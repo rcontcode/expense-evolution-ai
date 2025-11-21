@@ -1,0 +1,140 @@
+import { useState } from 'react';
+import { Layout } from '@/components/Layout';
+import { Button } from '@/components/ui/button';
+import { Plus, Tag as TagIcon, Edit, Trash2 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTags, useDeleteTag } from '@/hooks/data/useTags';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { TagDialog } from '@/components/dialogs/TagDialog';
+import { Tag } from '@/types/expense.types';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
+export default function Tags() {
+  const { t } = useLanguage();
+  const { data: tags, isLoading } = useTags();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<Tag | undefined>();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const deleteMutation = useDeleteTag();
+
+  const handleEdit = (tag: Tag) => {
+    setSelectedTag(tag);
+    setDialogOpen(true);
+  };
+
+  const handleClose = () => {
+    setDialogOpen(false);
+    setSelectedTag(undefined);
+  };
+
+  const handleCreate = () => {
+    setSelectedTag(undefined);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = () => {
+    if (deleteId) {
+      deleteMutation.mutate(deleteId);
+      setDeleteId(null);
+    }
+  };
+
+  return (
+    <Layout>
+      <div className="p-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Tags</h1>
+            <p className="text-muted-foreground mt-2">Organize your expenses with custom tags</p>
+          </div>
+          <Button onClick={handleCreate}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Tag
+          </Button>
+        </div>
+
+        {isLoading ? (
+          <Card className="border-dashed">
+            <CardContent className="flex items-center justify-center py-12">
+              <p className="text-muted-foreground">Loading tags...</p>
+            </CardContent>
+          </Card>
+        ) : tags && tags.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {tags.map((tag) => (
+              <Card key={tag.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <Badge
+                      style={{ backgroundColor: tag.color || '#3B82F6' }}
+                      className="text-white text-base px-3 py-1"
+                    >
+                      {tag.name}
+                    </Badge>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEdit(tag)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteId(tag.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <TagIcon className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-lg font-medium">No tags yet</p>
+              <p className="text-sm text-muted-foreground">
+                Create tags to organize your expenses
+              </p>
+              <Button onClick={handleCreate} className="mt-4">
+                <Plus className="mr-2 h-4 w-4" />
+                Create First Tag
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        <TagDialog open={dialogOpen} onClose={handleClose} tag={selectedTag} />
+
+        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will remove the tag from all expenses. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </Layout>
+  );
+}

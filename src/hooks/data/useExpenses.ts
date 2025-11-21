@@ -46,6 +46,22 @@ export function useExpenses(filters?: ExpenseFilters) {
         query = query.or(`vendor.ilike.%${filters.searchQuery}%,description.ilike.%${filters.searchQuery}%,notes.ilike.%${filters.searchQuery}%`);
       }
       
+      if (filters?.tagIds?.length) {
+        // First get expense IDs that have the selected tags
+        const { data: expenseTagData } = await supabase
+          .from('expense_tags')
+          .select('expense_id')
+          .in('tag_id', filters.tagIds);
+        
+        const expenseIds = expenseTagData?.map(et => et.expense_id) || [];
+        if (expenseIds.length > 0) {
+          query = query.in('id', expenseIds);
+        } else {
+          // No expenses match the tag filter, return empty
+          return [];
+        }
+      }
+      
       const { data, error } = await query.order('date', { ascending: false });
       
       if (error) throw error;

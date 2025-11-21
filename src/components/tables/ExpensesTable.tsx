@@ -80,6 +80,7 @@ export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
               <TableHead>Vendor</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Client</TableHead>
+              <TableHead>Tags</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-[50px]"></TableHead>
@@ -102,6 +103,23 @@ export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
                 <TableCell>{getCategoryLabel(expense.category as any)}</TableCell>
                 <TableCell>
                   {expense.client?.name || <span className="text-muted-foreground">-</span>}
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {expense.tags && expense.tags.length > 0 ? (
+                      expense.tags.map((tag) => (
+                        <Badge
+                          key={tag.id}
+                          style={{ backgroundColor: tag.color || '#3B82F6' }}
+                          className="text-white text-xs"
+                        >
+                          {tag.name}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground text-sm">-</span>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-right font-medium">
                   ${Number(expense.amount).toFixed(2)}

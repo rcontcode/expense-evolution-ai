@@ -15,6 +15,7 @@ import Contracts from "./pages/Contracts";
 import Mileage from "./pages/Mileage";
 import Reconciliation from "./pages/Reconciliation";
 import Settings from "./pages/Settings";
+import Tags from "./pages/Tags";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/chaos" element={<ChaosInbox />} />
               <Route path="/expenses" element={<Expenses />} />
               <Route path="/clients" element={<Clients />} />
+              <Route path="/tags" element={<Tags />} />
               <Route path="/contracts" element={<Contracts />} />
               <Route path="/mileage" element={<Mileage />} />
               <Route path="/reconciliation" element={<Reconciliation />} />
