@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
@@ -31,16 +32,16 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/chaos" element={<ChaosInbox />} />
-              <Route path="/expenses" element={<Expenses />} />
-              <Route path="/clients" element={<Clients />} />
-              <Route path="/tags" element={<Tags />} />
-              <Route path="/contracts" element={<Contracts />} />
-              <Route path="/mileage" element={<Mileage />} />
-              <Route path="/reconciliation" element={<Reconciliation />} />
-              <Route path="/settings" element={<Settings />} />
+              <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/chaos" element={<ProtectedRoute><ChaosInbox /></ProtectedRoute>} />
+              <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
+              <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+              <Route path="/tags" element={<ProtectedRoute><Tags /></ProtectedRoute>} />
+              <Route path="/contracts" element={<ProtectedRoute><Contracts /></ProtectedRoute>} />
+              <Route path="/mileage" element={<ProtectedRoute><Mileage /></ProtectedRoute>} />
+              <Route path="/reconciliation" element={<ProtectedRoute><Reconciliation /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
