@@ -6,6 +6,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Client } from '@/types/expense.types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ClientFormProps {
   client?: Client;
@@ -15,6 +16,7 @@ interface ClientFormProps {
 }
 
 export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientFormProps) {
+  const { t } = useLanguage();
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
@@ -33,9 +35,9 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Client Name *</FormLabel>
+              <FormLabel>{t('clients.clientName')} *</FormLabel>
               <FormControl>
-                <Input placeholder="Company or individual name" {...field} />
+                <Input placeholder={t('clients.clientNamePlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -48,9 +50,9 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
             name="country"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Country *</FormLabel>
+                <FormLabel>{t('clients.countryLabel')} *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Canada" {...field} />
+                  <Input placeholder={t('clients.countryPlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -62,9 +64,9 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
             name="province"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Province/State</FormLabel>
+                <FormLabel>{t('clients.provinceLabel')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="BC, ON, etc." {...field} value={field.value || ''} />
+                  <Input placeholder={t('clients.provincePlaceholder')} {...field} value={field.value || ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -77,10 +79,10 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Notes</FormLabel>
+              <FormLabel>{t('clients.notesLabel')}</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Additional information about this client"
+                  placeholder={t('clients.notesPlaceholder')}
                   className="resize-none"
                   {...field}
                   value={field.value || ''}
@@ -93,10 +95,10 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
 
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? 'Saving...' : client ? 'Update' : 'Create'}
+            {isLoading ? t('common.saving') : client ? t('common.update') : t('common.create')}
           </Button>
         </div>
       </form>

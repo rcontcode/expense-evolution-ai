@@ -54,19 +54,19 @@ export default function Tags() {
       <div className="p-8 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Tags</h1>
-            <p className="text-muted-foreground mt-2">Organize your expenses with custom tags</p>
+            <h1 className="text-3xl font-bold">{t('tags.title')}</h1>
+            <p className="text-muted-foreground mt-2">{t('tags.description')}</p>
           </div>
           <Button onClick={handleCreate}>
             <Plus className="mr-2 h-4 w-4" />
-            Create Tag
+            {t('tags.createTag')}
           </Button>
         </div>
 
         {isLoading ? (
           <Card className="border-dashed">
             <CardContent className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">Loading tags...</p>
+              <p className="text-muted-foreground">{t('common.loading')}</p>
             </CardContent>
           </Card>
         ) : tags && tags.length > 0 ? (
@@ -106,13 +106,13 @@ export default function Tags() {
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-12">
               <TagIcon className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium">No tags yet</p>
+              <p className="text-lg font-medium">{t('tags.noTags')}</p>
               <p className="text-sm text-muted-foreground">
-                Create tags to organize your expenses
+                {t('tags.createFirst')}
               </p>
               <Button onClick={handleCreate} className="mt-4">
                 <Plus className="mr-2 h-4 w-4" />
-                Create First Tag
+                {t('tags.createTag')}
               </Button>
             </CardContent>
           </Card>
@@ -123,14 +123,14 @@ export default function Tags() {
         <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogTitle>{t('tags.deleteConfirm')}</AlertDialogTitle>
               <AlertDialogDescription>
-                This will remove the tag from all expenses. This action cannot be undone.
+                {t('tags.deleteTagWarning')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete}>{t('common.delete')}</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

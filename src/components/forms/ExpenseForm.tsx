@@ -16,6 +16,7 @@ import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { useClients } from '@/hooks/data/useClients';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { TagSelect } from '@/components/forms/TagSelect';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ExpenseFormProps {
   expense?: ExpenseWithRelations;
@@ -25,6 +26,7 @@ interface ExpenseFormProps {
 }
 
 export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseFormProps) {
+  const { t } = useLanguage();
   const { data: clients } = useClients();
   const [selectedTags, setSelectedTags] = useState<string[]>(
     expense?.tags?.map(tag => tag.id) || []
@@ -57,7 +59,7 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
             name="date"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Date *</FormLabel>
+                <FormLabel>{t('expenses.dateLabel')} *</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -68,7 +70,7 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
                           !field.value && 'text-muted-foreground'
                         )}
                       >
-                        {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                        {field.value ? format(field.value, 'PPP') : <span>{t('expenses.pickDate')}</span>}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
@@ -93,12 +95,12 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
             name="amount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Amount *</FormLabel>
+                <FormLabel>{t('expenses.amountLabel')} *</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
                     step="0.01"
-                    placeholder="0.00"
+                    placeholder={t('expenses.amountPlaceholder')}
                     {...field}
                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
                   />
@@ -114,9 +116,9 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
           name="vendor"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Vendor *</FormLabel>
+              <FormLabel>{t('expenses.vendorLabel')} *</FormLabel>
               <FormControl>
-                <Input placeholder="Company name" {...field} />
+                <Input placeholder={t('expenses.vendorPlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -129,11 +131,11 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
             name="category"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Category *</FormLabel>
+                <FormLabel>{t('expenses.categoryLabel')} *</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder={t('expenses.selectCategory')} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -154,15 +156,15 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
             name="client_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Client</FormLabel>
+                <FormLabel>{t('expenses.clientLabel')}</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select client" />
+                      <SelectValue placeholder={t('expenses.selectClient')} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="__none__">None</SelectItem>
+                    <SelectItem value="__none__">{t('expenses.none')}</SelectItem>
                     {clients?.map((client) => (
                       <SelectItem key={client.id} value={client.id}>
                         {client.name}
@@ -181,10 +183,10 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>{t('expenses.descriptionLabel')}</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Brief description of the expense"
+                  placeholder={t('expenses.descriptionPlaceholder')}
                   className="resize-none"
                   {...field}
                 />
@@ -199,10 +201,10 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Notes</FormLabel>
+              <FormLabel>{t('expenses.notesLabel')}</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Additional notes or context"
+                  placeholder={t('expenses.notesPlaceholder')}
                   className="resize-none"
                   {...field}
                 />
@@ -213,16 +215,16 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
         />
 
         <div>
-          <label className="text-sm font-medium mb-2 block">Tags</label>
+          <label className="text-sm font-medium mb-2 block">{t('expenses.tagsLabel')}</label>
           <TagSelect value={selectedTags} onChange={setSelectedTags} />
         </div>
 
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? 'Saving...' : expense ? 'Update' : 'Create'}
+            {isLoading ? t('common.saving') : expense ? t('common.update') : t('common.create')}
           </Button>
         </div>
       </form>
