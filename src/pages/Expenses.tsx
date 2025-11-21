@@ -39,7 +39,7 @@ export default function Expenses() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">{t('expenses.title')}</h1>
-            <p className="text-muted-foreground mt-2">Manage and track all your expenses</p>
+            <p className="text-muted-foreground mt-2">{t('expenses.manageExpenses')}</p>
           </div>
           <Button onClick={handleCreate}>
             <Plus className="mr-2 h-4 w-4" />
@@ -52,7 +52,7 @@ export default function Expenses() {
         {isLoading ? (
           <Card className="border-dashed">
             <CardContent className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">Loading expenses...</p>
+              <p className="text-muted-foreground">{t('expenses.loadingExpenses')}</p>
             </CardContent>
           </Card>
         ) : expenses && expenses.length > 0 ? (
@@ -63,11 +63,11 @@ export default function Expenses() {
               <Receipt className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-lg font-medium">{t('expenses.noExpenses')}</p>
               <p className="text-sm text-muted-foreground">
-                Start by uploading documents or adding expenses manually
+                {t('expenses.startByUploading')}
               </p>
               <Button onClick={handleCreate} className="mt-4">
                 <Plus className="mr-2 h-4 w-4" />
-                Add First Expense
+                {t('expenses.addFirstExpense')}
               </Button>
             </CardContent>
           </Card>

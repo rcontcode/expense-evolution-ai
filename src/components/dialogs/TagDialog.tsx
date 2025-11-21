@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { TagForm } from '@/components/forms/TagForm';
 import { useCreateTag, useUpdateTag } from '@/hooks/data/useTags';
 import { Tag, TagInsert } from '@/types/expense.types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TagDialogProps {
   open: boolean;
@@ -10,6 +11,7 @@ interface TagDialogProps {
 }
 
 export function TagDialog({ open, onClose, tag }: TagDialogProps) {
+  const { t } = useLanguage();
   const createMutation = useCreateTag();
   const updateMutation = useUpdateTag();
 
@@ -30,7 +32,7 @@ export function TagDialog({ open, onClose, tag }: TagDialogProps) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{tag ? 'Edit Tag' : 'Create Tag'}</DialogTitle>
+          <DialogTitle>{tag ? t('tags.editTag') : t('tags.createTag')}</DialogTitle>
         </DialogHeader>
         <TagForm
           tag={tag}

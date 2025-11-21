@@ -20,6 +20,7 @@ import {
 import { format } from 'date-fns';
 import { getCategoryLabel } from '@/lib/constants/expense-categories';
 import { useDeleteExpense } from '@/hooks/data/useExpenses';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +38,7 @@ interface ExpensesTableProps {
 }
 
 export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
+  const { t } = useLanguage();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const deleteMutation = useDeleteExpense();
 
@@ -65,7 +67,7 @@ export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
   if (expenses.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        <p>No expenses found</p>
+        <p>{t('expenses.noExpensesFound')}</p>
       </div>
     );
   }
@@ -76,13 +78,13 @@ export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Vendor</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Client</TableHead>
-              <TableHead>Tags</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{t('expenses.date')}</TableHead>
+              <TableHead>{t('expenses.vendor')}</TableHead>
+              <TableHead>{t('expenses.category')}</TableHead>
+              <TableHead>{t('expenses.client')}</TableHead>
+              <TableHead>{t('expenses.tags')}</TableHead>
+              <TableHead className="text-right">{t('expenses.amount')}</TableHead>
+              <TableHead>{t('expenses.status')}</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -139,14 +141,14 @@ export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => onEdit(expense)}>
                         <Edit className="mr-2 h-4 w-4" />
-                        Edit
+                        {t('common.edit')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => setDeleteId(expense.id)}
                         className="text-destructive"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
+                        {t('common.delete')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -160,14 +162,14 @@ export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t('expenses.deleteConfirm')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the expense.
+              {t('expenses.deleteWarning')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>{t('common.delete')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

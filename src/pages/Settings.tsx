@@ -12,13 +12,13 @@ export default function Settings() {
       <div className="p-8 space-y-8">
         <div>
           <h1 className="text-3xl font-bold">{t('nav.settings')}</h1>
-          <p className="text-muted-foreground mt-2">Manage your preferences</p>
+          <p className="text-muted-foreground mt-2">{t('settings.description')}</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Language</CardTitle>
-            <CardDescription>Choose your preferred language</CardDescription>
+            <CardTitle>{t('settings.languageTitle')}</CardTitle>
+            <CardDescription>{t('settings.languageDescription')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">

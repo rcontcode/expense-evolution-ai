@@ -55,7 +55,7 @@ export default function Clients() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">{t('clients.title')}</h1>
-            <p className="text-muted-foreground mt-2">Manage your client relationships</p>
+            <p className="text-muted-foreground mt-2">{t('clients.description')}</p>
           </div>
           <Button onClick={handleCreate}>
             <Plus className="mr-2 h-4 w-4" />
@@ -66,7 +66,7 @@ export default function Clients() {
         {isLoading ? (
           <Card className="border-dashed">
             <CardContent className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">Loading clients...</p>
+              <p className="text-muted-foreground">{t('clients.loadingClients')}</p>
             </CardContent>
           </Card>
         ) : clients && clients.length > 0 ? (
@@ -119,7 +119,7 @@ export default function Clients() {
               <p className="text-sm text-muted-foreground">{t('clients.addFirst')}</p>
               <Button onClick={handleCreate} className="mt-4">
                 <Plus className="mr-2 h-4 w-4" />
-                Add First Client
+                {t('clients.addFirstClient')}
               </Button>
             </CardContent>
           </Card>
@@ -130,14 +130,14 @@ export default function Clients() {
         <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogTitle>{t('clients.deleteConfirm')}</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the client and may affect related expenses.
+                {t('clients.deleteWarning')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete}>{t('common.delete')}</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
