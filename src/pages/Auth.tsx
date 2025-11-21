@@ -7,10 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -30,7 +32,17 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (isForgotPassword) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth`,
+        });
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success(t('auth.checkEmail'));
+          setIsForgotPassword(false);
+        }
+      } else if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) {
           toast.error(error.message);
@@ -71,12 +83,17 @@ export default function Auth() {
             EvoExpense AI
           </CardTitle>
           <CardDescription className="text-center">
-            {isLogin ? t('auth.login') : t('auth.signup')}
+            {isForgotPassword ? t('auth.resetPassword') : isLogin ? t('auth.login') : t('auth.signup')}
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {isForgotPassword && (
+            <p className="text-sm text-muted-foreground mb-4">
+              {t('auth.resetPasswordDescription')}
+            </p>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
+            {!isLogin && !isForgotPassword && (
               <div className="space-y-2">
                 <Label htmlFor="fullName">{t('auth.fullName')}</Label>
                 <Input
@@ -98,38 +115,66 @@ export default function Auth() {
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">{t('auth.password')}</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-              />
-            </div>
+            {!isForgotPassword && (
+              <div className="space-y-2">
+                <Label htmlFor="password">{t('auth.password')}</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+            )}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? t('common.loading') : isLogin ? t('auth.login') : t('auth.signup')}
+              {loading ? t('common.loading') : isForgotPassword ? t('auth.resetPassword') : isLogin ? t('auth.login') : t('auth.signup')}
             </Button>
           </form>
           
-          <div className="mt-4 text-center text-sm">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:underline"
-            >
-              {isLogin ? (
-                <>
-                  {t('auth.dontHaveAccount')} {t('auth.signupNow')}
-                </>
-              ) : (
-                <>
-                  {t('auth.alreadyHaveAccount')} {t('auth.loginNow')}
-                </>
-              )}
-            </button>
+          <div className="mt-4 text-center text-sm space-y-2">
+            {isForgotPassword ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsForgotPassword(false);
+                  setIsLogin(true);
+                }}
+                className="text-primary hover:underline"
+              >
+                {t('auth.backToLogin')}
+              </button>
+            ) : (
+              <>
+                {isLogin && (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setIsForgotPassword(true)}
+                      className="text-primary hover:underline"
+                    >
+                      {t('auth.forgotPassword')}
+                    </button>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="text-primary hover:underline"
+                >
+                  {isLogin ? (
+                    <>
+                      {t('auth.dontHaveAccount')} {t('auth.signupNow')}
+                    </>
+                  ) : (
+                    <>
+                      {t('auth.alreadyHaveAccount')} {t('auth.loginNow')}
+                    </>
+                  )}
+                </button>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
