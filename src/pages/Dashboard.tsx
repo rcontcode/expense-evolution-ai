@@ -6,10 +6,30 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
+import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+
+const categoryChartConfig = {
+  total: {
+    label: "Total",
+  },
+} satisfies ChartConfig;
+
+const clientChartConfig = {
+  total: {
+    label: "Total",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig;
+
+const trendChartConfig = {
+  total: {
+    label: "Total",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig;
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -118,7 +138,7 @@ export default function Dashboard() {
                   No data available
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={300}>
+                <ChartContainer config={categoryChartConfig} className="h-[300px] w-full">
                   <PieChart>
                     <Pie
                       data={stats?.categoryBreakdown}
@@ -135,7 +155,7 @@ export default function Dashboard() {
                     </Pie>
                     <ChartTooltip content={<ChartTooltipContent />} />
                   </PieChart>
-                </ResponsiveContainer>
+                </ChartContainer>
               )}
             </CardContent>
           </Card>
@@ -153,7 +173,7 @@ export default function Dashboard() {
                   No data available
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={300}>
+                <ChartContainer config={clientChartConfig} className="h-[300px] w-full">
                   <BarChart data={stats?.clientBreakdown}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="client_name" stroke="hsl(var(--muted-foreground))" />
@@ -161,7 +181,7 @@ export default function Dashboard() {
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar dataKey="total" fill="hsl(var(--chart-1))" />
                   </BarChart>
-                </ResponsiveContainer>
+                </ChartContainer>
               )}
             </CardContent>
           </Card>
@@ -177,7 +197,7 @@ export default function Dashboard() {
             {isLoading ? (
               <Skeleton className="h-[300px] w-full" />
             ) : (
-              <ResponsiveContainer width="100%" height={300}>
+              <ChartContainer config={trendChartConfig} className="h-[300px] w-full">
                 <LineChart data={stats?.monthlyTrends}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
@@ -185,7 +205,7 @@ export default function Dashboard() {
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Line type="monotone" dataKey="total" stroke="hsl(var(--chart-1))" strokeWidth={2} />
                 </LineChart>
-              </ResponsiveContainer>
+              </ChartContainer>
             )}
           </CardContent>
         </Card>
