@@ -4,7 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, X } from 'lucide-react';
 import { useClients } from '@/hooks/data/useClients';
+import { useTags } from '@/hooks/data/useTags';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
+import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 interface ExpenseFiltersProps {
   filters: Filters;
@@ -13,6 +20,8 @@ interface ExpenseFiltersProps {
 
 export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
   const { data: clients } = useClients();
+  const { data: tags } = useTags();
+  const [tagPopoverOpen, setTagPopoverOpen] = useState(false);
 
   const handleSearchChange = (value: string) => {
     onChange({ ...filters, searchQuery: value || undefined });
@@ -36,11 +45,19 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
     });
   };
 
+  const handleTagToggle = (tagId: string) => {
+    const currentTags = filters.tagIds || [];
+    const newTags = currentTags.includes(tagId)
+      ? currentTags.filter(id => id !== tagId)
+      : [...currentTags, tagId];
+    onChange({ ...filters, tagIds: newTags.length > 0 ? newTags : undefined });
+  };
+
   const clearFilters = () => {
     onChange({});
   };
 
-  const hasActiveFilters = filters.searchQuery || filters.category || filters.clientIds?.length || filters.statuses?.length;
+  const hasActiveFilters = filters.searchQuery || filters.category || filters.clientIds?.length || filters.statuses?.length || filters.tagIds?.length;
 
   return (
     <div className="flex flex-col gap-4 mb-6">
@@ -102,6 +119,45 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
             <SelectItem value="reimbursable">Reimbursable</SelectItem>
           </SelectContent>
         </Select>
+
+        <Popover open={tagPopoverOpen} onOpenChange={setTagPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="w-[180px] justify-between">
+              <span>
+                {filters.tagIds?.length ? `${filters.tagIds.length} tags` : 'Tags'}
+              </span>
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[200px] p-0" align="start">
+            <Command>
+              <CommandInput placeholder="Search tags..." />
+              <CommandEmpty>No tags found.</CommandEmpty>
+              <CommandGroup>
+                {tags?.map((tag) => (
+                  <CommandItem
+                    key={tag.id}
+                    value={tag.name}
+                    onSelect={() => handleTagToggle(tag.id)}
+                  >
+                    <Check
+                      className={cn(
+                        'mr-2 h-4 w-4',
+                        filters.tagIds?.includes(tag.id) ? 'opacity-100' : 'opacity-0'
+                      )}
+                    />
+                    <Badge
+                      style={{ backgroundColor: tag.color || '#3B82F6' }}
+                      className="text-white"
+                    >
+                      {tag.name}
+                    </Badge>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </Command>
+          </PopoverContent>
+        </Popover>
 
         {hasActiveFilters && (
           <Button variant="ghost" size="sm" onClick={clearFilters}>

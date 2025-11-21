@@ -1,4 +1,5 @@
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { expenseSchema, ExpenseFormValues } from '@/lib/validations/expense.schema';
 import { Button } from '@/components/ui/button';
@@ -14,16 +15,20 @@ import { format } from 'date-fns';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { useClients } from '@/hooks/data/useClients';
 import { ExpenseWithRelations } from '@/types/expense.types';
+import { TagSelect } from '@/components/forms/TagSelect';
 
 interface ExpenseFormProps {
   expense?: ExpenseWithRelations;
-  onSubmit: (data: ExpenseFormValues) => void;
+  onSubmit: (data: ExpenseFormValues & { tagIds?: string[] }) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
 export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseFormProps) {
   const { data: clients } = useClients();
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    expense?.tags?.map(tag => tag.id) || []
+  );
 
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
@@ -39,9 +44,13 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
     },
   });
 
+  const handleSubmit = (data: ExpenseFormValues) => {
+    onSubmit({ ...data, tagIds: selectedTags });
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -202,6 +211,11 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
             </FormItem>
           )}
         />
+
+        <div>
+          <label className="text-sm font-medium mb-2 block">Tags</label>
+          <TagSelect value={selectedTags} onChange={setSelectedTags} />
+        </div>
 
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
