@@ -32,6 +32,7 @@ export const translations = {
     dashboard: {
       welcome: 'Bienvenido',
       monthlyTotal: 'Total del Mes',
+      totalExpenses: 'Total de Gastos',
       pendingDocuments: 'Documentos Pendientes',
       billableExpenses: 'Gastos Facturables',
       recentActivity: 'Actividad Reciente',
@@ -39,6 +40,9 @@ export const translations = {
       uploadDocument: 'Subir Documento',
       addExpense: 'Agregar Gasto',
       addClient: 'Agregar Cliente',
+      expensesByCategory: 'Gastos por Categoría',
+      expensesByClient: 'Gastos por Cliente',
+      monthlyTrends: 'Tendencias Mensuales',
     },
     // Onboarding
     onboarding: {
@@ -189,6 +193,7 @@ export const translations = {
     dashboard: {
       welcome: 'Welcome',
       monthlyTotal: 'Monthly Total',
+      totalExpenses: 'Total Expenses',
       pendingDocuments: 'Pending Documents',
       billableExpenses: 'Billable Expenses',
       recentActivity: 'Recent Activity',
@@ -196,6 +201,9 @@ export const translations = {
       uploadDocument: 'Upload Document',
       addExpense: 'Add Expense',
       addClient: 'Add Client',
+      expensesByCategory: 'Expenses by Category',
+      expensesByClient: 'Expenses by Client',
+      monthlyTrends: 'Monthly Trends',
     },
     // Onboarding
     onboarding: {
