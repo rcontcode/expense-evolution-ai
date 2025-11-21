@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_usage_logs: {
+        Row: {
+          action_type: string
+          contract_id: string | null
+          created_at: string | null
+          credits_used: number | null
+          document_id: string | null
+          error_message: string | null
+          id: string
+          success: boolean | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          contract_id?: string | null
+          created_at?: string | null
+          credits_used?: number | null
+          document_id?: string | null
+          error_message?: string | null
+          id?: string
+          success?: boolean | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          contract_id?: string | null
+          created_at?: string | null
+          credits_used?: number | null
+          document_id?: string | null
+          error_message?: string | null
+          id?: string
+          success?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_logs_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_logs_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bank_transactions: {
         Row: {
           amount: number
@@ -319,6 +370,39 @@ export type Database = {
           },
         ]
       }
+      export_logs: {
+        Row: {
+          created_at: string | null
+          export_type: string
+          file_name: string
+          file_path: string | null
+          filters: Json | null
+          id: string
+          record_count: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          export_type: string
+          file_name: string
+          file_path?: string | null
+          filters?: Json | null
+          id?: string
+          record_count?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          export_type?: string
+          file_name?: string
+          file_path?: string | null
+          filters?: Json | null
+          id?: string
+          record_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       mileage: {
         Row: {
           client_id: string | null
@@ -369,6 +453,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string | null
+          id: string
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          read?: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -510,6 +627,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_use_ai: {
+        Args: { credit_limit?: number; user_uuid: string }
+        Returns: boolean
+      }
+      get_monthly_ai_credits_used: {
+        Args: { user_uuid: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["user_role"]
