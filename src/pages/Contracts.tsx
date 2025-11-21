@@ -1,11 +1,16 @@
+import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { FileText, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { ContractDialog } from '@/components/dialogs/ContractDialog';
+import { ContractsTable } from '@/components/tables/ContractsTable';
+import { useContracts } from '@/hooks/data/useContracts';
 
 export default function Contracts() {
   const { t } = useLanguage();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { data: contracts, isLoading } = useContracts();
 
   return (
     <Layout>
@@ -13,22 +18,24 @@ export default function Contracts() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">{t('nav.contracts')}</h1>
-            <p className="text-muted-foreground mt-2">Store and manage client contracts</p>
+            <p className="text-muted-foreground mt-2">{t('contracts.description')}</p>
           </div>
-          <Button>
+          <Button onClick={() => setDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            Upload Contract
+            {t('contracts.uploadContract')}
           </Button>
         </div>
 
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium">No contracts yet</p>
-            <p className="text-sm text-muted-foreground">Upload your first contract to get started</p>
-          </CardContent>
-        </Card>
+        {isLoading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">{t('common.loading')}</p>
+          </div>
+        ) : (
+          <ContractsTable contracts={contracts || []} />
+        )}
       </div>
+
+      <ContractDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </Layout>
   );
 }
