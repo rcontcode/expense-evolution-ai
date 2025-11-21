@@ -1,11 +1,18 @@
+import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
+import { useClients } from '@/hooks/data/useClients';
+import { useExpenses } from '@/hooks/data/useExpenses';
+import { useTaxCalculations } from '@/hooks/data/useTaxCalculations';
+import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
+import { TaxSummaryCards } from '@/components/dashboard/TaxSummaryCards';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
@@ -34,15 +41,52 @@ const trendChartConfig = {
 export default function Dashboard() {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { data: stats, isLoading } = useDashboardStats();
+  const [selectedClient, setSelectedClient] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  const filters = {
+    clientId: selectedClient,
+    status: selectedStatus as any,
+    category: selectedCategory as any,
+  };
+
+  const expenseFilters = {
+    clientIds: selectedClient !== 'all' ? [selectedClient] : undefined,
+    statuses: selectedStatus !== 'all' ? [selectedStatus as any] : undefined,
+    category: selectedCategory !== 'all' ? (selectedCategory as any) : undefined,
+  };
+
+  const { data: stats, isLoading } = useDashboardStats(filters);
+  const { data: clients } = useClients();
+  const { data: allExpenses } = useExpenses(expenseFilters);
+  const { taxSummary } = useTaxCalculations(allExpenses || []);
+
+  const handleResetFilters = () => {
+    setSelectedClient('all');
+    setSelectedStatus('all');
+    setSelectedCategory('all');
+  };
 
   return (
     <Layout>
       <div className="p-8 space-y-8">
         <div>
           <h1 className="text-3xl font-bold">{t('dashboard.welcome')}</h1>
-          <p className="text-muted-foreground mt-2">Track and manage your expenses efficiently</p>
+          <p className="text-muted-foreground mt-2">Panel de control con análisis fiscal detallado</p>
         </div>
+
+        {/* Filtros */}
+        <DashboardFilters
+          selectedClient={selectedClient}
+          selectedStatus={selectedStatus}
+          selectedCategory={selectedCategory}
+          onClientChange={setSelectedClient}
+          onStatusChange={setSelectedStatus}
+          onCategoryChange={setSelectedCategory}
+          onReset={handleResetFilters}
+          clients={clients || []}
+        />
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
@@ -123,8 +167,15 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Charts */}
-        <div className="grid gap-4 md:grid-cols-2">
+        {/* Tabs para Gráficos y Análisis Fiscal */}
+        <Tabs defaultValue="charts" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="charts">Gráficos</TabsTrigger>
+            <TabsTrigger value="tax">Análisis Fiscal</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="charts" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>{t('dashboard.expensesByCategory')}</CardTitle>
@@ -185,9 +236,9 @@ export default function Dashboard() {
               )}
             </CardContent>
           </Card>
-        </div>
+            </div>
 
-        {/* Trends */}
+            {/* Trends */}
         <Card>
           <CardHeader>
             <CardTitle>{t('dashboard.monthlyTrends')}</CardTitle>
@@ -208,7 +259,13 @@ export default function Dashboard() {
               </ChartContainer>
             )}
           </CardContent>
-        </Card>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tax" className="space-y-4">
+            <TaxSummaryCards taxSummary={taxSummary} />
+          </TabsContent>
+        </Tabs>
 
         {/* Quick Actions */}
         <Card>

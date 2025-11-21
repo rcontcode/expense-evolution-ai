@@ -2,6 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
+import { ExpenseStatus, ExpenseCategory } from '@/types/expense.types';
+
+interface DashboardFilters {
+  clientId?: string;
+  status?: ExpenseStatus | 'all';
+  category?: ExpenseCategory | 'all';
+}
 
 interface CategoryStats {
   category: string;
@@ -28,11 +35,11 @@ interface DashboardStats {
   monthlyTrends: MonthlyTrend[];
 }
 
-export const useDashboardStats = () => {
+export const useDashboardStats = (filters?: DashboardFilters) => {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['dashboard-stats', user?.id],
+    queryKey: ['dashboard-stats', user?.id, filters],
     queryFn: async (): Promise<DashboardStats> => {
       if (!user) throw new Error('No user');
 
@@ -40,13 +47,25 @@ export const useDashboardStats = () => {
       const firstDayThisMonth = startOfMonth(now);
       const lastDayThisMonth = endOfMonth(now);
 
-      // Get monthly total
-      const { data: monthlyExpenses } = await supabase
+      // Build query with filters
+      let monthlyQuery = supabase
         .from('expenses')
         .select('amount')
         .eq('user_id', user.id)
         .gte('date', firstDayThisMonth.toISOString())
         .lte('date', lastDayThisMonth.toISOString());
+
+      if (filters?.clientId && filters.clientId !== 'all') {
+        monthlyQuery = monthlyQuery.eq('client_id', filters.clientId);
+      }
+      if (filters?.status && filters.status !== 'all') {
+        monthlyQuery = monthlyQuery.eq('status', filters.status);
+      }
+      if (filters?.category && filters.category !== 'all') {
+        monthlyQuery = monthlyQuery.eq('category', filters.category);
+      }
+
+      const { data: monthlyExpenses } = await monthlyQuery;
 
       const monthlyTotal = monthlyExpenses?.reduce(
         (sum, exp) => sum + parseFloat(exp.amount.toString()),
@@ -73,13 +92,25 @@ export const useDashboardStats = () => {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
 
-      // Get expenses by category
-      const { data: expensesByCategory } = await supabase
+      // Get expenses by category with filters
+      let categoryQuery = supabase
         .from('expenses')
         .select('category, amount')
         .eq('user_id', user.id)
         .gte('date', firstDayThisMonth.toISOString())
         .lte('date', lastDayThisMonth.toISOString());
+
+      if (filters?.clientId && filters.clientId !== 'all') {
+        categoryQuery = categoryQuery.eq('client_id', filters.clientId);
+      }
+      if (filters?.status && filters.status !== 'all') {
+        categoryQuery = categoryQuery.eq('status', filters.status);
+      }
+      if (filters?.category && filters.category !== 'all') {
+        categoryQuery = categoryQuery.eq('category', filters.category);
+      }
+
+      const { data: expensesByCategory } = await categoryQuery;
 
       const categoryBreakdown = expensesByCategory?.reduce((acc, exp) => {
         const category = exp.category || 'other';
@@ -94,14 +125,26 @@ export const useDashboardStats = () => {
         return acc;
       }, [] as CategoryStats[]) || [];
 
-      // Get expenses by client
-      const { data: expensesByClient } = await supabase
+      // Get expenses by client with filters
+      let clientQuery = supabase
         .from('expenses')
         .select('client_id, amount, clients(name)')
         .eq('user_id', user.id)
         .gte('date', firstDayThisMonth.toISOString())
         .lte('date', lastDayThisMonth.toISOString())
         .not('client_id', 'is', null);
+
+      if (filters?.clientId && filters.clientId !== 'all') {
+        clientQuery = clientQuery.eq('client_id', filters.clientId);
+      }
+      if (filters?.status && filters.status !== 'all') {
+        clientQuery = clientQuery.eq('status', filters.status);
+      }
+      if (filters?.category && filters.category !== 'all') {
+        clientQuery = clientQuery.eq('category', filters.category);
+      }
+
+      const { data: expensesByClient } = await clientQuery;
 
       const clientBreakdown = expensesByClient?.reduce((acc, exp) => {
         const clientName = (exp.clients as any)?.name || 'Unknown';
@@ -116,19 +159,31 @@ export const useDashboardStats = () => {
         return acc;
       }, [] as ClientStats[]) || [];
 
-      // Get monthly trends (last 6 months)
+      // Get monthly trends (last 6 months) with filters
       const monthlyTrends: MonthlyTrend[] = [];
       for (let i = 5; i >= 0; i--) {
         const monthDate = subMonths(now, i);
         const firstDay = startOfMonth(monthDate);
         const lastDay = endOfMonth(monthDate);
 
-        const { data: monthExpenses } = await supabase
+        let trendQuery = supabase
           .from('expenses')
           .select('amount')
           .eq('user_id', user.id)
           .gte('date', firstDay.toISOString())
           .lte('date', lastDay.toISOString());
+
+        if (filters?.clientId && filters.clientId !== 'all') {
+          trendQuery = trendQuery.eq('client_id', filters.clientId);
+        }
+        if (filters?.status && filters.status !== 'all') {
+          trendQuery = trendQuery.eq('status', filters.status);
+        }
+        if (filters?.category && filters.category !== 'all') {
+          trendQuery = trendQuery.eq('category', filters.category);
+        }
+
+        const { data: monthExpenses } = await trendQuery;
 
         const total = monthExpenses?.reduce(
           (sum, exp) => sum + parseFloat(exp.amount.toString()),
