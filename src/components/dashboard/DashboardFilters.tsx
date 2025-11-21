@@ -30,18 +30,18 @@ export const DashboardFilters = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Filtros del Dashboard</CardTitle>
+        <CardTitle>{t('filters.dashboardFilters')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label>Cliente</Label>
+            <Label>{t('filters.client')}</Label>
             <Select value={selectedClient} onValueChange={onClientChange}>
               <SelectTrigger>
-                <SelectValue placeholder="Todos los clientes" />
+                <SelectValue placeholder={t('filters.allClients')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los clientes</SelectItem>
+                <SelectItem value="all">{t('filters.allClients')}</SelectItem>
                 {clients.map((client) => (
                   <SelectItem key={client.id} value={client.id}>
                     {client.name}
@@ -52,44 +52,44 @@ export const DashboardFilters = ({
           </div>
 
           <div className="space-y-2">
-            <Label>Estado</Label>
+            <Label>{t('filters.status')}</Label>
             <Select value={selectedStatus} onValueChange={onStatusChange}>
               <SelectTrigger>
-                <SelectValue placeholder="Todos los estados" />
+                <SelectValue placeholder={t('filters.allStatuses')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="deductible">Deducible</SelectItem>
-                <SelectItem value="reimbursable">Reembolsable</SelectItem>
-                <SelectItem value="pending">Pendiente</SelectItem>
+                <SelectItem value="all">{t('filters.allStatuses')}</SelectItem>
+                <SelectItem value="deductible">{t('expenses.deductible')}</SelectItem>
+                <SelectItem value="reimbursable">{t('expenses.reimbursable')}</SelectItem>
+                <SelectItem value="pending">{t('expenses.pending')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>Categoría</Label>
+            <Label>{t('filters.category')}</Label>
             <Select value={selectedCategory} onValueChange={onCategoryChange}>
               <SelectTrigger>
-                <SelectValue placeholder="Todas las categorías" />
+                <SelectValue placeholder={t('filters.allCategories')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas</SelectItem>
-                <SelectItem value="meals">Comidas</SelectItem>
-                <SelectItem value="travel">Viajes</SelectItem>
-                <SelectItem value="equipment">Equipo</SelectItem>
-                <SelectItem value="software">Software</SelectItem>
-                <SelectItem value="office_supplies">Suministros de oficina</SelectItem>
-                <SelectItem value="utilities">Servicios públicos</SelectItem>
-                <SelectItem value="professional_services">Servicios profesionales</SelectItem>
-                <SelectItem value="home_office">Oficina en casa</SelectItem>
-                <SelectItem value="mileage">Kilometraje</SelectItem>
+                <SelectItem value="all">{t('filters.allCategories')}</SelectItem>
+                <SelectItem value="meals">{t('filters.meals')}</SelectItem>
+                <SelectItem value="travel">{t('filters.travel')}</SelectItem>
+                <SelectItem value="equipment">{t('filters.equipment')}</SelectItem>
+                <SelectItem value="software">{t('filters.software')}</SelectItem>
+                <SelectItem value="office_supplies">{t('filters.officeSupplies')}</SelectItem>
+                <SelectItem value="utilities">{t('filters.utilities')}</SelectItem>
+                <SelectItem value="professional_services">{t('filters.professionalServices')}</SelectItem>
+                <SelectItem value="home_office">{t('filters.homeOffice')}</SelectItem>
+                <SelectItem value="mileage">{t('filters.mileage')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
         <Button onClick={onReset} variant="outline" className="w-full">
-          Resetear Filtros
+          {t('filters.resetFilters')}
         </Button>
       </CardContent>
     </Card>
