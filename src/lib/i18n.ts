@@ -87,6 +87,9 @@ export const translations = {
       client: 'Cliente',
       status: 'Estado',
       actions: 'Acciones',
+      category: 'Categoría',
+      description: 'Descripción',
+      notes: 'Notas',
       noExpenses: 'No hay gastos registrados',
       pending: 'Pendiente',
       classified: 'Clasificado',
@@ -96,6 +99,11 @@ export const translations = {
       rejected: 'Rechazado',
       underReview: 'En Revisión',
       finalized: 'Finalizado',
+      filters: 'Filtros',
+      searchPlaceholder: 'Buscar proveedor, descripción...',
+      allCategories: 'Todas las Categorías',
+      allClients: 'Todos los Clientes',
+      allStatuses: 'Todos los Estados',
     },
     // Clients
     clients: {
@@ -211,6 +219,9 @@ export const translations = {
       client: 'Client',
       status: 'Status',
       actions: 'Actions',
+      category: 'Category',
+      description: 'Description',
+      notes: 'Notes',
       noExpenses: 'No expenses recorded',
       pending: 'Pending',
       classified: 'Classified',
@@ -220,6 +231,11 @@ export const translations = {
       rejected: 'Rejected',
       underReview: 'Under Review',
       finalized: 'Finalized',
+      filters: 'Filters',
+      searchPlaceholder: 'Search vendor, description...',
+      allCategories: 'All Categories',
+      allClients: 'All Clients',
+      allStatuses: 'All Statuses',
     },
     // Clients
     clients: {
