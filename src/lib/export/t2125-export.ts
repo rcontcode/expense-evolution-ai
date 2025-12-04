@@ -213,6 +213,11 @@ export function exportT2125Report(expenses: ExpenseWithRelations[], year?: numbe
   const totalGross = lineTotals.reduce((sum, l) => sum + l.grossAmount, 0);
   const totalDeductible = lineTotals.reduce((sum, l) => sum + l.netDeductible, 0);
 
+  // Calculate HST/GST (assuming 13% Ontario HST as default)
+  const HST_RATE = 0.13;
+  const totalHstGst = totalGross - (totalGross / (1 + HST_RATE));
+  const itcClaimable = totalDeductible - (totalDeductible / (1 + HST_RATE));
+
   const wb = XLSX.utils.book_new();
 
   // Sheet 1: T2125 Summary by Line
@@ -259,6 +264,19 @@ export function exportT2125Report(expenses: ExpenseWithRelations[], year?: numbe
   ]);
   summaryData.push(['']);
   summaryData.push(['═══════════════════════════════════════════════════════════════════════════']);
+  summaryData.push(['RESUMEN HST/GST - INPUT TAX CREDITS (ITC)']);
+  summaryData.push(['HST/GST SUMMARY - INPUT TAX CREDITS (ITC)']);
+  summaryData.push(['═══════════════════════════════════════════════════════════════════════════']);
+  summaryData.push(['']);
+  summaryData.push(['', 'Descripción', 'Description', 'Monto / Amount']);
+  summaryData.push(['', 'Total HST/GST pagado en gastos deducibles', 'Total HST/GST paid on deductible expenses', `$${totalHstGst.toFixed(2)}`]);
+  summaryData.push(['', 'ITC Reclamable (según tasas de deducción)', 'Claimable ITC (per deduction rates)', `$${itcClaimable.toFixed(2)}`]);
+  summaryData.push(['', 'Tasa de recuperación', 'Recovery rate', `${((itcClaimable / totalHstGst) * 100).toFixed(1)}%`]);
+  summaryData.push(['']);
+  summaryData.push(['', '⚠️ Los ITC de comidas y entretenimiento son 50% como la deducción del gasto']);
+  summaryData.push(['', '⚠️ Meals and entertainment ITCs are 50% like the expense deduction']);
+  summaryData.push(['']);
+  summaryData.push(['═══════════════════════════════════════════════════════════════════════════']);
   summaryData.push(['NOTAS IMPORTANTES / IMPORTANT NOTES']);
   summaryData.push(['═══════════════════════════════════════════════════════════════════════════']);
   summaryData.push(['']);
@@ -271,10 +289,15 @@ export function exportT2125Report(expenses: ExpenseWithRelations[], year?: numbe
   summaryData.push(['3. CCA (Línea 9281) requiere cálculo separado según la clase del activo']);
   summaryData.push(['   CCA (Line 9281) requires separate calculation based on asset class']);
   summaryData.push(['']);
-  summaryData.push(['4. Este reporte es solo para referencia. Consulte con un contador profesional.']);
+  summaryData.push(['4. ITC calculado asumiendo HST 13% (Ontario). Ajustar según su provincia.']);
+  summaryData.push(['   ITC calculated assuming 13% HST (Ontario). Adjust for your province.']);
+  summaryData.push(['']);
+  summaryData.push(['5. Este reporte es solo para referencia. Consulte con un contador profesional.']);
   summaryData.push(['   This report is for reference only. Consult a professional accountant.']);
   summaryData.push(['']);
-  summaryData.push(['Referencia / Reference: https://www.canada.ca/en/revenue-agency/services/forms-publications/forms/t2125.html']);
+  summaryData.push(['Referencias / References:']);
+  summaryData.push(['T2125: https://www.canada.ca/en/revenue-agency/services/forms-publications/forms/t2125.html']);
+  summaryData.push(['ITC: https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/complete-file-input-tax-credit.html']);
 
   const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
   summaryWs['!cols'] = [

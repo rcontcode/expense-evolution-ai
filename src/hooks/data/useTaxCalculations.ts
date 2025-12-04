@@ -13,13 +13,36 @@ export interface TaxSummary {
   deductibleAmount: number;
   reimbursableAmount: number;
   nonDeductibleAmount: number;
+  hstGstPaid: number;
+  itcClaimable: number;
   categoryBreakdown: {
     category: string;
     total: number;
     deductible: number;
     rate: number;
+    hstGst: number;
+    itc: number;
   }[];
 }
+
+// HST/GST rates by province (default to Ontario 13%)
+export const HST_GST_RATES: Record<string, number> = {
+  ON: 0.13,  // Ontario HST
+  BC: 0.12,  // BC PST+GST
+  AB: 0.05,  // Alberta GST only
+  SK: 0.11,  // Saskatchewan PST+GST
+  MB: 0.12,  // Manitoba PST+GST
+  QC: 0.14975, // Quebec QST+GST
+  NB: 0.15,  // New Brunswick HST
+  NS: 0.15,  // Nova Scotia HST
+  PE: 0.15,  // PEI HST
+  NL: 0.15,  // Newfoundland HST
+  NT: 0.05,  // Northwest Territories GST
+  NU: 0.05,  // Nunavut GST
+  YT: 0.05,  // Yukon GST
+};
+
+export const DEFAULT_HST_RATE = 0.13; // Ontario default
 
 // Tasas de deducción basadas en CRA (Canada Revenue Agency)
 export const TAX_DEDUCTION_RULES: TaxDeductionRule[] = [
@@ -88,22 +111,29 @@ export const TAX_DEDUCTION_RULES: TaxDeductionRule[] = [
   },
 ];
 
-export const useTaxCalculations = (expenses: any[]) => {
+export const useTaxCalculations = (expenses: any[], hstRate: number = DEFAULT_HST_RATE) => {
   const taxSummary = useMemo((): TaxSummary => {
     let totalExpenses = 0;
     let deductibleAmount = 0;
     let reimbursableAmount = 0;
     let nonDeductibleAmount = 0;
+    let hstGstPaid = 0;
+    let itcClaimable = 0;
 
-    const categoryMap = new Map<string, { total: number; deductible: number; rate: number }>();
+    const categoryMap = new Map<string, { total: number; deductible: number; rate: number; hstGst: number; itc: number }>();
 
     expenses.forEach((expense) => {
       const amount = parseFloat(expense.amount.toString());
       totalExpenses += amount;
 
+      // Calculate HST/GST from the total (assuming prices include tax)
+      // Formula: HST = Total - (Total / (1 + rate))
+      const hstGstInAmount = amount - (amount / (1 + hstRate));
+
       // Calcular deducción según categoría y estado
       if (expense.status === 'reimbursable') {
         reimbursableAmount += amount;
+        // Reimbursable expenses - no ITC claim (client pays)
       } else if (expense.status === 'deductible') {
         const rule = TAX_DEDUCTION_RULES.find((r) => r.category === expense.category);
         const rate = rule?.deductionRate || 1.0;
@@ -111,17 +141,26 @@ export const useTaxCalculations = (expenses: any[]) => {
         
         deductibleAmount += deductible;
         nonDeductibleAmount += amount - deductible;
+        
+        // ITC is claimable at the same rate as expense deduction
+        const itcForExpense = hstGstInAmount * rate;
+        hstGstPaid += hstGstInAmount;
+        itcClaimable += itcForExpense;
 
         // Agregar a breakdown por categoría
         const category = expense.category || 'other';
-        const existing = categoryMap.get(category) || { total: 0, deductible: 0, rate };
+        const existing = categoryMap.get(category) || { total: 0, deductible: 0, rate, hstGst: 0, itc: 0 };
         categoryMap.set(category, {
           total: existing.total + amount,
           deductible: existing.deductible + deductible,
           rate,
+          hstGst: existing.hstGst + hstGstInAmount,
+          itc: existing.itc + itcForExpense,
         });
       } else {
         nonDeductibleAmount += amount;
+        // Pending/other status - track HST but no ITC until classified
+        hstGstPaid += hstGstInAmount;
       }
     });
 
@@ -135,9 +174,11 @@ export const useTaxCalculations = (expenses: any[]) => {
       deductibleAmount,
       reimbursableAmount,
       nonDeductibleAmount,
+      hstGstPaid,
+      itcClaimable,
       categoryBreakdown,
     };
-  }, [expenses]);
+  }, [expenses, hstRate]);
 
-  return { taxSummary, taxRules: TAX_DEDUCTION_RULES };
+  return { taxSummary, taxRules: TAX_DEDUCTION_RULES, hstRates: HST_GST_RATES };
 };

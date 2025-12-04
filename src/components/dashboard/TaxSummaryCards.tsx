@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ExternalLink, Calculator, TrendingDown, TrendingUp, AlertCircle } from 'lucide-react';
+import { ExternalLink, Calculator, TrendingDown, TrendingUp, AlertCircle, Receipt, BadgeDollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TaxSummary, TAX_DEDUCTION_RULES } from '@/hooks/data/useTaxCalculations';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -25,7 +25,7 @@ export const TaxSummaryCards = ({ taxSummary }: TaxSummaryCardsProps) => {
               ${taxSummary.deductibleAmount.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {((taxSummary.deductibleAmount / taxSummary.totalExpenses) * 100).toFixed(1)}% {t('taxAnalysis.ofTotal')}
+              {taxSummary.totalExpenses > 0 ? ((taxSummary.deductibleAmount / taxSummary.totalExpenses) * 100).toFixed(1) : '0.0'}% {t('taxAnalysis.ofTotal')}
             </p>
           </CardContent>
         </Card>
@@ -40,7 +40,7 @@ export const TaxSummaryCards = ({ taxSummary }: TaxSummaryCardsProps) => {
               ${taxSummary.reimbursableAmount.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {((taxSummary.reimbursableAmount / taxSummary.totalExpenses) * 100).toFixed(1)}% {t('taxAnalysis.ofTotal')}
+              {taxSummary.totalExpenses > 0 ? ((taxSummary.reimbursableAmount / taxSummary.totalExpenses) * 100).toFixed(1) : '0.0'}% {t('taxAnalysis.ofTotal')}
             </p>
           </CardContent>
         </Card>
@@ -55,11 +55,75 @@ export const TaxSummaryCards = ({ taxSummary }: TaxSummaryCardsProps) => {
               ${taxSummary.nonDeductibleAmount.toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {((taxSummary.nonDeductibleAmount / taxSummary.totalExpenses) * 100).toFixed(1)}% {t('taxAnalysis.ofTotal')}
+              {taxSummary.totalExpenses > 0 ? ((taxSummary.nonDeductibleAmount / taxSummary.totalExpenses) * 100).toFixed(1) : '0.0'}% {t('taxAnalysis.ofTotal')}
             </p>
           </CardContent>
         </Card>
       </div>
+
+      {/* HST/GST & ITC Summary */}
+      <Card className="border-chart-4/30 bg-chart-4/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BadgeDollarSign className="h-5 w-5 text-chart-4" />
+            {t('taxAnalysis.hstGstSummary')}
+          </CardTitle>
+          <CardDescription>
+            {t('taxAnalysis.itcDescription')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{t('taxAnalysis.totalHstGstPaid')}</span>
+                <span className="font-semibold">${taxSummary.hstGstPaid.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{t('taxAnalysis.itcClaimable')}</span>
+                <span className="font-bold text-chart-4 text-lg">${taxSummary.itcClaimable.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">{t('taxAnalysis.itcRate')}</span>
+                <span>{taxSummary.hstGstPaid > 0 ? ((taxSummary.itcClaimable / taxSummary.hstGstPaid) * 100).toFixed(1) : '0.0'}%</span>
+              </div>
+            </div>
+            <div className="space-y-2 border-l pl-4">
+              <p className="text-xs text-muted-foreground">{t('taxAnalysis.itcNote1')}</p>
+              <p className="text-xs text-muted-foreground">{t('taxAnalysis.itcNote2')}</p>
+              <Button
+                variant="link"
+                size="sm"
+                className="h-auto p-0 text-xs"
+                onClick={() => window.open('https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/complete-file-input-tax-credit.html', '_blank')}
+              >
+                <ExternalLink className="h-3 w-3 mr-1" />
+                {t('taxAnalysis.itcGuide')}
+              </Button>
+            </div>
+          </div>
+          
+          {/* ITC by Category */}
+          {taxSummary.categoryBreakdown.length > 0 && (
+            <div className="mt-4 pt-4 border-t">
+              <h4 className="text-sm font-medium mb-3">{t('taxAnalysis.itcByCategory')}</h4>
+              <div className="space-y-2">
+                {taxSummary.categoryBreakdown.map((item) => (
+                  <div key={item.category} className="flex items-center justify-between text-sm">
+                    <span className="capitalize text-muted-foreground">{item.category.replace('_', ' ')}</span>
+                    <div className="text-right">
+                      <span className="font-medium">${item.itc.toFixed(2)}</span>
+                      <span className="text-xs text-muted-foreground ml-2">
+                        ({(item.rate * 100).toFixed(0)}% {t('taxAnalysis.eligible')})
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Desglose por Categoría */}
       <Card>
