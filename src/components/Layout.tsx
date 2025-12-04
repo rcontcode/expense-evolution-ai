@@ -48,7 +48,7 @@ const NAV_SECTIONS = [
       { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tip: 'Registra y clasifica gastos' },
       { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tip: 'Administra tus clientes' },
       { icon: Tag, label: 'nav.tags', path: '/tags', badge: null, tip: 'Organiza con etiquetas' },
-      { icon: FileText, label: 'nav.contracts', path: '/contracts', badge: null, tip: 'Contratos y documentos' },
+      { icon: FileText, label: 'nav.contracts', path: '/contracts', badge: null, tip: 'Contratos, emails y acuerdos' },
     ]
   },
   {
@@ -181,7 +181,7 @@ export const Layout = ({ children }: LayoutProps) => {
                   <Sparkles className="h-5 w-5" />
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-sm">Captura Rápida</p>
+                  <p className="font-semibold text-sm">Captura de Gastos</p>
                   <p className="text-xs opacity-80">Foto, voz o texto</p>
                 </div>
               </button>
