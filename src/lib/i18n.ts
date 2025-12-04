@@ -369,6 +369,16 @@ export const translations = {
       currency: 'Moneda',
       taxId: 'ID Fiscal',
       website: 'Sitio Web',
+      // Completeness
+      completeness: 'Completitud',
+      complete: 'Completo',
+      statusIncomplete: 'Incompleto',
+      statusInProgress: 'En progreso',
+      statusComplete: 'Completo',
+      statusActive: 'En uso activo',
+      missingFields: 'Campos faltantes',
+      profileComplete: 'Perfil completo',
+      legendTitle: 'Leyenda de estados',
     },
     filters: {
       dashboardFilters: 'Filtros del Dashboard',
@@ -778,6 +788,16 @@ export const translations = {
       currency: 'Currency',
       taxId: 'Tax ID',
       website: 'Website',
+      // Completeness
+      completeness: 'Completeness',
+      complete: 'Complete',
+      statusIncomplete: 'Incomplete',
+      statusInProgress: 'In Progress',
+      statusComplete: 'Complete',
+      statusActive: 'Actively Used',
+      missingFields: 'Missing fields',
+      profileComplete: 'Profile complete',
+      legendTitle: 'Status legend',
     },
     tags: {
       title: 'Tags',
