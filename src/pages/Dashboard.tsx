@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp } from 'lucide-react';
+import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useClients } from '@/hooks/data/useClients';
@@ -13,6 +13,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useTaxCalculations } from '@/hooks/data/useTaxCalculations';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
 import { TaxSummaryCards } from '@/components/dashboard/TaxSummaryCards';
+import { ExportDialog } from '@/components/export/ExportDialog';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
@@ -44,6 +45,7 @@ export default function Dashboard() {
   const [selectedClient, setSelectedClient] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   const filters = {
     clientId: selectedClient,
@@ -71,9 +73,15 @@ export default function Dashboard() {
   return (
     <Layout>
       <div className="p-8 space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold">{t('dashboard.welcome')}</h1>
-          <p className="text-muted-foreground mt-2">Panel de control con análisis fiscal detallado</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">{t('dashboard.welcome')}</h1>
+            <p className="text-muted-foreground mt-2">Panel de control con análisis fiscal detallado</p>
+          </div>
+          <Button onClick={() => setExportDialogOpen(true)} variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            {t('export.exportButton')}
+          </Button>
         </div>
 
         {/* Filtros */}
@@ -301,6 +309,12 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+
+        <ExportDialog 
+          open={exportDialogOpen} 
+          onClose={() => setExportDialogOpen(false)} 
+          expenses={allExpenses || []} 
+        />
       </div>
     </Layout>
   );
