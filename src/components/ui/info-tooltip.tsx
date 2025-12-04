@@ -508,4 +508,16 @@ export const TOOLTIP_CONTENT = {
       howToUse: "Click on any expense to edit it or view details.",
     },
   },
+  income: {
+    es: {
+      title: "Control de Ingresos",
+      description: "Registra todos tus ingresos: salario, pagos de clientes, inversiones, ingresos pasivos y más.",
+      howToUse: "Asocia ingresos a proyectos para un seguimiento detallado.",
+    },
+    en: {
+      title: "Income Tracking",
+      description: "Record all your income: salary, client payments, investments, passive income and more.",
+      howToUse: "Associate income with projects for detailed tracking.",
+    },
+  },
 } as const;

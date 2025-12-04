@@ -454,6 +454,78 @@ export type Database = {
         }
         Relationships: []
       }
+      income: {
+        Row: {
+          amount: number
+          client_id: string | null
+          created_at: string | null
+          currency: string | null
+          date: string
+          description: string | null
+          id: string
+          income_type: Database["public"]["Enums"]["income_type"]
+          is_taxable: boolean | null
+          notes: string | null
+          project_id: string | null
+          recurrence: Database["public"]["Enums"]["recurrence_type"] | null
+          recurrence_end_date: string | null
+          source: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          client_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          date: string
+          description?: string | null
+          id?: string
+          income_type: Database["public"]["Enums"]["income_type"]
+          is_taxable?: boolean | null
+          notes?: string | null
+          project_id?: string | null
+          recurrence?: Database["public"]["Enums"]["recurrence_type"] | null
+          recurrence_end_date?: string | null
+          source?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          date?: string
+          description?: string | null
+          id?: string
+          income_type?: Database["public"]["Enums"]["income_type"]
+          is_taxable?: boolean | null
+          notes?: string | null
+          project_id?: string | null
+          recurrence?: Database["public"]["Enums"]["recurrence_type"] | null
+          recurrence_end_date?: string | null
+          source?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "income_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "income_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mileage: {
         Row: {
           client_id: string | null
@@ -571,6 +643,101 @@ export type Database = {
           province?: string | null
           updated_at?: string | null
           work_types?: Database["public"]["Enums"]["work_type"][] | null
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          budget: number | null
+          client_id: string | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          start_date: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          budget?: number | null
+          client_id?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          budget?: number | null
+          client_id?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      savings_goals: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          current_amount: number | null
+          deadline: string | null
+          id: string
+          name: string
+          priority: number | null
+          status: string | null
+          target_amount: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          current_amount?: number | null
+          deadline?: string | null
+          id?: string
+          name: string
+          priority?: number | null
+          status?: string | null
+          target_amount: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          current_amount?: number | null
+          deadline?: string | null
+          id?: string
+          name?: string
+          priority?: number | null
+          status?: string | null
+          target_amount?: number
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -710,6 +877,28 @@ export type Database = {
         | "rejected"
         | "under_review"
         | "finalized"
+      income_type:
+        | "salary"
+        | "client_payment"
+        | "bonus"
+        | "gift"
+        | "refund"
+        | "investment_stocks"
+        | "investment_crypto"
+        | "investment_funds"
+        | "passive_rental"
+        | "passive_royalties"
+        | "online_business"
+        | "freelance"
+        | "other"
+      recurrence_type:
+        | "one_time"
+        | "daily"
+        | "weekly"
+        | "biweekly"
+        | "monthly"
+        | "quarterly"
+        | "yearly"
       user_role: "user" | "accountant" | "admin"
       work_type: "employee" | "contractor" | "corporation"
     }
@@ -855,6 +1044,30 @@ export const Constants = {
         "rejected",
         "under_review",
         "finalized",
+      ],
+      income_type: [
+        "salary",
+        "client_payment",
+        "bonus",
+        "gift",
+        "refund",
+        "investment_stocks",
+        "investment_crypto",
+        "investment_funds",
+        "passive_rental",
+        "passive_royalties",
+        "online_business",
+        "freelance",
+        "other",
+      ],
+      recurrence_type: [
+        "one_time",
+        "daily",
+        "weekly",
+        "biweekly",
+        "monthly",
+        "quarterly",
+        "yearly",
       ],
       user_role: ["user", "accountant", "admin"],
       work_type: ["employee", "contractor", "corporation"],
