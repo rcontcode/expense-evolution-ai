@@ -101,7 +101,15 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
   const handleSaveCurrentExpense = async () => {
     if (!currentExpense?.vendor || !currentExpense?.amount) return;
     try {
-      await createExpense.mutateAsync({ vendor: currentExpense.vendor, amount: currentExpense.amount, date: currentExpense.date, category: currentExpense.category, description: currentExpense.description, status: 'pending' } as any);
+      await createExpense.mutateAsync({ 
+        vendor: currentExpense.vendor, 
+        amount: currentExpense.amount, 
+        date: currentExpense.date, 
+        category: currentExpense.category, 
+        description: currentExpense.description, 
+        client_id: currentExpense.client_id || null,
+        status: 'pending' 
+      } as any);
       setSavedCount(prev => prev + 1);
       if (currentIndex < editedExpenses.length - 1) setCurrentIndex(prev => prev + 1);
       else onSuccess?.();
@@ -112,7 +120,15 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
     for (const exp of editedExpenses) {
       if (!exp.vendor || !exp.amount) continue;
       try {
-        await createExpense.mutateAsync({ vendor: exp.vendor, amount: exp.amount, date: exp.date, category: exp.category, description: exp.description, status: 'pending' } as any);
+        await createExpense.mutateAsync({ 
+          vendor: exp.vendor, 
+          amount: exp.amount, 
+          date: exp.date, 
+          category: exp.category, 
+          description: exp.description, 
+          client_id: exp.client_id || null,
+          status: 'pending' 
+        } as any);
       } catch (e) { console.error(e); }
     }
     onSuccess?.();
@@ -336,6 +352,35 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
                   <label className="text-sm font-medium">{t('expenses.descriptionLabel')}</label>
                   <Textarea value={currentExpense.description || ''} onChange={(e) => updateCurrentExpense('description', e.target.value)} className="min-h-[60px]" placeholder="Descripción del gasto..." />
                 </div>
+
+                {/* Client Selector for Reimbursable Expenses */}
+                {currentExpense.typically_reimbursable && hasClients && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-green-600" />
+                      Asociar a Cliente (Reembolso)
+                    </label>
+                    <Select 
+                      value={currentExpense.client_id || ''} 
+                      onValueChange={(val) => updateCurrentExpense('client_id', val || null)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar cliente para reembolso..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Sin cliente</SelectItem>
+                        {clients.map((client) => (
+                          <SelectItem key={client.id} value={client.id}>
+                            {client.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Selecciona el cliente para solicitar reembolso de este gasto
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 

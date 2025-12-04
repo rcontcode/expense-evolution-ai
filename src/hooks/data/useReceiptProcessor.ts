@@ -14,6 +14,7 @@ export interface ExtractedExpenseData {
   cra_deductible: boolean;
   cra_deduction_rate: number;
   typically_reimbursable: boolean;
+  client_id?: string | null;
 }
 
 export interface ProcessReceiptResult {
