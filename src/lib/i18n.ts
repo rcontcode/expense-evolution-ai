@@ -55,6 +55,8 @@ export const translations = {
       expensesByCategory: 'Gastos por Categoría',
       expensesByClient: 'Gastos por Cliente',
       monthlyTrends: 'Tendencias Mensuales',
+      thisYear: 'este año',
+      viewAllMileage: 'Ver todo el kilometraje',
     },
     // Onboarding
     onboarding: {
@@ -400,6 +402,8 @@ export const translations = {
       expensesByCategory: 'Expenses by Category',
       expensesByClient: 'Expenses by Client',
       monthlyTrends: 'Monthly Trends',
+      thisYear: 'this year',
+      viewAllMileage: 'View all mileage',
     },
     // Onboarding
     onboarding: {
