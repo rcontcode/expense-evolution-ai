@@ -122,3 +122,58 @@ export function useDeleteClient() {
     },
   });
 }
+
+export function useDeleteClientTestData() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (clientId: string) => {
+      // Delete expenses for this client
+      const { error: expensesError } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('client_id', clientId);
+      if (expensesError) throw expensesError;
+
+      // Delete income for this client
+      const { error: incomeError } = await supabase
+        .from('income')
+        .delete()
+        .eq('client_id', clientId);
+      if (incomeError) throw incomeError;
+
+      // Delete mileage for this client
+      const { error: mileageError } = await supabase
+        .from('mileage')
+        .delete()
+        .eq('client_id', clientId);
+      if (mileageError) throw mileageError;
+
+      // Delete contracts for this client
+      const { error: contractsError } = await supabase
+        .from('contracts')
+        .delete()
+        .eq('client_id', clientId);
+      if (contractsError) throw contractsError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['income'] });
+      queryClient.invalidateQueries({ queryKey: ['mileage'] });
+      queryClient.invalidateQueries({ queryKey: ['contracts'] });
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      toast({
+        title: 'Datos de prueba eliminados',
+        description: 'Se eliminaron todos los datos de prueba asociados al cliente.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+}

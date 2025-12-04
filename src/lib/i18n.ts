@@ -389,6 +389,10 @@ export const translations = {
       missingFields: 'Campos faltantes',
       profileComplete: 'Perfil completo',
       legendTitle: 'Leyenda de estados',
+      hasTestData: '(con información de prueba)',
+      deleteTestData: 'Eliminar datos de prueba',
+      deleteTestDataConfirm: '¿Eliminar datos de prueba?',
+      deleteTestDataWarning: 'Esto eliminará todos los gastos, ingresos, kilometraje y contratos asociados a este cliente.',
     },
     filters: {
       dashboardFilters: 'Filtros del Dashboard',
@@ -808,6 +812,10 @@ export const translations = {
       missingFields: 'Missing fields',
       profileComplete: 'Profile complete',
       legendTitle: 'Status legend',
+      hasTestData: '(with test data)',
+      deleteTestData: 'Delete test data',
+      deleteTestDataConfirm: 'Delete test data?',
+      deleteTestDataWarning: 'This will delete all expenses, income, mileage, and contracts associated with this client.',
     },
     tags: {
       title: 'Tags',

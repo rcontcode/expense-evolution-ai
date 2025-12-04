@@ -3,9 +3,12 @@ import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Plus, Users, Edit, Trash2, MapPin, CircleDot, CheckCircle2, AlertCircle, Zap, Mail, Phone, Building2, Globe, FileText } from 'lucide-react';
-import { useClients, useDeleteClient } from '@/hooks/data/useClients';
+import { Plus, Users, Edit, Trash2, MapPin, CircleDot, CheckCircle2, AlertCircle, Zap, Mail, Phone, Building2, Globe, FileText, FlaskConical } from 'lucide-react';
+import { useClients, useDeleteClient, useDeleteClientTestData } from '@/hooks/data/useClients';
 import { useExpenses } from '@/hooks/data/useExpenses';
+import { useIncome } from '@/hooks/data/useIncome';
+import { useMileage } from '@/hooks/data/useMileage';
+import { useContracts } from '@/hooks/data/useContracts';
 import { ClientDialog } from '@/components/dialogs/ClientDialog';
 import { Client } from '@/types/expense.types';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -40,14 +43,23 @@ export default function Clients() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | undefined>();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteTestDataId, setDeleteTestDataId] = useState<string | null>(null);
 
   const { data: clients, isLoading } = useClients();
   const { data: expenses } = useExpenses();
+  const { data: income } = useIncome();
+  const { data: mileage } = useMileage();
+  const { data: contracts } = useContracts();
   const deleteMutation = useDeleteClient();
+  const deleteTestDataMutation = useDeleteClientTestData();
 
-  // Check which clients have active expenses
-  const getClientHasExpenses = (clientId: string) => {
-    return expenses?.some(exp => exp.client_id === clientId) || false;
+  // Check which clients have test data (any associated records)
+  const getClientHasTestData = (clientId: string) => {
+    const hasExpenses = expenses?.some(exp => exp.client_id === clientId) || false;
+    const hasIncome = income?.some(inc => inc.client_id === clientId) || false;
+    const hasMileage = mileage?.some(mil => mil.client_id === clientId) || false;
+    const hasContracts = contracts?.some(con => con.client_id === clientId) || false;
+    return hasExpenses || hasIncome || hasMileage || hasContracts;
   };
 
   const handleEdit = (client: Client) => {
@@ -69,6 +81,13 @@ export default function Clients() {
     if (deleteId) {
       deleteMutation.mutate(deleteId);
       setDeleteId(null);
+    }
+  };
+
+  const handleDeleteTestData = () => {
+    if (deleteTestDataId) {
+      deleteTestDataMutation.mutate(deleteTestDataId);
+      setDeleteTestDataId(null);
     }
   };
 
@@ -122,8 +141,8 @@ export default function Clients() {
           ) : clients && clients.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {clients.map((client) => {
-                const hasExpenses = getClientHasExpenses(client.id);
-                const completeness = calculateClientCompleteness(client, hasExpenses);
+                const hasTestData = getClientHasTestData(client.id);
+                const completeness = calculateClientCompleteness(client, hasTestData);
                 const statusConfig = CLIENT_STATUS_CONFIG[completeness.status];
                 const StatusIcon = STATUS_ICONS[completeness.status];
 
@@ -134,37 +153,60 @@ export default function Clients() {
                     
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          <CardTitle className="text-xl">{client.name}</CardTitle>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <Badge className={`${statusConfig.bgColor} ${statusConfig.color} border-0 gap-1`}>
-                                <StatusIcon className="h-3 w-3" />
-                                <span className="text-xs">{completeness.percentage}%</span>
-                              </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs">
-                              <div className="space-y-2">
-                                <p className="font-medium">
-                                  {language === 'es' ? statusConfig.label : statusConfig.labelEn}
-                                </p>
-                                {completeness.missingFields.length > 0 ? (
-                                  <>
-                                    <p className="text-xs text-muted-foreground">{t('clients.missingFields')}:</p>
-                                    <ul className="text-xs space-y-0.5">
-                                      {completeness.missingFields.map(field => (
-                                        <li key={field.key}>• {language === 'es' ? field.label : field.labelEn}</li>
-                                      ))}
-                                    </ul>
-                                  </>
-                                ) : (
-                                  <p className="text-xs text-green-600">{t('clients.profileComplete')}</p>
-                                )}
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <CardTitle className="text-xl">{client.name}</CardTitle>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <Badge className={`${statusConfig.bgColor} ${statusConfig.color} border-0 gap-1`}>
+                                  <StatusIcon className="h-3 w-3" />
+                                  <span className="text-xs">{completeness.percentage}%</span>
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-xs">
+                                <div className="space-y-2">
+                                  <p className="font-medium">
+                                    {language === 'es' ? statusConfig.label : statusConfig.labelEn}
+                                  </p>
+                                  {completeness.missingFields.length > 0 ? (
+                                    <>
+                                      <p className="text-xs text-muted-foreground">{t('clients.missingFields')}:</p>
+                                      <ul className="text-xs space-y-0.5">
+                                        {completeness.missingFields.map(field => (
+                                          <li key={field.key}>• {language === 'es' ? field.label : field.labelEn}</li>
+                                        ))}
+                                      </ul>
+                                    </>
+                                  ) : (
+                                    <p className="text-xs text-green-600">{t('clients.profileComplete')}</p>
+                                  )}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                          {hasTestData && (
+                            <div className="flex items-center gap-1.5 text-xs text-amber-600">
+                              <FlaskConical className="h-3 w-3" />
+                              <span>{t('clients.hasTestData')}</span>
+                            </div>
+                          )}
                         </div>
                         <div className="flex gap-1">
+                          {hasTestData && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                                  onClick={() => setDeleteTestDataId(client.id)}
+                                >
+                                  <FlaskConical className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>{t('clients.deleteTestData')}</TooltipContent>
+                            </Tooltip>
+                          )}
                           <InfoTooltip content={TOOLTIP_CONTENT.editAction} variant="wrapper">
                             <Button
                               variant="ghost"
@@ -288,6 +330,23 @@ export default function Clients() {
               <AlertDialogFooter>
                 <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                 <AlertDialogAction onClick={handleDelete}>{t('common.delete')}</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <AlertDialog open={!!deleteTestDataId} onOpenChange={() => setDeleteTestDataId(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('clients.deleteTestDataConfirm')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('clients.deleteTestDataWarning')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteTestData} className="bg-amber-600 hover:bg-amber-700">
+                  {t('clients.deleteTestData')}
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
