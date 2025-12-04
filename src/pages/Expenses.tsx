@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Plus, Receipt } from 'lucide-react';
+import { Plus, Receipt, Download } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { ExpensesTable } from '@/components/tables/ExpensesTable';
 import { ExpenseFilters } from '@/components/filters/ExpenseFilters';
 import { ExpenseDialog } from '@/components/dialogs/ExpenseDialog';
+import { ExportDialog } from '@/components/export/ExportDialog';
 import { ExpenseFilters as Filters, ExpenseWithRelations } from '@/types/expense.types';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -14,9 +15,11 @@ export default function Expenses() {
   const { t } = useLanguage();
   const [filters, setFilters] = useState<Filters>({});
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseWithRelations | undefined>();
 
   const { data: expenses, isLoading } = useExpenses(filters);
+  const { data: allExpenses } = useExpenses({});
 
   const handleEdit = (expense: ExpenseWithRelations) => {
     setSelectedExpense(expense);
@@ -41,10 +44,16 @@ export default function Expenses() {
             <h1 className="text-3xl font-bold">{t('expenses.title')}</h1>
             <p className="text-muted-foreground mt-2">{t('expenses.manageExpenses')}</p>
           </div>
-          <Button onClick={handleCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('expenses.addExpense')}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setExportDialogOpen(true)}>
+              <Download className="mr-2 h-4 w-4" />
+              {t('common.export')}
+            </Button>
+            <Button onClick={handleCreate}>
+              <Plus className="mr-2 h-4 w-4" />
+              {t('expenses.addExpense')}
+            </Button>
+          </div>
         </div>
 
         <ExpenseFilters filters={filters} onChange={setFilters} />
@@ -74,6 +83,11 @@ export default function Expenses() {
         )}
 
         <ExpenseDialog open={dialogOpen} onClose={handleClose} expense={selectedExpense} />
+        <ExportDialog 
+          open={exportDialogOpen} 
+          onClose={() => setExportDialogOpen(false)} 
+          expenses={allExpenses || []} 
+        />
       </div>
     </Layout>
   );
