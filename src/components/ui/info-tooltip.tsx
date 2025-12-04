@@ -74,7 +74,19 @@ export function InfoTooltip({
 
 // Pre-configured tooltips for common sections
 export const TOOLTIP_CONTENT = {
-  // Dashboard
+  // ========== COMMON ACTIONS ==========
+  editAction: {
+    title: "Editar",
+    description: "Abre el formulario de edición para modificar este elemento.",
+    howToUse: "Los cambios se guardan al confirmar el formulario.",
+  },
+  deleteAction: {
+    title: "Eliminar",
+    description: "Elimina permanentemente este elemento. Esta acción no se puede deshacer.",
+    howToUse: "Se te pedirá confirmación antes de eliminar.",
+  },
+
+  // ========== DASHBOARD ==========
   monthlyTotal: {
     title: "Total Mensual",
     description: "Suma de todos los gastos registrados en el mes actual, sin importar su estado de clasificación.",
@@ -116,7 +128,7 @@ export const TOOLTIP_CONTENT = {
     howToUse: "Selecciona el formato y rango de fechas en el diálogo de exportación.",
   },
 
-  // Expenses
+  // ========== EXPENSES ==========
   quickCapture: {
     title: "Captura Rápida con IA",
     description: "Sube una foto de recibo, usa tu voz o escribe para registrar gastos automáticamente con inteligencia artificial.",
@@ -138,50 +150,119 @@ export const TOOLTIP_CONTENT = {
     howToUse: "Combina múltiples filtros para encontrar gastos específicos rápidamente.",
   },
 
-  // Navigation
-  dashboard: {
-    title: "Panel de Control",
-    description: "Vista general de tus finanzas con estadísticas, gráficos y análisis fiscal.",
-    howToUse: "Tu punto de partida para entender tu situación financiera.",
-  },
+  // ========== CHAOS INBOX ==========
   chaosInbox: {
     title: "Bandeja Inteligente",
     description: "Sube documentos sin organizar - la IA los clasificará y extraerá la información automáticamente.",
     howToUse: "Arrastra múltiples archivos para procesamiento masivo.",
   },
-  expenses: {
-    title: "Gestión de Gastos",
-    description: "Lista completa de todos tus gastos con herramientas de filtrado y edición.",
-    howToUse: "Haz clic en cualquier gasto para editarlo o ver detalles.",
+  chaosInboxUpload: {
+    title: "Subir Documentos",
+    description: "Arrastra archivos o haz clic para subir recibos, facturas, emails y cualquier documento.",
+    howToUse: "La IA clasificará automáticamente cada documento y extraerá la información relevante.",
   },
+  chaosInboxStatus: {
+    title: "Estado del Documento",
+    description: "Indica si el documento está pendiente de procesar, clasificado o archivado.",
+    howToUse: "Los documentos 'pendientes' serán procesados por la IA próximamente.",
+  },
+
+  // ========== CLIENTS ==========
   clients: {
     title: "Administración de Clientes",
     description: "Gestiona la información de tus clientes para asociar gastos y generar reportes de reembolso.",
     howToUse: "Cada cliente puede tener su propio perfil de facturación.",
   },
+  addClient: {
+    title: "Agregar Cliente",
+    description: "Crea un nuevo perfil de cliente para asociar gastos y generar reportes de reembolso.",
+    howToUse: "Incluye información de contacto, industria y tipo de cliente.",
+  },
+
+  // ========== TAGS ==========
   tags: {
     title: "Sistema de Etiquetas",
     description: "Crea etiquetas personalizadas para organizar y filtrar tus gastos de forma flexible.",
     howToUse: "Asigna múltiples etiquetas a cada gasto para mejor organización.",
   },
+  createTag: {
+    title: "Crear Etiqueta",
+    description: "Crea etiquetas personalizadas con colores para organizar tus gastos.",
+    howToUse: "Elige un color que represente el tipo de etiqueta (rojo = urgente, verde = pagado).",
+  },
+
+  // ========== CONTRACTS ==========
   contracts: {
     title: "Contratos y Acuerdos",
     description: "Almacena contratos, emails y acuerdos de reembolso que respalden tus deducciones.",
     howToUse: "Sube PDFs, imágenes o cualquier documento relacionado.",
   },
+  uploadContract: {
+    title: "Subir Contrato o Acuerdo",
+    description: "Sube PDFs, imágenes o cualquier documento que respalde tus términos de reembolso.",
+    howToUse: "Puedes subir contratos formales, emails de confirmación o cualquier acuerdo escrito.",
+  },
+
+  // ========== MILEAGE ==========
   mileage: {
     title: "Registro de Kilometraje",
     description: "Registra viajes de negocio para deducciones por uso de vehículo con tasas CRA 2024.",
     howToUse: "Ingresa ruta, kilómetros y propósito de cada viaje.",
   },
+  addTrip: {
+    title: "Registrar Viaje",
+    description: "Añade un viaje de negocio para calcular deducciones por kilometraje según tasas CRA.",
+    howToUse: "Ingresa origen, destino, kilómetros y propósito del viaje.",
+  },
+  yearSelector: {
+    title: "Seleccionar Año",
+    description: "Filtra los registros de kilometraje por año fiscal.",
+    howToUse: "El CRA requiere registros separados por año para el cálculo de deducciones.",
+  },
+  mileageTripsTab: {
+    title: "Viajes Registrados",
+    description: "Lista detallada de todos los viajes de negocio con kilometraje y deducciones.",
+    howToUse: "Haz clic en un viaje para editarlo o eliminarlo.",
+  },
+  mileageSummaryTab: {
+    title: "Resumen Anual",
+    description: "Totales de kilometraje, deducciones y créditos ITC calculados según tasas CRA 2024.",
+    howToUse: "Usa estos datos para tu declaración T2125.",
+  },
+
+  // ========== RECONCILIATION ==========
   reconciliation: {
     title: "Conciliación Bancaria",
     description: "Compara tus gastos registrados con transacciones bancarias para detectar discrepancias.",
     howToUse: "Importa tu estado de cuenta para conciliación automática.",
   },
+  reconciliationUpload: {
+    title: "Importar Estado de Cuenta",
+    description: "Sube tu estado bancario para comparar transacciones con gastos registrados.",
+    howToUse: "Acepta formatos CSV, OFX y QFX de la mayoría de bancos.",
+  },
+
+  // ========== SETTINGS ==========
   settings: {
     title: "Configuración",
     description: "Personaliza tu perfil, preferencias fiscales, idioma y notificaciones.",
     howToUse: "Configura tu provincia para cálculos de impuestos precisos.",
+  },
+  languageSetting: {
+    title: "Idioma de la Aplicación",
+    description: "Cambia el idioma de toda la interfaz entre Español e Inglés.",
+    howToUse: "El cambio se aplica inmediatamente a toda la aplicación.",
+  },
+
+  // ========== NAVIGATION ==========
+  dashboard: {
+    title: "Panel de Control",
+    description: "Vista general de tus finanzas con estadísticas, gráficos y análisis fiscal.",
+    howToUse: "Tu punto de partida para entender tu situación financiera.",
+  },
+  expenses: {
+    title: "Gestión de Gastos",
+    description: "Lista completa de todos tus gastos con herramientas de filtrado y edición.",
+    howToUse: "Haz clic en cualquier gasto para editarlo o ver detalles.",
   },
 } as const;
