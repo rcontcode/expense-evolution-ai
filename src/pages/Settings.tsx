@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme, ThemeMode, ThemeStyle } from '@/contexts/ThemeContext';
 import { useProfile, useUpdateProfile } from '@/hooks/data/useProfile';
 import { useSavingsGoals, useCreateSavingsGoal, useUpdateSavingsGoal, useDeleteSavingsGoal, useAddToSavingsGoal } from '@/hooks/data/useSavingsGoals';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { User, Target, Plus, Edit, Trash2, PiggyBank, Save, DollarSign } from 'lucide-react';
+import { User, Target, Plus, Edit, Trash2, PiggyBank, Save, DollarSign, Palette, Sun, Moon, Monitor } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import {
@@ -45,6 +46,7 @@ const GOAL_COLORS = [
 
 export default function Settings() {
   const { t, language, setLanguage } = useLanguage();
+  const { mode, style, setMode, setStyle } = useTheme();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const updateProfile = useUpdateProfile();
   const { data: savingsGoals, isLoading: goalsLoading } = useSavingsGoals();
@@ -253,6 +255,85 @@ export default function Settings() {
                   <SelectItem value="en">English</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Theme Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Palette className="h-5 w-5 text-primary" />
+              <div>
+                <CardTitle>{t('settings.themeTitle')}</CardTitle>
+                <CardDescription>{t('settings.themeDescription')}</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Theme Mode */}
+            <div className="space-y-3">
+              <Label>{t('settings.themeMode')}</Label>
+              <div className="flex gap-2">
+                <Button
+                  variant={mode === 'light' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setMode('light')}
+                  className="flex items-center gap-2"
+                >
+                  <Sun className="h-4 w-4" />
+                  {t('settings.lightMode')}
+                </Button>
+                <Button
+                  variant={mode === 'dark' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setMode('dark')}
+                  className="flex items-center gap-2"
+                >
+                  <Moon className="h-4 w-4" />
+                  {t('settings.darkMode')}
+                </Button>
+                <Button
+                  variant={mode === 'system' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setMode('system')}
+                  className="flex items-center gap-2"
+                >
+                  <Monitor className="h-4 w-4" />
+                  {t('settings.systemMode')}
+                </Button>
+              </div>
+            </div>
+
+            {/* Theme Style */}
+            <div className="space-y-3">
+              <Label>{t('settings.themeStyle')}</Label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {([
+                  { value: 'modern', gradient: 'from-violet-500 to-fuchsia-500' },
+                  { value: 'vintage', gradient: 'from-amber-600 to-orange-700' },
+                  { value: 'ocean', gradient: 'from-cyan-500 to-blue-600' },
+                  { value: 'forest', gradient: 'from-emerald-500 to-green-700' },
+                  { value: 'sunset', gradient: 'from-orange-500 to-rose-600' },
+                  { value: 'minimal', gradient: 'from-slate-400 to-slate-600' },
+                ] as const).map(({ value, gradient }) => (
+                  <button
+                    key={value}
+                    onClick={() => setStyle(value)}
+                    className={`relative p-4 rounded-lg border-2 transition-all ${
+                      style === value 
+                        ? 'border-primary ring-2 ring-primary/20' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className={`w-full h-8 rounded bg-gradient-to-r ${gradient} mb-2`} />
+                    <span className="text-sm font-medium">{t(`settings.${value}`)}</span>
+                    {style === value && (
+                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
