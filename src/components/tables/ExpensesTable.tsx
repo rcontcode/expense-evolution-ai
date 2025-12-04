@@ -10,7 +10,20 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, MoreHorizontal } from 'lucide-react';
+import { 
+  Edit, 
+  Trash2, 
+  MoreHorizontal, 
+  Building2, 
+  Landmark, 
+  User, 
+  CheckCircle2, 
+  Clock, 
+  XCircle,
+  AlertCircle,
+  FileCheck,
+  Ban
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,11 +44,28 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface ExpensesTableProps {
   expenses: ExpenseWithRelations[];
   onEdit: (expense: ExpenseWithRelations) => void;
 }
+
+const STATUS_CONFIG: Record<string, { icon: React.ElementType; color: string; bgColor: string; label: string }> = {
+  pending: { icon: Clock, color: 'text-yellow-600', bgColor: 'bg-yellow-100 dark:bg-yellow-900/30', label: 'Pendiente' },
+  classified: { icon: FileCheck, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30', label: 'Clasificado' },
+  deductible: { icon: Landmark, color: 'text-green-600', bgColor: 'bg-green-100 dark:bg-green-900/30', label: 'Deducible CRA' },
+  non_deductible: { icon: Ban, color: 'text-red-600', bgColor: 'bg-red-100 dark:bg-red-900/30', label: 'No Deducible' },
+  reimbursable: { icon: Building2, color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30', label: 'Reembolsable' },
+  rejected: { icon: XCircle, color: 'text-red-600', bgColor: 'bg-red-100 dark:bg-red-900/30', label: 'Rechazado' },
+  under_review: { icon: AlertCircle, color: 'text-orange-600', bgColor: 'bg-orange-100 dark:bg-orange-900/30', label: 'En Revisión' },
+  finalized: { icon: CheckCircle2, color: 'text-green-700', bgColor: 'bg-green-100 dark:bg-green-900/30', label: 'Finalizado' },
+};
 
 export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
   const { t } = useLanguage();
@@ -46,21 +76,6 @@ export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
     if (deleteId) {
       deleteMutation.mutate(deleteId);
       setDeleteId(null);
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'deductible':
-        return 'bg-green-500';
-      case 'non_deductible':
-        return 'bg-red-500';
-      case 'reimbursable':
-        return 'bg-blue-500';
-      case 'pending':
-        return 'bg-yellow-500';
-      default:
-        return 'bg-gray-500';
     }
   };
 
@@ -104,7 +119,39 @@ export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
                 </TableCell>
                 <TableCell>{getCategoryLabel(expense.category as any)}</TableCell>
                 <TableCell>
-                  {expense.client?.name || <span className="text-muted-foreground">-</span>}
+                  {expense.client ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-center h-6 w-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                              <Building2 className="h-3.5 w-3.5 text-emerald-600" />
+                            </div>
+                            <span className="font-medium text-sm">{expense.client.name}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Cliente asociado para reembolso</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-center h-6 w-6 rounded-full bg-muted">
+                              <User className="h-3.5 w-3.5 text-muted-foreground" />
+                            </div>
+                            <span className="text-muted-foreground text-sm">Personal</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Gasto personal sin cliente asociado</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
@@ -127,9 +174,25 @@ export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
                   ${Number(expense.amount).toFixed(2)}
                 </TableCell>
                 <TableCell>
-                  <Badge className={getStatusColor(expense.status)}>
-                    {expense.status.replace('_', ' ')}
-                  </Badge>
+                  {(() => {
+                    const config = STATUS_CONFIG[expense.status] || STATUS_CONFIG.pending;
+                    const StatusIcon = config.icon;
+                    return (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge className={`${config.bgColor} ${config.color} border-0 gap-1.5`}>
+                              <StatusIcon className="h-3.5 w-3.5" />
+                              <span>{config.label}</span>
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Estado: {config.label}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    );
+                  })()}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
