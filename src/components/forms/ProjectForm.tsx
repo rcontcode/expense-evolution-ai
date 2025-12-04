@@ -282,7 +282,7 @@ export function ProjectForm({ project, onSubmit, onCancel, isLoading }: ProjectF
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('income.description')}</FormLabel>
+              <FormLabel>{t('income.descriptionLabel')}</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder={t('income.projectDescriptionPlaceholder')}

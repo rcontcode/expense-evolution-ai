@@ -311,7 +311,7 @@ export function IncomeForm({ income, onSubmit, onCancel, isLoading }: IncomeForm
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('income.description')}</FormLabel>
+              <FormLabel>{t('income.descriptionLabel')}</FormLabel>
               <FormControl>
                 <Input placeholder={t('income.descriptionPlaceholder')} {...field} />
               </FormControl>
