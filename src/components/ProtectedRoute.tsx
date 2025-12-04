@@ -1,11 +1,17 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
-  if (loading) {
+  // Check if this might be an OAuth callback (has tokens in hash)
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const isOAuthCallback = hashParams.has('access_token') || hashParams.has('error');
+
+  // Show loading while auth is initializing or during OAuth callback
+  if (loading || isOAuthCallback) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="space-y-4 w-full max-w-md p-8">
@@ -18,7 +24,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;
