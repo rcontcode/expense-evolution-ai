@@ -12,7 +12,7 @@ export function QuickCaptureDialog({ open, onClose }: QuickCaptureDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <QuickCapture 
           onSuccess={onClose}
           onCancel={onClose}
