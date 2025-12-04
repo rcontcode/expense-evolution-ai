@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Plus, Receipt, Download } from 'lucide-react';
+import { Plus, Receipt, Download, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { ExpensesTable } from '@/components/tables/ExpensesTable';
 import { ExpenseFilters } from '@/components/filters/ExpenseFilters';
 import { ExpenseDialog } from '@/components/dialogs/ExpenseDialog';
 import { ExportDialog } from '@/components/export/ExportDialog';
+import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
 import { ExpenseFilters as Filters, ExpenseWithRelations } from '@/types/expense.types';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -16,6 +17,7 @@ export default function Expenses() {
   const [filters, setFilters] = useState<Filters>({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseWithRelations | undefined>();
 
   const { data: expenses, isLoading } = useExpenses(filters);
@@ -49,9 +51,13 @@ export default function Expenses() {
               <Download className="mr-2 h-4 w-4" />
               {t('common.export')}
             </Button>
-            <Button onClick={handleCreate}>
+            <Button variant="outline" onClick={handleCreate}>
               <Plus className="mr-2 h-4 w-4" />
               {t('expenses.addExpense')}
+            </Button>
+            <Button onClick={() => setQuickCaptureOpen(true)} className="bg-primary">
+              <Sparkles className="mr-2 h-4 w-4" />
+              {t('quickCapture.title')}
             </Button>
           </div>
         </div>
@@ -87,6 +93,10 @@ export default function Expenses() {
           open={exportDialogOpen} 
           onClose={() => setExportDialogOpen(false)} 
           expenses={allExpenses || []} 
+        />
+        <QuickCaptureDialog 
+          open={quickCaptureOpen} 
+          onClose={() => setQuickCaptureOpen(false)} 
         />
       </div>
     </Layout>
