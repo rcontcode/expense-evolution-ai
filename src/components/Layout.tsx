@@ -29,6 +29,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
+import { TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 
 interface LayoutProps {
   children: ReactNode;
@@ -38,24 +39,24 @@ const NAV_SECTIONS = [
   {
     title: 'Principal',
     items: [
-      { icon: LayoutDashboard, label: 'nav.dashboard', path: '/dashboard', badge: null, tip: 'Vista general de tus finanzas' },
-      { icon: Inbox, label: 'nav.chaos', path: '/chaos', badge: 'AI', tip: 'Bandeja inteligente de documentos' },
+      { icon: LayoutDashboard, label: 'nav.dashboard', path: '/dashboard', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: Inbox, label: 'nav.chaos', path: '/chaos', badge: 'AI', tooltipKey: 'chaosInbox' as const },
     ]
   },
   {
     title: 'Gestión',
     items: [
-      { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tip: 'Registra y clasifica gastos' },
-      { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tip: 'Administra tus clientes' },
-      { icon: Tag, label: 'nav.tags', path: '/tags', badge: null, tip: 'Organiza con etiquetas' },
-      { icon: FileText, label: 'nav.contracts', path: '/contracts', badge: null, tip: 'Contratos, emails y acuerdos' },
+      { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
+      { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tooltipKey: 'clients' as const },
+      { icon: Tag, label: 'nav.tags', path: '/tags', badge: null, tooltipKey: 'tags' as const },
+      { icon: FileText, label: 'nav.contracts', path: '/contracts', badge: null, tooltipKey: 'contracts' as const },
     ]
   },
   {
     title: 'Seguimiento',
     items: [
-      { icon: Car, label: 'nav.mileage', path: '/mileage', badge: 'CRA', tip: 'Kilometraje deducible' },
-      { icon: RefreshCw, label: 'nav.reconciliation', path: '/reconciliation', badge: null, tip: 'Concilia transacciones' },
+      { icon: Car, label: 'nav.mileage', path: '/mileage', badge: 'CRA', tooltipKey: 'mileage' as const },
+      { icon: RefreshCw, label: 'nav.reconciliation', path: '/reconciliation', badge: null, tooltipKey: 'reconciliation' as const },
     ]
   },
 ];
@@ -155,12 +156,21 @@ export const Layout = ({ children }: LayoutProps) => {
                       </button>
                     );
 
+                    const tooltipData = TOOLTIP_CONTENT[item.tooltipKey];
+
                     return collapsed ? (
                       <Tooltip key={item.path}>
                         <TooltipTrigger asChild>{button}</TooltipTrigger>
-                        <TooltipContent side="right" className="flex flex-col gap-1">
-                          <span className="font-medium">{t(item.label)}</span>
-                          <span className="text-xs text-muted-foreground">{item.tip}</span>
+                        <TooltipContent side="right" className="max-w-xs p-3">
+                          <div className="space-y-2">
+                            <span className="font-semibold">{tooltipData.title}</span>
+                            <p className="text-xs text-muted-foreground">{tooltipData.description}</p>
+                            {tooltipData.howToUse && (
+                              <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
+                                💡 {tooltipData.howToUse}
+                              </p>
+                            )}
+                          </div>
                         </TooltipContent>
                       </Tooltip>
                     ) : button;
@@ -173,18 +183,31 @@ export const Layout = ({ children }: LayoutProps) => {
           {/* Quick Capture CTA */}
           {!collapsed && (
             <div className="p-3">
-              <button
-                onClick={() => navigate('/expenses')}
-                className="w-full p-4 rounded-xl bg-gradient-hero text-primary-foreground flex items-center gap-3 hover:opacity-90 transition-opacity shadow-glow"
-              >
-                <div className="w-10 h-10 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
-                  <Sparkles className="h-5 w-5" />
-                </div>
-                <div className="text-left">
-                  <p className="font-semibold text-sm">Captura de Gastos</p>
-                  <p className="text-xs opacity-80">Foto, voz o texto</p>
-                </div>
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => navigate('/expenses')}
+                    className="w-full p-4 rounded-xl bg-gradient-hero text-primary-foreground flex items-center gap-3 hover:opacity-90 transition-opacity shadow-glow"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
+                      <Sparkles className="h-5 w-5" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-sm">Captura de Gastos</p>
+                      <p className="text-xs opacity-80">Foto, voz o texto</p>
+                    </div>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-xs p-3">
+                  <div className="space-y-2">
+                    <span className="font-semibold">{TOOLTIP_CONTENT.quickCapture.title}</span>
+                    <p className="text-xs text-muted-foreground">{TOOLTIP_CONTENT.quickCapture.description}</p>
+                    <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
+                      💡 {TOOLTIP_CONTENT.quickCapture.howToUse}
+                    </p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
             </div>
           )}
 
@@ -208,9 +231,15 @@ export const Layout = ({ children }: LayoutProps) => {
                   {!collapsed && <span className="flex-1 text-left">{t('nav.settings')}</span>}
                 </button>
               </TooltipTrigger>
-              {collapsed && (
-                <TooltipContent side="right">Configuración</TooltipContent>
-              )}
+              <TooltipContent side="right" className="max-w-xs p-3">
+                <div className="space-y-2">
+                  <span className="font-semibold">{TOOLTIP_CONTENT.settings.title}</span>
+                  <p className="text-xs text-muted-foreground">{TOOLTIP_CONTENT.settings.description}</p>
+                  <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
+                    💡 {TOOLTIP_CONTENT.settings.howToUse}
+                  </p>
+                </div>
+              </TooltipContent>
             </Tooltip>
 
             <div className={cn(

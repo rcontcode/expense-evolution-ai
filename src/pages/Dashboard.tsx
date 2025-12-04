@@ -17,6 +17,8 @@ import { TaxSummaryCards } from '@/components/dashboard/TaxSummaryCards';
 import { ExportDialog } from '@/components/export/ExportDialog';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
@@ -74,115 +76,135 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="p-8 space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">{t('dashboard.welcome')}</h1>
-            <p className="text-muted-foreground mt-2">Panel de control con análisis fiscal detallado</p>
+      <TooltipProvider delayDuration={200}>
+        <div className="p-8 space-y-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="text-3xl font-bold">{t('dashboard.welcome')}</h1>
+                <p className="text-muted-foreground mt-2">Panel de control con análisis fiscal detallado</p>
+              </div>
+              <InfoTooltip {...TOOLTIP_CONTENT.dashboard} />
+            </div>
+            <InfoTooltip {...TOOLTIP_CONTENT.exportButton} variant="wrapper" side="bottom">
+              <Button onClick={() => setExportDialogOpen(true)} variant="outline">
+                <Download className="mr-2 h-4 w-4" />
+                {t('export.exportButton')}
+              </Button>
+            </InfoTooltip>
           </div>
-          <Button onClick={() => setExportDialogOpen(true)} variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            {t('export.exportButton')}
-          </Button>
-        </div>
 
-        {/* Filtros */}
-        <DashboardFilters
-          selectedClient={selectedClient}
-          selectedStatus={selectedStatus}
-          selectedCategory={selectedCategory}
-          onClientChange={setSelectedClient}
-          onStatusChange={setSelectedStatus}
-          onCategoryChange={setSelectedCategory}
-          onReset={handleResetFilters}
-          clients={clients || []}
-        />
+          {/* Filtros */}
+          <DashboardFilters
+            selectedClient={selectedClient}
+            selectedStatus={selectedStatus}
+            selectedCategory={selectedCategory}
+            onClientChange={setSelectedClient}
+            onStatusChange={setSelectedStatus}
+            onCategoryChange={setSelectedCategory}
+            onReset={handleResetFilters}
+            clients={clients || []}
+          />
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t('dashboard.monthlyTotal')}
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-chart-1" />
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-8 w-24" />
-              ) : (
-                <>
-                  <div className="text-2xl font-bold">${stats?.monthlyTotal.toFixed(2)}</div>
-                  <p className="text-xs text-muted-foreground">CAD</p>
-                </>
-              )}
-            </CardContent>
-          </Card>
+          {/* Stats Cards */}
+          <div className="grid gap-4 md:grid-cols-4">
+            <InfoTooltip {...TOOLTIP_CONTENT.monthlyTotal} variant="wrapper" side="bottom">
+              <Card className="cursor-help transition-shadow hover:shadow-md">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {t('dashboard.monthlyTotal')}
+                  </CardTitle>
+                  <DollarSign className="h-4 w-4 text-chart-1" />
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-24" />
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold">${stats?.monthlyTotal.toFixed(2)}</div>
+                      <p className="text-xs text-muted-foreground">CAD</p>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </InfoTooltip>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t('dashboard.totalExpenses')}
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-chart-2" />
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                <>
-                  <div className="text-2xl font-bold">{stats?.totalExpenses}</div>
-                  <p className="text-xs text-muted-foreground">Total records</p>
-                </>
-              )}
-            </CardContent>
-          </Card>
+            <InfoTooltip {...TOOLTIP_CONTENT.totalExpenses} variant="wrapper" side="bottom">
+              <Card className="cursor-help transition-shadow hover:shadow-md">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {t('dashboard.totalExpenses')}
+                  </CardTitle>
+                  <TrendingUp className="h-4 w-4 text-chart-2" />
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold">{stats?.totalExpenses}</div>
+                      <p className="text-xs text-muted-foreground">Total records</p>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </InfoTooltip>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t('dashboard.pendingDocuments')}
-              </CardTitle>
-              <FileText className="h-4 w-4 text-chart-3" />
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                <>
-                  <div className="text-2xl font-bold">{stats?.pendingDocs}</div>
-                  <p className="text-xs text-muted-foreground">Awaiting classification</p>
-                </>
-              )}
-            </CardContent>
-          </Card>
+            <InfoTooltip {...TOOLTIP_CONTENT.pendingDocs} variant="wrapper" side="bottom">
+              <Card className="cursor-help transition-shadow hover:shadow-md">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {t('dashboard.pendingDocuments')}
+                  </CardTitle>
+                  <FileText className="h-4 w-4 text-chart-3" />
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold">{stats?.pendingDocs}</div>
+                      <p className="text-xs text-muted-foreground">Awaiting classification</p>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </InfoTooltip>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t('dashboard.billableExpenses')}
-              </CardTitle>
-              <Receipt className="h-4 w-4 text-chart-4" />
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                <>
-                  <div className="text-2xl font-bold">{stats?.billableExpenses}</div>
-                  <p className="text-xs text-muted-foreground">Ready to invoice</p>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+            <InfoTooltip {...TOOLTIP_CONTENT.billableExpenses} variant="wrapper" side="bottom">
+              <Card className="cursor-help transition-shadow hover:shadow-md">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {t('dashboard.billableExpenses')}
+                  </CardTitle>
+                  <Receipt className="h-4 w-4 text-chart-4" />
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold">{stats?.billableExpenses}</div>
+                      <p className="text-xs text-muted-foreground">Ready to invoice</p>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </InfoTooltip>
+          </div>
 
         {/* Tabs para Gráficos y Análisis Fiscal */}
         <Tabs defaultValue="charts" className="space-y-4">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="charts">{t('taxAnalysis.charts')}</TabsTrigger>
-            <TabsTrigger value="tax">{t('taxAnalysis.taxAnalysis')}</TabsTrigger>
-            <TabsTrigger value="mileage">{t('mileage.title')}</TabsTrigger>
+            <InfoTooltip {...TOOLTIP_CONTENT.chartsTab} variant="wrapper" side="bottom">
+              <TabsTrigger value="charts" className="cursor-pointer">{t('taxAnalysis.charts')}</TabsTrigger>
+            </InfoTooltip>
+            <InfoTooltip {...TOOLTIP_CONTENT.taxTab} variant="wrapper" side="bottom">
+              <TabsTrigger value="tax" className="cursor-pointer">{t('taxAnalysis.taxAnalysis')}</TabsTrigger>
+            </InfoTooltip>
+            <InfoTooltip {...TOOLTIP_CONTENT.mileageTab} variant="wrapper" side="bottom">
+              <TabsTrigger value="mileage" className="cursor-pointer">{t('mileage.title')}</TabsTrigger>
+            </InfoTooltip>
           </TabsList>
 
           <TabsContent value="charts" className="space-y-4">
@@ -437,7 +459,8 @@ export default function Dashboard() {
           onClose={() => setExportDialogOpen(false)} 
           expenses={allExpenses || []} 
         />
-      </div>
+        </div>
+      </TooltipProvider>
     </Layout>
   );
 }

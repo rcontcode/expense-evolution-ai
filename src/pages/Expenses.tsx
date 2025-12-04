@@ -12,6 +12,8 @@ import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
 import { ReimbursementReportDialog } from '@/components/dialogs/ReimbursementReportDialog';
 import { ExpenseFilters as Filters, ExpenseWithRelations } from '@/types/expense.types';
 import { Card, CardContent } from '@/components/ui/card';
+import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export default function Expenses() {
   const { t } = useLanguage();
@@ -42,33 +44,48 @@ export default function Expenses() {
 
   return (
     <Layout>
-      <div className="p-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">{t('expenses.title')}</h1>
-            <p className="text-muted-foreground mt-2">{t('expenses.manageExpenses')}</p>
+      <TooltipProvider delayDuration={200}>
+        <div className="p-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="text-3xl font-bold">{t('expenses.title')}</h1>
+                <p className="text-muted-foreground mt-2">{t('expenses.manageExpenses')}</p>
+              </div>
+              <InfoTooltip {...TOOLTIP_CONTENT.expenses} />
+            </div>
+            <div className="flex gap-2">
+              <InfoTooltip {...TOOLTIP_CONTENT.reimbursementReport} variant="wrapper" side="bottom">
+                <Button variant="outline" onClick={() => setReimbursementReportOpen(true)}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Reembolsos
+                </Button>
+              </InfoTooltip>
+              <InfoTooltip {...TOOLTIP_CONTENT.exportButton} variant="wrapper" side="bottom">
+                <Button variant="outline" onClick={() => setExportDialogOpen(true)}>
+                  <Download className="mr-2 h-4 w-4" />
+                  {t('common.export')}
+                </Button>
+              </InfoTooltip>
+              <InfoTooltip {...TOOLTIP_CONTENT.addExpense} variant="wrapper" side="bottom">
+                <Button variant="outline" onClick={handleCreate}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t('expenses.addExpense')}
+                </Button>
+              </InfoTooltip>
+              <InfoTooltip {...TOOLTIP_CONTENT.quickCapture} variant="wrapper" side="bottom">
+                <Button onClick={() => setQuickCaptureOpen(true)} className="bg-primary">
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  {t('quickCapture.title')}
+                </Button>
+              </InfoTooltip>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setReimbursementReportOpen(true)}>
-              <FileText className="mr-2 h-4 w-4" />
-              Reembolsos
-            </Button>
-            <Button variant="outline" onClick={() => setExportDialogOpen(true)}>
-              <Download className="mr-2 h-4 w-4" />
-              {t('common.export')}
-            </Button>
-            <Button variant="outline" onClick={handleCreate}>
-              <Plus className="mr-2 h-4 w-4" />
-              {t('expenses.addExpense')}
-            </Button>
-            <Button onClick={() => setQuickCaptureOpen(true)} className="bg-primary">
-              <Sparkles className="mr-2 h-4 w-4" />
-              {t('quickCapture.title')}
-            </Button>
-          </div>
-        </div>
 
-        <ExpenseFilters filters={filters} onChange={setFilters} />
+          <div className="flex items-center gap-2">
+            <ExpenseFilters filters={filters} onChange={setFilters} />
+            <InfoTooltip {...TOOLTIP_CONTENT.expenseFilters} />
+          </div>
 
         {isLoading ? (
           <Card className="border-dashed">
@@ -104,12 +121,13 @@ export default function Expenses() {
           open={quickCaptureOpen} 
           onClose={() => setQuickCaptureOpen(false)} 
         />
-        <ReimbursementReportDialog
-          open={reimbursementReportOpen}
-          onClose={() => setReimbursementReportOpen(false)}
-          expenses={allExpenses || []}
-        />
-      </div>
+          <ReimbursementReportDialog
+            open={reimbursementReportOpen}
+            onClose={() => setReimbursementReportOpen(false)}
+            expenses={allExpenses || []}
+          />
+        </div>
+      </TooltipProvider>
     </Layout>
   );
 }
