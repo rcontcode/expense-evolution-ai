@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Plus, Tag as TagIcon, Edit, Trash2 } from 'lucide-react';
+import { Plus, Tag as TagIcon, Edit, Trash2, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useTags, useDeleteTag } from '@/hooks/data/useTags';
+import { useTags, useDeleteTag, useSeedDefaultTags } from '@/hooks/data/useTags';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TagDialog } from '@/components/dialogs/TagDialog';
 import { Tag } from '@/types/expense.types';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
+import { TAG_COLOR_PALETTE } from '@/lib/constants/default-tags';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,12 +23,13 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export default function Tags() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { data: tags, isLoading } = useTags();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedTag, setSelectedTag] = useState<Tag | undefined>();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const deleteMutation = useDeleteTag();
+  const seedDefaultTags = useSeedDefaultTags();
 
   const handleEdit = (tag: Tag) => {
     setSelectedTag(tag);
@@ -119,13 +121,40 @@ export default function Tags() {
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <TagIcon className="h-12 w-12 text-muted-foreground mb-4" />
                 <p className="text-lg font-medium">{t('tags.noTags')}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground mb-4">
                   {t('tags.createFirst')}
                 </p>
-                <Button onClick={handleCreate} className="mt-4">
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t('tags.createTag')}
-                </Button>
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => seedDefaultTags.mutate()}
+                    disabled={seedDefaultTags.isPending}
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    {language === 'es' ? 'Crear Predeterminadas' : 'Create Defaults'}
+                  </Button>
+                  <Button onClick={handleCreate}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    {t('tags.createTag')}
+                  </Button>
+                </div>
+                
+                {/* Color Palette Preview */}
+                <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground mb-2 text-center">
+                    {language === 'es' ? 'Paleta de colores disponibles' : 'Available color palette'}
+                  </p>
+                  <div className="flex gap-2 flex-wrap justify-center">
+                    {TAG_COLOR_PALETTE.map((item) => (
+                      <div 
+                        key={item.color} 
+                        className="w-6 h-6 rounded-full border-2 border-background shadow-sm"
+                        style={{ backgroundColor: item.color }}
+                        title={language === 'es' ? item.name : item.nameEn}
+                      />
+                    ))}
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}

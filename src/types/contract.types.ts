@@ -9,6 +9,15 @@ export interface ContractFormData {
   client_id?: string;
   file: File;
   billing_profile?: Record<string, any>;
+  // New fields
+  title?: string;
+  contract_type?: string;
+  start_date?: Date | null;
+  end_date?: Date | null;
+  auto_renew?: boolean;
+  renewal_notice_days?: number;
+  value?: number | null;
+  description?: string;
 }
 
 export interface ContractWithClient extends Contract {

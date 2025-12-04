@@ -116,36 +116,60 @@ export type Database = {
       clients: {
         Row: {
           billing_profile: Json | null
+          client_type: string | null
+          contact_email: string | null
+          contact_phone: string | null
           country: string | null
           created_at: string | null
+          currency: string | null
           id: string
+          industry: string | null
           name: string
           notes: string | null
+          payment_terms: number | null
           province: string | null
+          tax_id: string | null
           updated_at: string | null
           user_id: string
+          website: string | null
         }
         Insert: {
           billing_profile?: Json | null
+          client_type?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           country?: string | null
           created_at?: string | null
+          currency?: string | null
           id?: string
+          industry?: string | null
           name: string
           notes?: string | null
+          payment_terms?: number | null
           province?: string | null
+          tax_id?: string | null
           updated_at?: string | null
           user_id: string
+          website?: string | null
         }
         Update: {
           billing_profile?: Json | null
+          client_type?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           country?: string | null
           created_at?: string | null
+          currency?: string | null
           id?: string
+          industry?: string | null
           name?: string
           notes?: string | null
+          payment_terms?: number | null
           province?: string | null
+          tax_id?: string | null
           updated_at?: string | null
           user_id?: string
+          website?: string | null
         }
         Relationships: [
           {
@@ -159,40 +183,67 @@ export type Database = {
       }
       contracts: {
         Row: {
+          auto_renew: boolean | null
           billing_profile: Json | null
           client_id: string | null
+          contract_type: string | null
           created_at: string | null
+          description: string | null
+          end_date: string | null
           file_name: string
           file_path: string
           file_type: string | null
           id: string
+          reimbursement_terms: Json | null
+          renewal_notice_days: number | null
+          start_date: string | null
           status: Database["public"]["Enums"]["contract_status"] | null
+          title: string | null
           updated_at: string | null
           user_id: string
+          value: number | null
         }
         Insert: {
+          auto_renew?: boolean | null
           billing_profile?: Json | null
           client_id?: string | null
+          contract_type?: string | null
           created_at?: string | null
+          description?: string | null
+          end_date?: string | null
           file_name: string
           file_path: string
           file_type?: string | null
           id?: string
+          reimbursement_terms?: Json | null
+          renewal_notice_days?: number | null
+          start_date?: string | null
           status?: Database["public"]["Enums"]["contract_status"] | null
+          title?: string | null
           updated_at?: string | null
           user_id: string
+          value?: number | null
         }
         Update: {
+          auto_renew?: boolean | null
           billing_profile?: Json | null
           client_id?: string | null
+          contract_type?: string | null
           created_at?: string | null
+          description?: string | null
+          end_date?: string | null
           file_name?: string
           file_path?: string
           file_type?: string | null
           id?: string
+          reimbursement_terms?: Json | null
+          renewal_notice_days?: number | null
+          start_date?: string | null
           status?: Database["public"]["Enums"]["contract_status"] | null
+          title?: string | null
           updated_at?: string | null
           user_id?: string
+          value?: number | null
         }
         Relationships: [
           {
