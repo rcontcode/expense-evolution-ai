@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -10,88 +10,243 @@ import {
   Car, 
   RefreshCw, 
   Settings,
-  LogOut
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  HelpCircle,
+  Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 
 interface LayoutProps {
   children: ReactNode;
 }
+
+const NAV_SECTIONS = [
+  {
+    title: 'Principal',
+    items: [
+      { icon: LayoutDashboard, label: 'nav.dashboard', path: '/dashboard', badge: null, tip: 'Vista general de tus finanzas' },
+      { icon: Inbox, label: 'nav.chaos', path: '/chaos', badge: 'AI', tip: 'Bandeja inteligente de documentos' },
+    ]
+  },
+  {
+    title: 'Gestión',
+    items: [
+      { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tip: 'Registra y clasifica gastos' },
+      { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tip: 'Administra tus clientes' },
+      { icon: Tag, label: 'nav.tags', path: '/tags', badge: null, tip: 'Organiza con etiquetas' },
+      { icon: FileText, label: 'nav.contracts', path: '/contracts', badge: null, tip: 'Contratos y documentos' },
+    ]
+  },
+  {
+    title: 'Seguimiento',
+    items: [
+      { icon: Car, label: 'nav.mileage', path: '/mileage', badge: 'CRA', tip: 'Kilometraje deducible' },
+      { icon: RefreshCw, label: 'nav.reconciliation', path: '/reconciliation', badge: null, tip: 'Concilia transacciones' },
+    ]
+  },
+];
 
 export const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useLanguage();
   const { signOut } = useAuth();
-
-  const navItems = [
-    { icon: LayoutDashboard, label: t('nav.dashboard'), path: '/dashboard' },
-    { icon: Inbox, label: t('nav.chaos'), path: '/chaos' },
-    { icon: Receipt, label: t('nav.expenses'), path: '/expenses' },
-    { icon: Users, label: t('nav.clients'), path: '/clients' },
-    { icon: Tag, label: t('nav.tags'), path: '/tags' },
-    { icon: FileText, label: t('nav.contracts'), path: '/contracts' },
-    { icon: Car, label: t('nav.mileage'), path: '/mileage' },
-    { icon: RefreshCw, label: t('nav.reconciliation'), path: '/reconciliation' },
-    { icon: Settings, label: t('nav.settings'), path: '/settings' },
-  ];
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen bg-background">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-border bg-card">
-        <div className="flex h-full flex-col">
+    <TooltipProvider delayDuration={300}>
+      <div className="flex h-screen bg-background">
+        {/* Sidebar */}
+        <aside 
+          className={cn(
+            "relative flex flex-col border-r border-border bg-card transition-all duration-300 ease-out",
+            collapsed ? "w-[72px]" : "w-72"
+          )}
+        >
           {/* Logo */}
-          <div className="flex h-16 items-center border-b border-border px-6">
-            <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              EvoExpense AI
-            </h1>
+          <div className={cn(
+            "flex h-16 items-center border-b border-border px-4 transition-all",
+            collapsed ? "justify-center" : "px-6"
+          )}>
+            {collapsed ? (
+              <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
+                <Zap className="h-5 w-5 text-primary-foreground" />
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
+                  <Zap className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-display font-bold gradient-text">EvoExpense</h1>
+                  <span className="text-xs text-muted-foreground">AI Finance</span>
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Collapse button */}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="absolute -right-3 top-20 z-10 flex h-6 w-6 items-center justify-center rounded-full border bg-card shadow-sm hover:bg-secondary transition-colors"
+          >
+            {collapsed ? (
+              <ChevronRight className="h-3 w-3" />
+            ) : (
+              <ChevronLeft className="h-3 w-3" />
+            )}
+          </button>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 p-4">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
-              
-              return (
-                <button
-                  key={item.path}
-                  onClick={() => navigate(item.path)}
-                  className={cn(
-                    'flex w-full items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
+          <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
+            {NAV_SECTIONS.map((section) => (
+              <div key={section.title}>
+                {!collapsed && (
+                  <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {section.title}
+                  </h3>
+                )}
+                <div className="space-y-1">
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location.pathname === item.path;
+                    
+                    const button = (
+                      <button
+                        key={item.path}
+                        onClick={() => navigate(item.path)}
+                        className={cn(
+                          'nav-item w-full',
+                          isActive && 'active',
+                          collapsed && 'justify-center px-0'
+                        )}
+                      >
+                        <Icon className={cn("h-5 w-5 flex-shrink-0", isActive && "text-primary-foreground")} />
+                        {!collapsed && (
+                          <>
+                            <span className="flex-1 text-left">{t(item.label)}</span>
+                            {item.badge && (
+                              <Badge 
+                                variant={item.badge === 'AI' ? 'default' : 'secondary'} 
+                                className={cn(
+                                  "text-[10px] px-1.5 py-0",
+                                  item.badge === 'AI' && "bg-gradient-primary border-0"
+                                )}
+                              >
+                                {item.badge}
+                              </Badge>
+                            )}
+                          </>
+                        )}
+                      </button>
+                    );
+
+                    return collapsed ? (
+                      <Tooltip key={item.path}>
+                        <TooltipTrigger asChild>{button}</TooltipTrigger>
+                        <TooltipContent side="right" className="flex flex-col gap-1">
+                          <span className="font-medium">{t(item.label)}</span>
+                          <span className="text-xs text-muted-foreground">{item.tip}</span>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : button;
+                  })}
+                </div>
+              </div>
+            ))}
           </nav>
 
+          {/* Quick Capture CTA */}
+          {!collapsed && (
+            <div className="p-3">
+              <button
+                onClick={() => navigate('/expenses')}
+                className="w-full p-4 rounded-xl bg-gradient-hero text-primary-foreground flex items-center gap-3 hover:opacity-90 transition-opacity shadow-glow"
+              >
+                <div className="w-10 h-10 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-sm">Captura Rápida</p>
+                  <p className="text-xs opacity-80">Foto, voz o texto</p>
+                </div>
+              </button>
+            </div>
+          )}
+
           {/* Bottom actions */}
-          <div className="border-t border-border p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <LanguageSelector />
-              <Button variant="ghost" size="icon" onClick={signOut}>
-                <LogOut className="h-5 w-5" />
-              </Button>
+          <div className={cn(
+            "border-t border-border p-3 space-y-2",
+            collapsed && "flex flex-col items-center"
+          )}>
+            {/* Settings */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => navigate('/settings')}
+                  className={cn(
+                    'nav-item w-full',
+                    location.pathname === '/settings' && 'active',
+                    collapsed && 'justify-center px-0 w-auto'
+                  )}
+                >
+                  <Settings className="h-5 w-5" />
+                  {!collapsed && <span className="flex-1 text-left">{t('nav.settings')}</span>}
+                </button>
+              </TooltipTrigger>
+              {collapsed && (
+                <TooltipContent side="right">Configuración</TooltipContent>
+              )}
+            </Tooltip>
+
+            <div className={cn(
+              "flex items-center gap-2 pt-2",
+              collapsed ? "flex-col" : "justify-between"
+            )}>
+              {!collapsed && <LanguageSelector />}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={signOut}>
+                    <LogOut className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side={collapsed ? "right" : "top"}>Cerrar sesión</TooltipContent>
+              </Tooltip>
+              {collapsed && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="text-muted-foreground">
+                      <HelpCircle className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Ayuda</TooltipContent>
+                </Tooltip>
+              )}
             </div>
           </div>
-        </div>
-      </aside>
+        </aside>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-auto">
-        {children}
-      </main>
-    </div>
+        {/* Main content */}
+        <main className="flex-1 overflow-auto">
+          <div className="animate-fade-in">
+            {children}
+          </div>
+        </main>
+      </div>
+    </TooltipProvider>
   );
 };
