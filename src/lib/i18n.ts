@@ -297,6 +297,16 @@ export const translations = {
       descriptionPlaceholder: 'Describe los términos de reembolso, categorías cubiertas, límites, etc.',
       optional: 'Opcional',
       fileFormats: 'PDF, PNG o JPG (máx. 10MB)',
+      // Validity
+      validity: 'Vigencia',
+      validityActive: 'Vigente',
+      validityExpiringSoon: 'Por vencer',
+      validityExpired: 'Vencido',
+      validityNotSet: 'Sin fechas',
+      daysRemaining: 'días restantes',
+      expiredDaysAgo: 'venció hace',
+      days: 'días',
+      noEndDate: 'Sin fecha fin',
     },
     // Expense table
     expenseTable: {
@@ -855,6 +865,16 @@ export const translations = {
       descriptionPlaceholder: 'Describe reimbursement terms, covered categories, limits, etc.',
       optional: 'Optional',
       fileFormats: 'PDF, PNG or JPG (max. 10MB)',
+      // Validity
+      validity: 'Validity',
+      validityActive: 'Active',
+      validityExpiringSoon: 'Expiring Soon',
+      validityExpired: 'Expired',
+      validityNotSet: 'No dates',
+      daysRemaining: 'days remaining',
+      expiredDaysAgo: 'expired',
+      days: 'days ago',
+      noEndDate: 'No end date',
     },
     // Expense table
     expenseTable: {
