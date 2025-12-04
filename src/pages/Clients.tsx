@@ -61,9 +61,9 @@ export default function Clients() {
                 <h1 className="text-3xl font-bold">{t('clients.title')}</h1>
                 <p className="text-muted-foreground mt-2">{t('clients.description')}</p>
               </div>
-              <InfoTooltip {...TOOLTIP_CONTENT.clients} />
+              <InfoTooltip content={TOOLTIP_CONTENT.clients} />
             </div>
-            <InfoTooltip {...TOOLTIP_CONTENT.addClient} variant="wrapper">
+            <InfoTooltip content={TOOLTIP_CONTENT.addClient} variant="wrapper">
               <Button onClick={handleCreate}>
                 <Plus className="mr-2 h-4 w-4" />
                 {t('clients.addClient')}
@@ -85,7 +85,7 @@ export default function Clients() {
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-xl">{client.name}</CardTitle>
                       <div className="flex gap-1">
-                        <InfoTooltip {...TOOLTIP_CONTENT.editAction} variant="wrapper">
+                        <InfoTooltip content={TOOLTIP_CONTENT.editAction} variant="wrapper">
                           <Button
                             variant="ghost"
                             size="icon"
@@ -94,7 +94,7 @@ export default function Clients() {
                             <Edit className="h-4 w-4" />
                           </Button>
                         </InfoTooltip>
-                        <InfoTooltip {...TOOLTIP_CONTENT.deleteAction} variant="wrapper">
+                        <InfoTooltip content={TOOLTIP_CONTENT.deleteAction} variant="wrapper">
                           <Button
                             variant="ghost"
                             size="icon"

@@ -57,10 +57,10 @@ export default function Mileage() {
                 <h1 className="text-3xl font-bold">{t('mileage.title')}</h1>
                 <p className="text-muted-foreground mt-2">{t('mileage.description')}</p>
               </div>
-              <InfoTooltip {...TOOLTIP_CONTENT.mileage} />
+              <InfoTooltip content={TOOLTIP_CONTENT.mileage} />
             </div>
             <div className="flex items-center gap-2">
-              <InfoTooltip {...TOOLTIP_CONTENT.yearSelector} variant="wrapper">
+              <InfoTooltip content={TOOLTIP_CONTENT.yearSelector} variant="wrapper">
                 <Select
                   value={selectedYear.toString()}
                   onValueChange={(value) => setSelectedYear(parseInt(value))}
@@ -77,7 +77,7 @@ export default function Mileage() {
                   </SelectContent>
                 </Select>
               </InfoTooltip>
-              <InfoTooltip {...TOOLTIP_CONTENT.addTrip} variant="wrapper">
+              <InfoTooltip content={TOOLTIP_CONTENT.addTrip} variant="wrapper">
                 <Button onClick={handleCreate}>
                   <Plus className="mr-2 h-4 w-4" />
                   {t('mileage.addTrip')}
@@ -88,10 +88,10 @@ export default function Mileage() {
 
           <Tabs defaultValue="records" className="space-y-4">
             <TabsList>
-              <InfoTooltip {...TOOLTIP_CONTENT.mileageTripsTab} variant="wrapper">
+              <InfoTooltip content={TOOLTIP_CONTENT.mileageTripsTab} variant="wrapper">
                 <TabsTrigger value="records">{t('mileage.tripsTab')}</TabsTrigger>
               </InfoTooltip>
-              <InfoTooltip {...TOOLTIP_CONTENT.mileageSummaryTab} variant="wrapper">
+              <InfoTooltip content={TOOLTIP_CONTENT.mileageSummaryTab} variant="wrapper">
                 <TabsTrigger value="summary">{t('mileage.summaryTab')}</TabsTrigger>
               </InfoTooltip>
             </TabsList>

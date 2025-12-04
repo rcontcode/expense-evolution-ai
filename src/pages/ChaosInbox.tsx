@@ -107,9 +107,9 @@ export default function ChaosInbox() {
                 <h1 className="text-3xl font-bold">{t('chaos.title')}</h1>
                 <p className="text-muted-foreground mt-2">{t('chaos.subtitle')}</p>
               </div>
-              <InfoTooltip {...TOOLTIP_CONTENT.chaosInbox} />
+              <InfoTooltip content={TOOLTIP_CONTENT.chaosInbox} />
             </div>
-            <InfoTooltip {...TOOLTIP_CONTENT.chaosInboxUpload} variant="wrapper">
+            <InfoTooltip content={TOOLTIP_CONTENT.chaosInboxUpload} variant="wrapper">
               <label htmlFor="file-upload">
                 <Button disabled={uploading} asChild>
                   <span className="cursor-pointer">
@@ -149,7 +149,7 @@ export default function ChaosInbox() {
                           {new Date(doc.created_at).toLocaleDateString()}
                         </p>
                       </div>
-                      <InfoTooltip {...TOOLTIP_CONTENT.chaosInboxStatus} variant="wrapper">
+                      <InfoTooltip content={TOOLTIP_CONTENT.chaosInboxStatus} variant="wrapper">
                         {getStatusBadge(doc.status)}
                       </InfoTooltip>
                     </div>

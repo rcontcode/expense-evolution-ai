@@ -52,28 +52,28 @@ export default function Expenses() {
                 <h1 className="text-3xl font-bold">{t('expenses.title')}</h1>
                 <p className="text-muted-foreground mt-2">{t('expenses.manageExpenses')}</p>
               </div>
-              <InfoTooltip {...TOOLTIP_CONTENT.expenses} />
+              <InfoTooltip content={TOOLTIP_CONTENT.expenses} />
             </div>
             <div className="flex gap-2">
-              <InfoTooltip {...TOOLTIP_CONTENT.reimbursementReport} variant="wrapper" side="bottom">
+              <InfoTooltip content={TOOLTIP_CONTENT.reimbursementReport} variant="wrapper" side="bottom">
                 <Button variant="outline" onClick={() => setReimbursementReportOpen(true)}>
                   <FileText className="mr-2 h-4 w-4" />
                   Reembolsos
                 </Button>
               </InfoTooltip>
-              <InfoTooltip {...TOOLTIP_CONTENT.exportButton} variant="wrapper" side="bottom">
+              <InfoTooltip content={TOOLTIP_CONTENT.exportButton} variant="wrapper" side="bottom">
                 <Button variant="outline" onClick={() => setExportDialogOpen(true)}>
                   <Download className="mr-2 h-4 w-4" />
                   {t('common.export')}
                 </Button>
               </InfoTooltip>
-              <InfoTooltip {...TOOLTIP_CONTENT.addExpense} variant="wrapper" side="bottom">
+              <InfoTooltip content={TOOLTIP_CONTENT.addExpense} variant="wrapper" side="bottom">
                 <Button variant="outline" onClick={handleCreate}>
                   <Plus className="mr-2 h-4 w-4" />
                   {t('expenses.addExpense')}
                 </Button>
               </InfoTooltip>
-              <InfoTooltip {...TOOLTIP_CONTENT.quickCapture} variant="wrapper" side="bottom">
+              <InfoTooltip content={TOOLTIP_CONTENT.quickCapture} variant="wrapper" side="bottom">
                 <Button onClick={() => setQuickCaptureOpen(true)} className="bg-primary">
                   <Sparkles className="mr-2 h-4 w-4" />
                   {t('quickCapture.title')}
@@ -84,7 +84,7 @@ export default function Expenses() {
 
           <div className="flex items-center gap-2">
             <ExpenseFilters filters={filters} onChange={setFilters} />
-            <InfoTooltip {...TOOLTIP_CONTENT.expenseFilters} />
+            <InfoTooltip content={TOOLTIP_CONTENT.expenseFilters} />
           </div>
 
         {isLoading ? (
