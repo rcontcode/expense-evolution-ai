@@ -3,12 +3,15 @@ import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Plus, Users, Edit, Trash2, MapPin } from 'lucide-react';
+import { Plus, Users, Edit, Trash2, MapPin, CircleDot, CheckCircle2, AlertCircle, Zap, Mail, Phone, Building2, Globe, FileText } from 'lucide-react';
 import { useClients, useDeleteClient } from '@/hooks/data/useClients';
+import { useExpenses } from '@/hooks/data/useExpenses';
 import { ClientDialog } from '@/components/dialogs/ClientDialog';
 import { Client } from '@/types/expense.types';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,15 +22,33 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  calculateClientCompleteness,
+  CLIENT_STATUS_CONFIG,
+  ClientStatus,
+} from '@/lib/constants/client-completeness';
+
+const STATUS_ICONS: Record<ClientStatus, React.ElementType> = {
+  incomplete: AlertCircle,
+  in_progress: CircleDot,
+  complete: CheckCircle2,
+  active: Zap,
+};
 
 export default function Clients() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | undefined>();
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: clients, isLoading } = useClients();
+  const { data: expenses } = useExpenses();
   const deleteMutation = useDeleteClient();
+
+  // Check which clients have active expenses
+  const getClientHasExpenses = (clientId: string) => {
+    return expenses?.some(exp => exp.client_id === clientId) || false;
+  };
 
   const handleEdit = (client: Client) => {
     setSelectedClient(client);
@@ -71,6 +92,27 @@ export default function Clients() {
             </InfoTooltip>
           </div>
 
+          {/* Legend */}
+          <Card className="bg-muted/30">
+            <CardContent className="py-3">
+              <div className="flex flex-wrap items-center gap-4 text-sm">
+                <span className="font-medium text-muted-foreground">{t('clients.legendTitle')}:</span>
+                {(Object.keys(CLIENT_STATUS_CONFIG) as ClientStatus[]).map((status) => {
+                  const config = CLIENT_STATUS_CONFIG[status];
+                  const StatusIcon = STATUS_ICONS[status];
+                  return (
+                    <div key={status} className="flex items-center gap-1.5">
+                      <StatusIcon className={`h-4 w-4 ${config.color}`} />
+                      <span className="text-muted-foreground">
+                        {language === 'es' ? config.label : config.labelEn}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
           {isLoading ? (
             <Card className="border-dashed">
               <CardContent className="flex items-center justify-center py-12">
@@ -79,49 +121,145 @@ export default function Clients() {
             </Card>
           ) : clients && clients.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {clients.map((client) => (
-                <Card key={client.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-xl">{client.name}</CardTitle>
-                      <div className="flex gap-1">
-                        <InfoTooltip content={TOOLTIP_CONTENT.editAction} variant="wrapper">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(client)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </InfoTooltip>
-                        <InfoTooltip content={TOOLTIP_CONTENT.deleteAction} variant="wrapper">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setDeleteId(client.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </InfoTooltip>
+              {clients.map((client) => {
+                const hasExpenses = getClientHasExpenses(client.id);
+                const completeness = calculateClientCompleteness(client, hasExpenses);
+                const statusConfig = CLIENT_STATUS_CONFIG[completeness.status];
+                const StatusIcon = STATUS_ICONS[completeness.status];
+
+                return (
+                  <Card key={client.id} className="hover:shadow-lg transition-shadow relative overflow-hidden">
+                    {/* Status indicator bar */}
+                    <div className={`absolute top-0 left-0 right-0 h-1 ${statusConfig.bgColor.replace('bg-', 'bg-').replace('/30', '')}`} />
+                    
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-xl">{client.name}</CardTitle>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Badge className={`${statusConfig.bgColor} ${statusConfig.color} border-0 gap-1`}>
+                                <StatusIcon className="h-3 w-3" />
+                                <span className="text-xs">{completeness.percentage}%</span>
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <div className="space-y-2">
+                                <p className="font-medium">
+                                  {language === 'es' ? statusConfig.label : statusConfig.labelEn}
+                                </p>
+                                {completeness.missingFields.length > 0 ? (
+                                  <>
+                                    <p className="text-xs text-muted-foreground">{t('clients.missingFields')}:</p>
+                                    <ul className="text-xs space-y-0.5">
+                                      {completeness.missingFields.map(field => (
+                                        <li key={field.key}>• {language === 'es' ? field.label : field.labelEn}</li>
+                                      ))}
+                                    </ul>
+                                  </>
+                                ) : (
+                                  <p className="text-xs text-green-600">{t('clients.profileComplete')}</p>
+                                )}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                        <div className="flex gap-1">
+                          <InfoTooltip content={TOOLTIP_CONTENT.editAction} variant="wrapper">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEdit(client)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </InfoTooltip>
+                          <InfoTooltip content={TOOLTIP_CONTENT.deleteAction} variant="wrapper">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setDeleteId(client.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </InfoTooltip>
+                        </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {/* Progress bar */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>{t('clients.completeness')}</span>
+                          <span>{completeness.percentage}%</span>
+                        </div>
+                        <Progress value={completeness.percentage} className="h-1.5" />
+                      </div>
+
+                      {/* Client info icons */}
+                      <div className="flex flex-wrap gap-2">
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className={`p-1.5 rounded-full ${client.contact_email ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
+                              <Mail className={`h-3.5 w-3.5 ${client.contact_email ? 'text-green-600' : 'text-muted-foreground'}`} />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>{client.contact_email || t('clients.contactEmail')}</TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className={`p-1.5 rounded-full ${client.contact_phone ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
+                              <Phone className={`h-3.5 w-3.5 ${client.contact_phone ? 'text-green-600' : 'text-muted-foreground'}`} />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>{client.contact_phone || t('clients.contactPhone')}</TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className={`p-1.5 rounded-full ${client.industry ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
+                              <Building2 className={`h-3.5 w-3.5 ${client.industry ? 'text-green-600' : 'text-muted-foreground'}`} />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>{client.industry || t('clients.industry')}</TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className={`p-1.5 rounded-full ${client.website ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
+                              <Globe className={`h-3.5 w-3.5 ${client.website ? 'text-green-600' : 'text-muted-foreground'}`} />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>{client.website || t('clients.website')}</TooltipContent>
+                        </Tooltip>
+
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className={`p-1.5 rounded-full ${client.tax_id ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
+                              <FileText className={`h-3.5 w-3.5 ${client.tax_id ? 'text-green-600' : 'text-muted-foreground'}`} />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>{client.tax_id || t('clients.taxId')}</TooltipContent>
+                        </Tooltip>
+                      </div>
+
+                      {/* Location */}
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <MapPin className="h-4 w-4" />
                         <span>
                           {client.province && `${client.province}, `}
                           {client.country || 'Canada'}
                         </span>
                       </div>
+
                       {client.notes && (
-                        <p className="text-sm mt-2 line-clamp-2">{client.notes}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{client.notes}</p>
                       )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           ) : (
             <Card className="border-dashed">
