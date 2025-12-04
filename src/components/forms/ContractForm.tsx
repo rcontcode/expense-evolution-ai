@@ -43,7 +43,7 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
         <div className="space-y-4">
           <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Upload className="h-4 w-4" />
-            {language === 'es' ? 'Archivo del Contrato' : 'Contract File'}
+            {t('contracts.contractFile')}
           </h3>
 
           <FormField
@@ -67,7 +67,7 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
                   </div>
                 </FormControl>
                 <FormDescription>
-                  {language === 'es' ? 'PDF, PNG o JPG (máx. 10MB)' : 'PDF, PNG or JPG (max. 10MB)'}
+                  {t('contracts.fileFormats')}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -79,7 +79,7 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
         <div className="space-y-4 border-t pt-4">
           <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            {language === 'es' ? 'Detalles del Contrato' : 'Contract Details'}
+            {t('contracts.contractDetails')}
           </h3>
 
           <FormField
@@ -87,10 +87,10 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{language === 'es' ? 'Título' : 'Title'}</FormLabel>
+                <FormLabel>{t('contracts.formTitle')}</FormLabel>
                 <FormControl>
                   <Input 
-                    placeholder={language === 'es' ? 'Ej: Contrato Q4 2024' : 'E.g: Q4 2024 Contract'} 
+                    placeholder={t('contracts.titlePlaceholder')} 
                     {...field} 
                     value={field.value || ''} 
                   />
@@ -106,7 +106,7 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
               name="contract_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{language === 'es' ? 'Tipo de Contrato' : 'Contract Type'}</FormLabel>
+                  <FormLabel>{t('contracts.contractType')}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value || 'services'}>
                     <FormControl>
                       <SelectTrigger>
@@ -161,7 +161,7 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
               name="start_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>{language === 'es' ? 'Fecha de Inicio' : 'Start Date'}</FormLabel>
+                  <FormLabel>{t('contracts.startDate')}</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -175,7 +175,7 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
                           {field.value ? (
                             format(field.value, "PPP", { locale: dateLocale })
                           ) : (
-                            <span>{language === 'es' ? 'Seleccionar fecha' : 'Select date'}</span>
+                            <span>{t('contracts.selectDate')}</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -200,7 +200,7 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
               name="end_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>{language === 'es' ? 'Fecha de Fin' : 'End Date'}</FormLabel>
+                  <FormLabel>{t('contracts.endDate')}</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -214,7 +214,7 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
                           {field.value ? (
                             format(field.value, "PPP", { locale: dateLocale })
                           ) : (
-                            <span>{language === 'es' ? 'Indefinido' : 'Indefinite'}</span>
+                            <span>{t('contracts.indefinite')}</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -240,7 +240,7 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
         <div className="space-y-4 border-t pt-4">
           <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
-            {language === 'es' ? 'Valor y Renovación' : 'Value & Renewal'}
+            {t('contracts.valueRenewal')}
           </h3>
 
           <div className="grid grid-cols-2 gap-4">
@@ -249,7 +249,7 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
               name="value"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{language === 'es' ? 'Valor del Contrato' : 'Contract Value'}</FormLabel>
+                  <FormLabel>{t('contracts.contractValue')}</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
@@ -264,7 +264,7 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
                     </div>
                   </FormControl>
                   <FormDescription>
-                    {language === 'es' ? 'Opcional' : 'Optional'}
+                    {t('contracts.optional')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -276,7 +276,7 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
               name="renewal_notice_days"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{language === 'es' ? 'Días de Aviso' : 'Notice Days'}</FormLabel>
+                  <FormLabel>{t('contracts.noticeDays')}</FormLabel>
                   <FormControl>
                     <Input 
                       type="number" 
@@ -286,7 +286,7 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
                     />
                   </FormControl>
                   <FormDescription>
-                    {language === 'es' ? 'Días antes del vencimiento' : 'Days before expiry'}
+                    {t('contracts.daysBeforeExpiry')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -302,12 +302,10 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
                 <div className="space-y-0.5">
                   <FormLabel className="flex items-center gap-2">
                     <RefreshCw className="h-4 w-4" />
-                    {language === 'es' ? 'Renovación Automática' : 'Auto Renewal'}
+                    {t('contracts.autoRenewal')}
                   </FormLabel>
                   <FormDescription>
-                    {language === 'es' 
-                      ? 'El contrato se renueva automáticamente al vencer' 
-                      : 'Contract automatically renews on expiry'}
+                    {t('contracts.autoRenewalDescription')}
                   </FormDescription>
                 </div>
                 <FormControl>
@@ -328,12 +326,10 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{language === 'es' ? 'Descripción / Términos de Reembolso' : 'Description / Reimbursement Terms'}</FormLabel>
+                <FormLabel>{t('contracts.descriptionTerms')}</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder={language === 'es' 
-                      ? 'Describe los términos de reembolso, categorías cubiertas, límites, etc.' 
-                      : 'Describe reimbursement terms, covered categories, limits, etc.'}
+                    placeholder={t('contracts.descriptionPlaceholder')}
                     className="resize-none"
                     rows={4}
                     {...field}

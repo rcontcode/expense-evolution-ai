@@ -35,16 +35,16 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-const NAV_SECTIONS = [
+const getNavSections = (t: (key: string) => string) => [
   {
-    title: 'Principal',
+    titleKey: 'layout.principal',
     items: [
       { icon: LayoutDashboard, label: 'nav.dashboard', path: '/dashboard', badge: null, tooltipKey: 'dashboard' as const },
       { icon: Inbox, label: 'nav.chaos', path: '/chaos', badge: 'AI', tooltipKey: 'chaosInbox' as const },
     ]
   },
   {
-    title: 'Gestión',
+    titleKey: 'layout.management',
     items: [
       { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
       { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tooltipKey: 'clients' as const },
@@ -53,7 +53,7 @@ const NAV_SECTIONS = [
     ]
   },
   {
-    title: 'Seguimiento',
+    titleKey: 'layout.tracking',
     items: [
       { icon: Car, label: 'nav.mileage', path: '/mileage', badge: 'CRA', tooltipKey: 'mileage' as const },
       { icon: RefreshCw, label: 'nav.reconciliation', path: '/reconciliation', badge: null, tooltipKey: 'reconciliation' as const },
@@ -67,6 +67,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const { t, language } = useLanguage();
   const { signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const NAV_SECTIONS = getNavSections(t);
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -94,7 +95,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 </div>
                 <div>
                   <h1 className="text-lg font-display font-bold gradient-text">EvoExpense</h1>
-                  <span className="text-xs text-muted-foreground">AI Finance</span>
+                  <span className="text-xs text-muted-foreground">{t('layout.aiFinance')}</span>
                 </div>
               </div>
             )}
@@ -115,10 +116,10 @@ export const Layout = ({ children }: LayoutProps) => {
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
             {NAV_SECTIONS.map((section) => (
-              <div key={section.title}>
+              <div key={section.titleKey}>
                 {!collapsed && (
                   <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {section.title}
+                    {t(section.titleKey)}
                   </h3>
                 )}
                 <div className="space-y-1">
@@ -217,8 +218,8 @@ export const Layout = ({ children }: LayoutProps) => {
                       <Sparkles className="h-5 w-5" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-sm">Captura de Gastos</p>
-                      <p className="text-xs opacity-80">Foto, voz o texto</p>
+                      <p className="font-semibold text-sm">{t('layout.quickCapture')}</p>
+                      <p className="text-xs opacity-80">{t('layout.quickCaptureSubtitle')}</p>
                     </div>
                   </button>
                 </TooltipTrigger>
@@ -277,7 +278,7 @@ export const Layout = ({ children }: LayoutProps) => {
                     <LogOut className="h-5 w-5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side={collapsed ? "right" : "top"}>Cerrar sesión</TooltipContent>
+                <TooltipContent side={collapsed ? "right" : "top"}>{t('layout.logout')}</TooltipContent>
               </Tooltip>
               {collapsed && (
                 <Tooltip>
@@ -286,7 +287,7 @@ export const Layout = ({ children }: LayoutProps) => {
                       <HelpCircle className="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="right">Ayuda</TooltipContent>
+                  <TooltipContent side="right">{t('layout.help')}</TooltipContent>
                 </Tooltip>
               )}
             </div>

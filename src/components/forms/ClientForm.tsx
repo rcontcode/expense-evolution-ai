@@ -44,7 +44,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
         <div className="space-y-4">
           <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Building2 className="h-4 w-4" />
-            {language === 'es' ? 'Información Básica' : 'Basic Information'}
+            {t('formSections.basicInfo')}
           </h3>
           
           <FormField
@@ -67,7 +67,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
               name="client_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{language === 'es' ? 'Tipo de Cliente' : 'Client Type'}</FormLabel>
+                  <FormLabel>{t('formSections.clientType')}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value || 'private'}>
                     <FormControl>
                       <SelectTrigger>
@@ -95,11 +95,11 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
               name="industry"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{language === 'es' ? 'Industria' : 'Industry'}</FormLabel>
+                  <FormLabel>{t('formSections.industry')}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value || ''}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={language === 'es' ? 'Seleccionar...' : 'Select...'} />
+                        <SelectValue placeholder={t('formSections.selectPlaceholder')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -151,7 +151,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
         <div className="space-y-4 border-t pt-4">
           <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Mail className="h-4 w-4" />
-            {language === 'es' ? 'Información de Contacto' : 'Contact Information'}
+            {t('formSections.contactInfo')}
           </h3>
 
           <div className="grid grid-cols-2 gap-4">
@@ -179,7 +179,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
                 <FormItem>
                   <FormLabel className="flex items-center gap-1">
                     <Phone className="h-3 w-3" />
-                    {language === 'es' ? 'Teléfono' : 'Phone'}
+                    {t('formSections.phone')}
                   </FormLabel>
                   <FormControl>
                     <Input type="tel" placeholder="+1 (555) 123-4567" {...field} value={field.value || ''} />
@@ -197,7 +197,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
               <FormItem>
                 <FormLabel className="flex items-center gap-1">
                   <Link className="h-3 w-3" />
-                  {language === 'es' ? 'Sitio Web' : 'Website'}
+                  {t('formSections.website')}
                 </FormLabel>
                 <FormControl>
                   <Input type="url" placeholder="https://www.empresa.com" {...field} value={field.value || ''} />
@@ -212,7 +212,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
         <div className="space-y-4 border-t pt-4">
           <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
-            {language === 'es' ? 'Información de Facturación' : 'Billing Information'}
+            {t('formSections.billingInfo')}
           </h3>
 
           <div className="grid grid-cols-3 gap-4">
@@ -221,7 +221,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
               name="payment_terms"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{language === 'es' ? 'Términos de Pago' : 'Payment Terms'}</FormLabel>
+                  <FormLabel>{t('formSections.paymentTerms')}</FormLabel>
                   <Select 
                     onValueChange={(value) => field.onChange(parseInt(value))} 
                     value={field.value?.toString() || '30'}
@@ -249,7 +249,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
               name="currency"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{language === 'es' ? 'Moneda' : 'Currency'}</FormLabel>
+                  <FormLabel>{t('formSections.currency')}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value || 'CAD'}>
                     <FormControl>
                       <SelectTrigger>
@@ -275,7 +275,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
                 <FormItem>
                   <FormLabel className="flex items-center gap-1">
                     <FileText className="h-3 w-3" />
-                    {language === 'es' ? 'ID Fiscal' : 'Tax ID'}
+                    {t('formSections.taxId')}
                   </FormLabel>
                   <FormControl>
                     <Input placeholder="GST/HST #" {...field} value={field.value || ''} />
