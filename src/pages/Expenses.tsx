@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Plus, Receipt, Download, Sparkles } from 'lucide-react';
+import { Plus, Receipt, Download, Sparkles, FileText } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { ExpensesTable } from '@/components/tables/ExpensesTable';
@@ -9,6 +9,7 @@ import { ExpenseFilters } from '@/components/filters/ExpenseFilters';
 import { ExpenseDialog } from '@/components/dialogs/ExpenseDialog';
 import { ExportDialog } from '@/components/export/ExportDialog';
 import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
+import { ReimbursementReportDialog } from '@/components/dialogs/ReimbursementReportDialog';
 import { ExpenseFilters as Filters, ExpenseWithRelations } from '@/types/expense.types';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -18,6 +19,7 @@ export default function Expenses() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
+  const [reimbursementReportOpen, setReimbursementReportOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseWithRelations | undefined>();
 
   const { data: expenses, isLoading } = useExpenses(filters);
@@ -47,6 +49,10 @@ export default function Expenses() {
             <p className="text-muted-foreground mt-2">{t('expenses.manageExpenses')}</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setReimbursementReportOpen(true)}>
+              <FileText className="mr-2 h-4 w-4" />
+              Reembolsos
+            </Button>
             <Button variant="outline" onClick={() => setExportDialogOpen(true)}>
               <Download className="mr-2 h-4 w-4" />
               {t('common.export')}
@@ -97,6 +103,11 @@ export default function Expenses() {
         <QuickCaptureDialog 
           open={quickCaptureOpen} 
           onClose={() => setQuickCaptureOpen(false)} 
+        />
+        <ReimbursementReportDialog
+          open={reimbursementReportOpen}
+          onClose={() => setReimbursementReportOpen(false)}
+          expenses={allExpenses || []}
         />
       </div>
     </Layout>
