@@ -40,7 +40,7 @@ export const useCreateContract = () => {
 
       if (uploadError) throw uploadError;
 
-      // Create contract record
+      // Create contract record with new fields
       const { data: contract, error: insertError } = await supabase
         .from('contracts')
         .insert({
@@ -51,6 +51,14 @@ export const useCreateContract = () => {
           file_type: data.file.type,
           billing_profile: data.billing_profile || {},
           status: 'uploaded',
+          title: data.title || null,
+          contract_type: data.contract_type || 'services',
+          start_date: data.start_date ? data.start_date.toISOString().split('T')[0] : null,
+          end_date: data.end_date ? data.end_date.toISOString().split('T')[0] : null,
+          auto_renew: data.auto_renew || false,
+          renewal_notice_days: data.renewal_notice_days || 30,
+          value: data.value || null,
+          description: data.description || null,
         })
         .select()
         .single();

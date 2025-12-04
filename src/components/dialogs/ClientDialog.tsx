@@ -15,21 +15,28 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
   const updateMutation = useUpdateClient();
 
   const handleSubmit = (data: ClientFormValues) => {
+    const clientData = {
+      name: data.name,
+      country: data.country || 'Canada',
+      province: data.province || null,
+      notes: data.notes || null,
+      industry: data.industry || null,
+      client_type: data.client_type || 'private',
+      contact_email: data.contact_email || null,
+      contact_phone: data.contact_phone || null,
+      payment_terms: data.payment_terms || 30,
+      currency: data.currency || 'CAD',
+      tax_id: data.tax_id || null,
+      website: data.website || null,
+    };
+
     if (client) {
       updateMutation.mutate(
-        { id: client.id, updates: data },
+        { id: client.id, updates: clientData },
         { onSuccess: onClose }
       );
     } else {
-      createMutation.mutate(
-        { 
-          name: data.name, 
-          country: data.country || 'Canada',
-          province: data.province || null,
-          notes: data.notes || null
-        }, 
-        { onSuccess: onClose }
-      );
+      createMutation.mutate(clientData, { onSuccess: onClose });
     }
   };
 

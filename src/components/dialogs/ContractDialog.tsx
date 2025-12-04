@@ -17,6 +17,14 @@ export function ContractDialog({ open, onOpenChange }: ContractDialogProps) {
     await createContract.mutateAsync({
       file: data.file,
       client_id: data.client_id,
+      title: data.title || undefined,
+      contract_type: data.contract_type || undefined,
+      start_date: data.start_date || undefined,
+      end_date: data.end_date || undefined,
+      auto_renew: data.auto_renew,
+      renewal_notice_days: data.renewal_notice_days || undefined,
+      value: data.value || undefined,
+      description: data.description || undefined,
     });
     onOpenChange(false);
   };

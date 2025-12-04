@@ -184,6 +184,15 @@ export const translations = {
         approved: 'Aprobado',
         rejected: 'Rechazado',
       },
+      // New fields
+      contractTitle: 'Título',
+      contractType: 'Tipo de Contrato',
+      startDate: 'Fecha de Inicio',
+      endDate: 'Fecha de Fin',
+      autoRenew: 'Renovación Automática',
+      renewalNoticeDays: 'Días de Aviso',
+      contractValue: 'Valor del Contrato',
+      reimbursementTerms: 'Términos de Reembolso',
     },
     common: {
       save: 'Guardar',
@@ -230,6 +239,15 @@ export const translations = {
       provincePlaceholder: 'BC, ON, etc.',
       notesLabel: 'Notas',
       notesPlaceholder: 'Información adicional sobre este cliente',
+      // New fields
+      industry: 'Industria',
+      clientType: 'Tipo de Cliente',
+      contactEmail: 'Email de Contacto',
+      contactPhone: 'Teléfono',
+      paymentTerms: 'Términos de Pago',
+      currency: 'Moneda',
+      taxId: 'ID Fiscal',
+      website: 'Sitio Web',
     },
     filters: {
       dashboardFilters: 'Filtros del Dashboard',
@@ -536,6 +554,15 @@ export const translations = {
       provincePlaceholder: 'BC, ON, etc.',
       notesLabel: 'Notes',
       notesPlaceholder: 'Additional information about this client',
+      // New fields
+      industry: 'Industry',
+      clientType: 'Client Type',
+      contactEmail: 'Contact Email',
+      contactPhone: 'Phone',
+      paymentTerms: 'Payment Terms',
+      currency: 'Currency',
+      taxId: 'Tax ID',
+      website: 'Website',
     },
     tags: {
       title: 'Tags',
@@ -551,6 +578,7 @@ export const translations = {
       deleteTagWarning: 'This will remove the tag from all expenses. This action cannot be undone.',
     },
     contracts: {
+      title: 'Contracts & Agreements',
       description: 'Store and manage client contracts',
       file: 'File',
       client: 'Client',
@@ -572,6 +600,15 @@ export const translations = {
         approved: 'Approved',
         rejected: 'Rejected',
       },
+      // New fields
+      contractTitle: 'Title',
+      contractType: 'Contract Type',
+      startDate: 'Start Date',
+      endDate: 'End Date',
+      autoRenew: 'Auto Renewal',
+      renewalNoticeDays: 'Notice Days',
+      contractValue: 'Contract Value',
+      reimbursementTerms: 'Reimbursement Terms',
     },
     common: {
       save: 'Save',
