@@ -84,9 +84,9 @@ export default function Dashboard() {
                 <h1 className="text-3xl font-bold">{t('dashboard.welcome')}</h1>
                 <p className="text-muted-foreground mt-2">Panel de control con análisis fiscal detallado</p>
               </div>
-              <InfoTooltip {...TOOLTIP_CONTENT.dashboard} />
+              <InfoTooltip content={TOOLTIP_CONTENT.dashboard} />
             </div>
-            <InfoTooltip {...TOOLTIP_CONTENT.exportButton} variant="wrapper" side="bottom">
+            <InfoTooltip content={TOOLTIP_CONTENT.exportButton} variant="wrapper" side="bottom">
               <Button onClick={() => setExportDialogOpen(true)} variant="outline">
                 <Download className="mr-2 h-4 w-4" />
                 {t('export.exportButton')}
@@ -108,7 +108,7 @@ export default function Dashboard() {
 
           {/* Stats Cards */}
           <div className="grid gap-4 md:grid-cols-4">
-            <InfoTooltip {...TOOLTIP_CONTENT.monthlyTotal} variant="wrapper" side="bottom">
+            <InfoTooltip content={TOOLTIP_CONTENT.monthlyTotal} variant="wrapper" side="bottom">
               <Card className="cursor-help transition-shadow hover:shadow-md">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -129,7 +129,7 @@ export default function Dashboard() {
               </Card>
             </InfoTooltip>
 
-            <InfoTooltip {...TOOLTIP_CONTENT.totalExpenses} variant="wrapper" side="bottom">
+            <InfoTooltip content={TOOLTIP_CONTENT.totalExpenses} variant="wrapper" side="bottom">
               <Card className="cursor-help transition-shadow hover:shadow-md">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -150,7 +150,7 @@ export default function Dashboard() {
               </Card>
             </InfoTooltip>
 
-            <InfoTooltip {...TOOLTIP_CONTENT.pendingDocs} variant="wrapper" side="bottom">
+            <InfoTooltip content={TOOLTIP_CONTENT.pendingDocs} variant="wrapper" side="bottom">
               <Card className="cursor-help transition-shadow hover:shadow-md">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -171,7 +171,7 @@ export default function Dashboard() {
               </Card>
             </InfoTooltip>
 
-            <InfoTooltip {...TOOLTIP_CONTENT.billableExpenses} variant="wrapper" side="bottom">
+            <InfoTooltip content={TOOLTIP_CONTENT.billableExpenses} variant="wrapper" side="bottom">
               <Card className="cursor-help transition-shadow hover:shadow-md">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -196,13 +196,13 @@ export default function Dashboard() {
         {/* Tabs para Gráficos y Análisis Fiscal */}
         <Tabs defaultValue="charts" className="space-y-4">
           <TabsList className="grid w-full grid-cols-3">
-            <InfoTooltip {...TOOLTIP_CONTENT.chartsTab} variant="wrapper" side="bottom">
+            <InfoTooltip content={TOOLTIP_CONTENT.chartsTab} variant="wrapper" side="bottom">
               <TabsTrigger value="charts" className="cursor-pointer">{t('taxAnalysis.charts')}</TabsTrigger>
             </InfoTooltip>
-            <InfoTooltip {...TOOLTIP_CONTENT.taxTab} variant="wrapper" side="bottom">
+            <InfoTooltip content={TOOLTIP_CONTENT.taxTab} variant="wrapper" side="bottom">
               <TabsTrigger value="tax" className="cursor-pointer">{t('taxAnalysis.taxAnalysis')}</TabsTrigger>
             </InfoTooltip>
-            <InfoTooltip {...TOOLTIP_CONTENT.mileageTab} variant="wrapper" side="bottom">
+            <InfoTooltip content={TOOLTIP_CONTENT.mileageTab} variant="wrapper" side="bottom">
               <TabsTrigger value="mileage" className="cursor-pointer">{t('mileage.title')}</TabsTrigger>
             </InfoTooltip>
           </TabsList>

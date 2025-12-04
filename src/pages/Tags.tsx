@@ -63,9 +63,9 @@ export default function Tags() {
                 <h1 className="text-3xl font-bold">{t('tags.title')}</h1>
                 <p className="text-muted-foreground mt-2">{t('tags.description')}</p>
               </div>
-              <InfoTooltip {...TOOLTIP_CONTENT.tags} />
+              <InfoTooltip content={TOOLTIP_CONTENT.tags} />
             </div>
-            <InfoTooltip {...TOOLTIP_CONTENT.createTag} variant="wrapper">
+            <InfoTooltip content={TOOLTIP_CONTENT.createTag} variant="wrapper">
               <Button onClick={handleCreate}>
                 <Plus className="mr-2 h-4 w-4" />
                 {t('tags.createTag')}
@@ -92,7 +92,7 @@ export default function Tags() {
                         {tag.name}
                       </Badge>
                       <div className="flex gap-2">
-                        <InfoTooltip {...TOOLTIP_CONTENT.editAction} variant="wrapper">
+                        <InfoTooltip content={TOOLTIP_CONTENT.editAction} variant="wrapper">
                           <Button
                             variant="ghost"
                             size="icon"
@@ -101,7 +101,7 @@ export default function Tags() {
                             <Edit className="h-4 w-4" />
                           </Button>
                         </InfoTooltip>
-                        <InfoTooltip {...TOOLTIP_CONTENT.deleteAction} variant="wrapper">
+                        <InfoTooltip content={TOOLTIP_CONTENT.deleteAction} variant="wrapper">
                           <Button
                             variant="ghost"
                             size="icon"

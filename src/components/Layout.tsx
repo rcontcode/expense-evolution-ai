@@ -64,7 +64,7 @@ const NAV_SECTIONS = [
 export const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -224,10 +224,10 @@ export const Layout = ({ children }: LayoutProps) => {
                 </TooltipTrigger>
                 <TooltipContent side="right" className="max-w-xs p-3">
                   <div className="space-y-2">
-                    <span className="font-semibold">{TOOLTIP_CONTENT.quickCapture.title}</span>
-                    <p className="text-xs text-muted-foreground">{TOOLTIP_CONTENT.quickCapture.description}</p>
+                    <span className="font-semibold">{TOOLTIP_CONTENT.quickCapture[language].title}</span>
+                    <p className="text-xs text-muted-foreground">{TOOLTIP_CONTENT.quickCapture[language].description}</p>
                     <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
-                      💡 {TOOLTIP_CONTENT.quickCapture.howToUse}
+                      💡 {TOOLTIP_CONTENT.quickCapture[language].howToUse}
                     </p>
                   </div>
                 </TooltipContent>
@@ -257,10 +257,10 @@ export const Layout = ({ children }: LayoutProps) => {
               </TooltipTrigger>
               <TooltipContent side="right" className="max-w-xs p-3">
                 <div className="space-y-2">
-                  <span className="font-semibold">{TOOLTIP_CONTENT.settings.title}</span>
-                  <p className="text-xs text-muted-foreground">{TOOLTIP_CONTENT.settings.description}</p>
+                  <span className="font-semibold">{TOOLTIP_CONTENT.settings[language].title}</span>
+                  <p className="text-xs text-muted-foreground">{TOOLTIP_CONTENT.settings[language].description}</p>
                   <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
-                    💡 {TOOLTIP_CONTENT.settings.howToUse}
+                    💡 {TOOLTIP_CONTENT.settings[language].howToUse}
                   </p>
                 </div>
               </TooltipContent>
