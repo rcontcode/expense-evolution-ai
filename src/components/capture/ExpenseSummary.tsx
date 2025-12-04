@@ -1,16 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ExtractedExpenseData } from '@/hooks/data/useReceiptProcessor';
 import { 
   Building2, Landmark, User, Receipt, Calculator, Info, Lightbulb,
   Utensils, Plane, Monitor, Code, Paperclip, Briefcase, Zap, Home, Car, HelpCircle,
-  TrendingDown, PiggyBank, Target
+  TrendingDown, PiggyBank, Target, AlertCircle
 } from 'lucide-react';
 import { getCategoryLabel } from '@/lib/constants/expense-categories';
 
 interface ExpenseSummaryProps {
   expenses: ExtractedExpenseData[];
+  hasClients?: boolean;
+  clientCount?: number;
 }
 
 const HST_RATE = 0.13;
@@ -76,7 +79,7 @@ const getSavingsTips = (expenses: ExtractedExpenseData[], totals: any): string[]
   return tips.slice(0, 3); // Max 3 tips
 };
 
-export function ExpenseSummary({ expenses }: ExpenseSummaryProps) {
+export function ExpenseSummary({ expenses, hasClients = false, clientCount = 0 }: ExpenseSummaryProps) {
   if (!expenses.length) return null;
 
   // Group by category
@@ -119,6 +122,7 @@ export function ExpenseSummary({ expenses }: ExpenseSummaryProps) {
   });
 
   const savingsTips = getSavingsTips(expenses, totals);
+  const hasReimbursableExpenses = expenses.some(e => e.typically_reimbursable);
 
   const formatCurrency = (amount: number) => 
     new Intl.NumberFormat('es-CA', { style: 'currency', currency: 'CAD' }).format(amount);
@@ -128,30 +132,51 @@ export function ExpenseSummary({ expenses }: ExpenseSummaryProps) {
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
           <Calculator className="h-4 w-4" />
-          Resumen de Gastos Detectados
+          Resumen de Gastos Detectados ({expenses.length} {expenses.length === 1 ? 'gasto' : 'gastos'})
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Client Info Alert */}
+        {hasReimbursableExpenses && !hasClients && (
+          <Alert className="border-amber-200 bg-amber-50 text-amber-800">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="text-xs">
+              <strong>⚠️ Sin clientes configurados:</strong> Hay gastos potencialmente reembolsables, pero no tienes clientes registrados para verificar acuerdos de reembolso. 
+              Agrega clientes en la sección "Clientes" para cálculos precisos.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {hasClients && hasReimbursableExpenses && (
+          <Alert className="border-green-200 bg-green-50 text-green-800">
+            <Building2 className="h-4 w-4" />
+            <AlertDescription className="text-xs">
+              <strong>✓ {clientCount} cliente(s) configurado(s):</strong> Los gastos reembolsables se pueden asociar a tus clientes para generar reportes de facturación.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Itemized by Category */}
         <div className="space-y-3">
           {Object.entries(byCategory).map(([category, items]) => {
             const CategoryIcon = CATEGORY_ICONS[category] || HelpCircle;
+            const categoryTotal = items.reduce((sum, i) => sum + (i.amount || 0), 0);
             return (
               <div key={category} className="space-y-1">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <CategoryIcon className="h-4 w-4" />
+                <div className="flex justify-between items-center bg-muted/50 rounded px-2 py-1.5">
+                  <span className="text-sm font-medium flex items-center gap-2">
+                    <CategoryIcon className="h-4 w-4 text-primary" />
                     {getCategoryLabel(category as any)}
                   </span>
                   <span className="text-sm font-semibold">
-                    {formatCurrency(items.reduce((sum, i) => sum + (i.amount || 0), 0))}
+                    {formatCurrency(categoryTotal)}
                   </span>
                 </div>
                 {items.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center pl-6 text-sm">
+                  <div key={idx} className="flex justify-between items-center pl-8 pr-2 py-1 text-sm">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-muted-foreground">•</span>
-                      <span className="truncate max-w-[120px]">{item.description || item.vendor}</span>
+                      <span className="truncate max-w-[140px]">{item.description || item.vendor || 'Sin descripción'}</span>
                       <div className="flex gap-1">
                         {item.typically_reimbursable && (
                           <Badge variant="outline" className="text-xs px-1.5 py-0 bg-green-50 text-green-700 border-green-200">
@@ -195,6 +220,7 @@ export function ExpenseSummary({ expenses }: ExpenseSummaryProps) {
               <span className="flex items-center gap-2 text-sm text-green-700">
                 <Building2 className="h-4 w-4" />
                 Reembolsable por Cliente
+                {!hasClients && <span className="text-xs">(verificar)</span>}
               </span>
               <span className="font-semibold text-green-700">{formatCurrency(totals.clientReimbursable)}</span>
             </div>
@@ -262,23 +288,24 @@ export function ExpenseSummary({ expenses }: ExpenseSummaryProps) {
           </>
         )}
 
-        {/* Notes/Justifications */}
-        {expenses.some(e => e.typically_reimbursable !== expenses[0]?.typically_reimbursable) && (
+        {/* Notes/Justifications for Mixed Expenses */}
+        {expenses.length > 1 && expenses.some(e => e.typically_reimbursable) && expenses.some(e => !e.typically_reimbursable) && (
           <>
             <Separator />
             <div className="flex gap-2 p-2 bg-slate-50 rounded-md border">
               <Info className="h-4 w-4 text-slate-600 shrink-0 mt-0.5" />
               <p className="text-xs text-slate-600">
-                <strong>Nota:</strong> Este recibo contiene gastos mixtos. 
-                <span className="inline-flex items-center gap-1 mx-1"><Building2 className="h-3 w-3 text-green-600"/>Cliente</span> = reembolsable,
-                <span className="inline-flex items-center gap-1 mx-1"><Landmark className="h-3 w-3 text-blue-600"/>CRA</span> = deducible de impuestos.
+                <strong>Nota:</strong> Este recibo contiene gastos mixtos con diferentes destinos:
+                <span className="inline-flex items-center gap-1 mx-1"><Building2 className="h-3 w-3 text-green-600"/>Cliente</span> = tu cliente te reembolsa,
+                <span className="inline-flex items-center gap-1 mx-1"><Landmark className="h-3 w-3 text-blue-600"/>CRA</span> = reduces tus impuestos,
+                <span className="inline-flex items-center gap-1 mx-1"><User className="h-3 w-3"/>Personal</span> = gasto personal sin beneficios fiscales.
               </p>
             </div>
           </>
         )}
 
         {/* Legend */}
-        <div className="flex flex-wrap gap-3 pt-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap gap-3 pt-2 text-xs text-muted-foreground border-t pt-3">
           <span className="flex items-center gap-1"><Building2 className="h-3 w-3 text-green-600"/>= Tu cliente te devuelve</span>
           <span className="flex items-center gap-1"><Landmark className="h-3 w-3 text-blue-600"/>= Reduces impuestos CRA</span>
           <span className="flex items-center gap-1"><User className="h-3 w-3"/>= Gasto personal</span>
