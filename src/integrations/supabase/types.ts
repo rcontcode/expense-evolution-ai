@@ -526,6 +526,60 @@ export type Database = {
           },
         ]
       }
+      investment_goals: {
+        Row: {
+          asset_class: string | null
+          color: string | null
+          created_at: string | null
+          current_amount: number | null
+          deadline: string | null
+          goal_type: string
+          id: string
+          monthly_target: number | null
+          name: string
+          notes: string | null
+          risk_level: string | null
+          status: string | null
+          target_amount: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          asset_class?: string | null
+          color?: string | null
+          created_at?: string | null
+          current_amount?: number | null
+          deadline?: string | null
+          goal_type?: string
+          id?: string
+          monthly_target?: number | null
+          name: string
+          notes?: string | null
+          risk_level?: string | null
+          status?: string | null
+          target_amount?: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          asset_class?: string | null
+          color?: string | null
+          created_at?: string | null
+          current_amount?: number | null
+          deadline?: string | null
+          goal_type?: string
+          id?: string
+          monthly_target?: number | null
+          name?: string
+          notes?: string | null
+          risk_level?: string | null
+          status?: string | null
+          target_amount?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       mileage: {
         Row: {
           client_id: string | null
@@ -810,6 +864,117 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_achievements: {
+        Row: {
+          achievement_key: string
+          id: string
+          progress: number | null
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          achievement_key: string
+          id?: string
+          progress?: number | null
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          achievement_key?: string
+          id?: string
+          progress?: number | null
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_financial_level: {
+        Row: {
+          created_at: string | null
+          experience_points: number | null
+          id: string
+          last_activity_date: string | null
+          level: number | null
+          streak_days: number | null
+          total_investments: number | null
+          total_savings: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          experience_points?: number | null
+          id?: string
+          last_activity_date?: string | null
+          level?: number | null
+          streak_days?: number | null
+          total_investments?: number | null
+          total_savings?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          experience_points?: number | null
+          id?: string
+          last_activity_date?: string | null
+          level?: number | null
+          streak_days?: number | null
+          total_investments?: number | null
+          total_savings?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_financial_profile: {
+        Row: {
+          available_capital: number | null
+          created_at: string | null
+          financial_education_level: string | null
+          id: string
+          interests: string[] | null
+          monthly_investment_capacity: number | null
+          passions: string[] | null
+          preferred_income_type: string | null
+          risk_tolerance: string | null
+          talents: string[] | null
+          time_availability: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          available_capital?: number | null
+          created_at?: string | null
+          financial_education_level?: string | null
+          id?: string
+          interests?: string[] | null
+          monthly_investment_capacity?: number | null
+          passions?: string[] | null
+          preferred_income_type?: string | null
+          risk_tolerance?: string | null
+          talents?: string[] | null
+          time_availability?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          available_capital?: number | null
+          created_at?: string | null
+          financial_education_level?: string | null
+          id?: string
+          interests?: string[] | null
+          monthly_investment_capacity?: number | null
+          passions?: string[] | null
+          preferred_income_type?: string | null
+          risk_tolerance?: string | null
+          talents?: string[] | null
+          time_availability?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
