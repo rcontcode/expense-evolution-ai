@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download, Car, BadgeDollarSign } from 'lucide-react';
+import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, TrendingDown, Download, Car, BadgeDollarSign, Scale, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useClients } from '@/hooks/data/useClients';
 import { useExpenses } from '@/hooks/data/useExpenses';
+import { useIncomeSummary } from '@/hooks/data/useIncome';
 import { useTaxCalculations } from '@/hooks/data/useTaxCalculations';
 import { useMileageSummary, CRA_MILEAGE_RATES } from '@/hooks/data/useMileage';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
@@ -65,8 +66,15 @@ export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats(filters);
   const { data: clients } = useClients();
   const { data: allExpenses } = useExpenses(expenseFilters);
+  const { data: incomeSummary, isLoading: incomeLoading } = useIncomeSummary();
   const { taxSummary } = useTaxCalculations(allExpenses || []);
   const { data: mileageSummary, isLoading: mileageLoading } = useMileageSummary();
+
+  // Calculate balance
+  const totalExpensesAmount = allExpenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+  const totalIncomeAmount = incomeSummary?.totalIncome || 0;
+  const netBalance = totalIncomeAmount - totalExpensesAmount;
+  const isPositive = netBalance >= 0;
 
   const handleResetFilters = () => {
     setSelectedClient('all');
@@ -105,6 +113,43 @@ export default function Dashboard() {
             onReset={handleResetFilters}
             clients={clients || []}
           />
+
+          {/* Balance Card */}
+          <Card className={`border-2 ${isPositive ? 'border-green-500/30 bg-green-50/50 dark:bg-green-900/10' : 'border-red-500/30 bg-red-50/50 dark:bg-red-900/10'}`}>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Scale className="h-5 w-5" />
+                  <CardTitle className="text-lg">{t('balance.title')}</CardTitle>
+                </div>
+                <span className="text-xs text-muted-foreground">{t('balance.thisYear')}</span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <ArrowUpRight className="h-4 w-4 text-green-600" />
+                    {t('balance.totalIncome')}
+                  </div>
+                  <div className="text-xl font-bold text-green-600">${totalIncomeAmount.toLocaleString()}</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <ArrowDownRight className="h-4 w-4 text-red-600" />
+                    {t('balance.totalExpenses')}
+                  </div>
+                  <div className="text-xl font-bold text-red-600">${totalExpensesAmount.toLocaleString()}</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">{t('balance.netBalance')}</div>
+                  <div className={`text-2xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                    {isPositive ? '+' : ''}${netBalance.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Stats Cards */}
           <div className="grid gap-4 md:grid-cols-4">
