@@ -2,11 +2,25 @@ export type Language = 'es' | 'en';
 
 export const translations = {
   es: {
-    settings: {
+  settings: {
       title: 'Configuración',
       description: 'Gestiona tus preferencias y perfil',
       languageTitle: 'Idioma',
       languageDescription: 'Elige tu idioma preferido',
+      // Theme section
+      themeTitle: 'Tema y Apariencia',
+      themeDescription: 'Personaliza el aspecto visual de la aplicación',
+      themeMode: 'Modo',
+      themeStyle: 'Estilo',
+      lightMode: 'Claro',
+      darkMode: 'Oscuro',
+      systemMode: 'Sistema',
+      modern: 'Moderno',
+      vintage: 'Vintage',
+      ocean: 'Océano',
+      forest: 'Bosque',
+      sunset: 'Atardecer',
+      minimal: 'Minimalista',
       // Profile section
       profileTitle: 'Perfil de Usuario',
       profileDescription: 'Tu información personal y profesional',
@@ -578,11 +592,25 @@ export const translations = {
     },
   },
   en: {
-    settings: {
+  settings: {
       title: 'Settings',
       description: 'Manage your preferences and profile',
       languageTitle: 'Language',
       languageDescription: 'Choose your preferred language',
+      // Theme section
+      themeTitle: 'Theme & Appearance',
+      themeDescription: 'Customize the visual appearance of the application',
+      themeMode: 'Mode',
+      themeStyle: 'Style',
+      lightMode: 'Light',
+      darkMode: 'Dark',
+      systemMode: 'System',
+      modern: 'Modern',
+      vintage: 'Vintage',
+      ocean: 'Ocean',
+      forest: 'Forest',
+      sunset: 'Sunset',
+      minimal: 'Minimal',
       // Profile section
       profileTitle: 'User Profile',
       profileDescription: 'Your personal and professional information',
