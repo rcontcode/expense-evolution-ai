@@ -7,14 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useTheme, ThemeMode, ThemeStyle } from '@/contexts/ThemeContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useProfile, useUpdateProfile } from '@/hooks/data/useProfile';
 import { useSavingsGoals, useCreateSavingsGoal, useUpdateSavingsGoal, useDeleteSavingsGoal, useAddToSavingsGoal } from '@/hooks/data/useSavingsGoals';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { User, Target, Plus, Edit, Trash2, PiggyBank, Save, DollarSign, Palette, Sun, Moon, Monitor } from 'lucide-react';
+import { User, Target, Plus, Edit, Trash2, PiggyBank, Save, DollarSign, Palette, Sun, Moon, Monitor, TrendingUp } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { InvestmentSection } from '@/components/investments/InvestmentSection';
 import {
   AlertDialog,
   AlertDialogAction,
