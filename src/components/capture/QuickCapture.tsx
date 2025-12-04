@@ -5,12 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Mic, MicOff, Loader2, Sparkles, Check, X, ImageIcon, ChevronLeft, ChevronRight, Trash2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Mic, MicOff, Loader2, Sparkles, Check, X, ImageIcon, ChevronLeft, ChevronRight, Trash2, AlertCircle, CheckCircle, Save } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useVoiceInput } from '@/hooks/utils/useVoiceInput';
 import { useReceiptProcessor, ExtractedExpenseData } from '@/hooks/data/useReceiptProcessor';
 import { useCreateExpense } from '@/hooks/data/useExpenses';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
+import { ExpenseSummary } from './ExpenseSummary';
 import { cn } from '@/lib/utils';
 
 interface QuickCaptureProps {
@@ -76,10 +77,22 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
 
   const handleSaveCurrentExpense = async () => {
     if (!currentExpense?.vendor || !currentExpense?.amount) return;
-    await createExpense.mutateAsync({ vendor: currentExpense.vendor, amount: currentExpense.amount, date: currentExpense.date, category: currentExpense.category, description: currentExpense.description, status: 'pending' } as any);
-    setSavedCount(prev => prev + 1);
-    if (currentIndex < editedExpenses.length - 1) setCurrentIndex(prev => prev + 1);
-    else onSuccess?.();
+    try {
+      await createExpense.mutateAsync({ vendor: currentExpense.vendor, amount: currentExpense.amount, date: currentExpense.date, category: currentExpense.category, description: currentExpense.description, status: 'pending' } as any);
+      setSavedCount(prev => prev + 1);
+      if (currentIndex < editedExpenses.length - 1) setCurrentIndex(prev => prev + 1);
+      else onSuccess?.();
+    } catch (e) { console.error(e); }
+  };
+
+  const handleSaveAll = async () => {
+    for (const exp of editedExpenses) {
+      if (!exp.vendor || !exp.amount) continue;
+      try {
+        await createExpense.mutateAsync({ vendor: exp.vendor, amount: exp.amount, date: exp.date, category: exp.category, description: exp.description, status: 'pending' } as any);
+      } catch (e) { console.error(e); }
+    }
+    onSuccess?.();
   };
 
   const handleRemoveCurrentExpense = () => {
@@ -152,11 +165,20 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
                 <div className="space-y-2"><label className="text-sm font-medium">{t('expenses.descriptionLabel')}</label><Textarea value={currentExpense.description || ''} onChange={(e) => updateCurrentExpense('description', e.target.value)} className="min-h-[60px]" /></div>
               </div>
             )}
+
+            {/* Summary Panel */}
+            <ExpenseSummary expenses={editedExpenses} />
+
             <div className="flex gap-2 pt-4">
               <Button variant="outline" onClick={clearAll} size="sm"><X className="mr-1 h-4 w-4" />{t('quickCapture.startOver')}</Button>
               {editedExpenses.length > 1 && <Button variant="ghost" onClick={handleRemoveCurrentExpense} size="sm" className="text-destructive"><Trash2 className="mr-1 h-4 w-4" />Omitir</Button>}
               <Button onClick={handleSaveCurrentExpense} disabled={createExpense.isPending || !currentExpense?.vendor || !currentExpense?.amount} className="flex-1">{createExpense.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}{editedExpenses.length > 1 ? 'Guardar y Siguiente' : t('quickCapture.saveExpense')}</Button>
             </div>
+            {editedExpenses.length > 1 && savedCount === 0 && (
+              <Button variant="secondary" onClick={handleSaveAll} disabled={createExpense.isPending} className="w-full">
+                <Save className="mr-2 h-4 w-4" />Guardar Todos ({editedExpenses.length} gastos)
+              </Button>
+            )}
           </>
         )}
       </CardContent>
