@@ -8,6 +8,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TagDialog } from '@/components/dialogs/TagDialog';
 import { Tag } from '@/types/expense.types';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,90 +53,101 @@ export default function Tags() {
 
   return (
     <Layout>
-      <div className="p-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">{t('tags.title')}</h1>
-            <p className="text-muted-foreground mt-2">{t('tags.description')}</p>
-          </div>
-          <Button onClick={handleCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('tags.createTag')}
-          </Button>
-        </div>
-
-        {isLoading ? (
-          <Card className="border-dashed">
-            <CardContent className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">{t('common.loading')}</p>
-            </CardContent>
-          </Card>
-        ) : tags && tags.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tags.map((tag) => (
-              <Card key={tag.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <Badge
-                      style={{ backgroundColor: tag.color || '#3B82F6' }}
-                      className="text-white text-base px-3 py-1"
-                    >
-                      {tag.name}
-                    </Badge>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(tag)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteId(tag.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <TagIcon className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium">{t('tags.noTags')}</p>
-              <p className="text-sm text-muted-foreground">
-                {t('tags.createFirst')}
-              </p>
-              <Button onClick={handleCreate} className="mt-4">
+      <TooltipProvider>
+        <div className="p-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div>
+                <h1 className="text-3xl font-bold">{t('tags.title')}</h1>
+                <p className="text-muted-foreground mt-2">{t('tags.description')}</p>
+              </div>
+              <InfoTooltip {...TOOLTIP_CONTENT.tags} />
+            </div>
+            <InfoTooltip {...TOOLTIP_CONTENT.createTag} variant="wrapper">
+              <Button onClick={handleCreate}>
                 <Plus className="mr-2 h-4 w-4" />
                 {t('tags.createTag')}
               </Button>
-            </CardContent>
-          </Card>
-        )}
+            </InfoTooltip>
+          </div>
 
-        <TagDialog open={dialogOpen} onClose={handleClose} tag={selectedTag} />
+          {isLoading ? (
+            <Card className="border-dashed">
+              <CardContent className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">{t('common.loading')}</p>
+              </CardContent>
+            </Card>
+          ) : tags && tags.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {tags.map((tag) => (
+                <Card key={tag.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <Badge
+                        style={{ backgroundColor: tag.color || '#3B82F6' }}
+                        className="text-white text-base px-3 py-1"
+                      >
+                        {tag.name}
+                      </Badge>
+                      <div className="flex gap-2">
+                        <InfoTooltip {...TOOLTIP_CONTENT.editAction} variant="wrapper">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(tag)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </InfoTooltip>
+                        <InfoTooltip {...TOOLTIP_CONTENT.deleteAction} variant="wrapper">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteId(tag.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </InfoTooltip>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <TagIcon className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-lg font-medium">{t('tags.noTags')}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t('tags.createFirst')}
+                </p>
+                <Button onClick={handleCreate} className="mt-4">
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t('tags.createTag')}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
-        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{t('tags.deleteConfirm')}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {t('tags.deleteTagWarning')}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>{t('common.delete')}</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
+          <TagDialog open={dialogOpen} onClose={handleClose} tag={selectedTag} />
+
+          <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('tags.deleteConfirm')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('tags.deleteTagWarning')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>{t('common.delete')}</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </TooltipProvider>
     </Layout>
   );
 }

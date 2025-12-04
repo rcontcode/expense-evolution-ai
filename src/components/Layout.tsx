@@ -125,10 +125,10 @@ export const Layout = ({ children }: LayoutProps) => {
                   {section.items.map((item) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;
+                    const tooltipData = TOOLTIP_CONTENT[item.tooltipKey];
                     
                     const button = (
                       <button
-                        key={item.path}
                         onClick={() => navigate(item.path)}
                         className={cn(
                           'nav-item w-full',
@@ -156,24 +156,48 @@ export const Layout = ({ children }: LayoutProps) => {
                       </button>
                     );
 
-                    const tooltipData = TOOLTIP_CONTENT[item.tooltipKey];
-
-                    return collapsed ? (
-                      <Tooltip key={item.path}>
-                        <TooltipTrigger asChild>{button}</TooltipTrigger>
-                        <TooltipContent side="right" className="max-w-xs p-3">
-                          <div className="space-y-2">
-                            <span className="font-semibold">{tooltipData.title}</span>
-                            <p className="text-xs text-muted-foreground">{tooltipData.description}</p>
-                            {tooltipData.howToUse && (
-                              <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
-                                💡 {tooltipData.howToUse}
-                              </p>
-                            )}
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    ) : button;
+                    return (
+                      <div key={item.path} className="flex items-center gap-1">
+                        {collapsed ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>{button}</TooltipTrigger>
+                            <TooltipContent side="right" className="max-w-xs p-3">
+                              <div className="space-y-2">
+                                <span className="font-semibold">{tooltipData.title}</span>
+                                <p className="text-xs text-muted-foreground">{tooltipData.description}</p>
+                                {tooltipData.howToUse && (
+                                  <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
+                                    💡 {tooltipData.howToUse}
+                                  </p>
+                                )}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <>
+                            {button}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button className="p-1 rounded-full text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+                                  <HelpCircle className="h-3.5 w-3.5" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="right" className="max-w-xs p-3">
+                                <div className="space-y-2">
+                                  <span className="font-semibold">{tooltipData.title}</span>
+                                  <p className="text-xs text-muted-foreground">{tooltipData.description}</p>
+                                  {tooltipData.howToUse && (
+                                    <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
+                                      💡 {tooltipData.howToUse}
+                                    </p>
+                                  )}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </>
+                        )}
+                      </div>
+                    );
                   })}
                 </div>
               </div>
