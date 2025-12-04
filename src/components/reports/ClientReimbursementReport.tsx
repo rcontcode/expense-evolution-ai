@@ -1,24 +1,33 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import { 
   Building2, 
   DollarSign, 
   FileText, 
   Download,
   Calendar,
-  TrendingUp
+  CalendarIcon,
+  X
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 
 interface ClientReimbursementReportProps {
   expenses: ExpenseWithRelations[];
+}
+
+interface DateRange {
+  from: Date | undefined;
+  to: Date | undefined;
 }
 
 interface ClientGroup {
@@ -48,9 +57,28 @@ const CATEGORY_LABELS: Record<string, string> = {
 export function ClientReimbursementReport({ expenses }: ClientReimbursementReportProps) {
   const { t, language } = useLanguage();
   const dateLocale = language === 'es' ? es : enUS;
+  
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: startOfMonth(new Date()),
+    to: endOfMonth(new Date()),
+  });
 
-  const { clientGroups, totalReimbursable, totalExpenses } = useMemo(() => {
-    const reimbursableExpenses = expenses.filter(
+  const { clientGroups, totalReimbursable, totalExpenses, filteredExpenses } = useMemo(() => {
+    // First filter by date range
+    let filtered = expenses;
+    if (dateRange.from && dateRange.to) {
+      filtered = expenses.filter((e) => {
+        const expenseDate = parseISO(e.date);
+        return isWithinInterval(expenseDate, { start: dateRange.from!, end: dateRange.to! });
+      });
+    } else if (dateRange.from) {
+      filtered = expenses.filter((e) => parseISO(e.date) >= dateRange.from!);
+    } else if (dateRange.to) {
+      filtered = expenses.filter((e) => parseISO(e.date) <= dateRange.to!);
+    }
+
+    // Then filter reimbursable with client
+    const reimbursableExpenses = filtered.filter(
       (e) => e.client_id && (REIMBURSABLE_STATUSES.includes(e.status || '') || e.status === 'classified')
     );
 
@@ -90,8 +118,13 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
       clientGroups: groups,
       totalReimbursable: total,
       totalExpenses: groups.reduce((sum, g) => sum + g.count, 0),
+      filteredExpenses: reimbursableExpenses,
     };
-  }, [expenses]);
+  }, [expenses, dateRange]);
+
+  const clearDateRange = () => {
+    setDateRange({ from: undefined, to: undefined });
+  };
 
   const exportToExcel = () => {
     const workbook = XLSX.utils.book_new();
@@ -140,7 +173,10 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
     const categorySheet = XLSX.utils.json_to_sheet(categoryData);
     XLSX.utils.book_append_sheet(workbook, categorySheet, 'Por Categoría');
 
-    const filename = `reporte-reembolsos-cliente-${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+    const dateStr = dateRange.from && dateRange.to 
+      ? `${format(dateRange.from, 'yyyy-MM-dd')}_${format(dateRange.to, 'yyyy-MM-dd')}`
+      : format(new Date(), 'yyyy-MM-dd');
+    const filename = `reporte-reembolsos-cliente-${dateStr}.xlsx`;
     XLSX.writeFile(workbook, filename);
   };
 
@@ -160,6 +196,75 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
 
   return (
     <div className="space-y-6">
+      {/* Date Range Filter */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Período:</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[150px] justify-start text-left font-normal",
+                      !dateRange.from && "text-muted-foreground"
+                    )}
+                  >
+                    {dateRange.from ? format(dateRange.from, "dd/MM/yyyy") : "Desde"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-background" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={dateRange.from}
+                    onSelect={(date) => setDateRange((prev) => ({ ...prev, from: date }))}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              <span className="text-muted-foreground">—</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[150px] justify-start text-left font-normal",
+                      !dateRange.to && "text-muted-foreground"
+                    )}
+                  >
+                    {dateRange.to ? format(dateRange.to, "dd/MM/yyyy") : "Hasta"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-background" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={dateRange.to}
+                    onSelect={(date) => setDateRange((prev) => ({ ...prev, to: date }))}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              {(dateRange.from || dateRange.to) && (
+                <Button variant="ghost" size="icon" onClick={clearDateRange}>
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            {dateRange.from && dateRange.to && (
+              <Badge variant="secondary">
+                {format(dateRange.from, "dd MMM", { locale: dateLocale })} - {format(dateRange.to, "dd MMM yyyy", { locale: dateLocale })}
+              </Badge>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
@@ -205,7 +310,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
 
       {/* Export Button */}
       <div className="flex justify-end">
-        <Button onClick={exportToExcel} variant="outline">
+        <Button onClick={exportToExcel} variant="outline" disabled={clientGroups.length === 0}>
           <Download className="mr-2 h-4 w-4" />
           Exportar Reporte Excel
         </Button>
