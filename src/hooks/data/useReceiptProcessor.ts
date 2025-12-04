@@ -11,6 +11,13 @@ export interface ExtractedExpenseData {
   description: string;
   confidence: 'high' | 'medium' | 'low';
   currency: string;
+  cra_deductible: boolean;
+  cra_deduction_rate: number;
+  typically_reimbursable: boolean;
+}
+
+export interface ProcessReceiptResult {
+  expenses: ExtractedExpenseData[];
 }
 
 export function useReceiptProcessor() {
@@ -20,7 +27,7 @@ export function useReceiptProcessor() {
   const processReceipt = async (
     imageBase64?: string,
     voiceText?: string
-  ): Promise<ExtractedExpenseData | null> => {
+  ): Promise<ProcessReceiptResult | null> => {
     if (!imageBase64 && !voiceText) {
       toast.error(t('quickCapture.noInput'));
       return null;
@@ -50,7 +57,7 @@ export function useReceiptProcessor() {
         return null;
       }
 
-      return data as ExtractedExpenseData;
+      return data as ProcessReceiptResult;
     } catch (err) {
       console.error('Receipt processing failed:', err);
       toast.error(t('quickCapture.processingError'));
