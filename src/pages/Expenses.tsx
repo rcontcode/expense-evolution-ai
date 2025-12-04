@@ -58,7 +58,7 @@ export default function Expenses() {
               <InfoTooltip content={TOOLTIP_CONTENT.reimbursementReport} variant="wrapper" side="bottom">
                 <Button variant="outline" onClick={() => setReimbursementReportOpen(true)}>
                   <FileText className="mr-2 h-4 w-4" />
-                  Reembolsos
+                  {t('reimbursements.title')}
                 </Button>
               </InfoTooltip>
               <InfoTooltip content={TOOLTIP_CONTENT.exportButton} variant="wrapper" side="bottom">

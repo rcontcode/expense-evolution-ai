@@ -56,15 +56,15 @@ interface ExpensesTableProps {
   onEdit: (expense: ExpenseWithRelations) => void;
 }
 
-const STATUS_CONFIG: Record<string, { icon: React.ElementType; color: string; bgColor: string; label: string }> = {
-  pending: { icon: Clock, color: 'text-yellow-600', bgColor: 'bg-yellow-100 dark:bg-yellow-900/30', label: 'Pendiente' },
-  classified: { icon: FileCheck, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30', label: 'Clasificado' },
-  deductible: { icon: Landmark, color: 'text-green-600', bgColor: 'bg-green-100 dark:bg-green-900/30', label: 'Deducible CRA' },
-  non_deductible: { icon: Ban, color: 'text-red-600', bgColor: 'bg-red-100 dark:bg-red-900/30', label: 'No Deducible' },
-  reimbursable: { icon: Building2, color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30', label: 'Reembolsable' },
-  rejected: { icon: XCircle, color: 'text-red-600', bgColor: 'bg-red-100 dark:bg-red-900/30', label: 'Rechazado' },
-  under_review: { icon: AlertCircle, color: 'text-orange-600', bgColor: 'bg-orange-100 dark:bg-orange-900/30', label: 'En Revisión' },
-  finalized: { icon: CheckCircle2, color: 'text-green-700', bgColor: 'bg-green-100 dark:bg-green-900/30', label: 'Finalizado' },
+const STATUS_CONFIG: Record<string, { icon: React.ElementType; color: string; bgColor: string; labelKey: string }> = {
+  pending: { icon: Clock, color: 'text-yellow-600', bgColor: 'bg-yellow-100 dark:bg-yellow-900/30', labelKey: 'expenseStatuses.pending' },
+  classified: { icon: FileCheck, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30', labelKey: 'expenseStatuses.classified' },
+  deductible: { icon: Landmark, color: 'text-green-600', bgColor: 'bg-green-100 dark:bg-green-900/30', labelKey: 'expenseStatuses.deductible' },
+  non_deductible: { icon: Ban, color: 'text-red-600', bgColor: 'bg-red-100 dark:bg-red-900/30', labelKey: 'expenseStatuses.non_deductible' },
+  reimbursable: { icon: Building2, color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30', labelKey: 'expenseStatuses.reimbursable' },
+  rejected: { icon: XCircle, color: 'text-red-600', bgColor: 'bg-red-100 dark:bg-red-900/30', labelKey: 'expenseStatuses.rejected' },
+  under_review: { icon: AlertCircle, color: 'text-orange-600', bgColor: 'bg-orange-100 dark:bg-orange-900/30', labelKey: 'expenseStatuses.under_review' },
+  finalized: { icon: CheckCircle2, color: 'text-green-700', bgColor: 'bg-green-100 dark:bg-green-900/30', labelKey: 'expenseStatuses.finalized' },
 };
 
 export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
@@ -131,7 +131,7 @@ export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
                           </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Cliente asociado para reembolso</p>
+                          <p>{t('expenseTable.clientAssociated')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -143,11 +143,11 @@ export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
                             <div className="flex items-center justify-center h-6 w-6 rounded-full bg-muted">
                               <User className="h-3.5 w-3.5 text-muted-foreground" />
                             </div>
-                            <span className="text-muted-foreground text-sm">Personal</span>
+                            <span className="text-muted-foreground text-sm">{t('expenseTable.personal')}</span>
                           </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Gasto personal sin cliente asociado</p>
+                          <p>{t('expenseTable.personalExpense')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -177,17 +177,18 @@ export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
                   {(() => {
                     const config = STATUS_CONFIG[expense.status] || STATUS_CONFIG.pending;
                     const StatusIcon = config.icon;
+                    const statusLabel = t(config.labelKey);
                     return (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Badge className={`${config.bgColor} ${config.color} border-0 gap-1.5`}>
                               <StatusIcon className="h-3.5 w-3.5" />
-                              <span>{config.label}</span>
+                              <span>{statusLabel}</span>
                             </Badge>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Estado: {config.label}</p>
+                            <p>{t('expenseTable.statusLabel')}: {statusLabel}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>

@@ -82,7 +82,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-3">
               <div>
                 <h1 className="text-3xl font-bold">{t('dashboard.welcome')}</h1>
-                <p className="text-muted-foreground mt-2">Panel de control con análisis fiscal detallado</p>
+                <p className="text-muted-foreground mt-2">{t('dashboardLabels.subtitle')}</p>
               </div>
               <InfoTooltip content={TOOLTIP_CONTENT.dashboard} />
             </div>
@@ -122,7 +122,7 @@ export default function Dashboard() {
                   ) : (
                     <>
                       <div className="text-2xl font-bold">${stats?.monthlyTotal.toFixed(2)}</div>
-                      <p className="text-xs text-muted-foreground">CAD</p>
+                      <p className="text-xs text-muted-foreground">{t('dashboardLabels.currency')}</p>
                     </>
                   )}
                 </CardContent>
@@ -143,7 +143,7 @@ export default function Dashboard() {
                   ) : (
                     <>
                       <div className="text-2xl font-bold">{stats?.totalExpenses}</div>
-                      <p className="text-xs text-muted-foreground">Total records</p>
+                      <p className="text-xs text-muted-foreground">{t('dashboardLabels.totalRecords')}</p>
                     </>
                   )}
                 </CardContent>
@@ -164,7 +164,7 @@ export default function Dashboard() {
                   ) : (
                     <>
                       <div className="text-2xl font-bold">{stats?.pendingDocs}</div>
-                      <p className="text-xs text-muted-foreground">Awaiting classification</p>
+                      <p className="text-xs text-muted-foreground">{t('dashboardLabels.awaitingClassification')}</p>
                     </>
                   )}
                 </CardContent>
@@ -185,7 +185,7 @@ export default function Dashboard() {
                   ) : (
                     <>
                       <div className="text-2xl font-bold">{stats?.billableExpenses}</div>
-                      <p className="text-xs text-muted-foreground">Ready to invoice</p>
+                      <p className="text-xs text-muted-foreground">{t('dashboardLabels.readyToInvoice')}</p>
                     </>
                   )}
                 </CardContent>
