@@ -6,13 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   TrendingUp, Target, Lightbulb, Trophy, Star, Sparkles, 
-  Plus, Edit, Trash2, DollarSign, Brain, Flame, Quote, BarChart3, Medal, Gift
+  Plus, Edit, Trash2, DollarSign, Brain, Flame, Quote, BarChart3, Medal, Gift, ShoppingBag
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useInvestmentGoals, useDeleteInvestmentGoal } from '@/hooks/data/useInvestmentGoals';
 import { useSavingsGoals } from '@/hooks/data/useSavingsGoals';
 import { useUserLevel, useUserAchievements, LEVELS, ACHIEVEMENTS } from '@/hooks/data/useGamification';
 import { useGoalNotifications, useLevelUpNotification } from '@/hooks/data/useGoalNotifications';
+import { useRewards } from '@/hooks/data/useRewards';
 import { MENTOR_QUOTES, getRandomQuote } from '@/lib/constants/mentor-quotes';
 import { InvestmentGoalDialog } from './InvestmentGoalDialog';
 import { FinancialProfileDialog } from './FinancialProfileDialog';
@@ -20,6 +21,7 @@ import { PassiveIncomeSuggestions } from './PassiveIncomeSuggestions';
 import { ProgressCharts } from './ProgressCharts';
 import { AchievementBadges } from './AchievementBadges';
 import { MissionsCard } from './MissionsCard';
+import { RewardsShop } from './RewardsShop';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,14 +34,21 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export function InvestmentSection() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { data: goals, isLoading: goalsLoading } = useInvestmentGoals();
   const { data: savingsGoals } = useSavingsGoals();
   const { data: userLevel } = useUserLevel();
   const { data: achievements } = useUserAchievements();
+  const { userXP } = useRewards();
   const deleteGoal = useDeleteInvestmentGoal();
   
   // Goal notifications
+  useGoalNotifications({ 
+    savingsGoals: savingsGoals || [], 
+    investmentGoals: goals || [], 
+    userLevel 
+  });
+  useLevelUpNotification(userLevel);
   useGoalNotifications({ 
     savingsGoals: savingsGoals || [], 
     investmentGoals: goals || [], 
@@ -106,7 +115,10 @@ export function InvestmentSection() {
                 <span className="font-bold">{userLevel?.streak_days || 0}</span>
                 <span className="text-sm text-violet-200">{t('gamification.dayStreak')}</span>
               </div>
-              <p className="text-sm text-violet-200">{userLevel?.experience_points || 0} XP</p>
+              <div className="flex items-center gap-1">
+                <Sparkles className="h-4 w-4 text-yellow-300" />
+                <span className="text-sm text-violet-200">{userXP} XP {language === 'es' ? 'disponible' : 'available'}</span>
+              </div>
             </div>
           </div>
           {nextLevel && (
@@ -149,10 +161,14 @@ export function InvestmentSection() {
 
       {/* Main Investment Content */}
       <Tabs defaultValue="missions" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="missions" className="flex items-center gap-2">
             <Gift className="h-4 w-4" />
             <span className="hidden sm:inline">{t('missions.title')}</span>
+          </TabsTrigger>
+          <TabsTrigger value="rewards" className="flex items-center gap-2">
+            <ShoppingBag className="h-4 w-4" />
+            <span className="hidden sm:inline">{language === 'es' ? 'Tienda' : 'Shop'}</span>
           </TabsTrigger>
           <TabsTrigger value="goals" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
@@ -179,6 +195,11 @@ export function InvestmentSection() {
         {/* Missions Tab */}
         <TabsContent value="missions">
           <MissionsCard />
+        </TabsContent>
+
+        {/* Rewards Shop Tab */}
+        <TabsContent value="rewards">
+          <RewardsShop />
         </TabsContent>
 
         {/* Goals Tab */}
