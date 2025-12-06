@@ -40,7 +40,7 @@ export function SplitTransactionDialog({
   onSave,
   isLoading 
 }: SplitTransactionDialogProps) {
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
   const { data: clients = [] } = useClients();
   
   const [items, setItems] = useState<SplitItem[]>([
@@ -93,21 +93,13 @@ export function SplitTransactionDialog({
     if (!transaction) return;
     
     if (!isBalanced) {
-      toast.error(
-        language === 'es' 
-          ? 'Los montos deben sumar el total de la transacción' 
-          : 'Amounts must equal the transaction total'
-      );
+      toast.error(t('reconciliation.amountsMustEqual'));
       return;
     }
 
     const invalidItems = items.filter(item => !item.vendor || item.amount <= 0);
     if (invalidItems.length > 0) {
-      toast.error(
-        language === 'es' 
-          ? 'Todos los gastos deben tener proveedor y monto válido' 
-          : 'All expenses must have vendor and valid amount'
-      );
+      toast.error(t('reconciliation.allMustHaveVendor'));
       return;
     }
 
@@ -129,12 +121,10 @@ export function SplitTransactionDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Split className="h-5 w-5 text-primary" />
-            {language === 'es' ? 'Dividir Transacción' : 'Split Transaction'}
+            {t('reconciliation.splitTitle')}
           </DialogTitle>
           <DialogDescription>
-            {language === 'es' 
-              ? 'Divide esta transacción en múltiples gastos (ej: combustible + comida en gasolinera)'
-              : 'Split this transaction into multiple expenses (e.g., fuel + food at gas station)'}
+            {t('reconciliation.splitDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -144,7 +134,7 @@ export function SplitTransactionDialog({
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium">{transaction.description || 'Sin descripción'}</p>
+                  <p className="font-medium">{transaction.description || t('reconciliation.noDescription')}</p>
                   <p className="text-sm text-muted-foreground">
                     {new Date(transaction.transaction_date).toLocaleDateString()}
                   </p>
@@ -167,15 +157,15 @@ export function SplitTransactionDialog({
                 <AlertCircle className="h-5 w-5 text-warning" />
               )}
               <span className="text-sm font-medium">
-                {language === 'es' ? 'Total asignado:' : 'Total assigned:'}
+                {t('reconciliation.totalAssigned')}:
               </span>
               <span className="font-bold">${totalAmount.toFixed(2)}</span>
             </div>
             {!isBalanced && (
               <span className={`text-sm font-medium ${remainingAmount > 0 ? 'text-warning' : 'text-destructive'}`}>
                 {remainingAmount > 0 
-                  ? `${language === 'es' ? 'Falta:' : 'Remaining:'} $${remainingAmount.toFixed(2)}`
-                  : `${language === 'es' ? 'Excede:' : 'Exceeds:'} $${Math.abs(remainingAmount).toFixed(2)}`}
+                  ? `${t('reconciliation.remaining')}: $${remainingAmount.toFixed(2)}`
+                  : `${t('reconciliation.exceeds')}: $${Math.abs(remainingAmount).toFixed(2)}`}
               </span>
             )}
           </div>
@@ -183,12 +173,12 @@ export function SplitTransactionDialog({
           {/* Split items */}
           <div className="space-y-3">
             {items.map((item, index) => (
-              <Card key={item.id} className="border-primary/20">
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="secondary">
-                      {language === 'es' ? `Gasto ${index + 1}` : `Expense ${index + 1}`}
-                    </Badge>
+                <Card key={item.id} className="border-primary/20">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="secondary">
+                        {t('reconciliation.expense')} {index + 1}
+                      </Badge>
                     {items.length > 1 && (
                       <Button
                         type="button"
@@ -202,17 +192,17 @@ export function SplitTransactionDialog({
                     )}
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-xs">{language === 'es' ? 'Proveedor' : 'Vendor'}</Label>
-                      <Input
-                        value={item.vendor}
-                        onChange={(e) => updateItem(item.id, 'vendor', e.target.value)}
-                        placeholder={language === 'es' ? 'Ej: Petro-Canada' : 'E.g., Petro-Canada'}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">{language === 'es' ? 'Monto' : 'Amount'}</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">{t('reconciliation.vendor')}</Label>
+                        <Input
+                          value={item.vendor}
+                          onChange={(e) => updateItem(item.id, 'vendor', e.target.value)}
+                          placeholder={language === 'es' ? 'Ej: Petro-Canada' : 'E.g., Petro-Canada'}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">{t('reconciliation.amount')}</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -223,10 +213,10 @@ export function SplitTransactionDialog({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-xs">{language === 'es' ? 'Categoría' : 'Category'}</Label>
-                      <Select
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">{t('reconciliation.category')}</Label>
+                        <Select
                         value={item.category}
                         onValueChange={(value) => updateItem(item.id, 'category', value)}
                       >
@@ -242,18 +232,18 @@ export function SplitTransactionDialog({
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">{language === 'es' ? 'Cliente (opcional)' : 'Client (optional)'}</Label>
-                      <Select
-                        value={item.client_id || '__none__'}
-                        onValueChange={(value) => updateItem(item.id, 'client_id', value === '__none__' ? null : value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={language === 'es' ? 'Sin cliente' : 'No client'} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">
-                            {language === 'es' ? 'Sin cliente' : 'No client'}
+                      <div className="space-y-1">
+                        <Label className="text-xs">{t('reconciliation.clientOptional')}</Label>
+                        <Select
+                          value={item.client_id || '__none__'}
+                          onValueChange={(value) => updateItem(item.id, 'client_id', value === '__none__' ? null : value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={t('reconciliation.noClient')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__">
+                              {t('reconciliation.noClient')}
                           </SelectItem>
                           {clients.map((client) => (
                             <SelectItem key={client.id} value={client.id}>
@@ -277,13 +267,13 @@ export function SplitTransactionDialog({
             className="w-full border-dashed"
           >
             <Plus className="h-4 w-4 mr-2" />
-            {language === 'es' ? 'Agregar otro gasto' : 'Add another expense'}
+            {t('reconciliation.addAnotherExpense')}
           </Button>
 
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={handleClose}>
-              {language === 'es' ? 'Cancelar' : 'Cancel'}
+              {t('common.cancel')}
             </Button>
             <Button 
               onClick={handleSave} 
@@ -291,8 +281,8 @@ export function SplitTransactionDialog({
               className="bg-gradient-primary"
             >
               {isLoading 
-                ? (language === 'es' ? 'Guardando...' : 'Saving...')
-                : (language === 'es' ? `Crear ${items.length} gasto(s)` : `Create ${items.length} expense(s)`)}
+                ? t('reconciliation.saving')
+                : `${t('reconciliation.createExpenses').replace('(s)', `(${items.length})`)}`}
             </Button>
           </div>
         </div>

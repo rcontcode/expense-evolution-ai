@@ -112,10 +112,7 @@ export function RewardsShop() {
                 variant={isEquipped ? "default" : "outline"}
                 onClick={() => handleEquipToggle(reward)}
               >
-                {isEquipped 
-                  ? (language === 'es' ? 'Equipado' : 'Equipped')
-                  : (language === 'es' ? 'Equipar' : 'Equip')
-                }
+                {isEquipped ? t('rewards.equipped') : t('rewards.equip')}
               </Button>
             ) : (
               <Button 
@@ -127,7 +124,7 @@ export function RewardsShop() {
                 }}
               >
                 <ShoppingBag className="h-3 w-3 mr-1" />
-                {language === 'es' ? 'Canjear' : 'Redeem'}
+                {t('rewards.redeem')}
               </Button>
             )}
           </div>
@@ -152,24 +149,21 @@ export function RewardsShop() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">
-                  {language === 'es' ? 'Tu XP disponible' : 'Your available XP'}
+                  {t('rewards.yourXP')}
                 </p>
                 <p className="text-3xl font-bold">{userXP.toLocaleString()}</p>
               </div>
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">
-                {language === 'es' ? 'Recompensas' : 'Rewards'}
+                {t('rewards.rewardsUnlocked')}
               </p>
               <p className="text-lg font-semibold">{unlockedCount} / {totalRewards}</p>
             </div>
           </div>
           <Progress value={progressPercent} className="h-2" />
           <p className="text-xs text-muted-foreground mt-2 text-center">
-            {language === 'es' 
-              ? `${Math.round(progressPercent)}% de recompensas desbloqueadas`
-              : `${Math.round(progressPercent)}% of rewards unlocked`
-            }
+            {Math.round(progressPercent)}% {t('rewards.unlocked')}
           </p>
         </CardContent>
       </Card>
@@ -209,7 +203,7 @@ export function RewardsShop() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <span className="text-2xl">{selectedReward?.icon}</span>
-              {language === 'es' ? '¿Canjear recompensa?' : 'Redeem reward?'}
+              {t('rewards.redeemQuestion')}
             </DialogTitle>
             <DialogDescription>
               {selectedReward && (
@@ -229,7 +223,7 @@ export function RewardsShop() {
                   )}
                   
                   <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <span>{language === 'es' ? 'Costo:' : 'Cost:'}</span>
+                    <span>{t('rewards.cost')}:</span>
                     <div className="flex items-center gap-1 font-bold">
                       <Sparkles className="h-4 w-4 text-yellow-500" />
                       {selectedReward.xp_cost} XP
@@ -237,12 +231,12 @@ export function RewardsShop() {
                   </div>
                   
                   <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <span>{language === 'es' ? 'Tu XP:' : 'Your XP:'}</span>
+                    <span>{t('rewards.yourBalance')}:</span>
                     <span className="font-bold">{userXP} XP</span>
                   </div>
                   
                   <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <span>{language === 'es' ? 'Después:' : 'After:'}</span>
+                    <span>{t('rewards.after')}:</span>
                     <span className="font-bold text-green-600">
                       {userXP - selectedReward.xp_cost} XP
                     </span>
@@ -253,11 +247,11 @@ export function RewardsShop() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmDialogOpen(false)}>
-              {language === 'es' ? 'Cancelar' : 'Cancel'}
+              {t('rewards.cancel')}
             </Button>
             <Button onClick={handlePurchase}>
               <ShoppingBag className="h-4 w-4 mr-2" />
-              {language === 'es' ? 'Canjear' : 'Redeem'}
+              {t('rewards.redeem')}
             </Button>
           </DialogFooter>
         </DialogContent>
