@@ -1,16 +1,18 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Upload, FileText, Camera, Loader2, RefreshCw, 
   CheckCircle2, Clock, AlertTriangle, X, Sparkles,
-  Smartphone, Monitor, Video
+  Smartphone, Monitor, Video, Layers, ScanLine
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -23,6 +25,8 @@ import {
   useDocumentImageUrl 
 } from '@/hooks/data/useDocumentReview';
 import { ContinuousCameraDialog, CapturedPhoto } from '@/components/capture/ContinuousCameraDialog';
+import { ScanSessionHistory } from '@/components/capture/ScanSessionHistory';
+import { useScanSessions } from '@/hooks/data/useScanSessions';
 import { cn } from '@/lib/utils';
 
 function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, isLoading }: {
@@ -53,8 +57,12 @@ export default function ChaosInbox() {
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState<string | null>(null);
   const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
+  const [detectMultipleReceipts, setDetectMultipleReceipts] = useState(true);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  
   const { data: documents = [], isLoading, refetch } = useDocumentsForReview();
   const { approveDocument, rejectDocument, addComment } = useDocumentReviewActions();
+  const { startSession, updateSession, endSession } = useScanSessions();
   
   // Enable realtime sync
   useRealtimeDocuments();
@@ -63,6 +71,15 @@ export default function ChaosInbox() {
   const approvedDocs = documents.filter(d => d.review_status === 'approved');
   const needsCorrectionDocs = documents.filter(d => d.review_status === 'needs_correction');
   const rejectedDocs = documents.filter(d => d.review_status === 'rejected');
+
+  // End session when leaving page
+  useEffect(() => {
+    return () => {
+      if (currentSessionId) {
+        endSession.mutate(currentSessionId);
+      }
+    };
+  }, [currentSessionId]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -111,11 +128,19 @@ export default function ChaosInbox() {
           setProcessing(doc.id);
           try {
             const { data: result, error: aiError } = await supabase.functions.invoke('process-receipt', {
-              body: { imageBase64: base64 },
+              body: { 
+                imageBase64: base64,
+                detectMultipleReceipts: detectMultipleReceipts,
+              },
             });
 
             if (!aiError && result?.expenses?.length > 0) {
-              const extractedData: ExtractedData = result.expenses[0];
+              // Store all extracted expenses data
+              const extractedData = {
+                ...result.expenses[0],
+                all_expenses: result.expenses,
+                receipts_detected: result.receipts_detected || 1,
+              };
               
               await supabase
                 .from('documents')
@@ -124,6 +149,15 @@ export default function ChaosInbox() {
                   status: 'classified' 
                 } as any)
                 .eq('id', doc.id);
+              
+              // Show notification if multiple receipts/expenses detected
+              if (result.expenses.length > 1) {
+                toast.info(
+                  language === 'es'
+                    ? `${result.expenses.length} gastos detectados en esta imagen`
+                    : `${result.expenses.length} expenses detected in this image`
+                );
+              }
             }
           } catch (aiErr) {
             console.error('AI processing failed:', aiErr);
@@ -165,6 +199,17 @@ export default function ChaosInbox() {
     if (!user || photos.length === 0) return;
 
     setUploading(true);
+    
+    // Start a new scan session
+    let sessionId = currentSessionId;
+    if (!sessionId) {
+      const session = await startSession.mutateAsync(undefined);
+      sessionId = session.id;
+      setCurrentSessionId(sessionId);
+    }
+
+    let totalAmount = 0;
+    let receiptsCount = 0;
 
     try {
       for (const photo of photos) {
@@ -203,11 +248,18 @@ export default function ChaosInbox() {
           setProcessing(doc.id);
           try {
             const { data: result, error: aiError } = await supabase.functions.invoke('process-receipt', {
-              body: { imageBase64: photo.dataUrl },
+              body: { 
+                imageBase64: photo.dataUrl,
+                detectMultipleReceipts: detectMultipleReceipts,
+              },
             });
 
             if (!aiError && result?.expenses?.length > 0) {
-              const extractedData: ExtractedData = result.expenses[0];
+              const extractedData = {
+                ...result.expenses[0],
+                all_expenses: result.expenses,
+                receipts_detected: result.receipts_detected || 1,
+              };
               
               await supabase
                 .from('documents')
@@ -216,6 +268,20 @@ export default function ChaosInbox() {
                   status: 'classified' 
                 } as any)
                 .eq('id', doc.id);
+              
+              // Track session stats
+              receiptsCount += result.receipts_detected || 1;
+              result.expenses.forEach((exp: any) => {
+                totalAmount += exp.amount || 0;
+              });
+              
+              if (result.expenses.length > 1) {
+                toast.info(
+                  language === 'es'
+                    ? `${result.expenses.length} gastos detectados en esta imagen`
+                    : `${result.expenses.length} expenses detected in this image`
+                );
+              }
             }
           } catch (aiErr) {
             console.error('AI processing failed:', aiErr);
@@ -224,11 +290,22 @@ export default function ChaosInbox() {
           }
         }
       }
+      
+      // Update session with captured receipts count
+      if (sessionId) {
+        updateSession.mutate({
+          sessionId,
+          updates: {
+            receipts_captured: receiptsCount,
+            total_amount: totalAmount,
+          },
+        });
+      }
 
       toast.success(
         language === 'es' 
-          ? `${photos.length} recibo(s) capturado(s) - revisa los datos extraídos`
-          : `${photos.length} receipt(s) captured - review extracted data`
+          ? `${photos.length} foto(s) procesada(s) - ${receiptsCount} recibo(s) detectado(s)`
+          : `${photos.length} photo(s) processed - ${receiptsCount} receipt(s) detected`
       );
       refetch();
     } catch (error: any) {
@@ -259,7 +336,23 @@ export default function ChaosInbox() {
               <InfoTooltip content={TOOLTIP_CONTENT.chaosInbox} />
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Scan History Button */}
+              <ScanSessionHistory />
+              
+              {/* Multi-receipt detection toggle */}
+              <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50">
+                <Switch
+                  id="multi-receipt"
+                  checked={detectMultipleReceipts}
+                  onCheckedChange={setDetectMultipleReceipts}
+                />
+                <Label htmlFor="multi-receipt" className="flex items-center gap-1 text-xs cursor-pointer">
+                  <Layers className="h-3 w-3" />
+                  {language === 'es' ? 'Multi-recibo' : 'Multi-receipt'}
+                </Label>
+              </div>
+              
               <Button 
                 variant="outline" 
                 size="sm" 
