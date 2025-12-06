@@ -24,18 +24,61 @@ export interface Achievement {
 }
 
 export const ACHIEVEMENTS = {
+  // Beginner achievements
   first_expense: { icon: '📝', points: 10 },
   first_income: { icon: '💰', points: 10 },
   first_savings_goal: { icon: '🎯', points: 15 },
   first_investment: { icon: '📈', points: 20 },
+  complete_profile: { icon: '✅', points: 15 },
+  first_client: { icon: '🤝', points: 15 },
+  first_mileage: { icon: '🚗', points: 10 },
+  first_contract: { icon: '📄', points: 20 },
+  
+  // Streak achievements
   track_7_days: { icon: '🔥', points: 25 },
   track_30_days: { icon: '⚡', points: 50 },
+  track_60_days: { icon: '💪', points: 100 },
+  track_100_days: { icon: '🌟', points: 150 },
+  track_365_days: { icon: '👑', points: 500 },
+  
+  // Savings achievements
   save_1000: { icon: '💵', points: 30 },
   save_5000: { icon: '💎', points: 75 },
+  save_10000: { icon: '🏦', points: 150 },
+  save_25000: { icon: '💰', points: 250 },
+  save_50000: { icon: '🤑', points: 400 },
+  
+  // Investment achievements
   invest_1000: { icon: '🚀', points: 40 },
   invest_10000: { icon: '🏆', points: 100 },
-  complete_profile: { icon: '✅', points: 15 },
+  invest_25000: { icon: '📊', points: 200 },
+  invest_50000: { icon: '🌙', points: 350 },
+  invest_100000: { icon: '🌍', points: 500 },
+  
+  // Activity achievements
+  expenses_10: { icon: '📋', points: 15 },
+  expenses_50: { icon: '📑', points: 35 },
+  expenses_100: { icon: '📚', points: 60 },
+  expenses_500: { icon: '🗄️', points: 150 },
+  income_entries_10: { icon: '💸', points: 20 },
+  income_entries_50: { icon: '🏧', points: 50 },
+  
+  // Mission achievements
+  mission_starter: { icon: '🎮', points: 25 },
+  mission_master: { icon: '🎯', points: 75 },
+  mission_legend: { icon: '🏅', points: 200 },
+  daily_perfect: { icon: '⭐', points: 30 },
+  weekly_perfect: { icon: '🌠', points: 100 },
+  
+  // Special achievements
   first_passive_income: { icon: '🌱', points: 50 },
+  diversified_investor: { icon: '🎨', points: 100 },
+  tax_master: { icon: '📊', points: 75 },
+  early_bird: { icon: '🐦', points: 20 },
+  night_owl: { icon: '🦉', points: 20 },
+  weekend_warrior: { icon: '⚔️', points: 25 },
+  consistent_saver: { icon: '🎖️', points: 100 },
+  budget_guru: { icon: '🧮', points: 80 },
 };
 
 export const LEVELS = [
