@@ -6,7 +6,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  console.log('ProtectedRoute:', { user: user?.email, loading, path: location.pathname });
+  
 
   if (loading) {
     return (
