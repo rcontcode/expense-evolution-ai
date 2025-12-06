@@ -262,6 +262,45 @@ export type Database = {
           },
         ]
       }
+      decoded_codes: {
+        Row: {
+          category: string | null
+          confidence_count: number | null
+          created_at: string | null
+          decoded_meaning: string
+          id: string
+          last_seen_at: string | null
+          original_code: string
+          updated_at: string | null
+          user_id: string
+          vendor_context: string | null
+        }
+        Insert: {
+          category?: string | null
+          confidence_count?: number | null
+          created_at?: string | null
+          decoded_meaning: string
+          id?: string
+          last_seen_at?: string | null
+          original_code: string
+          updated_at?: string | null
+          user_id: string
+          vendor_context?: string | null
+        }
+        Update: {
+          category?: string | null
+          confidence_count?: number | null
+          created_at?: string | null
+          decoded_meaning?: string
+          id?: string
+          last_seen_at?: string | null
+          original_code?: string
+          updated_at?: string | null
+          user_id?: string
+          vendor_context?: string | null
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string | null
