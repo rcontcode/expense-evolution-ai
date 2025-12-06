@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -6,15 +6,19 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   TrendingUp, Target, Lightbulb, Trophy, Star, Sparkles, 
-  Plus, Edit, Trash2, DollarSign, Brain, Flame, Quote
+  Plus, Edit, Trash2, DollarSign, Brain, Flame, Quote, BarChart3, Medal
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useInvestmentGoals, useDeleteInvestmentGoal } from '@/hooks/data/useInvestmentGoals';
+import { useSavingsGoals } from '@/hooks/data/useSavingsGoals';
 import { useUserLevel, useUserAchievements, LEVELS, ACHIEVEMENTS } from '@/hooks/data/useGamification';
+import { useGoalNotifications, useLevelUpNotification } from '@/hooks/data/useGoalNotifications';
 import { MENTOR_QUOTES, getRandomQuote } from '@/lib/constants/mentor-quotes';
 import { InvestmentGoalDialog } from './InvestmentGoalDialog';
 import { FinancialProfileDialog } from './FinancialProfileDialog';
 import { PassiveIncomeSuggestions } from './PassiveIncomeSuggestions';
+import { ProgressCharts } from './ProgressCharts';
+import { AchievementBadges } from './AchievementBadges';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,9 +33,18 @@ import {
 export function InvestmentSection() {
   const { t } = useLanguage();
   const { data: goals, isLoading: goalsLoading } = useInvestmentGoals();
+  const { data: savingsGoals } = useSavingsGoals();
   const { data: userLevel } = useUserLevel();
   const { data: achievements } = useUserAchievements();
   const deleteGoal = useDeleteInvestmentGoal();
+  
+  // Goal notifications
+  useGoalNotifications({ 
+    savingsGoals: savingsGoals || [], 
+    investmentGoals: goals || [], 
+    userLevel 
+  });
+  useLevelUpNotification(userLevel);
   
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
@@ -135,18 +148,26 @@ export function InvestmentSection() {
 
       {/* Main Investment Content */}
       <Tabs defaultValue="goals" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="goals" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
-            {t('investments.goals')}
+            <span className="hidden sm:inline">{t('investments.goals')}</span>
+          </TabsTrigger>
+          <TabsTrigger value="charts" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">{t('investments.charts')}</span>
+          </TabsTrigger>
+          <TabsTrigger value="badges" className="flex items-center gap-2">
+            <Medal className="h-4 w-4" />
+            <span className="hidden sm:inline">{t('investments.badges')}</span>
           </TabsTrigger>
           <TabsTrigger value="suggestions" className="flex items-center gap-2">
             <Lightbulb className="h-4 w-4" />
-            {t('investments.suggestions')}
+            <span className="hidden sm:inline">{t('investments.suggestions')}</span>
           </TabsTrigger>
           <TabsTrigger value="learn" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
-            {t('investments.learn')}
+            <span className="hidden sm:inline">{t('investments.learn')}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -237,6 +258,22 @@ export function InvestmentSection() {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        {/* Charts Tab */}
+        <TabsContent value="charts">
+          <ProgressCharts 
+            savingsGoals={savingsGoals || []} 
+            investmentGoals={goals || []} 
+          />
+        </TabsContent>
+
+        {/* Badges Tab */}
+        <TabsContent value="badges">
+          <AchievementBadges 
+            achievements={achievements || []} 
+            userLevel={userLevel}
+          />
         </TabsContent>
 
         {/* Suggestions Tab */}
