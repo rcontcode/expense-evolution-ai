@@ -13,24 +13,176 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   Camera, X, Trash2, Loader2, 
   RotateCcw, ImagePlus, Send, Zap, Flashlight, Crop,
-  ScanLine, Pause, Play
+  ScanLine, Pause, Play, FileStack, AlertTriangle, CheckCircle2,
+  ZoomIn, ZoomOut, Eye
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface CapturedPhoto {
   id: string;
   dataUrl: string;
   timestamp: Date;
+  partOf?: string; // For long receipts - group ID
+  partNumber?: number; // Part number in sequence
+  qualityScore?: number; // 0-100 quality score
+}
+
+interface QualityCheckResult {
+  score: number;
+  isReadable: boolean;
+  issues: string[];
 }
 
 interface ContinuousCameraDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmitPhotos: (photos: CapturedPhoto[]) => Promise<void>;
+}
+
+// Analyze image quality for text readability
+function analyzeImageQuality(canvas: HTMLCanvasElement): QualityCheckResult {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return { score: 0, isReadable: false, issues: ['No context'] };
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  const width = canvas.width;
+  const height = canvas.height;
+  
+  const issues: string[] = [];
+  let score = 100;
+  
+  // 1. Check brightness - too dark or too bright
+  let totalBrightness = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    totalBrightness += (data[i] + data[i + 1] + data[i + 2]) / 3;
+  }
+  const avgBrightness = totalBrightness / (data.length / 4);
+  
+  if (avgBrightness < 60) {
+    issues.push('too_dark');
+    score -= 30;
+  } else if (avgBrightness > 220) {
+    issues.push('too_bright');
+    score -= 25;
+  }
+  
+  // 2. Check contrast - important for text readability
+  let minBrightness = 255, maxBrightness = 0;
+  for (let i = 0; i < data.length; i += 16) { // Sample every 4th pixel
+    const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+    if (brightness < minBrightness) minBrightness = brightness;
+    if (brightness > maxBrightness) maxBrightness = brightness;
+  }
+  const contrast = maxBrightness - minBrightness;
+  
+  if (contrast < 80) {
+    issues.push('low_contrast');
+    score -= 25;
+  }
+  
+  // 3. Check sharpness using Laplacian variance
+  const grayscale: number[] = [];
+  for (let i = 0; i < data.length; i += 4) {
+    grayscale.push(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+  }
+  
+  let laplacianVariance = 0;
+  let samples = 0;
+  for (let y = 1; y < height - 1; y += 2) {
+    for (let x = 1; x < width - 1; x += 2) {
+      const idx = y * width + x;
+      const laplacian = 
+        -grayscale[idx - width] - grayscale[idx - 1] + 
+        4 * grayscale[idx] - 
+        grayscale[idx + 1] - grayscale[idx + width];
+      laplacianVariance += laplacian * laplacian;
+      samples++;
+    }
+  }
+  laplacianVariance = samples > 0 ? Math.sqrt(laplacianVariance / samples) : 0;
+  
+  if (laplacianVariance < 15) {
+    issues.push('blurry');
+    score -= 35;
+  } else if (laplacianVariance < 25) {
+    issues.push('slightly_blurry');
+    score -= 15;
+  }
+  
+  // 4. Check resolution
+  const pixels = width * height;
+  if (pixels < 500000) { // Less than ~700x700
+    issues.push('low_resolution');
+    score -= 20;
+  }
+  
+  // 5. Check if image has text-like patterns (edges)
+  let edgeCount = 0;
+  for (let y = 1; y < height - 1; y += 3) {
+    for (let x = 1; x < width - 1; x += 3) {
+      const idx = y * width + x;
+      const gx = grayscale[idx + 1] - grayscale[idx - 1];
+      const gy = grayscale[idx + width] - grayscale[idx - width];
+      const magnitude = Math.sqrt(gx * gx + gy * gy);
+      if (magnitude > 30) edgeCount++;
+    }
+  }
+  const edgeDensity = edgeCount / ((width / 3) * (height / 3));
+  
+  if (edgeDensity < 0.05) {
+    issues.push('no_text_detected');
+    score -= 20;
+  }
+  
+  score = Math.max(0, Math.min(100, score));
+  const isReadable = score >= 50 && !issues.includes('blurry') && !issues.includes('no_text_detected');
+  
+  return { score, isReadable, issues };
+}
+
+// Stitch multiple images vertically for long receipts
+function stitchImagesVertically(images: string[]): Promise<string> {
+  return new Promise((resolve) => {
+    const loadPromises = images.map(src => {
+      return new Promise<HTMLImageElement>((res) => {
+        const img = new Image();
+        img.onload = () => res(img);
+        img.src = src;
+      });
+    });
+    
+    Promise.all(loadPromises).then(loadedImages => {
+      const maxWidth = Math.max(...loadedImages.map(img => img.width));
+      const totalHeight = loadedImages.reduce((sum, img) => sum + img.height, 0);
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = maxWidth;
+      canvas.height = totalHeight;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(images[0]);
+        return;
+      }
+      
+      let currentY = 0;
+      loadedImages.forEach(img => {
+        // Center horizontally if narrower than max width
+        const x = (maxWidth - img.width) / 2;
+        ctx.drawImage(img, x, currentY);
+        currentY += img.height;
+      });
+      
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    });
+  });
 }
 
 // Generate shutter sound using Web Audio API
@@ -54,6 +206,32 @@ function playShutterSound() {
     oscillator.stop(audioContext.currentTime + 0.1);
     
     setTimeout(() => audioContext.close(), 200);
+  } catch (e) {
+    console.log('Audio not supported');
+  }
+}
+
+// Play warning sound for quality issues
+function playWarningSound() {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(200, audioContext.currentTime + 0.1);
+    
+    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
+    
+    setTimeout(() => audioContext.close(), 300);
   } catch (e) {
     console.log('Audio not supported');
   }
@@ -193,6 +371,21 @@ export function ContinuousCameraDialog({
   const [autoScanPaused, setAutoScanPaused] = useState(false);
   const [scanStatus, setScanStatus] = useState<'waiting' | 'detecting' | 'stabilizing' | 'capturing'>('waiting');
   const [stabilityProgress, setStabilityProgress] = useState(0);
+  
+  // Long receipt mode
+  const [longReceiptMode, setLongReceiptMode] = useState(false);
+  const [currentLongReceiptId, setCurrentLongReceiptId] = useState<string | null>(null);
+  const [longReceiptParts, setLongReceiptParts] = useState<CapturedPhoto[]>([]);
+  
+  // Quality check states
+  const [qualityCheckEnabled, setQualityCheckEnabled] = useState(true);
+  const [lastQualityResult, setLastQualityResult] = useState<QualityCheckResult | null>(null);
+  const [showQualityWarning, setShowQualityWarning] = useState(false);
+  
+  // Zoom control
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [zoomSupported, setZoomSupported] = useState(false);
+  const [maxZoom, setMaxZoom] = useState(1);
 
   const STABILITY_THRESHOLD = 5; // Max difference for "stable" frame
   const CHANGE_THRESHOLD = 15; // Min difference for "new receipt detected"
@@ -227,6 +420,15 @@ export function ContinuousCameraDialog({
         setFlashSupported(false);
       }
       
+      // Check zoom capability
+      if (capabilities?.zoom) {
+        setZoomSupported(true);
+        setMaxZoom(capabilities.zoom.max || 3);
+        setZoomLevel(1);
+      } else {
+        setZoomSupported(false);
+      }
+      
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
@@ -242,6 +444,21 @@ export function ContinuousCameraDialog({
       setCameraActive(false);
     }
   }, [facingMode, language]);
+  
+  // Apply zoom level
+  const applyZoom = useCallback(async (newZoom: number) => {
+    if (!trackRef.current || !zoomSupported) return;
+    
+    const clampedZoom = Math.max(1, Math.min(maxZoom, newZoom));
+    try {
+      await trackRef.current.applyConstraints({
+        advanced: [{ zoom: clampedZoom } as any]
+      });
+      setZoomLevel(clampedZoom);
+    } catch (e) {
+      console.error('Failed to apply zoom:', e);
+    }
+  }, [zoomSupported, maxZoom]);
 
   const stopCamera = useCallback(() => {
     if (animationFrameRef.current) {
@@ -284,13 +501,46 @@ export function ContinuousCameraDialog({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
+    ctx.drawImage(video, 0, 0);
+    
+    // Quality check before accepting
+    if (qualityCheckEnabled) {
+      const quality = analyzeImageQuality(canvas);
+      setLastQualityResult(quality);
+      
+      if (!quality.isReadable) {
+        playWarningSound();
+        triggerVibration();
+        setShowQualityWarning(true);
+        
+        // Show toast with issues
+        const issueMessages: Record<string, string> = {
+          too_dark: language === 'es' ? 'Muy oscura' : 'Too dark',
+          too_bright: language === 'es' ? 'Muy brillante' : 'Too bright',
+          low_contrast: language === 'es' ? 'Bajo contraste' : 'Low contrast',
+          blurry: language === 'es' ? 'Borrosa' : 'Blurry',
+          slightly_blurry: language === 'es' ? 'Ligeramente borrosa' : 'Slightly blurry',
+          low_resolution: language === 'es' ? 'Baja resolución' : 'Low resolution',
+          no_text_detected: language === 'es' ? 'No se detecta texto' : 'No text detected',
+        };
+        
+        const issueText = quality.issues.map(i => issueMessages[i] || i).join(', ');
+        toast.warning(
+          language === 'es' 
+            ? `Calidad insuficiente (${quality.score}%): ${issueText}. Intenta de nuevo.`
+            : `Poor quality (${quality.score}%): ${issueText}. Try again.`
+        );
+        
+        return; // Don't save the photo
+      }
+    }
+    
     playShutterSound();
     triggerVibration();
     
     setIsFlashing(true);
     setTimeout(() => setIsFlashing(false), 100);
-    
-    ctx.drawImage(video, 0, 0);
+    setShowQualityWarning(false);
     
     const dataUrl = autoCropEnabled 
       ? autoCropReceipt(canvas) 
@@ -300,15 +550,89 @@ export function ContinuousCameraDialog({
       id: `photo-${Date.now()}`,
       dataUrl,
       timestamp: new Date(),
+      qualityScore: lastQualityResult?.score || 100,
+      partOf: longReceiptMode ? currentLongReceiptId || undefined : undefined,
+      partNumber: longReceiptMode ? longReceiptParts.length + 1 : undefined,
     };
     
-    setPhotos(prev => [...prev, newPhoto]);
+    if (longReceiptMode) {
+      // Add to long receipt parts
+      if (!currentLongReceiptId) {
+        const newId = `long-${Date.now()}`;
+        setCurrentLongReceiptId(newId);
+        newPhoto.partOf = newId;
+      }
+      setLongReceiptParts(prev => [...prev, newPhoto]);
+      
+      toast.success(
+        language === 'es' 
+          ? `Parte ${newPhoto.partNumber} capturada. Continúa con la siguiente parte.`
+          : `Part ${newPhoto.partNumber} captured. Continue with the next part.`
+      );
+    } else {
+      setPhotos(prev => [...prev, newPhoto]);
+    }
+    
     lastCaptureTimeRef.current = Date.now();
     stableFrameCountRef.current = 0;
     prevFrameDataRef.current = null;
     setScanStatus('waiting');
     setStabilityProgress(0);
-  }, [autoCropEnabled]);
+  }, [autoCropEnabled, qualityCheckEnabled, language, longReceiptMode, currentLongReceiptId, longReceiptParts.length, lastQualityResult?.score]);
+  
+  // Complete long receipt and stitch images
+  const completeLongReceipt = useCallback(async () => {
+    if (longReceiptParts.length < 2) {
+      toast.error(
+        language === 'es' 
+          ? 'Necesitas al menos 2 partes para unir.'
+          : 'You need at least 2 parts to stitch.'
+      );
+      return;
+    }
+    
+    toast.loading(
+      language === 'es' ? 'Uniendo partes...' : 'Stitching parts...',
+      { id: 'stitch' }
+    );
+    
+    try {
+      const stitchedDataUrl = await stitchImagesVertically(
+        longReceiptParts.map(p => p.dataUrl)
+      );
+      
+      const stitchedPhoto: CapturedPhoto = {
+        id: `stitched-${Date.now()}`,
+        dataUrl: stitchedDataUrl,
+        timestamp: new Date(),
+        qualityScore: Math.min(...longReceiptParts.map(p => p.qualityScore || 100)),
+      };
+      
+      setPhotos(prev => [...prev, stitchedPhoto]);
+      setLongReceiptParts([]);
+      setCurrentLongReceiptId(null);
+      setLongReceiptMode(false);
+      
+      toast.success(
+        language === 'es' 
+          ? `Boleta unida exitosamente (${longReceiptParts.length} partes)`
+          : `Receipt stitched successfully (${longReceiptParts.length} parts)`,
+        { id: 'stitch' }
+      );
+    } catch (e) {
+      toast.error(
+        language === 'es' ? 'Error al unir las partes' : 'Error stitching parts',
+        { id: 'stitch' }
+      );
+    }
+  }, [longReceiptParts, language]);
+  
+  // Cancel long receipt mode
+  const cancelLongReceipt = useCallback(() => {
+    setLongReceiptParts([]);
+    setCurrentLongReceiptId(null);
+    setLongReceiptMode(false);
+  }, []);
 
   // Auto-scan detection loop
   const runAutoScanDetection = useCallback(() => {
@@ -485,13 +809,14 @@ export function ContinuousCameraDialog({
         <div className="flex-1 flex flex-col md:flex-row gap-4 p-4 pt-0 overflow-hidden">
           {/* Camera View */}
           <div className="flex-1 flex flex-col gap-3">
-            {/* Camera Options */}
-            <div className="flex flex-wrap items-center gap-4 text-sm">
+            {/* Camera Options Row 1 */}
+            <div className="flex flex-wrap items-center gap-3 text-sm">
               <div className="flex items-center gap-2">
                 <Switch
                   id="auto-scan"
                   checked={autoScanEnabled}
                   onCheckedChange={toggleAutoScan}
+                  disabled={longReceiptMode}
                 />
                 <Label htmlFor="auto-scan" className="flex items-center gap-1 text-xs">
                   <ScanLine className="h-3 w-3" />
@@ -511,6 +836,18 @@ export function ContinuousCameraDialog({
                 </Label>
               </div>
               
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="quality-check"
+                  checked={qualityCheckEnabled}
+                  onCheckedChange={setQualityCheckEnabled}
+                />
+                <Label htmlFor="quality-check" className="flex items-center gap-1 text-xs">
+                  <Eye className="h-3 w-3" />
+                  {t('camera.qualityCheck')}
+                </Label>
+              </div>
+              
               {flashSupported && (
                 <div className="flex items-center gap-2">
                   <Switch
@@ -525,6 +862,105 @@ export function ContinuousCameraDialog({
                 </div>
               )}
             </div>
+            
+            {/* Camera Options Row 2 - Long Receipt Mode */}
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="long-receipt"
+                  checked={longReceiptMode}
+                  onCheckedChange={(checked) => {
+                    if (!checked && longReceiptParts.length > 0) {
+                      // Ask to complete or cancel
+                      return;
+                    }
+                    setLongReceiptMode(checked);
+                    if (checked) {
+                      setAutoScanEnabled(false);
+                    }
+                  }}
+                />
+                <Label htmlFor="long-receipt" className="flex items-center gap-1 text-xs">
+                  <FileStack className="h-3 w-3" />
+                  {t('camera.longReceipt')}
+                </Label>
+              </div>
+              
+              {longReceiptMode && longReceiptParts.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {t('camera.parts')}: {longReceiptParts.length}
+                  </Badge>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={completeLongReceipt}
+                    className="h-6 text-xs"
+                  >
+                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    {t('camera.finishStitch')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={cancelLongReceipt}
+                    className="h-6 text-xs text-destructive"
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    {t('common.cancel')}
+                  </Button>
+                </div>
+              )}
+              
+              {/* Zoom controls */}
+              {zoomSupported && (
+                <div className="flex items-center gap-2 ml-auto">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => applyZoom(zoomLevel - 0.5)}
+                    disabled={zoomLevel <= 1}
+                    className="h-6 w-6"
+                  >
+                    <ZoomOut className="h-3 w-3" />
+                  </Button>
+                  <span className="text-xs text-muted-foreground w-10 text-center">
+                    {zoomLevel.toFixed(1)}x
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => applyZoom(zoomLevel + 0.5)}
+                    disabled={zoomLevel >= maxZoom}
+                    className="h-6 w-6"
+                  >
+                    <ZoomIn className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            {/* Long receipt mode info */}
+            {longReceiptMode && (
+              <Alert variant="default" className="py-2">
+                <FileStack className="h-4 w-4" />
+                <AlertTitle className="text-sm">{t('camera.longReceiptMode')}</AlertTitle>
+                <AlertDescription className="text-xs">
+                  {t('camera.longReceiptModeDesc')}
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {/* Quality warning */}
+            {showQualityWarning && lastQualityResult && (
+              <Alert variant="destructive" className="py-2">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle className="text-sm">{t('camera.qualityWarning')}</AlertTitle>
+                <AlertDescription className="text-xs">
+                  {t('camera.qualityWarningDesc')}
+                </AlertDescription>
+              </Alert>
+            )}
             
             <div className="relative flex-1 bg-black rounded-lg overflow-hidden min-h-[300px]">
               {/* Flash overlay animation */}
@@ -546,7 +982,7 @@ export function ContinuousCameraDialog({
                     className="mt-4"
                   >
                     <RotateCcw className="h-4 w-4 mr-2" />
-                    {language === 'es' ? 'Reintentar' : 'Retry'}
+                    {t('common.retry')}
                   </Button>
                 </div>
               ) : (
@@ -562,14 +998,28 @@ export function ContinuousCameraDialog({
                   {/* Receipt guide overlay */}
                   <div className={cn(
                     "absolute inset-8 border-2 border-dashed rounded-lg pointer-events-none transition-colors",
+                    longReceiptMode ? "border-warning" :
                     autoScanEnabled && scanStatus === 'detecting' ? "border-warning" :
                     autoScanEnabled && scanStatus === 'stabilizing' ? "border-primary" :
                     autoScanEnabled && scanStatus === 'capturing' ? "border-success" :
+                    showQualityWarning ? "border-destructive" :
                     "border-white/30"
                   )} />
                   
+                  {/* Long receipt part indicator */}
+                  {longReceiptMode && longReceiptParts.length > 0 && (
+                    <div className="absolute top-4 left-4 right-4">
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg backdrop-blur bg-warning/80 text-sm">
+                        <FileStack className="h-4 w-4" />
+                        <span>
+                          {t('camera.capturingPart')} {longReceiptParts.length + 1}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Auto-scan status overlay */}
-                  {autoScanEnabled && (
+                  {autoScanEnabled && !longReceiptMode && (
                     <div className="absolute top-4 left-4 right-4 space-y-2">
                       <div className={cn(
                         "flex items-center gap-2 px-3 py-2 rounded-lg backdrop-blur text-sm",
@@ -603,6 +1053,18 @@ export function ContinuousCameraDialog({
                     </div>
                   )}
                   
+                  {/* Quality score indicator */}
+                  {qualityCheckEnabled && lastQualityResult && (
+                    <div className={cn(
+                      "absolute top-4 right-4 px-2 py-1 rounded text-xs font-medium backdrop-blur",
+                      lastQualityResult.score >= 70 ? "bg-success/80 text-success-foreground" :
+                      lastQualityResult.score >= 50 ? "bg-warning/80 text-warning-foreground" :
+                      "bg-destructive/80 text-destructive-foreground"
+                    )}>
+                      {t('camera.quality')}: {lastQualityResult.score}%
+                    </div>
+                  )}
+                  
                   {/* Camera Controls Overlay */}
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4">
                     <Button
@@ -620,12 +1082,18 @@ export function ContinuousCameraDialog({
                       disabled={!cameraActive}
                       className={cn(
                         "rounded-full h-16 w-16 shadow-lg active:scale-95 transition-all",
-                        autoScanEnabled 
-                          ? "bg-secondary hover:bg-secondary/90" 
-                          : "bg-primary hover:bg-primary/90"
+                        longReceiptMode 
+                          ? "bg-warning hover:bg-warning/90" 
+                          : autoScanEnabled 
+                            ? "bg-secondary hover:bg-secondary/90" 
+                            : "bg-primary hover:bg-primary/90"
                       )}
                     >
-                      <Camera className="h-8 w-8" />
+                      {longReceiptMode ? (
+                        <FileStack className="h-8 w-8" />
+                      ) : (
+                        <Camera className="h-8 w-8" />
+                      )}
                     </Button>
                     
                     {flashSupported ? (
@@ -646,12 +1114,15 @@ export function ContinuousCameraDialog({
                   </div>
 
                   {/* Photo count badge */}
-                  {photos.length > 0 && (
+                  {(photos.length > 0 || longReceiptParts.length > 0) && (
                     <Badge 
-                      className="absolute bottom-4 right-4 bg-primary text-primary-foreground"
+                      className={cn(
+                        "absolute bottom-4 right-4",
+                        longReceiptMode ? "bg-warning text-warning-foreground" : "bg-primary text-primary-foreground"
+                      )}
                     >
                       <ImagePlus className="h-3 w-3 mr-1" />
-                      {photos.length}
+                      {longReceiptMode ? longReceiptParts.length : photos.length}
                     </Badge>
                   )}
                 </>
