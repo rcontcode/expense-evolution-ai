@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useTags } from '@/hooks/data/useTags';
 import { TagDialog } from '@/components/dialogs/TagDialog';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TagSelectProps {
   value: string[];
@@ -17,6 +18,7 @@ export function TagSelect({ value = [], onChange }: TagSelectProps) {
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { data: tags } = useTags();
+  const { t } = useLanguage();
 
   const selectedTags = tags?.filter((tag) => value.includes(tag.id)) || [];
 
@@ -45,7 +47,7 @@ export function TagSelect({ value = [], onChange }: TagSelectProps) {
           >
             <div className="flex flex-wrap gap-1 flex-1 items-center">
               {selectedTags.length === 0 ? (
-                <span className="text-muted-foreground">Select tags...</span>
+                <span className="text-muted-foreground">{t('tagSelect.selectTags')}</span>
               ) : (
                 selectedTags.map((tag) => (
                   <Badge
@@ -69,8 +71,8 @@ export function TagSelect({ value = [], onChange }: TagSelectProps) {
         </PopoverTrigger>
         <PopoverContent className="w-full p-0" align="start">
           <Command>
-            <CommandInput placeholder="Search tags..." />
-            <CommandEmpty>No tags found.</CommandEmpty>
+            <CommandInput placeholder={t('tagSelect.searchTags')} />
+            <CommandEmpty>{t('tagSelect.noTagsFound')}</CommandEmpty>
             <CommandGroup>
               {tags?.map((tag) => (
                 <CommandItem
@@ -100,7 +102,7 @@ export function TagSelect({ value = [], onChange }: TagSelectProps) {
                 className="text-primary"
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Create new tag
+                {t('tagSelect.createNewTag')}
               </CommandItem>
             </CommandGroup>
           </Command>

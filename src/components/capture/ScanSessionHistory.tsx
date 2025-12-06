@@ -63,7 +63,7 @@ function ChangeIndicator({ value, label }: ChangeIndicatorProps) {
 }
 
 export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { sessions, dailyStats, weeklyComparison, isLoading } = useScanSessions();
   const [open, setOpen] = useState(false);
 
@@ -88,14 +88,14 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className={className}>
           <History className="h-4 w-4 mr-2" />
-          {language === 'es' ? 'Historial' : 'History'}
+          {t('scanHistory.title').split(' ')[0]}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
-            {language === 'es' ? 'Historial de Escaneo' : 'Scan History'}
+            {t('scanHistory.title')}
           </DialogTitle>
         </DialogHeader>
 
@@ -105,32 +105,32 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                {language === 'es' ? 'Comparación Semanal' : 'Weekly Comparison'}
+                {t('scanHistory.weeklyComparison')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">
-                    {language === 'es' ? 'Semana Actual' : 'Current Week'}
+                    {t('scanHistory.currentWeek')}
                   </p>
                   <div className="space-y-1">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs">{language === 'es' ? 'Recibos' : 'Receipts'}</span>
+                      <span className="text-xs">{t('scanHistory.receipts')}</span>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">{weeklyComparison.currentWeek.receipts}</span>
                         <ChangeIndicator value={weeklyComparison.changes.receipts} label="receipts" />
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-xs">{language === 'es' ? 'Aprobados' : 'Approved'}</span>
+                      <span className="text-xs">{t('scanHistory.approved')}</span>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">{weeklyComparison.currentWeek.approved}</span>
                         <ChangeIndicator value={weeklyComparison.changes.approved} label="approved" />
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-xs">{language === 'es' ? 'Monto' : 'Amount'}</span>
+                      <span className="text-xs">{t('scanHistory.amount')}</span>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">${weeklyComparison.currentWeek.amount.toFixed(0)}</span>
                         <ChangeIndicator value={weeklyComparison.changes.amount} label="amount" />
@@ -140,19 +140,19 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
                 </div>
                 <div className="border-l pl-4">
                   <p className="text-xs text-muted-foreground mb-2">
-                    {language === 'es' ? 'Semana Anterior' : 'Previous Week'}
+                    {t('scanHistory.previousWeek')}
                   </p>
                   <div className="space-y-1">
                     <div className="flex justify-between">
-                      <span className="text-xs text-muted-foreground">{language === 'es' ? 'Recibos' : 'Receipts'}</span>
+                      <span className="text-xs text-muted-foreground">{t('scanHistory.receipts')}</span>
                       <span className="text-muted-foreground">{weeklyComparison.previousWeek.receipts}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-xs text-muted-foreground">{language === 'es' ? 'Aprobados' : 'Approved'}</span>
+                      <span className="text-xs text-muted-foreground">{t('scanHistory.approved')}</span>
                       <span className="text-muted-foreground">{weeklyComparison.previousWeek.approved}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-xs text-muted-foreground">{language === 'es' ? 'Monto' : 'Amount'}</span>
+                      <span className="text-xs text-muted-foreground">{t('scanHistory.amount')}</span>
                       <span className="text-muted-foreground">${weeklyComparison.previousWeek.amount.toFixed(0)}</span>
                     </div>
                   </div>
@@ -168,7 +168,7 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
                 <Receipt className="h-5 w-5 mx-auto text-primary mb-1" />
                 <p className="text-xl font-bold">{totalReceipts}</p>
                 <p className="text-xs text-muted-foreground">
-                  {language === 'es' ? 'Total Capturados' : 'Total Captured'}
+                  {t('scanHistory.totalCaptured')}
                 </p>
               </CardContent>
             </Card>
@@ -177,7 +177,7 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
                 <CheckCircle2 className="h-5 w-5 mx-auto text-success mb-1" />
                 <p className="text-xl font-bold">{totalApproved}</p>
                 <p className="text-xs text-muted-foreground">
-                  {language === 'es' ? 'Aprobados' : 'Approved'}
+                  {t('scanHistory.approved')}
                 </p>
               </CardContent>
             </Card>
@@ -186,7 +186,7 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
                 <TrendingUp className="h-5 w-5 mx-auto text-warning mb-1" />
                 <p className="text-xl font-bold">${totalAmount.toFixed(0)}</p>
                 <p className="text-xs text-muted-foreground">
-                  {language === 'es' ? 'Monto Total' : 'Total Amount'}
+                  {t('scanHistory.totalAmount')}
                 </p>
               </CardContent>
             </Card>
@@ -195,7 +195,7 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
                 <Clock className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
                 <p className="text-xl font-bold">{avgPerSession}</p>
                 <p className="text-xs text-muted-foreground">
-                  {language === 'es' ? 'Promedio/Sesión' : 'Avg/Session'}
+                  {t('scanHistory.avgPerSession')}
                 </p>
               </CardContent>
             </Card>
@@ -206,7 +206,7 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">
-                  {language === 'es' ? 'Últimos 7 días' : 'Last 7 days'}
+                  {t('scanHistory.last7Days')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -233,7 +233,7 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
                       <Area
                         type="monotone"
                         dataKey="receipts"
-                        name={language === 'es' ? 'Capturados' : 'Captured'}
+                        name={t('scanHistory.captured')}
                         stroke="hsl(var(--primary))"
                         fill="hsl(var(--primary) / 0.2)"
                         strokeWidth={2}
@@ -241,7 +241,7 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
                       <Area
                         type="monotone"
                         dataKey="approved"
-                        name={language === 'es' ? 'Aprobados' : 'Approved'}
+                        name={t('scanHistory.approved')}
                         stroke="hsl(var(--success))"
                         fill="hsl(var(--success) / 0.2)"
                         strokeWidth={2}
@@ -258,22 +258,20 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                {language === 'es' ? 'Sesiones Recientes' : 'Recent Sessions'}
+                {t('scanHistory.recentSessions')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <ScrollArea className="h-64">
                 {isLoading ? (
                   <div className="p-4 text-center text-muted-foreground">
-                    {language === 'es' ? 'Cargando...' : 'Loading...'}
+                    {t('scanHistory.loading')}
                   </div>
                 ) : sessions.length === 0 ? (
                   <div className="p-4 text-center text-muted-foreground">
                     <History className="h-8 w-8 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">
-                      {language === 'es' 
-                        ? 'No hay sesiones de escaneo aún'
-                        : 'No scan sessions yet'}
+                      {t('scanHistory.noSessions')}
                     </p>
                   </div>
                 ) : (
@@ -321,7 +319,7 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
                             )}
                             {!session.ended_at && (
                               <Badge className="text-xs bg-success text-success-foreground animate-pulse">
-                                {language === 'es' ? 'Activa' : 'Active'}
+                                {t('scanHistory.active')}
                               </Badge>
                             )}
                           </div>
