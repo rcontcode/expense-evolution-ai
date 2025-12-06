@@ -15,6 +15,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
+import { OnboardingGuide } from '@/components/ui/onboarding-guide';
 
 export default function Expenses() {
   const { t } = useLanguage();
@@ -85,6 +86,9 @@ export default function Expenses() {
               </InfoTooltip>
             </div>
           </div>
+
+          {/* Onboarding Guide */}
+          <OnboardingGuide pageKey="expenses" />
 
           <div className="flex items-center gap-2">
             <ExpenseFilters filters={filters} onChange={setFilters} />

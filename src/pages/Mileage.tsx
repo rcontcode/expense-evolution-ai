@@ -12,6 +12,7 @@ import { MileageTable } from '@/components/tables/MileageTable';
 import { MileageSummaryCard } from '@/components/dashboard/MileageSummaryCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
+import { OnboardingGuide } from '@/components/ui/onboarding-guide';
 import {
   Select,
   SelectContent,
@@ -85,6 +86,9 @@ export default function Mileage() {
               </InfoTooltip>
             </div>
           </div>
+
+          {/* Onboarding Guide */}
+          <OnboardingGuide pageKey="mileage" />
 
           <Tabs defaultValue="records" className="space-y-4">
             <TabsList>

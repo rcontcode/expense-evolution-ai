@@ -14,6 +14,7 @@ import { Client } from '@/types/expense.types';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { Badge } from '@/components/ui/badge';
+import { OnboardingGuide } from '@/components/ui/onboarding-guide';
 import { Progress } from '@/components/ui/progress';
 import {
   AlertDialog,
@@ -110,6 +111,9 @@ export default function Clients() {
               </Button>
             </InfoTooltip>
           </div>
+
+          {/* Onboarding Guide */}
+          <OnboardingGuide pageKey="clients" />
 
           {/* Legend */}
           <Card className="bg-muted/30">
