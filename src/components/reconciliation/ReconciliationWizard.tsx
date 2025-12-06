@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import confetti from 'canvas-confetti';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -72,6 +73,59 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
 
   const pendingTransactions = transactions.filter(t => t.status === 'pending');
   const matchedTransactions = transactions.filter(t => t.status === 'matched');
+
+  // Trigger confetti when reaching summary with all complete
+  useEffect(() => {
+    if (currentStep === 'summary') {
+      const allComplete = pendingTransactions.length === 0;
+      
+      // Always celebrate reaching summary
+      const celebrateCompletion = () => {
+        // First burst
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#22c55e', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6']
+        });
+        
+        if (allComplete) {
+          // Extra celebration for full completion
+          setTimeout(() => {
+            confetti({
+              particleCount: 50,
+              angle: 60,
+              spread: 55,
+              origin: { x: 0 },
+              colors: ['#22c55e', '#10b981']
+            });
+          }, 250);
+          
+          setTimeout(() => {
+            confetti({
+              particleCount: 50,
+              angle: 120,
+              spread: 55,
+              origin: { x: 1 },
+              colors: ['#22c55e', '#10b981']
+            });
+          }, 400);
+          
+          // Final big celebration
+          setTimeout(() => {
+            confetti({
+              particleCount: 150,
+              spread: 100,
+              origin: { y: 0.4 },
+              colors: ['#22c55e', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6', '#14b8a6']
+            });
+          }, 600);
+        }
+      };
+      
+      celebrateCompletion();
+    }
+  }, [currentStep, pendingTransactions.length]);
 
   const flows: Flow[] = [
     {
@@ -615,16 +669,16 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
           <div className="space-y-6 max-w-2xl mx-auto">
             <div className="text-center">
               {allComplete ? (
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-success to-success/60 flex items-center justify-center mx-auto mb-4">
-                  <PartyPopper className="h-12 w-12 text-success-foreground" />
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-success to-success/60 flex items-center justify-center mx-auto mb-4 animate-bounce">
+                  <PartyPopper className="h-12 w-12 text-success-foreground animate-pulse" />
                 </div>
               ) : (
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center mx-auto mb-4">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center mx-auto mb-4 animate-scale-in">
                   <TrendingUp className="h-12 w-12 text-primary-foreground" />
                 </div>
               )}
-              <h2 className="text-2xl font-bold">{msg.title}</h2>
-              <p className="text-muted-foreground mt-2">{msg.message}</p>
+              <h2 className="text-2xl font-bold animate-fade-in">{msg.title}</h2>
+              <p className="text-muted-foreground mt-2 animate-fade-in">{msg.message}</p>
             </div>
 
             <Card>
