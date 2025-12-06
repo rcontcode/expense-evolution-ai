@@ -15,24 +15,38 @@ import {
   HelpCircle,
   Banknote,
   Receipt,
-  Sparkles
+  Sparkles,
+  Trash2,
+  Calendar,
+  DollarSign
 } from 'lucide-react';
 import { EmptyStateWithGuide } from '@/components/ui/feature-guide';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
+import { useBankTransactions, useDeleteBankTransaction } from '@/hooks/data/useBankTransactions';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Reconciliation() {
   const { t, language } = useLanguage();
-  const [hasTransactions] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  
+  const { data: transactions = [], isLoading } = useBankTransactions();
+  const deleteTransaction = useDeleteBankTransaction();
+
+  const pendingTransactions = transactions.filter(t => t.status === 'pending');
+  const matchedTransactions = transactions.filter(t => t.status === 'matched');
+  const discrepancyTransactions = transactions.filter(t => t.status === 'discrepancy');
 
   const guideSteps = [
     {
       icon: <Upload className="h-5 w-5 text-primary" />,
       title: language === 'es' ? 'Sube tu estado bancario' : 'Upload bank statement',
       description: language === 'es' 
-        ? 'Exporta el CSV o OFX desde tu banco y súbelo aquí'
-        : 'Export the CSV or OFX from your bank and upload it here',
+        ? 'Exporta el CSV desde tu banco o toma una foto'
+        : 'Export CSV from your bank or take a photo',
     },
     {
       icon: <ArrowLeftRight className="h-5 w-5 text-primary" />,
@@ -49,14 +63,6 @@ export default function Reconciliation() {
         : 'Verify matches and resolve discrepancies',
     },
   ];
-
-  const handleUpload = () => {
-    toast.info(
-      language === 'es' 
-        ? 'Próximamente: Importación de estados bancarios' 
-        : 'Coming soon: Bank statement import'
-    );
-  };
 
   return (
     <Layout>
@@ -78,7 +84,7 @@ export default function Reconciliation() {
             </p>
           </div>
           <Button 
-            onClick={handleUpload}
+            onClick={() => setImportDialogOpen(true)}
             className="bg-gradient-primary hover:opacity-90 shadow-glow"
           >
             <Upload className="h-4 w-4 mr-2" />
@@ -95,7 +101,7 @@ export default function Reconciliation() {
                   <Banknote className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">0</p>
+                  <p className="text-2xl font-bold">{isLoading ? '-' : transactions.length}</p>
                   <p className="text-xs text-muted-foreground">
                     {language === 'es' ? 'Transacciones bancarias' : 'Bank transactions'}
                   </p>
@@ -111,7 +117,7 @@ export default function Reconciliation() {
                   <CheckCircle2 className="h-5 w-5 text-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">0</p>
+                  <p className="text-2xl font-bold">{isLoading ? '-' : matchedTransactions.length}</p>
                   <p className="text-xs text-muted-foreground">
                     {language === 'es' ? 'Conciliadas' : 'Matched'}
                   </p>
@@ -127,7 +133,7 @@ export default function Reconciliation() {
                   <Clock className="h-5 w-5 text-warning" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">0</p>
+                  <p className="text-2xl font-bold">{isLoading ? '-' : pendingTransactions.length}</p>
                   <p className="text-xs text-muted-foreground">
                     {language === 'es' ? 'Pendientes' : 'Pending'}
                   </p>
@@ -143,7 +149,7 @@ export default function Reconciliation() {
                   <XCircle className="h-5 w-5 text-destructive" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">0</p>
+                  <p className="text-2xl font-bold">{isLoading ? '-' : discrepancyTransactions.length}</p>
                   <p className="text-xs text-muted-foreground">
                     {language === 'es' ? 'Discrepancias' : 'Discrepancies'}
                   </p>
@@ -154,7 +160,15 @@ export default function Reconciliation() {
         </div>
 
         {/* Main Content */}
-        {!hasTransactions ? (
+        {isLoading ? (
+          <Card>
+            <CardContent className="p-6 space-y-4">
+              {[1, 2, 3].map(i => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </CardContent>
+          </Card>
+        ) : transactions.length === 0 ? (
           <EmptyStateWithGuide
             icon={<RefreshCw className="h-8 w-8 text-muted-foreground" />}
             title={language === 'es' ? 'Sin transacciones bancarias' : 'No bank transactions'}
@@ -165,7 +179,7 @@ export default function Reconciliation() {
             }
             guideTitle={language === 'es' ? '¿Para qué sirve la conciliación?' : 'What is reconciliation for?'}
             steps={guideSteps}
-            onAction={handleUpload}
+            onAction={() => setImportDialogOpen(true)}
             actionLabel={language === 'es' ? 'Importar Estado Bancario' : 'Import Bank Statement'}
           />
         ) : (
@@ -173,50 +187,128 @@ export default function Reconciliation() {
             <TabsList>
               <TabsTrigger value="pending" className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                {language === 'es' ? 'Pendientes' : 'Pending'}
+                {language === 'es' ? 'Pendientes' : 'Pending'} ({pendingTransactions.length})
               </TabsTrigger>
               <TabsTrigger value="matched" className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4" />
-                {language === 'es' ? 'Conciliadas' : 'Matched'}
+                {language === 'es' ? 'Conciliadas' : 'Matched'} ({matchedTransactions.length})
               </TabsTrigger>
               <TabsTrigger value="discrepancies" className="flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
-                {language === 'es' ? 'Discrepancias' : 'Discrepancies'}
+                {language === 'es' ? 'Discrepancias' : 'Discrepancies'} ({discrepancyTransactions.length})
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="pending">
               <Card>
-                <CardContent className="p-6">
-                  <p className="text-muted-foreground text-center py-8">
-                    {language === 'es' 
-                      ? 'No hay transacciones pendientes de conciliar'
-                      : 'No pending transactions to reconcile'}
-                  </p>
+                <CardContent className="p-4 space-y-3">
+                  {pendingTransactions.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">
+                      {language === 'es' 
+                        ? 'No hay transacciones pendientes de conciliar'
+                        : 'No pending transactions to reconcile'}
+                    </p>
+                  ) : (
+                    pendingTransactions.map(transaction => (
+                      <div key={transaction.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+                            <DollarSign className="h-5 w-5 text-warning" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">{transaction.description || (language === 'es' ? 'Sin descripción' : 'No description')}</p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Calendar className="h-3 w-3" />
+                              {format(new Date(transaction.transaction_date), 'dd MMM yyyy', {
+                                locale: language === 'es' ? es : undefined
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-destructive">
+                            -${transaction.amount.toFixed(2)}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={() => deleteTransaction.mutate(transaction.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
             
             <TabsContent value="matched">
               <Card>
-                <CardContent className="p-6">
-                  <p className="text-muted-foreground text-center py-8">
-                    {language === 'es' 
-                      ? 'No hay transacciones conciliadas'
-                      : 'No matched transactions'}
-                  </p>
+                <CardContent className="p-4 space-y-3">
+                  {matchedTransactions.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">
+                      {language === 'es' 
+                        ? 'No hay transacciones conciliadas'
+                        : 'No matched transactions'}
+                    </p>
+                  ) : (
+                    matchedTransactions.map(transaction => (
+                      <div key={transaction.id} className="flex items-center justify-between p-3 bg-success/5 rounded-lg border border-success/20">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+                            <CheckCircle2 className="h-5 w-5 text-success" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">{transaction.description}</p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Calendar className="h-3 w-3" />
+                              {format(new Date(transaction.transaction_date), 'dd MMM yyyy', {
+                                locale: language === 'es' ? es : undefined
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                        <span className="font-bold">${transaction.amount.toFixed(2)}</span>
+                      </div>
+                    ))
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
             
             <TabsContent value="discrepancies">
               <Card>
-                <CardContent className="p-6">
-                  <p className="text-muted-foreground text-center py-8">
-                    {language === 'es' 
-                      ? 'No hay discrepancias detectadas'
-                      : 'No discrepancies detected'}
-                  </p>
+                <CardContent className="p-4 space-y-3">
+                  {discrepancyTransactions.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">
+                      {language === 'es' 
+                        ? 'No hay discrepancias detectadas'
+                        : 'No discrepancies detected'}
+                    </p>
+                  ) : (
+                    discrepancyTransactions.map(transaction => (
+                      <div key={transaction.id} className="flex items-center justify-between p-3 bg-destructive/5 rounded-lg border border-destructive/20">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center">
+                            <AlertTriangle className="h-5 w-5 text-destructive" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">{transaction.description}</p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Calendar className="h-3 w-3" />
+                              {format(new Date(transaction.transaction_date), 'dd MMM yyyy', {
+                                locale: language === 'es' ? es : undefined
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                        <span className="font-bold text-destructive">${transaction.amount.toFixed(2)}</span>
+                      </div>
+                    ))
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -284,6 +376,12 @@ export default function Reconciliation() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Import Dialog */}
+      <BankImportDialog 
+        open={importDialogOpen} 
+        onClose={() => setImportDialogOpen(false)} 
+      />
     </Layout>
   );
 }
