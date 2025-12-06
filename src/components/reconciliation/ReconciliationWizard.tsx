@@ -24,8 +24,11 @@ import {
   Building2,
   User,
   TrendingUp,
-  Plus
+  Plus,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
 import { useBankTransactions, useBankTransactionsWithMatches, useMatchTransaction, useMarkAsDiscrepancy } from '@/hooks/data/useBankTransactions';
 import { useExpenses, useCreateExpense } from '@/hooks/data/useExpenses';
@@ -34,6 +37,7 @@ import { ExpenseFormValues } from '@/lib/validations/expense.schema';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
 
 interface Flow {
   id: string;
@@ -63,6 +67,9 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
   const [createExpenseDialogOpen, setCreateExpenseDialogOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionForExpense | null>(null);
   const [createdExpensesCount, setCreatedExpensesCount] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  
+  const { playSuccessSound, playCelebrationSound, playFullCelebration } = useCelebrationSound();
   
   const { data: transactions = [] } = useBankTransactions();
   const { data: transactionsWithMatches = [] } = useBankTransactionsWithMatches();
@@ -74,13 +81,22 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
   const pendingTransactions = transactions.filter(t => t.status === 'pending');
   const matchedTransactions = transactions.filter(t => t.status === 'matched');
 
-  // Trigger confetti when reaching summary with all complete
+  // Trigger confetti and sound when reaching summary with all complete
   useEffect(() => {
     if (currentStep === 'summary') {
       const allComplete = pendingTransactions.length === 0;
       
       // Always celebrate reaching summary
       const celebrateCompletion = () => {
+        // Play celebration sound if enabled
+        if (soundEnabled) {
+          if (allComplete) {
+            playFullCelebration();
+          } else {
+            playCelebrationSound();
+          }
+        }
+        
         // First burst
         confetti({
           particleCount: 100,
@@ -125,7 +141,17 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
       
       celebrateCompletion();
     }
-  }, [currentStep, pendingTransactions.length]);
+  }, [currentStep, pendingTransactions.length, soundEnabled, playCelebrationSound, playFullCelebration]);
+  
+  // Play success sound when matching transactions
+  const handleMatch = (transactionId: string, expenseId: string) => {
+    matchTransaction.mutate({ transactionId, expenseId }, {
+      onSuccess: () => {
+        setMatchedCount(prev => prev + 1);
+        if (soundEnabled) playSuccessSound();
+      }
+    });
+  };
 
   const flows: Flow[] = [
     {
@@ -255,11 +281,6 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
     }
   };
 
-  const handleMatch = (transactionId: string, expenseId: string) => {
-    matchTransaction.mutate({ transactionId, expenseId }, {
-      onSuccess: () => setMatchedCount(prev => prev + 1)
-    });
-  };
 
   const handleMarkDiscrepancy = (transactionId: string) => {
     markAsDiscrepancy.mutate(transactionId, {
@@ -323,6 +344,23 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
             </div>
             <h2 className="text-2xl font-bold">{msg.title}</h2>
             <p className="text-muted-foreground text-lg">{msg.message}</p>
+            
+            {/* Sound toggle */}
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-muted/50 rounded-full">
+              {soundEnabled ? (
+                <Volume2 className="h-4 w-4 text-primary" />
+              ) : (
+                <VolumeX className="h-4 w-4 text-muted-foreground" />
+              )}
+              <span className="text-sm">
+                {language === 'es' ? 'Sonidos de celebración' : 'Celebration sounds'}
+              </span>
+              <Switch 
+                checked={soundEnabled} 
+                onCheckedChange={setSoundEnabled}
+              />
+            </div>
+            
             <Button size="lg" onClick={() => setCurrentStep('select-flow')} className="bg-gradient-primary">
               {language === 'es' ? '¡Comencemos!' : "Let's begin!"}
               <ArrowRight className="ml-2 h-5 w-5" />
