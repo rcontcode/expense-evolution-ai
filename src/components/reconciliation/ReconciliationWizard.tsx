@@ -26,7 +26,8 @@ import {
   TrendingUp,
   Plus,
   Volume2,
-  VolumeX
+  VolumeX,
+  Split
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
@@ -34,6 +35,7 @@ import { useBankTransactions, useBankTransactionsWithMatches, useMatchTransactio
 import { useExpenses, useCreateExpense } from '@/hooks/data/useExpenses';
 import { ExpenseForm } from '@/components/forms/ExpenseForm';
 import { ExpenseFormValues } from '@/lib/validations/expense.schema';
+import { SplitTransactionDialog } from './SplitTransactionDialog';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -68,6 +70,9 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionForExpense | null>(null);
   const [createdExpensesCount, setCreatedExpensesCount] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [splitDialogOpen, setSplitDialogOpen] = useState(false);
+  const [transactionToSplit, setTransactionToSplit] = useState<TransactionForExpense | null>(null);
+  const [isSplitting, setIsSplitting] = useState(false);
   
   const { playSuccessSound, playCelebrationSound, playFullCelebration } = useCelebrationSound();
   
@@ -329,6 +334,73 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
       );
     } catch (error) {
       // Error handling done in mutations
+    }
+  };
+
+  const handleOpenSplitTransaction = (transaction: TransactionForExpense) => {
+    setTransactionToSplit(transaction);
+    setSplitDialogOpen(true);
+  };
+
+  const handleSplitSave = async (items: Array<{
+    id: string;
+    vendor: string;
+    amount: number;
+    category: string;
+    client_id: string | null;
+  }>, transactionId: string) => {
+    setIsSplitting(true);
+    
+    try {
+      let firstExpenseId: string | null = null;
+      
+      for (const item of items) {
+        const expenseData = {
+          date: transactionToSplit?.transaction_date || new Date().toISOString().split('T')[0],
+          vendor: item.vendor,
+          amount: item.amount,
+          category: item.category,
+          description: `${language === 'es' ? 'División de:' : 'Split from:'} ${transactionToSplit?.description || ''}`,
+          notes: null,
+          client_id: item.client_id,
+          status: 'pending' as const,
+          currency: 'CAD',
+        };
+
+        const createdExpense = await createExpense.mutateAsync(expenseData as any);
+        
+        // Link first expense to the transaction
+        if (!firstExpenseId) {
+          firstExpenseId = createdExpense.id;
+        }
+        
+        setCreatedExpensesCount(prev => prev + 1);
+      }
+      
+      // Match the transaction with the first expense
+      if (firstExpenseId) {
+        await matchTransaction.mutateAsync({ 
+          transactionId, 
+          expenseId: firstExpenseId 
+        });
+        setMatchedCount(prev => prev + 1);
+      }
+      
+      if (soundEnabled) playSuccessSound();
+      
+      toast.success(
+        language === 'es' 
+          ? `¡${items.length} gastos creados desde la transacción dividida!` 
+          : `${items.length} expenses created from split transaction!`
+      );
+    } catch (error) {
+      toast.error(
+        language === 'es' 
+          ? 'Error al dividir la transacción' 
+          : 'Error splitting transaction'
+      );
+    } finally {
+      setIsSplitting(false);
     }
   };
 
@@ -673,7 +745,20 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                             })}
                           >
                             <Plus className="h-3 w-3 mr-1" />
-                            {language === 'es' ? 'Crear Gasto' : 'Create Expense'}
+                            {language === 'es' ? 'Crear' : 'Create'}
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="secondary"
+                            onClick={() => handleOpenSplitTransaction({
+                              id: tx.id,
+                              amount: Number(tx.amount),
+                              description: tx.description,
+                              transaction_date: tx.transaction_date
+                            })}
+                          >
+                            <Split className="h-3 w-3 mr-1" />
+                            {language === 'es' ? 'Dividir' : 'Split'}
                           </Button>
                           <Button 
                             size="sm" 
@@ -682,7 +767,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                             disabled={markAsDiscrepancy.isPending}
                           >
                             <AlertTriangle className="h-3 w-3 mr-1" />
-                            {language === 'es' ? 'Discrepancia' : 'Discrepancy'}
+                            {language === 'es' ? 'Discr.' : 'Disc.'}
                           </Button>
                         </div>
                       </div>
@@ -888,6 +973,18 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
           />
         </DialogContent>
       </Dialog>
+
+      {/* Split Transaction Dialog */}
+      <SplitTransactionDialog
+        open={splitDialogOpen}
+        onClose={() => {
+          setSplitDialogOpen(false);
+          setTransactionToSplit(null);
+        }}
+        transaction={transactionToSplit}
+        onSave={handleSplitSave}
+        isLoading={isSplitting}
+      />
     </div>
   );
 }
