@@ -26,6 +26,72 @@ interface DailyStats {
   total_amount: number;
 }
 
+interface WeeklyComparison {
+  currentWeek: {
+    receipts: number;
+    approved: number;
+    amount: number;
+    sessions: number;
+  };
+  previousWeek: {
+    receipts: number;
+    approved: number;
+    amount: number;
+    sessions: number;
+  };
+  changes: {
+    receipts: number;
+    approved: number;
+    amount: number;
+    sessions: number;
+  };
+}
+
+function calculateWeeklyComparison(sessions: ScanSession[]): WeeklyComparison {
+  const now = new Date();
+  const startOfCurrentWeek = new Date(now);
+  startOfCurrentWeek.setDate(now.getDate() - now.getDay());
+  startOfCurrentWeek.setHours(0, 0, 0, 0);
+  
+  const startOfPreviousWeek = new Date(startOfCurrentWeek);
+  startOfPreviousWeek.setDate(startOfCurrentWeek.getDate() - 7);
+  
+  const currentWeek = { receipts: 0, approved: 0, amount: 0, sessions: 0 };
+  const previousWeek = { receipts: 0, approved: 0, amount: 0, sessions: 0 };
+  
+  sessions.forEach(session => {
+    const sessionDate = new Date(session.started_at);
+    
+    if (sessionDate >= startOfCurrentWeek) {
+      currentWeek.receipts += session.receipts_captured || 0;
+      currentWeek.approved += session.receipts_approved || 0;
+      currentWeek.amount += Number(session.total_amount) || 0;
+      currentWeek.sessions++;
+    } else if (sessionDate >= startOfPreviousWeek && sessionDate < startOfCurrentWeek) {
+      previousWeek.receipts += session.receipts_captured || 0;
+      previousWeek.approved += session.receipts_approved || 0;
+      previousWeek.amount += Number(session.total_amount) || 0;
+      previousWeek.sessions++;
+    }
+  });
+  
+  const calcChange = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return Math.round(((current - previous) / previous) * 100);
+  };
+  
+  return {
+    currentWeek,
+    previousWeek,
+    changes: {
+      receipts: calcChange(currentWeek.receipts, previousWeek.receipts),
+      approved: calcChange(currentWeek.approved, previousWeek.approved),
+      amount: calcChange(currentWeek.amount, previousWeek.amount),
+      sessions: calcChange(currentWeek.sessions, previousWeek.sessions),
+    },
+  };
+}
+
 export function useScanSessions() {
   const { user } = useAuth();
   const { language } = useLanguage();
@@ -175,9 +241,12 @@ export function useScanSessions() {
     },
   });
 
+  const weeklyComparison = calculateWeeklyComparison(sessionsQuery.data || []);
+
   return {
     sessions: sessionsQuery.data || [],
     dailyStats: dailyStatsQuery.data || [],
+    weeklyComparison,
     isLoading: sessionsQuery.isLoading,
     startSession,
     updateSession,
@@ -190,4 +259,4 @@ export function useScanSessions() {
   };
 }
 
-export type { ScanSession, DailyStats };
+export type { ScanSession, DailyStats, WeeklyComparison };

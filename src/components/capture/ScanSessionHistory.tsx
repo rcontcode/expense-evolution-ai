@@ -11,11 +11,11 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useScanSessions, DailyStats } from '@/hooks/data/useScanSessions';
+import { useScanSessions, DailyStats, WeeklyComparison } from '@/hooks/data/useScanSessions';
 import { 
   History, Calendar, Receipt, CheckCircle2, 
-  TrendingUp, Clock, Smartphone, Monitor,
-  ChevronRight, BarChart3
+  TrendingUp, TrendingDown, Clock, Smartphone, Monitor,
+  ChevronRight, BarChart3, ArrowUpRight, ArrowDownRight, Minus
 } from 'lucide-react';
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
@@ -34,9 +34,37 @@ interface ScanSessionHistoryProps {
   className?: string;
 }
 
+interface ChangeIndicatorProps {
+  value: number;
+  label: string;
+}
+
+function ChangeIndicator({ value, label }: ChangeIndicatorProps) {
+  const isPositive = value > 0;
+  const isNeutral = value === 0;
+  
+  return (
+    <div className={cn(
+      "flex items-center gap-1 text-xs font-medium",
+      isPositive && "text-success",
+      !isPositive && !isNeutral && "text-destructive",
+      isNeutral && "text-muted-foreground"
+    )}>
+      {isPositive ? (
+        <ArrowUpRight className="h-3 w-3" />
+      ) : isNeutral ? (
+        <Minus className="h-3 w-3" />
+      ) : (
+        <ArrowDownRight className="h-3 w-3" />
+      )}
+      <span>{isPositive ? '+' : ''}{value}%</span>
+    </div>
+  );
+}
+
 export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
   const { language } = useLanguage();
-  const { sessions, dailyStats, isLoading } = useScanSessions();
+  const { sessions, dailyStats, weeklyComparison, isLoading } = useScanSessions();
   const [open, setOpen] = useState(false);
 
   const locale = language === 'es' ? es : enUS;
@@ -72,6 +100,67 @@ export function ScanSessionHistory({ className }: ScanSessionHistoryProps) {
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto space-y-4">
+          {/* Weekly Comparison */}
+          <Card className="border-primary/20 bg-primary/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                {language === 'es' ? 'Comparación Semanal' : 'Weekly Comparison'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {language === 'es' ? 'Semana Actual' : 'Current Week'}
+                  </p>
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs">{language === 'es' ? 'Recibos' : 'Receipts'}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">{weeklyComparison.currentWeek.receipts}</span>
+                        <ChangeIndicator value={weeklyComparison.changes.receipts} label="receipts" />
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs">{language === 'es' ? 'Aprobados' : 'Approved'}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">{weeklyComparison.currentWeek.approved}</span>
+                        <ChangeIndicator value={weeklyComparison.changes.approved} label="approved" />
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs">{language === 'es' ? 'Monto' : 'Amount'}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">${weeklyComparison.currentWeek.amount.toFixed(0)}</span>
+                        <ChangeIndicator value={weeklyComparison.changes.amount} label="amount" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="border-l pl-4">
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {language === 'es' ? 'Semana Anterior' : 'Previous Week'}
+                  </p>
+                  <div className="space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-xs text-muted-foreground">{language === 'es' ? 'Recibos' : 'Receipts'}</span>
+                      <span className="text-muted-foreground">{weeklyComparison.previousWeek.receipts}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-xs text-muted-foreground">{language === 'es' ? 'Aprobados' : 'Approved'}</span>
+                      <span className="text-muted-foreground">{weeklyComparison.previousWeek.approved}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-xs text-muted-foreground">{language === 'es' ? 'Monto' : 'Amount'}</span>
+                      <span className="text-muted-foreground">${weeklyComparison.previousWeek.amount.toFixed(0)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Stats Summary */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Card>
