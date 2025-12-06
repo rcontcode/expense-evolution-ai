@@ -20,6 +20,23 @@ export interface ParsedTransaction {
   description: string;
 }
 
+export interface ExpenseMatch {
+  expense: {
+    id: string;
+    date: string;
+    amount: number;
+    vendor: string | null;
+    description: string | null;
+    category: string | null;
+  };
+  score: number;
+  matchType: 'exact' | 'amount' | 'date' | 'fuzzy';
+}
+
+export interface TransactionWithMatches extends BankTransaction {
+  suggestedMatches: ExpenseMatch[];
+}
+
 export function useBankTransactions() {
   return useQuery({
     queryKey: ['bank-transactions'],
@@ -37,6 +54,116 @@ export function useBankTransactions() {
       return data as BankTransaction[];
     },
   });
+}
+
+export function useBankTransactionsWithMatches() {
+  return useQuery({
+    queryKey: ['bank-transactions-with-matches'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Fetch transactions
+      const { data: transactions, error: txError } = await supabase
+        .from('bank_transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'pending')
+        .order('transaction_date', { ascending: false });
+
+      if (txError) throw txError;
+
+      // Fetch expenses for matching
+      const { data: expenses, error: expError } = await supabase
+        .from('expenses')
+        .select('id, date, amount, vendor, description, category')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
+
+      if (expError) throw expError;
+
+      // Find matches for each transaction
+      const transactionsWithMatches: TransactionWithMatches[] = (transactions || []).map(tx => {
+        const matches = findMatchingExpenses(tx, expenses || []);
+        return {
+          ...tx,
+          suggestedMatches: matches,
+        };
+      });
+
+      return transactionsWithMatches;
+    },
+  });
+}
+
+// Matching algorithm
+function findMatchingExpenses(
+  transaction: BankTransaction,
+  expenses: { id: string; date: string; amount: number; vendor: string | null; description: string | null; category: string | null }[]
+): ExpenseMatch[] {
+  const matches: ExpenseMatch[] = [];
+  const txDate = new Date(transaction.transaction_date);
+  const txAmount = Number(transaction.amount);
+
+  for (const expense of expenses) {
+    const expDate = new Date(expense.date);
+    const expAmount = Number(expense.amount);
+    
+    // Calculate date difference in days
+    const dateDiff = Math.abs((txDate.getTime() - expDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Calculate amount difference percentage
+    const amountDiff = Math.abs(txAmount - expAmount) / Math.max(txAmount, expAmount);
+    
+    let score = 0;
+    let matchType: 'exact' | 'amount' | 'date' | 'fuzzy' = 'fuzzy';
+
+    // Exact match: same amount and within 3 days
+    if (amountDiff < 0.01 && dateDiff <= 3) {
+      score = 100;
+      matchType = 'exact';
+    }
+    // Amount match: exact amount, different date (within 7 days)
+    else if (amountDiff < 0.01 && dateDiff <= 7) {
+      score = 85;
+      matchType = 'amount';
+    }
+    // Date match: same day, similar amount (within 5%)
+    else if (dateDiff <= 1 && amountDiff <= 0.05) {
+      score = 80;
+      matchType = 'date';
+    }
+    // Close match: within 3 days and 10% amount difference
+    else if (dateDiff <= 3 && amountDiff <= 0.10) {
+      score = 70;
+      matchType = 'fuzzy';
+    }
+    // Fuzzy match: within 7 days and 15% amount difference
+    else if (dateDiff <= 7 && amountDiff <= 0.15) {
+      score = 50;
+      matchType = 'fuzzy';
+    }
+
+    // Add text similarity bonus
+    if (score > 0 && transaction.description && expense.vendor) {
+      const descLower = transaction.description.toLowerCase();
+      const vendorLower = expense.vendor.toLowerCase();
+      if (descLower.includes(vendorLower) || vendorLower.includes(descLower)) {
+        score += 10;
+      }
+    }
+
+    if (score >= 50) {
+      matches.push({
+        expense,
+        score: Math.min(score, 100),
+        matchType,
+      });
+    }
+  }
+
+  // Sort by score descending and return top 3
+  return matches.sort((a, b) => b.score - a.score).slice(0, 3);
 }
 
 export function useCreateBankTransactions() {
@@ -63,6 +190,7 @@ export function useCreateBankTransactions() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['bank-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['bank-transactions-with-matches'] });
       toast.success(
         language === 'es'
           ? `${data.length} transacciones importadas exitosamente`
@@ -101,10 +229,40 @@ export function useMatchTransaction() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bank-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['bank-transactions-with-matches'] });
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
       toast.success(
         language === 'es'
           ? 'Transacción conciliada exitosamente'
           : 'Transaction matched successfully'
+      );
+    },
+  });
+}
+
+export function useMarkAsDiscrepancy() {
+  const queryClient = useQueryClient();
+  const { language } = useLanguage();
+
+  return useMutation({
+    mutationFn: async (transactionId: string) => {
+      const { data, error } = await supabase
+        .from('bank_transactions')
+        .update({ status: 'discrepancy' })
+        .eq('id', transactionId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bank-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['bank-transactions-with-matches'] });
+      toast.info(
+        language === 'es'
+          ? 'Transacción marcada como discrepancia'
+          : 'Transaction marked as discrepancy'
       );
     },
   });
@@ -125,6 +283,7 @@ export function useDeleteBankTransaction() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bank-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['bank-transactions-with-matches'] });
       toast.success(
         language === 'es'
           ? 'Transacción eliminada'
