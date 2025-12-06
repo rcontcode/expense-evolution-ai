@@ -12,7 +12,8 @@ import { useProfile, useUpdateProfile } from '@/hooks/data/useProfile';
 import { useSavingsGoals, useCreateSavingsGoal, useUpdateSavingsGoal, useDeleteSavingsGoal, useAddToSavingsGoal } from '@/hooks/data/useSavingsGoals';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { User, Target, Plus, Edit, Trash2, PiggyBank, Save, DollarSign, Palette, Sun, Moon, Monitor, TrendingUp } from 'lucide-react';
+import { User, Target, Plus, Edit, Trash2, PiggyBank, Save, DollarSign, Palette, Sun, Moon, Monitor, TrendingUp, RotateCcw, BookOpen } from 'lucide-react';
+import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { InvestmentSection } from '@/components/investments/InvestmentSection';
@@ -336,6 +337,43 @@ export default function Settings() {
                 ))}
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Onboarding Guides Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              <div>
+                <CardTitle>{language === 'es' ? 'Guías de Ayuda' : 'Help Guides'}</CardTitle>
+                <CardDescription>
+                  {language === 'es' 
+                    ? 'Restablece las guías de onboarding para verlas de nuevo en cada página' 
+                    : 'Reset the onboarding guides to see them again on each page'}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                // Clear all onboarding dismissed flags
+                const keysToRemove = Object.keys(localStorage).filter(key => 
+                  key.startsWith('onboarding-dismissed-')
+                );
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+                toast.success(
+                  language === 'es' 
+                    ? '¡Guías restablecidas! Las verás de nuevo al visitar cada página.' 
+                    : 'Guides reset! You will see them again when visiting each page.'
+                );
+              }}
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              {language === 'es' ? 'Restablecer Guías de Onboarding' : 'Reset Onboarding Guides'}
+            </Button>
           </CardContent>
         </Card>
 
