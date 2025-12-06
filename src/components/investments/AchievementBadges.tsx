@@ -21,13 +21,14 @@ interface AchievementBadgesProps {
 const ACHIEVEMENT_DETAILS: Record<string, {
   icon: string;
   points: number;
-  category: 'beginner' | 'savings' | 'investment' | 'streak' | 'special';
+  category: 'beginner' | 'savings' | 'investment' | 'streak' | 'activity' | 'missions' | 'special';
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
   description_es: string;
   description_en: string;
   requirement_es: string;
   requirement_en: string;
 }> = {
+  // Beginner achievements
   first_expense: { 
     icon: '📝', points: 10, category: 'beginner', rarity: 'common',
     description_es: 'Primer Paso', description_en: 'First Step',
@@ -48,6 +49,28 @@ const ACHIEVEMENT_DETAILS: Record<string, {
     description_es: 'Inversor Iniciado', description_en: 'Beginner Investor',
     requirement_es: 'Registra tu primera inversión', requirement_en: 'Record your first investment'
   },
+  complete_profile: { 
+    icon: '✅', points: 15, category: 'beginner', rarity: 'common',
+    description_es: 'Perfil Completo', description_en: 'Complete Profile',
+    requirement_es: 'Completa tu perfil financiero', requirement_en: 'Complete your financial profile'
+  },
+  first_client: { 
+    icon: '🤝', points: 15, category: 'beginner', rarity: 'common',
+    description_es: 'Primer Cliente', description_en: 'First Client',
+    requirement_es: 'Agrega tu primer cliente', requirement_en: 'Add your first client'
+  },
+  first_mileage: { 
+    icon: '🚗', points: 10, category: 'beginner', rarity: 'common',
+    description_es: 'En el Camino', description_en: 'On the Road',
+    requirement_es: 'Registra tu primer viaje', requirement_en: 'Record your first trip'
+  },
+  first_contract: { 
+    icon: '📄', points: 20, category: 'beginner', rarity: 'uncommon',
+    description_es: 'Formalizado', description_en: 'Formalized',
+    requirement_es: 'Sube tu primer contrato', requirement_en: 'Upload your first contract'
+  },
+  
+  // Streak achievements
   track_7_days: { 
     icon: '🔥', points: 25, category: 'streak', rarity: 'uncommon',
     description_es: 'Semana de Fuego', description_en: 'Fire Week',
@@ -58,6 +81,23 @@ const ACHIEVEMENT_DETAILS: Record<string, {
     description_es: 'Mes Eléctrico', description_en: 'Electric Month',
     requirement_es: 'Mantén una racha de 30 días', requirement_en: 'Maintain a 30-day streak'
   },
+  track_60_days: { 
+    icon: '💪', points: 100, category: 'streak', rarity: 'epic',
+    description_es: 'Dos Meses Fuertes', description_en: 'Two Strong Months',
+    requirement_es: 'Mantén una racha de 60 días', requirement_en: 'Maintain a 60-day streak'
+  },
+  track_100_days: { 
+    icon: '🌟', points: 150, category: 'streak', rarity: 'epic',
+    description_es: 'Centenario', description_en: 'Centurion',
+    requirement_es: 'Mantén una racha de 100 días', requirement_en: 'Maintain a 100-day streak'
+  },
+  track_365_days: { 
+    icon: '👑', points: 500, category: 'streak', rarity: 'legendary',
+    description_es: 'Rey del Año', description_en: 'Year King',
+    requirement_es: 'Mantén una racha de 365 días', requirement_en: 'Maintain a 365-day streak'
+  },
+  
+  // Savings achievements
   save_1000: { 
     icon: '💵', points: 30, category: 'savings', rarity: 'uncommon',
     description_es: 'Primer Millar', description_en: 'First Thousand',
@@ -68,6 +108,23 @@ const ACHIEVEMENT_DETAILS: Record<string, {
     description_es: 'Diamante en Bruto', description_en: 'Diamond in the Rough',
     requirement_es: 'Ahorra $5,000', requirement_en: 'Save $5,000'
   },
+  save_10000: { 
+    icon: '🏦', points: 150, category: 'savings', rarity: 'epic',
+    description_es: 'Ahorrador Élite', description_en: 'Elite Saver',
+    requirement_es: 'Ahorra $10,000', requirement_en: 'Save $10,000'
+  },
+  save_25000: { 
+    icon: '💰', points: 250, category: 'savings', rarity: 'epic',
+    description_es: 'Tesoro Creciente', description_en: 'Growing Treasure',
+    requirement_es: 'Ahorra $25,000', requirement_en: 'Save $25,000'
+  },
+  save_50000: { 
+    icon: '🤑', points: 400, category: 'savings', rarity: 'legendary',
+    description_es: 'Maestro del Ahorro', description_en: 'Savings Master',
+    requirement_es: 'Ahorra $50,000', requirement_en: 'Save $50,000'
+  },
+  
+  // Investment achievements
   invest_1000: { 
     icon: '🚀', points: 40, category: 'investment', rarity: 'uncommon',
     description_es: 'Despegue', description_en: 'Takeoff',
@@ -78,15 +135,121 @@ const ACHIEVEMENT_DETAILS: Record<string, {
     description_es: 'Gran Inversor', description_en: 'Great Investor',
     requirement_es: 'Invierte $10,000', requirement_en: 'Invest $10,000'
   },
-  complete_profile: { 
-    icon: '✅', points: 15, category: 'beginner', rarity: 'common',
-    description_es: 'Perfil Completo', description_en: 'Complete Profile',
-    requirement_es: 'Completa tu perfil financiero', requirement_en: 'Complete your financial profile'
+  invest_25000: { 
+    icon: '📊', points: 200, category: 'investment', rarity: 'epic',
+    description_es: 'Portafolio Sólido', description_en: 'Solid Portfolio',
+    requirement_es: 'Invierte $25,000', requirement_en: 'Invest $25,000'
   },
+  invest_50000: { 
+    icon: '🌙', points: 350, category: 'investment', rarity: 'legendary',
+    description_es: 'Inversor Lunar', description_en: 'Moon Investor',
+    requirement_es: 'Invierte $50,000', requirement_en: 'Invest $50,000'
+  },
+  invest_100000: { 
+    icon: '🌍', points: 500, category: 'investment', rarity: 'legendary',
+    description_es: 'Inversor Global', description_en: 'Global Investor',
+    requirement_es: 'Invierte $100,000', requirement_en: 'Invest $100,000'
+  },
+  
+  // Activity achievements
+  expenses_10: { 
+    icon: '📋', points: 15, category: 'activity', rarity: 'common',
+    description_es: 'Rastreador', description_en: 'Tracker',
+    requirement_es: 'Registra 10 gastos', requirement_en: 'Record 10 expenses'
+  },
+  expenses_50: { 
+    icon: '📑', points: 35, category: 'activity', rarity: 'uncommon',
+    description_es: 'Organizador', description_en: 'Organizer',
+    requirement_es: 'Registra 50 gastos', requirement_en: 'Record 50 expenses'
+  },
+  expenses_100: { 
+    icon: '📚', points: 60, category: 'activity', rarity: 'rare',
+    description_es: 'Archivador Pro', description_en: 'Pro Archiver',
+    requirement_es: 'Registra 100 gastos', requirement_en: 'Record 100 expenses'
+  },
+  expenses_500: { 
+    icon: '🗄️', points: 150, category: 'activity', rarity: 'epic',
+    description_es: 'Maestro de Datos', description_en: 'Data Master',
+    requirement_es: 'Registra 500 gastos', requirement_en: 'Record 500 expenses'
+  },
+  income_entries_10: { 
+    icon: '💸', points: 20, category: 'activity', rarity: 'common',
+    description_es: 'Flujo de Caja', description_en: 'Cash Flow',
+    requirement_es: 'Registra 10 ingresos', requirement_en: 'Record 10 incomes'
+  },
+  income_entries_50: { 
+    icon: '🏧', points: 50, category: 'activity', rarity: 'rare',
+    description_es: 'Banco Personal', description_en: 'Personal Bank',
+    requirement_es: 'Registra 50 ingresos', requirement_en: 'Record 50 incomes'
+  },
+  
+  // Mission achievements
+  mission_starter: { 
+    icon: '🎮', points: 25, category: 'missions', rarity: 'uncommon',
+    description_es: 'Jugador Activo', description_en: 'Active Player',
+    requirement_es: 'Completa 5 misiones', requirement_en: 'Complete 5 missions'
+  },
+  mission_master: { 
+    icon: '🎯', points: 75, category: 'missions', rarity: 'rare',
+    description_es: 'Maestro de Misiones', description_en: 'Mission Master',
+    requirement_es: 'Completa 25 misiones', requirement_en: 'Complete 25 missions'
+  },
+  mission_legend: { 
+    icon: '🏅', points: 200, category: 'missions', rarity: 'legendary',
+    description_es: 'Leyenda', description_en: 'Legend',
+    requirement_es: 'Completa 100 misiones', requirement_en: 'Complete 100 missions'
+  },
+  daily_perfect: { 
+    icon: '⭐', points: 30, category: 'missions', rarity: 'rare',
+    description_es: 'Día Perfecto', description_en: 'Perfect Day',
+    requirement_es: 'Completa todas las misiones diarias', requirement_en: 'Complete all daily missions'
+  },
+  weekly_perfect: { 
+    icon: '🌠', points: 100, category: 'missions', rarity: 'epic',
+    description_es: 'Semana Perfecta', description_en: 'Perfect Week',
+    requirement_es: 'Completa todas las misiones semanales', requirement_en: 'Complete all weekly missions'
+  },
+  
+  // Special achievements
   first_passive_income: { 
     icon: '🌱', points: 50, category: 'special', rarity: 'rare',
     description_es: 'Semilla Plantada', description_en: 'Seed Planted',
     requirement_es: 'Genera tu primer ingreso pasivo', requirement_en: 'Generate your first passive income'
+  },
+  diversified_investor: { 
+    icon: '🎨', points: 100, category: 'special', rarity: 'epic',
+    description_es: 'Inversor Diversificado', description_en: 'Diversified Investor',
+    requirement_es: 'Invierte en 3+ tipos de activos', requirement_en: 'Invest in 3+ asset types'
+  },
+  tax_master: { 
+    icon: '📊', points: 75, category: 'special', rarity: 'rare',
+    description_es: 'Experto en Impuestos', description_en: 'Tax Expert',
+    requirement_es: 'Exporta un reporte T2125', requirement_en: 'Export a T2125 report'
+  },
+  early_bird: { 
+    icon: '🐦', points: 20, category: 'special', rarity: 'uncommon',
+    description_es: 'Madrugador', description_en: 'Early Bird',
+    requirement_es: 'Registra un gasto antes de las 7am', requirement_en: 'Record an expense before 7am'
+  },
+  night_owl: { 
+    icon: '🦉', points: 20, category: 'special', rarity: 'uncommon',
+    description_es: 'Búho Nocturno', description_en: 'Night Owl',
+    requirement_es: 'Registra un gasto después de las 11pm', requirement_en: 'Record an expense after 11pm'
+  },
+  weekend_warrior: { 
+    icon: '⚔️', points: 25, category: 'special', rarity: 'uncommon',
+    description_es: 'Guerrero de Fin de Semana', description_en: 'Weekend Warrior',
+    requirement_es: 'Registra 5 gastos en un fin de semana', requirement_en: 'Record 5 expenses in a weekend'
+  },
+  consistent_saver: { 
+    icon: '🎖️', points: 100, category: 'special', rarity: 'epic',
+    description_es: 'Ahorrador Consistente', description_en: 'Consistent Saver',
+    requirement_es: 'Ahorra cada mes por 6 meses', requirement_en: 'Save every month for 6 months'
+  },
+  budget_guru: { 
+    icon: '🧮', points: 80, category: 'special', rarity: 'rare',
+    description_es: 'Gurú del Presupuesto', description_en: 'Budget Guru',
+    requirement_es: 'Mantén gastos bajo presupuesto 3 meses', requirement_en: 'Keep expenses under budget for 3 months'
   },
 };
 
@@ -111,6 +274,8 @@ const CATEGORY_ICONS = {
   savings: Target,
   investment: Zap,
   streak: Flame,
+  activity: Medal,
+  missions: Award,
   special: Crown,
 };
 
@@ -126,7 +291,7 @@ export function AchievementBadges({ achievements, userLevel }: AchievementBadges
   }, 0);
 
   // Group achievements by category
-  const categories = ['beginner', 'savings', 'investment', 'streak', 'special'] as const;
+  const categories = ['beginner', 'savings', 'investment', 'streak', 'activity', 'missions', 'special'] as const;
   const groupedAchievements = categories.map(category => ({
     category,
     achievements: Object.entries(ACHIEVEMENT_DETAILS).filter(([, v]) => v.category === category)

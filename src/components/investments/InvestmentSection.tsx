@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   TrendingUp, Target, Lightbulb, Trophy, Star, Sparkles, 
-  Plus, Edit, Trash2, DollarSign, Brain, Flame, Quote, BarChart3, Medal
+  Plus, Edit, Trash2, DollarSign, Brain, Flame, Quote, BarChart3, Medal, Gift
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useInvestmentGoals, useDeleteInvestmentGoal } from '@/hooks/data/useInvestmentGoals';
@@ -19,6 +19,7 @@ import { FinancialProfileDialog } from './FinancialProfileDialog';
 import { PassiveIncomeSuggestions } from './PassiveIncomeSuggestions';
 import { ProgressCharts } from './ProgressCharts';
 import { AchievementBadges } from './AchievementBadges';
+import { MissionsCard } from './MissionsCard';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -147,8 +148,12 @@ export function InvestmentSection() {
       </Card>
 
       {/* Main Investment Content */}
-      <Tabs defaultValue="goals" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+      <Tabs defaultValue="missions" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="missions" className="flex items-center gap-2">
+            <Gift className="h-4 w-4" />
+            <span className="hidden sm:inline">{t('missions.title')}</span>
+          </TabsTrigger>
           <TabsTrigger value="goals" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
             <span className="hidden sm:inline">{t('investments.goals')}</span>
@@ -170,6 +175,11 @@ export function InvestmentSection() {
             <span className="hidden sm:inline">{t('investments.learn')}</span>
           </TabsTrigger>
         </TabsList>
+
+        {/* Missions Tab */}
+        <TabsContent value="missions">
+          <MissionsCard />
+        </TabsContent>
 
         {/* Goals Tab */}
         <TabsContent value="goals" className="space-y-4">
