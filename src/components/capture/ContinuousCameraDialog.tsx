@@ -167,7 +167,7 @@ export function ContinuousCameraDialog({
   onOpenChange,
   onSubmitPhotos,
 }: ContinuousCameraDialogProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const detectionCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -447,13 +447,13 @@ export function ContinuousCameraDialog({
   const getScanStatusText = () => {
     switch (scanStatus) {
       case 'waiting':
-        return language === 'es' ? 'Esperando recibo...' : 'Waiting for receipt...';
+        return t('camera.waitingReceipt');
       case 'detecting':
-        return language === 'es' ? '¡Recibo detectado! Mantén estable...' : 'Receipt detected! Hold steady...';
+        return t('camera.receiptDetected');
       case 'stabilizing':
-        return language === 'es' ? 'Estabilizando...' : 'Stabilizing...';
+        return t('camera.stabilizing');
       case 'capturing':
-        return language === 'es' ? '¡Capturando!' : 'Capturing!';
+        return t('camera.capturing');
       default:
         return '';
     }
@@ -475,12 +475,10 @@ export function ContinuousCameraDialog({
         <DialogHeader className="p-4 pb-2">
           <DialogTitle className="flex items-center gap-2">
             <Camera className="h-5 w-5 text-primary" />
-            {language === 'es' ? 'Captura Continua' : 'Continuous Capture'}
+            {t('camera.continuousCapture')}
           </DialogTitle>
           <DialogDescription>
-            {language === 'es' 
-              ? 'Toma múltiples fotos de recibos sin cerrar la cámara'
-              : 'Take multiple photos of receipts without closing the camera'}
+            {t('camera.continuousCaptureDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -497,7 +495,7 @@ export function ContinuousCameraDialog({
                 />
                 <Label htmlFor="auto-scan" className="flex items-center gap-1 text-xs">
                   <ScanLine className="h-3 w-3" />
-                  {language === 'es' ? 'Auto-escaneo' : 'Auto-scan'}
+                  {t('camera.autoScan')}
                 </Label>
               </div>
               
@@ -509,7 +507,7 @@ export function ContinuousCameraDialog({
                 />
                 <Label htmlFor="auto-crop" className="flex items-center gap-1 text-xs">
                   <Crop className="h-3 w-3" />
-                  {language === 'es' ? 'Auto-recorte' : 'Auto-crop'}
+                  {t('camera.autoCrop')}
                 </Label>
               </div>
               
@@ -522,7 +520,7 @@ export function ContinuousCameraDialog({
                   />
                   <Label htmlFor="flash" className="flex items-center gap-1 text-xs">
                     <Flashlight className="h-3 w-3" />
-                    Flash
+                    {t('camera.flash')}
                   </Label>
                 </div>
               )}
@@ -669,7 +667,7 @@ export function ContinuousCameraDialog({
             <div className="flex items-center justify-between">
               <h3 className="font-medium flex items-center gap-2">
                 <Zap className="h-4 w-4 text-warning" />
-                {language === 'es' ? 'Capturadas' : 'Captured'} ({photos.length})
+                {t('scanHistory.captured')} ({photos.length})
               </h3>
               {photos.length > 0 && (
                 <Button 
@@ -679,7 +677,7 @@ export function ContinuousCameraDialog({
                   className="text-destructive hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
-                  {language === 'es' ? 'Limpiar' : 'Clear'}
+                  {t('common.delete')}
                 </Button>
               )}
             </div>
@@ -689,13 +687,7 @@ export function ContinuousCameraDialog({
                 <Card className="border-dashed p-4 text-center text-muted-foreground">
                   <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">
-                    {autoScanEnabled 
-                      ? (language === 'es' 
-                          ? 'Coloca recibos frente a la cámara' 
-                          : 'Place receipts in front of camera')
-                      : (language === 'es' 
-                          ? 'Toma fotos de tus recibos'
-                          : 'Take photos of your receipts')}
+                    {t('camera.startCapturing')}
                   </p>
                 </Card>
               ) : (
@@ -736,17 +728,15 @@ export function ContinuousCameraDialog({
               disabled={photos.length === 0 || isSubmitting}
               className="w-full bg-gradient-primary"
             >
-              {isSubmitting ? (
+            {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {language === 'es' ? 'Procesando...' : 'Processing...'}
+                  {t('camera.processing')}
                 </>
               ) : (
                 <>
                   <Send className="h-4 w-4 mr-2" />
-                  {language === 'es' 
-                    ? `Enviar ${photos.length} recibo(s)`
-                    : `Submit ${photos.length} receipt(s)`}
+                  {t('camera.processPhotos')} ({photos.length})
                 </>
               )}
             </Button>
