@@ -435,8 +435,11 @@ export default function Settings() {
                 <p className="text-sm text-muted-foreground">{t('savingsGoals.createFirst')}</p>
               </div>
             )}
-          </CardContent>
+        </CardContent>
         </Card>
+
+        {/* Investment Goals Section */}
+        <InvestmentSection />
 
         {/* Goal Dialog */}
         <Dialog open={goalDialogOpen} onOpenChange={setGoalDialogOpen}>
