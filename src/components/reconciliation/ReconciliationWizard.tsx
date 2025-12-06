@@ -27,7 +27,8 @@ import {
   Plus,
   Volume2,
   VolumeX,
-  Split
+  Split,
+  Link2
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
@@ -36,6 +37,7 @@ import { useExpenses, useCreateExpense } from '@/hooks/data/useExpenses';
 import { ExpenseForm } from '@/components/forms/ExpenseForm';
 import { ExpenseFormValues } from '@/lib/validations/expense.schema';
 import { SplitTransactionDialog } from './SplitTransactionDialog';
+import { LinkExpenseDialog } from './LinkExpenseDialog';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -73,6 +75,8 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
   const [splitDialogOpen, setSplitDialogOpen] = useState(false);
   const [transactionToSplit, setTransactionToSplit] = useState<TransactionForExpense | null>(null);
   const [isSplitting, setIsSplitting] = useState(false);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [transactionToLink, setTransactionToLink] = useState<TransactionForExpense | null>(null);
   
   const { playSuccessSound, playCelebrationSound, playFullCelebration } = useCelebrationSound();
   
@@ -284,6 +288,27 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
       default:
         return { title: '', message: '' };
     }
+  };
+
+  const handleOpenLinkDialog = (transaction: TransactionForExpense) => {
+    setTransactionToLink(transaction);
+    setLinkDialogOpen(true);
+  };
+
+  const handleLinkExpense = (transactionId: string, expenseId: string) => {
+    matchTransaction.mutate({ transactionId, expenseId }, {
+      onSuccess: () => {
+        setMatchedCount(prev => prev + 1);
+        if (soundEnabled) playSuccessSound();
+        toast.success(
+          language === 'es' 
+            ? '¡Transacción vinculada correctamente!' 
+            : 'Transaction linked successfully!'
+        );
+        setLinkDialogOpen(false);
+        setTransactionToLink(null);
+      }
+    });
   };
 
 
@@ -732,7 +757,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-bold">${Number(tx.amount).toFixed(2)}</span>
                           <Button 
                             size="sm" 
@@ -746,6 +771,19 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                           >
                             <Plus className="h-3 w-3 mr-1" />
                             {language === 'es' ? 'Crear' : 'Create'}
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="default"
+                            onClick={() => handleOpenLinkDialog({
+                              id: tx.id,
+                              amount: Number(tx.amount),
+                              description: tx.description,
+                              transaction_date: tx.transaction_date
+                            })}
+                          >
+                            <Link2 className="h-3 w-3 mr-1" />
+                            {language === 'es' ? 'Vincular' : 'Link'}
                           </Button>
                           <Button 
                             size="sm" 
@@ -984,6 +1022,19 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
         transaction={transactionToSplit}
         onSave={handleSplitSave}
         isLoading={isSplitting}
+      />
+
+      {/* Link Expense Dialog */}
+      <LinkExpenseDialog
+        open={linkDialogOpen}
+        onClose={() => {
+          setLinkDialogOpen(false);
+          setTransactionToLink(null);
+        }}
+        transaction={transactionToLink}
+        expenses={expenses}
+        onLink={handleLinkExpense}
+        isLoading={matchTransaction.isPending}
       />
     </div>
   );
