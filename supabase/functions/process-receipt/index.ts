@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, voiceText } = await req.json();
+    const { imageBase64, voiceText, detectMultipleReceipts } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
@@ -21,32 +21,48 @@ serve(async (req) => {
     console.log("Processing receipt with Gemini 2.5 Flash...");
     console.log("Has image:", !!imageBase64);
     console.log("Has voice text:", !!voiceText);
+    console.log("Detect multiple receipts:", !!detectMultipleReceipts);
 
 const systemPrompt = `You are an expert receipt analyzer for expense tracking. Extract expense information from receipts (images or text descriptions).
 
-CRITICAL: If a receipt or note contains MULTIPLE items that belong to DIFFERENT expense categories, you MUST split them into separate expense entries. 
+${detectMultipleReceipts ? `
+MULTI-RECEIPT DETECTION MODE ENABLED:
+- This image may contain MULTIPLE separate physical receipts or invoices
+- Carefully scan the ENTIRE image for separate receipt documents
+- Each physical receipt should become a separate entry with its own vendor, date, and total
+- Look for visual separations, different paper edges, different fonts/layouts indicating separate receipts
+- Also check for multiple transactions on a single receipt that should be split
+` : ''}
+
+CRITICAL SPLITTING RULES:
+1. If a receipt or note contains MULTIPLE items that belong to DIFFERENT expense categories, you MUST split them into separate expense entries
+2. If the image shows MULTIPLE PHYSICAL RECEIPTS, extract each as a separate expense entry
+3. Each unique vendor/transaction should be its own expense entry
 
 Examples of when to split:
-- "Beef 200, Gas 80" → Split into: meals (Beef $200) + mileage (Gas $80)
+- Multiple physical receipts in one photo → Each receipt = separate expense entry
+- "Beef 200, Gas 80" → Split into: meals (Beef $200) + fuel (Gas $80)
 - "Lunch $50, Uber $30" → Split into: meals (Lunch $50) + travel (Uber $30)
 - "Office supplies $100, Coffee $15" → Split into: office_supplies ($100) + meals (Coffee $15)
 
-DO NOT combine items from different categories into one expense.
+DO NOT combine items from different categories or different receipts into one expense.
 
 IMPORTANT: Always respond with a valid JSON object with this exact structure:
 {
+  "receipts_detected": number (how many physical receipts/invoices were found in the image),
   "expenses": [
     {
       "vendor": "store or company name",
       "amount": numeric value (no currency symbols),
       "date": "YYYY-MM-DD format",
-      "category": "one of: meals, travel, equipment, software, office_supplies, professional_services, utilities, home_office, mileage, other",
+      "category": "one of: meals, travel, equipment, software, office_supplies, professional_services, utilities, home_office, mileage, fuel, other",
       "description": "brief description of this specific item",
       "confidence": "high, medium, or low",
       "currency": "CAD, USD, etc.",
       "cra_deductible": true or false,
       "cra_deduction_rate": percentage (e.g., 50 for meals, 100 for equipment),
-      "typically_reimbursable": true or false (based on common contractor agreements)
+      "typically_reimbursable": true or false (based on common contractor agreements),
+      "receipt_index": number (which physical receipt this came from, starting at 1)
     }
   ]
 }
@@ -60,7 +76,8 @@ Category guidelines for Canadian tax deductions:
 - professional_services: legal, accounting, consulting (100% CRA deductible, rarely reimbursable)
 - utilities: phone bill, internet, electricity (prorated for home office, rarely reimbursable)
 - home_office: office furniture, supplies for home workspace (100% CRA deductible, NOT reimbursable)
-- mileage: gas, vehicle maintenance, fuel (use CRA mileage rates, sometimes reimbursable)
+- mileage: vehicle use based on kilometers (use CRA mileage rates, sometimes reimbursable)
+- fuel: gas station, diesel, charging (100% CRA deductible if business use, often reimbursable)
 - other: anything that doesn't fit above
 
 For each expense, assess:
@@ -82,14 +99,16 @@ For Canadian receipts, assume CAD unless otherwise specified.`;
       });
       userContent.push({
         type: "text",
-        text: "Extract expense information from this receipt image. Return a JSON object with vendor, amount, date, category, description, confidence, and currency.",
+        text: detectMultipleReceipts 
+          ? "IMPORTANT: Scan this image carefully for ALL receipts or invoices visible. There may be multiple physical receipts in this photo. Extract expense information from EACH receipt found. Return a JSON object with receipts_detected count and an expenses array with all items found."
+          : "Extract expense information from this receipt image. If there are multiple items of different categories, split them. Return a JSON object with expenses array.",
       });
     }
 
     if (voiceText) {
       userContent.push({
         type: "text",
-        text: `User voice input describing expense: "${voiceText}". Extract expense information and return a JSON object with vendor, amount, date, category, description, confidence, and currency.`,
+        text: `User voice input describing expense: "${voiceText}". Extract expense information and return a JSON object with expenses array. If multiple expenses are mentioned, split them into separate entries.`,
       });
     }
 
@@ -150,6 +169,7 @@ For Canadian receipts, assume CAD unless otherwise specified.`;
       console.error("Failed to parse AI response:", parseError);
       // Return a default structure with the raw response
       extracted = {
+        receipts_detected: 1,
         expenses: [{
           vendor: "Unknown",
           amount: 0,
@@ -161,6 +181,7 @@ For Canadian receipts, assume CAD unless otherwise specified.`;
           cra_deductible: true,
           cra_deduction_rate: 100,
           typically_reimbursable: false,
+          receipt_index: 1,
         }]
       };
     }
@@ -183,12 +204,14 @@ For Canadian receipts, assume CAD unless otherwise specified.`;
         cra_deductible: true,
         cra_deduction_rate: 100,
         typically_reimbursable: false,
+        receipt_index: 1,
       }];
     }
 
     // Validate and normalize each expense
     const result = {
-      expenses: expenses.map((exp: any) => ({
+      receipts_detected: extracted.receipts_detected || 1,
+      expenses: expenses.map((exp: any, index: number) => ({
         vendor: exp.vendor || "Unknown",
         amount: typeof exp.amount === "number" ? exp.amount : parseFloat(exp.amount) || 0,
         date: exp.date || new Date().toISOString().split("T")[0],
@@ -199,10 +222,12 @@ For Canadian receipts, assume CAD unless otherwise specified.`;
         cra_deductible: exp.cra_deductible !== false,
         cra_deduction_rate: exp.cra_deduction_rate || 100,
         typically_reimbursable: exp.typically_reimbursable || false,
+        receipt_index: exp.receipt_index || index + 1,
       }))
     };
 
     console.log("Processed result:", result);
+    console.log(`Found ${result.receipts_detected} receipts with ${result.expenses.length} expense items`);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

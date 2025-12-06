@@ -817,6 +817,48 @@ export type Database = {
         }
         Relationships: []
       }
+      scan_sessions: {
+        Row: {
+          created_at: string
+          device_type: string | null
+          ended_at: string | null
+          id: string
+          notes: string | null
+          receipts_approved: number | null
+          receipts_captured: number | null
+          receipts_rejected: number | null
+          started_at: string
+          total_amount: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_type?: string | null
+          ended_at?: string | null
+          id?: string
+          notes?: string | null
+          receipts_approved?: number | null
+          receipts_captured?: number | null
+          receipts_rejected?: number | null
+          started_at?: string
+          total_amount?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_type?: string | null
+          ended_at?: string | null
+          id?: string
+          notes?: string | null
+          receipts_approved?: number | null
+          receipts_captured?: number | null
+          receipts_rejected?: number | null
+          started_at?: string
+          total_amount?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           created_at: string | null
