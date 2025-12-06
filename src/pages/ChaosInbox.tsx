@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { 
   Upload, FileText, Camera, Loader2, RefreshCw, 
   CheckCircle2, Clock, AlertTriangle, X, Sparkles,
-  Smartphone, Monitor
+  Smartphone, Monitor, Video
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -22,6 +22,7 @@ import {
   useRealtimeDocuments,
   useDocumentImageUrl 
 } from '@/hooks/data/useDocumentReview';
+import { ContinuousCameraDialog, CapturedPhoto } from '@/components/capture/ContinuousCameraDialog';
 import { cn } from '@/lib/utils';
 
 function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, isLoading }: {
@@ -51,7 +52,7 @@ export default function ChaosInbox() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState<string | null>(null);
-
+  const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
   const { data: documents = [], isLoading, refetch } = useDocumentsForReview();
   const { approveDocument, rejectDocument, addComment } = useDocumentReviewActions();
   
@@ -160,6 +161,83 @@ export default function ChaosInbox() {
     await addComment.mutateAsync({ id, comment });
   };
 
+  const handleCameraPhotos = async (photos: CapturedPhoto[]) => {
+    if (!user || photos.length === 0) return;
+
+    setUploading(true);
+
+    try {
+      for (const photo of photos) {
+        // Convert dataUrl to blob
+        const response = await fetch(photo.dataUrl);
+        const blob = await response.blob();
+        
+        const fileName = `${user.id}/${Date.now()}.jpg`;
+        
+        // Upload to storage
+        const { error: uploadError } = await supabase.storage
+          .from('expense-documents')
+          .upload(fileName, blob, { contentType: 'image/jpeg' });
+
+        if (uploadError) throw uploadError;
+
+        // Create document record
+        const { data: doc, error: dbError } = await supabase
+          .from('documents')
+          .insert({
+            user_id: user.id,
+            file_path: fileName,
+            file_name: `receipt-${Date.now()}.jpg`,
+            file_type: 'image/jpeg',
+            file_size: blob.size,
+            status: 'pending',
+            review_status: 'pending_review',
+          })
+          .select()
+          .single();
+
+        if (dbError) throw dbError;
+
+        // Process with AI
+        if (doc) {
+          setProcessing(doc.id);
+          try {
+            const { data: result, error: aiError } = await supabase.functions.invoke('process-receipt', {
+              body: { imageBase64: photo.dataUrl },
+            });
+
+            if (!aiError && result?.expenses?.length > 0) {
+              const extractedData: ExtractedData = result.expenses[0];
+              
+              await supabase
+                .from('documents')
+                .update({ 
+                  extracted_data: JSON.parse(JSON.stringify(extractedData)),
+                  status: 'classified' 
+                } as any)
+                .eq('id', doc.id);
+            }
+          } catch (aiErr) {
+            console.error('AI processing failed:', aiErr);
+          } finally {
+            setProcessing(null);
+          }
+        }
+      }
+
+      toast.success(
+        language === 'es' 
+          ? `${photos.length} recibo(s) capturado(s) - revisa los datos extraídos`
+          : `${photos.length} receipt(s) captured - review extracted data`
+      );
+      refetch();
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <Layout>
       <TooltipProvider>
@@ -190,6 +268,16 @@ export default function ChaosInbox() {
               >
                 <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
                 {language === 'es' ? 'Actualizar' : 'Refresh'}
+              </Button>
+              
+              {/* Continuous Camera Button - Mobile optimized */}
+              <Button
+                variant="outline"
+                onClick={() => setCameraDialogOpen(true)}
+                className="bg-primary/10 border-primary/30 hover:bg-primary/20"
+              >
+                <Video className="mr-2 h-4 w-4" />
+                {language === 'es' ? 'Cámara Continua' : 'Continuous Camera'}
               </Button>
               
               <label htmlFor="file-upload">
@@ -385,6 +473,13 @@ export default function ChaosInbox() {
           </Tabs>
         </div>
       </TooltipProvider>
+
+      {/* Continuous Camera Dialog */}
+      <ContinuousCameraDialog
+        open={cameraDialogOpen}
+        onOpenChange={setCameraDialogOpen}
+        onSubmitPhotos={handleCameraPhotos}
+      />
     </Layout>
   );
 }
