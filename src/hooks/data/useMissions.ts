@@ -343,6 +343,12 @@ export function useCompleteMission() {
     
     // If completed, add XP and show notification
     if (isCompleted && !currentProgress.completed) {
+      // Add XP to user's spendable balance
+      const currentXP = parseInt(localStorage.getItem('user_total_xp') || '0', 10);
+      const newXP = currentXP + mission.xp_reward;
+      localStorage.setItem('user_total_xp', newXP.toString());
+      window.dispatchEvent(new CustomEvent('xp-earned', { detail: { xp: mission.xp_reward } }));
+      
       toast.success(`${mission.icon} ${t('missions.completed')}: ${mission.title_es}`, {
         description: `+${mission.xp_reward} XP`,
       });
