@@ -34,6 +34,44 @@ MULTI-RECEIPT DETECTION MODE ENABLED:
 - Also check for multiple transactions on a single receipt that should be split
 ` : ''}
 
+CRITICAL: CONTEXTUAL DISAMBIGUATION OF AMBIGUOUS CODES
+Receipts often contain cryptic item codes that are hard to interpret. You MUST use the ENTIRE context of the receipt to decode them:
+
+1. **Vendor Context is KEY**: The store/company name tells you what type of products they sell:
+   - "Chevron", "Shell", "Petro-Canada", "Esso", "Husky" → Gas station → unclear codes likely mean fuel types (PREM, REG, DISL = Premium, Regular, Diesel)
+   - "Costco", "Walmart", "Superstore", "Loblaws", "Metro", "Sobeys" → Supermarket → codes likely mean groceries
+   - "Canadian Tire", "Home Depot", "Rona" → Hardware → codes likely mean tools/equipment
+   - "Staples", "Bureau en Gros" → Office supplies
+   - "Tim Hortons", "Starbucks", "McDonalds" → Restaurant/Coffee
+   - "Amazon", "Best Buy" → Electronics/General merchandise
+
+2. **Cross-Reference Strategy**: 
+   - If vendor is "Chevron" and you see "CHV-PRE" or "CHVPREM" → This is Premium fuel, NOT meat (carne/beef)
+   - If vendor is "Citymarket" and you see "BFCARN" → This is likely Beef/Carne (meat), NOT fuel
+   - Look at the TOTAL amount to help: $80-150 at a gas station = likely full tank of fuel
+   - Look at quantities: "45.5 L" = liters of fuel, "2.5 kg" = food by weight
+
+3. **Common Cryptic Codes to Decode**:
+   Gas Station Codes:
+   - PRE, PREM, SPRM, SUP → Premium gasoline
+   - REG, UNLEAD, UNL, 87 → Regular unleaded
+   - DISL, DSL, DIESEL → Diesel fuel
+   - PLT, PLTS → Plutón/Premium Plus
+   - CARWSH, WASH, CW → Car wash service
+   
+   Grocery Store Codes:
+   - BF, BEEF, CARN → Beef/Carne
+   - PLLO, CHKN → Pollo/Chicken  
+   - VEG, VERD, FRSH → Vegetables/Fresh produce
+   - LACT, DARY → Dairy products
+   - PAN, BRD → Bread/Pan
+   - BEB, BVRG → Beverages/Bebidas
+
+4. **When Still Ambiguous**:
+   - Set confidence to "low"
+   - Use the most likely interpretation based on vendor type
+   - Add a note in the description explaining the ambiguity
+
 CRITICAL SPLITTING RULES:
 1. If a receipt or note contains MULTIPLE items that belong to DIFFERENT expense categories, you MUST split them into separate expense entries
 2. If the image shows MULTIPLE PHYSICAL RECEIPTS, extract each as a separate expense entry
@@ -43,7 +81,8 @@ Examples of when to split:
 - Multiple physical receipts in one photo → Each receipt = separate expense entry
 - "Beef 200, Gas 80" → Split into: meals (Beef $200) + fuel (Gas $80)
 - "Lunch $50, Uber $30" → Split into: meals (Lunch $50) + travel (Uber $30)
-- "Office supplies $100, Coffee $15" → Split into: office_supplies ($100) + meals (Coffee $15)
+- Gas station receipt with fuel + snacks → Split into: fuel (main amount) + meals (snacks/drinks)
+- Costco receipt with gas + groceries → Split by category
 
 DO NOT combine items from different categories or different receipts into one expense.
 
@@ -56,19 +95,20 @@ IMPORTANT: Always respond with a valid JSON object with this exact structure:
       "amount": numeric value (no currency symbols),
       "date": "YYYY-MM-DD format",
       "category": "one of: meals, travel, equipment, software, office_supplies, professional_services, utilities, home_office, mileage, fuel, other",
-      "description": "brief description of this specific item",
+      "description": "brief description of this specific item - include the original code if you decoded an ambiguous one",
       "confidence": "high, medium, or low",
       "currency": "CAD, USD, etc.",
       "cra_deductible": true or false,
       "cra_deduction_rate": percentage (e.g., 50 for meals, 100 for equipment),
       "typically_reimbursable": true or false (based on common contractor agreements),
-      "receipt_index": number (which physical receipt this came from, starting at 1)
+      "receipt_index": number (which physical receipt this came from, starting at 1),
+      "decoded_from": "original cryptic code if any was decoded, e.g., 'CHVPREM → Premium Fuel'"
     }
   ]
 }
 
 Category guidelines for Canadian tax deductions:
-- meals: restaurant, food, coffee, catering (50% CRA deductible, typically NOT reimbursable by clients)
+- meals: restaurant, food, coffee, catering, groceries for personal consumption (50% CRA deductible, typically NOT reimbursable by clients)
 - travel: flights, hotels, taxi, uber, parking, public transit (100% CRA deductible, often reimbursable)
 - equipment: computers, phones, tools, furniture, materials (100% CRA deductible, often reimbursable if for project)
 - software: subscriptions, licenses, apps (100% CRA deductible, sometimes reimbursable)
@@ -77,7 +117,7 @@ Category guidelines for Canadian tax deductions:
 - utilities: phone bill, internet, electricity (prorated for home office, rarely reimbursable)
 - home_office: office furniture, supplies for home workspace (100% CRA deductible, NOT reimbursable)
 - mileage: vehicle use based on kilometers (use CRA mileage rates, sometimes reimbursable)
-- fuel: gas station, diesel, charging (100% CRA deductible if business use, often reimbursable)
+- fuel: gas station, diesel, charging, vehicle fuel ONLY (100% CRA deductible if business use, often reimbursable)
 - other: anything that doesn't fit above
 
 For each expense, assess:
@@ -87,6 +127,7 @@ For each expense, assess:
 
 If information is unclear or missing, make your best estimate and set confidence to "low" or "medium".
 For Canadian receipts, assume CAD unless otherwise specified.`;
+
 
     const userContent: any[] = [];
 
