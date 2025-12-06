@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIncome, useIncomeSummary, useDeleteIncome } from '@/hooks/data/useIncome';
+import { OnboardingGuide } from '@/components/ui/onboarding-guide';
 import { useProjects } from '@/hooks/data/useProjects';
 import { INCOME_CATEGORIES, INCOME_GROUPS, getIncomeCategory } from '@/lib/constants/income-categories';
 import { IncomeDialog } from '@/components/dialogs/IncomeDialog';
@@ -124,6 +125,9 @@ export default function Income() {
             </Button>
           </div>
         </div>
+
+        {/* Onboarding Guide */}
+        <OnboardingGuide pageKey="income" />
 
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-4">

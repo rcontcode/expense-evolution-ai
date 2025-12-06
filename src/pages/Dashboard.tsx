@@ -21,6 +21,7 @@ import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, Cart
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
+import { OnboardingGuide } from '@/components/ui/onboarding-guide';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
@@ -105,6 +106,9 @@ export default function Dashboard() {
               </Button>
             </InfoTooltip>
           </div>
+
+          {/* Onboarding Guide */}
+          <OnboardingGuide pageKey="dashboard" />
 
           {/* Filtros */}
           <DashboardFilters
