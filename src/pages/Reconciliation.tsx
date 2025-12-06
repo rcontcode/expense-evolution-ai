@@ -22,7 +22,9 @@ import {
   Link2,
   Zap,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Wand2,
+  LayoutGrid
 } from 'lucide-react';
 import { EmptyStateWithGuide } from '@/components/ui/feature-guide';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +44,7 @@ import { es } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ReconciliationWizard } from '@/components/reconciliation/ReconciliationWizard';
 
 function MatchScoreBadge({ score, matchType }: { score: number; matchType: string }) {
   const { language } = useLanguage();
@@ -133,7 +136,6 @@ function TransactionWithSuggestions({
   const { language } = useLanguage();
   const [isOpen, setIsOpen] = useState(transaction.suggestedMatches.length > 0);
   const hasMatches = transaction.suggestedMatches.length > 0;
-  const bestMatch = transaction.suggestedMatches[0];
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -224,6 +226,7 @@ function TransactionWithSuggestions({
 export default function Reconciliation() {
   const { t, language } = useLanguage();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [wizardMode, setWizardMode] = useState(true);
   
   const { data: transactions = [], isLoading } = useBankTransactions();
   const { data: transactionsWithMatches = [], isLoading: isLoadingMatches } = useBankTransactionsWithMatches();
@@ -268,6 +271,43 @@ export default function Reconciliation() {
     matchTransaction.mutate({ transactionId, expenseId });
   };
 
+  // Show wizard mode
+  if (wizardMode) {
+    return (
+      <Layout>
+        <div className="p-8 space-y-6">
+          {/* Header with mode toggle */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold">{t('nav.reconciliation')}</h1>
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-0">
+                  <Wand2 className="h-3 w-3 mr-1" />
+                  {language === 'es' ? 'Modo Asistente' : 'Assistant Mode'}
+                </Badge>
+              </div>
+              <p className="text-muted-foreground mt-2">
+                {language === 'es' 
+                  ? 'Tu asistente de contabilidad personal te guiará paso a paso'
+                  : 'Your personal accounting assistant will guide you step by step'}
+              </p>
+            </div>
+            <Button 
+              variant="outline"
+              onClick={() => setWizardMode(false)}
+            >
+              <LayoutGrid className="h-4 w-4 mr-2" />
+              {language === 'es' ? 'Modo Avanzado' : 'Advanced Mode'}
+            </Button>
+          </div>
+
+          {/* Wizard content */}
+          <ReconciliationWizard onExitWizard={() => setWizardMode(false)} />
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="p-8 space-y-8">
@@ -276,9 +316,9 @@ export default function Reconciliation() {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold">{t('nav.reconciliation')}</h1>
-              <Badge variant="secondary" className="bg-primary/10 text-primary border-0">
-                <Sparkles className="h-3 w-3 mr-1" />
-                {language === 'es' ? 'Beta' : 'Beta'}
+              <Badge variant="secondary" className="bg-muted text-muted-foreground border-0">
+                <LayoutGrid className="h-3 w-3 mr-1" />
+                {language === 'es' ? 'Modo Avanzado' : 'Advanced Mode'}
               </Badge>
             </div>
             <p className="text-muted-foreground mt-2">
@@ -287,13 +327,22 @@ export default function Reconciliation() {
                 : 'Compare your bank transactions with recorded expenses to keep your accounting perfect'}
             </p>
           </div>
-          <Button 
-            onClick={() => setImportDialogOpen(true)}
-            className="bg-gradient-primary hover:opacity-90 shadow-glow"
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            {language === 'es' ? 'Importar Estado Bancario' : 'Import Bank Statement'}
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => setWizardMode(true)}
+            >
+              <Wand2 className="h-4 w-4 mr-2" />
+              {language === 'es' ? 'Modo Asistente' : 'Assistant Mode'}
+            </Button>
+            <Button 
+              onClick={() => setImportDialogOpen(true)}
+              className="bg-gradient-primary hover:opacity-90 shadow-glow"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              {language === 'es' ? 'Importar Estado Bancario' : 'Import Bank Statement'}
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
