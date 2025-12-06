@@ -27,7 +27,9 @@ export default function Onboarding() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+
+  console.log('Onboarding render:', { user: user?.email, authLoading, step });
 
   const handleWorkTypeToggle = (type: 'employee' | 'contractor' | 'corporation') => {
     setWorkTypes(prev =>
