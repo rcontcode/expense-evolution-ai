@@ -301,6 +301,7 @@ export function useCompleteMission() {
     // Update progress
     const newProgress = Math.min(currentProgress.progress + increment, mission.target);
     const isCompleted = newProgress >= mission.target;
+    const remaining = mission.target - newProgress;
     
     storedProgress[mission.key] = {
       ...currentProgress,
@@ -311,11 +312,45 @@ export function useCompleteMission() {
     
     storeProgress(storedProgress);
     
+    // Show progress notification when close to completing (but not completed yet)
+    if (!isCompleted && remaining <= Math.ceil(mission.target * 0.5) && remaining > 0) {
+      const progressNotificationKey = `progress_notified_${mission.key}_${newProgress}`;
+      const alreadyNotified = localStorage.getItem(progressNotificationKey);
+      
+      if (!alreadyNotified) {
+        localStorage.setItem(progressNotificationKey, 'true');
+        
+        // Show encouraging notification based on remaining count
+        if (remaining === 1) {
+          toast.info(`${mission.icon} ¡Ya casi! Te falta solo 1 para completar "${mission.title_es}"`, {
+            description: `+${mission.xp_reward} XP te esperan`,
+            duration: 5000,
+          });
+        } else if (remaining <= 2) {
+          toast.info(`${mission.icon} ¡Estás cerca! Te faltan ${remaining} para "${mission.title_es}"`, {
+            description: `Progreso: ${newProgress}/${mission.target}`,
+            duration: 4000,
+          });
+        } else if (newProgress === 1 && mission.target > 2) {
+          // First progress notification
+          toast(`${mission.icon} Misión iniciada: ${mission.title_es}`, {
+            description: `${newProgress}/${mission.target} completado`,
+            duration: 3000,
+          });
+        }
+      }
+    }
+    
     // If completed, add XP and show notification
     if (isCompleted && !currentProgress.completed) {
       toast.success(`${mission.icon} ${t('missions.completed')}: ${mission.title_es}`, {
         description: `+${mission.xp_reward} XP`,
       });
+      
+      // Clear progress notifications for this mission
+      for (let i = 1; i <= mission.target; i++) {
+        localStorage.removeItem(`progress_notified_${mission.key}_${i}`);
+      }
       
       // Check for mission-related achievements
       const completedMissions = Object.values(storedProgress).filter(p => p.completed).length;
