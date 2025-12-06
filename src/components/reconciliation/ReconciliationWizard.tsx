@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   Sparkles, 
@@ -21,13 +22,17 @@ import {
   Wallet,
   Building2,
   User,
-  TrendingUp
+  TrendingUp,
+  Plus
 } from 'lucide-react';
 import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
 import { useBankTransactions, useBankTransactionsWithMatches, useMatchTransaction, useMarkAsDiscrepancy } from '@/hooks/data/useBankTransactions';
-import { useExpenses } from '@/hooks/data/useExpenses';
+import { useExpenses, useCreateExpense } from '@/hooks/data/useExpenses';
+import { ExpenseForm } from '@/components/forms/ExpenseForm';
+import { ExpenseFormValues } from '@/lib/validations/expense.schema';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 interface Flow {
   id: string;
@@ -36,6 +41,13 @@ interface Flow {
   description: string;
   steps: string[];
   color: string;
+}
+
+interface TransactionForExpense {
+  id: string;
+  amount: number;
+  description: string | null;
+  transaction_date: string;
 }
 
 type WizardStep = 'welcome' | 'select-flow' | 'import' | 'review-matches' | 'resolve-pending' | 'summary';
@@ -47,12 +59,16 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [matchedCount, setMatchedCount] = useState(0);
   const [discrepancyCount, setDiscrepancyCount] = useState(0);
+  const [createExpenseDialogOpen, setCreateExpenseDialogOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<TransactionForExpense | null>(null);
+  const [createdExpensesCount, setCreatedExpensesCount] = useState(0);
   
   const { data: transactions = [] } = useBankTransactions();
   const { data: transactionsWithMatches = [] } = useBankTransactionsWithMatches();
   const { data: expenses = [] } = useExpenses();
   const matchTransaction = useMatchTransaction();
   const markAsDiscrepancy = useMarkAsDiscrepancy();
+  const createExpense = useCreateExpense();
 
   const pendingTransactions = transactions.filter(t => t.status === 'pending');
   const matchedTransactions = transactions.filter(t => t.status === 'matched');
@@ -195,6 +211,50 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
     markAsDiscrepancy.mutate(transactionId, {
       onSuccess: () => setDiscrepancyCount(prev => prev + 1)
     });
+  };
+
+  const handleOpenCreateExpense = (transaction: TransactionForExpense) => {
+    setSelectedTransaction(transaction);
+    setCreateExpenseDialogOpen(true);
+  };
+
+  const handleCreateExpenseSubmit = async (data: ExpenseFormValues) => {
+    if (!selectedTransaction) return;
+
+    const expenseData = {
+      date: data.date.toISOString().split('T')[0],
+      vendor: data.vendor,
+      amount: data.amount,
+      category: data.category,
+      description: data.description || null,
+      notes: data.notes || null,
+      client_id: data.client_id === '__none__' ? null : data.client_id || null,
+      status: data.status || 'pending',
+      currency: 'CAD',
+    };
+
+    try {
+      const createdExpense = await createExpense.mutateAsync(expenseData as any);
+      
+      // Auto-match the new expense with the transaction
+      await matchTransaction.mutateAsync({ 
+        transactionId: selectedTransaction.id, 
+        expenseId: createdExpense.id 
+      });
+      
+      setCreatedExpensesCount(prev => prev + 1);
+      setMatchedCount(prev => prev + 1);
+      setCreateExpenseDialogOpen(false);
+      setSelectedTransaction(null);
+      
+      toast.success(
+        language === 'es' 
+          ? '¡Gasto creado y vinculado automáticamente!' 
+          : 'Expense created and auto-linked!'
+      );
+    } catch (error) {
+      // Error handling done in mutations
+    }
   };
 
   const renderContent = () => {
@@ -453,16 +513,28 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
               )}
             </div>
 
-            {discrepancyCount > 0 && (
-              <div className="text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-warning/10 rounded-full">
-                  <AlertTriangle className="h-5 w-5 text-warning" />
-                  <span className="font-medium">
-                    {language === 'es' 
-                      ? `Has marcado ${discrepancyCount} discrepancia(s) para revisar después`
-                      : `You have marked ${discrepancyCount} discrepancy(ies) to review later`}
-                  </span>
-                </div>
+            {(discrepancyCount > 0 || createdExpensesCount > 0) && (
+              <div className="text-center flex flex-wrap gap-2 justify-center">
+                {createdExpensesCount > 0 && (
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-success/10 rounded-full">
+                    <Plus className="h-5 w-5 text-success" />
+                    <span className="font-medium text-success">
+                      {language === 'es' 
+                        ? `Has creado ${createdExpensesCount} gasto(s) nuevo(s)`
+                        : `You have created ${createdExpensesCount} new expense(s)`}
+                    </span>
+                  </div>
+                )}
+                {discrepancyCount > 0 && (
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-warning/10 rounded-full">
+                    <AlertTriangle className="h-5 w-5 text-warning" />
+                    <span className="font-medium">
+                      {language === 'es' 
+                        ? `Has marcado ${discrepancyCount} discrepancia(s) para revisar después`
+                        : `You have marked ${discrepancyCount} discrepancy(ies) to review later`}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -498,6 +570,19 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-bold">${Number(tx.amount).toFixed(2)}</span>
+                          <Button 
+                            size="sm" 
+                            className="bg-success hover:bg-success/90"
+                            onClick={() => handleOpenCreateExpense({
+                              id: tx.id,
+                              amount: Number(tx.amount),
+                              description: tx.description,
+                              transaction_date: tx.transaction_date
+                            })}
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            {language === 'es' ? 'Crear Gasto' : 'Create Expense'}
+                          </Button>
                           <Button 
                             size="sm" 
                             variant="outline"
@@ -651,6 +736,66 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
           }
         }} 
       />
+
+      {/* Create Expense from Transaction dialog */}
+      <Dialog open={createExpenseDialogOpen} onOpenChange={setCreateExpenseDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5 text-success" />
+              {language === 'es' ? 'Crear Gasto desde Transacción' : 'Create Expense from Transaction'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedTransaction && (
+            <div className="mb-4 p-3 bg-muted/50 rounded-lg border">
+              <p className="text-sm text-muted-foreground mb-1">
+                {language === 'es' ? 'Transacción bancaria:' : 'Bank transaction:'}
+              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">{selectedTransaction.description || (language === 'es' ? 'Sin descripción' : 'No description')}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {format(new Date(selectedTransaction.transaction_date), 'dd MMM yyyy', { locale: language === 'es' ? es : undefined })}
+                  </p>
+                </div>
+                <Badge variant="secondary" className="text-lg">
+                  ${selectedTransaction.amount.toFixed(2)}
+                </Badge>
+              </div>
+            </div>
+          )}
+
+          <ExpenseForm
+            expense={selectedTransaction ? {
+              id: '',
+              user_id: '',
+              date: selectedTransaction.transaction_date,
+              vendor: selectedTransaction.description || '',
+              amount: selectedTransaction.amount,
+              category: null,
+              description: selectedTransaction.description,
+              notes: language === 'es' 
+                ? `Creado desde transacción bancaria del ${format(new Date(selectedTransaction.transaction_date), 'dd/MM/yyyy')}`
+                : `Created from bank transaction on ${format(new Date(selectedTransaction.transaction_date), 'MM/dd/yyyy')}`,
+              client_id: null,
+              status: 'pending',
+              currency: 'CAD',
+              document_id: null,
+              created_at: null,
+              updated_at: null,
+              client: null,
+              tags: []
+            } : undefined}
+            onSubmit={handleCreateExpenseSubmit}
+            onCancel={() => {
+              setCreateExpenseDialogOpen(false);
+              setSelectedTransaction(null);
+            }}
+            isLoading={createExpense.isPending || matchTransaction.isPending}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
