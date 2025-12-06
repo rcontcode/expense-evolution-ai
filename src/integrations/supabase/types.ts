@@ -265,44 +265,66 @@ export type Database = {
       documents: {
         Row: {
           created_at: string | null
+          expense_id: string | null
+          extracted_data: Json | null
           file_name: string
           file_path: string
           file_size: number | null
           file_type: string | null
           id: string
           metadata: Json | null
+          review_status: string | null
+          reviewed_at: string | null
           status: Database["public"]["Enums"]["document_status"] | null
           thumbnail_path: string | null
           updated_at: string | null
+          user_corrections: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
+          expense_id?: string | null
+          extracted_data?: Json | null
           file_name: string
           file_path: string
           file_size?: number | null
           file_type?: string | null
           id?: string
           metadata?: Json | null
+          review_status?: string | null
+          reviewed_at?: string | null
           status?: Database["public"]["Enums"]["document_status"] | null
           thumbnail_path?: string | null
           updated_at?: string | null
+          user_corrections?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
+          expense_id?: string | null
+          extracted_data?: Json | null
           file_name?: string
           file_path?: string
           file_size?: number | null
           file_type?: string | null
           id?: string
           metadata?: Json | null
+          review_status?: string | null
+          reviewed_at?: string | null
           status?: Database["public"]["Enums"]["document_status"] | null
           thumbnail_path?: string | null
           updated_at?: string | null
+          user_corrections?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "documents_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "documents_user_id_fkey"
             columns: ["user_id"]
