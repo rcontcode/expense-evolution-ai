@@ -2,3 +2,6 @@ project_id = "oxrfslyuzcgxacomgzgw"
 
 [functions.process-receipt]
 verify_jwt = true
+
+[functions.suggest-passive-income]
+verify_jwt = true
