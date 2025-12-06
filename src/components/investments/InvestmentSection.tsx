@@ -117,7 +117,7 @@ export function InvestmentSection() {
               </div>
               <div className="flex items-center gap-1">
                 <Sparkles className="h-4 w-4 text-yellow-300" />
-                <span className="text-sm text-violet-200">{userXP} XP {language === 'es' ? 'disponible' : 'available'}</span>
+                <span className="text-sm text-violet-200">{userXP} XP {t('rewards.unlocked')}</span>
               </div>
             </div>
           </div>
@@ -168,7 +168,7 @@ export function InvestmentSection() {
           </TabsTrigger>
           <TabsTrigger value="rewards" className="flex items-center gap-2">
             <ShoppingBag className="h-4 w-4" />
-            <span className="hidden sm:inline">{language === 'es' ? 'Tienda' : 'Shop'}</span>
+            <span className="hidden sm:inline">{t('rewards.shop')}</span>
           </TabsTrigger>
           <TabsTrigger value="goals" className="flex items-center gap-2">
             <Target className="h-4 w-4" />

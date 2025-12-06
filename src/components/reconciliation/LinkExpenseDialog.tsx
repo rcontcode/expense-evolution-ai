@@ -33,7 +33,7 @@ export function LinkExpenseDialog({
   onLink,
   isLoading 
 }: LinkExpenseDialogProps) {
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedExpenseId, setSelectedExpenseId] = useState<string | null>(null);
 
@@ -114,26 +114,24 @@ export function LinkExpenseDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5 text-primary" />
-            {language === 'es' ? 'Vincular con Gasto Existente' : 'Link to Existing Expense'}
+            {t('reconciliation.linkToExpense')}
           </DialogTitle>
           <DialogDescription>
-            {language === 'es' 
-              ? 'Selecciona un gasto registrado para vincularlo con esta transacción bancaria'
-              : 'Select a recorded expense to link with this bank transaction'}
+            {t('reconciliation.selectExpenseToLink')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
           {/* Transaction info */}
           <Card className="bg-primary/5 border-primary/20">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    {language === 'es' ? 'Transacción a vincular:' : 'Transaction to link:'}
-                  </p>
-                  <p className="font-medium">{transaction.description || 'Sin descripción'}</p>
-                  <p className="text-sm text-muted-foreground">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {t('reconciliation.transactionToLink')}:
+                    </p>
+                    <p className="font-medium">{transaction.description || t('reconciliation.noDescription')}</p>
+                    <p className="text-sm text-muted-foreground">
                     {format(new Date(transaction.transaction_date), 'dd MMM yyyy', { 
                       locale: language === 'es' ? es : undefined 
                     })}
@@ -147,25 +145,23 @@ export function LinkExpenseDialog({
           </Card>
 
           {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={language === 'es' ? 'Buscar gastos...' : 'Search expenses...'}
-              value={searchQuery}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={t('reconciliation.searchExpenses')}
+                value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
             />
           </div>
 
           {/* Expenses list */}
-          <ScrollArea className="flex-1 -mx-6 px-6">
-            <div className="space-y-2 pr-4">
-              {sortedExpenses.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  {language === 'es' 
-                    ? 'No se encontraron gastos' 
-                    : 'No expenses found'}
-                </div>
+            <ScrollArea className="flex-1 -mx-6 px-6">
+              <div className="space-y-2 pr-4">
+                {sortedExpenses.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    {t('reconciliation.noExpensesFound')}
+                  </div>
               ) : (
                 sortedExpenses.map((expense) => {
                   const matchScore = getMatchScore(expense);
@@ -205,7 +201,7 @@ export function LinkExpenseDialog({
                               </p>
                               {matchScore >= 80 && (
                                 <Badge variant="default" className="bg-success text-xs">
-                                  {language === 'es' ? 'Coincide' : 'Match'}
+                                  {t('reconciliation.match')}
                                 </Badge>
                               )}
                             </div>
@@ -250,27 +246,25 @@ export function LinkExpenseDialog({
             </div>
           </ScrollArea>
 
-          {/* Actions */}
-          <div className="flex justify-between items-center pt-4 border-t">
-            <p className="text-sm text-muted-foreground">
-              {sortedExpenses.length} {language === 'es' ? 'gastos disponibles' : 'expenses available'}
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleClose}>
-                {language === 'es' ? 'Cancelar' : 'Cancel'}
-              </Button>
-              <Button 
-                onClick={handleLink} 
-                disabled={!selectedExpenseId || isLoading}
-                className="bg-gradient-primary"
-              >
-                <Link2 className="h-4 w-4 mr-2" />
-                {isLoading 
-                  ? (language === 'es' ? 'Vinculando...' : 'Linking...')
-                  : (language === 'es' ? 'Vincular' : 'Link')}
-              </Button>
+            {/* Actions */}
+            <div className="flex justify-between items-center pt-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                {sortedExpenses.length} {t('reconciliation.expensesAvailable')}
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={handleClose}>
+                  {t('common.cancel')}
+                </Button>
+                <Button 
+                  onClick={handleLink} 
+                  disabled={!selectedExpenseId || isLoading}
+                  className="bg-gradient-primary"
+                >
+                  <Link2 className="h-4 w-4 mr-2" />
+                  {isLoading ? t('reconciliation.linking') : t('reconciliation.link')}
+                </Button>
+              </div>
             </div>
-          </div>
         </div>
       </DialogContent>
     </Dialog>
