@@ -12,10 +12,12 @@ import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   Camera, X, Trash2, Loader2, 
-  RotateCcw, ImagePlus, Send, Zap, Flashlight, Crop
+  RotateCcw, ImagePlus, Send, Zap, Flashlight, Crop,
+  ScanLine, Pause, Play
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -36,7 +38,6 @@ function playShutterSound() {
   try {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     
-    // Create a short click sound
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
     
@@ -52,10 +53,7 @@ function playShutterSound() {
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.1);
     
-    // Cleanup
-    setTimeout(() => {
-      audioContext.close();
-    }, 200);
+    setTimeout(() => audioContext.close(), 200);
   } catch (e) {
     console.log('Audio not supported');
   }
@@ -82,25 +80,20 @@ function autoCropReceipt(canvas: HTMLCanvasElement): string {
   const width = canvas.width;
   const height = canvas.height;
   
-  // Convert to grayscale and detect edges
   const grayscale: number[] = [];
   for (let i = 0; i < data.length; i += 4) {
     grayscale.push(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
   }
   
-  // Find bounding box of bright/receipt area
   let minX = width, maxX = 0, minY = height, maxY = 0;
-  const threshold = 60; // Brightness threshold
-  const margin = 20; // Margin from edge to consider
+  const margin = 20;
   
   for (let y = margin; y < height - margin; y++) {
     for (let x = margin; x < width - margin; x++) {
       const idx = y * width + x;
       const brightness = grayscale[idx];
       
-      // Look for bright areas (receipt paper is usually white/light)
       if (brightness > 150) {
-        // Check if this is part of a larger bright region (not noise)
         let brightNeighbors = 0;
         for (let dy = -2; dy <= 2; dy++) {
           for (let dx = -2; dx <= 2; dx++) {
@@ -119,20 +112,17 @@ function autoCropReceipt(canvas: HTMLCanvasElement): string {
     }
   }
   
-  // If we found a valid crop region
   const cropWidth = maxX - minX;
   const cropHeight = maxY - minY;
   
   if (cropWidth > width * 0.2 && cropHeight > height * 0.2 && 
       cropWidth < width * 0.95 && cropHeight < height * 0.95) {
-    // Add small padding
     const padding = 10;
     const cropX = Math.max(0, minX - padding);
     const cropY = Math.max(0, minY - padding);
     const finalWidth = Math.min(width - cropX, cropWidth + padding * 2);
     const finalHeight = Math.min(height - cropY, cropHeight + padding * 2);
     
-    // Create cropped canvas
     const croppedCanvas = document.createElement('canvas');
     croppedCanvas.width = finalWidth;
     croppedCanvas.height = finalHeight;
@@ -148,8 +138,28 @@ function autoCropReceipt(canvas: HTMLCanvasElement): string {
     }
   }
   
-  // Return original if no good crop found
   return canvas.toDataURL('image/jpeg', 0.85);
+}
+
+// Calculate image difference for motion detection
+function calculateImageDifference(
+  prevData: Uint8ClampedArray | null, 
+  currData: Uint8ClampedArray
+): number {
+  if (!prevData || prevData.length !== currData.length) return 100;
+  
+  let diff = 0;
+  const sampleRate = 16; // Sample every 16th pixel for performance
+  let samples = 0;
+  
+  for (let i = 0; i < currData.length; i += 4 * sampleRate) {
+    const prevGray = 0.299 * prevData[i] + 0.587 * prevData[i + 1] + 0.114 * prevData[i + 2];
+    const currGray = 0.299 * currData[i] + 0.587 * currData[i + 1] + 0.114 * currData[i + 2];
+    diff += Math.abs(prevGray - currGray);
+    samples++;
+  }
+  
+  return samples > 0 ? diff / samples : 0;
 }
 
 export function ContinuousCameraDialog({
@@ -160,8 +170,13 @@ export function ContinuousCameraDialog({
   const { language } = useLanguage();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const detectionCanvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const trackRef = useRef<MediaStreamTrack | null>(null);
+  const prevFrameDataRef = useRef<Uint8ClampedArray | null>(null);
+  const stableFrameCountRef = useRef(0);
+  const lastCaptureTimeRef = useRef(0);
+  const animationFrameRef = useRef<number | null>(null);
   
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
   const [cameraActive, setCameraActive] = useState(false);
@@ -172,12 +187,22 @@ export function ContinuousCameraDialog({
   const [flashSupported, setFlashSupported] = useState(false);
   const [autoCropEnabled, setAutoCropEnabled] = useState(true);
   const [isFlashing, setIsFlashing] = useState(false);
+  
+  // Auto-scan mode states
+  const [autoScanEnabled, setAutoScanEnabled] = useState(false);
+  const [autoScanPaused, setAutoScanPaused] = useState(false);
+  const [scanStatus, setScanStatus] = useState<'waiting' | 'detecting' | 'stabilizing' | 'capturing'>('waiting');
+  const [stabilityProgress, setStabilityProgress] = useState(0);
+
+  const STABILITY_THRESHOLD = 5; // Max difference for "stable" frame
+  const CHANGE_THRESHOLD = 15; // Min difference for "new receipt detected"
+  const FRAMES_NEEDED_FOR_CAPTURE = 15; // ~0.5 seconds at 30fps
+  const MIN_CAPTURE_INTERVAL = 2000; // 2 seconds between auto-captures
 
   const startCamera = useCallback(async () => {
     try {
       setCameraError(null);
       
-      // Stop any existing stream
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
@@ -195,7 +220,6 @@ export function ContinuousCameraDialog({
       const videoTrack = stream.getVideoTracks()[0];
       trackRef.current = videoTrack;
       
-      // Check if torch/flash is supported
       const capabilities = videoTrack.getCapabilities?.() as any;
       if (capabilities?.torch) {
         setFlashSupported(true);
@@ -220,6 +244,10 @@ export function ContinuousCameraDialog({
   }, [facingMode, language]);
 
   const stopCamera = useCallback(() => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
@@ -227,6 +255,7 @@ export function ContinuousCameraDialog({
     }
     setCameraActive(false);
     setFlashOn(false);
+    setAutoScanEnabled(false);
   }, []);
 
   const toggleFlash = useCallback(async () => {
@@ -243,7 +272,7 @@ export function ContinuousCameraDialog({
     }
   }, [flashOn, flashSupported]);
 
-  const takePhoto = useCallback(() => {
+  const capturePhoto = useCallback(() => {
     if (!videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
@@ -255,17 +284,14 @@ export function ContinuousCameraDialog({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Play feedback
     playShutterSound();
     triggerVibration();
     
-    // Flash animation
     setIsFlashing(true);
     setTimeout(() => setIsFlashing(false), 100);
     
     ctx.drawImage(video, 0, 0);
     
-    // Apply auto-crop if enabled
     const dataUrl = autoCropEnabled 
       ? autoCropReceipt(canvas) 
       : canvas.toDataURL('image/jpeg', 0.85);
@@ -277,7 +303,86 @@ export function ContinuousCameraDialog({
     };
     
     setPhotos(prev => [...prev, newPhoto]);
+    lastCaptureTimeRef.current = Date.now();
+    stableFrameCountRef.current = 0;
+    prevFrameDataRef.current = null;
+    setScanStatus('waiting');
+    setStabilityProgress(0);
   }, [autoCropEnabled]);
+
+  // Auto-scan detection loop
+  const runAutoScanDetection = useCallback(() => {
+    if (!autoScanEnabled || autoScanPaused || !cameraActive || !videoRef.current || !detectionCanvasRef.current) {
+      return;
+    }
+
+    const video = videoRef.current;
+    const canvas = detectionCanvasRef.current;
+    
+    // Use smaller canvas for detection (performance)
+    const scale = 0.1;
+    canvas.width = video.videoWidth * scale;
+    canvas.height = video.videoHeight * scale;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const currentData = imageData.data;
+    
+    const diff = calculateImageDifference(prevFrameDataRef.current, currentData);
+    const timeSinceLastCapture = Date.now() - lastCaptureTimeRef.current;
+    
+    if (timeSinceLastCapture < MIN_CAPTURE_INTERVAL) {
+      setScanStatus('waiting');
+      setStabilityProgress(0);
+    } else if (diff > CHANGE_THRESHOLD) {
+      // Significant change detected - new receipt?
+      setScanStatus('detecting');
+      stableFrameCountRef.current = 0;
+      setStabilityProgress(0);
+    } else if (diff < STABILITY_THRESHOLD && scanStatus !== 'waiting') {
+      // Frame is stable
+      stableFrameCountRef.current++;
+      const progress = Math.min(100, (stableFrameCountRef.current / FRAMES_NEEDED_FOR_CAPTURE) * 100);
+      setStabilityProgress(progress);
+      setScanStatus('stabilizing');
+      
+      if (stableFrameCountRef.current >= FRAMES_NEEDED_FOR_CAPTURE) {
+        // Stable enough - capture!
+        setScanStatus('capturing');
+        capturePhoto();
+      }
+    } else if (scanStatus === 'detecting') {
+      // Still moving but detected change
+      stableFrameCountRef.current = 0;
+      setStabilityProgress(0);
+    }
+    
+    // Store current frame for next comparison
+    prevFrameDataRef.current = new Uint8ClampedArray(currentData);
+    
+    animationFrameRef.current = requestAnimationFrame(runAutoScanDetection);
+  }, [autoScanEnabled, autoScanPaused, cameraActive, scanStatus, capturePhoto]);
+
+  // Start/stop auto-scan detection loop
+  useEffect(() => {
+    if (autoScanEnabled && cameraActive && !autoScanPaused) {
+      animationFrameRef.current = requestAnimationFrame(runAutoScanDetection);
+    } else {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    }
+    
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [autoScanEnabled, cameraActive, autoScanPaused, runAutoScanDetection]);
 
   const removePhoto = useCallback((id: string) => {
     setPhotos(prev => prev.filter(p => p.id !== id));
@@ -306,7 +411,21 @@ export function ContinuousCameraDialog({
     onOpenChange(false);
   };
 
-  // Start camera when dialog opens
+  const toggleAutoScan = () => {
+    if (!autoScanEnabled) {
+      setAutoScanEnabled(true);
+      setAutoScanPaused(false);
+      stableFrameCountRef.current = 0;
+      prevFrameDataRef.current = null;
+      lastCaptureTimeRef.current = 0;
+      setScanStatus('waiting');
+    } else {
+      setAutoScanEnabled(false);
+      setScanStatus('waiting');
+      setStabilityProgress(0);
+    }
+  };
+
   useEffect(() => {
     if (open) {
       startCamera();
@@ -319,12 +438,36 @@ export function ContinuousCameraDialog({
     };
   }, [open, startCamera, stopCamera]);
 
-  // Restart camera when facing mode changes
   useEffect(() => {
     if (open && cameraActive) {
       startCamera();
     }
   }, [facingMode]);
+
+  const getScanStatusText = () => {
+    switch (scanStatus) {
+      case 'waiting':
+        return language === 'es' ? 'Esperando recibo...' : 'Waiting for receipt...';
+      case 'detecting':
+        return language === 'es' ? '¡Recibo detectado! Mantén estable...' : 'Receipt detected! Hold steady...';
+      case 'stabilizing':
+        return language === 'es' ? 'Estabilizando...' : 'Stabilizing...';
+      case 'capturing':
+        return language === 'es' ? '¡Capturando!' : 'Capturing!';
+      default:
+        return '';
+    }
+  };
+
+  const getScanStatusColor = () => {
+    switch (scanStatus) {
+      case 'waiting': return 'bg-muted';
+      case 'detecting': return 'bg-warning';
+      case 'stabilizing': return 'bg-primary';
+      case 'capturing': return 'bg-success';
+      default: return 'bg-muted';
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -345,7 +488,19 @@ export function ContinuousCameraDialog({
           {/* Camera View */}
           <div className="flex-1 flex flex-col gap-3">
             {/* Camera Options */}
-            <div className="flex items-center gap-4 text-sm">
+            <div className="flex flex-wrap items-center gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="auto-scan"
+                  checked={autoScanEnabled}
+                  onCheckedChange={toggleAutoScan}
+                />
+                <Label htmlFor="auto-scan" className="flex items-center gap-1 text-xs">
+                  <ScanLine className="h-3 w-3" />
+                  {language === 'es' ? 'Auto-escaneo' : 'Auto-scan'}
+                </Label>
+              </div>
+              
               <div className="flex items-center gap-2">
                 <Switch
                   id="auto-crop"
@@ -367,7 +522,7 @@ export function ContinuousCameraDialog({
                   />
                   <Label htmlFor="flash" className="flex items-center gap-1 text-xs">
                     <Flashlight className="h-3 w-3" />
-                    {language === 'es' ? 'Flash' : 'Flash'}
+                    Flash
                   </Label>
                 </div>
               )}
@@ -407,7 +562,48 @@ export function ContinuousCameraDialog({
                   />
                   
                   {/* Receipt guide overlay */}
-                  <div className="absolute inset-8 border-2 border-dashed border-white/30 rounded-lg pointer-events-none" />
+                  <div className={cn(
+                    "absolute inset-8 border-2 border-dashed rounded-lg pointer-events-none transition-colors",
+                    autoScanEnabled && scanStatus === 'detecting' ? "border-warning" :
+                    autoScanEnabled && scanStatus === 'stabilizing' ? "border-primary" :
+                    autoScanEnabled && scanStatus === 'capturing' ? "border-success" :
+                    "border-white/30"
+                  )} />
+                  
+                  {/* Auto-scan status overlay */}
+                  {autoScanEnabled && (
+                    <div className="absolute top-4 left-4 right-4 space-y-2">
+                      <div className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-lg backdrop-blur text-sm",
+                        getScanStatusColor(),
+                        "text-foreground"
+                      )}>
+                        <ScanLine className={cn(
+                          "h-4 w-4",
+                          scanStatus !== 'waiting' && "animate-pulse"
+                        )} />
+                        <span>{getScanStatusText()}</span>
+                        
+                        {/* Pause/Resume button */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setAutoScanPaused(!autoScanPaused)}
+                          className="ml-auto h-6 w-6"
+                        >
+                          {autoScanPaused ? (
+                            <Play className="h-3 w-3" />
+                          ) : (
+                            <Pause className="h-3 w-3" />
+                          )}
+                        </Button>
+                      </div>
+                      
+                      {scanStatus === 'stabilizing' && (
+                        <Progress value={stabilityProgress} className="h-1" />
+                      )}
+                    </div>
+                  )}
                   
                   {/* Camera Controls Overlay */}
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4">
@@ -422,14 +618,18 @@ export function ContinuousCameraDialog({
                     
                     <Button
                       size="icon"
-                      onClick={takePhoto}
+                      onClick={capturePhoto}
                       disabled={!cameraActive}
-                      className="rounded-full h-16 w-16 bg-primary hover:bg-primary/90 shadow-lg active:scale-95 transition-transform"
+                      className={cn(
+                        "rounded-full h-16 w-16 shadow-lg active:scale-95 transition-all",
+                        autoScanEnabled 
+                          ? "bg-secondary hover:bg-secondary/90" 
+                          : "bg-primary hover:bg-primary/90"
+                      )}
                     >
                       <Camera className="h-8 w-8" />
                     </Button>
                     
-                    {/* Flash toggle button for mobile */}
                     {flashSupported ? (
                       <Button
                         variant="secondary"
@@ -443,28 +643,17 @@ export function ContinuousCameraDialog({
                         <Flashlight className="h-5 w-5" />
                       </Button>
                     ) : (
-                      <div className="w-12" /> /* Spacer for symmetry */
+                      <div className="w-12" />
                     )}
                   </div>
 
                   {/* Photo count badge */}
                   {photos.length > 0 && (
                     <Badge 
-                      className="absolute top-4 right-4 bg-primary text-primary-foreground"
+                      className="absolute bottom-4 right-4 bg-primary text-primary-foreground"
                     >
                       <ImagePlus className="h-3 w-3 mr-1" />
                       {photos.length}
-                    </Badge>
-                  )}
-                  
-                  {/* Auto-crop indicator */}
-                  {autoCropEnabled && (
-                    <Badge 
-                      variant="secondary"
-                      className="absolute top-4 left-4 bg-background/80 backdrop-blur"
-                    >
-                      <Crop className="h-3 w-3 mr-1" />
-                      {language === 'es' ? 'Auto-recorte activo' : 'Auto-crop active'}
                     </Badge>
                   )}
                 </>
@@ -472,6 +661,7 @@ export function ContinuousCameraDialog({
             </div>
             
             <canvas ref={canvasRef} className="hidden" />
+            <canvas ref={detectionCanvasRef} className="hidden" />
           </div>
 
           {/* Captured Photos Panel */}
@@ -499,9 +689,13 @@ export function ContinuousCameraDialog({
                 <Card className="border-dashed p-4 text-center text-muted-foreground">
                   <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">
-                    {language === 'es' 
-                      ? 'Toma fotos de tus recibos'
-                      : 'Take photos of your receipts'}
+                    {autoScanEnabled 
+                      ? (language === 'es' 
+                          ? 'Coloca recibos frente a la cámara' 
+                          : 'Place receipts in front of camera')
+                      : (language === 'es' 
+                          ? 'Toma fotos de tus recibos'
+                          : 'Take photos of your receipts')}
                   </p>
                 </Card>
               ) : (
