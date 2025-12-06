@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
+import { useMissionTracker } from './useMissions';
 
 type SavingsGoal = Database['public']['Tables']['savings_goals']['Row'];
 type SavingsGoalInsert = Database['public']['Tables']['savings_goals']['Insert'];
@@ -140,6 +141,7 @@ export function useDeleteSavingsGoal() {
 
 export function useAddToSavingsGoal() {
   const queryClient = useQueryClient();
+  const { trackAction } = useMissionTracker();
 
   return useMutation({
     mutationFn: async ({ id, amount }: { id: string; amount: number }) => {
@@ -163,6 +165,8 @@ export function useAddToSavingsGoal() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['savings-goals'] });
+      // Track mission progress
+      trackAction('add_savings', 1);
       toast.success('Cantidad agregada');
     },
     onError: (error: Error) => {

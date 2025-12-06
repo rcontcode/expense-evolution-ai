@@ -20,6 +20,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '
 import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
@@ -50,6 +51,9 @@ export default function Dashboard() {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+
+  // Track dashboard visit for missions
+  usePageVisitTracker('view_dashboard');
 
   const filters = {
     clientId: selectedClient,

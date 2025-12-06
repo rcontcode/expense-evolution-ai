@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Income, IncomeWithRelations, IncomeFormData } from '@/types/income.types';
-
+import { useMissionTracker } from './useMissions';
 export function useIncome(filters?: { year?: number; month?: number; type?: string }) {
   const { user } = useAuth();
 
@@ -48,6 +48,7 @@ export function useIncome(filters?: { year?: number; month?: number; type?: stri
 export function useCreateIncome() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { trackAction } = useMissionTracker();
 
   return useMutation({
     mutationFn: async (data: IncomeFormData) => {
@@ -76,6 +77,8 @@ export function useCreateIncome() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['income'] });
+      // Track mission progress
+      trackAction('add_income', 1);
       toast.success('Ingreso registrado');
     },
     onError: (error) => {

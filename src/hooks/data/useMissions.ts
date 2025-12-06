@@ -352,3 +352,17 @@ export function useMissionTracker() {
   
   return { trackAction };
 }
+
+// Hook to listen for login events and track login mission
+export function useLoginMissionListener() {
+  const { trackAction } = useMissionTracker();
+  
+  useEffect(() => {
+    const handleLogin = () => {
+      trackAction('login', 1);
+    };
+    
+    window.addEventListener('user-login', handleLogin);
+    return () => window.removeEventListener('user-login', handleLogin);
+  }, [trackAction]);
+}
