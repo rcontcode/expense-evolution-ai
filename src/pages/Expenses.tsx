@@ -14,6 +14,7 @@ import { ExpenseFilters as Filters, ExpenseWithRelations } from '@/types/expense
 import { Card, CardContent } from '@/components/ui/card';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
 
 export default function Expenses() {
   const { t } = useLanguage();
@@ -23,6 +24,9 @@ export default function Expenses() {
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
   const [reimbursementReportOpen, setReimbursementReportOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseWithRelations | undefined>();
+
+  // Track expenses page visit for missions
+  usePageVisitTracker('view_expenses');
 
   const { data: expenses, isLoading } = useExpenses(filters);
   const { data: allExpenses } = useExpenses({});

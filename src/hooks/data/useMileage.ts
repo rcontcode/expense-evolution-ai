@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
+import { useMissionTracker } from './useMissions';
 
 export type Mileage = Database['public']['Tables']['mileage']['Row'];
 export type MileageInsert = Database['public']['Tables']['mileage']['Insert'];
@@ -132,6 +133,7 @@ export const useMileageSummary = (year?: number) => {
 export const useCreateMileage = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { trackAction } = useMissionTracker();
 
   return useMutation({
     mutationFn: async (data: Omit<MileageInsert, 'user_id'>) => {
@@ -150,6 +152,8 @@ export const useCreateMileage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mileage'] });
       queryClient.invalidateQueries({ queryKey: ['mileage-summary'] });
+      // Track mission progress
+      trackAction('add_mileage', 1);
       toast({
         title: 'Viaje registrado',
         description: 'El kilometraje se ha guardado correctamente.',

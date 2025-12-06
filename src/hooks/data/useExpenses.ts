@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ExpenseWithRelations, ExpenseInsert, ExpenseUpdate, ExpenseFilters } from '@/types/expense.types';
 import { useToast } from '@/hooks/use-toast';
-
+import { useMissionTracker } from './useMissions';
 export function useExpenses(filters?: ExpenseFilters) {
   return useQuery({
     queryKey: ['expenses', filters],
@@ -78,6 +78,7 @@ export function useExpenses(filters?: ExpenseFilters) {
 export function useCreateExpense() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { trackAction } = useMissionTracker();
 
   return useMutation({
     mutationFn: async (expense: ExpenseInsert) => {
@@ -95,6 +96,9 @@ export function useCreateExpense() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      // Track mission progress
+      trackAction('add_expense', 1);
+      trackAction('categorize_expense', 1);
       toast({
         title: 'Expense created',
         description: 'The expense has been created successfully.',
