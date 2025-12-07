@@ -46,73 +46,112 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
       const now = new Date();
       const firstDayThisMonth = startOfMonth(now);
       const lastDayThisMonth = endOfMonth(now);
+      
+      // Get first day of 6 months ago for trends query
+      const sixMonthsAgo = subMonths(now, 5);
+      const firstDayForTrends = startOfMonth(sixMonthsAgo);
 
-      // Build query with filters
-      let monthlyQuery = supabase
-        .from('expenses')
-        .select('amount')
-        .eq('user_id', user.id)
-        .gte('date', firstDayThisMonth.toISOString())
-        .lte('date', lastDayThisMonth.toISOString());
+      // Build base filter conditions
+      const clientFilter = filters?.clientId && filters.clientId !== 'all' ? filters.clientId : null;
+      const statusFilter = filters?.status && filters.status !== 'all' ? filters.status : null;
+      const categoryFilter = filters?.category && filters.category !== 'all' ? filters.category : null;
 
-      if (filters?.clientId && filters.clientId !== 'all') {
-        monthlyQuery = monthlyQuery.eq('client_id', filters.clientId);
-      }
-      if (filters?.status && filters.status !== 'all') {
-        monthlyQuery = monthlyQuery.eq('status', filters.status);
-      }
-      if (filters?.category && filters.category !== 'all') {
-        monthlyQuery = monthlyQuery.eq('category', filters.category);
-      }
+      // Execute all queries in parallel for better performance
+      const [
+        monthlyExpensesResult,
+        pendingCountResult,
+        billableCountResult,
+        totalCountResult,
+        expensesByCategoryResult,
+        expensesByClientResult,
+        trendsExpensesResult,
+      ] = await Promise.all([
+        // Monthly expenses query
+        (() => {
+          let query = supabase
+            .from('expenses')
+            .select('amount')
+            .eq('user_id', user.id)
+            .gte('date', firstDayThisMonth.toISOString())
+            .lte('date', lastDayThisMonth.toISOString());
+          if (clientFilter) query = query.eq('client_id', clientFilter);
+          if (statusFilter) query = query.eq('status', statusFilter);
+          if (categoryFilter) query = query.eq('category', categoryFilter);
+          return query;
+        })(),
+        
+        // Pending documents count
+        supabase
+          .from('documents')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('status', 'pending'),
+        
+        // Billable expenses count
+        supabase
+          .from('expenses')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('status', 'reimbursable'),
+        
+        // Total expenses count
+        supabase
+          .from('expenses')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id),
+        
+        // Expenses by category
+        (() => {
+          let query = supabase
+            .from('expenses')
+            .select('category, amount')
+            .eq('user_id', user.id)
+            .gte('date', firstDayThisMonth.toISOString())
+            .lte('date', lastDayThisMonth.toISOString());
+          if (clientFilter) query = query.eq('client_id', clientFilter);
+          if (statusFilter) query = query.eq('status', statusFilter);
+          if (categoryFilter) query = query.eq('category', categoryFilter);
+          return query;
+        })(),
+        
+        // Expenses by client
+        (() => {
+          let query = supabase
+            .from('expenses')
+            .select('client_id, amount, clients(name)')
+            .eq('user_id', user.id)
+            .gte('date', firstDayThisMonth.toISOString())
+            .lte('date', lastDayThisMonth.toISOString())
+            .not('client_id', 'is', null);
+          if (clientFilter) query = query.eq('client_id', clientFilter);
+          if (statusFilter) query = query.eq('status', statusFilter);
+          if (categoryFilter) query = query.eq('category', categoryFilter);
+          return query;
+        })(),
+        
+        // All expenses for last 6 months (single query instead of 6)
+        (() => {
+          let query = supabase
+            .from('expenses')
+            .select('amount, date')
+            .eq('user_id', user.id)
+            .gte('date', firstDayForTrends.toISOString())
+            .lte('date', lastDayThisMonth.toISOString());
+          if (clientFilter) query = query.eq('client_id', clientFilter);
+          if (statusFilter) query = query.eq('status', statusFilter);
+          if (categoryFilter) query = query.eq('category', categoryFilter);
+          return query;
+        })(),
+      ]);
 
-      const { data: monthlyExpenses } = await monthlyQuery;
-
-      const monthlyTotal = monthlyExpenses?.reduce(
+      // Process monthly total
+      const monthlyTotal = monthlyExpensesResult.data?.reduce(
         (sum, exp) => sum + parseFloat(exp.amount.toString()),
         0
       ) || 0;
 
-      // Get pending documents count
-      const { count: pendingCount } = await supabase
-        .from('documents')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('status', 'pending');
-
-      // Get billable expenses count
-      const { count: billableCount } = await supabase
-        .from('expenses')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('status', 'reimbursable');
-
-      // Get total expenses count
-      const { count: totalCount } = await supabase
-        .from('expenses')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-
-      // Get expenses by category with filters
-      let categoryQuery = supabase
-        .from('expenses')
-        .select('category, amount')
-        .eq('user_id', user.id)
-        .gte('date', firstDayThisMonth.toISOString())
-        .lte('date', lastDayThisMonth.toISOString());
-
-      if (filters?.clientId && filters.clientId !== 'all') {
-        categoryQuery = categoryQuery.eq('client_id', filters.clientId);
-      }
-      if (filters?.status && filters.status !== 'all') {
-        categoryQuery = categoryQuery.eq('status', filters.status);
-      }
-      if (filters?.category && filters.category !== 'all') {
-        categoryQuery = categoryQuery.eq('category', filters.category);
-      }
-
-      const { data: expensesByCategory } = await categoryQuery;
-
-      const categoryBreakdown = expensesByCategory?.reduce((acc, exp) => {
+      // Process category breakdown
+      const categoryBreakdown = expensesByCategoryResult.data?.reduce((acc, exp) => {
         const category = exp.category || 'other';
         const existing = acc.find((c) => c.category === category);
         const amount = parseFloat(exp.amount.toString());
@@ -125,28 +164,8 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
         return acc;
       }, [] as CategoryStats[]) || [];
 
-      // Get expenses by client with filters
-      let clientQuery = supabase
-        .from('expenses')
-        .select('client_id, amount, clients(name)')
-        .eq('user_id', user.id)
-        .gte('date', firstDayThisMonth.toISOString())
-        .lte('date', lastDayThisMonth.toISOString())
-        .not('client_id', 'is', null);
-
-      if (filters?.clientId && filters.clientId !== 'all') {
-        clientQuery = clientQuery.eq('client_id', filters.clientId);
-      }
-      if (filters?.status && filters.status !== 'all') {
-        clientQuery = clientQuery.eq('status', filters.status);
-      }
-      if (filters?.category && filters.category !== 'all') {
-        clientQuery = clientQuery.eq('category', filters.category);
-      }
-
-      const { data: expensesByClient } = await clientQuery;
-
-      const clientBreakdown = expensesByClient?.reduce((acc, exp) => {
+      // Process client breakdown
+      const clientBreakdown = expensesByClientResult.data?.reduce((acc, exp) => {
         const clientName = (exp.clients as any)?.name || 'Unknown';
         const existing = acc.find((c) => c.client_name === clientName);
         const amount = parseFloat(exp.amount.toString());
@@ -159,53 +178,46 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
         return acc;
       }, [] as ClientStats[]) || [];
 
-      // Get monthly trends (last 6 months) with filters
+      // Process monthly trends from single query result
+      const monthlyTrendsMap = new Map<string, number>();
+      
+      // Initialize all 6 months with 0
+      for (let i = 5; i >= 0; i--) {
+        const monthDate = subMonths(now, i);
+        const monthKey = format(monthDate, 'MMM');
+        monthlyTrendsMap.set(monthKey, 0);
+      }
+      
+      // Aggregate expenses by month
+      trendsExpensesResult.data?.forEach((exp) => {
+        const expDate = new Date(exp.date);
+        const monthKey = format(expDate, 'MMM');
+        const current = monthlyTrendsMap.get(monthKey) || 0;
+        monthlyTrendsMap.set(monthKey, current + parseFloat(exp.amount.toString()));
+      });
+      
+      // Convert to array maintaining order
       const monthlyTrends: MonthlyTrend[] = [];
       for (let i = 5; i >= 0; i--) {
         const monthDate = subMonths(now, i);
-        const firstDay = startOfMonth(monthDate);
-        const lastDay = endOfMonth(monthDate);
-
-        let trendQuery = supabase
-          .from('expenses')
-          .select('amount')
-          .eq('user_id', user.id)
-          .gte('date', firstDay.toISOString())
-          .lte('date', lastDay.toISOString());
-
-        if (filters?.clientId && filters.clientId !== 'all') {
-          trendQuery = trendQuery.eq('client_id', filters.clientId);
-        }
-        if (filters?.status && filters.status !== 'all') {
-          trendQuery = trendQuery.eq('status', filters.status);
-        }
-        if (filters?.category && filters.category !== 'all') {
-          trendQuery = trendQuery.eq('category', filters.category);
-        }
-
-        const { data: monthExpenses } = await trendQuery;
-
-        const total = monthExpenses?.reduce(
-          (sum, exp) => sum + parseFloat(exp.amount.toString()),
-          0
-        ) || 0;
-
+        const monthKey = format(monthDate, 'MMM');
         monthlyTrends.push({
-          month: format(monthDate, 'MMM'),
-          total,
+          month: monthKey,
+          total: monthlyTrendsMap.get(monthKey) || 0,
         });
       }
 
       return {
         monthlyTotal,
-        pendingDocs: pendingCount || 0,
-        billableExpenses: billableCount || 0,
-        totalExpenses: totalCount || 0,
+        pendingDocs: pendingCountResult.count || 0,
+        billableExpenses: billableCountResult.count || 0,
+        totalExpenses: totalCountResult.count || 0,
         categoryBreakdown: categoryBreakdown.sort((a, b) => b.total - a.total).slice(0, 5),
         clientBreakdown: clientBreakdown.sort((a, b) => b.total - a.total).slice(0, 5),
         monthlyTrends,
       };
     },
     enabled: !!user,
+    staleTime: 30000, // Cache for 30 seconds to reduce refetches
   });
 };
