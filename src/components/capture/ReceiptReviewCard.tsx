@@ -12,18 +12,11 @@ import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { 
   Check, X, Edit2, MessageSquare, Loader2, ZoomIn, 
   Building2, Landmark, Calendar, DollarSign, Tag, Store,
-  ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2, Clock,
-  Sparkles, BookOpen
+  ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2, Clock
 } from 'lucide-react';
-import { useRegisterDecodedCode } from '@/hooks/data/useDecodedCodes';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-
-export interface DecodedItem {
-  original_code: string;
-  decoded_to: string;
-}
 
 export interface ExtractedData {
   vendor?: string;
@@ -36,7 +29,6 @@ export interface ExtractedData {
   cra_deduction_rate?: number;
   typically_reimbursable?: boolean;
   confidence?: 'high' | 'medium' | 'low';
-  decoded_items?: DecodedItem[];
 }
 
 export interface ReceiptDocument {
@@ -72,7 +64,6 @@ export function ReceiptReviewCard({
 }: ReceiptReviewCardProps) {
   const { language } = useLanguage();
   const { data: clients = [] } = useClients();
-  const registerDecodedCode = useRegisterDecodedCode();
   
   const [isEditing, setIsEditing] = useState(false);
   const [showCommentInput, setShowCommentInput] = useState(false);
@@ -81,23 +72,6 @@ export function ReceiptReviewCard({
   const [editedData, setEditedData] = useState<ExtractedData>(document.extracted_data || {});
 
   const handleApprove = async () => {
-    // Register any decoded codes for learning
-    const dataToSave = isEditing ? editedData : document.extracted_data;
-    if (dataToSave?.decoded_items && dataToSave.decoded_items.length > 0) {
-      for (const item of dataToSave.decoded_items) {
-        try {
-          await registerDecodedCode.mutateAsync({
-            original_code: item.original_code,
-            decoded_meaning: item.decoded_to,
-            vendor_context: dataToSave.vendor,
-            category: dataToSave.category
-          });
-        } catch (e) {
-          console.log('Failed to register decoded code:', e);
-        }
-      }
-    }
-    
     await onApprove(document.id, editedData);
     setIsEditing(false);
   };
@@ -287,33 +261,6 @@ export function ReceiptReviewCard({
                       </Badge>
                     )}
                   </div>
-
-                  {/* Decoded codes section */}
-                  {data.decoded_items && data.decoded_items.length > 0 && (
-                    <div className="p-2 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded text-xs">
-                      <p className="font-medium text-purple-800 dark:text-purple-300 mb-2 flex items-center gap-1">
-                        <Sparkles className="h-3 w-3" />
-                        {language === 'es' ? 'Códigos decodificados:' : 'Decoded codes:'}
-                      </p>
-                      <div className="space-y-1">
-                        {data.decoded_items.map((item, idx) => (
-                          <div key={idx} className="flex items-center gap-2 text-purple-700 dark:text-purple-400">
-                            <code className="bg-purple-100 dark:bg-purple-900/50 px-1 rounded font-mono text-[10px]">
-                              {item.original_code}
-                            </code>
-                            <span className="text-muted-foreground">→</span>
-                            <span className="font-medium">{item.decoded_to}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <p className="text-[10px] text-purple-600 dark:text-purple-500 mt-2 flex items-center gap-1">
-                        <BookOpen className="h-3 w-3" />
-                        {language === 'es' 
-                          ? 'Estos códigos se guardarán para mejorar el reconocimiento futuro' 
-                          : 'These codes will be saved to improve future recognition'}
-                      </p>
-                    </div>
-                  )}
 
                   {data.description && (
                     <p className="text-xs text-muted-foreground p-2 bg-muted/30 rounded italic">
