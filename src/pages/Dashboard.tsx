@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -56,17 +56,18 @@ export default function Dashboard() {
   // Track dashboard visit for missions
   usePageVisitTracker('view_dashboard');
 
-  const filters = {
+  // Memoize filters to prevent unnecessary re-renders
+  const filters = useMemo(() => ({
     clientId: selectedClient,
     status: selectedStatus as any,
     category: selectedCategory as any,
-  };
+  }), [selectedClient, selectedStatus, selectedCategory]);
 
-  const expenseFilters = {
+  const expenseFilters = useMemo(() => ({
     clientIds: selectedClient !== 'all' ? [selectedClient] : undefined,
     statuses: selectedStatus !== 'all' ? [selectedStatus as any] : undefined,
     category: selectedCategory !== 'all' ? (selectedCategory as any) : undefined,
-  };
+  }), [selectedClient, selectedStatus, selectedCategory]);
 
   const { data: stats, isLoading } = useDashboardStats(filters);
   const { data: clients } = useClients();
@@ -75,17 +76,24 @@ export default function Dashboard() {
   const { taxSummary } = useTaxCalculations(allExpenses || []);
   const { data: mileageSummary, isLoading: mileageLoading } = useMileageSummary();
 
-  // Calculate balance
-  const totalExpensesAmount = allExpenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
-  const totalIncomeAmount = incomeSummary?.totalIncome || 0;
-  const netBalance = totalIncomeAmount - totalExpensesAmount;
-  const isPositive = netBalance >= 0;
+  // Memoize balance calculations
+  const balanceData = useMemo(() => {
+    const totalExpensesAmount = allExpenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+    const totalIncomeAmount = incomeSummary?.totalIncome || 0;
+    const netBalance = totalIncomeAmount - totalExpensesAmount;
+    return {
+      totalExpensesAmount,
+      totalIncomeAmount,
+      netBalance,
+      isPositive: netBalance >= 0,
+    };
+  }, [allExpenses, incomeSummary?.totalIncome]);
 
-  const handleResetFilters = () => {
+  const handleResetFilters = useCallback(() => {
     setSelectedClient('all');
     setSelectedStatus('all');
     setSelectedCategory('all');
-  };
+  }, []);
 
   return (
     <Layout>
@@ -123,7 +131,7 @@ export default function Dashboard() {
           />
 
           {/* Balance Card */}
-          <Card className={`border-2 ${isPositive ? 'border-green-500/30 bg-green-50/50 dark:bg-green-900/10' : 'border-red-500/30 bg-red-50/50 dark:bg-red-900/10'}`}>
+          <Card className={`border-2 ${balanceData.isPositive ? 'border-green-500/30 bg-green-50/50 dark:bg-green-900/10' : 'border-red-500/30 bg-red-50/50 dark:bg-red-900/10'}`}>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -140,19 +148,19 @@ export default function Dashboard() {
                     <ArrowUpRight className="h-4 w-4 text-green-600" />
                     {t('balance.totalIncome')}
                   </div>
-                  <div className="text-xl font-bold text-green-600">${totalIncomeAmount.toLocaleString()}</div>
+                  <div className="text-xl font-bold text-green-600">${balanceData.totalIncomeAmount.toLocaleString()}</div>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <ArrowDownRight className="h-4 w-4 text-red-600" />
                     {t('balance.totalExpenses')}
                   </div>
-                  <div className="text-xl font-bold text-red-600">${totalExpensesAmount.toLocaleString()}</div>
+                  <div className="text-xl font-bold text-red-600">${balanceData.totalExpensesAmount.toLocaleString()}</div>
                 </div>
                 <div className="space-y-1">
                   <div className="text-sm text-muted-foreground">{t('balance.netBalance')}</div>
-                  <div className={`text-2xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                    {isPositive ? '+' : ''}${netBalance.toLocaleString()}
+                  <div className={`text-2xl font-bold ${balanceData.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                    {balanceData.isPositive ? '+' : ''}${balanceData.netBalance.toLocaleString()}
                   </div>
                 </div>
               </div>

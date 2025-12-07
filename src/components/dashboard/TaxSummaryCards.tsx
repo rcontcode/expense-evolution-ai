@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExternalLink, Calculator, TrendingDown, TrendingUp, AlertCircle, Receipt, BadgeDollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ interface TaxSummaryCardsProps {
   taxSummary: TaxSummary;
 }
 
-export const TaxSummaryCards = ({ taxSummary }: TaxSummaryCardsProps) => {
+export const TaxSummaryCards = memo(({ taxSummary }: TaxSummaryCardsProps) => {
   const { t } = useLanguage();
   
   return (
@@ -219,4 +220,6 @@ export const TaxSummaryCards = ({ taxSummary }: TaxSummaryCardsProps) => {
       </Card>
     </div>
   );
-};
+});
+
+TaxSummaryCards.displayName = 'TaxSummaryCards';
