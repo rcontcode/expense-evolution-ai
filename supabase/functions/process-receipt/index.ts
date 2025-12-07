@@ -252,19 +252,35 @@ For Canadian receipts, assume CAD unless otherwise specified.`;
     // Validate and normalize each expense
     const result = {
       receipts_detected: extracted.receipts_detected || 1,
-      expenses: expenses.map((exp: any, index: number) => ({
-        vendor: exp.vendor || "Unknown",
-        amount: typeof exp.amount === "number" ? exp.amount : parseFloat(exp.amount) || 0,
-        date: exp.date || new Date().toISOString().split("T")[0],
-        category: exp.category || "other",
-        description: exp.description || "",
-        confidence: exp.confidence || "medium",
-        currency: exp.currency || "CAD",
-        cra_deductible: exp.cra_deductible !== false,
-        cra_deduction_rate: exp.cra_deduction_rate || 100,
-        typically_reimbursable: exp.typically_reimbursable || false,
-        receipt_index: exp.receipt_index || index + 1,
-      }))
+      expenses: expenses.map((exp: any, index: number) => {
+        // Parse decoded_from field into structured decoded_items array
+        const decoded_items: { original_code: string; decoded_to: string }[] = [];
+        if (exp.decoded_from) {
+          // Parse "CHVPREM → Premium Fuel" format
+          const parts = exp.decoded_from.split('→').map((s: string) => s.trim());
+          if (parts.length === 2) {
+            decoded_items.push({
+              original_code: parts[0],
+              decoded_to: parts[1]
+            });
+          }
+        }
+        
+        return {
+          vendor: exp.vendor || "Unknown",
+          amount: typeof exp.amount === "number" ? exp.amount : parseFloat(exp.amount) || 0,
+          date: exp.date || new Date().toISOString().split("T")[0],
+          category: exp.category || "other",
+          description: exp.description || "",
+          confidence: exp.confidence || "medium",
+          currency: exp.currency || "CAD",
+          cra_deductible: exp.cra_deductible !== false,
+          cra_deduction_rate: exp.cra_deduction_rate || 100,
+          typically_reimbursable: exp.typically_reimbursable || false,
+          receipt_index: exp.receipt_index || index + 1,
+          decoded_items: decoded_items.length > 0 ? decoded_items : undefined
+        };
+      })
     };
 
     console.log("Processed result:", result);
