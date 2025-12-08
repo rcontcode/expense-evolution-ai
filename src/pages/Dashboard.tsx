@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useClients } from '@/hooks/data/useClients';
 import { useExpenses } from '@/hooks/data/useExpenses';
+import { useExpensesRealtime } from '@/hooks/data/useExpensesRealtime';
 import { useIncomeSummary } from '@/hooks/data/useIncome';
 import { useTaxCalculations } from '@/hooks/data/useTaxCalculations';
 import { useMileageSummary } from '@/hooks/data/useMileage';
@@ -55,6 +56,9 @@ export default function Dashboard() {
 
   // Track dashboard visit for missions
   usePageVisitTracker('view_dashboard');
+
+  // Enable real-time sync for expenses
+  useExpensesRealtime();
 
   // Memoize filters to prevent unnecessary re-renders
   const filters = useMemo(() => ({
