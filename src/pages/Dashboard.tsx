@@ -16,6 +16,7 @@ import { useTaxCalculations } from '@/hooks/data/useTaxCalculations';
 import { useMileageSummary } from '@/hooks/data/useMileage';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
 import { TaxSummaryCards } from '@/components/dashboard/TaxSummaryCards';
+import { CompletenessCard } from '@/components/dashboard/CompletenessCard';
 import { ExportDialog } from '@/components/export/ExportDialog';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -133,6 +134,9 @@ export default function Dashboard() {
             onReset={handleResetFilters}
             clients={clients || []}
           />
+
+          {/* Completeness Card */}
+          <CompletenessCard expenses={allExpenses || []} isLoading={isLoading} />
 
           {/* Balance Card */}
           <Card className={`border-2 ${balanceData.isPositive ? 'border-green-500/30 bg-green-50/50 dark:bg-green-900/10' : 'border-red-500/30 bg-red-50/50 dark:bg-red-900/10'}`}>
