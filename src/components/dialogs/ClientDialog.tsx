@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ClientForm } from '@/components/forms/ClientForm';
 import { ClientFormValues } from '@/lib/validations/client.schema';
@@ -10,8 +10,9 @@ import { useContracts } from '@/hooks/data/useContracts';
 import { Client } from '@/types/expense.types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import { FlaskConical, Loader2 } from 'lucide-react';
+import { FlaskConical, Loader2, CheckCircle2, Sparkles } from 'lucide-react';
 import { ClientProjectsSection } from '@/components/clients/ClientProjectsSection';
+import confetti from 'canvas-confetti';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,12 +30,24 @@ interface ClientDialogProps {
   client?: Client;
 }
 
+type DeleteStep = 'idle' | 'deleting' | 'success';
+
 export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
   const { t } = useLanguage();
   const createMutation = useCreateClient();
   const updateMutation = useUpdateClient();
   const deleteTestDataMutation = useDeleteClientTestData();
   const [showDeleteTestData, setShowDeleteTestData] = useState(false);
+  const [deleteStep, setDeleteStep] = useState<DeleteStep>('idle');
+
+  const triggerSuccessConfetti = () => {
+    confetti({
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#10B981', '#34D399', '#6EE7B7', '#A7F3D0']
+    });
+  };
 
   const { data: expenses } = useExpenses();
   const { data: income } = useIncome();
@@ -77,12 +90,30 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
 
   const handleDeleteTestData = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (client && !deleteTestDataMutation.isPending) {
+    if (client && deleteStep === 'idle') {
+      setDeleteStep('deleting');
       deleteTestDataMutation.mutate(client.id, {
-        onSuccess: () => setShowDeleteTestData(false)
+        onSuccess: () => {
+          setDeleteStep('success');
+          triggerSuccessConfetti();
+          setTimeout(() => {
+            setDeleteStep('idle');
+            setShowDeleteTestData(false);
+          }, 1500);
+        },
+        onError: () => {
+          setDeleteStep('idle');
+        }
       });
     }
   };
+
+  // Reset delete step when dialog closes
+  useEffect(() => {
+    if (!showDeleteTestData) {
+      setDeleteStep('idle');
+    }
+  }, [showDeleteTestData]);
 
   return (
     <>
@@ -123,31 +154,53 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={showDeleteTestData} onOpenChange={setShowDeleteTestData}>
+      <AlertDialog open={showDeleteTestData} onOpenChange={(open) => {
+        if (!open && deleteStep === 'idle') setShowDeleteTestData(false);
+      }}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('clients.deleteTestDataConfirm')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('clients.deleteTestDataWarning')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteTestData} 
-              className="bg-amber-600 hover:bg-amber-700"
-              disabled={deleteTestDataMutation.isPending}
-            >
-              {deleteTestDataMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Eliminando...
-                </>
-              ) : (
-                t('clients.deleteTestData')
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
+          {deleteStep === 'success' ? (
+            <div className="flex flex-col items-center justify-center py-8 gap-4">
+              <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center animate-in zoom-in-50 duration-300">
+                <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="text-center animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+                <p className="text-lg font-semibold text-green-700 dark:text-green-400">
+                  ¡Datos eliminados!
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Todos los datos de prueba han sido eliminados exitosamente
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('clients.deleteTestDataConfirm')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('clients.deleteTestDataWarning')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deleteStep === 'deleting'}>
+                  {t('common.cancel')}
+                </AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleDeleteTestData} 
+                  className="bg-amber-600 hover:bg-amber-700"
+                  disabled={deleteStep === 'deleting'}
+                >
+                  {deleteStep === 'deleting' ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Eliminando...
+                    </>
+                  ) : (
+                    t('clients.deleteTestData')
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </>
+          )}
         </AlertDialogContent>
       </AlertDialog>
     </>
