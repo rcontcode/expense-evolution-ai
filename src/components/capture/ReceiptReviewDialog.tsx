@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useClients } from '@/hooks/data/useClients';
+import { useProjects } from '@/hooks/data/useProjects';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -42,6 +43,8 @@ export interface ExtractedData {
   cra_deduction_rate?: number;
   typically_reimbursable?: boolean;
   confidence?: 'high' | 'medium' | 'low';
+  client_id?: string;
+  project_id?: string;
 }
 
 export interface ReceiptDocument {
@@ -85,6 +88,7 @@ export function ReceiptReviewDialog({
 }: ReceiptReviewDialogProps) {
   const { language } = useLanguage();
   const { data: clients = [] } = useClients();
+  const { data: projects = [] } = useProjects('active');
   
   const [isEditing, setIsEditing] = useState(false);
   const [showCommentInput, setShowCommentInput] = useState(false);
@@ -426,6 +430,69 @@ export function ReceiptReviewDialog({
                     </Badge>
                   </div>
                 )}
+              </div>
+
+              {/* Client & Project Selectors */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                    {language === 'es' ? 'Cliente' : 'Client'}
+                  </label>
+                  {isEditing ? (
+                    <Select 
+                      value={editedData.client_id || 'none'} 
+                      onValueChange={(v) => updateField('client_id', v === 'none' ? undefined : v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={language === 'es' ? 'Sin cliente' : 'No client'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">{language === 'es' ? 'Sin cliente' : 'No client'}</SelectItem>
+                        {clients.map(client => (
+                          <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="p-3 bg-muted/50 rounded-md">
+                      {data.client_id 
+                        ? clients.find(c => c.id === data.client_id)?.name 
+                        : <span className="text-muted-foreground italic">{language === 'es' ? 'Sin cliente' : 'No client'}</span>
+                      }
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <Tag className="h-4 w-4 text-muted-foreground" />
+                    {language === 'es' ? 'Proyecto' : 'Project'}
+                  </label>
+                  {isEditing ? (
+                    <Select 
+                      value={editedData.project_id || 'none'} 
+                      onValueChange={(v) => updateField('project_id', v === 'none' ? undefined : v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={language === 'es' ? 'Sin proyecto' : 'No project'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">{language === 'es' ? 'Sin proyecto' : 'No project'}</SelectItem>
+                        {projects.map(project => (
+                          <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="p-3 bg-muted/50 rounded-md">
+                      {data.project_id 
+                        ? projects.find(p => p.id === data.project_id)?.name 
+                        : <span className="text-muted-foreground italic">{language === 'es' ? 'Sin proyecto' : 'No project'}</span>
+                      }
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Reimbursement badges */}
