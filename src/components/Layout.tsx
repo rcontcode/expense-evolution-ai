@@ -36,6 +36,7 @@ import { Badge } from '@/components/ui/badge';
 import { TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { SyncStatusIndicator } from '@/components/SyncStatusIndicator';
 
 interface LayoutProps {
   children: ReactNode;
@@ -100,6 +101,11 @@ export const Layout = ({ children }: LayoutProps) => {
               </div>
               <span className="font-bold text-lg">EvoExpense</span>
             </div>
+
+            <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <SyncStatusIndicator />
+              </TooltipProvider>
             
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
@@ -178,6 +184,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 </div>
               </SheetContent>
             </Sheet>
+            </div>
           </div>
         </header>
 
