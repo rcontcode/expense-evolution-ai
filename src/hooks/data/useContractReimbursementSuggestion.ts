@@ -79,6 +79,46 @@ export function useContractReimbursementSuggestion(
     for (const contract of clientContracts) {
       const terms = contract.extracted_terms as ExtractedTerms;
       const reimbursementPolicy = terms?.reimbursement_policy;
+      const userNotes = contract.user_notes?.toLowerCase() || '';
+
+      // First check user notes/corrections - they override AI extracted terms
+      if (userNotes) {
+        const categoryVariants = CATEGORY_MAPPINGS[category] || [category];
+        const notesMatchCategory = categoryVariants.some(variant => 
+          normalizeText(userNotes).includes(normalizeText(variant))
+        );
+
+        // Check if user notes indicate this category IS reimbursable
+        const positiveIndicators = ['reembolsan', 'reembolsable', 'me pagan', 'cubre', 'cubren', 'incluye', 'incluyen', 'sí pagan', 'si pagan', 'acuerdo', 'acordamos', 'reimbursable', 'covered', 'pays for', 'will pay'];
+        const hasPositiveIndicator = positiveIndicators.some(ind => userNotes.includes(ind));
+        
+        if (notesMatchCategory && hasPositiveIndicator) {
+          return {
+            isReimbursable: true,
+            confidence: 'medium',
+            reason: `Según tus notas en el contrato "${contract.title || contract.file_name}", esta categoría es reembolsable (acuerdo informal/corrección manual).`,
+            reasonEn: `According to your notes on contract "${contract.title || contract.file_name}", this category is reimbursable (informal agreement/manual correction).`,
+            matchedCategory: category,
+            contractTitle: contract.title || contract.file_name,
+          };
+        }
+
+        // Check for general "materials/tools/supplies" mentions in notes
+        const materialTerms = ['materiales', 'herramientas', 'insumos', 'materials', 'tools', 'supplies', 'compras', 'purchases'];
+        const notesMentionsMaterials = materialTerms.some(term => userNotes.includes(term));
+        const categoryIsMaterial = ['equipment', 'office_supplies', 'other'].includes(category);
+        
+        if (notesMentionsMaterials && hasPositiveIndicator && categoryIsMaterial) {
+          return {
+            isReimbursable: true,
+            confidence: 'medium',
+            reason: `Según tus notas en el contrato "${contract.title || contract.file_name}", los materiales/herramientas son reembolsables (acuerdo informal).`,
+            reasonEn: `According to your notes on contract "${contract.title || contract.file_name}", materials/tools are reimbursable (informal agreement).`,
+            matchedCategory: 'materiales/herramientas',
+            contractTitle: contract.title || contract.file_name,
+          };
+        }
+      }
 
       if (!reimbursementPolicy) continue;
 
@@ -101,8 +141,8 @@ export function useContractReimbursementSuggestion(
         };
       }
 
-      // Check if category matches non-reimbursable
-      if (categoryMatchesTerms(category, nonReimbursable)) {
+      // Check if category matches non-reimbursable (but user notes can override)
+      if (categoryMatchesTerms(category, nonReimbursable) && !userNotes) {
         const matchedTerm = nonReimbursable.find(term => 
           categoryMatchesTerms(category, [term])
         );
