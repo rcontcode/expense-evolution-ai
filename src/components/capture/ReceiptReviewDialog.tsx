@@ -166,6 +166,53 @@ export function ReceiptReviewDialog({
     onOpenChange(false);
   };
 
+  const handleSaveChanges = async () => {
+    try {
+      // Update the document's extracted_data
+      const { error: docError } = await supabase
+        .from('documents')
+        .update({ extracted_data: JSON.parse(JSON.stringify(editedData)) } as any)
+        .eq('id', document.id);
+
+      if (docError) throw docError;
+
+      // If there's an associated expense, update it too
+      if (document.expense_id) {
+        const expenseUpdates: any = {};
+        if (editedData.vendor) expenseUpdates.vendor = editedData.vendor;
+        if (editedData.amount) expenseUpdates.amount = editedData.amount;
+        if (editedData.date) expenseUpdates.date = editedData.date;
+        if (editedData.category) expenseUpdates.category = editedData.category;
+        if (editedData.description) expenseUpdates.description = editedData.description;
+        if (editedData.client_id) expenseUpdates.client_id = editedData.client_id;
+        if (editedData.project_id) expenseUpdates.project_id = editedData.project_id;
+        if (editedData.typically_reimbursable !== undefined) {
+          expenseUpdates.reimbursement_type = editedData.typically_reimbursable ? 'client_reimbursable' : 
+            (editedData.cra_deductible ? 'cra_deductible' : 'personal');
+        }
+
+        if (Object.keys(expenseUpdates).length > 0) {
+          const { error: expenseError } = await supabase
+            .from('expenses')
+            .update(expenseUpdates)
+            .eq('id', document.expense_id);
+          
+          if (expenseError) throw expenseError;
+        }
+      }
+
+      toast.success(language === 'es' ? 'Cambios guardados' : 'Changes saved');
+      setIsEditing(false);
+      
+      if (onDataExtracted) {
+        onDataExtracted(editedData);
+      }
+    } catch (err) {
+      console.error('Error saving changes:', err);
+      toast.error(language === 'es' ? 'Error al guardar cambios' : 'Error saving changes');
+    }
+  };
+
   const handleReject = async () => {
     if (!comment.trim()) {
       setShowCommentInput(true);
@@ -737,6 +784,18 @@ export function ReceiptReviewDialog({
                       : (language === 'es' ? 'Aprobar' : 'Approve')}
                   </Button>
                 </>
+              )}
+
+              {/* Save button for non-pending (already approved/rejected) receipts */}
+              {!isPending && isEditing && hasChanges && (
+                <Button 
+                  onClick={handleSaveChanges} 
+                  disabled={isLoading}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                >
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                  {language === 'es' ? 'Guardar Cambios' : 'Save Changes'}
+                </Button>
               )}
             </div>
           </div>
