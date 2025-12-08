@@ -68,60 +68,69 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !user) {
+      console.log('No file or user:', { file: !!file, user: !!user });
+      return;
+    }
     
-    // Set previews
+    console.log('File selected:', file.name, file.size, file.type);
+    
+    // Set preview
     setImagePreview(URL.createObjectURL(file));
     setImageFile(file);
     
-    // Convert to base64
+    // Convert to base64 for AI processing
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64 = reader.result as string;
       setImageBase64(base64);
+      console.log('Base64 ready, length:', base64.length);
     };
     reader.readAsDataURL(file);
     
-    // Upload immediately if user is authenticated
-    if (user && !savedDocumentId) {
-      try {
-        const fileName = `${user.id}/${Date.now()}.jpg`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('expense-documents')
-          .upload(fileName, file, { contentType: file.type });
+    // Upload to storage immediately
+    const fileName = `${user.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    console.log('Uploading to:', fileName);
+    
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('expense-documents')
+      .upload(fileName, file, { 
+        contentType: file.type,
+        upsert: false 
+      });
 
-        if (uploadError) {
-          console.error('Upload error:', uploadError);
-          toast.error(language === 'es' ? 'Error subiendo imagen' : 'Error uploading image');
-          return;
-        }
-
-        // Create document record
-        const { data: doc, error: dbError } = await supabase
-          .from('documents')
-          .insert({
-            user_id: user.id,
-            file_path: fileName,
-            file_name: file.name || `receipt-${Date.now()}.jpg`,
-            file_type: file.type,
-            file_size: file.size,
-            status: 'pending',
-            review_status: 'pending_review',
-          })
-          .select()
-          .single();
-
-        if (dbError) {
-          console.error('DB error:', dbError);
-        } else {
-          setSavedDocumentId(doc.id);
-          toast.success(language === 'es' ? 'Foto guardada' : 'Photo saved');
-        }
-      } catch (error) {
-        console.error('Failed to save image:', error);
-      }
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError);
+      toast.error(language === 'es' ? `Error: ${uploadError.message}` : `Error: ${uploadError.message}`);
+      return;
     }
+    
+    console.log('Upload success:', uploadData);
+
+    // Create document record
+    const { data: doc, error: dbError } = await supabase
+      .from('documents')
+      .insert({
+        user_id: user.id,
+        file_path: fileName,
+        file_name: file.name,
+        file_type: file.type,
+        file_size: file.size,
+        status: 'pending',
+        review_status: 'pending_review',
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('Document DB error:', dbError);
+      toast.error(language === 'es' ? `Error BD: ${dbError.message}` : `DB Error: ${dbError.message}`);
+      return;
+    }
+    
+    console.log('Document created:', doc.id);
+    setSavedDocumentId(doc.id);
+    toast.success(language === 'es' ? 'Foto guardada correctamente' : 'Photo saved successfully');
   };
 
 
