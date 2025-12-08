@@ -11,7 +11,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useCreateProject, useUpdateProject } from '@/hooks/data/useProjects';
 import { useAddClientToProject } from '@/hooks/data/useProjectClients';
 import { ProjectWithRelations, ProjectFormData } from '@/types/income.types';
-import { Loader2, CheckCircle2, Link2 } from 'lucide-react';
+import { Loader2, CheckCircle2, Link2, Sparkles } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
 interface ProjectDialogProps {
   open: boolean;
@@ -28,6 +29,31 @@ export function ProjectDialog({ open, onClose, project, defaultClientId }: Proje
   const updateMutation = useUpdateProject();
   const addClientToProject = useAddClientToProject();
   const [creationStep, setCreationStep] = useState<CreationStep>('idle');
+
+  const triggerConfetti = () => {
+    const defaults = {
+      spread: 360,
+      ticks: 100,
+      gravity: 0.8,
+      decay: 0.94,
+      startVelocity: 30,
+      colors: ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899']
+    };
+
+    confetti({
+      ...defaults,
+      particleCount: 50,
+      scalar: 1.2,
+      shapes: ['circle', 'square']
+    });
+
+    confetti({
+      ...defaults,
+      particleCount: 30,
+      scalar: 0.8,
+      shapes: ['circle']
+    });
+  };
 
   const handleSubmit = async (data: ProjectFormData) => {
     if (project) {
@@ -48,10 +74,12 @@ export function ProjectDialog({ open, onClose, project, defaultClientId }: Proje
         }
         
         setCreationStep('done');
+        triggerConfetti();
+        
         setTimeout(() => {
           setCreationStep('idle');
           onClose();
-        }, 800);
+        }, 1200);
       } catch (error) {
         setCreationStep('idle');
       }
