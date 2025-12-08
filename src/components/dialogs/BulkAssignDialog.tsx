@@ -6,7 +6,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
-import { Building2, FolderKanban, FileText, Sparkles, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Building2, FolderKanban, FileText, Sparkles, CheckCircle2, AlertTriangle, Loader2, Filter, Calendar, X } from 'lucide-react';
 import { useClients } from '@/hooks/data/useClients';
 import { useProjects } from '@/hooks/data/useProjects';
 import { useContracts } from '@/hooks/data/useContracts';
@@ -14,8 +15,8 @@ import { useUpdateExpense } from '@/hooks/data/useExpenses';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ExpenseWithRelations } from '@/types/expense.types';
-import { format } from 'date-fns';
-import { getCategoryLabel } from '@/lib/constants/expense-categories';
+import { format, parseISO, isWithinInterval } from 'date-fns';
+import { getCategoryLabel, EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { cn } from '@/lib/utils';
 
 interface BulkAssignDialogProps {
@@ -39,14 +40,55 @@ export function BulkAssignDialog({ open, onClose, expenses }: BulkAssignDialogPr
   const [reimbursementType, setReimbursementType] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Filter unassigned or pending expenses
-  const unassignedExpenses = useMemo(() => 
-    expenses.filter(e => 
-      !e.client_id || 
-      (e as any).reimbursement_type === 'pending_classification'
-    ), 
-    [expenses]
-  );
+  // Filter states
+  const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
+
+  // Get unique categories from expenses
+  const availableCategories = useMemo(() => {
+    const cats = new Set(expenses.map(e => e.category).filter(Boolean));
+    return Array.from(cats) as string[];
+  }, [expenses]);
+
+  // Filter unassigned or pending expenses with category and date filters
+  const unassignedExpenses = useMemo(() => {
+    return expenses.filter(e => {
+      // Must be unassigned or pending
+      if (e.client_id && (e as any).reimbursement_type !== 'pending_classification') {
+        return false;
+      }
+      
+      // Category filter
+      if (categoryFilter && e.category !== categoryFilter) {
+        return false;
+      }
+      
+      // Date range filter
+      if (dateFrom || dateTo) {
+        const expenseDate = parseISO(e.date);
+        if (dateFrom && dateTo) {
+          if (!isWithinInterval(expenseDate, { start: parseISO(dateFrom), end: parseISO(dateTo) })) {
+            return false;
+          }
+        } else if (dateFrom && expenseDate < parseISO(dateFrom)) {
+          return false;
+        } else if (dateTo && expenseDate > parseISO(dateTo)) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+  }, [expenses, categoryFilter, dateFrom, dateTo]);
+
+  const clearFilters = () => {
+    setCategoryFilter('');
+    setDateFrom('');
+    setDateTo('');
+  };
+
+  const hasActiveFilters = categoryFilter || dateFrom || dateTo;
 
   // Filter projects and contracts by selected client
   const filteredProjects = useMemo(() => {
@@ -141,6 +183,9 @@ export function BulkAssignDialog({ open, onClose, expenses }: BulkAssignDialogPr
     setProjectId('');
     setContractId('');
     setReimbursementType('');
+    setCategoryFilter('');
+    setDateFrom('');
+    setDateTo('');
     onClose();
   };
 
@@ -280,14 +325,109 @@ export function BulkAssignDialog({ open, onClose, expenses }: BulkAssignDialogPr
             </Alert>
           )}
 
+          {/* Quick Filters */}
+          <div className="space-y-3 p-4 bg-muted/30 rounded-lg border">
+            <div className="flex items-center justify-between">
+              <h4 className="font-medium text-sm flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                {language === 'es' ? 'Filtros rápidos' : 'Quick Filters'}
+              </h4>
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-7 text-xs">
+                  <X className="h-3 w-3 mr-1" />
+                  {language === 'es' ? 'Limpiar' : 'Clear'}
+                </Button>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">{language === 'es' ? 'Categoría' : 'Category'}</Label>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder={language === 'es' ? 'Todas...' : 'All...'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">{language === 'es' ? 'Todas las categorías' : 'All categories'}</SelectItem>
+                    {availableCategories.map(cat => (
+                      <SelectItem key={cat} value={cat}>
+                        {getCategoryLabel(cat as any)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-1">
+                <Label className="text-xs flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {language === 'es' ? 'Desde' : 'From'}
+                </Label>
+                <Input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="h-8 text-xs"
+                />
+              </div>
+              
+              <div className="space-y-1">
+                <Label className="text-xs flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {language === 'es' ? 'Hasta' : 'To'}
+                </Label>
+                <Input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="h-8 text-xs"
+                />
+              </div>
+            </div>
+            
+            {hasActiveFilters && (
+              <div className="flex items-center gap-2 flex-wrap">
+                {categoryFilter && (
+                  <Badge variant="secondary" className="text-xs">
+                    {getCategoryLabel(categoryFilter as any)}
+                    <button onClick={() => setCategoryFilter('')} className="ml-1 hover:text-destructive">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {dateFrom && (
+                  <Badge variant="secondary" className="text-xs">
+                    {language === 'es' ? 'Desde:' : 'From:'} {format(parseISO(dateFrom), 'PP')}
+                    <button onClick={() => setDateFrom('')} className="ml-1 hover:text-destructive">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {dateTo && (
+                  <Badge variant="secondary" className="text-xs">
+                    {language === 'es' ? 'Hasta:' : 'To:'} {format(parseISO(dateTo), 'PP')}
+                    <button onClick={() => setDateTo('')} className="ml-1 hover:text-destructive">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Expense List */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h4 className="font-medium text-sm">
                 {language === 'es' ? 'Gastos sin asignar' : 'Unassigned Expenses'} ({unassignedExpenses.length})
+                {hasActiveFilters && (
+                  <span className="text-muted-foreground ml-1">
+                    ({language === 'es' ? 'filtrados' : 'filtered'})
+                  </span>
+                )}
               </h4>
-              <Button variant="outline" size="sm" onClick={selectAll}>
-                {selectedIds.size === unassignedExpenses.length
+              <Button variant="outline" size="sm" onClick={selectAll} disabled={unassignedExpenses.length === 0}>
+                {selectedIds.size === unassignedExpenses.length && unassignedExpenses.length > 0
                   ? (language === 'es' ? 'Deseleccionar todo' : 'Deselect all')
                   : (language === 'es' ? 'Seleccionar todo' : 'Select all')
                 }
