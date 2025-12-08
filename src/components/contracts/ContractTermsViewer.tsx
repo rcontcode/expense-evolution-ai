@@ -271,7 +271,7 @@ export function ContractTermsViewer({
                   )}
 
                   {/* Reimbursable Categories */}
-                  {terms.reimbursement_policy.reimbursable_categories && 
+                  {Array.isArray(terms.reimbursement_policy.reimbursable_categories) && 
                    terms.reimbursement_policy.reimbursable_categories.length > 0 && (
                     <div className="space-y-2 px-3">
                       <p className="text-sm font-medium flex items-center gap-2">
@@ -280,17 +280,18 @@ export function ContractTermsViewer({
                       </p>
                       <div className="grid gap-2">
                         {terms.reimbursement_policy.reimbursable_categories.map((cat, idx) => {
-                          const Icon = categoryIcons[cat.category] || categoryIcons.default;
+                          const catData = typeof cat === 'string' ? { category: cat, description: '', rate: '100%' } : cat;
+                          const Icon = categoryIcons[catData.category] || categoryIcons.default;
                           return (
                             <div key={idx} className="p-2 bg-green-50 dark:bg-green-950/30 rounded-md border border-green-200 dark:border-green-900">
                               <div className="flex items-center gap-2 mb-1">
                                 <Icon className="h-4 w-4 text-green-600" />
-                                <span className="font-medium text-sm capitalize">{cat.category}</span>
-                                <Badge variant="outline" className="text-xs">{cat.rate}</Badge>
+                                <span className="font-medium text-sm capitalize">{catData.category}</span>
+                                {catData.rate && <Badge variant="outline" className="text-xs">{catData.rate}</Badge>}
                               </div>
-                              <p className="text-xs text-muted-foreground">{cat.description}</p>
-                              {cat.limits && (
-                                <p className="text-xs text-amber-600 mt-1">⚠️ {cat.limits}</p>
+                              {catData.description && <p className="text-xs text-muted-foreground">{catData.description}</p>}
+                              {catData.limits && (
+                                <p className="text-xs text-amber-600 mt-1">⚠️ {catData.limits}</p>
                               )}
                             </div>
                           );
@@ -300,7 +301,7 @@ export function ContractTermsViewer({
                   )}
 
                   {/* Non-Reimbursable */}
-                  {terms.reimbursement_policy.non_reimbursable && 
+                  {Array.isArray(terms.reimbursement_policy.non_reimbursable) && 
                    terms.reimbursement_policy.non_reimbursable.length > 0 && (
                     <div className="space-y-2 px-3">
                       <p className="text-sm font-medium flex items-center gap-2">
@@ -309,14 +310,14 @@ export function ContractTermsViewer({
                       </p>
                       <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
                         {terms.reimbursement_policy.non_reimbursable.map((item, idx) => (
-                          <li key={idx}>{item}</li>
+                          <li key={idx}>{typeof item === 'string' ? item : JSON.stringify(item)}</li>
                         ))}
                       </ul>
                     </div>
                   )}
 
                   {/* Documentation Required */}
-                  {terms.reimbursement_policy.documentation_required && 
+                  {Array.isArray(terms.reimbursement_policy.documentation_required) && 
                    terms.reimbursement_policy.documentation_required.length > 0 && (
                     <div className="space-y-2 px-3">
                       <p className="text-sm font-medium">
@@ -324,7 +325,7 @@ export function ContractTermsViewer({
                       </p>
                       <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
                         {terms.reimbursement_policy.documentation_required.map((item, idx) => (
-                          <li key={idx}>{item}</li>
+                          <li key={idx}>{typeof item === 'string' ? item : JSON.stringify(item)}</li>
                         ))}
                       </ul>
                     </div>
