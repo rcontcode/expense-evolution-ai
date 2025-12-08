@@ -27,7 +27,8 @@ import {
   TrendingDown,
   ArrowUpRight,
   ArrowDownRight,
-  BarChart3
+  BarChart3,
+  PieChart
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProjectsWithClients } from '@/hooks/data/useProjectClients';
@@ -37,6 +38,8 @@ import { useIncome } from '@/hooks/data/useIncome';
 import { useClients } from '@/hooks/data/useClients';
 import { ProjectDialog } from '@/components/dialogs/ProjectDialog';
 import { ProjectDetailDialog } from '@/components/projects/ProjectDetailDialog';
+import { ProjectFinancialOverview } from '@/components/projects/ProjectFinancialOverview';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -73,6 +76,7 @@ export default function Projects() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [detailProject, setDetailProject] = useState<any>(null);
+  const [financialProject, setFinancialProject] = useState<any>(null);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   
@@ -508,6 +512,17 @@ export default function Projects() {
                         </div>
                       </div>
                     )}
+
+                    {/* Quick Financial Overview Button */}
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full mt-2 gap-2"
+                      onClick={() => setFinancialProject(project)}
+                    >
+                      <PieChart className="h-4 w-4" />
+                      {language === 'es' ? 'Panorama Financiero' : 'Financial Overview'}
+                    </Button>
                   </CardContent>
                 </Card>
               );
@@ -555,6 +570,29 @@ export default function Projects() {
           onClose={() => setDetailProject(null)}
           project={detailProject}
         />
+
+        {/* Quick Financial Overview Dialog */}
+        <Dialog open={!!financialProject} onOpenChange={() => setFinancialProject(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <PieChart className="h-5 w-5 text-primary" />
+                {language === 'es' ? 'Panorama Financiero' : 'Financial Overview'}
+                {financialProject && (
+                  <span className="text-muted-foreground font-normal">
+                    — {financialProject.name}
+                  </span>
+                )}
+              </DialogTitle>
+            </DialogHeader>
+            {financialProject && (
+              <ProjectFinancialOverview 
+                projectId={financialProject.id} 
+                projectName={financialProject.name}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
 
         <AlertDialog open={!!deleteProjectId} onOpenChange={() => setDeleteProjectId(null)}>
           <AlertDialogContent>
