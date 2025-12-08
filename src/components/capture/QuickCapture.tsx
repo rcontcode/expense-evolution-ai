@@ -185,11 +185,15 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
     try {
       // Save image first if we have one (either file or base64)
       let documentId = savedDocumentId;
+      console.log('Saving expense. imageFile:', !!imageFile, 'imageBase64:', !!imageBase64, 'savedDocumentId:', savedDocumentId);
+      
       if ((imageFile || imageBase64) && !documentId) {
+        console.log('Attempting to save image to storage...');
         documentId = await saveImageToStorage();
+        console.log('Document created with ID:', documentId);
       }
 
-      await createExpense.mutateAsync({ 
+      const expenseData = { 
         vendor: currentExpense.vendor, 
         amount: currentExpense.amount, 
         date: currentExpense.date, 
@@ -198,7 +202,10 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
         client_id: currentExpense.client_id || null,
         document_id: documentId,
         status: 'pending' 
-      } as any);
+      };
+      console.log('Creating expense with data:', expenseData);
+      
+      await createExpense.mutateAsync(expenseData as any);
 
       // Update document with expense link
       if (documentId) {
@@ -218,11 +225,11 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
       }
 
       setSavedCount(prev => prev + 1);
-      toast.success(language === 'es' ? 'Gasto guardado con foto' : 'Expense saved with photo');
+      toast.success(language === 'es' ? (documentId ? 'Gasto guardado con foto' : 'Gasto guardado') : (documentId ? 'Expense saved with photo' : 'Expense saved'));
       if (currentIndex < editedExpenses.length - 1) setCurrentIndex(prev => prev + 1);
       else onSuccess?.();
     } catch (e) { 
-      console.error(e);
+      console.error('Error saving expense:', e);
       toast.error(language === 'es' ? 'Error al guardar' : 'Error saving');
     } finally {
       setIsSaving(false);
