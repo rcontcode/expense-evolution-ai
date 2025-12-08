@@ -16,7 +16,10 @@ import {
   Sparkles,
   HelpCircle,
   Zap,
-  TrendingUp
+  TrendingUp,
+  Camera,
+  Menu,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -31,6 +34,8 @@ import {
 } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 
 interface LayoutProps {
   children: ReactNode;
@@ -63,14 +68,167 @@ const getNavSections = (t: (key: string) => string) => [
   },
 ];
 
+// Bottom navigation items for mobile
+const MOBILE_NAV_ITEMS = [
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+  { icon: Receipt, label: 'Gastos', path: '/expenses' },
+  { icon: Camera, label: 'Captura', path: '/capture', primary: true },
+  { icon: TrendingUp, label: 'Ingresos', path: '/income' },
+  { icon: Settings, label: 'Config', path: '/settings' },
+];
+
 export const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t, language } = useLanguage();
   const { signOut } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
   const NAV_SECTIONS = getNavSections(t);
 
+  // Mobile Layout
+  if (isMobile) {
+    return (
+      <div className="flex flex-col min-h-screen bg-background">
+        {/* Mobile Header */}
+        <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
+                <Zap className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <span className="font-bold text-lg">EvoExpense</span>
+            </div>
+            
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[280px] p-0">
+                <div className="flex flex-col h-full">
+                  <div className="p-4 border-b flex items-center justify-between">
+                    <span className="font-semibold">{t('nav.menu') || 'Menú'}</span>
+                    <SheetClose asChild>
+                      <Button variant="ghost" size="icon">
+                        <X className="h-5 w-5" />
+                      </Button>
+                    </SheetClose>
+                  </div>
+                  
+                  <nav className="flex-1 overflow-y-auto p-4 space-y-6">
+                    {NAV_SECTIONS.map((section) => (
+                      <div key={section.titleKey}>
+                        <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          {t(section.titleKey)}
+                        </h3>
+                        <div className="space-y-1">
+                          {section.items.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = location.pathname === item.path;
+                            return (
+                              <button
+                                key={item.path}
+                                onClick={() => {
+                                  navigate(item.path);
+                                  setMobileMenuOpen(false);
+                                }}
+                                className={cn(
+                                  'nav-item w-full',
+                                  isActive && 'active'
+                                )}
+                              >
+                                <Icon className={cn("h-5 w-5", isActive && "text-primary-foreground")} />
+                                <span className="flex-1 text-left">{t(item.label)}</span>
+                                {item.badge && (
+                                  <Badge 
+                                    variant={item.badge === 'AI' ? 'default' : 'secondary'} 
+                                    className={cn(
+                                      "text-[10px] px-1.5 py-0",
+                                      item.badge === 'AI' && "bg-gradient-primary border-0"
+                                    )}
+                                  >
+                                    {item.badge}
+                                  </Badge>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </nav>
+
+                  <div className="border-t p-4 space-y-3">
+                    <LanguageSelector />
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start text-destructive hover:text-destructive" 
+                      onClick={() => {
+                        signOut();
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <LogOut className="h-5 w-5 mr-2" />
+                      {t('layout.logout')}
+                    </Button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </header>
+
+        {/* Main content */}
+        <main className="flex-1 overflow-auto pb-20">
+          {children}
+        </main>
+
+        {/* Mobile Bottom Navigation */}
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t safe-area-inset-bottom">
+          <div className="flex items-center justify-around py-2">
+            {MOBILE_NAV_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              
+              if (item.primary) {
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => navigate(item.path)}
+                    className="flex flex-col items-center justify-center -mt-6"
+                  >
+                    <div className="w-14 h-14 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg shadow-primary/30">
+                      <Icon className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                    <span className="text-xs mt-1 font-medium text-primary">{item.label}</span>
+                  </button>
+                );
+              }
+              
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className={cn(
+                    "flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-colors",
+                    isActive ? "text-primary" : "text-muted-foreground"
+                  )}
+                >
+                  <Icon className={cn("h-5 w-5", isActive && "text-primary")} />
+                  <span className={cn("text-xs mt-1", isActive && "font-medium")}>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      </div>
+    );
+  }
+
+  // Desktop Layout
   return (
     <TooltipProvider delayDuration={300}>
       <div className="flex h-screen bg-background">

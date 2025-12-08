@@ -4,14 +4,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
   Camera, 
-  Check, 
   Loader2, 
   Sparkles, 
   RefreshCw, 
   ArrowLeft,
   Wifi,
   WifiOff,
-  Smartphone
+  Check
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -128,7 +127,7 @@ export default function MobileCapture() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <Smartphone className="h-5 w-5 text-primary" />
+            <Camera className="h-5 w-5 text-primary" />
             <span className="font-semibold">
               {language === 'es' ? 'Captura Móvil' : 'Mobile Capture'}
             </span>

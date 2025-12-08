@@ -1073,3 +1073,62 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-muted-foreground/40;
 }
+
+/* ================================================================
+   MOBILE OPTIMIZATIONS
+   ================================================================ */
+
+/* Safe area for bottom navigation */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Prevent text selection on navigation */
+.nav-mobile {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Mobile-optimized touch targets */
+@media (max-width: 768px) {
+  .nav-item {
+    min-height: 44px;
+  }
+  
+  button, 
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Reduce padding on mobile pages */
+  .p-8 {
+    padding: 1rem;
+  }
+  
+  /* Stack grid on mobile */
+  .md\:grid-cols-2,
+  .md\:grid-cols-3,
+  .md\:grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Hide desktop-only elements */
+  .desktop-only {
+    display: none !important;
+  }
+  
+  /* Full width cards on mobile */
+  .card {
+    border-radius: 0.75rem;
+  }
+}
+
+/* Ensure proper height on iOS */
+@supports (-webkit-touch-callout: none) {
+  .min-h-screen {
+    min-height: -webkit-fill-available;
+  }
+}
