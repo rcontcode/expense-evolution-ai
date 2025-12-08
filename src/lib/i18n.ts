@@ -487,6 +487,10 @@ export const translations = {
       notesLabel: 'Notas',
       notesPlaceholder: 'Notas adicionales o contexto',
       tagsLabel: 'Etiquetas',
+      receipt: 'Foto',
+      viewReceipt: 'Ver foto de boleta',
+      noReceipt: 'Sin foto de boleta',
+      receiptPhoto: 'Foto de Boleta',
     },
     tags: {
       title: 'Etiquetas',
@@ -1265,6 +1269,10 @@ export const translations = {
       notesLabel: 'Notes',
       notesPlaceholder: 'Additional notes or context',
       tagsLabel: 'Tags',
+      receipt: 'Receipt',
+      viewReceipt: 'View receipt photo',
+      noReceipt: 'No receipt photo',
+      receiptPhoto: 'Receipt Photo',
     },
     clients: {
       title: 'Clients',
