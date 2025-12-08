@@ -78,29 +78,55 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
 
   // Save image to storage and create document record
   const saveImageToStorage = async (): Promise<string | null> => {
-    if (!imageFile || !user || savedDocumentId) return savedDocumentId;
+    if (!user) {
+      console.error('No user available');
+      return null;
+    }
+    if (savedDocumentId) {
+      console.log('Already have document:', savedDocumentId);
+      return savedDocumentId;
+    }
+    
+    // Need either a file or base64 image
+    if (!imageFile && !imageBase64) {
+      console.error('No image available to upload');
+      return null;
+    }
     
     try {
-      const fileExt = imageFile.name.split('.').pop() || 'jpg';
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}/${Date.now()}.jpg`;
+      let uploadData: Blob | File;
       
+      if (imageFile) {
+        uploadData = imageFile;
+      } else if (imageBase64) {
+        // Convert base64 to blob
+        const response = await fetch(imageBase64);
+        uploadData = await response.blob();
+      } else {
+        return null;
+      }
+      
+      console.log('Uploading to storage:', fileName);
       const { error: uploadError } = await supabase.storage
         .from('expense-documents')
-        .upload(fileName, imageFile);
+        .upload(fileName, uploadData, { contentType: 'image/jpeg' });
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
-        throw uploadError;
+        toast.error(language === 'es' ? 'Error subiendo imagen' : 'Error uploading image');
+        return null;
       }
 
+      console.log('Creating document record...');
       const { data: doc, error: dbError } = await supabase
         .from('documents')
         .insert({
           user_id: user.id,
           file_path: fileName,
-          file_name: imageFile.name,
-          file_type: imageFile.type,
-          file_size: imageFile.size,
+          file_name: `receipt-${Date.now()}.jpg`,
+          file_type: 'image/jpeg',
+          file_size: uploadData.size,
           status: 'classified',
           review_status: 'approved',
         })
@@ -109,13 +135,16 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
 
       if (dbError) {
         console.error('DB error:', dbError);
-        throw dbError;
+        toast.error(language === 'es' ? 'Error guardando documento' : 'Error saving document');
+        return null;
       }
 
+      console.log('Document created:', doc.id);
       setSavedDocumentId(doc.id);
       return doc.id;
     } catch (error) {
       console.error('Failed to save image:', error);
+      toast.error(language === 'es' ? 'Error procesando imagen' : 'Error processing image');
       return null;
     }
   };
@@ -154,9 +183,9 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
     if (!currentExpense?.vendor || !currentExpense?.amount) return;
     setIsSaving(true);
     try {
-      // Save image first if we have one
+      // Save image first if we have one (either file or base64)
       let documentId = savedDocumentId;
-      if (imageFile && !documentId) {
+      if ((imageFile || imageBase64) && !documentId) {
         documentId = await saveImageToStorage();
       }
 
@@ -203,9 +232,9 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
   const handleSaveAll = async () => {
     setIsSaving(true);
     try {
-      // Save image first if we have one
+      // Save image first if we have one (either file or base64)
       let documentId = savedDocumentId;
-      if (imageFile && !documentId) {
+      if ((imageFile || imageBase64) && !documentId) {
         documentId = await saveImageToStorage();
       }
 
