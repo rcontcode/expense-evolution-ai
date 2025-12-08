@@ -469,14 +469,14 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
                       Asociar a Cliente (Reembolso)
                     </label>
                     <Select 
-                      value={currentExpense.client_id || ''} 
-                      onValueChange={(val) => updateCurrentExpense('client_id', val || null)}
+                      value={currentExpense.client_id || '__none__'} 
+                      onValueChange={(val) => updateCurrentExpense('client_id', val === '__none__' ? null : val)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar cliente para reembolso..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Sin cliente</SelectItem>
+                        <SelectItem value="__none__">Sin cliente</SelectItem>
                         {clients.map((client) => (
                           <SelectItem key={client.id} value={client.id}>
                             {client.name}

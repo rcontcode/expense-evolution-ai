@@ -202,14 +202,14 @@ export function IncomeForm({ income, onSubmit, onCancel, isLoading }: IncomeForm
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t('income.client')}</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select onValueChange={(val) => field.onChange(val === '__none__' ? undefined : val)} value={field.value || '__none__'}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder={t('income.selectClient')} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">{t('common.none')}</SelectItem>
+                    <SelectItem value="__none__">{t('common.none')}</SelectItem>
                     {clients?.map(client => (
                       <SelectItem key={client.id} value={client.id}>
                         {client.name}
@@ -230,14 +230,14 @@ export function IncomeForm({ income, onSubmit, onCancel, isLoading }: IncomeForm
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('income.project')}</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={(val) => field.onChange(val === '__none__' ? undefined : val)} value={field.value || '__none__'}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder={t('income.selectProject')} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">{t('common.none')}</SelectItem>
+                  <SelectItem value="__none__">{t('common.none')}</SelectItem>
                   {projects?.map(project => (
                     <SelectItem key={project.id} value={project.id}>
                       <span className="flex items-center gap-2">
