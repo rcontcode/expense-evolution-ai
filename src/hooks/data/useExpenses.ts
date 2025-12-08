@@ -49,6 +49,22 @@ export function useExpenses(filters?: ExpenseFilters) {
       if (filters?.hasReceipt) {
         query = query.not('document_id', 'is', null);
       }
+
+      if (filters?.reimbursementType) {
+        query = query.eq('reimbursement_type', filters.reimbursementType);
+      }
+
+      // Filter for incomplete expenses (for reports)
+      // Incomplete = pending_classification OR (client_reimbursable without client/contract)
+      if (filters?.onlyIncomplete) {
+        // Get expenses that are pending classification OR missing required data
+        query = query.or(
+          'reimbursement_type.eq.pending_classification,' +
+          'and(reimbursement_type.eq.client_reimbursable,client_id.is.null),' +
+          'and(reimbursement_type.eq.client_reimbursable,contract_id.is.null),' +
+          'category.is.null'
+        );
+      }
       
       if (filters?.tagIds?.length) {
         // First get expense IDs that have the selected tags
