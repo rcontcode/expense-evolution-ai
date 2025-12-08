@@ -285,7 +285,7 @@ export function ReceiptReviewDialog({
               <span className="text-sm font-medium text-muted-foreground">
                 {language === 'es' ? 'Datos extraídos' : 'Extracted data'}
               </span>
-              {isPending && !isEditing && (
+              {!isEditing && (
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -495,30 +495,78 @@ export function ReceiptReviewDialog({
                 </div>
               </div>
 
-              {/* Reimbursement badges */}
+              {/* Reimbursement classification */}
               <div className="space-y-1">
                 <label className="text-sm font-medium">
                   {language === 'es' ? 'Clasificación fiscal' : 'Tax classification'}
                 </label>
-                <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-md">
-                  {data.typically_reimbursable && (
-                    <Badge className="bg-green-600">
-                      <Building2 className="h-3 w-3 mr-1" />
-                      {language === 'es' ? 'Reembolsable por cliente' : 'Client reimbursable'}
-                    </Badge>
-                  )}
-                  {data.cra_deductible && (
-                    <Badge className="bg-blue-600">
-                      <Landmark className="h-3 w-3 mr-1" />
-                      CRA {data.cra_deduction_rate}%
-                    </Badge>
-                  )}
-                  {!data.typically_reimbursable && !data.cra_deductible && (
-                    <span className="text-muted-foreground italic text-sm">
-                      {language === 'es' ? 'Gasto personal' : 'Personal expense'}
-                    </span>
-                  )}
-                </div>
+                {isEditing ? (
+                  <div className="space-y-2 p-3 bg-muted/30 rounded-md">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm flex items-center gap-2">
+                        <Building2 className="h-4 w-4 text-green-600" />
+                        {language === 'es' ? 'Reembolsable por cliente' : 'Client reimbursable'}
+                      </label>
+                      <input
+                        type="checkbox"
+                        checked={editedData.typically_reimbursable || false}
+                        onChange={(e) => updateField('typically_reimbursable', e.target.checked)}
+                        className="h-4 w-4 rounded border-input"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm flex items-center gap-2">
+                        <Landmark className="h-4 w-4 text-blue-600" />
+                        {language === 'es' ? 'Deducible CRA' : 'CRA deductible'}
+                      </label>
+                      <input
+                        type="checkbox"
+                        checked={editedData.cra_deductible || false}
+                        onChange={(e) => updateField('cra_deductible', e.target.checked)}
+                        className="h-4 w-4 rounded border-input"
+                      />
+                    </div>
+                    {editedData.cra_deductible && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-sm text-muted-foreground">
+                          {language === 'es' ? 'Tasa de deducción:' : 'Deduction rate:'}
+                        </span>
+                        <Select 
+                          value={String(editedData.cra_deduction_rate || 100)}
+                          onValueChange={(v) => updateField('cra_deduction_rate', parseInt(v))}
+                        >
+                          <SelectTrigger className="w-24">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="50">50%</SelectItem>
+                            <SelectItem value="100">100%</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2 p-3 bg-muted/50 rounded-md">
+                    {data.typically_reimbursable && (
+                      <Badge className="bg-green-600">
+                        <Building2 className="h-3 w-3 mr-1" />
+                        {language === 'es' ? 'Reembolsable por cliente' : 'Client reimbursable'}
+                      </Badge>
+                    )}
+                    {data.cra_deductible && (
+                      <Badge className="bg-blue-600">
+                        <Landmark className="h-3 w-3 mr-1" />
+                        CRA {data.cra_deduction_rate}%
+                      </Badge>
+                    )}
+                    {!data.typically_reimbursable && !data.cra_deductible && (
+                      <span className="text-muted-foreground italic text-sm">
+                        {language === 'es' ? 'Gasto personal' : 'Personal expense'}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Description */}
