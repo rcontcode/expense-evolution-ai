@@ -122,19 +122,24 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {/* Completeness Warnings */}
+        {/* Completeness Tips - Non-blocking */}
         {completenessIssues.length > 0 && (
-          <Alert variant="destructive" className="bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800">
-            <AlertTriangle className="h-4 w-4 text-yellow-600" />
-            <AlertDescription className="text-yellow-700 dark:text-yellow-400">
+          <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+            <AlertTriangle className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-700 dark:text-blue-400">
               <p className="font-medium mb-1">
-                {language === 'es' ? 'Información incompleta para reportes:' : 'Incomplete information for reports:'}
+                {language === 'es' ? 'Sugerencias para reportes (opcional):' : 'Suggestions for reports (optional):'}
               </p>
               <ul className="list-disc list-inside text-sm space-y-1">
                 {completenessIssues.map((issue, idx) => (
                   <li key={idx}>{issue}</li>
                 ))}
               </ul>
+              <p className="text-xs mt-2 opacity-75">
+                {language === 'es' 
+                  ? 'Puedes guardar ahora y completar esta información después.' 
+                  : 'You can save now and complete this information later.'}
+              </p>
             </AlertDescription>
           </Alert>
         )}
