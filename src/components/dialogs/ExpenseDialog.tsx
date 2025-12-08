@@ -26,7 +26,10 @@ export function ExpenseDialog({ open, onClose, expense }: ExpenseDialogProps) {
       description: formData.description || null,
       notes: formData.notes || null,
       client_id: formData.client_id === '__none__' ? null : formData.client_id || null,
+      project_id: formData.project_id === '__none__' ? null : formData.project_id || null,
+      contract_id: formData.contract_id === '__none__' ? null : formData.contract_id || null,
       status: formData.status || 'pending',
+      reimbursement_type: formData.reimbursement_type || 'pending_classification',
       currency: 'CAD',
     };
 

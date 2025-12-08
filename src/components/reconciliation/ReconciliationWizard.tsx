@@ -994,6 +994,9 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                 ? `Creado desde transacción bancaria del ${format(new Date(selectedTransaction.transaction_date), 'dd/MM/yyyy')}`
                 : `Created from bank transaction on ${format(new Date(selectedTransaction.transaction_date), 'MM/dd/yyyy')}`,
               client_id: null,
+              project_id: null,
+              contract_id: null,
+              reimbursement_type: 'pending_classification',
               status: 'pending',
               currency: 'CAD',
               document_id: null,

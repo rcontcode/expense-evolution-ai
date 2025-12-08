@@ -23,12 +23,16 @@ export const expenseSchema = z.object({
     'professional_services',
     'office_supplies',
     'utilities',
+    'fuel',
     'other'
   ]),
   description: z.string().max(500, 'Description too long').trim().optional(),
   notes: z.string().max(1000, 'Notes too long').trim().optional(),
   client_id: z.string().uuid().optional().nullable(),
+  project_id: z.string().uuid().optional().nullable(),
+  contract_id: z.string().uuid().optional().nullable(),
   status: z.enum(['pending', 'classified', 'deductible', 'non_deductible', 'reimbursable', 'rejected', 'under_review', 'finalized']).optional(),
+  reimbursement_type: z.enum(['pending_classification', 'client_reimbursable', 'cra_deductible', 'personal']).optional(),
 });
 
 export type ExpenseFormValues = z.infer<typeof expenseSchema>;

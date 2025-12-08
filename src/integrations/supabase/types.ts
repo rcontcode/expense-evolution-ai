@@ -414,6 +414,7 @@ export type Database = {
           amount: number
           category: string | null
           client_id: string | null
+          contract_id: string | null
           created_at: string | null
           currency: string | null
           date: string
@@ -421,6 +422,8 @@ export type Database = {
           document_id: string | null
           id: string
           notes: string | null
+          project_id: string | null
+          reimbursement_type: string | null
           status: Database["public"]["Enums"]["expense_status"] | null
           updated_at: string | null
           user_id: string
@@ -430,6 +433,7 @@ export type Database = {
           amount: number
           category?: string | null
           client_id?: string | null
+          contract_id?: string | null
           created_at?: string | null
           currency?: string | null
           date: string
@@ -437,6 +441,8 @@ export type Database = {
           document_id?: string | null
           id?: string
           notes?: string | null
+          project_id?: string | null
+          reimbursement_type?: string | null
           status?: Database["public"]["Enums"]["expense_status"] | null
           updated_at?: string | null
           user_id: string
@@ -446,6 +452,7 @@ export type Database = {
           amount?: number
           category?: string | null
           client_id?: string | null
+          contract_id?: string | null
           created_at?: string | null
           currency?: string | null
           date?: string
@@ -453,6 +460,8 @@ export type Database = {
           document_id?: string | null
           id?: string
           notes?: string | null
+          project_id?: string | null
+          reimbursement_type?: string | null
           status?: Database["public"]["Enums"]["expense_status"] | null
           updated_at?: string | null
           user_id?: string
@@ -467,10 +476,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "expenses_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "expenses_document_id_fkey"
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
           {
