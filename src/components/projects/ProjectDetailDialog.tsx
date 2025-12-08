@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   AreaChart, 
   Area, 
@@ -23,13 +24,16 @@ import {
   ArrowDownRight,
   Building2,
   Calendar,
-  Target
+  Target,
+  Calculator,
+  BarChart3
 } from 'lucide-react';
 import { format, parseISO, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
+import { ProjectFinancialOverview } from './ProjectFinancialOverview';
 
 interface ProjectDetailDialogProps {
   open: boolean;
@@ -149,64 +153,76 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
           </div>
         </DialogHeader>
 
-        <div className="space-y-6 mt-4">
-          {/* Summary Cards */}
-          <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardContent className="pt-4">
-                <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                  <ArrowUpRight className="h-4 w-4 text-green-600" />
-                  {language === 'es' ? 'Ingresos' : 'Income'}
-                </div>
-                <p className="text-2xl font-bold text-green-600 mt-1">
-                  ${totals.income.toLocaleString()}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4">
-                <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                  <ArrowDownRight className="h-4 w-4 text-red-600" />
-                  {language === 'es' ? 'Gastos' : 'Expenses'}
-                </div>
-                <p className="text-2xl font-bold text-red-600 mt-1">
-                  ${totals.expenses.toLocaleString()}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4">
-                <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                  {totals.netBalance >= 0 ? (
-                    <TrendingUp className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 text-red-600" />
-                  )}
-                  {language === 'es' ? 'Balance' : 'Balance'}
-                </div>
-                <p className={`text-2xl font-bold mt-1 ${totals.netBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  ${Math.abs(totals.netBalance).toLocaleString()}
-                </p>
-              </CardContent>
-            </Card>
-            {project.budget && (
+        <Tabs defaultValue="overview" className="mt-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              {language === 'es' ? 'Resumen' : 'Overview'}
+            </TabsTrigger>
+            <TabsTrigger value="financial" className="flex items-center gap-2">
+              <Calculator className="h-4 w-4" />
+              {language === 'es' ? 'Panorama Financiero' : 'Financial Overview'}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6 mt-4">
+            {/* Summary Cards */}
+            <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardContent className="pt-4">
                   <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                    <Target className="h-4 w-4" />
-                    {language === 'es' ? 'Presupuesto' : 'Budget'}
+                    <ArrowUpRight className="h-4 w-4 text-green-600" />
+                    {language === 'es' ? 'Ingresos' : 'Income'}
                   </div>
-                  <p className="text-2xl font-bold mt-1">
-                    ${totals.budgetRemaining.toLocaleString()}
-                  </p>
-                  <Progress value={Math.min(totals.budgetUsed, 100)} className="h-2 mt-2" />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {totals.budgetUsed.toFixed(0)}% {language === 'es' ? 'usado' : 'used'}
+                  <p className="text-2xl font-bold text-green-600 mt-1">
+                    ${totals.income.toLocaleString()}
                   </p>
                 </CardContent>
               </Card>
-            )}
-          </div>
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                    <ArrowDownRight className="h-4 w-4 text-red-600" />
+                    {language === 'es' ? 'Gastos' : 'Expenses'}
+                  </div>
+                  <p className="text-2xl font-bold text-red-600 mt-1">
+                    ${totals.expenses.toLocaleString()}
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                    {totals.netBalance >= 0 ? (
+                      <TrendingUp className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <TrendingDown className="h-4 w-4 text-red-600" />
+                    )}
+                    {language === 'es' ? 'Balance' : 'Balance'}
+                  </div>
+                  <p className={`text-2xl font-bold mt-1 ${totals.netBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    ${Math.abs(totals.netBalance).toLocaleString()}
+                  </p>
+                </CardContent>
+              </Card>
+              {project.budget && (
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Target className="h-4 w-4" />
+                      {language === 'es' ? 'Presupuesto' : 'Budget'}
+                    </div>
+                    <p className="text-2xl font-bold mt-1">
+                      ${totals.budgetRemaining.toLocaleString()}
+                    </p>
+                    <Progress value={Math.min(totals.budgetUsed, 100)} className="h-2 mt-2" />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {totals.budgetUsed.toFixed(0)}% {language === 'es' ? 'usado' : 'used'}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
 
           {/* Trend Chart */}
           <Card>
@@ -381,7 +397,15 @@ export function ProjectDetailDialog({ open, onClose, project }: ProjectDetailDia
               </CardContent>
             </Card>
           </div>
-        </div>
+          </TabsContent>
+
+          <TabsContent value="financial" className="mt-4">
+            <ProjectFinancialOverview 
+              projectId={project.id} 
+              projectName={project.name} 
+            />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
