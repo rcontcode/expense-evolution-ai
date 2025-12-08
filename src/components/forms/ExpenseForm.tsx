@@ -132,7 +132,7 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t('expenses.categoryLabel')} *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder={t('expenses.selectCategory')} />
@@ -157,7 +157,7 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t('expenses.clientLabel')}</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
+                <Select onValueChange={field.onChange} value={field.value || '__none__'}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder={t('expenses.selectClient')} />
@@ -214,9 +214,39 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
           )}
         />
 
-        <div>
-          <label className="text-sm font-medium mb-2 block">{t('expenses.tagsLabel')}</label>
-          <TagSelect value={selectedTags} onChange={setSelectedTags} />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('expenses.statusLabel')}</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value || 'pending'}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('expenses.selectStatus')} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="pending">{t('expenseStatuses.pending')}</SelectItem>
+                    <SelectItem value="classified">{t('expenseStatuses.classified')}</SelectItem>
+                    <SelectItem value="deductible">{t('expenseStatuses.deductible')}</SelectItem>
+                    <SelectItem value="non_deductible">{t('expenseStatuses.non_deductible')}</SelectItem>
+                    <SelectItem value="reimbursable">{t('expenseStatuses.reimbursable')}</SelectItem>
+                    <SelectItem value="rejected">{t('expenseStatuses.rejected')}</SelectItem>
+                    <SelectItem value="under_review">{t('expenseStatuses.under_review')}</SelectItem>
+                    <SelectItem value="finalized">{t('expenseStatuses.finalized')}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">{t('expenses.tagsLabel')}</label>
+            <TagSelect value={selectedTags} onChange={setSelectedTags} />
+          </div>
         </div>
 
         <div className="flex justify-end gap-3">
