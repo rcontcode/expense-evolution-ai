@@ -11,16 +11,25 @@ serve(async (req) => {
   }
 
   try {
-    const { documentBase64, documentType, contractTitle } = await req.json();
+    const { documentBase64, documentType, contractTitle, targetLanguage = 'es' } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    const languageNames: Record<string, string> = {
+      es: 'Spanish',
+      en: 'English',
+      fr: 'French',
+      pt: 'Portuguese',
+    };
+    const outputLanguage = languageNames[targetLanguage] || 'Spanish';
+
     console.log("Analyzing contract with Gemini 2.5 Flash...");
     console.log("Document type:", documentType);
     console.log("Contract title:", contractTitle);
+    console.log("Target language:", outputLanguage);
 
     const systemPrompt = `You are an expert contract and agreement analyzer specializing in extracting reimbursement terms, billing policies, and expense guidelines from business documents.
 
@@ -34,49 +43,73 @@ Your task is to analyze the provided contract/agreement document and extract ALL
 7. Required documentation for reimbursement
 8. Any special conditions or exceptions
 
+CRITICAL INSTRUCTIONS:
+1. ALL text output (summaries, descriptions, titles) MUST be in ${outputLanguage}
+2. Extract and include EXACT quotes from the original document in "original_quotes" arrays
+3. Identify if this is a multi-party agreement and clearly describe each party's role
+
 IMPORTANT: Respond with a valid JSON object with this exact structure:
 {
-  "contract_summary": "Brief 1-2 sentence summary of the contract/agreement",
+  "contract_summary": "Brief 1-2 sentence summary in ${outputLanguage}",
+  "contract_summary_detailed": "Detailed 3-5 sentence explanation of what this contract establishes, the relationship between parties, and main obligations - in ${outputLanguage}",
+  "original_language": "The detected language of the original document (e.g., 'English', 'Spanish')",
   "parties": {
+    "party_count": 2,
     "client": "Client/company name",
-    "contractor": "Contractor/service provider name (if mentioned)"
+    "client_role": "Description of client's role and responsibilities in ${outputLanguage}",
+    "contractor": "Contractor/service provider name",
+    "contractor_role": "Description of contractor's role and responsibilities in ${outputLanguage}",
+    "relationship_summary": "Brief description of how the parties relate to each other in ${outputLanguage}"
   },
   "reimbursement_policy": {
-    "summary": "Overall summary of what's reimbursable",
+    "summary": "Overall summary of what's reimbursable in ${outputLanguage}",
+    "original_quotes": ["Exact quote from document about reimbursement in original language", "Another relevant quote"],
     "reimbursable_categories": [
       {
         "category": "travel|meals|equipment|software|office_supplies|professional_services|mileage|fuel|lodging|other",
-        "description": "What's specifically covered",
+        "description": "What's specifically covered in ${outputLanguage}",
         "rate": "100% or specific percentage",
-        "limits": "Any caps or limits (e.g., 'max $50/day for meals')",
-        "conditions": "Any special requirements"
+        "limits": "Any caps or limits in ${outputLanguage}",
+        "conditions": "Any special requirements in ${outputLanguage}",
+        "original_quote": "Exact text from document that mentions this"
       }
     ],
-    "non_reimbursable": ["List of expenses explicitly NOT reimbursable"],
-    "documentation_required": ["List of required documentation for reimbursement"],
-    "submission_deadline": "When expenses must be submitted",
-    "approval_process": "How reimbursements are approved"
+    "non_reimbursable": ["List of expenses explicitly NOT reimbursable in ${outputLanguage}"],
+    "documentation_required": ["List of required documentation in ${outputLanguage}"],
+    "submission_deadline": "When expenses must be submitted in ${outputLanguage}",
+    "approval_process": "How reimbursements are approved in ${outputLanguage}"
   },
   "billing_terms": {
     "rate": "Hourly/daily/project rate",
-    "payment_terms": "Net 30, etc.",
-    "invoicing_frequency": "Monthly, per project, etc.",
-    "currency": "CAD, USD, etc."
+    "payment_terms": "Net 30, etc. in ${outputLanguage}",
+    "invoicing_frequency": "Monthly, per project, etc. in ${outputLanguage}",
+    "currency": "CAD, USD, etc.",
+    "original_quotes": ["Exact quote about billing/payment from document"]
   },
   "key_clauses": [
     {
-      "title": "Clause name/topic",
-      "summary": "Brief summary of the clause",
-      "importance": "high|medium|low"
+      "title": "Clause name/topic in ${outputLanguage}",
+      "summary": "Brief summary in ${outputLanguage}",
+      "importance": "high|medium|low",
+      "original_quote": "Exact text from document for this clause"
+    }
+  ],
+  "important_agreements": [
+    {
+      "topic": "Topic of the agreement in ${outputLanguage}",
+      "summary": "What was agreed in ${outputLanguage}",
+      "who_benefits": "client|contractor|both",
+      "original_quote": "Exact text from document"
     }
   ],
   "confidence": "high|medium|low",
-  "notes": "Any additional observations or unclear items"
+  "notes": "Any additional observations in ${outputLanguage}"
 }
 
 If the document is unclear or doesn't contain certain information, indicate that in the relevant field.
 For Canadian contracts, assume CAD unless otherwise specified.
-Pay special attention to expense reimbursement policies as this is critical for expense tracking.`;
+Pay special attention to expense reimbursement policies as this is critical for expense tracking.
+Remember: ALL descriptions and summaries must be in ${outputLanguage}, but original_quotes must preserve the original document language.`;
 
     const userContent: any[] = [];
 
@@ -99,7 +132,7 @@ Pay special attention to expense reimbursement policies as this is critical for 
 
     userContent.push({
       type: "text",
-      text: `Analyze this contract/agreement document${contractTitle ? ` titled "${contractTitle}"` : ''} and extract all relevant terms, especially focusing on expense reimbursement policies and billing terms. Return a detailed JSON object with the extracted information.`,
+      text: `Analyze this contract/agreement document${contractTitle ? ` titled "${contractTitle}"` : ''} and extract all relevant terms, especially focusing on expense reimbursement policies and billing terms. Return a detailed JSON object with the extracted information. Remember to output all summaries and descriptions in ${outputLanguage}, but keep original quotes in their original language.`,
     });
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
