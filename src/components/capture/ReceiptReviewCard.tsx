@@ -195,6 +195,7 @@ export function ReceiptReviewCard({
         onApprove={onApprove}
         onReject={onReject}
         onAddComment={onAddComment}
+        onDelete={onDelete}
         isLoading={isLoading}
         onDataExtracted={onDataExtracted ? () => onDataExtracted() : undefined}
       />

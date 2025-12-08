@@ -14,8 +14,19 @@ import { toast } from 'sonner';
 import { 
   Check, X, Edit2, MessageSquare, Loader2, ZoomIn, ZoomOut,
   Building2, Landmark, Calendar, DollarSign, Tag, Store,
-  AlertTriangle, CheckCircle2, Clock, RotateCcw, Save, Sparkles
+  AlertTriangle, CheckCircle2, Clock, RotateCcw, Save, Sparkles, Trash2
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -55,6 +66,7 @@ interface ReceiptReviewDialogProps {
   onApprove: (id: string, data: ExtractedData) => Promise<void>;
   onReject: (id: string, reason: string) => Promise<void>;
   onAddComment: (id: string, comment: string) => Promise<void>;
+  onDelete?: (id: string) => Promise<void>;
   isLoading?: boolean;
   onDataExtracted?: (data: ExtractedData) => void;
 }
@@ -67,6 +79,7 @@ export function ReceiptReviewDialog({
   onApprove, 
   onReject,
   onAddComment,
+  onDelete,
   isLoading,
   onDataExtracted 
 }: ReceiptReviewDialogProps) {
@@ -500,37 +513,73 @@ export function ReceiptReviewDialog({
             </div>
 
             {/* Action Buttons - Always visible at bottom */}
-            {isPending && (
-              <div className="flex gap-3 pt-4 border-t mt-4 shrink-0 bg-background">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowCommentInput(!showCommentInput)}
-                  className="flex-1"
-                >
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  {language === 'es' ? 'Comentar' : 'Comment'}
-                </Button>
-                <Button 
-                  variant="destructive"
-                  onClick={handleReject}
-                  disabled={isLoading}
-                  className="flex-1"
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  {language === 'es' ? 'Rechazar' : 'Reject'}
-                </Button>
-                <Button 
-                  onClick={handleApprove} 
-                  disabled={isLoading}
-                  className="flex-1 bg-success hover:bg-success/90"
-                >
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
-                  {isEditing && hasChanges 
-                    ? (language === 'es' ? 'Guardar y Aprobar' : 'Save & Approve')
-                    : (language === 'es' ? 'Aprobar' : 'Approve')}
-                </Button>
-              </div>
-            )}
+            <div className="flex gap-3 pt-4 border-t mt-4 shrink-0 bg-background">
+              {onDelete && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        {language === 'es' ? '¿Eliminar este recibo?' : 'Delete this receipt?'}
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {language === 'es' 
+                          ? 'Esta acción no se puede deshacer. El recibo será eliminado permanentemente.'
+                          : 'This action cannot be undone. The receipt will be permanently deleted.'}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{language === 'es' ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={async () => {
+                          await onDelete(document.id);
+                          onOpenChange(false);
+                        }}
+                        className="bg-destructive hover:bg-destructive/90"
+                      >
+                        {language === 'es' ? 'Eliminar' : 'Delete'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+              
+              {isPending && (
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowCommentInput(!showCommentInput)}
+                    className="flex-1"
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    {language === 'es' ? 'Comentar' : 'Comment'}
+                  </Button>
+                  <Button 
+                    variant="destructive"
+                    onClick={handleReject}
+                    disabled={isLoading}
+                    className="flex-1"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    {language === 'es' ? 'Rechazar' : 'Reject'}
+                  </Button>
+                  <Button 
+                    onClick={handleApprove} 
+                    disabled={isLoading}
+                    className="flex-1 bg-success hover:bg-success/90"
+                  >
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                    {isEditing && hasChanges 
+                      ? (language === 'es' ? 'Guardar y Aprobar' : 'Save & Approve')
+                      : (language === 'es' ? 'Aprobar' : 'Approve')}
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </DialogContent>
