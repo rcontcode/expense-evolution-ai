@@ -214,7 +214,7 @@ export function ReceiptReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl w-[95vw] max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-5xl w-[95vw] max-h-[85vh] overflow-hidden flex flex-col p-6">
         <DialogHeader className="shrink-0">
           <div className="flex items-center justify-between">
             <div>
@@ -513,7 +513,7 @@ export function ReceiptReviewDialog({
             </div>
 
             {/* Action Buttons - Always visible at bottom */}
-            <div className="flex gap-3 pt-4 border-t mt-4 shrink-0 bg-background">
+            <div className="flex gap-3 pt-4 border-t mt-4 shrink-0 bg-background pb-1">
               {onDelete && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
