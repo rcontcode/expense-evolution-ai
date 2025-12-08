@@ -3,19 +3,21 @@ import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Plus, Users, Edit, Trash2, MapPin, CircleDot, CheckCircle2, AlertCircle, Zap, Mail, Phone, Building2, Globe, FileText, FlaskConical } from 'lucide-react';
+import { Plus, Users, Edit, Trash2, MapPin, CircleDot, CheckCircle2, AlertCircle, Zap, Mail, Phone, Building2, Globe, FileText, FlaskConical, PieChart } from 'lucide-react';
 import { useClients, useDeleteClient, useDeleteClientTestData } from '@/hooks/data/useClients';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useMileage } from '@/hooks/data/useMileage';
 import { useContracts } from '@/hooks/data/useContracts';
 import { ClientDialog } from '@/components/dialogs/ClientDialog';
+import { ClientFinancialOverview } from '@/components/clients/ClientFinancialOverview';
 import { Client } from '@/types/expense.types';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { Badge } from '@/components/ui/badge';
 import { OnboardingGuide } from '@/components/ui/onboarding-guide';
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +45,7 @@ export default function Clients() {
   const { t, language } = useLanguage();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | undefined>();
+  const [financialClient, setFinancialClient] = useState<Client | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteTestDataId, setDeleteTestDataId] = useState<string | null>(null);
 
@@ -302,6 +305,17 @@ export default function Clients() {
                       {client.notes && (
                         <p className="text-sm text-muted-foreground line-clamp-2">{client.notes}</p>
                       )}
+
+                      {/* Quick Financial Overview Button */}
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full mt-2 gap-2"
+                        onClick={() => setFinancialClient(client)}
+                      >
+                        <PieChart className="h-4 w-4" />
+                        {language === 'es' ? 'Panorama Financiero' : 'Financial Overview'}
+                      </Button>
                     </CardContent>
                   </Card>
                 );
@@ -322,6 +336,29 @@ export default function Clients() {
           )}
 
           <ClientDialog open={dialogOpen} onClose={handleClose} client={selectedClient} />
+
+          {/* Quick Financial Overview Dialog */}
+          <Dialog open={!!financialClient} onOpenChange={() => setFinancialClient(null)}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <PieChart className="h-5 w-5 text-primary" />
+                  {language === 'es' ? 'Panorama Financiero' : 'Financial Overview'}
+                  {financialClient && (
+                    <span className="text-muted-foreground font-normal">
+                      — {financialClient.name}
+                    </span>
+                  )}
+                </DialogTitle>
+              </DialogHeader>
+              {financialClient && (
+                <ClientFinancialOverview 
+                  clientId={financialClient.id} 
+                  clientName={financialClient.name}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
 
           <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
             <AlertDialogContent>
