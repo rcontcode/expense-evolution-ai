@@ -26,7 +26,8 @@ import {
   TrendingUp,
   TrendingDown,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  BarChart3
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProjectsWithClients } from '@/hooks/data/useProjectClients';
@@ -35,6 +36,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useClients } from '@/hooks/data/useClients';
 import { ProjectDialog } from '@/components/dialogs/ProjectDialog';
+import { ProjectDetailDialog } from '@/components/projects/ProjectDetailDialog';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -70,6 +72,7 @@ export default function Projects() {
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [detailProject, setDetailProject] = useState<any>(null);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   
@@ -384,6 +387,10 @@ export default function Projects() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setDetailProject(project)}>
+                            <BarChart3 className="mr-2 h-4 w-4" />
+                            {language === 'es' ? 'Ver detalles' : 'View details'}
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEdit(project)}>
                             <Edit className="mr-2 h-4 w-4" />
                             {language === 'es' ? 'Editar' : 'Edit'}
@@ -541,6 +548,12 @@ export default function Projects() {
             setSelectedProject(null);
           }}
           project={selectedProject}
+        />
+
+        <ProjectDetailDialog
+          open={!!detailProject}
+          onClose={() => setDetailProject(null)}
+          project={detailProject}
         />
 
         <AlertDialog open={!!deleteProjectId} onOpenChange={() => setDeleteProjectId(null)}>
