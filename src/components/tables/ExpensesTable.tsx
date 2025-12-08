@@ -1,13 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback, memo, CSSProperties, ReactElement } from 'react';
+import { List } from 'react-window';
 import { ExpenseWithRelations } from '@/types/expense.types';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -67,17 +60,182 @@ const STATUS_CONFIG: Record<string, { icon: React.ElementType; color: string; bg
   finalized: { icon: CheckCircle2, color: 'text-green-700', bgColor: 'bg-green-100 dark:bg-green-900/30', labelKey: 'expenseStatuses.finalized' },
 };
 
-export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
+const ROW_HEIGHT = 72;
+const TABLE_HEIGHT = 600;
+
+// Props that react-window will provide + our custom props
+interface ExpenseRowCustomProps {
+  expenses: ExpenseWithRelations[];
+  onEdit: (expense: ExpenseWithRelations) => void;
+  onDelete: (id: string) => void;
+  t: (key: string) => string;
+}
+
+// Full row props including react-window's injected props
+interface ExpenseRowProps extends ExpenseRowCustomProps {
+  ariaAttributes: {
+    "aria-posinset": number;
+    "aria-setsize": number;
+    role: "listitem";
+  };
+  index: number;
+  style: CSSProperties;
+}
+
+function ExpenseRowComponent({ index, style, expenses, onEdit, onDelete, t }: ExpenseRowProps): ReactElement {
+  const expense = expenses[index];
+  const config = STATUS_CONFIG[expense.status] || STATUS_CONFIG.pending;
+  const StatusIcon = config.icon;
+  const statusLabel = t(config.labelKey);
+
+  return (
+    <div 
+      style={style} 
+      className="flex items-center border-b border-border hover:bg-muted/50 transition-colors"
+    >
+      {/* Date */}
+      <div className="w-[12%] px-4 font-medium text-sm">
+        {format(new Date(expense.date), 'MMM dd, yyyy')}
+      </div>
+      
+      {/* Vendor */}
+      <div className="w-[18%] px-4">
+        <div className="font-medium text-sm truncate">{expense.vendor}</div>
+        {expense.description && (
+          <div className="text-xs text-muted-foreground truncate">{expense.description}</div>
+        )}
+      </div>
+      
+      {/* Category */}
+      <div className="w-[12%] px-4 text-sm truncate">
+        {getCategoryLabel(expense.category as any)}
+      </div>
+      
+      {/* Client */}
+      <div className="w-[14%] px-4">
+        {expense.client ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 shrink-0">
+                    <Building2 className="h-3.5 w-3.5 text-emerald-600" />
+                  </div>
+                  <span className="font-medium text-sm truncate">{expense.client.name}</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('expenseTable.clientAssociated')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-muted shrink-0">
+                    <User className="h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                  <span className="text-muted-foreground text-sm">{t('expenseTable.personal')}</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('expenseTable.personalExpense')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
+      
+      {/* Tags */}
+      <div className="w-[12%] px-4">
+        <div className="flex flex-wrap gap-1">
+          {expense.tags && expense.tags.length > 0 ? (
+            expense.tags.slice(0, 2).map((tag) => (
+              <Badge
+                key={tag.id}
+                style={{ backgroundColor: tag.color || '#3B82F6' }}
+                className="text-white text-xs"
+              >
+                {tag.name}
+              </Badge>
+            ))
+          ) : (
+            <span className="text-muted-foreground text-sm">-</span>
+          )}
+          {expense.tags && expense.tags.length > 2 && (
+            <Badge variant="secondary" className="text-xs">
+              +{expense.tags.length - 2}
+            </Badge>
+          )}
+        </div>
+      </div>
+      
+      {/* Amount */}
+      <div className="w-[10%] px-4 text-right font-medium text-sm">
+        ${Number(expense.amount).toFixed(2)}
+      </div>
+      
+      {/* Status */}
+      <div className="w-[14%] px-4">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge className={`${config.bgColor} ${config.color} border-0 gap-1.5`}>
+                <StatusIcon className="h-3.5 w-3.5" />
+                <span className="truncate">{statusLabel}</span>
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('expenseTable.statusLabel')}: {statusLabel}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      
+      {/* Actions */}
+      <div className="w-[8%] px-4 flex justify-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onEdit(expense)}>
+              <Edit className="mr-2 h-4 w-4" />
+              {t('common.edit')}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => onDelete(expense.id)}
+              className="text-destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              {t('common.delete')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  );
+}
+
+export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
   const { t } = useLanguage();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const deleteMutation = useDeleteExpense();
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     if (deleteId) {
       deleteMutation.mutate(deleteId);
       setDeleteId(null);
     }
-  };
+  }, [deleteId, deleteMutation]);
+
+  const handleSetDeleteId = useCallback((id: string) => {
+    setDeleteId(id);
+  }, []);
 
   if (expenses.length === 0) {
     return (
@@ -87,140 +245,63 @@ export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
     );
   }
 
+  // Use virtualization only for large lists
+  const useVirtualization = expenses.length > 50;
+  const listHeight = useVirtualization 
+    ? Math.min(TABLE_HEIGHT, expenses.length * ROW_HEIGHT)
+    : expenses.length * ROW_HEIGHT;
+
+  const rowProps: ExpenseRowCustomProps = {
+    expenses,
+    onEdit,
+    onDelete: handleSetDeleteId,
+    t,
+  };
+
   return (
     <>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('expenses.date')}</TableHead>
-              <TableHead>{t('expenses.vendor')}</TableHead>
-              <TableHead>{t('expenses.category')}</TableHead>
-              <TableHead>{t('expenses.client')}</TableHead>
-              <TableHead>{t('expenses.tags')}</TableHead>
-              <TableHead className="text-right">{t('expenses.amount')}</TableHead>
-              <TableHead>{t('expenses.status')}</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {expenses.map((expense) => (
-              <TableRow key={expense.id}>
-                <TableCell className="font-medium">
-                  {format(new Date(expense.date), 'MMM dd, yyyy')}
-                </TableCell>
-                <TableCell>
-                  <div>
-                    <div className="font-medium">{expense.vendor}</div>
-                    {expense.description && (
-                      <div className="text-sm text-muted-foreground">{expense.description}</div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>{getCategoryLabel(expense.category as any)}</TableCell>
-                <TableCell>
-                  {expense.client ? (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center justify-center h-6 w-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-                              <Building2 className="h-3.5 w-3.5 text-emerald-600" />
-                            </div>
-                            <span className="font-medium text-sm">{expense.client.name}</span>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{t('expenseTable.clientAssociated')}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ) : (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center justify-center h-6 w-6 rounded-full bg-muted">
-                              <User className="h-3.5 w-3.5 text-muted-foreground" />
-                            </div>
-                            <span className="text-muted-foreground text-sm">{t('expenseTable.personal')}</span>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{t('expenseTable.personalExpense')}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-wrap gap-1">
-                    {expense.tags && expense.tags.length > 0 ? (
-                      expense.tags.map((tag) => (
-                        <Badge
-                          key={tag.id}
-                          style={{ backgroundColor: tag.color || '#3B82F6' }}
-                          className="text-white text-xs"
-                        >
-                          {tag.name}
-                        </Badge>
-                      ))
-                    ) : (
-                      <span className="text-muted-foreground text-sm">-</span>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="text-right font-medium">
-                  ${Number(expense.amount).toFixed(2)}
-                </TableCell>
-                <TableCell>
-                  {(() => {
-                    const config = STATUS_CONFIG[expense.status] || STATUS_CONFIG.pending;
-                    const StatusIcon = config.icon;
-                    const statusLabel = t(config.labelKey);
-                    return (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge className={`${config.bgColor} ${config.color} border-0 gap-1.5`}>
-                              <StatusIcon className="h-3.5 w-3.5" />
-                              <span>{statusLabel}</span>
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{t('expenseTable.statusLabel')}: {statusLabel}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    );
-                  })()}
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onEdit(expense)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        {t('common.edit')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setDeleteId(expense.id)}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        {t('common.delete')}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
+      <div className="rounded-md border overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center bg-muted/50 border-b border-border font-medium text-sm text-muted-foreground">
+          <div className="w-[12%] px-4 py-3">{t('expenses.date')}</div>
+          <div className="w-[18%] px-4 py-3">{t('expenses.vendor')}</div>
+          <div className="w-[12%] px-4 py-3">{t('expenses.category')}</div>
+          <div className="w-[14%] px-4 py-3">{t('expenses.client')}</div>
+          <div className="w-[12%] px-4 py-3">{t('expenses.tags')}</div>
+          <div className="w-[10%] px-4 py-3 text-right">{t('expenses.amount')}</div>
+          <div className="w-[14%] px-4 py-3">{t('expenses.status')}</div>
+          <div className="w-[8%] px-4 py-3"></div>
+        </div>
+        
+        {/* Virtualized Body */}
+        {useVirtualization ? (
+          <List<ExpenseRowCustomProps>
+            style={{ height: listHeight, width: '100%' }}
+            rowCount={expenses.length}
+            rowHeight={ROW_HEIGHT}
+            rowProps={rowProps}
+            rowComponent={ExpenseRowComponent}
+          />
+        ) : (
+          <div>
+            {expenses.map((expense, index) => (
+              <ExpenseRowComponent
+                key={expense.id}
+                ariaAttributes={{
+                  "aria-posinset": index + 1,
+                  "aria-setsize": expenses.length,
+                  role: "listitem",
+                }}
+                index={index}
+                style={{ height: ROW_HEIGHT }}
+                expenses={expenses}
+                onEdit={onEdit}
+                onDelete={handleSetDeleteId}
+                t={t}
+              />
             ))}
-          </TableBody>
-        </Table>
+          </div>
+        )}
       </div>
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
@@ -239,4 +320,4 @@ export function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
       </AlertDialog>
     </>
   );
-}
+});
