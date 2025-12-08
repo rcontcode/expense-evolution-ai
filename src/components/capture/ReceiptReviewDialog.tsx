@@ -201,7 +201,7 @@ export function ReceiptReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl w-[95vw] max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-5xl w-[95vw] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader className="shrink-0">
           <div className="flex items-center justify-between">
             <div>
@@ -263,7 +263,7 @@ export function ReceiptReviewDialog({
           </div>
 
           {/* Right: Extracted Data & Actions */}
-          <div className="flex flex-col h-full overflow-y-auto">
+          <div className="flex flex-col h-full">
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-medium text-muted-foreground">
                 {language === 'es' ? 'Datos extraídos' : 'Extracted data'}
@@ -289,6 +289,9 @@ export function ReceiptReviewDialog({
                 </Button>
               )}
             </div>
+
+            {/* Scrollable data area */}
+            <div className="flex-1 overflow-y-auto pr-2">
 
             {/* Alert for no data */}
             {hasNoData && !isProcessingAI && (
@@ -493,10 +496,12 @@ export function ReceiptReviewDialog({
                 </div>
               )}
             </div>
+            {/* End scrollable area */}
+            </div>
 
-            {/* Action Buttons */}
+            {/* Action Buttons - Always visible at bottom */}
             {isPending && (
-              <div className="flex gap-3 pt-4 border-t mt-4">
+              <div className="flex gap-3 pt-4 border-t mt-4 shrink-0 bg-background">
                 <Button 
                   variant="outline" 
                   onClick={() => setShowCommentInput(!showCommentInput)}
