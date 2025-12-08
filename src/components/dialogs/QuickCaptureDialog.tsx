@@ -16,7 +16,7 @@ export function QuickCaptureDialog({ open, onClose }: QuickCaptureDialogProps) {
         className={
           isMobile 
             ? "max-w-[100vw] w-full h-[100dvh] max-h-[100dvh] m-0 p-0 rounded-none overflow-y-auto" 
-            : "max-w-2xl max-h-[85vh] overflow-y-auto fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] shadow-2xl border bg-background z-50"
+            : "max-w-2xl max-h-[85vh] overflow-y-auto"
         }
       >
         <QuickCapture 

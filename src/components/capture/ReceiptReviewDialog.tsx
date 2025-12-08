@@ -139,7 +139,7 @@ export function ReceiptReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl w-[95vw] max-h-[85vh] overflow-hidden flex flex-col fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] shadow-2xl border bg-background z-50">
+      <DialogContent className="max-w-5xl w-[95vw] max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader className="shrink-0">
           <div className="flex items-center justify-between">
             <div>
