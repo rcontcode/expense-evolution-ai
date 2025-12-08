@@ -19,7 +19,8 @@ import {
   TrendingUp,
   Camera,
   Menu,
-  X
+  X,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -54,6 +55,7 @@ const getNavSections = (t: (key: string) => string) => [
     titleKey: 'layout.management',
     items: [
       { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
+      { icon: AlertTriangle, label: 'nav.incomplete', path: '/expenses?incomplete=true', badge: '!', tooltipKey: 'expenses' as const },
       { icon: TrendingUp, label: 'nav.income', path: '/income', badge: null, tooltipKey: 'income' as const },
       { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tooltipKey: 'clients' as const },
       { icon: Tag, label: 'nav.tags', path: '/tags', badge: null, tooltipKey: 'tags' as const },
