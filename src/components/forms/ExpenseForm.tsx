@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { expenseSchema, ExpenseFormValues } from '@/lib/validations/expense.schema';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, AlertTriangle, Building2, FileText, FolderKanban, Landmark, User, CheckCircle2 } from 'lucide-react';
+import { CalendarIcon, AlertTriangle, Building2, FileText, FolderKanban, Landmark, User, CheckCircle2, ArrowRight, Plus, Lightbulb } from 'lucide-react';
 import { format } from 'date-fns';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { useClients } from '@/hooks/data/useClients';
@@ -37,6 +38,7 @@ const REIMBURSEMENT_TYPES = [
 
 export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseFormProps) {
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
   const { data: clients } = useClients();
   const { data: projects } = useProjects();
   const { data: contracts } = useContracts();
@@ -343,9 +345,22 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
                     </SelectContent>
                   </Select>
                   {filteredProjects.length === 0 && selectedClientId && selectedClientId !== '__none__' && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {language === 'es' ? 'No hay proyectos para este cliente' : 'No projects for this client'}
-                    </p>
+                    <div className="flex items-center gap-2 mt-1.5 p-2 rounded bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                      <Lightbulb className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
+                      <span className="text-xs text-amber-700 dark:text-amber-400 flex-1">
+                        {language === 'es' ? 'No hay proyectos para este cliente' : 'No projects for this client'}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs text-amber-700 hover:text-amber-900 hover:bg-amber-100"
+                        onClick={() => navigate('/settings?tab=projects')}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        {language === 'es' ? 'Crear' : 'Create'}
+                      </Button>
+                    </div>
                   )}
                   <FormMessage />
                 </FormItem>
@@ -381,11 +396,24 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
                     </SelectContent>
                   </Select>
                   {filteredContracts.length === 0 && selectedClientId && selectedClientId !== '__none__' && (
-                    <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                      {language === 'es' 
-                        ? '⚠️ Sin contrato no se pueden verificar términos de reembolso' 
-                        : '⚠️ Without contract, reimbursement terms cannot be verified'}
-                    </p>
+                    <div className="flex items-center gap-2 mt-1.5 p-2 rounded bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                      <AlertTriangle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
+                      <span className="text-xs text-amber-700 dark:text-amber-400 flex-1">
+                        {language === 'es' 
+                          ? 'Sin contrato no se pueden verificar términos de reembolso' 
+                          : 'Without contract, reimbursement terms cannot be verified'}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs text-amber-700 hover:text-amber-900 hover:bg-amber-100"
+                        onClick={() => navigate('/contracts')}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        {language === 'es' ? 'Subir' : 'Upload'}
+                      </Button>
+                    </div>
                   )}
                   <FormMessage />
                 </FormItem>

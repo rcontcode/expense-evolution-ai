@@ -355,25 +355,35 @@ export default function Settings() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                // Clear all onboarding dismissed flags
-                const keysToRemove = Object.keys(localStorage).filter(key => 
-                  key.startsWith('onboarding-dismissed-')
-                );
-                keysToRemove.forEach(key => localStorage.removeItem(key));
-                toast.success(
-                  language === 'es' 
-                    ? '¡Guías restablecidas! Las verás de nuevo al visitar cada página.' 
-                    : 'Guides reset! You will see them again when visiting each page.'
-                );
-              }}
-            >
-              <RotateCcw className="mr-2 h-4 w-4" />
-              {language === 'es' ? 'Restablecer Guías de Onboarding' : 'Reset Onboarding Guides'}
-            </Button>
+          <CardContent className="space-y-4">
+            <div>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  // Clear all onboarding dismissed flags
+                  const keysToRemove = Object.keys(localStorage).filter(key => 
+                    key.startsWith('onboarding-dismissed-') || 
+                    key.startsWith('guide-') ||
+                    key.startsWith('tip-') ||
+                    key === 'setup-banner-dismissed'
+                  );
+                  keysToRemove.forEach(key => localStorage.removeItem(key));
+                  toast.success(
+                    language === 'es' 
+                      ? '¡Guías restablecidas! Las verás de nuevo al visitar cada página.' 
+                      : 'Guides reset! You will see them again when visiting each page.'
+                  );
+                }}
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                {language === 'es' ? 'Restablecer Todas las Guías' : 'Reset All Guides'}
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2">
+                {language === 'es' 
+                  ? 'Esto incluye el banner de configuración, guías de onboarding y consejos contextuales.'
+                  : 'This includes the setup banner, onboarding guides, and contextual tips.'}
+              </p>
+            </div>
           </CardContent>
         </Card>
 
