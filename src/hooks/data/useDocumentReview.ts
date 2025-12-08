@@ -51,6 +51,7 @@ export function useDocumentReviewActions() {
           description: data.description,
           status: 'pending',
           currency: data.currency || 'CAD',
+          client_id: data.client_id || null,
         })
         .select()
         .single();

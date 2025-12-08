@@ -24,6 +24,8 @@ export interface ExtractedData {
   cra_deduction_rate?: number;
   typically_reimbursable?: boolean;
   confidence?: 'high' | 'medium' | 'low';
+  client_id?: string;
+  project_id?: string;
 }
 
 export interface ReceiptDocument {
