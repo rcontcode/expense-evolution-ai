@@ -23,6 +23,12 @@ export type ExpenseCategory =
   | 'fuel'
   | 'other';
 
+export type ReimbursementType = 
+  | 'pending_classification'
+  | 'client_reimbursable'
+  | 'cra_deductible'
+  | 'personal';
+
 export interface ExpenseFormData {
   date: Date;
   vendor: string;
@@ -31,8 +37,11 @@ export interface ExpenseFormData {
   description?: string;
   notes?: string;
   client_id?: string;
+  project_id?: string;
+  contract_id?: string;
   document_id?: string;
   status?: ExpenseStatus;
+  reimbursement_type?: ReimbursementType;
 }
 
 export interface ExpenseFilters {
