@@ -66,88 +66,64 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
     onResult: (text) => { handleCategoryFromText(text); setCategoryTranscript(''); },
   });
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    // Set previews
     setImagePreview(URL.createObjectURL(file));
     setImageFile(file);
+    
+    // Convert to base64
     const reader = new FileReader();
-    reader.onloadend = () => setImageBase64(reader.result as string);
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      setImageBase64(base64);
+    };
     reader.readAsDataURL(file);
+    
+    // Upload immediately if user is authenticated
+    if (user && !savedDocumentId) {
+      try {
+        const fileName = `${user.id}/${Date.now()}.jpg`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('expense-documents')
+          .upload(fileName, file, { contentType: file.type });
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          toast.error(language === 'es' ? 'Error subiendo imagen' : 'Error uploading image');
+          return;
+        }
+
+        // Create document record
+        const { data: doc, error: dbError } = await supabase
+          .from('documents')
+          .insert({
+            user_id: user.id,
+            file_path: fileName,
+            file_name: file.name || `receipt-${Date.now()}.jpg`,
+            file_type: file.type,
+            file_size: file.size,
+            status: 'pending',
+            review_status: 'pending_review',
+          })
+          .select()
+          .single();
+
+        if (dbError) {
+          console.error('DB error:', dbError);
+        } else {
+          setSavedDocumentId(doc.id);
+          toast.success(language === 'es' ? 'Foto guardada' : 'Photo saved');
+        }
+      } catch (error) {
+        console.error('Failed to save image:', error);
+      }
+    }
   };
 
-  // Save image to storage and create document record
-  const saveImageToStorage = async (): Promise<string | null> => {
-    if (!user) {
-      console.error('No user available');
-      return null;
-    }
-    if (savedDocumentId) {
-      console.log('Already have document:', savedDocumentId);
-      return savedDocumentId;
-    }
-    
-    // Need either a file or base64 image
-    if (!imageFile && !imageBase64) {
-      console.error('No image available to upload');
-      return null;
-    }
-    
-    try {
-      const fileName = `${user.id}/${Date.now()}.jpg`;
-      let uploadData: Blob | File;
-      
-      if (imageFile) {
-        uploadData = imageFile;
-      } else if (imageBase64) {
-        // Convert base64 to blob
-        const response = await fetch(imageBase64);
-        uploadData = await response.blob();
-      } else {
-        return null;
-      }
-      
-      console.log('Uploading to storage:', fileName);
-      const { error: uploadError } = await supabase.storage
-        .from('expense-documents')
-        .upload(fileName, uploadData, { contentType: 'image/jpeg' });
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        toast.error(language === 'es' ? 'Error subiendo imagen' : 'Error uploading image');
-        return null;
-      }
-
-      console.log('Creating document record...');
-      const { data: doc, error: dbError } = await supabase
-        .from('documents')
-        .insert({
-          user_id: user.id,
-          file_path: fileName,
-          file_name: `receipt-${Date.now()}.jpg`,
-          file_type: 'image/jpeg',
-          file_size: uploadData.size,
-          status: 'classified',
-          review_status: 'approved',
-        })
-        .select()
-        .single();
-
-      if (dbError) {
-        console.error('DB error:', dbError);
-        toast.error(language === 'es' ? 'Error guardando documento' : 'Error saving document');
-        return null;
-      }
-
-      console.log('Document created:', doc.id);
-      setSavedDocumentId(doc.id);
-      return doc.id;
-    } catch (error) {
-      console.error('Failed to save image:', error);
-      toast.error(language === 'es' ? 'Error procesando imagen' : 'Error processing image');
-      return null;
-    }
-  };
 
   const handleProcess = async () => {
     const result = await processReceipt(imageBase64 || undefined, transcript || undefined);
@@ -183,16 +159,6 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
     if (!currentExpense?.vendor || !currentExpense?.amount) return;
     setIsSaving(true);
     try {
-      // Save image first if we have one (either file or base64)
-      let documentId = savedDocumentId;
-      console.log('Saving expense. imageFile:', !!imageFile, 'imageBase64:', !!imageBase64, 'savedDocumentId:', savedDocumentId);
-      
-      if ((imageFile || imageBase64) && !documentId) {
-        console.log('Attempting to save image to storage...');
-        documentId = await saveImageToStorage();
-        console.log('Document created with ID:', documentId);
-      }
-
       const expenseData = { 
         vendor: currentExpense.vendor, 
         amount: currentExpense.amount, 
@@ -200,34 +166,28 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
         category: currentExpense.category, 
         description: currentExpense.description, 
         client_id: currentExpense.client_id || null,
-        document_id: documentId,
-        status: 'pending' 
+        document_id: savedDocumentId,
+        status: 'pending' as const
       };
-      console.log('Creating expense with data:', expenseData);
       
-      await createExpense.mutateAsync(expenseData as any);
+      const newExpense = await createExpense.mutateAsync(expenseData as any);
 
-      // Update document with expense link
-      if (documentId) {
-        const { data: expenses } = await supabase
-          .from('expenses')
-          .select('id')
-          .eq('document_id', documentId)
-          .order('created_at', { ascending: false })
-          .limit(1);
-        
-        if (expenses?.[0]) {
-          await supabase
-            .from('documents')
-            .update({ expense_id: expenses[0].id })
-            .eq('id', documentId);
-        }
+      // Link document to expense if we have one
+      if (savedDocumentId && newExpense?.id) {
+        await supabase
+          .from('documents')
+          .update({ expense_id: newExpense.id, status: 'classified', review_status: 'approved' })
+          .eq('id', savedDocumentId);
       }
 
       setSavedCount(prev => prev + 1);
-      toast.success(language === 'es' ? (documentId ? 'Gasto guardado con foto' : 'Gasto guardado') : (documentId ? 'Expense saved with photo' : 'Expense saved'));
-      if (currentIndex < editedExpenses.length - 1) setCurrentIndex(prev => prev + 1);
-      else onSuccess?.();
+      toast.success(language === 'es' ? (savedDocumentId ? 'Gasto guardado con foto' : 'Gasto guardado') : (savedDocumentId ? 'Expense saved with photo' : 'Expense saved'));
+      
+      if (currentIndex < editedExpenses.length - 1) {
+        setCurrentIndex(prev => prev + 1);
+      } else {
+        onSuccess?.();
+      }
     } catch (e) { 
       console.error('Error saving expense:', e);
       toast.error(language === 'es' ? 'Error al guardar' : 'Error saving');
@@ -239,12 +199,6 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
   const handleSaveAll = async () => {
     setIsSaving(true);
     try {
-      // Save image first if we have one (either file or base64)
-      let documentId = savedDocumentId;
-      if ((imageFile || imageBase64) && !documentId) {
-        documentId = await saveImageToStorage();
-      }
-
       for (const exp of editedExpenses) {
         if (!exp.vendor || !exp.amount) continue;
         await createExpense.mutateAsync({ 
@@ -254,8 +208,8 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
           category: exp.category, 
           description: exp.description, 
           client_id: exp.client_id || null,
-          document_id: documentId,
-          status: 'pending' 
+          document_id: savedDocumentId,
+          status: 'pending' as const
         } as any);
       }
       
