@@ -20,6 +20,8 @@ import Reconciliation from "./pages/Reconciliation";
 import Settings from "./pages/Settings";
 import Tags from "./pages/Tags";
 import Income from "./pages/Income";
+import Install from "./pages/Install";
+import MobileCapture from "./pages/MobileCapture";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +56,8 @@ const App = () => (
                 <Route path="/mileage" element={<ProtectedRoute><Mileage /></ProtectedRoute>} />
                 <Route path="/reconciliation" element={<ProtectedRoute><Reconciliation /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/install" element={<Install />} />
+                <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AuthProvider>

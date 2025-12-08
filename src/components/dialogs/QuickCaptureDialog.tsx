@@ -1,6 +1,6 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { QuickCapture } from '@/components/capture/QuickCapture';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface QuickCaptureDialogProps {
   open: boolean;
@@ -8,11 +8,17 @@ interface QuickCaptureDialogProps {
 }
 
 export function QuickCaptureDialog({ open, onClose }: QuickCaptureDialogProps) {
-  const { t } = useLanguage();
+  const isMobile = useIsMobile();
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className={
+          isMobile 
+            ? "max-w-[100vw] w-full h-[100dvh] max-h-[100dvh] m-0 p-0 rounded-none overflow-y-auto" 
+            : "max-w-2xl max-h-[90vh] overflow-y-auto"
+        }
+      >
         <QuickCapture 
           onSuccess={onClose}
           onCancel={onClose}
