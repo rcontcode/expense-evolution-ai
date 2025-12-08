@@ -47,6 +47,7 @@ interface ReceiptReviewCardProps {
   onReject: (id: string, reason: string) => Promise<void>;
   onAddComment: (id: string, comment: string) => Promise<void>;
   isLoading?: boolean;
+  onDataExtracted?: () => void;
 }
 
 export function ReceiptReviewCard({ 
@@ -55,7 +56,8 @@ export function ReceiptReviewCard({
   onApprove, 
   onReject,
   onAddComment,
-  isLoading 
+  isLoading,
+  onDataExtracted 
 }: ReceiptReviewCardProps) {
   const { language } = useLanguage();
   const [showReviewDialog, setShowReviewDialog] = useState(false);
@@ -172,6 +174,7 @@ export function ReceiptReviewCard({
         onReject={onReject}
         onAddComment={onAddComment}
         isLoading={isLoading}
+        onDataExtracted={onDataExtracted ? () => onDataExtracted() : undefined}
       />
     </>
   );

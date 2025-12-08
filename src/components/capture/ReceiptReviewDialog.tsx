@@ -5,13 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useClients } from '@/hooks/data/useClients';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { 
   Check, X, Edit2, MessageSquare, Loader2, ZoomIn, ZoomOut,
   Building2, Landmark, Calendar, DollarSign, Tag, Store,
-  AlertTriangle, CheckCircle2, Clock, RotateCcw, Save
+  AlertTriangle, CheckCircle2, Clock, RotateCcw, Save, Sparkles
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -53,6 +56,7 @@ interface ReceiptReviewDialogProps {
   onReject: (id: string, reason: string) => Promise<void>;
   onAddComment: (id: string, comment: string) => Promise<void>;
   isLoading?: boolean;
+  onDataExtracted?: (data: ExtractedData) => void;
 }
 
 export function ReceiptReviewDialog({ 
@@ -63,7 +67,8 @@ export function ReceiptReviewDialog({
   onApprove, 
   onReject,
   onAddComment,
-  isLoading 
+  isLoading,
+  onDataExtracted 
 }: ReceiptReviewDialogProps) {
   const { language } = useLanguage();
   const { data: clients = [] } = useClients();
@@ -73,6 +78,63 @@ export function ReceiptReviewDialog({
   const [comment, setComment] = useState('');
   const [editedData, setEditedData] = useState<ExtractedData>(document.extracted_data || {});
   const [imageZoom, setImageZoom] = useState(1);
+  const [isProcessingAI, setIsProcessingAI] = useState(false);
+
+  // Check if document has no extracted data
+  const hasNoData = !document.extracted_data?.vendor && !document.extracted_data?.amount && !document.extracted_data?.date;
+
+  const handleProcessWithAI = async () => {
+    if (!imageUrl) return;
+    
+    setIsProcessingAI(true);
+    try {
+      // Get the image as base64
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
+
+      // Call the AI processing function
+      const { data: result, error } = await supabase.functions.invoke('process-receipt', {
+        body: { imageBase64: base64 },
+      });
+
+      if (error) throw error;
+
+      if (result?.expenses?.length > 0) {
+        const extractedData = result.expenses[0];
+        
+        // Update the document in database
+        await supabase
+          .from('documents')
+          .update({ 
+            extracted_data: JSON.parse(JSON.stringify(extractedData)),
+            status: 'classified' 
+          } as any)
+          .eq('id', document.id);
+
+        // Update local state
+        setEditedData(extractedData);
+        setIsEditing(true);
+        
+        if (onDataExtracted) {
+          onDataExtracted(extractedData);
+        }
+
+        toast.success(language === 'es' ? '¡Datos extraídos exitosamente!' : 'Data extracted successfully!');
+      } else {
+        toast.error(language === 'es' ? 'No se pudieron extraer datos' : 'Could not extract data');
+      }
+    } catch (err) {
+      console.error('AI processing error:', err);
+      toast.error(language === 'es' ? 'Error al procesar con IA' : 'Error processing with AI');
+    } finally {
+      setIsProcessingAI(false);
+    }
+  };
 
   const handleApprove = async () => {
     await onApprove(document.id, editedData);
@@ -227,6 +289,40 @@ export function ReceiptReviewDialog({
                 </Button>
               )}
             </div>
+
+            {/* Alert for no data */}
+            {hasNoData && !isProcessingAI && (
+              <Alert className="mb-4 border-amber-500/50 bg-amber-50 dark:bg-amber-950/30">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <span className="text-amber-700 dark:text-amber-300">
+                    {language === 'es' 
+                      ? 'No se detectaron datos. ¿Deseas procesar la imagen con IA?' 
+                      : 'No data detected. Would you like to process the image with AI?'}
+                  </span>
+                  <Button 
+                    size="sm" 
+                    onClick={handleProcessWithAI}
+                    disabled={!imageUrl || isProcessingAI}
+                    className="shrink-0"
+                  >
+                    <Sparkles className="h-4 w-4 mr-1" />
+                    {language === 'es' ? 'Procesar con IA' : 'Process with AI'}
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {isProcessingAI && (
+              <Alert className="mb-4 border-primary/50 bg-primary/5">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                <AlertDescription className="text-primary">
+                  {language === 'es' 
+                    ? 'Procesando imagen con IA... Esto puede tomar unos segundos.' 
+                    : 'Processing image with AI... This may take a few seconds.'}
+                </AlertDescription>
+              </Alert>
+            )}
 
             {/* Data Fields */}
             <div className="space-y-4 flex-1">

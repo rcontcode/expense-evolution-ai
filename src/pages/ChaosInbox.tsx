@@ -31,12 +31,13 @@ import { useScanSessions } from '@/hooks/data/useScanSessions';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, isLoading }: {
+function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, isLoading, onDataExtracted }: {
   document: ReceiptDocument;
   onApprove: (id: string, data: ExtractedData) => Promise<void>;
   onReject: (id: string, reason: string) => Promise<void>;
   onAddComment: (id: string, comment: string) => Promise<void>;
   isLoading?: boolean;
+  onDataExtracted?: () => void;
 }) {
   const imageUrl = useDocumentImageUrl(document.file_path);
   
@@ -48,6 +49,7 @@ function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, isL
       onReject={onReject}
       onAddComment={onAddComment}
       isLoading={isLoading}
+      onDataExtracted={onDataExtracted}
     />
   );
 }
@@ -574,6 +576,7 @@ export default function ChaosInbox() {
                     onReject={handleReject}
                     onAddComment={handleAddComment}
                     isLoading={approveDocument.isPending || processing === doc.id}
+                    onDataExtracted={() => refetch()}
                   />
                 ))}
               </div>
@@ -602,6 +605,7 @@ export default function ChaosInbox() {
                     onReject={handleReject}
                     onAddComment={handleAddComment}
                     isLoading={approveDocument.isPending}
+                    onDataExtracted={() => refetch()}
                   />
                 ))}
               </div>
@@ -693,6 +697,7 @@ export default function ChaosInbox() {
                       onApprove={handleApprove}
                       onReject={handleReject}
                       onAddComment={handleAddComment}
+                      onDataExtracted={() => refetch()}
                     />
                   ))}
                 </div>
@@ -722,6 +727,7 @@ export default function ChaosInbox() {
                       onApprove={handleApprove}
                       onReject={handleReject}
                       onAddComment={handleAddComment}
+                      onDataExtracted={() => refetch()}
                     />
                   ))}
                 </div>

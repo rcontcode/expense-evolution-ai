@@ -20,6 +20,7 @@ export type ExpenseCategory =
   | 'professional_services'
   | 'office_supplies'
   | 'utilities'
+  | 'fuel'
   | 'other';
 
 export interface ExpenseFormData {
