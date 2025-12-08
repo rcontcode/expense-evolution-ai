@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Receipt, Download, Sparkles, FileText } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
+import { useExpensesRealtime } from '@/hooks/data/useExpensesRealtime';
 import { ExpensesTable } from '@/components/tables/ExpensesTable';
 import { ExpenseFilters } from '@/components/filters/ExpenseFilters';
 import { ExpenseDialog } from '@/components/dialogs/ExpenseDialog';
@@ -28,6 +29,9 @@ export default function Expenses() {
 
   // Track expenses page visit for missions
   usePageVisitTracker('view_expenses');
+
+  // Enable real-time sync for expenses
+  useExpensesRealtime();
 
   const { data: expenses, isLoading } = useExpenses(filters);
   const { data: allExpenses } = useExpenses({});
