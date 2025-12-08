@@ -169,6 +169,7 @@ export function ClientProjectsSection({ clientId }: ClientProjectsSectionProps) 
           setSelectedProject(null);
         }}
         project={selectedProject}
+        defaultClientId={clientId}
       />
 
       <AlertDialog open={!!removeProjectId} onOpenChange={() => setRemoveProjectId(null)}>
