@@ -12,6 +12,8 @@ import {
   Utensils, Plane, Monitor, Code, Paperclip, Briefcase, Zap, Home, Car, HelpCircle
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { useVoiceInput } from '@/hooks/utils/useVoiceInput';
 import { useReceiptProcessor, ExtractedExpenseData } from '@/hooks/data/useReceiptProcessor';
 import { useCreateExpense } from '@/hooks/data/useExpenses';
@@ -19,6 +21,7 @@ import { useClients } from '@/hooks/data/useClients';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { ExpenseSummary } from './ExpenseSummary';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface QuickCaptureProps {
   onSuccess?: () => void;
@@ -40,15 +43,19 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
 };
 
 export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [editedExpenses, setEditedExpenses] = useState<ExtractedExpenseData[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [savedCount, setSavedCount] = useState(0);
   const [categoryTextInput, setCategoryTextInput] = useState('');
   const [showCategoryTextInput, setShowCategoryTextInput] = useState(false);
+  const [savedDocumentId, setSavedDocumentId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const { processReceipt, isProcessing } = useReceiptProcessor();
   const createExpense = useCreateExpense();
@@ -63,9 +70,54 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
     const file = e.target.files?.[0];
     if (!file) return;
     setImagePreview(URL.createObjectURL(file));
+    setImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => setImageBase64(reader.result as string);
     reader.readAsDataURL(file);
+  };
+
+  // Save image to storage and create document record
+  const saveImageToStorage = async (): Promise<string | null> => {
+    if (!imageFile || !user || savedDocumentId) return savedDocumentId;
+    
+    try {
+      const fileExt = imageFile.name.split('.').pop() || 'jpg';
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('expense-documents')
+        .upload(fileName, imageFile);
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      const { data: doc, error: dbError } = await supabase
+        .from('documents')
+        .insert({
+          user_id: user.id,
+          file_path: fileName,
+          file_name: imageFile.name,
+          file_type: imageFile.type,
+          file_size: imageFile.size,
+          status: 'classified',
+          review_status: 'approved',
+        })
+        .select()
+        .single();
+
+      if (dbError) {
+        console.error('DB error:', dbError);
+        throw dbError;
+      }
+
+      setSavedDocumentId(doc.id);
+      return doc.id;
+    } catch (error) {
+      console.error('Failed to save image:', error);
+      return null;
+    }
   };
 
   const handleProcess = async () => {
@@ -100,7 +152,14 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
 
   const handleSaveCurrentExpense = async () => {
     if (!currentExpense?.vendor || !currentExpense?.amount) return;
+    setIsSaving(true);
     try {
+      // Save image first if we have one
+      let documentId = savedDocumentId;
+      if (imageFile && !documentId) {
+        documentId = await saveImageToStorage();
+      }
+
       await createExpense.mutateAsync({ 
         vendor: currentExpense.vendor, 
         amount: currentExpense.amount, 
@@ -108,18 +167,50 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
         category: currentExpense.category, 
         description: currentExpense.description, 
         client_id: currentExpense.client_id || null,
+        document_id: documentId,
         status: 'pending' 
       } as any);
+
+      // Update document with expense link
+      if (documentId) {
+        const { data: expenses } = await supabase
+          .from('expenses')
+          .select('id')
+          .eq('document_id', documentId)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        
+        if (expenses?.[0]) {
+          await supabase
+            .from('documents')
+            .update({ expense_id: expenses[0].id })
+            .eq('id', documentId);
+        }
+      }
+
       setSavedCount(prev => prev + 1);
+      toast.success(language === 'es' ? 'Gasto guardado con foto' : 'Expense saved with photo');
       if (currentIndex < editedExpenses.length - 1) setCurrentIndex(prev => prev + 1);
       else onSuccess?.();
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error(e);
+      toast.error(language === 'es' ? 'Error al guardar' : 'Error saving');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSaveAll = async () => {
-    for (const exp of editedExpenses) {
-      if (!exp.vendor || !exp.amount) continue;
-      try {
+    setIsSaving(true);
+    try {
+      // Save image first if we have one
+      let documentId = savedDocumentId;
+      if (imageFile && !documentId) {
+        documentId = await saveImageToStorage();
+      }
+
+      for (const exp of editedExpenses) {
+        if (!exp.vendor || !exp.amount) continue;
         await createExpense.mutateAsync({ 
           vendor: exp.vendor, 
           amount: exp.amount, 
@@ -127,11 +218,19 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
           category: exp.category, 
           description: exp.description, 
           client_id: exp.client_id || null,
+          document_id: documentId,
           status: 'pending' 
         } as any);
-      } catch (e) { console.error(e); }
+      }
+      
+      toast.success(language === 'es' ? 'Todos los gastos guardados' : 'All expenses saved');
+      onSuccess?.();
+    } catch (e) { 
+      console.error(e);
+      toast.error(language === 'es' ? 'Error al guardar' : 'Error saving');
+    } finally {
+      setIsSaving(false);
     }
-    onSuccess?.();
   };
 
   const handleRemoveCurrentExpense = () => {
@@ -140,7 +239,17 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
     if (currentIndex >= editedExpenses.length - 1) setCurrentIndex(prev => Math.max(0, prev - 1));
   };
 
-  const clearAll = () => { setImagePreview(null); setImageBase64(null); setEditedExpenses([]); setCurrentIndex(0); setSavedCount(0); setTranscript(''); setShowCategoryTextInput(false); };
+  const clearAll = () => { 
+    setImagePreview(null); 
+    setImageBase64(null); 
+    setImageFile(null);
+    setEditedExpenses([]); 
+    setCurrentIndex(0); 
+    setSavedCount(0); 
+    setTranscript(''); 
+    setShowCategoryTextInput(false); 
+    setSavedDocumentId(null);
+  };
 
   // Get category icon for current expense
   const CurrentCategoryIcon = currentExpense ? (CATEGORY_ICONS[currentExpense.category] || HelpCircle) : HelpCircle;
@@ -388,13 +497,17 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
             <ExpenseSummary expenses={editedExpenses} hasClients={hasClients} clientCount={clients.length} />
 
             <div className="flex gap-2 pt-4">
-              <Button variant="outline" onClick={clearAll} size="sm"><X className="mr-1 h-4 w-4" />{t('quickCapture.startOver')}</Button>
-              {editedExpenses.length > 1 && <Button variant="ghost" onClick={handleRemoveCurrentExpense} size="sm" className="text-destructive"><Trash2 className="mr-1 h-4 w-4" />Omitir</Button>}
-              <Button onClick={handleSaveCurrentExpense} disabled={createExpense.isPending || !currentExpense?.vendor || !currentExpense?.amount || currentExpense?.vendor === 'Unknown'} className="flex-1">{createExpense.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}{editedExpenses.length > 1 ? 'Guardar y Siguiente' : t('quickCapture.saveExpense')}</Button>
+              <Button variant="outline" onClick={clearAll} size="sm" disabled={isSaving}><X className="mr-1 h-4 w-4" />{t('quickCapture.startOver')}</Button>
+              {editedExpenses.length > 1 && <Button variant="ghost" onClick={handleRemoveCurrentExpense} size="sm" className="text-destructive" disabled={isSaving}><Trash2 className="mr-1 h-4 w-4" />Omitir</Button>}
+              <Button onClick={handleSaveCurrentExpense} disabled={isSaving || !currentExpense?.vendor || !currentExpense?.amount || currentExpense?.vendor === 'Unknown'} className="flex-1">
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
+                {editedExpenses.length > 1 ? 'Guardar y Siguiente' : t('quickCapture.saveExpense')}
+              </Button>
             </div>
             {editedExpenses.length > 1 && savedCount === 0 && (
-              <Button variant="secondary" onClick={handleSaveAll} disabled={createExpense.isPending} className="w-full">
-                <Save className="mr-2 h-4 w-4" />Guardar Todos ({editedExpenses.length} gastos)
+              <Button variant="secondary" onClick={handleSaveAll} disabled={isSaving} className="w-full">
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                Guardar Todos ({editedExpenses.length} gastos)
               </Button>
             )}
           </>
