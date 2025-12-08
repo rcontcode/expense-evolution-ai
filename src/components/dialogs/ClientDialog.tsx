@@ -10,7 +10,7 @@ import { useContracts } from '@/hooks/data/useContracts';
 import { Client } from '@/types/expense.types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import { FlaskConical } from 'lucide-react';
+import { FlaskConical, Loader2 } from 'lucide-react';
 import { ClientProjectsSection } from '@/components/clients/ClientProjectsSection';
 import {
   AlertDialog,
@@ -75,8 +75,9 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
     }
   };
 
-  const handleDeleteTestData = () => {
-    if (client) {
+  const handleDeleteTestData = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (client && !deleteTestDataMutation.isPending) {
       deleteTestDataMutation.mutate(client.id, {
         onSuccess: () => setShowDeleteTestData(false)
       });
@@ -135,8 +136,16 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
             <AlertDialogAction 
               onClick={handleDeleteTestData} 
               className="bg-amber-600 hover:bg-amber-700"
+              disabled={deleteTestDataMutation.isPending}
             >
-              {t('clients.deleteTestData')}
+              {deleteTestDataMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                t('clients.deleteTestData')
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
