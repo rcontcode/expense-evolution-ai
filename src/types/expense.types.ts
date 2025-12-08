@@ -44,6 +44,7 @@ export interface ExpenseFilters {
   maxAmount?: number;
   searchQuery?: string;
   category?: ExpenseCategory;
+  hasReceipt?: boolean;
 }
 
 export interface ExpenseWithRelations extends Expense {

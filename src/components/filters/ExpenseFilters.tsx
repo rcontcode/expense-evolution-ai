@@ -2,7 +2,7 @@ import { ExpenseFilters as Filters, ExpenseCategory, ExpenseStatus } from '@/typ
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, X, Clock, FileCheck, Landmark, Ban, Building2, XCircle, AlertCircle, CheckCircle2, Filter } from 'lucide-react';
+import { Search, X, Clock, FileCheck, Landmark, Ban, Building2, XCircle, AlertCircle, CheckCircle2, Filter, Receipt } from 'lucide-react';
 import { useClients } from '@/hooks/data/useClients';
 import { useTags } from '@/hooks/data/useTags';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
@@ -65,11 +65,15 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
     onChange({ ...filters, tagIds: newTags.length > 0 ? newTags : undefined });
   };
 
+  const handleReceiptFilterToggle = () => {
+    onChange({ ...filters, hasReceipt: filters.hasReceipt ? undefined : true });
+  };
+
   const clearFilters = () => {
     onChange({});
   };
 
-  const hasActiveFilters = filters.searchQuery || filters.category || filters.clientIds?.length || filters.statuses?.length || filters.tagIds?.length;
+  const hasActiveFilters = filters.searchQuery || filters.category || filters.clientIds?.length || filters.statuses?.length || filters.tagIds?.length || filters.hasReceipt;
 
   const handleQuickStatusFilter = (value: string) => {
     onChange({ 
@@ -103,6 +107,20 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
             </button>
           );
         })}
+        
+        {/* Receipt Filter */}
+        <button
+          onClick={handleReceiptFilterToggle}
+          className={cn(
+            'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all',
+            filters.hasReceipt 
+              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 ring-2 ring-offset-2 ring-offset-background ring-primary/50' 
+              : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+          )}
+        >
+          <Receipt className="h-3.5 w-3.5" />
+          <span>Con Recibo</span>
+        </button>
       </div>
 
       {/* Other Filters */}
