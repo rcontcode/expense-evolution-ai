@@ -101,7 +101,7 @@ function ExpenseRowComponent({ index, style, expenses, onEdit, onDelete, t }: Ex
 
       {/* Date */}
       <div className="w-[10%] px-3 font-medium text-sm">
-        {format(new Date(expense.date), 'MMM dd, yyyy')}
+        {format(new Date(expense.date + 'T12:00:00'), 'MMM dd, yyyy')}
       </div>
       
       {/* Vendor */}
