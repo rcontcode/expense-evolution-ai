@@ -183,6 +183,7 @@ export type Database = {
       }
       contracts: {
         Row: {
+          ai_processed_at: string | null
           auto_renew: boolean | null
           billing_profile: Json | null
           client_id: string | null
@@ -190,6 +191,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           end_date: string | null
+          extracted_terms: Json | null
           file_name: string
           file_path: string
           file_type: string | null
@@ -201,9 +203,11 @@ export type Database = {
           title: string | null
           updated_at: string | null
           user_id: string
+          user_notes: string | null
           value: number | null
         }
         Insert: {
+          ai_processed_at?: string | null
           auto_renew?: boolean | null
           billing_profile?: Json | null
           client_id?: string | null
@@ -211,6 +215,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           end_date?: string | null
+          extracted_terms?: Json | null
           file_name: string
           file_path: string
           file_type?: string | null
@@ -222,9 +227,11 @@ export type Database = {
           title?: string | null
           updated_at?: string | null
           user_id: string
+          user_notes?: string | null
           value?: number | null
         }
         Update: {
+          ai_processed_at?: string | null
           auto_renew?: boolean | null
           billing_profile?: Json | null
           client_id?: string | null
@@ -232,6 +239,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           end_date?: string | null
+          extracted_terms?: Json | null
           file_name?: string
           file_path?: string
           file_type?: string | null
@@ -243,6 +251,7 @@ export type Database = {
           title?: string | null
           updated_at?: string | null
           user_id?: string
+          user_notes?: string | null
           value?: number | null
         }
         Relationships: [

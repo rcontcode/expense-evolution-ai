@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -26,10 +25,12 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useDeleteContract, useContractUrl } from '@/hooks/data/useContracts';
+import { useDeleteContract, useContracts } from '@/hooks/data/useContracts';
 import { ContractWithClient } from '@/types/contract.types';
-import { MoreVertical, Eye, Trash2, Download, FileText, CheckCircle2, AlertTriangle, XCircle, Calendar, Clock } from 'lucide-react';
-import { format, differenceInDays, isPast, isFuture, isWithinInterval, addDays } from 'date-fns';
+import { ContractDetailDialog } from '@/components/contracts/ContractDetailDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { MoreVertical, Eye, Trash2, Download, FileText, CheckCircle2, AlertTriangle, XCircle, Calendar, Clock, Sparkles } from 'lucide-react';
+import { format, differenceInDays, isPast } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 
 interface ContractsTableProps {
@@ -115,10 +116,9 @@ function calculateValidity(startDate: string | null, endDate: string | null, not
 export function ContractsTable({ contracts }: ContractsTableProps) {
   const { t, language } = useLanguage();
   const deleteContract = useDeleteContract();
+  const { refetch } = useContracts();
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [previewPath, setPreviewPath] = useState<string | null>(null);
-
-  const { data: previewUrl } = useContractUrl(previewPath);
+  const [selectedContract, setSelectedContract] = useState<ContractWithClient | null>(null);
 
   const handleDelete = async () => {
     if (deleteId) {
@@ -128,13 +128,20 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
   };
 
   const handleDownload = async (filePath: string, fileName: string) => {
-    const { data } = await useContractUrl(filePath);
-    if (data) {
+    const { data } = await supabase.storage
+      .from('contracts')
+      .createSignedUrl(filePath, 3600);
+    if (data?.signedUrl) {
       const link = document.createElement('a');
-      link.href = data;
+      link.href = data.signedUrl;
       link.download = fileName;
       link.click();
     }
+  };
+
+  const handleContractUpdate = () => {
+    refetch();
+    setSelectedContract(null);
   };
 
   const locale = language === 'es' ? es : enUS;
@@ -246,7 +253,7 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setPreviewPath(contract.file_path)}>
+                        <DropdownMenuItem onClick={() => setSelectedContract(contract)}>
                           <Eye className="mr-2 h-4 w-4" />
                           {t('contracts.preview')}
                         </DropdownMenuItem>
@@ -284,15 +291,13 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
         </AlertDialogContent>
       </AlertDialog>
 
-      {previewUrl && (
-        <Dialog open={!!previewPath} onOpenChange={() => setPreviewPath(null)}>
-          <DialogContent className="max-w-4xl h-[80vh]">
-            <DialogHeader>
-              <DialogTitle>{t('contracts.preview')}</DialogTitle>
-            </DialogHeader>
-            <iframe src={previewUrl} className="w-full h-full" />
-          </DialogContent>
-        </Dialog>
+      {selectedContract && (
+        <ContractDetailDialog
+          open={!!selectedContract}
+          onOpenChange={(open) => !open && setSelectedContract(null)}
+          contract={selectedContract}
+          onContractUpdate={handleContractUpdate}
+        />
       )}
     </TooltipProvider>
   );
