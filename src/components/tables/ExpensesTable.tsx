@@ -17,6 +17,7 @@ import {
   FileCheck,
   Ban
 } from 'lucide-react';
+import { ReceiptPhotoViewer } from '@/components/ReceiptPhotoViewer';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -93,13 +94,18 @@ function ExpenseRowComponent({ index, style, expenses, onEdit, onDelete, t }: Ex
       style={style} 
       className="flex items-center border-b border-border hover:bg-muted/50 transition-colors"
     >
+      {/* Receipt Photo */}
+      <div className="w-[5%] px-2 flex justify-center">
+        <ReceiptPhotoViewer documentId={expense.document_id} size="sm" />
+      </div>
+
       {/* Date */}
-      <div className="w-[12%] px-4 font-medium text-sm">
+      <div className="w-[10%] px-3 font-medium text-sm">
         {format(new Date(expense.date), 'MMM dd, yyyy')}
       </div>
       
       {/* Vendor */}
-      <div className="w-[18%] px-4">
+      <div className="w-[17%] px-3">
         <div className="font-medium text-sm truncate">{expense.vendor}</div>
         {expense.description && (
           <div className="text-xs text-muted-foreground truncate">{expense.description}</div>
@@ -107,12 +113,12 @@ function ExpenseRowComponent({ index, style, expenses, onEdit, onDelete, t }: Ex
       </div>
       
       {/* Category */}
-      <div className="w-[12%] px-4 text-sm truncate">
+      <div className="w-[10%] px-3 text-sm truncate">
         {getCategoryLabel(expense.category as any)}
       </div>
       
       {/* Client */}
-      <div className="w-[14%] px-4">
+      <div className="w-[14%] px-3">
         {expense.client ? (
           <TooltipProvider>
             <Tooltip>
@@ -149,7 +155,7 @@ function ExpenseRowComponent({ index, style, expenses, onEdit, onDelete, t }: Ex
       </div>
       
       {/* Tags */}
-      <div className="w-[12%] px-4">
+      <div className="w-[12%] px-3">
         <div className="flex flex-wrap gap-1">
           {expense.tags && expense.tags.length > 0 ? (
             expense.tags.slice(0, 2).map((tag) => (
@@ -173,12 +179,12 @@ function ExpenseRowComponent({ index, style, expenses, onEdit, onDelete, t }: Ex
       </div>
       
       {/* Amount */}
-      <div className="w-[10%] px-4 text-right font-medium text-sm">
+      <div className="w-[10%] px-3 text-right font-medium text-sm">
         ${Number(expense.amount).toFixed(2)}
       </div>
       
       {/* Status */}
-      <div className="w-[14%] px-4">
+      <div className="w-[14%] px-3">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -195,7 +201,7 @@ function ExpenseRowComponent({ index, style, expenses, onEdit, onDelete, t }: Ex
       </div>
       
       {/* Actions */}
-      <div className="w-[8%] px-4 flex justify-end">
+      <div className="w-[8%] px-3 flex justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
@@ -263,14 +269,15 @@ export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: E
       <div className="rounded-md border overflow-hidden">
         {/* Header */}
         <div className="flex items-center bg-muted/50 border-b border-border font-medium text-sm text-muted-foreground">
-          <div className="w-[12%] px-4 py-3">{t('expenses.date')}</div>
-          <div className="w-[18%] px-4 py-3">{t('expenses.vendor')}</div>
-          <div className="w-[12%] px-4 py-3">{t('expenses.category')}</div>
-          <div className="w-[14%] px-4 py-3">{t('expenses.client')}</div>
-          <div className="w-[12%] px-4 py-3">{t('expenses.tags')}</div>
-          <div className="w-[10%] px-4 py-3 text-right">{t('expenses.amount')}</div>
-          <div className="w-[14%] px-4 py-3">{t('expenses.status')}</div>
-          <div className="w-[8%] px-4 py-3"></div>
+          <div className="w-[5%] px-2 py-3 text-center">{t('expenses.receipt')}</div>
+          <div className="w-[10%] px-3 py-3">{t('expenses.date')}</div>
+          <div className="w-[17%] px-3 py-3">{t('expenses.vendor')}</div>
+          <div className="w-[10%] px-3 py-3">{t('expenses.category')}</div>
+          <div className="w-[14%] px-3 py-3">{t('expenses.client')}</div>
+          <div className="w-[12%] px-3 py-3">{t('expenses.tags')}</div>
+          <div className="w-[10%] px-3 py-3 text-right">{t('expenses.amount')}</div>
+          <div className="w-[14%] px-3 py-3">{t('expenses.status')}</div>
+          <div className="w-[8%] px-3 py-3"></div>
         </div>
         
         {/* Virtualized Body */}
