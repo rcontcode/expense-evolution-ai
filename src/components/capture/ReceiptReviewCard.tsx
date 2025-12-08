@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { 
   Check, X, Loader2, Eye,
-  AlertTriangle, CheckCircle2, Clock
+  AlertTriangle, CheckCircle2, Clock, Trash2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -46,6 +46,7 @@ interface ReceiptReviewCardProps {
   onApprove: (id: string, data: ExtractedData) => Promise<void>;
   onReject: (id: string, reason: string) => Promise<void>;
   onAddComment: (id: string, comment: string) => Promise<void>;
+  onDelete?: (id: string) => Promise<void>;
   isLoading?: boolean;
   onDataExtracted?: () => void;
 }
@@ -56,6 +57,7 @@ export function ReceiptReviewCard({
   onApprove, 
   onReject,
   onAddComment,
+  onDelete,
   isLoading,
   onDataExtracted 
 }: ReceiptReviewCardProps) {
@@ -158,6 +160,26 @@ export function ReceiptReviewCard({
               >
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
                 {language === 'es' ? 'Aprobar' : 'Approve'}
+              </Button>
+            </div>
+          )}
+
+          {/* Delete Button - Always visible */}
+          {onDelete && (
+            <div className="pt-2" onClick={(e) => e.stopPropagation()}>
+              <Button 
+                size="sm" 
+                variant="ghost"
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (window.confirm(language === 'es' ? '¿Eliminar este recibo?' : 'Delete this receipt?')) {
+                    await onDelete(document.id);
+                  }
+                }} 
+                className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                {language === 'es' ? 'Eliminar' : 'Delete'}
               </Button>
             </div>
           )}
