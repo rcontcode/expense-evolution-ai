@@ -16,11 +16,15 @@ export const CONTRACT_TYPES = [
 
 export const contractFormSchema = z.object({
   client_id: z.string().uuid().optional(),
-  file: z
-    .instanceof(File)
-    .refine((file) => file.size <= MAX_FILE_SIZE, 'El archivo no debe superar 10MB')
+  files: z
+    .array(z.instanceof(File))
+    .min(1, 'Debes subir al menos un archivo')
     .refine(
-      (file) => ACCEPTED_FILE_TYPES.includes(file.type),
+      (files) => files.every((file) => file.size <= MAX_FILE_SIZE),
+      'Cada archivo no debe superar 10MB'
+    )
+    .refine(
+      (files) => files.every((file) => ACCEPTED_FILE_TYPES.includes(file.type)),
       'Solo se aceptan archivos PDF, PNG o JPG'
     ),
   // New fields

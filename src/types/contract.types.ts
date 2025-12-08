@@ -7,7 +7,7 @@ export type ContractStatus = Database['public']['Enums']['contract_status'];
 
 export interface ContractFormData {
   client_id?: string;
-  file: File;
+  files: File[];
   billing_profile?: Record<string, any>;
   // New fields
   title?: string;

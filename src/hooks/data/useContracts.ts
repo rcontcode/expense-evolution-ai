@@ -30,41 +30,56 @@ export const useCreateContract = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Upload file to storage
-      const fileExt = data.file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      // Upload all files to storage
+      const uploadedFiles: { fileName: string; filePath: string; fileType: string }[] = [];
       
-      const { error: uploadError } = await supabase.storage
-        .from('contracts')
-        .upload(fileName, data.file);
+      for (const file of data.files) {
+        const fileExt = file.name.split('.').pop();
+        const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('contracts')
+          .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError;
+        
+        uploadedFiles.push({
+          fileName: file.name,
+          filePath,
+          fileType: file.type,
+        });
+      }
 
-      // Create contract record with new fields
-      const { data: contract, error: insertError } = await supabase
-        .from('contracts')
-        .insert({
-          user_id: user.id,
-          client_id: data.client_id,
-          file_name: data.file.name,
-          file_path: fileName,
-          file_type: data.file.type,
-          billing_profile: data.billing_profile || {},
-          status: 'uploaded',
-          title: data.title || null,
-          contract_type: data.contract_type || 'services',
-          start_date: data.start_date ? data.start_date.toISOString().split('T')[0] : null,
-          end_date: data.end_date ? data.end_date.toISOString().split('T')[0] : null,
-          auto_renew: data.auto_renew || false,
-          renewal_notice_days: data.renewal_notice_days || 30,
-          value: data.value || null,
-          description: data.description || null,
-        })
-        .select()
-        .single();
+      // Create contract records for each file
+      const contracts = [];
+      for (const uploadedFile of uploadedFiles) {
+        const { data: contract, error: insertError } = await supabase
+          .from('contracts')
+          .insert({
+            user_id: user.id,
+            client_id: data.client_id,
+            file_name: uploadedFile.fileName,
+            file_path: uploadedFile.filePath,
+            file_type: uploadedFile.fileType,
+            billing_profile: data.billing_profile || {},
+            status: 'uploaded',
+            title: data.title || null,
+            contract_type: data.contract_type || 'services',
+            start_date: data.start_date ? data.start_date.toISOString().split('T')[0] : null,
+            end_date: data.end_date ? data.end_date.toISOString().split('T')[0] : null,
+            auto_renew: data.auto_renew || false,
+            renewal_notice_days: data.renewal_notice_days || 30,
+            value: data.value || null,
+            description: data.description || null,
+          })
+          .select()
+          .single();
 
-      if (insertError) throw insertError;
-      return contract;
+        if (insertError) throw insertError;
+        contracts.push(contract);
+      }
+
+      return contracts;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts'] });

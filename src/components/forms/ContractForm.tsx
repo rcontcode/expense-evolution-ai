@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useLanguage } from '@/contexts/LanguageContext';
 import { contractFormSchema, type ContractFormSchema, CONTRACT_TYPES } from '@/lib/validations/contract.schema';
 import { useClients } from '@/hooks/data/useClients';
-import { Upload, CalendarIcon, FileText, DollarSign, RefreshCw } from 'lucide-react';
+import { Upload, CalendarIcon, FileText, DollarSign, RefreshCw, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -31,8 +31,24 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
       contract_type: 'services',
       auto_renew: false,
       renewal_notice_days: 30,
+      files: [],
     },
   });
+
+  const selectedFiles = form.watch('files') || [];
+
+  const handleFilesChange = (newFiles: FileList | null) => {
+    if (!newFiles) return;
+    const currentFiles = form.getValues('files') || [];
+    const filesArray = Array.from(newFiles);
+    form.setValue('files', [...currentFiles, ...filesArray], { shouldValidate: true });
+  };
+
+  const removeFile = (index: number) => {
+    const currentFiles = form.getValues('files') || [];
+    const updated = currentFiles.filter((_, i) => i !== index);
+    form.setValue('files', updated, { shouldValidate: true });
+  };
 
   const dateLocale = language === 'es' ? es : enUS;
 
@@ -48,26 +64,51 @@ export function ContractForm({ onSubmit, isSubmitting }: ContractFormProps) {
 
           <FormField
             control={form.control}
-            name="file"
+            name="files"
             render={({ field: { onChange, value, ...field } }) => (
               <FormItem>
                 <FormLabel>{t('contracts.file')} *</FormLabel>
                 <FormControl>
-                  <div className="flex items-center gap-2">
+                  <div className="space-y-3">
                     <Input
                       type="file"
                       accept=".pdf,.png,.jpg,.jpeg"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) onChange(file);
-                      }}
+                      multiple
+                      onChange={(e) => handleFilesChange(e.target.files)}
                       className="file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
                       {...field}
                     />
+                    {selectedFiles.length > 0 && (
+                      <div className="space-y-2">
+                        {selectedFiles.map((file, index) => (
+                          <div
+                            key={`${file.name}-${index}`}
+                            className="flex items-center justify-between p-2 bg-muted/50 rounded-md"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                              <span className="text-sm truncate">{file.name}</span>
+                              <span className="text-xs text-muted-foreground shrink-0">
+                                ({(file.size / 1024).toFixed(1)} KB)
+                              </span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 shrink-0"
+                              onClick={() => removeFile(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </FormControl>
                 <FormDescription>
-                  {t('contracts.fileFormats')}
+                  {t('contracts.fileFormats')} - {language === 'es' ? 'Puedes subir múltiples archivos' : 'You can upload multiple files'}
                 </FormDescription>
                 <FormMessage />
               </FormItem>

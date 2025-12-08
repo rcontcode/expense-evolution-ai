@@ -15,7 +15,7 @@ export function ContractDialog({ open, onOpenChange }: ContractDialogProps) {
 
   const handleSubmit = async (data: ContractFormSchema) => {
     await createContract.mutateAsync({
-      file: data.file,
+      files: data.files || [],
       client_id: data.client_id,
       title: data.title || undefined,
       contract_type: data.contract_type || undefined,
