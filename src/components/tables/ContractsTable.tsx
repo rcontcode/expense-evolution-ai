@@ -167,6 +167,7 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
               <TableHead>{t('contracts.startDate')}</TableHead>
               <TableHead>{t('contracts.endDate')}</TableHead>
               <TableHead>{t('contracts.validity')}</TableHead>
+              <TableHead>IA</TableHead>
               <TableHead>{t('contracts.status')}</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
@@ -239,6 +240,36 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
                         )}
                       </TooltipContent>
                     </Tooltip>
+                  </TableCell>
+                  <TableCell>
+                    {contract.ai_processed_at ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-0 gap-1">
+                            <Sparkles className="h-3 w-3" />
+                            {language === 'es' ? 'Analizado' : 'Analyzed'}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            {language === 'es' ? 'Analizado el ' : 'Analyzed on '}
+                            {format(new Date(contract.ai_processed_at), 'dd MMM yyyy HH:mm', { locale })}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="outline" className="text-muted-foreground gap-1">
+                            <Sparkles className="h-3 w-3" />
+                            {language === 'es' ? 'Pendiente' : 'Pending'}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{language === 'es' ? 'Haz clic en Ver para analizar con IA' : 'Click View to analyze with AI'}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge variant={statusVariants[contract.status || 'uploaded']}>
