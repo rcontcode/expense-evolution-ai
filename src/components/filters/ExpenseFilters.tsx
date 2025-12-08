@@ -1,8 +1,8 @@
-import { ExpenseFilters as Filters, ExpenseCategory, ExpenseStatus } from '@/types/expense.types';
+import { ExpenseFilters as Filters, ExpenseCategory, ExpenseStatus, ReimbursementType } from '@/types/expense.types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, X, Clock, FileCheck, Landmark, Ban, Building2, XCircle, AlertCircle, CheckCircle2, Filter, Receipt } from 'lucide-react';
+import { Search, X, Clock, FileCheck, Landmark, Ban, Building2, XCircle, AlertCircle, CheckCircle2, Filter, Receipt, AlertTriangle, User } from 'lucide-react';
 import { useClients } from '@/hooks/data/useClients';
 import { useTags } from '@/hooks/data/useTags';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
@@ -15,14 +15,22 @@ import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const QUICK_STATUS_FILTERS = [
-  { value: 'all', label: 'Todos', icon: Filter, color: 'bg-muted text-muted-foreground' },
-  { value: 'pending', label: 'Pendiente', icon: Clock, color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-500' },
-  { value: 'classified', label: 'Clasificado', icon: FileCheck, color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-500' },
-  { value: 'deductible', label: 'Deducible CRA', icon: Landmark, color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-500' },
-  { value: 'reimbursable', label: 'Reembolsable', icon: Building2, color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-500' },
-  { value: 'non_deductible', label: 'No Deducible', icon: Ban, color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-500' },
-  { value: 'under_review', label: 'En Revisión', icon: AlertCircle, color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-500' },
-  { value: 'finalized', label: 'Finalizado', icon: CheckCircle2, color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
+  { value: 'all', label: 'Todos', labelEn: 'All', icon: Filter, color: 'bg-muted text-muted-foreground' },
+  { value: 'pending', label: 'Pendiente', labelEn: 'Pending', icon: Clock, color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-500' },
+  { value: 'classified', label: 'Clasificado', labelEn: 'Classified', icon: FileCheck, color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-500' },
+  { value: 'deductible', label: 'Deducible CRA', labelEn: 'CRA Deductible', icon: Landmark, color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-500' },
+  { value: 'reimbursable', label: 'Reembolsable', labelEn: 'Reimbursable', icon: Building2, color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-500' },
+  { value: 'non_deductible', label: 'No Deducible', labelEn: 'Non Deductible', icon: Ban, color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-500' },
+  { value: 'under_review', label: 'En Revisión', labelEn: 'Under Review', icon: AlertCircle, color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-500' },
+  { value: 'finalized', label: 'Finalizado', labelEn: 'Finalized', icon: CheckCircle2, color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
+] as const;
+
+const REIMBURSEMENT_FILTERS = [
+  { value: 'all', label: 'Todos', labelEn: 'All', icon: Filter, color: 'bg-muted text-muted-foreground' },
+  { value: 'pending_classification', label: 'Sin clasificar', labelEn: 'Unclassified', icon: AlertTriangle, color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-500' },
+  { value: 'client_reimbursable', label: 'Cliente', labelEn: 'Client', icon: Building2, color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-500' },
+  { value: 'cra_deductible', label: 'CRA', labelEn: 'CRA', icon: Landmark, color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-500' },
+  { value: 'personal', label: 'Personal', labelEn: 'Personal', icon: User, color: 'bg-muted text-muted-foreground' },
 ] as const;
 
 interface ExpenseFiltersProps {
@@ -31,6 +39,7 @@ interface ExpenseFiltersProps {
 }
 
 export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
+  const { language } = useLanguage();
   const { data: clients } = useClients();
   const { data: tags } = useTags();
   const [tagPopoverOpen, setTagPopoverOpen] = useState(false);
@@ -69,11 +78,22 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
     onChange({ ...filters, hasReceipt: filters.hasReceipt ? undefined : true });
   };
 
+  const handleIncompleteFilterToggle = () => {
+    onChange({ ...filters, onlyIncomplete: filters.onlyIncomplete ? undefined : true });
+  };
+
+  const handleReimbursementTypeChange = (value: string) => {
+    onChange({ 
+      ...filters, 
+      reimbursementType: value === 'all' ? undefined : (value as ReimbursementType) 
+    });
+  };
+
   const clearFilters = () => {
     onChange({});
   };
 
-  const hasActiveFilters = filters.searchQuery || filters.category || filters.clientIds?.length || filters.statuses?.length || filters.tagIds?.length || filters.hasReceipt;
+  const hasActiveFilters = filters.searchQuery || filters.category || filters.clientIds?.length || filters.statuses?.length || filters.tagIds?.length || filters.hasReceipt || filters.onlyIncomplete || filters.reimbursementType;
 
   const handleQuickStatusFilter = (value: string) => {
     onChange({ 
@@ -86,7 +106,45 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
 
   return (
     <div className="flex flex-col gap-4 mb-6">
-      {/* Quick Status Filters */}
+      {/* Incomplete Filter - Prominent */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={handleIncompleteFilterToggle}
+          className={cn(
+            'inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all border-2',
+            filters.onlyIncomplete 
+              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-700 ring-2 ring-offset-2 ring-offset-background ring-red-500/50' 
+              : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30'
+          )}
+        >
+          <AlertTriangle className="h-4 w-4" />
+          <span>{language === 'es' ? 'Incompletos para Reportes' : 'Incomplete for Reports'}</span>
+        </button>
+
+        {/* Reimbursement Type Filter */}
+        {REIMBURSEMENT_FILTERS.map((type) => {
+          const Icon = type.icon;
+          const isActive = (filters.reimbursementType || 'all') === type.value;
+          if (type.value === 'all') return null;
+          return (
+            <button
+              key={type.value}
+              onClick={() => handleReimbursementTypeChange(isActive ? 'all' : type.value)}
+              className={cn(
+                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all',
+                isActive 
+                  ? `${type.color} ring-2 ring-offset-2 ring-offset-background ring-primary/50` 
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              )}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              <span>{language === 'es' ? type.label : type.labelEn}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Status Quick Filters */}
       <div className="flex flex-wrap gap-2">
         {QUICK_STATUS_FILTERS.map((status) => {
           const Icon = status.icon;
@@ -103,7 +161,7 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
               )}
             >
               <Icon className="h-3.5 w-3.5" />
-              <span>{status.label}</span>
+              <span>{language === 'es' ? status.label : status.labelEn}</span>
             </button>
           );
         })}
@@ -119,7 +177,7 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
           )}
         >
           <Receipt className="h-3.5 w-3.5" />
-          <span>Con Recibo</span>
+          <span>{language === 'es' ? 'Con Recibo' : 'With Receipt'}</span>
         </button>
       </div>
 

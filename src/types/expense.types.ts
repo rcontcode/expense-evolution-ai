@@ -54,6 +54,8 @@ export interface ExpenseFilters {
   searchQuery?: string;
   category?: ExpenseCategory;
   hasReceipt?: boolean;
+  onlyIncomplete?: boolean;
+  reimbursementType?: ReimbursementType;
 }
 
 export interface ExpenseWithRelations extends Expense {
