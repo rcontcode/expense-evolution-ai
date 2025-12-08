@@ -140,6 +140,23 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
       setEditedExpenses(result.expenses);
       setCurrentIndex(0);
       setSavedCount(0);
+      
+      // Save extracted data to document if we have one
+      if (savedDocumentId) {
+        const { error } = await supabase
+          .from('documents')
+          .update({ 
+            extracted_data: result.expenses as any,
+            status: 'classified'
+          })
+          .eq('id', savedDocumentId);
+        
+        if (error) {
+          console.error('Error saving extracted data:', error);
+        } else {
+          console.log('Extracted data saved to document:', savedDocumentId);
+        }
+      }
     }
   };
 
