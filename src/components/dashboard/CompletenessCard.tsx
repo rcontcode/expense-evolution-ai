@@ -150,17 +150,22 @@ export function CompletenessCard({ expenses, isLoading }: CompletenessCardProps)
               {language === 'es' ? 'Completitud para Reportes' : 'Report Readiness'}
             </CardTitle>
           </div>
-          {hasIssues && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => navigate('/expenses?incomplete=true')}
-              className="text-yellow-700 border-yellow-300 hover:bg-yellow-100 dark:text-yellow-400 dark:border-yellow-700 dark:hover:bg-yellow-900/30"
-            >
-              {language === 'es' ? 'Ver incompletos' : 'View incomplete'}
-              <ArrowRight className="ml-1 h-4 w-4" />
-            </Button>
-          )}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate(hasIssues ? '/expenses?incomplete=true' : '/expenses')}
+            className={cn(
+              hasIssues 
+                ? "text-yellow-700 border-yellow-300 hover:bg-yellow-100 dark:text-yellow-400 dark:border-yellow-700 dark:hover:bg-yellow-900/30"
+                : "text-green-700 border-green-300 hover:bg-green-100 dark:text-green-400 dark:border-green-700 dark:hover:bg-green-900/30"
+            )}
+          >
+            {hasIssues 
+              ? (language === 'es' ? 'Ver incompletos' : 'View incomplete')
+              : (language === 'es' ? 'Ver gastos' : 'View expenses')
+            }
+            <ArrowRight className="ml-1 h-4 w-4" />
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
