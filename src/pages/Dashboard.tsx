@@ -22,6 +22,7 @@ import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
 import { OnboardingGuide } from '@/components/ui/onboarding-guide';
+import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
 
 // Lazy load chart components for better performance
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
@@ -119,6 +120,9 @@ export default function Dashboard() {
               </Button>
             </InfoTooltip>
           </div>
+
+          {/* Setup Progress Banner - Proactive Guidance */}
+          <SetupProgressBanner />
 
           {/* Onboarding Guide */}
           <OnboardingGuide pageKey="dashboard" />

@@ -17,6 +17,7 @@ import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
 import { OnboardingGuide } from '@/components/ui/onboarding-guide';
+import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
 
 export default function Expenses() {
   const { t } = useLanguage();
@@ -90,6 +91,9 @@ export default function Expenses() {
               </InfoTooltip>
             </div>
           </div>
+
+          {/* Setup Progress Banner - Compact */}
+          <SetupProgressBanner variant="compact" />
 
           {/* Onboarding Guide */}
           <OnboardingGuide pageKey="expenses" />
