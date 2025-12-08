@@ -39,6 +39,7 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
   utilities: Zap,
   home_office: Home,
   mileage: Car,
+  fuel: Car,
   other: HelpCircle,
 };
 
@@ -167,7 +168,7 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
       'viaje': 'travel', 'travel': 'travel', 'uber': 'travel', 'taxi': 'travel', 'avion': 'travel', 'vuelo': 'travel',
       'equipo': 'equipment', 'equipment': 'equipment', 'materiales': 'equipment', 'materials': 'equipment',
       'software': 'software', 'app': 'software', 'suscripcion': 'software',
-      'gasolina': 'mileage', 'gas': 'mileage', 'fuel': 'mileage', 'bencina': 'mileage', 'combustible': 'mileage', 'nafta': 'mileage',
+      'gasolina': 'fuel', 'gas': 'fuel', 'fuel': 'fuel', 'bencina': 'fuel', 'combustible': 'fuel', 'nafta': 'fuel',
       'oficina': 'office_supplies', 'papeleria': 'office_supplies',
       'otro': 'other', 'other': 'other',
     };
@@ -478,19 +479,19 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
                   <Textarea value={currentExpense.description || ''} onChange={(e) => updateCurrentExpense('description', e.target.value)} className="min-h-[60px]" placeholder="Descripción del gasto..." />
                 </div>
 
-                {/* Client Selector for Reimbursable Expenses */}
-                {currentExpense.typically_reimbursable && hasClients && (
+                {/* Client Selector - Always show if clients exist */}
+                {hasClients && (
                   <div className="space-y-2">
                     <label className="text-sm font-medium flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-green-600" />
-                      Asociar a Cliente (Reembolso)
+                      <Building2 className="h-4 w-4 text-primary" />
+                      Asociar a Cliente
                     </label>
                     <Select 
                       value={currentExpense.client_id || '__none__'} 
                       onValueChange={(val) => updateCurrentExpense('client_id', val === '__none__' ? null : val)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar cliente para reembolso..." />
+                        <SelectValue placeholder="Seleccionar cliente..." />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="__none__">Sin cliente</SelectItem>
@@ -502,7 +503,7 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
                       </SelectContent>
                     </Select>
                     <p className="text-xs text-muted-foreground">
-                      Selecciona el cliente para solicitar reembolso de este gasto
+                      Asocia este gasto a un cliente para facturación o reembolso
                     </p>
                   </div>
                 )}
