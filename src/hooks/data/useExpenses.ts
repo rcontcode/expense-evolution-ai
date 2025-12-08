@@ -45,6 +45,10 @@ export function useExpenses(filters?: ExpenseFilters) {
       if (filters?.searchQuery) {
         query = query.or(`vendor.ilike.%${filters.searchQuery}%,description.ilike.%${filters.searchQuery}%,notes.ilike.%${filters.searchQuery}%`);
       }
+
+      if (filters?.hasReceipt) {
+        query = query.not('document_id', 'is', null);
+      }
       
       if (filters?.tagIds?.length) {
         // First get expense IDs that have the selected tags
