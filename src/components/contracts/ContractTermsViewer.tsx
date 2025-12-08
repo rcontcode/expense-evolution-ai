@@ -11,7 +11,8 @@ import { toast } from 'sonner';
 import { 
   Sparkles, Loader2, ChevronDown, ChevronUp, Check, X, 
   FileText, DollarSign, Clock, AlertTriangle, Building2,
-  Receipt, Car, Utensils, Briefcase, MessageSquare, Save
+  Receipt, Car, Utensils, Briefcase, MessageSquare, Save,
+  Users, Quote, Languages, Handshake, UserCheck, User
 } from 'lucide-react';
 
 interface ReimbursableCategory {
@@ -28,14 +29,28 @@ interface KeyClause {
   importance: 'high' | 'medium' | 'low';
 }
 
+interface ImportantAgreement {
+  topic: string;
+  summary: string;
+  who_benefits: 'client' | 'contractor' | 'both';
+  original_quote?: string;
+}
+
 interface ExtractedTerms {
   contract_summary?: string;
+  contract_summary_detailed?: string;
+  original_language?: string;
   parties?: {
+    party_count?: number;
     client?: string;
+    client_role?: string;
     contractor?: string;
+    contractor_role?: string;
+    relationship_summary?: string;
   };
   reimbursement_policy?: {
     summary?: string;
+    original_quotes?: string[];
     reimbursable_categories?: ReimbursableCategory[];
     non_reimbursable?: string[];
     documentation_required?: string[];
@@ -47,8 +62,10 @@ interface ExtractedTerms {
     payment_terms?: string;
     invoicing_frequency?: string;
     currency?: string;
+    original_quotes?: string[];
   };
   key_clauses?: KeyClause[];
+  important_agreements?: ImportantAgreement[];
   confidence?: 'high' | 'medium' | 'low';
   notes?: string;
 }
@@ -112,12 +129,13 @@ export function ContractTermsViewer({
         reader.readAsDataURL(blob);
       });
 
-      // Call AI analysis function
+      // Call AI analysis function with target language
       const { data: result, error } = await supabase.functions.invoke('analyze-contract', {
         body: { 
           documentBase64: base64,
           documentType: fileType,
           contractTitle: title,
+          targetLanguage: language,
         },
       });
 
@@ -228,27 +246,112 @@ export function ContractTermsViewer({
           </Alert>
         ) : (
           <>
+            {/* Original Language Notice */}
+            {terms.original_language && terms.original_language.toLowerCase() !== (language === 'es' ? 'spanish' : 'english') && (
+              <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-900">
+                <Languages className="h-4 w-4 text-blue-600" />
+                <span className="text-sm text-blue-700 dark:text-blue-300">
+                  {language === 'es' 
+                    ? `Contrato original en ${terms.original_language} - Traducido a español para su comprensión`
+                    : `Original contract in ${terms.original_language} - Translated to English for understanding`}
+                </span>
+              </div>
+            )}
+
             {/* Contract Summary */}
             {terms.contract_summary && (
-              <div className="p-3 bg-muted/50 rounded-lg">
+              <div className="p-3 bg-muted/50 rounded-lg space-y-2">
                 <p className="text-sm font-medium mb-1">
                   {language === 'es' ? 'Resumen' : 'Summary'}
                 </p>
                 <p className="text-sm text-muted-foreground">{terms.contract_summary}</p>
+                {terms.contract_summary_detailed && (
+                  <p className="text-sm text-muted-foreground mt-2 pt-2 border-t border-border/50">
+                    {terms.contract_summary_detailed}
+                  </p>
+                )}
               </div>
             )}
 
-            {/* Parties */}
-            {terms.parties && (
-              <div className="flex gap-4 text-sm">
-                {terms.parties.client && (
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">{language === 'es' ? 'Cliente:' : 'Client:'}</span>
-                    <span className="font-medium">{terms.parties.client}</span>
-                  </div>
+            {/* Parties Section */}
+            {terms.parties && (terms.parties.party_count && terms.parties.party_count >= 2) && (
+              <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                <p className="text-sm font-medium flex items-center gap-2 mb-3">
+                  <Users className="h-4 w-4 text-primary" />
+                  {language === 'es' ? 'Partes del Contrato' : 'Contract Parties'}
+                  <Badge variant="outline" className="ml-auto">
+                    {terms.parties.party_count} {language === 'es' ? 'partes' : 'parties'}
+                  </Badge>
+                </p>
+                <div className="grid md:grid-cols-2 gap-3">
+                  {terms.parties.client && (
+                    <div className="p-2 bg-background rounded border">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium text-sm">{terms.parties.client}</span>
+                      </div>
+                      {terms.parties.client_role && (
+                        <p className="text-xs text-muted-foreground">{terms.parties.client_role}</p>
+                      )}
+                    </div>
+                  )}
+                  {terms.parties.contractor && (
+                    <div className="p-2 bg-background rounded border">
+                      <div className="flex items-center gap-2 mb-1">
+                        <UserCheck className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium text-sm">{terms.parties.contractor}</span>
+                      </div>
+                      {terms.parties.contractor_role && (
+                        <p className="text-xs text-muted-foreground">{terms.parties.contractor_role}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {terms.parties.relationship_summary && (
+                  <p className="text-xs text-muted-foreground mt-2 pt-2 border-t">
+                    {terms.parties.relationship_summary}
+                  </p>
                 )}
               </div>
+            )}
+
+            {/* Important Agreements */}
+            {Array.isArray(terms.important_agreements) && terms.important_agreements.length > 0 && (
+              <Collapsible defaultOpen>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-between p-3 h-auto bg-amber-50/50 dark:bg-amber-950/20">
+                    <span className="flex items-center gap-2 font-medium">
+                      <Handshake className="h-4 w-4 text-amber-600" />
+                      {language === 'es' ? 'Acuerdos Importantes' : 'Important Agreements'}
+                      <Badge variant="secondary" className="ml-1">{terms.important_agreements.length}</Badge>
+                    </span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-2 pt-2 px-3">
+                  {terms.important_agreements.map((agreement, idx) => (
+                    <div key={idx} className="p-3 bg-muted/30 rounded-lg border">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <span className="font-medium text-sm">{agreement.topic}</span>
+                        <Badge variant="outline" className="text-xs shrink-0">
+                          {agreement.who_benefits === 'client' 
+                            ? (language === 'es' ? 'Beneficia: Cliente' : 'Benefits: Client')
+                            : agreement.who_benefits === 'contractor'
+                              ? (language === 'es' ? 'Beneficia: Contratista' : 'Benefits: Contractor')
+                              : (language === 'es' ? 'Beneficia: Ambos' : 'Benefits: Both')}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{agreement.summary}</p>
+                      {agreement.original_quote && (
+                        <div className="mt-2 p-2 bg-muted/50 rounded text-xs italic flex gap-2 items-start">
+                          <Quote className="h-3 w-3 shrink-0 mt-0.5 text-muted-foreground" />
+                          <span className="text-muted-foreground">"{agreement.original_quote}"</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
             )}
 
             {/* Reimbursement Policy */}
@@ -268,6 +371,20 @@ export function ContractTermsViewer({
                     <p className="text-sm text-muted-foreground px-3">
                       {terms.reimbursement_policy.summary}
                     </p>
+                  )}
+
+                  {/* Original Quotes for Reimbursement */}
+                  {Array.isArray(terms.reimbursement_policy.original_quotes) && 
+                   terms.reimbursement_policy.original_quotes.length > 0 && (
+                    <div className="mx-3 p-2 bg-muted/30 rounded border-l-2 border-primary/50">
+                      <p className="text-xs font-medium mb-1 flex items-center gap-1">
+                        <Quote className="h-3 w-3" />
+                        {language === 'es' ? 'Texto original extraído:' : 'Original extracted text:'}
+                      </p>
+                      {terms.reimbursement_policy.original_quotes.map((quote, idx) => (
+                        <p key={idx} className="text-xs italic text-muted-foreground">"{quote}"</p>
+                      ))}
+                    </div>
                   )}
 
                   {/* Reimbursable Categories */}
