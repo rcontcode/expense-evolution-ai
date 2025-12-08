@@ -58,6 +58,8 @@ export function useCreateProject() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['projects-with-clients'] });
+      queryClient.invalidateQueries({ queryKey: ['client-projects'] });
       toast.success('Proyecto creado');
     },
     onError: (error) => {
