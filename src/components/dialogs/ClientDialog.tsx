@@ -11,6 +11,7 @@ import { Client } from '@/types/expense.types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { FlaskConical } from 'lucide-react';
+import { ClientProjectsSection } from '@/components/clients/ClientProjectsSection';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -85,7 +86,7 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{client ? 'Edit Client' : 'Create New Client'}</DialogTitle>
           </DialogHeader>
@@ -113,6 +114,11 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
             onCancel={onClose}
             isLoading={createMutation.isPending || updateMutation.isPending}
           />
+
+          {/* Projects Section - only show when editing */}
+          {client && (
+            <ClientProjectsSection clientId={client.id} />
+          )}
         </DialogContent>
       </Dialog>
 

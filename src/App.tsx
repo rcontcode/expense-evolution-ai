@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import ChaosInbox from "./pages/ChaosInbox";
 import Expenses from "./pages/Expenses";
 import Clients from "./pages/Clients";
+import Projects from "./pages/Projects";
 import Contracts from "./pages/Contracts";
 import Mileage from "./pages/Mileage";
 import Reconciliation from "./pages/Reconciliation";
@@ -51,6 +52,7 @@ const App = () => (
                 <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
                 <Route path="/income" element={<ProtectedRoute><Income /></ProtectedRoute>} />
                 <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+                <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
                 <Route path="/tags" element={<ProtectedRoute><Tags /></ProtectedRoute>} />
                 <Route path="/contracts" element={<ProtectedRoute><Contracts /></ProtectedRoute>} />
                 <Route path="/mileage" element={<ProtectedRoute><Mileage /></ProtectedRoute>} />
