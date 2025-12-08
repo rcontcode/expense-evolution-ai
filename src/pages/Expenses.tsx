@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Plus, Receipt, Download, Sparkles, FileText } from 'lucide-react';
+import { Plus, Receipt, Download, Sparkles, FileText, Users } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useExpensesRealtime } from '@/hooks/data/useExpensesRealtime';
@@ -11,6 +11,7 @@ import { ExpenseDialog } from '@/components/dialogs/ExpenseDialog';
 import { ExportDialog } from '@/components/export/ExportDialog';
 import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
 import { ReimbursementReportDialog } from '@/components/dialogs/ReimbursementReportDialog';
+import { BulkAssignDialog } from '@/components/dialogs/BulkAssignDialog';
 import { ExpenseFilters as Filters, ExpenseWithRelations } from '@/types/expense.types';
 import { Card, CardContent } from '@/components/ui/card';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
@@ -26,6 +27,7 @@ export default function Expenses() {
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
   const [reimbursementReportOpen, setReimbursementReportOpen] = useState(false);
+  const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseWithRelations | undefined>();
 
   // Track expenses page visit for missions
@@ -64,7 +66,11 @@ export default function Expenses() {
               </div>
               <InfoTooltip content={TOOLTIP_CONTENT.expenses} />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              <Button variant="outline" onClick={() => setBulkAssignOpen(true)}>
+                <Users className="mr-2 h-4 w-4" />
+                {t('expenses.bulkAssign')}
+              </Button>
               <InfoTooltip content={TOOLTIP_CONTENT.reimbursementReport} variant="wrapper" side="bottom">
                 <Button variant="outline" onClick={() => setReimbursementReportOpen(true)}>
                   <FileText className="mr-2 h-4 w-4" />
@@ -140,6 +146,11 @@ export default function Expenses() {
           <ReimbursementReportDialog
             open={reimbursementReportOpen}
             onClose={() => setReimbursementReportOpen(false)}
+            expenses={allExpenses || []}
+          />
+          <BulkAssignDialog
+            open={bulkAssignOpen}
+            onClose={() => setBulkAssignOpen(false)}
             expenses={allExpenses || []}
           />
         </div>

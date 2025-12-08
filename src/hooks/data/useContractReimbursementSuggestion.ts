@@ -24,15 +24,16 @@ interface ExtractedTerms {
 const CATEGORY_MAPPINGS: Record<string, string[]> = {
   meals: ['comidas', 'alimentación', 'meals', 'food', 'restaurantes', 'restaurants'],
   travel: ['viajes', 'transporte', 'travel', 'transportation', 'vuelos', 'flights', 'hoteles', 'hotels', 'alojamiento', 'accommodation'],
-  equipment: ['equipos', 'equipment', 'tecnología', 'technology', 'hardware', 'computadoras', 'computers'],
+  equipment: ['equipos', 'equipment', 'tecnología', 'technology', 'hardware', 'computadoras', 'computers', 'materiales', 'materials', 'insumos', 'supplies', 'herramientas', 'tools'],
   software: ['software', 'licencias', 'licenses', 'suscripciones', 'subscriptions', 'herramientas digitales'],
   mileage: ['kilometraje', 'mileage', 'gasolina', 'combustible', 'fuel', 'vehículo', 'vehicle'],
   home_office: ['oficina en casa', 'home office', 'teletrabajo', 'remote work'],
   professional_services: ['servicios profesionales', 'professional services', 'consultoría', 'consulting', 'capacitación', 'training'],
-  office_supplies: ['suministros de oficina', 'office supplies', 'papelería', 'stationery', 'materiales'],
+  office_supplies: ['suministros de oficina', 'office supplies', 'papelería', 'stationery', 'materiales', 'materials', 'insumos', 'supplies'],
   utilities: ['servicios', 'utilities', 'internet', 'teléfono', 'phone', 'electricidad'],
   fuel: ['combustible', 'fuel', 'gasolina', 'gasoline', 'diésel', 'diesel', 'gas'],
-  other: ['otros', 'other', 'misceláneos', 'miscellaneous'],
+  materials: ['materiales', 'materials', 'insumos', 'supplies', 'herramientas', 'tools', 'equipos', 'equipment', 'compras', 'purchases'],
+  other: ['otros', 'other', 'misceláneos', 'miscellaneous', 'materiales', 'materials', 'insumos'],
 };
 
 function normalizeText(text: string): string {

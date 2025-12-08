@@ -442,6 +442,7 @@ export const translations = {
     expenses: {
       title: 'Gastos',
       addExpense: 'Agregar Gasto',
+      bulkAssign: 'Asignar Masivo',
       date: 'Fecha',
       vendor: 'Proveedor',
       amount: 'Monto',
@@ -1228,6 +1229,7 @@ export const translations = {
     expenses: {
       title: 'Expenses',
       addExpense: 'Add Expense',
+      bulkAssign: 'Bulk Assign',
       date: 'Date',
       vendor: 'Vendor',
       amount: 'Amount',
