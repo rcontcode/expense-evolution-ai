@@ -31,11 +31,12 @@ import { useScanSessions } from '@/hooks/data/useScanSessions';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, isLoading, onDataExtracted }: {
+function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, onDelete, isLoading, onDataExtracted }: {
   document: ReceiptDocument;
   onApprove: (id: string, data: ExtractedData) => Promise<void>;
   onReject: (id: string, reason: string) => Promise<void>;
   onAddComment: (id: string, comment: string) => Promise<void>;
+  onDelete?: (id: string) => Promise<void>;
   isLoading?: boolean;
   onDataExtracted?: () => void;
 }) {
@@ -48,6 +49,7 @@ function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, isL
       onApprove={onApprove}
       onReject={onReject}
       onAddComment={onAddComment}
+      onDelete={onDelete}
       isLoading={isLoading}
       onDataExtracted={onDataExtracted}
     />
@@ -147,7 +149,7 @@ export default function ChaosInbox() {
   const [showRejected, setShowRejected] = useState(false);
   
   const { data: documents = [], isLoading, refetch } = useDocumentsForReview();
-  const { approveDocument, rejectDocument, addComment } = useDocumentReviewActions();
+  const { approveDocument, rejectDocument, addComment, deleteDocument } = useDocumentReviewActions();
   const { startSession, updateSession, endSession } = useScanSessions();
   
   // Enable realtime sync
@@ -277,6 +279,10 @@ export default function ChaosInbox() {
 
   const handleAddComment = async (id: string, comment: string) => {
     await addComment.mutateAsync({ id, comment });
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteDocument.mutateAsync(id);
   };
 
   const handleCameraPhotos = async (photos: CapturedPhoto[]) => {
@@ -575,6 +581,7 @@ export default function ChaosInbox() {
                     onApprove={handleApprove}
                     onReject={handleReject}
                     onAddComment={handleAddComment}
+                    onDelete={handleDelete}
                     isLoading={approveDocument.isPending || processing === doc.id}
                     onDataExtracted={() => refetch()}
                   />
@@ -604,6 +611,7 @@ export default function ChaosInbox() {
                     onApprove={handleApprove}
                     onReject={handleReject}
                     onAddComment={handleAddComment}
+                    onDelete={handleDelete}
                     isLoading={approveDocument.isPending}
                     onDataExtracted={() => refetch()}
                   />
@@ -697,6 +705,7 @@ export default function ChaosInbox() {
                       onApprove={handleApprove}
                       onReject={handleReject}
                       onAddComment={handleAddComment}
+                      onDelete={handleDelete}
                       onDataExtracted={() => refetch()}
                     />
                   ))}
@@ -727,6 +736,7 @@ export default function ChaosInbox() {
                       onApprove={handleApprove}
                       onReject={handleReject}
                       onAddComment={handleAddComment}
+                      onDelete={handleDelete}
                       onDataExtracted={() => refetch()}
                     />
                   ))}

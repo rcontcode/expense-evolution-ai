@@ -141,7 +141,41 @@ export function useDocumentReviewActions() {
     },
   });
 
-  return { approveDocument, rejectDocument, addComment };
+  const deleteDocument = useMutation({
+    mutationFn: async (id: string) => {
+      // First get the document to find file path
+      const { data: doc } = await supabase
+        .from('documents')
+        .select('file_path')
+        .eq('id', id)
+        .single();
+
+      // Delete from storage if file exists
+      if (doc?.file_path) {
+        await supabase.storage
+          .from('expense-documents')
+          .remove([doc.file_path]);
+      }
+
+      // Delete from database
+      const { error } = await supabase
+        .from('documents')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents-review'] });
+      toast.success(language === 'es' ? 'Documento eliminado' : 'Document deleted');
+    },
+    onError: (error) => {
+      toast.error(language === 'es' ? 'Error al eliminar' : 'Error deleting');
+      console.error(error);
+    },
+  });
+
+  return { approveDocument, rejectDocument, addComment, deleteDocument };
 }
 
 export function useRealtimeDocuments() {
