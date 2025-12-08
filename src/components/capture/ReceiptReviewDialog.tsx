@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useClients } from '@/hooks/data/useClients';
 import { useProjects } from '@/hooks/data/useProjects';
+import { useContractReimbursementSuggestion } from '@/hooks/data/useContractReimbursementSuggestion';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -96,6 +97,12 @@ export function ReceiptReviewDialog({
   const [editedData, setEditedData] = useState<ExtractedData>(document.extracted_data || {});
   const [imageZoom, setImageZoom] = useState(1);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
+
+  // Get reimbursement suggestion from contract terms
+  const reimbursementSuggestion = useContractReimbursementSuggestion(
+    editedData.client_id,
+    editedData.category
+  );
 
   // Check if document has no extracted data
   const hasNoData = !document.extracted_data?.vendor && !document.extracted_data?.amount && !document.extracted_data?.date;
@@ -500,6 +507,43 @@ export function ReceiptReviewDialog({
                 <label className="text-sm font-medium">
                   {language === 'es' ? 'Clasificación fiscal' : 'Tax classification'}
                 </label>
+                
+                {/* Reimbursement Suggestion from Contract */}
+                {reimbursementSuggestion && isEditing && (
+                  <div className={cn(
+                    "flex items-start gap-2 p-2 rounded text-xs mb-2",
+                    reimbursementSuggestion.isReimbursable 
+                      ? "bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800"
+                      : "bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800"
+                  )}>
+                    <Sparkles className={cn(
+                      "h-3.5 w-3.5 flex-shrink-0 mt-0.5",
+                      reimbursementSuggestion.isReimbursable ? "text-green-600" : "text-amber-600"
+                    )} />
+                    <div className="flex-1">
+                      <p className={cn(
+                        reimbursementSuggestion.isReimbursable 
+                          ? "text-green-700 dark:text-green-300" 
+                          : "text-amber-700 dark:text-amber-300"
+                      )}>
+                        {language === 'es' ? reimbursementSuggestion.reason : reimbursementSuggestion.reasonEn}
+                      </p>
+                      {reimbursementSuggestion.isReimbursable && !editedData.typically_reimbursable && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 mt-1 text-green-700 hover:bg-green-100"
+                          onClick={() => updateField('typically_reimbursable', true)}
+                        >
+                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                          {language === 'es' ? 'Aplicar sugerencia' : 'Apply suggestion'}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {isEditing ? (
                   <div className="space-y-2 p-3 bg-muted/30 rounded-md">
                     <div className="flex items-center justify-between">

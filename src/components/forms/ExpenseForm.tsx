@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { expenseSchema, ExpenseFormValues } from '@/lib/validations/expense.schema';
@@ -12,12 +12,13 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, AlertTriangle, Building2, FileText, FolderKanban, Landmark, User, CheckCircle2, ArrowRight, Plus, Lightbulb } from 'lucide-react';
+import { CalendarIcon, AlertTriangle, Building2, FileText, FolderKanban, Landmark, User, CheckCircle2, ArrowRight, Plus, Lightbulb, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { useClients } from '@/hooks/data/useClients';
 import { useProjects } from '@/hooks/data/useProjects';
 import { useContracts } from '@/hooks/data/useContracts';
+import { useContractReimbursementSuggestion } from '@/hooks/data/useContractReimbursementSuggestion';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { TagSelect } from '@/components/forms/TagSelect';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -65,6 +66,10 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
 
   const selectedClientId = form.watch('client_id');
   const selectedReimbursementType = form.watch('reimbursement_type');
+  const selectedCategory = form.watch('category');
+
+  // Get reimbursement suggestion from contract terms
+  const reimbursementSuggestion = useContractReimbursementSuggestion(selectedClientId, selectedCategory);
 
   // Filter projects and contracts by selected client
   const filteredProjects = useMemo(() => {
@@ -76,6 +81,15 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
     if (!selectedClientId || selectedClientId === '__none__') return contracts || [];
     return contracts?.filter(c => c.client_id === selectedClientId) || [];
   }, [contracts, selectedClientId]);
+
+  // Apply suggestion when client/category changes (only if not editing existing expense)
+  useEffect(() => {
+    if (reimbursementSuggestion && !expense && selectedReimbursementType === 'pending_classification') {
+      if (reimbursementSuggestion.isReimbursable && reimbursementSuggestion.confidence === 'high') {
+        form.setValue('reimbursement_type', 'client_reimbursable');
+      }
+    }
+  }, [reimbursementSuggestion, expense, selectedReimbursementType, form]);
 
   // Completeness validation for report generation
   const completenessIssues = useMemo(() => {
@@ -273,6 +287,41 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
                     })}
                   </SelectContent>
                 </Select>
+                {/* Reimbursement Suggestion from Contract */}
+                {reimbursementSuggestion && (
+                  <div className={cn(
+                    "flex items-start gap-2 mt-2 p-2 rounded text-xs",
+                    reimbursementSuggestion.isReimbursable 
+                      ? "bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800"
+                      : "bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800"
+                  )}>
+                    <Sparkles className={cn(
+                      "h-3.5 w-3.5 flex-shrink-0 mt-0.5",
+                      reimbursementSuggestion.isReimbursable ? "text-green-600" : "text-amber-600"
+                    )} />
+                    <div className="flex-1">
+                      <p className={cn(
+                        reimbursementSuggestion.isReimbursable 
+                          ? "text-green-700 dark:text-green-300" 
+                          : "text-amber-700 dark:text-amber-300"
+                      )}>
+                        {language === 'es' ? reimbursementSuggestion.reason : reimbursementSuggestion.reasonEn}
+                      </p>
+                      {reimbursementSuggestion.isReimbursable && field.value !== 'client_reimbursable' && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 mt-1 text-green-700 hover:bg-green-100"
+                          onClick={() => form.setValue('reimbursement_type', 'client_reimbursable')}
+                        >
+                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                          {language === 'es' ? 'Aplicar sugerencia' : 'Apply suggestion'}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <FormMessage />
               </FormItem>
             )}
