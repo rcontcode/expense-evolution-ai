@@ -22,7 +22,8 @@ import {
   X,
   AlertTriangle,
   FolderKanban,
-  UserCircle
+  UserCircle,
+  Building2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -421,10 +422,10 @@ export const Layout = ({ children }: LayoutProps) => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onClick={() => navigate('/settings')}
+                  onClick={() => navigate('/business-profile')}
                   className={cn(
                     'nav-item w-full',
-                    location.pathname === '/settings' && 'active',
+                    location.pathname === '/business-profile' && 'active',
                     collapsed && 'justify-center px-0 w-auto'
                   )}
                 >
@@ -441,6 +442,29 @@ export const Layout = ({ children }: LayoutProps) => {
                       </span>
                     </div>
                   )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-xs p-3">
+                <div className="space-y-2">
+                  <span className="font-semibold">{t('businessProfile.title')}</span>
+                  <p className="text-xs text-muted-foreground">{t('businessProfile.description')}</p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Settings Button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => navigate('/settings')}
+                  className={cn(
+                    'nav-item w-full',
+                    location.pathname === '/settings' && 'active',
+                    collapsed && 'justify-center px-0 w-auto'
+                  )}
+                >
+                  <Settings className="h-5 w-5" />
+                  {!collapsed && <span className="flex-1 text-left">{t('nav.settings')}</span>}
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right" className="max-w-xs p-3">
