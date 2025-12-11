@@ -19,6 +19,7 @@ import Contracts from "./pages/Contracts";
 import Mileage from "./pages/Mileage";
 import Reconciliation from "./pages/Reconciliation";
 import Settings from "./pages/Settings";
+import BusinessProfile from "./pages/BusinessProfile";
 import Tags from "./pages/Tags";
 import Income from "./pages/Income";
 import Install from "./pages/Install";
@@ -58,6 +59,7 @@ const App = () => (
                 <Route path="/mileage" element={<ProtectedRoute><Mileage /></ProtectedRoute>} />
                 <Route path="/reconciliation" element={<ProtectedRoute><Reconciliation /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/business-profile" element={<ProtectedRoute><BusinessProfile /></ProtectedRoute>} />
                 <Route path="/install" element={<Install />} />
                 <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
