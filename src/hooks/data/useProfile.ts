@@ -14,6 +14,11 @@ export interface ProfileFormData {
   province: string | null;
   language: string;
   work_types: WorkType[];
+  business_name?: string | null;
+  business_number?: string | null;
+  gst_hst_registered?: boolean;
+  business_start_date?: string | null;
+  fiscal_year_end?: string | null;
 }
 
 export function useProfile() {
@@ -50,6 +55,11 @@ export function useUpdateProfile() {
         province: data.province,
         language: data.language,
         work_types: data.work_types,
+        business_name: data.business_name,
+        business_number: data.business_number,
+        gst_hst_registered: data.gst_hst_registered,
+        business_start_date: data.business_start_date,
+        fiscal_year_end: data.fiscal_year_end,
       };
 
       const { error } = await supabase

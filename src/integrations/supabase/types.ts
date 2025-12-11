@@ -759,9 +759,14 @@ export type Database = {
       }
       profiles: {
         Row: {
+          business_name: string | null
+          business_number: string | null
+          business_start_date: string | null
           created_at: string | null
           email: string | null
+          fiscal_year_end: string | null
           full_name: string | null
+          gst_hst_registered: boolean | null
           id: string
           language: string | null
           onboarding_completed: boolean | null
@@ -770,9 +775,14 @@ export type Database = {
           work_types: Database["public"]["Enums"]["work_type"][] | null
         }
         Insert: {
+          business_name?: string | null
+          business_number?: string | null
+          business_start_date?: string | null
           created_at?: string | null
           email?: string | null
+          fiscal_year_end?: string | null
           full_name?: string | null
+          gst_hst_registered?: boolean | null
           id: string
           language?: string | null
           onboarding_completed?: boolean | null
@@ -781,9 +791,14 @@ export type Database = {
           work_types?: Database["public"]["Enums"]["work_type"][] | null
         }
         Update: {
+          business_name?: string | null
+          business_number?: string | null
+          business_start_date?: string | null
           created_at?: string | null
           email?: string | null
+          fiscal_year_end?: string | null
           full_name?: string | null
+          gst_hst_registered?: boolean | null
           id?: string
           language?: string | null
           onboarding_completed?: boolean | null

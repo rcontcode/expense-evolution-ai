@@ -21,12 +21,14 @@ import {
   Menu,
   X,
   AlertTriangle,
-  FolderKanban
+  FolderKanban,
+  UserCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/data/useProfile';
 import { cn } from '@/lib/utils';
 import {
   Tooltip,
@@ -87,10 +89,13 @@ export const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const { t, language } = useLanguage();
   const { signOut } = useAuth();
+  const { data: profile } = useProfile();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
   const NAV_SECTIONS = getNavSections(t);
+  
+  const userInitial = profile?.full_name?.charAt(0)?.toUpperCase() || profile?.email?.charAt(0)?.toUpperCase() || 'U';
 
   // Mobile Layout
   if (isMobile) {
@@ -412,7 +417,7 @@ export const Layout = ({ children }: LayoutProps) => {
             "border-t border-border p-3 space-y-2",
             collapsed && "flex flex-col items-center"
           )}>
-            {/* Settings */}
+            {/* Profile Button */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
@@ -423,8 +428,19 @@ export const Layout = ({ children }: LayoutProps) => {
                     collapsed && 'justify-center px-0 w-auto'
                   )}
                 >
-                  <Settings className="h-5 w-5" />
-                  {!collapsed && <span className="flex-1 text-left">{t('nav.settings')}</span>}
+                  <div className="w-7 h-7 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
+                    {userInitial}
+                  </div>
+                  {!collapsed && (
+                    <div className="flex-1 text-left">
+                      <span className="block text-sm font-medium truncate">{profile?.full_name || t('settings.profileTitle')}</span>
+                      <span className="block text-xs text-muted-foreground truncate">
+                        {profile?.work_types?.includes('contractor') ? 'Sole Proprietor' : 
+                         profile?.work_types?.includes('corporation') ? 'Corporation' : 
+                         profile?.work_types?.includes('employee') ? 'Employee' : t('nav.settings')}
+                      </span>
+                    </div>
+                  )}
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right" className="max-w-xs p-3">

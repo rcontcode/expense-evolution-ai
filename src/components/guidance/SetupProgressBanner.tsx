@@ -12,7 +12,8 @@ import {
   Receipt,
   Lightbulb,
   Sparkles,
-  X
+  X,
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -23,6 +24,7 @@ import { useClients } from "@/hooks/data/useClients";
 import { useProjects } from "@/hooks/data/useProjects";
 import { useContracts } from "@/hooks/data/useContracts";
 import { useExpenses } from "@/hooks/data/useExpenses";
+import { useProfile } from "@/hooks/data/useProfile";
 
 interface SetupStep {
   id: string;
@@ -53,9 +55,26 @@ export function SetupProgressBanner({ className, variant = 'full' }: SetupProgre
   const { data: projects = [] } = useProjects();
   const { data: contracts = [] } = useContracts();
   const { data: expenses = [] } = useExpenses();
+  const { data: profile } = useProfile();
+  
+  // Check if profile is complete (has work type and province)
+  const isProfileComplete = profile?.work_types && profile.work_types.length > 0 && profile.province;
 
   // Define setup steps with completion status
   const steps: SetupStep[] = React.useMemo(() => [
+    {
+      id: 'profile',
+      icon: <User className="h-4 w-4" />,
+      title: { es: 'Completar Perfil', en: 'Complete Profile' },
+      description: { 
+        es: 'Configura tu tipo de trabajo y provincia para cálculos de impuestos precisos',
+        en: 'Set up your work type and province for accurate tax calculations'
+      },
+      action: { es: 'Completar perfil', en: 'Complete profile' },
+      path: '/settings',
+      completed: !!isProfileComplete,
+      priority: 'high'
+    },
     {
       id: 'clients',
       icon: <Users className="h-4 w-4" />,
@@ -78,7 +97,7 @@ export function SetupProgressBanner({ className, variant = 'full' }: SetupProgre
         en: 'Organize your expenses and income by project for better tracking'
       },
       action: { es: 'Crear proyecto', en: 'Create project' },
-      path: '/settings?tab=projects',
+      path: '/projects',
       completed: projects.length > 0,
       priority: 'medium'
     },
@@ -108,7 +127,7 @@ export function SetupProgressBanner({ className, variant = 'full' }: SetupProgre
       completed: expenses.length > 0,
       priority: 'high'
     }
-  ], [clients.length, projects.length, contracts.length, expenses.length]);
+  ], [clients.length, projects.length, contracts.length, expenses.length, isProfileComplete]);
 
   const completedSteps = steps.filter(s => s.completed).length;
   const totalSteps = steps.length;
