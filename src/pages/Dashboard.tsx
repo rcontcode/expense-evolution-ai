@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download, Scale, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download, Scale, ArrowUpRight, ArrowDownRight, UserCircle, Building2, MapPin, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useClients } from '@/hooks/data/useClients';
@@ -13,6 +13,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useExpensesRealtime } from '@/hooks/data/useExpensesRealtime';
 import { useIncomeSummary } from '@/hooks/data/useIncome';
 import { useTaxCalculations } from '@/hooks/data/useTaxCalculations';
+import { useProfile } from '@/hooks/data/useProfile';
 import { useMileageSummary } from '@/hooks/data/useMileage';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
 import { TaxSummaryCards } from '@/components/dashboard/TaxSummaryCards';
@@ -81,6 +82,7 @@ export default function Dashboard() {
   const { data: incomeSummary, isLoading: incomeLoading } = useIncomeSummary();
   const { taxSummary } = useTaxCalculations(allExpenses || []);
   const { data: mileageSummary, isLoading: mileageLoading } = useMileageSummary();
+  const { data: profile } = useProfile();
 
   // Memoize balance calculations
   const balanceData = useMemo(() => {
@@ -141,6 +143,48 @@ export default function Dashboard() {
 
           {/* Completeness Card */}
           <CompletenessCard expenses={allExpenses || []} isLoading={isLoading} />
+
+          {/* Profile Summary Card */}
+          {profile && (
+            <Card className="border-l-4 border-l-primary">
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground text-lg font-semibold">
+                      {profile.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{profile.full_name || t('settings.profileTitle')}</h3>
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                        {profile.work_types && profile.work_types.length > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Building2 className="h-3 w-3" />
+                            {profile.work_types.includes('contractor') ? 'Sole Proprietor' : 
+                             profile.work_types.includes('corporation') ? 'Corporation' : 'Employee'}
+                          </span>
+                        )}
+                        {profile.province && (
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {profile.province}
+                          </span>
+                        )}
+                        {profile.gst_hst_registered && (
+                          <span className="flex items-center gap-1 text-green-600">
+                            <CheckCircle className="h-3 w-3" />
+                            GST/HST
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
+                    {t('common.edit')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Balance Card */}
           <Card className={`border-2 ${balanceData.isPositive ? 'border-green-500/30 bg-green-50/50 dark:bg-green-900/10' : 'border-red-500/30 bg-red-50/50 dark:bg-red-900/10'}`}>
