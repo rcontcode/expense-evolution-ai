@@ -1,20 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useProfile, useUpdateProfile } from '@/hooks/data/useProfile';
 import { useSavingsGoals, useCreateSavingsGoal, useUpdateSavingsGoal, useDeleteSavingsGoal, useAddToSavingsGoal } from '@/hooks/data/useSavingsGoals';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { User, Target, Plus, Edit, Trash2, PiggyBank, Save, DollarSign, Palette, Sun, Moon, Monitor, TrendingUp, RotateCcw, BookOpen, Building2, Calendar, HelpCircle } from 'lucide-react';
+import { Target, Plus, Edit, Trash2, PiggyBank, DollarSign, Palette, Sun, Moon, Monitor, RotateCcw, BookOpen, Globe } from 'lucide-react';
 import { toast } from 'sonner';
-import { Database } from '@/integrations/supabase/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { InvestmentSection } from '@/components/investments/InvestmentSection';
 import {
@@ -28,25 +25,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-type WorkType = Database['public']['Enums']['work_type'];
-
-const PROVINCES = [
-  'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
-  'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island',
-  'Quebec', 'Saskatchewan', 'Yukon'
-];
-
-const WORK_TYPES: { value: WorkType; labelKey: string; descriptionKey: string }[] = [
-  { value: 'employee', labelKey: 'employee', descriptionKey: 'employeeDesc' },
-  { value: 'contractor', labelKey: 'contractor', descriptionKey: 'contractorDesc' },
-  { value: 'corporation', labelKey: 'corporation', descriptionKey: 'corporationDesc' },
-];
-
-const FISCAL_YEAR_ENDS = [
-  'January 31', 'February 28', 'March 31', 'April 30', 'May 31', 'June 30',
-  'July 31', 'August 31', 'September 30', 'October 31', 'November 30', 'December 31'
-];
-
 const GOAL_COLORS = [
   '#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#06B6D4', '#84CC16'
 ];
@@ -54,23 +32,11 @@ const GOAL_COLORS = [
 export default function Settings() {
   const { t, language, setLanguage } = useLanguage();
   const { mode, style, setMode, setStyle } = useTheme();
-  const { data: profile, isLoading: profileLoading } = useProfile();
-  const updateProfile = useUpdateProfile();
   const { data: savingsGoals, isLoading: goalsLoading } = useSavingsGoals();
   const createGoal = useCreateSavingsGoal();
   const updateGoal = useUpdateSavingsGoal();
   const deleteGoal = useDeleteSavingsGoal();
   const addToGoal = useAddToSavingsGoal();
-
-  // Profile form state
-  const [fullName, setFullName] = useState('');
-  const [province, setProvince] = useState<string>('');
-  const [workTypes, setWorkTypes] = useState<WorkType[]>([]);
-  const [businessName, setBusinessName] = useState('');
-  const [businessNumber, setBusinessNumber] = useState('');
-  const [gstHstRegistered, setGstHstRegistered] = useState(false);
-  const [businessStartDate, setBusinessStartDate] = useState('');
-  const [fiscalYearEnd, setFiscalYearEnd] = useState('December 31');
 
   // Savings goal dialog state
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
@@ -85,40 +51,6 @@ export default function Settings() {
   // Add amount dialog
   const [addAmountGoalId, setAddAmountGoalId] = useState<string | null>(null);
   const [amountToAdd, setAmountToAdd] = useState('');
-
-  useEffect(() => {
-    if (profile) {
-      setFullName(profile.full_name || '');
-      setProvince(profile.province || '');
-      setWorkTypes(profile.work_types || []);
-      setBusinessName(profile.business_name || '');
-      setBusinessNumber(profile.business_number || '');
-      setGstHstRegistered(profile.gst_hst_registered || false);
-      setBusinessStartDate(profile.business_start_date || '');
-      setFiscalYearEnd(profile.fiscal_year_end || 'December 31');
-    }
-  }, [profile]);
-
-  const handleSaveProfile = () => {
-    updateProfile.mutate({
-      full_name: fullName,
-      province: province || null,
-      work_types: workTypes,
-      business_name: businessName || null,
-      business_number: businessNumber || null,
-      gst_hst_registered: gstHstRegistered,
-      business_start_date: businessStartDate || null,
-      fiscal_year_end: fiscalYearEnd || null,
-    });
-  };
-
-  const handleWorkTypeToggle = (type: WorkType) => {
-    setWorkTypes(prev => 
-      prev.includes(type)
-        ? prev.filter(t => t !== type)
-        : [...prev, type]
-    );
-  };
 
   const openGoalDialog = (goal?: any) => {
     if (goal) {
@@ -175,177 +107,23 @@ export default function Settings() {
       <div className="p-8 space-y-8">
         <div>
           <h1 className="text-3xl font-bold">{t('nav.settings')}</h1>
-          <p className="text-muted-foreground mt-2">{t('settings.description')}</p>
+          <p className="text-muted-foreground mt-2">
+            {language === 'es' 
+              ? 'Personaliza la apariencia y preferencias de la aplicación' 
+              : 'Customize app appearance and preferences'}
+          </p>
         </div>
-
-        {/* Profile Section */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
-              <CardTitle>{t('settings.profileTitle')}</CardTitle>
-            </div>
-            <CardDescription>{t('settings.profileDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {profileLoading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            ) : (
-              <>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">{t('settings.fullName')}</Label>
-                    <Input
-                      id="fullName"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder={t('settings.fullNamePlaceholder')}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">{t('settings.email')}</Label>
-                    <Input
-                      id="email"
-                      value={profile?.email || ''}
-                      disabled
-                      className="bg-muted"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>{t('settings.province')}</Label>
-                  <Select value={province} onValueChange={setProvince}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('settings.provincePlaceholder')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PROVINCES.map(prov => (
-                        <SelectItem key={prov} value={prov}>{prov}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>{t('settings.workTypes')}</Label>
-                  <p className="text-sm text-muted-foreground">{t('settings.workTypesDescription')}</p>
-                  <div className="space-y-3">
-                    {WORK_TYPES.map(({ value, labelKey, descriptionKey }) => (
-                      <div key={value} className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors">
-                        <Checkbox
-                          id={value}
-                          checked={workTypes.includes(value)}
-                          onCheckedChange={() => handleWorkTypeToggle(value)}
-                          className="mt-0.5"
-                        />
-                        <div className="flex-1">
-                          <Label htmlFor={value} className="cursor-pointer font-medium">
-                            {t(`settings.${labelKey}`)}
-                          </Label>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {t(`settings.${descriptionKey}`)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Business Information Section - Only show if contractor or corporation */}
-                {(workTypes.includes('contractor') || workTypes.includes('corporation')) && (
-                  <div className="space-y-4 pt-4 border-t">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-primary" />
-                      <Label className="font-semibold">{t('settings.businessInfo')}</Label>
-                    </div>
-                    
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="businessName">{t('settings.businessName')}</Label>
-                        <Input
-                          id="businessName"
-                          value={businessName}
-                          onChange={(e) => setBusinessName(e.target.value)}
-                          placeholder={t('settings.businessNamePlaceholder')}
-                        />
-                        <p className="text-xs text-muted-foreground">{t('settings.businessNameHelp')}</p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="businessNumber">{t('settings.businessNumber')}</Label>
-                        <Input
-                          id="businessNumber"
-                          value={businessNumber}
-                          onChange={(e) => setBusinessNumber(e.target.value)}
-                          placeholder="123456789 RT0001"
-                        />
-                        <p className="text-xs text-muted-foreground">{t('settings.businessNumberHelp')}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start space-x-3 p-3 rounded-lg border bg-accent/30">
-                      <Checkbox
-                        id="gstHstRegistered"
-                        checked={gstHstRegistered}
-                        onCheckedChange={(checked) => setGstHstRegistered(!!checked)}
-                      />
-                      <div className="flex-1">
-                        <Label htmlFor="gstHstRegistered" className="cursor-pointer font-medium">
-                          {t('settings.gstHstRegistered')}
-                        </Label>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {t('settings.gstHstRegisteredHelp')}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="businessStartDate">{t('settings.businessStartDate')}</Label>
-                        <Input
-                          id="businessStartDate"
-                          type="date"
-                          value={businessStartDate}
-                          onChange={(e) => setBusinessStartDate(e.target.value)}
-                        />
-                        <p className="text-xs text-muted-foreground">{t('settings.businessStartDateHelp')}</p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>{t('settings.fiscalYearEnd')}</Label>
-                        <Select value={fiscalYearEnd} onValueChange={setFiscalYearEnd}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {FISCAL_YEAR_ENDS.map(date => (
-                              <SelectItem key={date} value={date}>{date}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground">{t('settings.fiscalYearEndHelp')}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <Button onClick={handleSaveProfile} disabled={updateProfile.isPending}>
-                  <Save className="mr-2 h-4 w-4" />
-                  {t('settings.saveProfile')}
-                </Button>
-              </>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Language Section */}
         <Card>
           <CardHeader>
-            <CardTitle>{t('settings.languageTitle')}</CardTitle>
-            <CardDescription>{t('settings.languageDescription')}</CardDescription>
+            <div className="flex items-center gap-2">
+              <Globe className="h-5 w-5 text-primary" />
+              <div>
+                <CardTitle>{t('settings.languageTitle')}</CardTitle>
+                <CardDescription>{t('settings.languageDescription')}</CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
