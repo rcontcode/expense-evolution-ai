@@ -24,6 +24,8 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
 import { OnboardingGuide } from '@/components/ui/onboarding-guide';
 import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
+import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Lazy load chart components for better performance
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
@@ -49,8 +51,9 @@ const MileageSkeleton = () => (
 );
 
 export default function Dashboard() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [selectedClient, setSelectedClient] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -97,6 +100,9 @@ export default function Dashboard() {
     };
   }, [allExpenses, incomeSummary?.totalIncome]);
 
+  // Get user's first name for personalized greeting
+  const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || '';
+
   const handleResetFilters = useCallback(() => {
     setSelectedClient('all');
     setSelectedStatus('all');
@@ -107,10 +113,18 @@ export default function Dashboard() {
     <Layout>
       <TooltipProvider delayDuration={200}>
         <div className="p-8 space-y-8">
+          {/* Mentor Quote Banner */}
+          <MentorQuoteBanner showTip className="mb-2" />
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div>
-                <h1 className="text-3xl font-bold">{t('dashboard.welcome')}</h1>
+                <h1 className="text-3xl font-bold">
+                  {language === 'es' 
+                    ? `¡Hola${firstName ? `, ${firstName}` : ''}! 👋`
+                    : `Hello${firstName ? `, ${firstName}` : ''}! 👋`
+                  }
+                </h1>
                 <p className="text-muted-foreground mt-2">{t('dashboardLabels.subtitle')}</p>
               </div>
               <InfoTooltip content={TOOLTIP_CONTENT.dashboard} />
