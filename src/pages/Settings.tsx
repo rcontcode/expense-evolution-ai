@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { InvestmentSection } from '@/components/investments/InvestmentSection';
 import { FinancialEducationResources } from '@/components/settings/FinancialEducationResources';
+import { resetOnboardingTutorial } from '@/components/guidance/OnboardingTutorial';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -237,7 +238,7 @@ export default function Settings() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
+            <div className="flex flex-wrap gap-3">
               <Button 
                 variant="outline" 
                 onClick={() => {
@@ -251,20 +252,34 @@ export default function Settings() {
                   keysToRemove.forEach(key => localStorage.removeItem(key));
                   toast.success(
                     language === 'es' 
-                      ? '¡Guías restablecidas! Las verás de nuevo al visitar cada página.' 
-                      : 'Guides reset! You will see them again when visiting each page.'
+                      ? '¡Guías de página restablecidas!' 
+                      : 'Page guides reset!'
                   );
                 }}
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
-                {language === 'es' ? 'Restablecer Todas las Guías' : 'Reset All Guides'}
+                {language === 'es' ? 'Restablecer Guías de Página' : 'Reset Page Guides'}
               </Button>
-              <p className="text-xs text-muted-foreground mt-2">
-                {language === 'es' 
-                  ? 'Esto incluye el banner de configuración, guías de onboarding y consejos contextuales.'
-                  : 'This includes the setup banner, onboarding guides, and contextual tips.'}
-              </p>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  resetOnboardingTutorial();
+                  toast.success(
+                    language === 'es' 
+                      ? '¡Tutorial reiniciado! Recarga la página para verlo.' 
+                      : 'Tutorial reset! Reload the page to see it.'
+                  );
+                }}
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                {language === 'es' ? 'Ver Tutorial de Inicio' : 'View Welcome Tutorial'}
+              </Button>
             </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              {language === 'es' 
+                ? 'Puedes restablecer las guías contextuales de cada página o volver a ver el tutorial interactivo de bienvenida.'
+                : 'You can reset the contextual guides on each page or view the interactive welcome tutorial again.'}
+            </p>
           </CardContent>
         </Card>
 
