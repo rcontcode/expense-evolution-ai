@@ -134,6 +134,52 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-5px)" },
         },
+        // Theme background animations
+        "float-slow": {
+          "0%, 100%": { transform: "translateY(0) rotate(0deg)" },
+          "50%": { transform: "translateY(-20px) rotate(5deg)" },
+        },
+        "float-delayed": {
+          "0%, 100%": { transform: "translateY(0) rotate(0deg)" },
+          "50%": { transform: "translateY(-15px) rotate(-3deg)" },
+        },
+        "fall-slow": {
+          "0%": { transform: "translateY(-20px) rotate(0deg)", opacity: "0" },
+          "10%": { opacity: "1" },
+          "90%": { opacity: "1" },
+          "100%": { transform: "translateY(100vh) rotate(360deg)", opacity: "0" },
+        },
+        "sway": {
+          "0%, 100%": { transform: "rotate(-3deg)" },
+          "50%": { transform: "rotate(3deg)" },
+        },
+        "wave": {
+          "0%, 100%": { transform: "translateX(0)" },
+          "50%": { transform: "translateX(-20px)" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "0.3", transform: "scale(1)" },
+          "50%": { opacity: "0.5", transform: "scale(1.05)" },
+        },
+        "drift": {
+          "0%, 100%": { transform: "translateX(0) translateY(0)" },
+          "25%": { transform: "translateX(10px) translateY(-5px)" },
+          "50%": { transform: "translateX(0) translateY(-10px)" },
+          "75%": { transform: "translateX(-10px) translateY(-5px)" },
+        },
+        "spin-slow": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
+        "bounce-slow": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "shimmer": {
+          "0%": { opacity: "0.4" },
+          "50%": { opacity: "0.7" },
+          "100%": { opacity: "0.4" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -144,6 +190,17 @@ export default {
         "slide-in-right": "slide-in-right 0.3s ease-out",
         "pulse-soft": "pulse-soft 2s ease-in-out infinite",
         "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
+        // Theme background animations
+        "float-slow": "float-slow 8s ease-in-out infinite",
+        "float-delayed": "float-delayed 10s ease-in-out infinite",
+        "fall-slow": "fall-slow 15s linear infinite",
+        "sway": "sway 4s ease-in-out infinite",
+        "wave": "wave 6s ease-in-out infinite",
+        "pulse-glow": "pulse-glow 4s ease-in-out infinite",
+        "drift": "drift 12s ease-in-out infinite",
+        "spin-slow": "spin-slow 20s linear infinite",
+        "bounce-slow": "bounce-slow 3s ease-in-out infinite",
+        "shimmer": "shimmer 3s ease-in-out infinite",
       },
     },
   },
