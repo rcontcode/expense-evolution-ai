@@ -32,6 +32,7 @@ const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardChart
 const MileageTabContent = lazy(() => import('@/components/dashboard/MileageTabContent').then(m => ({ default: m.MileageTabContent })));
 const SubscriptionTracker = lazy(() => import('@/components/subscriptions/SubscriptionTracker').then(m => ({ default: m.SubscriptionTracker })));
 const TaxOptimizerCard = lazy(() => import('@/components/dashboard/TaxOptimizerCard').then(m => ({ default: m.TaxOptimizerCard })));
+const RrspTfsaOptimizerCard = lazy(() => import('@/components/dashboard/RrspTfsaOptimizerCard').then(m => ({ default: m.RrspTfsaOptimizerCard })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -370,15 +371,20 @@ export default function Dashboard() {
 
           <TabsContent value="tax" className="space-y-4">
             {activeTab === 'tax' && (
-              <div className="grid gap-6 lg:grid-cols-2">
-                <div className="lg:col-span-1">
-                  <Suspense fallback={<Skeleton className="h-[500px]" />}>
-                    <TaxOptimizerCard />
-                  </Suspense>
+              <div className="space-y-6">
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <div className="lg:col-span-1">
+                    <Suspense fallback={<Skeleton className="h-[500px]" />}>
+                      <TaxOptimizerCard />
+                    </Suspense>
+                  </div>
+                  <div className="lg:col-span-1">
+                    <Suspense fallback={<Skeleton className="h-[500px]" />}>
+                      <RrspTfsaOptimizerCard />
+                    </Suspense>
+                  </div>
                 </div>
-                <div className="lg:col-span-1">
-                  <TaxSummaryCards taxSummary={taxSummary} />
-                </div>
+                <TaxSummaryCards taxSummary={taxSummary} />
               </div>
             )}
           </TabsContent>

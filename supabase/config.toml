@@ -17,3 +17,6 @@ verify_jwt = true
 
 [functions.optimize-taxes]
 verify_jwt = true
+
+[functions.optimize-rrsp-tfsa]
+verify_jwt = true
