@@ -43,6 +43,7 @@ const SeasonalityChart = lazy(() => import('@/components/analytics/SeasonalityCh
 const MonthComparisonChart = lazy(() => import('@/components/analytics/MonthComparisonChart').then(m => ({ default: m.MonthComparisonChart })));
 const FinancialHealthRadar = lazy(() => import('@/components/analytics/FinancialHealthRadar').then(m => ({ default: m.FinancialHealthRadar })));
 const CashFlowSankey = lazy(() => import('@/components/analytics/CashFlowSankey').then(m => ({ default: m.CashFlowSankey })));
+const ProjectProfitability = lazy(() => import('@/components/analytics/ProjectProfitability').then(m => ({ default: m.ProjectProfitability })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -412,6 +413,7 @@ export default function Dashboard() {
                     <FinancialHealthRadar />
                     <CashFlowSankey />
                   </div>
+                  <ProjectProfitability />
                   <SpendingHeatmap expenses={allExpenses || []} isLoading={isLoading} />
                   <div className="grid gap-6 lg:grid-cols-2">
                     <SeasonalityChart expenses={allExpenses || []} isLoading={isLoading} />
