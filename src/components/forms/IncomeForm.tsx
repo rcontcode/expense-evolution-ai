@@ -18,6 +18,7 @@ import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { CalendarIcon, DollarSign } from 'lucide-react';
+import { GlossaryLabel, TermHelp } from '@/components/ui/glossary-term';
 
 const incomeSchema = z.object({
   amount: z.number().min(0.01, 'Amount must be greater than 0'),
@@ -263,7 +264,11 @@ export function IncomeForm({ income, onSubmit, onCancel, isLoading }: IncomeForm
             name="recurrence"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('income.recurrence')}</FormLabel>
+                <FormLabel className="flex items-center gap-1">
+                  <GlossaryLabel termKey="recurring">
+                    {t('income.recurrence')}
+                  </GlossaryLabel>
+                </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -289,7 +294,11 @@ export function IncomeForm({ income, onSubmit, onCancel, isLoading }: IncomeForm
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 mt-6">
                 <div className="space-y-0.5">
-                  <FormLabel>{t('income.taxable')}</FormLabel>
+                  <FormLabel className="flex items-center gap-1">
+                    <GlossaryLabel termKey="taxable">
+                      {t('income.taxable')}
+                    </GlossaryLabel>
+                  </FormLabel>
                   <FormDescription className="text-xs">
                     {t('income.taxableDescription')}
                   </FormDescription>

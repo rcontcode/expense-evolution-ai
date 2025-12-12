@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Scale, ArrowUpRight, ArrowDownRight, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Scale, ArrowUpRight, ArrowDownRight, Target, HelpCircle } from 'lucide-react';
 import { NetWorthSnapshot } from '@/hooks/data/useNetWorth';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface NetWorthSummaryProps {
   totalAssets: number;
@@ -45,6 +46,20 @@ export function NetWorthSummary({ totalAssets, totalLiabilities, snapshots }: Ne
           <div className="flex items-center gap-2 mb-2">
             <Scale className={`h-5 w-5 ${netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`} />
             <span className="text-sm font-medium text-muted-foreground">Patrimonio Neto</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="text-muted-foreground/60 hover:text-muted-foreground">
+                  <HelpCircle className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs p-3">
+                <p className="font-medium text-sm mb-1">¿Qué es el Patrimonio Neto?</p>
+                <p className="text-xs text-muted-foreground">
+                  Es lo que realmente tienes = Activos - Pasivos. Es como tu "puntaje financiero" personal. 
+                  Si crece cada mes, vas por buen camino hacia la libertad financiera.
+                </p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           <div className={`text-3xl font-bold ${netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             {formatCurrency(netWorth)}
@@ -71,6 +86,20 @@ export function NetWorthSummary({ totalAssets, totalLiabilities, snapshots }: Ne
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="h-5 w-5 text-primary" />
             <span className="text-sm font-medium text-muted-foreground">Total Activos</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="text-muted-foreground/60 hover:text-muted-foreground">
+                  <HelpCircle className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs p-3">
+                <p className="font-medium text-sm mb-1">¿Qué son los Activos?</p>
+                <p className="text-xs text-muted-foreground">
+                  Cosas que PONEN dinero en tu bolsillo: inversiones, propiedades que rentas, negocios. 
+                  Un verdadero activo genera ingresos o aumenta de valor.
+                </p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           <div className="text-2xl font-bold text-primary">
             {formatCurrency(totalAssets)}
@@ -87,6 +116,20 @@ export function NetWorthSummary({ totalAssets, totalLiabilities, snapshots }: Ne
           <div className="flex items-center gap-2 mb-2">
             <TrendingDown className="h-5 w-5 text-destructive" />
             <span className="text-sm font-medium text-muted-foreground">Total Pasivos</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="text-muted-foreground/60 hover:text-muted-foreground">
+                  <HelpCircle className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs p-3">
+                <p className="font-medium text-sm mb-1">¿Qué son los Pasivos?</p>
+                <p className="text-xs text-muted-foreground">
+                  Cosas que SACAN dinero de tu bolsillo: deudas, préstamos, hipotecas. 
+                  El objetivo es que tus activos generen suficiente dinero para pagar tus pasivos.
+                </p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           <div className="text-2xl font-bold text-destructive">
             {formatCurrency(totalLiabilities)}
@@ -103,6 +146,23 @@ export function NetWorthSummary({ totalAssets, totalLiabilities, snapshots }: Ne
           <div className="flex items-center gap-2 mb-2">
             <Target className="h-5 w-5 text-amber-500" />
             <span className="text-sm font-medium text-muted-foreground">Ratio Deuda/Activos</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="text-muted-foreground/60 hover:text-muted-foreground">
+                  <HelpCircle className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs p-3">
+                <p className="font-medium text-sm mb-1">¿Qué es el Ratio Deuda/Activos?</p>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Qué porcentaje de tus activos debes. Menos de 30% = saludable. 
+                  Más de 50% = deberías enfocarte en pagar deudas.
+                </p>
+                <p className="text-xs text-amber-600">
+                  💡 Los bancos usan este ratio para decidir si te prestan dinero.
+                </p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           <div className={`text-2xl font-bold ${debtToAssetRatio <= 30 ? 'text-green-600' : debtToAssetRatio <= 50 ? 'text-amber-500' : 'text-red-600'}`}>
             {debtToAssetRatio.toFixed(1)}%

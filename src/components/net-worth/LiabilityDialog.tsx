@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Liability, LIABILITY_CATEGORIES, useCreateLiability, useUpdateLiability } from '@/hooks/data/useNetWorth';
-import { Home, Car, GraduationCap, CreditCard, HandCoins, Banknote, Building2, Receipt } from 'lucide-react';
+import { Home, Car, GraduationCap, CreditCard, HandCoins, Banknote, Building2, Receipt, BookOpen, TrendingDown, Lightbulb } from 'lucide-react';
 
 interface LiabilityDialogProps {
   open: boolean;
@@ -221,6 +222,25 @@ export function LiabilityDialog({ open, onOpenChange, editingLiability }: Liabil
               placeholder="Detalles adicionales..."
               rows={2}
             />
+          </div>
+
+          {/* Liability Education Box */}
+          <div className="bg-muted/50 p-4 rounded-lg border border-border/50">
+            <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
+              <BookOpen className="h-4 w-4 text-primary" />
+              ¿Qué es un pasivo?
+            </h4>
+            <p className="text-xs text-muted-foreground mb-2">
+              Un <strong>pasivo</strong> es algo que saca dinero de tu bolsillo: deudas, préstamos, 
+              obligaciones de pago. Son compromisos financieros que debes cumplir.
+            </p>
+            <div className="flex items-start gap-2 bg-amber-500/10 p-2 rounded border border-amber-500/20">
+              <Lightbulb className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                <strong>Estrategia:</strong> Paga primero las deudas con mayor tasa de interés (método "avalancha") 
+                o las más pequeñas primero (método "bola de nieve") para ganar momentum.
+              </p>
+            </div>
           </div>
         </div>
 
