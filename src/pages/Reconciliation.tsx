@@ -27,6 +27,7 @@ import {
   LayoutGrid
 } from 'lucide-react';
 import { EmptyStateWithGuide } from '@/components/ui/feature-guide';
+import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
@@ -344,6 +345,17 @@ export default function Reconciliation() {
             </Button>
           </div>
         </div>
+
+        {/* Contextual Page Guide */}
+        <PageContextGuide
+          {...PAGE_GUIDES.reconciliation}
+          actions={[
+            { icon: Upload, title: { es: 'Importar', en: 'Import' }, description: { es: 'Estado bancario', en: 'Bank statement' }, action: () => setImportDialogOpen(true) },
+            { icon: Link2, title: { es: 'Emparejar', en: 'Match' }, description: { es: 'Transacciones', en: 'Transactions' }, action: () => {} },
+            { icon: Wand2, title: { es: 'Modo Asistente', en: 'Assistant Mode' }, description: { es: 'Guía paso a paso', en: 'Step by step guide' }, action: () => setWizardMode(true) },
+            { icon: AlertTriangle, title: { es: 'Discrepancias', en: 'Discrepancies' }, description: { es: 'Sin emparejar', en: 'Unmatched' }, action: () => {} }
+          ]}
+        />
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">

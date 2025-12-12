@@ -29,6 +29,7 @@ import { ContinuousCameraDialog, CapturedPhoto } from '@/components/capture/Cont
 import { ScanSessionHistory } from '@/components/capture/ScanSessionHistory';
 import { useScanSessions } from '@/hooks/data/useScanSessions';
 import { cn } from '@/lib/utils';
+import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, onDelete, isLoading, onDataExtracted }: {
@@ -447,48 +448,16 @@ export default function ChaosInbox() {
             </div>
           </div>
 
-          {/* Workflow Guide */}
-          <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Info className="h-4 w-4 text-primary" />
-                {language === 'es' ? '¿Cómo funciona?' : 'How does it work?'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-3 gap-3">
-                <WorkflowStep
-                  step={1}
-                  title={language === 'es' ? 'Capturar' : 'Capture'}
-                  description={language === 'es' 
-                    ? 'Sube fotos de tus recibos desde el celular o computadora'
-                    : 'Upload receipt photos from your phone or computer'}
-                  icon={Camera}
-                  isActive={currentStep === 1}
-                />
-                <WorkflowStep
-                  step={2}
-                  title={language === 'es' ? 'Revisar' : 'Review'}
-                  description={language === 'es' 
-                    ? 'Verifica los datos que la IA extrajo automáticamente'
-                    : 'Verify the data AI extracted automatically'}
-                  icon={Eye}
-                  isActive={currentStep === 2}
-                  count={pendingDocs.length}
-                />
-                <WorkflowStep
-                  step={3}
-                  title={language === 'es' ? 'Aprobar' : 'Approve'}
-                  description={language === 'es' 
-                    ? 'Confirma y guarda como gasto registrado'
-                    : 'Confirm and save as recorded expense'}
-                  icon={ThumbsUp}
-                  isActive={currentStep === 3}
-                  count={needsCorrectionDocs.length}
-                />
-              </div>
-            </CardContent>
-          </Card>
+          {/* Contextual Page Guide */}
+          <PageContextGuide
+            {...PAGE_GUIDES['chaos-inbox']}
+            actions={[
+              { icon: Camera, title: { es: 'Cámara', en: 'Camera' }, description: { es: 'Captura continua', en: 'Continuous capture' }, action: () => setCameraDialogOpen(true) },
+              { icon: Upload, title: { es: 'Subir Archivo', en: 'Upload File' }, description: { es: 'Imagen o PDF', en: 'Image or PDF' }, action: () => fileInputRef.current?.click() },
+              { icon: CheckCircle2, title: { es: 'Revisar Pendientes', en: 'Review Pending' }, description: { es: `${pendingDocs.length} recibos`, en: `${pendingDocs.length} receipts` }, action: () => {} },
+              { icon: Edit3, title: { es: 'Correcciones', en: 'Corrections' }, description: { es: `${needsCorrectionDocs.length} pendientes`, en: `${needsCorrectionDocs.length} pending` }, action: () => {} }
+            ]}
+          />
 
           {/* Upload Section - Always visible */}
           <Card className="border-dashed border-2 hover:border-primary/50 transition-colors">

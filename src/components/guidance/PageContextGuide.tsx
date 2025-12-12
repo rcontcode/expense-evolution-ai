@@ -336,22 +336,7 @@ export const PAGE_GUIDES = {
       { es: 'guarda un registro de cada viaje - la CRA puede solicitar comprobantes.', en: 'keep a record of each trip - CRA may request proof.' }
     ]
   },
-  contracts: {
-    pageKey: 'contracts',
-    pageTitle: { es: 'aquí gestionas tus contratos', en: 'here you manage your contracts' },
-    pageDescription: { 
-      es: 'Sube contratos para extraer términos de reembolso automáticamente', 
-      en: 'Upload contracts to automatically extract reimbursement terms' 
-    },
-    goals: [
-      { es: 'Subir nuevo contrato', en: 'Upload new contract' },
-      { es: 'Ver términos extraídos', en: 'View extracted terms' },
-      { es: 'Agregar notas manuales', en: 'Add manual notes' }
-    ],
-    tips: [
-      { es: 'tus notas en los contratos tienen prioridad sobre la extracción de IA para clasificar gastos.', en: 'your notes on contracts take priority over AI extraction for classifying expenses.' }
-    ]
-  },
+  // contracts key moved to after banking
   'net-worth': {
     pageKey: 'net-worth',
     pageTitle: { es: 'aquí ves tu patrimonio completo', en: 'here you see your complete wealth' },
@@ -382,8 +367,87 @@ export const PAGE_GUIDES = {
       { es: 'Buscar transacciones', en: 'Search transactions' },
       { es: 'Detectar cobros duplicados', en: 'Detect duplicate charges' }
     ],
+    workflows: [
+      { step: 1, title: { es: 'Importar', en: 'Import' }, description: { es: 'CSV o foto', en: 'CSV or photo' } },
+      { step: 2, title: { es: 'Analizar', en: 'Analyze' }, description: { es: 'IA detecta', en: 'AI detects' } },
+      { step: 3, title: { es: 'Revisar', en: 'Review' }, description: { es: 'Anomalías', en: 'Anomalies' } },
+      { step: 4, title: { es: 'Optimizar', en: 'Optimize' }, description: { es: 'Reducir gastos', en: 'Reduce costs' } }
+    ],
     tips: [
-      { es: 'puedes preguntar en lenguaje natural: "¿cuánto pago de internet al mes?"', en: 'you can ask in natural language: "how much do I pay for internet per month?"' }
+      { es: 'puedes preguntar en lenguaje natural: "¿cuánto pago de internet al mes?"', en: 'you can ask in natural language: "how much do I pay for internet per month?"' },
+      { es: 'la IA detecta automáticamente suscripciones y cobros recurrentes.', en: 'AI automatically detects subscriptions and recurring charges.' }
+    ]
+  },
+  reconciliation: {
+    pageKey: 'reconciliation',
+    pageTitle: { es: 'aquí concilias banco con gastos', en: 'here you reconcile bank with expenses' },
+    pageDescription: { 
+      es: 'Empareja transacciones bancarias con tus gastos registrados', 
+      en: 'Match bank transactions with your recorded expenses' 
+    },
+    goals: [
+      { es: 'Emparejar transacciones', en: 'Match transactions' },
+      { es: 'Encontrar gastos faltantes', en: 'Find missing expenses' },
+      { es: 'Detectar discrepancias', en: 'Detect discrepancies' },
+      { es: 'Preparar declaración', en: 'Prepare tax filing' }
+    ],
+    workflows: [
+      { step: 1, title: { es: 'Importar', en: 'Import' }, description: { es: 'Estado bancario', en: 'Bank statement' } },
+      { step: 2, title: { es: 'Emparejar', en: 'Match' }, description: { es: 'Auto/manual', en: 'Auto/manual' } },
+      { step: 3, title: { es: 'Revisar', en: 'Review' }, description: { es: 'Sin emparejar', en: 'Unmatched' } },
+      { step: 4, title: { es: 'Completar', en: 'Complete' }, description: { es: 'Crear faltantes', en: 'Create missing' } }
+    ],
+    tips: [
+      { es: 'usa el Modo Asistente si eres nuevo - te guía paso a paso.', en: 'use Assistant Mode if you are new - it guides you step by step.' },
+      { es: 'puedes crear gastos directamente desde transacciones no emparejadas.', en: 'you can create expenses directly from unmatched transactions.' }
+    ]
+  },
+  'chaos-inbox': {
+    pageKey: 'chaos-inbox',
+    pageTitle: { es: 'aquí revisas tus recibos capturados', en: 'here you review your captured receipts' },
+    pageDescription: { 
+      es: 'Aprueba, corrige o rechaza los recibos procesados por IA', 
+      en: 'Approve, correct or reject AI-processed receipts' 
+    },
+    goals: [
+      { es: 'Revisar recibos pendientes', en: 'Review pending receipts' },
+      { es: 'Aprobar datos correctos', en: 'Approve correct data' },
+      { es: 'Corregir errores de IA', en: 'Correct AI errors' },
+      { es: 'Capturar más recibos', en: 'Capture more receipts' }
+    ],
+    workflows: [
+      { step: 1, title: { es: 'Capturar', en: 'Capture' }, description: { es: 'Foto/archivo', en: 'Photo/file' } },
+      { step: 2, title: { es: 'IA Procesa', en: 'AI Processes' }, description: { es: 'Automático', en: 'Automatic' } },
+      { step: 3, title: { es: 'Revisar', en: 'Review' }, description: { es: 'Verificar datos', en: 'Verify data' } },
+      { step: 4, title: { es: 'Aprobar', en: 'Approve' }, description: { es: 'Crear gasto', en: 'Create expense' } }
+    ],
+    tips: [
+      { es: 'haz clic en cualquier tarjeta de recibo para ver la imagen completa y editar los datos.', en: 'click on any receipt card to see the full image and edit the data.' },
+      { es: 'puedes capturar múltiples recibos en secuencia con la cámara continua.', en: 'you can capture multiple receipts in sequence with continuous camera.' }
+    ]
+  },
+  contracts: {
+    pageKey: 'contracts',
+    pageTitle: { es: 'aquí gestionas tus contratos', en: 'here you manage your contracts' },
+    pageDescription: { 
+      es: 'Sube contratos para extraer términos de reembolso automáticamente', 
+      en: 'Upload contracts to automatically extract reimbursement terms' 
+    },
+    goals: [
+      { es: 'Subir nuevo contrato', en: 'Upload new contract' },
+      { es: 'Ver términos extraídos', en: 'View extracted terms' },
+      { es: 'Agregar notas manuales', en: 'Add manual notes' },
+      { es: 'Vincular a cliente', en: 'Link to client' }
+    ],
+    workflows: [
+      { step: 1, title: { es: 'Subir', en: 'Upload' }, description: { es: 'PDF/imagen', en: 'PDF/image' } },
+      { step: 2, title: { es: 'IA Analiza', en: 'AI Analyzes' }, description: { es: 'Extrae términos', en: 'Extracts terms' } },
+      { step: 3, title: { es: 'Revisar', en: 'Review' }, description: { es: 'Agregar notas', en: 'Add notes' } },
+      { step: 4, title: { es: 'Usar', en: 'Use' }, description: { es: 'Clasificar gastos', en: 'Classify expenses' } }
+    ],
+    tips: [
+      { es: 'tus notas en los contratos tienen prioridad sobre la extracción de IA para clasificar gastos.', en: 'your notes on contracts take priority over AI extraction for classifying expenses.' },
+      { es: 'los términos extraídos se usan automáticamente para sugerir reembolsos en gastos.', en: 'extracted terms are automatically used to suggest reimbursements on expenses.' }
     ]
   }
 };
