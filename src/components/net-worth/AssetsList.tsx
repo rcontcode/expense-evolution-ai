@@ -139,17 +139,54 @@ const generateRecommendations = (
 
 // Conversion status helpers
 const CONVERSION_MARKERS = {
-  IN_PROGRESS: '[EN CONVERSIÓN]',
-  COMPLETED: '[CONVERTIDO]',
-  GENERATES_INCOME: '[GENERA INGRESOS]'
+  IN_PROGRESS: '[EN CONVERSIÓN',
+  COMPLETED: '[CONVERTIDO',
+  GENERATES_INCOME: '[GENERA INGRESOS'
+};
+
+interface ConversionInfo {
+  status: 'none' | 'in_progress' | 'completed' | 'productive';
+  startDate?: Date;
+  completedDate?: Date;
+  elapsedDays?: number;
+}
+
+const parseConversionInfo = (asset: Asset): ConversionInfo => {
+  const notes = asset.notes || '';
+  
+  // Match patterns like [EN CONVERSIÓN:2024-12-12] or [GENERA INGRESOS:2024-12-12]
+  const inProgressMatch = notes.match(/\[EN CONVERSIÓN:(\d{4}-\d{2}-\d{2})\]/i);
+  const completedMatch = notes.match(/\[GENERA INGRESOS:(\d{4}-\d{2}-\d{2}):(\d{4}-\d{2}-\d{2})\]/i);
+  const legacyCompleted = notes.match(/\[GENERA INGRESOS\]/i) || notes.match(/\[CONVERTIDO\]/i);
+  
+  if (completedMatch) {
+    const startDate = new Date(completedMatch[1]);
+    const completedDate = new Date(completedMatch[2]);
+    const elapsedDays = Math.floor((completedDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    return { status: 'productive', startDate, completedDate, elapsedDays };
+  }
+  
+  if (legacyCompleted && !completedMatch) {
+    return { status: 'productive' };
+  }
+  
+  if (inProgressMatch) {
+    const startDate = new Date(inProgressMatch[1]);
+    const now = new Date();
+    const elapsedDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    return { status: 'in_progress', startDate, elapsedDays };
+  }
+  
+  // Legacy pattern without date
+  if (notes.toUpperCase().includes('[EN CONVERSIÓN]')) {
+    return { status: 'in_progress' };
+  }
+  
+  return { status: 'none' };
 };
 
 const getConversionStatus = (asset: Asset): 'none' | 'in_progress' | 'completed' | 'productive' => {
-  const notes = asset.notes?.toUpperCase() || '';
-  if (notes.includes(CONVERSION_MARKERS.GENERATES_INCOME.toUpperCase()) || 
-      notes.includes(CONVERSION_MARKERS.COMPLETED.toUpperCase())) return 'productive';
-  if (notes.includes(CONVERSION_MARKERS.IN_PROGRESS.toUpperCase())) return 'in_progress';
-  return 'none';
+  return parseConversionInfo(asset).status;
 };
 
 export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
@@ -212,27 +249,50 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
   // Handle conversion status toggle
   const handleStartConversion = (asset: Asset) => {
     const currentNotes = asset.notes || '';
-    const newNotes = `${CONVERSION_MARKERS.IN_PROGRESS} ${currentNotes}`.trim();
+    const today = new Date().toISOString().split('T')[0];
+    // Remove any old conversion markers first
+    const cleanNotes = currentNotes
+      .replace(/\[EN CONVERSIÓN[:\d-]*\]\s*/gi, '')
+      .replace(/\[GENERA INGRESOS[:\d-]*\]\s*/gi, '')
+      .replace(/\[CONVERTIDO[:\d-]*\]\s*/gi, '');
+    const newNotes = `[EN CONVERSIÓN:${today}] ${cleanNotes}`.trim();
     updateAsset.mutate({ id: asset.id, notes: newNotes });
   };
 
   const handleCompleteConversion = (asset: Asset) => {
     let currentNotes = asset.notes || '';
-    // Remove IN_PROGRESS marker and add COMPLETED/GENERATES_INCOME
-    currentNotes = currentNotes.replace(/\[EN CONVERSIÓN\]\s*/gi, '');
-    const newNotes = `${CONVERSION_MARKERS.GENERATES_INCOME} ${currentNotes}`.trim();
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Extract start date from in-progress marker
+    const startMatch = currentNotes.match(/\[EN CONVERSIÓN:(\d{4}-\d{2}-\d{2})\]/i);
+    const startDate = startMatch ? startMatch[1] : today;
+    
+    // Remove old markers
+    const cleanNotes = currentNotes
+      .replace(/\[EN CONVERSIÓN[:\d-]*\]\s*/gi, '')
+      .replace(/\[GENERA INGRESOS[:\d-]*\]\s*/gi, '')
+      .replace(/\[CONVERTIDO[:\d-]*\]\s*/gi, '');
+    
+    const newNotes = `[GENERA INGRESOS:${startDate}:${today}] ${cleanNotes}`.trim();
     updateAsset.mutate({ id: asset.id, notes: newNotes });
   };
 
   const handleCancelConversion = (asset: Asset) => {
     let currentNotes = asset.notes || '';
-    // Remove conversion markers
-    currentNotes = currentNotes.replace(/\[EN CONVERSIÓN\]\s*/gi, '');
+    // Remove all conversion markers
+    currentNotes = currentNotes
+      .replace(/\[EN CONVERSIÓN[:\d-]*\]\s*/gi, '')
+      .replace(/\[GENERA INGRESOS[:\d-]*\]\s*/gi, '')
+      .replace(/\[CONVERTIDO[:\d-]*\]\s*/gi, '');
     updateAsset.mutate({ id: asset.id, notes: currentNotes.trim() });
   };
 
-  // Count assets in conversion
+  // Count assets in conversion and converted
   const assetsInConversion = assets.filter(a => getConversionStatus(a) === 'in_progress');
+  const convertedAssets = assets.filter(a => {
+    const info = parseConversionInfo(a);
+    return info.status === 'productive' && info.startDate; // Only those with conversion history
+  });
 
   return (
     <Card>
@@ -553,6 +613,104 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
               );
             })}
           </TooltipProvider>
+        )}
+
+        {/* Conversion History */}
+        {(convertedAssets.length > 0 || assetsInConversion.length > 0) && (
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-primary">
+              <RotateCw className="h-4 w-4" />
+              <span>Historial de Conversiones</span>
+              <Badge variant="outline" className="text-xs">
+                {convertedAssets.length} completado{convertedAssets.length !== 1 ? 's' : ''} · {assetsInConversion.length} en progreso
+              </Badge>
+            </div>
+
+            {/* In Progress */}
+            {assetsInConversion.map((asset) => {
+              const info = parseConversionInfo(asset);
+              const category = getCategoryInfo(asset.category);
+              return (
+                <div 
+                  key={`progress-${asset.id}`}
+                  className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-full bg-blue-500/10">
+                        <RotateCw className="h-4 w-4 text-blue-500 animate-spin" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{asset.name}</p>
+                        <p className="text-xs text-muted-foreground">{category.label}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {info.startDate && (
+                        <>
+                          <p className="text-xs text-blue-600">
+                            Inicio: {info.startDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                          <p className="text-xs font-semibold text-blue-500">
+                            {info.elapsedDays} día{info.elapsedDays !== 1 ? 's' : ''} en proceso
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <Progress 
+                    value={Math.min(100, (info.elapsedDays || 0) * 3)} 
+                    className="h-1.5 mt-2"
+                  />
+                </div>
+              );
+            })}
+
+            {/* Completed Conversions */}
+            {convertedAssets.map((asset) => {
+              const info = parseConversionInfo(asset);
+              const category = getCategoryInfo(asset.category);
+              return (
+                <div 
+                  key={`completed-${asset.id}`}
+                  className="p-3 rounded-lg bg-green-500/5 border border-green-500/20"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-full bg-green-500/10">
+                        <Check className="h-4 w-4 text-green-500" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm flex items-center gap-2">
+                          {asset.name}
+                          <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/30">
+                            <Zap className="h-3 w-3 mr-1" />
+                            Convertido
+                          </Badge>
+                        </p>
+                        <p className="text-xs text-muted-foreground">{category.label}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {info.startDate && info.completedDate && (
+                        <>
+                          <p className="text-xs text-muted-foreground">
+                            {info.startDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} → {info.completedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                          <p className="text-xs font-semibold text-green-600">
+                            Convertido en {info.elapsedDays} día{info.elapsedDays !== 1 ? 's' : ''}
+                          </p>
+                        </>
+                      )}
+                      <p className="text-xs text-green-500 font-medium mt-1">
+                        {formatCurrency(asset.current_value)} generando ingresos
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
 
         {/* Personalized Recommendations */}
