@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download, Scale, ArrowUpRight, ArrowDownRight, UserCircle, Building2, MapPin, CheckCircle, RefreshCw, Landmark, Briefcase } from 'lucide-react';
+import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download, Scale, ArrowUpRight, ArrowDownRight, UserCircle, Building2, MapPin, CheckCircle, RefreshCw, Landmark, Briefcase, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useClients } from '@/hooks/data/useClients';
@@ -38,6 +38,9 @@ const FIRECalculatorCard = lazy(() => import('@/components/dashboard/FIRECalcula
 const DebtManagerCard = lazy(() => import('@/components/dashboard/DebtManagerCard').then(m => ({ default: m.DebtManagerCard })));
 const PortfolioTrackerCard = lazy(() => import('@/components/dashboard/PortfolioTrackerCard').then(m => ({ default: m.PortfolioTrackerCard })));
 const PersonalizedInvestmentTips = lazy(() => import('@/components/investments/PersonalizedInvestmentTips').then(m => ({ default: m.PersonalizedInvestmentTips })));
+const SpendingHeatmap = lazy(() => import('@/components/analytics/SpendingHeatmap').then(m => ({ default: m.SpendingHeatmap })));
+const SeasonalityChart = lazy(() => import('@/components/analytics/SeasonalityChart').then(m => ({ default: m.SeasonalityChart })));
+const MonthComparisonChart = lazy(() => import('@/components/analytics/MonthComparisonChart').then(m => ({ default: m.MonthComparisonChart })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -55,6 +58,16 @@ const MileageSkeleton = () => (
     <Skeleton className="h-32" />
     <Skeleton className="h-32" />
     <Skeleton className="h-32" />
+  </div>
+);
+
+const AnalyticsSkeleton = () => (
+  <div className="space-y-4">
+    <Skeleton className="h-[300px]" />
+    <div className="grid gap-4 md:grid-cols-2">
+      <Skeleton className="h-[380px]" />
+      <Skeleton className="h-[400px]" />
+    </div>
   </div>
 );
 
@@ -344,10 +357,14 @@ export default function Dashboard() {
           </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <InfoTooltip content={TOOLTIP_CONTENT.chartsTab} variant="wrapper" side="bottom">
               <TabsTrigger value="charts" className="cursor-pointer">{t('taxAnalysis.charts')}</TabsTrigger>
             </InfoTooltip>
+            <TabsTrigger value="analytics" className="cursor-pointer flex items-center gap-1">
+              <BarChart3 className="h-3 w-3" />
+              {language === 'es' ? 'Análisis' : 'Analytics'}
+            </TabsTrigger>
             <InfoTooltip content={TOOLTIP_CONTENT.taxTab} variant="wrapper" side="bottom">
               <TabsTrigger value="tax" className="cursor-pointer">{t('taxAnalysis.taxAnalysis')}</TabsTrigger>
             </InfoTooltip>
@@ -381,6 +398,20 @@ export default function Dashboard() {
                   monthlyTrends={stats?.monthlyTrends || []}
                   isLoading={isLoading}
                 />
+              </Suspense>
+            )}
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-4">
+            {activeTab === 'analytics' && (
+              <Suspense fallback={<AnalyticsSkeleton />}>
+                <div className="space-y-6">
+                  <SpendingHeatmap expenses={allExpenses || []} isLoading={isLoading} />
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <SeasonalityChart expenses={allExpenses || []} isLoading={isLoading} />
+                    <MonthComparisonChart expenses={allExpenses || []} isLoading={isLoading} />
+                  </div>
+                </div>
               </Suspense>
             )}
           </TabsContent>
