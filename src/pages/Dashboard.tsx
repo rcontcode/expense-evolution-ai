@@ -114,7 +114,7 @@ export default function Dashboard() {
       <TooltipProvider delayDuration={200}>
         <div className="p-8 space-y-8">
           {/* Mentor Quote Banner */}
-          <MentorQuoteBanner showTip className="mb-2" />
+          <MentorQuoteBanner showTip context="dashboard" className="mb-2" />
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

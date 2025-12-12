@@ -11,6 +11,7 @@ import { useMileage } from '@/hooks/data/useMileage';
 import { useContracts } from '@/hooks/data/useContracts';
 import { ClientDialog } from '@/components/dialogs/ClientDialog';
 import { ClientFinancialOverview } from '@/components/clients/ClientFinancialOverview';
+import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { Client } from '@/types/expense.types';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
@@ -114,6 +115,9 @@ export default function Clients() {
               </Button>
             </InfoTooltip>
           </div>
+
+          {/* Mentor Quote Banner */}
+          <MentorQuoteBanner context="clients" className="mb-2" />
 
           {/* Onboarding Guide */}
           <OnboardingGuide pageKey="clients" />
