@@ -2,7 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Asset, ASSET_CATEGORIES, useDeleteAsset } from '@/hooks/data/useNetWorth';
-import { Plus, Pencil, Trash2, Wallet, TrendingUp, Home, Car, PiggyBank, Bitcoin, Gem, Building2, Package, Droplets } from 'lucide-react';
+import { 
+  Plus, Pencil, Trash2, Wallet, TrendingUp, Home, Car, PiggyBank, Bitcoin, 
+  Gem, Building2, Package, Droplets, Hexagon, CircleDollarSign, Coins, Layers, ImageIcon 
+} from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +25,8 @@ interface AssetsListProps {
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Wallet, TrendingUp, Home, Car, PiggyBank, Bitcoin, Gem, Building2, Package
+  Wallet, TrendingUp, Home, Car, PiggyBank, Bitcoin, Gem, Building2, Package,
+  Hexagon, CircleDollarSign, Coins, Layers, ImageIcon
 };
 
 export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
@@ -93,8 +97,8 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
                 className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-primary/10">
-                    <IconComponent className="h-4 w-4 text-primary" />
+                  <div className={`p-2 rounded-full ${category.group === 'crypto' ? 'bg-amber-500/10' : 'bg-primary/10'}`}>
+                    <IconComponent className={`h-4 w-4 ${category.group === 'crypto' ? 'text-amber-500' : 'text-primary'}`} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">

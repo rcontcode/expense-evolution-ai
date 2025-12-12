@@ -46,15 +46,21 @@ export interface NetWorthSnapshot {
 }
 
 export const ASSET_CATEGORIES = [
-  { value: 'cash', label: 'Efectivo y Cuentas Bancarias', icon: 'Wallet' },
-  { value: 'investments', label: 'Inversiones', icon: 'TrendingUp' },
-  { value: 'real_estate', label: 'Bienes Raíces', icon: 'Home' },
-  { value: 'vehicles', label: 'Vehículos', icon: 'Car' },
-  { value: 'retirement', label: 'Cuentas de Retiro (RRSP/TFSA)', icon: 'PiggyBank' },
-  { value: 'crypto', label: 'Criptomonedas', icon: 'Bitcoin' },
-  { value: 'collectibles', label: 'Coleccionables', icon: 'Gem' },
-  { value: 'business', label: 'Negocios', icon: 'Building2' },
-  { value: 'other', label: 'Otros Activos', icon: 'Package' },
+  { value: 'cash', label: 'Efectivo y Cuentas Bancarias', icon: 'Wallet', group: 'general' },
+  { value: 'investments', label: 'Inversiones (Acciones/ETFs)', icon: 'TrendingUp', group: 'general' },
+  { value: 'real_estate', label: 'Bienes Raíces', icon: 'Home', group: 'general' },
+  { value: 'vehicles', label: 'Vehículos', icon: 'Car', group: 'general' },
+  { value: 'retirement', label: 'Cuentas de Retiro (RRSP/TFSA)', icon: 'PiggyBank', group: 'general' },
+  { value: 'collectibles', label: 'Coleccionables', icon: 'Gem', group: 'general' },
+  { value: 'business', label: 'Negocios', icon: 'Building2', group: 'general' },
+  { value: 'other', label: 'Otros Activos', icon: 'Package', group: 'general' },
+  // Crypto categories
+  { value: 'crypto_btc', label: 'Bitcoin (BTC)', icon: 'Bitcoin', group: 'crypto' },
+  { value: 'crypto_eth', label: 'Ethereum (ETH)', icon: 'Hexagon', group: 'crypto' },
+  { value: 'crypto_stablecoins', label: 'Stablecoins (USDT/USDC)', icon: 'CircleDollarSign', group: 'crypto' },
+  { value: 'crypto_altcoins', label: 'Altcoins', icon: 'Coins', group: 'crypto' },
+  { value: 'crypto_defi', label: 'DeFi / Staking', icon: 'Layers', group: 'crypto' },
+  { value: 'crypto_nft', label: 'NFTs', icon: 'ImageIcon', group: 'crypto' },
 ];
 
 export const LIABILITY_CATEGORIES = [
