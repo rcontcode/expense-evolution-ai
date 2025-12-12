@@ -10,6 +10,8 @@ import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useClients } from '@/hooks/data/useClients';
 import { useProjects } from '@/hooks/data/useProjects';
+import { useExpenses } from '@/hooks/data/useExpenses';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useVoiceAssistant } from '@/hooks/utils/useVoiceAssistant';
@@ -83,7 +85,7 @@ const VOICE_COMMANDS = {
 };
 
 // Voice query commands (return data directly)
-type QueryType = 'expenses_month' | 'expenses_year' | 'income_month' | 'income_year' | 'balance' | 'client_count' | 'project_count' | 'pending_receipts';
+type QueryType = 'expenses_month' | 'expenses_year' | 'income_month' | 'income_year' | 'balance' | 'client_count' | 'project_count' | 'pending_receipts' | 'biggest_expense' | 'top_category' | 'tax_summary' | 'tax_owed' | 'deductible_total' | 'billable_total';
 
 interface VoiceQuery {
   patterns: string[];
@@ -100,6 +102,13 @@ const VOICE_QUERIES: { es: VoiceQuery[]; en: VoiceQuery[] } = {
     { patterns: ['cuántos clientes tengo', 'número de clientes', 'total de clientes', 'mis clientes'], queryType: 'client_count' },
     { patterns: ['cuántos proyectos tengo', 'número de proyectos', 'total de proyectos', 'mis proyectos'], queryType: 'project_count' },
     { patterns: ['recibos pendientes', 'cuántos recibos pendientes', 'pendientes de revisar'], queryType: 'pending_receipts' },
+    // New advanced queries
+    { patterns: ['cuál es mi mayor gasto', 'mayor gasto', 'gasto más grande', 'gasto más alto'], queryType: 'biggest_expense' },
+    { patterns: ['en qué gasto más', 'categoría más alta', 'dónde gasto más', 'principal categoría'], queryType: 'top_category' },
+    { patterns: ['resumen de impuestos', 'resumen fiscal', 'mis impuestos', 'situación fiscal'], queryType: 'tax_summary' },
+    { patterns: ['cuánto debo a hacienda', 'cuánto debo de impuestos', 'impuestos por pagar', 'deuda fiscal'], queryType: 'tax_owed' },
+    { patterns: ['gastos deducibles', 'cuánto puedo deducir', 'total deducible', 'deducciones'], queryType: 'deductible_total' },
+    { patterns: ['gastos facturables', 'cuánto puedo facturar', 'reembolsables', 'por facturar a clientes'], queryType: 'billable_total' },
   ],
   en: [
     { patterns: ['how much did i spend this month', 'monthly expenses', 'expenses this month', 'spending this month'], queryType: 'expenses_month' },
@@ -110,6 +119,13 @@ const VOICE_QUERIES: { es: VoiceQuery[]; en: VoiceQuery[] } = {
     { patterns: ['how many clients do i have', 'number of clients', 'total clients', 'my clients count'], queryType: 'client_count' },
     { patterns: ['how many projects do i have', 'number of projects', 'total projects', 'my projects count'], queryType: 'project_count' },
     { patterns: ['pending receipts', 'how many pending receipts', 'receipts to review'], queryType: 'pending_receipts' },
+    // New advanced queries
+    { patterns: ['what is my biggest expense', 'biggest expense', 'largest expense', 'highest expense'], queryType: 'biggest_expense' },
+    { patterns: ['what do i spend most on', 'top category', 'where do i spend most', 'main category'], queryType: 'top_category' },
+    { patterns: ['tax summary', 'my taxes', 'tax situation', 'fiscal summary'], queryType: 'tax_summary' },
+    { patterns: ['how much do i owe in taxes', 'taxes owed', 'tax debt', 'tax liability'], queryType: 'tax_owed' },
+    { patterns: ['deductible expenses', 'how much can i deduct', 'total deductions', 'tax deductions'], queryType: 'deductible_total' },
+    { patterns: ['billable expenses', 'reimbursable expenses', 'client billable', 'to bill clients'], queryType: 'billable_total' },
   ],
 };
 
@@ -129,6 +145,7 @@ export const ChatAssistant: React.FC = () => {
   const { data: incomeData } = useIncome();
   const { data: clients } = useClients();
   const { data: projects } = useProjects();
+  const { data: expenses } = useExpenses();
   const { language } = useLanguage();
 
   // Calculate financial data for queries
@@ -137,7 +154,7 @@ export const ChatAssistant: React.FC = () => {
   const currentYear = now.getFullYear();
 
   const monthlyExpenses = stats?.monthlyTotal || 0;
-  const yearlyExpenses = stats?.totalExpenses || 0; // Using totalExpenses as yearly approximation
+  const yearlyExpenses = stats?.totalExpenses || 0;
   const monthlyIncome = incomeData?.filter(inc => {
     const incDate = new Date(inc.date);
     return incDate.getMonth() === currentMonth && incDate.getFullYear() === currentYear;
@@ -152,7 +169,29 @@ export const ChatAssistant: React.FC = () => {
   const balance = yearlyIncome - yearlyExpenses;
   const pendingReceipts = stats?.pendingDocs || 0;
 
-  const userName = profile?.full_name?.split(' ')[0] || 'Usuario';
+  // Calculate advanced metrics
+  const biggestExpense = expenses?.reduce((max, exp) => 
+    Number(exp.amount) > Number(max?.amount || 0) ? exp : max, expenses[0]);
+  
+  const categoryTotals = expenses?.reduce((acc, exp) => {
+    const cat = exp.category || 'other';
+    acc[cat] = (acc[cat] || 0) + Number(exp.amount);
+    return acc;
+  }, {} as Record<string, number>) || {};
+  
+  const topCategory = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0];
+  
+  const deductibleTotal = expenses?.filter(exp => exp.status === 'deductible')
+    .reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+  
+  const billableTotal = expenses?.filter(exp => exp.reimbursement_type === 'client_reimbursable' || exp.status === 'reimbursable')
+    .reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+
+  // Estimated tax owed (simplified calculation)
+  const estimatedTaxRate = 0.25; // 25% estimated average
+  const estimatedTaxOwed = Math.max(0, (yearlyIncome - deductibleTotal) * estimatedTaxRate);
+
+  const userName = profile?.full_name?.split(' ')[0] || 'Usuario'
   const quickQuestions = QUICK_QUESTIONS[language as keyof typeof QUICK_QUESTIONS] || QUICK_QUESTIONS.es;
 
   // Check if text matches a voice query command
@@ -227,10 +266,51 @@ export const ChatAssistant: React.FC = () => {
             ? `You have 1 pending receipt to review.`
             : `You have ${pendingReceipts} pending receipts to review.`,
       },
+      // New advanced queries
+      biggest_expense: {
+        es: biggestExpense 
+          ? `Tu mayor gasto es ${formatCurrency(Number(biggestExpense.amount))} en ${biggestExpense.vendor || biggestExpense.description || 'un gasto sin descripción'}.`
+          : `No tienes gastos registrados aún.`,
+        en: biggestExpense
+          ? `Your biggest expense is ${formatCurrency(Number(biggestExpense.amount))} at ${biggestExpense.vendor || biggestExpense.description || 'an expense without description'}.`
+          : `You don't have any recorded expenses yet.`,
+      },
+      top_category: {
+        es: topCategory 
+          ? `Gastas más en ${topCategory[0]}: ${formatCurrency(topCategory[1])} en total.`
+          : `No tienes gastos categorizados aún.`,
+        en: topCategory
+          ? `You spend most on ${topCategory[0]}: ${formatCurrency(topCategory[1])} in total.`
+          : `You don't have any categorized expenses yet.`,
+      },
+      tax_summary: {
+        es: `Resumen fiscal: Ingresos ${formatCurrency(yearlyIncome)}, gastos ${formatCurrency(yearlyExpenses)}, deducible ${formatCurrency(deductibleTotal)}. Balance neto: ${formatCurrency(balance)}.`,
+        en: `Tax summary: Income ${formatCurrency(yearlyIncome)}, expenses ${formatCurrency(yearlyExpenses)}, deductible ${formatCurrency(deductibleTotal)}. Net balance: ${formatCurrency(balance)}.`,
+      },
+      tax_owed: {
+        es: estimatedTaxOwed > 0
+          ? `Estimación de impuestos por pagar: ${formatCurrency(estimatedTaxOwed)} (basado en tasa promedio del 25% sobre ingresos menos deducciones).`
+          : `No tienes impuestos estimados por pagar. Tus deducciones cubren tus ingresos gravables.`,
+        en: estimatedTaxOwed > 0
+          ? `Estimated taxes owed: ${formatCurrency(estimatedTaxOwed)} (based on 25% average rate on income minus deductions).`
+          : `You don't have estimated taxes owed. Your deductions cover your taxable income.`,
+      },
+      deductible_total: {
+        es: `Tienes ${formatCurrency(deductibleTotal)} en gastos deducibles para declarar.`,
+        en: `You have ${formatCurrency(deductibleTotal)} in deductible expenses to declare.`,
+      },
+      billable_total: {
+        es: billableTotal > 0
+          ? `Tienes ${formatCurrency(billableTotal)} en gastos facturables a clientes pendientes de cobrar.`
+          : `No tienes gastos facturables a clientes pendientes.`,
+        en: billableTotal > 0
+          ? `You have ${formatCurrency(billableTotal)} in client billable expenses pending collection.`
+          : `You don't have any client billable expenses pending.`,
+      },
     };
 
     return responses[queryType][language as 'es' | 'en'] || responses[queryType].es;
-  }, [monthlyExpenses, yearlyExpenses, monthlyIncome, yearlyIncome, balance, clients?.length, projects?.length, pendingReceipts, language]);
+  }, [monthlyExpenses, yearlyExpenses, monthlyIncome, yearlyIncome, balance, clients?.length, projects?.length, pendingReceipts, biggestExpense, topCategory, deductibleTotal, billableTotal, estimatedTaxOwed, language]);
 
   // Check if text matches a voice command
   const checkVoiceCommand = useCallback((text: string): { matched: boolean; route?: string; name?: string; action?: string } => {
