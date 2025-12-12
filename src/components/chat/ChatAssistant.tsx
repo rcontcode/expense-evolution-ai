@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { MessageCircle, X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -61,16 +61,26 @@ export const ChatAssistant: React.FC = () => {
   // Voice assistant hook
   const {
     isListening,
+    isContinuousMode,
     isSpeaking,
     isSupported: isVoiceSupported,
     transcript,
     toggleListening,
+    startContinuousListening,
+    stopContinuousListening,
     speak,
     stopSpeaking,
   } = useVoiceAssistant({
     onTranscript: (text) => {
       setInput('');
       sendMessage(text);
+    },
+    onContinuousStopped: () => {
+      // Notify user that continuous mode was stopped by voice
+      const msg = language === 'es' 
+        ? 'Modo continuo desactivado por comando de voz.'
+        : 'Continuous mode stopped by voice command.';
+      speak(msg);
     },
   });
 
@@ -165,7 +175,22 @@ export const ChatAssistant: React.FC = () => {
     if (isSpeaking) {
       stopSpeaking();
     }
-    toggleListening();
+    if (isContinuousMode) {
+      stopContinuousListening();
+    } else {
+      toggleListening();
+    }
+  };
+
+  const handleContinuousModeToggle = () => {
+    if (isSpeaking) {
+      stopSpeaking();
+    }
+    if (isContinuousMode) {
+      stopContinuousListening();
+    } else {
+      startContinuousListening();
+    }
   };
 
   return (
@@ -211,16 +236,42 @@ export const ChatAssistant: React.FC = () => {
                   {language === 'es' ? 'Asistente Financiero' : 'Financial Assistant'}
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  {isListening 
-                    ? (language === 'es' ? '🎤 Escuchando...' : '🎤 Listening...')
-                    : isSpeaking 
-                      ? (language === 'es' ? '🔊 Hablando...' : '🔊 Speaking...')
-                      : (language === 'es' ? `Hola ${userName}, ¿en qué te ayudo?` : `Hi ${userName}, how can I help?`)
+                  {isContinuousMode
+                    ? (language === 'es' ? '🎙️ Modo continuo activo - di "detener" para parar' : '🎙️ Continuous mode - say "stop" to end')
+                    : isListening 
+                      ? (language === 'es' ? '🎤 Escuchando...' : '🎤 Listening...')
+                      : isSpeaking 
+                        ? (language === 'es' ? '🔊 Hablando...' : '🔊 Speaking...')
+                        : (language === 'es' ? `Hola ${userName}, ¿en qué te ayudo?` : `Hi ${userName}, how can I help?`)
                   }
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-1">
+              {/* Continuous mode toggle */}
+              {isVoiceSupported && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={handleContinuousModeToggle}
+                      className={cn(
+                        "h-8 w-8",
+                        isContinuousMode && "text-green-500 bg-green-500/10"
+                      )}
+                    >
+                      <Radio className={cn("h-4 w-4", isContinuousMode && "animate-pulse")} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isContinuousMode 
+                      ? (language === 'es' ? 'Desactivar modo continuo' : 'Disable continuous mode')
+                      : (language === 'es' ? 'Modo continuo (manos libres)' : 'Continuous mode (hands-free)')
+                    }
+                  </TooltipContent>
+                </Tooltip>
+              )}
               {/* Auto-speak toggle */}
               {isVoiceSupported && (
                 <Tooltip>
@@ -255,11 +306,21 @@ export const ChatAssistant: React.FC = () => {
           </div>
 
           {/* Voice Mode Banner */}
-          {isVoiceSupported && (
+          {isVoiceSupported && isContinuousMode && (
+            <div className="px-4 py-2 bg-green-500/10 border-b border-green-500/20 text-xs text-center text-green-700 dark:text-green-400">
+              {language === 'es' 
+                ? '🎙️ Modo continuo: habla naturalmente. Di "detener", "parar" o "stop" para desactivar.'
+                : '🎙️ Continuous mode: speak naturally. Say "stop", "pause" or "quit" to disable.'
+              }
+            </div>
+          )}
+
+          {/* Voice Mode Banner - Normal */}
+          {isVoiceSupported && !isContinuousMode && (
             <div className="px-4 py-2 bg-muted/50 border-b text-xs text-center text-muted-foreground">
               {language === 'es' 
-                ? '🎙️ Modo manos libres: toca el micrófono para hablar'
-                : '🎙️ Hands-free mode: tap the microphone to speak'
+                ? '🎙️ Toca el micrófono para hablar o activa el modo continuo (📻)'
+                : '🎙️ Tap the microphone to speak or enable continuous mode (📻)'
               }
             </div>
           )}
@@ -361,16 +422,19 @@ export const ChatAssistant: React.FC = () => {
                       disabled={isLoading}
                       className={cn(
                         "flex-shrink-0 transition-all",
-                        isListening && "bg-red-500 hover:bg-red-600 animate-pulse"
+                        isContinuousMode && "bg-green-500 hover:bg-green-600 text-white",
+                        isListening && !isContinuousMode && "bg-red-500 hover:bg-red-600 animate-pulse"
                       )}
                     >
-                      {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                      {isContinuousMode ? <Radio className="h-4 w-4" /> : isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {isListening 
-                      ? (language === 'es' ? 'Detener grabación' : 'Stop recording')
-                      : (language === 'es' ? 'Hablar' : 'Speak')
+                    {isContinuousMode 
+                      ? (language === 'es' ? 'Detener modo continuo' : 'Stop continuous mode')
+                      : isListening 
+                        ? (language === 'es' ? 'Detener grabación' : 'Stop recording')
+                        : (language === 'es' ? 'Hablar' : 'Speak')
                     }
                   </TooltipContent>
                 </Tooltip>
