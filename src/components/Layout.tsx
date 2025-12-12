@@ -24,7 +24,8 @@ import {
   FolderKanban,
   UserCircle,
   Building2,
-  Scale
+  Scale,
+  Bell
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -43,6 +44,7 @@ import { TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { SyncStatusIndicator } from '@/components/SyncStatusIndicator';
+import { useUnreadNotifications } from '@/hooks/data/useUnreadNotifications';
 
 interface LayoutProps {
   children: ReactNode;
@@ -104,6 +106,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
   const NAV_SECTIONS = getNavSections(t);
+  const { data: unreadCount = 0 } = useUnreadNotifications();
   
   const userInitial = profile?.full_name?.charAt(0)?.toUpperCase() || profile?.email?.charAt(0)?.toUpperCase() || 'U';
 
@@ -125,8 +128,23 @@ export const Layout = ({ children }: LayoutProps) => {
               <TooltipProvider>
                 <SyncStatusIndicator />
               </TooltipProvider>
-            
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              
+              {/* Notification Bell - Mobile */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative"
+                onClick={() => navigate('/notifications')}
+              >
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-medium">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </Button>
+
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Menu className="h-5 w-5" />
@@ -457,6 +475,41 @@ export const Layout = ({ children }: LayoutProps) => {
                 <div className="space-y-2">
                   <span className="font-semibold">{t('businessProfile.title')}</span>
                   <p className="text-xs text-muted-foreground">{t('businessProfile.description')}</p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Notifications Button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => navigate('/notifications')}
+                  className={cn(
+                    'nav-item w-full relative',
+                    location.pathname === '/notifications' && 'active',
+                    collapsed && 'justify-center px-0 w-auto'
+                  )}
+                >
+                  <div className="relative">
+                    <Bell className="h-5 w-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-2 -right-2 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center font-medium">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </div>
+                  {!collapsed && <span className="flex-1 text-left">{t('nav.notifications') || 'Notificaciones'}</span>}
+                  {!collapsed && unreadCount > 0 && (
+                    <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                      {unreadCount}
+                    </Badge>
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-xs p-3">
+                <div className="space-y-2">
+                  <span className="font-semibold">{t('notifications.title') || 'Notificaciones'}</span>
+                  <p className="text-xs text-muted-foreground">{t('notifications.description') || 'Ver alertas y logros'}</p>
                 </div>
               </TooltipContent>
             </Tooltip>
