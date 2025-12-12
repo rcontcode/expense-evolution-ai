@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useUnlockAchievement } from './useGamification';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
 import confetti from 'canvas-confetti';
 
 interface GoalNotificationsProps {
@@ -68,6 +69,7 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const unlockAchievement = useUnlockAchievement();
+  const { playCelebrationSound, playFullCelebration, playSuccessSound } = useCelebrationSound();
   const previousGoalsRef = useRef<Map<string, number>>(new Map());
   const notifiedMilestonesRef = useRef<Set<string>>(new Set());
   const hasInitialized = useRef(false);
@@ -187,8 +189,9 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
         for (const milestone of milestones) {
           if (previousProgress < milestone && currentProgress >= milestone) {
             if (milestone === 100) {
-              // Goal completed!
+              // Goal completed! Play full celebration
               celebrateGoal();
+              playFullCelebration();
               toast.success(
                 `🎉 ${t('gamification.goalCompleted')}: ${goal.name}!`,
                 {
@@ -216,7 +219,8 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
                 );
               }
             } else {
-              // Milestone reached
+              // Milestone reached - play success sound
+              playSuccessSound();
               toast.success(
                 `🎯 ${goal.name}: ${milestone}% ${t('gamification.completed')}!`,
                 {
@@ -343,13 +347,15 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
 export function useLevelUpNotification(userLevel: any) {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const { playFullCelebration } = useCelebrationSound();
   const previousLevelRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!userLevel) return;
 
     if (previousLevelRef.current !== null && userLevel.level > previousLevelRef.current) {
-      // Level up!
+      // Level up! Play celebration sound
+      playFullCelebration();
       confetti({
         particleCount: 150,
         spread: 100,
@@ -377,17 +383,20 @@ export function useLevelUpNotification(userLevel: any) {
     }
 
     previousLevelRef.current = userLevel.level;
-  }, [userLevel?.level, t, user]);
+  }, [userLevel?.level, t, user, playFullCelebration]);
 }
 
 // Hook for achievement unlock notifications
 export function useAchievementNotification() {
   const { user } = useAuth();
   const { language } = useLanguage();
+  const { playCelebrationSound } = useCelebrationSound();
 
   const notifyAchievement = useCallback(async (achievementKey: string, achievementName: string) => {
     if (!user) return;
 
+    // Play celebration sound and confetti
+    playCelebrationSound();
     celebrateAchievement();
 
     toast.success(
@@ -403,9 +412,9 @@ export function useAchievementNotification() {
       language === 'es' ? '🏆 ¡Logro desbloqueado!' : '🏆 Achievement unlocked!',
       achievementName,
       'achievement',
-      '/dashboard'
+      '/notifications'
     );
-  }, [user, language]);
+  }, [user, language, playCelebrationSound]);
 
   return { notifyAchievement };
 }

@@ -27,6 +27,7 @@ import MobileCapture from "./pages/MobileCapture";
 import NotFound from "./pages/NotFound";
 import NetWorth from "./pages/NetWorth";
 import Banking from "./pages/Banking";
+import Notifications from "./pages/Notifications";
 
 const queryClient = new QueryClient();
 
@@ -64,7 +65,9 @@ const App = () => (
                 <Route path="/business-profile" element={<ProtectedRoute><BusinessProfile /></ProtectedRoute>} />
                 <Route path="/net-worth" element={<ProtectedRoute><NetWorth /></ProtectedRoute>} />
                 <Route path="/banking" element={<ProtectedRoute><Banking /></ProtectedRoute>} />
+                <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                 <Route path="/install" element={<Install />} />
+                <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
                 <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
