@@ -28,6 +28,7 @@ import NotFound from "./pages/NotFound";
 import NetWorth from "./pages/NetWorth";
 import Banking from "./pages/Banking";
 import Notifications from "./pages/Notifications";
+import { ChatAssistant } from "./components/chat/ChatAssistant";
 
 const queryClient = new QueryClient();
 
@@ -68,9 +69,9 @@ const App = () => (
                 <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                 <Route path="/install" element={<Install />} />
                 <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
-                <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <ChatAssistant />
             </AuthProvider>
           </LanguageProvider>
         </BrowserRouter>
