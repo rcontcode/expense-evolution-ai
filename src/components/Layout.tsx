@@ -45,6 +45,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { SyncStatusIndicator } from '@/components/SyncStatusIndicator';
 import { useUnreadNotifications } from '@/hooks/data/useUnreadNotifications';
+import { ThemeBackground } from '@/components/ThemeBackground';
 
 interface LayoutProps {
   children: ReactNode;
@@ -113,7 +114,8 @@ export const Layout = ({ children }: LayoutProps) => {
   // Mobile Layout
   if (isMobile) {
     return (
-      <div className="flex flex-col min-h-screen bg-background">
+      <div className="flex flex-col min-h-screen bg-background relative">
+        <ThemeBackground />
         {/* Mobile Header */}
         <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b px-4 py-3">
           <div className="flex items-center justify-between">
@@ -272,10 +274,10 @@ export const Layout = ({ children }: LayoutProps) => {
     );
   }
 
-  // Desktop Layout
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex h-screen bg-background">
+      <div className="flex h-screen bg-background relative">
+        <ThemeBackground />
         {/* Sidebar */}
         <aside 
           className={cn(
