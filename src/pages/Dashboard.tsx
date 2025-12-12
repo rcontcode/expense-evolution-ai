@@ -36,6 +36,7 @@ const RrspTfsaOptimizerCard = lazy(() => import('@/components/dashboard/RrspTfsa
 const FIRECalculatorCard = lazy(() => import('@/components/dashboard/FIRECalculatorCard').then(m => ({ default: m.FIRECalculatorCard })));
 const DebtManagerCard = lazy(() => import('@/components/dashboard/DebtManagerCard').then(m => ({ default: m.DebtManagerCard })));
 const PortfolioTrackerCard = lazy(() => import('@/components/dashboard/PortfolioTrackerCard').then(m => ({ default: m.PortfolioTrackerCard })));
+const PersonalizedInvestmentTips = lazy(() => import('@/components/investments/PersonalizedInvestmentTips').then(m => ({ default: m.PersonalizedInvestmentTips })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -440,9 +441,18 @@ export default function Dashboard() {
 
           <TabsContent value="portfolio" className="space-y-4">
             {activeTab === 'portfolio' && (
-              <Suspense fallback={<Skeleton className="h-[600px]" />}>
-                <PortfolioTrackerCard />
-              </Suspense>
+              <div className="grid gap-6 lg:grid-cols-3">
+                <div className="lg:col-span-2">
+                  <Suspense fallback={<Skeleton className="h-[600px]" />}>
+                    <PortfolioTrackerCard />
+                  </Suspense>
+                </div>
+                <div className="lg:col-span-1">
+                  <Suspense fallback={<Skeleton className="h-[400px]" />}>
+                    <PersonalizedInvestmentTips />
+                  </Suspense>
+                </div>
+              </div>
             )}
           </TabsContent>
         </Tabs>
