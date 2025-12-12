@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIncome, useIncomeSummary, useDeleteIncome } from '@/hooks/data/useIncome';
-import { OnboardingGuide } from '@/components/ui/onboarding-guide';
+import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { useProjects } from '@/hooks/data/useProjects';
 import { INCOME_CATEGORIES, INCOME_GROUPS, getIncomeCategory } from '@/lib/constants/income-categories';
@@ -130,8 +130,16 @@ export default function Income() {
         {/* Mentor Quote Banner */}
         <MentorQuoteBanner context="income" className="mb-2" />
 
-        {/* Onboarding Guide */}
-        <OnboardingGuide pageKey="income" />
+        {/* Contextual Page Guide */}
+        <PageContextGuide
+          {...PAGE_GUIDES.income}
+          actions={[
+            { icon: Plus, title: { es: 'Agregar Ingreso', en: 'Add Income' }, description: { es: 'Nuevo registro', en: 'New entry' }, action: () => setIncomeDialogOpen(true) },
+            { icon: FolderKanban, title: { es: 'Nuevo Proyecto', en: 'New Project' }, description: { es: 'Organizar trabajo', en: 'Organize work' }, action: () => setProjectDialogOpen(true) },
+            { icon: TrendingUp, title: { es: 'Ver Resumen', en: 'View Summary' }, description: { es: 'Por categoría', en: 'By category' }, path: '/dashboard' },
+            { icon: DollarSign, title: { es: 'Balance', en: 'Balance' }, description: { es: 'Ingresos vs gastos', en: 'Income vs expenses' }, path: '/dashboard' }
+          ]}
+        />
 
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-4">

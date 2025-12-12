@@ -24,6 +24,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
 import { OnboardingGuide } from '@/components/ui/onboarding-guide';
 import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
+import { InteractiveWelcome } from '@/components/guidance/InteractiveWelcome';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -155,11 +156,11 @@ export default function Dashboard() {
             </InfoTooltip>
           </div>
 
-          {/* Setup Progress Banner - Proactive Guidance */}
-          <SetupProgressBanner />
+          {/* Interactive Welcome - Proactive Guidance */}
+          <InteractiveWelcome />
 
-          {/* Onboarding Guide */}
-          <OnboardingGuide pageKey="dashboard" />
+          {/* Setup Progress Banner */}
+          <SetupProgressBanner variant="compact" />
 
           {/* Filtros */}
           <DashboardFilters

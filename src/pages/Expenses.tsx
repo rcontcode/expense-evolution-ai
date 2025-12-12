@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Plus, Receipt, Download, Sparkles, FileText, Users } from 'lucide-react';
+import { Plus, Receipt, Download, Sparkles, FileText, Users, Camera, Filter, Upload, BarChart } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useExpensesRealtime } from '@/hooks/data/useExpensesRealtime';
@@ -17,8 +17,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
-import { OnboardingGuide } from '@/components/ui/onboarding-guide';
 import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
+import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 
 export default function Expenses() {
@@ -102,11 +102,19 @@ export default function Expenses() {
           {/* Mentor Quote Banner */}
           <MentorQuoteBanner context="expenses" className="mb-2" />
 
+          {/* Contextual Page Guide */}
+          <PageContextGuide
+            {...PAGE_GUIDES.expenses}
+            actions={[
+              { icon: Camera, title: { es: 'Captura Rápida', en: 'Quick Capture' }, description: { es: 'Foto de recibo', en: 'Receipt photo' }, action: () => setQuickCaptureOpen(true) },
+              { icon: Plus, title: { es: 'Agregar Manual', en: 'Add Manual' }, description: { es: 'Nuevo gasto', en: 'New expense' }, action: handleCreate },
+              { icon: Users, title: { es: 'Asignar en Lote', en: 'Bulk Assign' }, description: { es: 'Múltiples gastos', en: 'Multiple expenses' }, action: () => setBulkAssignOpen(true) },
+              { icon: Download, title: { es: 'Exportar', en: 'Export' }, description: { es: 'Para CRA o Excel', en: 'For CRA or Excel' }, action: () => setExportDialogOpen(true) }
+            ]}
+          />
+
           {/* Setup Progress Banner - Compact */}
           <SetupProgressBanner variant="compact" />
-
-          {/* Onboarding Guide */}
-          <OnboardingGuide pageKey="expenses" />
 
           <div className="flex items-center gap-2">
             <ExpenseFilters filters={filters} onChange={setFilters} />
