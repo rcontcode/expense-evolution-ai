@@ -8,6 +8,8 @@ interface ReimbursementSuggestion {
   reasonEn: string;
   matchedCategory?: string;
   contractTitle?: string;
+  suggestionType: 'contract' | 'cra' | 'general';
+  craDeductionPercent?: number;
 }
 
 interface ExtractedTerms {
@@ -19,6 +21,22 @@ interface ExtractedTerms {
   };
   contract_summary?: string;
 }
+
+// CRA deduction rules by category
+const CRA_DEDUCTION_RULES: Record<string, { percent: number; descEs: string; descEn: string }> = {
+  meals: { percent: 50, descEs: 'Comidas de negocios: 50% deducible según CRA', descEn: 'Business meals: 50% deductible per CRA' },
+  travel: { percent: 100, descEs: 'Viajes de negocios: 100% deducible si es exclusivo para trabajo', descEn: 'Business travel: 100% deductible if exclusively for work' },
+  equipment: { percent: 100, descEs: 'Equipos de trabajo: 100% deducible (puede aplicar depreciación CCA)', descEn: 'Work equipment: 100% deductible (CCA depreciation may apply)' },
+  software: { percent: 100, descEs: 'Software de trabajo: 100% deducible como gasto operativo', descEn: 'Work software: 100% deductible as operating expense' },
+  mileage: { percent: 100, descEs: 'Kilometraje: $0.70/km primeros 5,000km, $0.64/km después (CRA 2024)', descEn: 'Mileage: $0.70/km first 5,000km, $0.64/km after (CRA 2024)' },
+  home_office: { percent: 100, descEs: 'Oficina en casa: proporcional al % de uso comercial del espacio', descEn: 'Home office: proportional to % of business use of space' },
+  professional_services: { percent: 100, descEs: 'Servicios profesionales: 100% deducible (legal, contable, consultoría)', descEn: 'Professional services: 100% deductible (legal, accounting, consulting)' },
+  office_supplies: { percent: 100, descEs: 'Suministros de oficina: 100% deducible', descEn: 'Office supplies: 100% deductible' },
+  utilities: { percent: 100, descEs: 'Servicios: % proporcional si trabaja desde casa', descEn: 'Utilities: proportional % if working from home' },
+  fuel: { percent: 100, descEs: 'Combustible: % proporcional al uso comercial del vehículo', descEn: 'Fuel: proportional % to business use of vehicle' },
+  materials: { percent: 100, descEs: 'Materiales de trabajo: 100% deducible', descEn: 'Work materials: 100% deductible' },
+  other: { percent: 100, descEs: 'Otros gastos: deducible si es exclusivamente para el negocio', descEn: 'Other expenses: deductible if exclusively for business' },
+};
 
 // Map expense categories to common contract term categories
 const CATEGORY_MAPPINGS: Record<string, string[]> = {
@@ -63,110 +81,126 @@ export function useContractReimbursementSuggestion(
   const { data: contracts } = useContracts();
 
   return useMemo(() => {
-    if (!clientId || clientId === '__none__' || !category) {
+    if (!category) {
       return null;
     }
 
-    // Find contracts for this client that have been analyzed
-    const clientContracts = contracts?.filter(
-      c => c.client_id === clientId && c.extracted_terms && Object.keys(c.extracted_terms as object).length > 0
-    ) || [];
+    // If client is selected, check contract terms first
+    if (clientId && clientId !== '__none__') {
+      const clientContracts = contracts?.filter(
+        c => c.client_id === clientId && c.extracted_terms && Object.keys(c.extracted_terms as object).length > 0
+      ) || [];
 
-    if (clientContracts.length === 0) {
-      return null;
-    }
+      for (const contract of clientContracts) {
+        const terms = contract.extracted_terms as ExtractedTerms;
+        const reimbursementPolicy = terms?.reimbursement_policy;
+        const userNotes = contract.user_notes?.toLowerCase() || '';
 
-    // Check each contract's terms
-    for (const contract of clientContracts) {
-      const terms = contract.extracted_terms as ExtractedTerms;
-      const reimbursementPolicy = terms?.reimbursement_policy;
-      const userNotes = contract.user_notes?.toLowerCase() || '';
+        // First check user notes/corrections - they override AI extracted terms
+        if (userNotes) {
+          const categoryVariants = CATEGORY_MAPPINGS[category] || [category];
+          const notesMatchCategory = categoryVariants.some(variant => 
+            normalizeText(userNotes).includes(normalizeText(variant))
+          );
 
-      // First check user notes/corrections - they override AI extracted terms
-      if (userNotes) {
-        const categoryVariants = CATEGORY_MAPPINGS[category] || [category];
-        const notesMatchCategory = categoryVariants.some(variant => 
-          normalizeText(userNotes).includes(normalizeText(variant))
-        );
+          const positiveIndicators = ['reembolsan', 'reembolsable', 'me pagan', 'cubre', 'cubren', 'incluye', 'incluyen', 'sí pagan', 'si pagan', 'acuerdo', 'acordamos', 'reimbursable', 'covered', 'pays for', 'will pay'];
+          const hasPositiveIndicator = positiveIndicators.some(ind => userNotes.includes(ind));
+          
+          if (notesMatchCategory && hasPositiveIndicator) {
+            return {
+              isReimbursable: true,
+              confidence: 'medium',
+              reason: `✅ Según tus notas en "${contract.title || contract.file_name}": categoría reembolsable por acuerdo informal.`,
+              reasonEn: `✅ Per your notes on "${contract.title || contract.file_name}": category reimbursable by informal agreement.`,
+              matchedCategory: category,
+              contractTitle: contract.title || contract.file_name,
+              suggestionType: 'contract',
+            };
+          }
 
-        // Check if user notes indicate this category IS reimbursable
-        const positiveIndicators = ['reembolsan', 'reembolsable', 'me pagan', 'cubre', 'cubren', 'incluye', 'incluyen', 'sí pagan', 'si pagan', 'acuerdo', 'acordamos', 'reimbursable', 'covered', 'pays for', 'will pay'];
-        const hasPositiveIndicator = positiveIndicators.some(ind => userNotes.includes(ind));
-        
-        if (notesMatchCategory && hasPositiveIndicator) {
+          const materialTerms = ['materiales', 'herramientas', 'insumos', 'materials', 'tools', 'supplies', 'compras', 'purchases'];
+          const notesMentionsMaterials = materialTerms.some(term => userNotes.includes(term));
+          const categoryIsMaterial = ['equipment', 'office_supplies', 'other', 'materials'].includes(category);
+          
+          if (notesMentionsMaterials && hasPositiveIndicator && categoryIsMaterial) {
+            return {
+              isReimbursable: true,
+              confidence: 'medium',
+              reason: `✅ Según notas en "${contract.title || contract.file_name}": materiales/herramientas son reembolsables.`,
+              reasonEn: `✅ Per notes on "${contract.title || contract.file_name}": materials/tools are reimbursable.`,
+              matchedCategory: 'materiales/herramientas',
+              contractTitle: contract.title || contract.file_name,
+              suggestionType: 'contract',
+            };
+          }
+        }
+
+        if (!reimbursementPolicy) continue;
+
+        const reimbursableCategories = reimbursementPolicy.reimbursable_categories || [];
+        const nonReimbursable = reimbursementPolicy.non_reimbursable || [];
+
+        if (categoryMatchesTerms(category, reimbursableCategories)) {
+          const matchedTerm = reimbursableCategories.find(term => 
+            categoryMatchesTerms(category, [term])
+          );
+
           return {
             isReimbursable: true,
-            confidence: 'medium',
-            reason: `Según tus notas en el contrato "${contract.title || contract.file_name}", esta categoría es reembolsable (acuerdo informal/corrección manual).`,
-            reasonEn: `According to your notes on contract "${contract.title || contract.file_name}", this category is reimbursable (informal agreement/manual correction).`,
-            matchedCategory: category,
+            confidence: 'high',
+            reason: `✅ Contrato "${contract.title || contract.file_name}": ${matchedTerm || category} es reembolsable por el cliente.`,
+            reasonEn: `✅ Contract "${contract.title || contract.file_name}": ${matchedTerm || category} is reimbursable by client.`,
+            matchedCategory: matchedTerm,
             contractTitle: contract.title || contract.file_name,
+            suggestionType: 'contract',
           };
         }
 
-        // Check for general "materials/tools/supplies" mentions in notes
-        const materialTerms = ['materiales', 'herramientas', 'insumos', 'materials', 'tools', 'supplies', 'compras', 'purchases'];
-        const notesMentionsMaterials = materialTerms.some(term => userNotes.includes(term));
-        const categoryIsMaterial = ['equipment', 'office_supplies', 'other'].includes(category);
-        
-        if (notesMentionsMaterials && hasPositiveIndicator && categoryIsMaterial) {
+        if (categoryMatchesTerms(category, nonReimbursable) && !userNotes) {
+          const matchedTerm = nonReimbursable.find(term => 
+            categoryMatchesTerms(category, [term])
+          );
+
+          // Not reimbursable by client, but suggest CRA deduction
+          const craRule = CRA_DEDUCTION_RULES[category];
           return {
-            isReimbursable: true,
-            confidence: 'medium',
-            reason: `Según tus notas en el contrato "${contract.title || contract.file_name}", los materiales/herramientas son reembolsables (acuerdo informal).`,
-            reasonEn: `According to your notes on contract "${contract.title || contract.file_name}", materials/tools are reimbursable (informal agreement).`,
-            matchedCategory: 'materiales/herramientas',
+            isReimbursable: false,
+            confidence: 'high',
+            reason: `⚠️ No reembolsable por cliente (${matchedTerm}). ${craRule ? `💡 Pero ${craRule.descEs}` : ''}`,
+            reasonEn: `⚠️ Not client reimbursable (${matchedTerm}). ${craRule ? `💡 But ${craRule.descEn}` : ''}`,
+            matchedCategory: matchedTerm,
             contractTitle: contract.title || contract.file_name,
+            suggestionType: 'contract',
+            craDeductionPercent: craRule?.percent,
           };
         }
       }
 
-      if (!reimbursementPolicy) continue;
-
-      const reimbursableCategories = reimbursementPolicy.reimbursable_categories || [];
-      const nonReimbursable = reimbursementPolicy.non_reimbursable || [];
-
-      // Check if category matches reimbursable categories
-      if (categoryMatchesTerms(category, reimbursableCategories)) {
-        const matchedTerm = reimbursableCategories.find(term => 
-          categoryMatchesTerms(category, [term])
-        );
-
-        return {
-          isReimbursable: true,
-          confidence: 'high',
-          reason: `Según el contrato "${contract.title || contract.file_name}", esta categoría es reembolsable${matchedTerm ? ` (${matchedTerm})` : ''}.`,
-          reasonEn: `According to contract "${contract.title || contract.file_name}", this category is reimbursable${matchedTerm ? ` (${matchedTerm})` : ''}.`,
-          matchedCategory: matchedTerm,
-          contractTitle: contract.title || contract.file_name,
-        };
-      }
-
-      // Check if category matches non-reimbursable (but user notes can override)
-      if (categoryMatchesTerms(category, nonReimbursable) && !userNotes) {
-        const matchedTerm = nonReimbursable.find(term => 
-          categoryMatchesTerms(category, [term])
-        );
-
+      // Has contracts but no explicit match - suggest checking manually + CRA option
+      if (clientContracts.length > 0) {
+        const craRule = CRA_DEDUCTION_RULES[category];
         return {
           isReimbursable: false,
-          confidence: 'high',
-          reason: `Según el contrato "${contract.title || contract.file_name}", esta categoría NO es reembolsable${matchedTerm ? ` (${matchedTerm})` : ''}.`,
-          reasonEn: `According to contract "${contract.title || contract.file_name}", this category is NOT reimbursable${matchedTerm ? ` (${matchedTerm})` : ''}.`,
-          matchedCategory: matchedTerm,
-          contractTitle: contract.title || contract.file_name,
+          confidence: 'low',
+          reason: `❓ Categoría no especificada en contrato. Verifica manualmente. ${craRule ? `💡 Alternativa CRA: ${craRule.descEs}` : ''}`,
+          reasonEn: `❓ Category not specified in contract. Verify manually. ${craRule ? `💡 CRA alternative: ${craRule.descEn}` : ''}`,
+          contractTitle: clientContracts[0].title || clientContracts[0].file_name,
+          suggestionType: 'contract',
+          craDeductionPercent: craRule?.percent,
         };
       }
     }
 
-    // If we have contracts but no explicit match, suggest with low confidence
-    if (clientContracts.length > 0) {
+    // No client or no contracts - suggest CRA deduction rules
+    const craRule = CRA_DEDUCTION_RULES[category];
+    if (craRule) {
       return {
         isReimbursable: false,
-        confidence: 'low',
-        reason: `No se encontró esta categoría explícitamente en los términos del contrato. Verifica manualmente.`,
-        reasonEn: `This category was not explicitly found in contract terms. Please verify manually.`,
-        contractTitle: clientContracts[0].title || clientContracts[0].file_name,
+        confidence: 'medium',
+        reason: `📋 Sin cliente asignado. ${craRule.descEs}`,
+        reasonEn: `📋 No client assigned. ${craRule.descEn}`,
+        suggestionType: 'cra',
+        craDeductionPercent: craRule.percent,
       };
     }
 

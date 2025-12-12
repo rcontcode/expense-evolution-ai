@@ -296,38 +296,73 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
                     })}
                   </SelectContent>
                 </Select>
-                {/* Reimbursement Suggestion from Contract */}
+                {/* Reimbursement Suggestion from Contract or CRA */}
                 {reimbursementSuggestion && (
                   <div className={cn(
-                    "flex items-start gap-2 mt-2 p-2 rounded text-xs",
+                    "flex items-start gap-2 mt-2 p-3 rounded-lg text-xs border",
                     reimbursementSuggestion.isReimbursable 
-                      ? "bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800"
-                      : "bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800"
+                      ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
+                      : reimbursementSuggestion.suggestionType === 'cra'
+                        ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800"
+                        : "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800"
                   )}>
                     <Sparkles className={cn(
-                      "h-3.5 w-3.5 flex-shrink-0 mt-0.5",
-                      reimbursementSuggestion.isReimbursable ? "text-green-600" : "text-amber-600"
+                      "h-4 w-4 flex-shrink-0 mt-0.5",
+                      reimbursementSuggestion.isReimbursable 
+                        ? "text-green-600" 
+                        : reimbursementSuggestion.suggestionType === 'cra'
+                          ? "text-blue-600"
+                          : "text-amber-600"
                     )} />
-                    <div className="flex-1">
+                    <div className="flex-1 space-y-1">
                       <p className={cn(
+                        "font-medium",
                         reimbursementSuggestion.isReimbursable 
                           ? "text-green-700 dark:text-green-300" 
-                          : "text-amber-700 dark:text-amber-300"
+                          : reimbursementSuggestion.suggestionType === 'cra'
+                            ? "text-blue-700 dark:text-blue-300"
+                            : "text-amber-700 dark:text-amber-300"
                       )}>
                         {language === 'es' ? reimbursementSuggestion.reason : reimbursementSuggestion.reasonEn}
                       </p>
-                      {reimbursementSuggestion.isReimbursable && field.value !== 'client_reimbursable' && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-2 mt-1 text-green-700 hover:bg-green-100"
-                          onClick={() => form.setValue('reimbursement_type', 'client_reimbursable')}
-                        >
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                          {language === 'es' ? 'Aplicar sugerencia' : 'Apply suggestion'}
-                        </Button>
+                      
+                      {reimbursementSuggestion.craDeductionPercent && (
+                        <p className="text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                          <Landmark className="h-3 w-3" />
+                          {language === 'es' 
+                            ? `Deducción CRA: ${reimbursementSuggestion.craDeductionPercent}%`
+                            : `CRA Deduction: ${reimbursementSuggestion.craDeductionPercent}%`
+                          }
+                        </p>
                       )}
+                      
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {reimbursementSuggestion.isReimbursable && field.value !== 'client_reimbursable' && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-green-700 hover:bg-green-100 dark:hover:bg-green-900/30"
+                            onClick={() => form.setValue('reimbursement_type', 'client_reimbursable')}
+                          >
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            {language === 'es' ? 'Reembolso cliente' : 'Client reimbursement'}
+                          </Button>
+                        )}
+                        
+                        {reimbursementSuggestion.craDeductionPercent && field.value !== 'cra_deductible' && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                            onClick={() => form.setValue('reimbursement_type', 'cra_deductible')}
+                          >
+                            <Landmark className="h-3 w-3 mr-1" />
+                            {language === 'es' ? 'Deducible CRA' : 'CRA Deductible'}
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
