@@ -77,6 +77,12 @@ const getNavSections = (t: (key: string) => string) => [
       { icon: RefreshCw, label: 'nav.reconciliation', path: '/reconciliation', badge: null, tooltipKey: 'reconciliation' as const },
     ]
   },
+  {
+    titleKey: 'layout.notifications',
+    items: [
+      { icon: Sparkles, label: 'Notificaciones', path: '/notifications', badge: null, tooltipKey: 'dashboard' as const },
+    ]
+  },
 ];
 
 // Bottom navigation items for mobile
