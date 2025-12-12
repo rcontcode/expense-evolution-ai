@@ -5,11 +5,19 @@ interface UseVoiceAssistantOptions {
   onTranscript?: (text: string) => void;
   onSpeakStart?: () => void;
   onSpeakEnd?: () => void;
+  onContinuousStopped?: () => void;
 }
+
+// Voice commands to stop continuous mode
+const STOP_COMMANDS = {
+  es: ['detener', 'parar', 'stop', 'para', 'basta', 'silencio', 'terminar'],
+  en: ['stop', 'pause', 'quit', 'end', 'silence', 'halt'],
+};
 
 export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   const { language } = useLanguage();
   const [isListening, setIsListening] = useState(false);
+  const [isContinuousMode, setIsContinuousMode] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -26,15 +34,24 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     setIsSupported(hasSpeechRecognition && 'speechSynthesis' in window);
   }, []);
 
+  const continuousModeRef = useRef(false);
+
+  // Check if text contains a stop command
+  const isStopCommand = useCallback((text: string) => {
+    const normalizedText = text.toLowerCase().trim();
+    const commands = STOP_COMMANDS[language as keyof typeof STOP_COMMANDS] || STOP_COMMANDS.en;
+    return commands.some(cmd => normalizedText.includes(cmd));
+  }, [language]);
+
   // Initialize speech recognition
-  const initRecognition = useCallback(() => {
+  const initRecognition = useCallback((continuous: boolean = false) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const win = window as any;
     const SpeechRecognitionClass = win.SpeechRecognition || win.webkitSpeechRecognition;
     if (!SpeechRecognitionClass) return null;
 
     const recognition = new SpeechRecognitionClass();
-    recognition.continuous = false;
+    recognition.continuous = continuous;
     recognition.interimResults = true;
     recognition.lang = language === 'es' ? 'es-ES' : 'en-US';
 
@@ -60,6 +77,12 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       setTranscript(interimTranscript || finalTranscript);
 
       if (finalTranscript) {
+        // Check for stop command in continuous mode
+        if (continuousModeRef.current && isStopCommand(finalTranscript)) {
+          stopContinuousListening();
+          options.onContinuousStopped?.();
+          return;
+        }
         options.onTranscript?.(finalTranscript);
       }
     };
@@ -67,25 +90,55 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error);
-      setIsListening(false);
+      // In continuous mode, restart on some errors
+      if (continuousModeRef.current && event.error !== 'aborted') {
+        setTimeout(() => {
+          if (continuousModeRef.current) {
+            try {
+              recognitionRef.current = initRecognition(true);
+              recognitionRef.current?.start();
+            } catch (e) {
+              console.error('Error restarting recognition:', e);
+            }
+          }
+        }, 500);
+      } else {
+        setIsListening(false);
+      }
     };
 
     recognition.onend = () => {
-      setIsListening(false);
+      // In continuous mode, restart listening after each phrase
+      if (continuousModeRef.current) {
+        setTimeout(() => {
+          if (continuousModeRef.current) {
+            try {
+              recognitionRef.current = initRecognition(true);
+              recognitionRef.current?.start();
+            } catch (e) {
+              console.error('Error restarting recognition:', e);
+            }
+          }
+        }, 100);
+      } else {
+        setIsListening(false);
+      }
     };
 
     return recognition;
-  }, [language, options]);
+  }, [language, options, isStopCommand]);
 
-  // Start listening
+  // Start listening (single phrase)
   const startListening = useCallback(() => {
     if (!isSupported) return;
     
     // Stop any ongoing speech
     window.speechSynthesis.cancel();
     setIsSpeaking(false);
+    continuousModeRef.current = false;
+    setIsContinuousMode(false);
 
-    recognitionRef.current = initRecognition();
+    recognitionRef.current = initRecognition(false);
     if (recognitionRef.current) {
       try {
         recognitionRef.current.start();
@@ -95,8 +148,40 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     }
   }, [isSupported, initRecognition]);
 
+  // Start continuous listening mode
+  const startContinuousListening = useCallback(() => {
+    if (!isSupported) return;
+    
+    // Stop any ongoing speech
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+    continuousModeRef.current = true;
+    setIsContinuousMode(true);
+
+    recognitionRef.current = initRecognition(true);
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.start();
+      } catch (error) {
+        console.error('Error starting continuous recognition:', error);
+      }
+    }
+  }, [isSupported, initRecognition]);
+
+  // Stop continuous listening mode
+  const stopContinuousListening = useCallback(() => {
+    continuousModeRef.current = false;
+    setIsContinuousMode(false);
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
+  }, []);
+
   // Stop listening
   const stopListening = useCallback(() => {
+    continuousModeRef.current = false;
+    setIsContinuousMode(false);
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       setIsListening(false);
@@ -171,11 +256,14 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
 
   return {
     isListening,
+    isContinuousMode,
     isSpeaking,
     isSupported,
     transcript,
     startListening,
     stopListening,
+    startContinuousListening,
+    stopContinuousListening,
     toggleListening,
     speak,
     stopSpeaking,
