@@ -3,12 +3,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Asset, ASSET_CATEGORIES, useCreateAsset, useUpdateAsset } from '@/hooks/data/useNetWorth';
-import { Wallet, TrendingUp, Home, Car, PiggyBank, Bitcoin, Gem, Building2, Package } from 'lucide-react';
+import { 
+  Wallet, TrendingUp, Home, Car, PiggyBank, Bitcoin, Gem, Building2, Package,
+  Hexagon, CircleDollarSign, Coins, Layers, ImageIcon
+} from 'lucide-react';
 
 interface AssetDialogProps {
   open: boolean;
@@ -17,7 +20,8 @@ interface AssetDialogProps {
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Wallet, TrendingUp, Home, Car, PiggyBank, Bitcoin, Gem, Building2, Package
+  Wallet, TrendingUp, Home, Car, PiggyBank, Bitcoin, Gem, Building2, Package,
+  Hexagon, CircleDollarSign, Coins, Layers, ImageIcon
 };
 
 export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogProps) {
@@ -115,17 +119,37 @@ export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogPro
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {ASSET_CATEGORIES.map((cat) => {
-                  const CatIcon = iconMap[cat.icon];
-                  return (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      <div className="flex items-center gap-2">
-                        {CatIcon && <CatIcon className="h-4 w-4" />}
-                        {cat.label}
-                      </div>
-                    </SelectItem>
-                  );
-                })}
+                <SelectGroup>
+                  <SelectLabel className="text-xs text-muted-foreground">Activos Generales</SelectLabel>
+                  {ASSET_CATEGORIES.filter(c => c.group === 'general').map((cat) => {
+                    const CatIcon = iconMap[cat.icon];
+                    return (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        <div className="flex items-center gap-2">
+                          {CatIcon && <CatIcon className="h-4 w-4" />}
+                          {cat.label}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Bitcoin className="h-3 w-3" />
+                    Criptomonedas
+                  </SelectLabel>
+                  {ASSET_CATEGORIES.filter(c => c.group === 'crypto').map((cat) => {
+                    const CatIcon = iconMap[cat.icon];
+                    return (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        <div className="flex items-center gap-2">
+                          {CatIcon && <CatIcon className="h-4 w-4 text-amber-500" />}
+                          {cat.label}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectGroup>
               </SelectContent>
             </Select>
           </div>
