@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Plus, Receipt, Download, Sparkles, FileText, Users, Camera, Filter, Upload, BarChart } from 'lucide-react';
@@ -39,6 +39,21 @@ export default function Expenses() {
 
   const { data: expenses, isLoading } = useExpenses(filters);
   const { data: allExpenses } = useExpenses({});
+
+  // Listen for voice command actions
+  useEffect(() => {
+    const handleVoiceAction = (event: CustomEvent<{ action: string }>) => {
+      if (event.detail.action === 'add-expense') {
+        setSelectedExpense(undefined);
+        setDialogOpen(true);
+      }
+    };
+
+    window.addEventListener('voice-command-action', handleVoiceAction as EventListener);
+    return () => {
+      window.removeEventListener('voice-command-action', handleVoiceAction as EventListener);
+    };
+  }, []);
 
   const handleEdit = (expense: ExpenseWithRelations) => {
     setSelectedExpense(expense);

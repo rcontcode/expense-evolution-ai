@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,6 +57,21 @@ export default function Clients() {
   const { data: contracts } = useContracts();
   const deleteMutation = useDeleteClient();
   const deleteTestDataMutation = useDeleteClientTestData();
+
+  // Listen for voice command actions
+  useEffect(() => {
+    const handleVoiceAction = (event: CustomEvent<{ action: string }>) => {
+      if (event.detail.action === 'add-client') {
+        setSelectedClient(undefined);
+        setDialogOpen(true);
+      }
+    };
+
+    window.addEventListener('voice-command-action', handleVoiceAction as EventListener);
+    return () => {
+      window.removeEventListener('voice-command-action', handleVoiceAction as EventListener);
+    };
+  }, []);
 
   // Check which clients have test data (any associated records)
   const getClientHasTestData = (clientId: string) => {
