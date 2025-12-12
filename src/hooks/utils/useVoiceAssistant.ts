@@ -188,6 +188,35 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     }
   }, []);
 
+  // Clean text for speech - remove emojis, markdown symbols, and special characters
+  const cleanTextForSpeech = useCallback((text: string): string => {
+    return text
+      // Remove emojis and special unicode symbols
+      .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA00}-\u{1FA6F}]|[\u{1FA70}-\u{1FAFF}]|[\u{231A}-\u{231B}]|[\u{23E9}-\u{23F3}]|[\u{23F8}-\u{23FA}]|[\u{25AA}-\u{25AB}]|[\u{25B6}]|[\u{25C0}]|[\u{25FB}-\u{25FE}]|[\u{2614}-\u{2615}]|[\u{2648}-\u{2653}]|[\u{267F}]|[\u{2693}]|[\u{26A1}]|[\u{26AA}-\u{26AB}]|[\u{26BD}-\u{26BE}]|[\u{26C4}-\u{26C5}]|[\u{26CE}]|[\u{26D4}]|[\u{26EA}]|[\u{26F2}-\u{26F3}]|[\u{26F5}]|[\u{26FA}]|[\u{26FD}]|[\u{2702}]|[\u{2705}]|[\u{2708}-\u{270D}]|[\u{270F}]|[\u{2712}]|[\u{2714}]|[\u{2716}]|[\u{271D}]|[\u{2721}]|[\u{2728}]|[\u{2733}-\u{2734}]|[\u{2744}]|[\u{2747}]|[\u{274C}]|[\u{274E}]|[\u{2753}-\u{2755}]|[\u{2757}]|[\u{2763}-\u{2764}]|[\u{2795}-\u{2797}]|[\u{27A1}]|[\u{27B0}]|[\u{27BF}]|[\u{2934}-\u{2935}]|[\u{2B05}-\u{2B07}]|[\u{2B1B}-\u{2B1C}]|[\u{2B50}]|[\u{2B55}]|[\u{3030}]|[\u{303D}]|[\u{3297}]|[\u{3299}]|👋|✨|🎯|💡|📊|💰|📈|🏆|⭐|🔥|✅|❌|⚠️|ℹ️|🎉|🎊|👍|👎|💪|🙌|🤝|💵|💸|📉|📌|🔔|🔒|🔓|💼|📁|📂|🗂️|📝|📋|✏️|📎|📍|🔍|🔎|⚙️|🛠️|🔧|🔨|⚡|🌟|🌈|☀️|🌙|❄️|🔵|🟢|🟡|🟠|🔴|⚫|⚪|🟣|🟤|▶️|⏸️|⏹️|⏺️|⏭️|⏮️|⏩|⏪|🎵|🎶|🎧|🎤|🎬|📱|💻|🖥️|⌨️|🖨️|💾|💿|📀|🎮|🕹️|🎰|🃏|🎴|🀄|🎲|♟️/gu, '')
+      // Remove markdown bold/italic markers
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/__/g, '')
+      .replace(/_/g, ' ')
+      // Remove markdown headers
+      .replace(/#{1,6}\s/g, '')
+      // Remove markdown links [text](url) -> text
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      // Remove inline code backticks
+      .replace(/`([^`]+)`/g, '$1')
+      // Remove code blocks
+      .replace(/```[\s\S]*?```/g, '')
+      // Remove bullet points and list markers
+      .replace(/^[\s]*[-•◦▪▸►]\s*/gm, '')
+      .replace(/^\s*\d+\.\s*/gm, '')
+      // Remove excessive whitespace
+      .replace(/\s+/g, ' ')
+      // Clean up any remaining special characters that might sound weird
+      .replace(/[~^<>|\\]/g, '')
+      // Trim
+      .trim();
+  }, []);
+
   // Speak text
   const speak = useCallback((text: string) => {
     if (!isSupported || !text) return;
@@ -195,7 +224,11 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     // Cancel any ongoing speech
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    // Clean the text before speaking
+    const cleanedText = cleanTextForSpeech(text);
+    if (!cleanedText) return;
+
+    const utterance = new SpeechSynthesisUtterance(cleanedText);
     utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
@@ -229,7 +262,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
 
     synthRef.current = utterance;
     window.speechSynthesis.speak(utterance);
-  }, [isSupported, language, options]);
+  }, [isSupported, language, options, cleanTextForSpeech]);
 
   // Stop speaking
   const stopSpeaking = useCallback(() => {
