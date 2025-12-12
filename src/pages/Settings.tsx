@@ -192,6 +192,9 @@ export default function Settings() {
             {/* Theme Style */}
             <div className="space-y-3">
               <Label>{t('settings.themeStyle')}</Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                {language === 'es' ? 'Estilos Clásicos' : 'Classic Styles'}
+              </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {([
                   { value: 'modern', gradient: 'from-violet-500 to-fuchsia-500' },
@@ -212,6 +215,73 @@ export default function Settings() {
                   >
                     <div className={`w-full h-8 rounded bg-gradient-to-r ${gradient} mb-2`} />
                     <span className="text-sm font-medium">{t(`settings.${value}`)}</span>
+                    {style === value && (
+                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                    )}
+                  </button>
+                ))}
+              </div>
+              
+              <p className="text-xs text-muted-foreground mb-2 mt-4">
+                {language === 'es' ? '🌸 Estaciones del Año' : '🌸 Seasons'}
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {([
+                  { value: 'spring', gradient: 'from-pink-400 to-green-400', emoji: '🌸' },
+                  { value: 'summer', gradient: 'from-yellow-400 to-cyan-400', emoji: '☀️' },
+                  { value: 'autumn', gradient: 'from-orange-500 to-amber-600', emoji: '🍂' },
+                  { value: 'winter', gradient: 'from-blue-400 to-slate-300', emoji: '❄️' },
+                ] as const).map(({ value, gradient, emoji }) => (
+                  <button
+                    key={value}
+                    onClick={() => setStyle(value)}
+                    className={`relative p-3 rounded-lg border-2 transition-all ${
+                      style === value 
+                        ? 'border-primary ring-2 ring-primary/20' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className={`w-full h-6 rounded bg-gradient-to-r ${gradient} mb-2`} />
+                    <span className="text-sm font-medium flex items-center gap-1">
+                      {emoji} {language === 'es' 
+                        ? value === 'spring' ? 'Primavera' 
+                        : value === 'summer' ? 'Verano' 
+                        : value === 'autumn' ? 'Otoño' 
+                        : 'Invierno'
+                        : value.charAt(0).toUpperCase() + value.slice(1)}
+                    </span>
+                    {style === value && (
+                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                    )}
+                  </button>
+                ))}
+              </div>
+              
+              <p className="text-xs text-muted-foreground mb-2 mt-4">
+                {language === 'es' ? '🎮 Intereses & Hobbies' : '🎮 Interests & Hobbies'}
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {([
+                  { value: 'crypto', gradient: 'from-yellow-500 to-orange-500', emoji: '₿', label: { es: 'Crypto', en: 'Crypto' } },
+                  { value: 'gaming', gradient: 'from-purple-500 via-pink-500 to-cyan-400', emoji: '🎮', label: { es: 'Gaming', en: 'Gaming' } },
+                  { value: 'sports', gradient: 'from-blue-600 to-red-500', emoji: '⚽', label: { es: 'Deportes', en: 'Sports' } },
+                  { value: 'music', gradient: 'from-purple-600 to-pink-500', emoji: '🎵', label: { es: 'Música', en: 'Music' } },
+                  { value: 'coffee', gradient: 'from-amber-700 to-orange-800', emoji: '☕', label: { es: 'Café', en: 'Coffee' } },
+                  { value: 'nature', gradient: 'from-green-500 to-lime-400', emoji: '🌿', label: { es: 'Naturaleza', en: 'Nature' } },
+                ] as const).map(({ value, gradient, emoji, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setStyle(value)}
+                    className={`relative p-3 rounded-lg border-2 transition-all ${
+                      style === value 
+                        ? 'border-primary ring-2 ring-primary/20' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className={`w-full h-6 rounded bg-gradient-to-r ${gradient} mb-2`} />
+                    <span className="text-sm font-medium flex items-center gap-1">
+                      {emoji} {label[language as 'es' | 'en']}
+                    </span>
                     {style === value && (
                       <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
                     )}
