@@ -552,19 +552,257 @@ export const ThemeBackground = () => {
           </>
         );
 
+      case 'space':
+        return (
+          <>
+            {/* Starfield on left */}
+            <svg className="absolute top-0 -left-4 w-80 h-full" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="30" cy="50" r="2" fill="hsl(0, 0%, 95%)" className="animate-shimmer" />
+              <circle cx="80" cy="120" r="1.5" fill="hsl(200, 80%, 85%)" className="animate-shimmer" style={{ animationDelay: '0.5s' }} />
+              <circle cx="45" cy="200" r="3" fill="hsl(260, 70%, 90%)" className="animate-pulse-glow" />
+              <circle cx="100" cy="280" r="2" fill="hsl(0, 0%, 95%)" className="animate-shimmer" style={{ animationDelay: '1s' }} />
+              <circle cx="60" cy="350" r="1.5" fill="hsl(180, 80%, 85%)" className="animate-shimmer" style={{ animationDelay: '1.5s' }} />
+              <circle cx="25" cy="420" r="2.5" fill="hsl(45, 90%, 90%)" className="animate-pulse-glow" style={{ animationDelay: '2s' }} />
+              <circle cx="90" cy="500" r="2" fill="hsl(0, 0%, 95%)" className="animate-shimmer" style={{ animationDelay: '0.8s' }} />
+              
+              {/* Planet */}
+              <g className="animate-float-slow">
+                <circle cx="70" cy="150" r="25" fill="hsl(260, 60%, 45%)" />
+                <ellipse cx="70" cy="150" rx="40" ry="8" stroke="hsl(45, 60%, 60%)" strokeWidth="3" fill="none" transform="rotate(-20 70 150)" />
+              </g>
+              
+              {/* Shooting star */}
+              <g className="animate-drift">
+                <line x1="20" y1="300" x2="80" y2="320" stroke="hsl(0, 0%, 95%)" strokeWidth="2" strokeLinecap="round" />
+                <circle cx="20" cy="300" r="3" fill="hsl(0, 0%, 100%)" />
+              </g>
+            </svg>
+            
+            {/* Right side nebula and stars */}
+            <svg className="absolute top-20 -right-8 w-72 h-[500px]" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="200" cy="40" r="2" fill="hsl(0, 0%, 95%)" className="animate-shimmer" />
+              <circle cx="180" cy="100" r="1.5" fill="hsl(280, 70%, 85%)" className="animate-shimmer" style={{ animationDelay: '0.3s' }} />
+              <circle cx="220" cy="180" r="2.5" fill="hsl(200, 80%, 90%)" className="animate-pulse-glow" style={{ animationDelay: '1s' }} />
+              <circle cx="190" cy="260" r="2" fill="hsl(0, 0%, 95%)" className="animate-shimmer" style={{ animationDelay: '0.7s' }} />
+              <circle cx="210" cy="340" r="3" fill="hsl(45, 90%, 85%)" className="animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
+              
+              {/* Moon */}
+              <g className="animate-float-delayed">
+                <circle cx="200" cy="420" r="30" fill="hsl(40, 10%, 70%)" />
+                <circle cx="190" cy="410" r="6" fill="hsl(40, 8%, 60%)" />
+                <circle cx="210" cy="430" r="4" fill="hsl(40, 8%, 62%)" />
+                <circle cx="195" cy="435" r="3" fill="hsl(40, 8%, 58%)" />
+              </g>
+            </svg>
+            
+            {/* Galaxy glow */}
+            <div className="absolute top-0 left-0 w-96 h-96 rounded-full bg-purple-600/20 blur-3xl animate-pulse-glow" />
+            <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-blue-500/20 blur-3xl animate-pulse-glow" style={{ animationDelay: '2s' }} />
+            <div className="absolute top-1/2 -right-20 w-60 h-60 rounded-full bg-cyan-400/15 blur-3xl animate-drift" />
+          </>
+        );
+
+      case 'photography':
+        return (
+          <>
+            {/* Left camera elements */}
+            <svg className="absolute top-20 -left-4 w-72 h-[400px]" xmlns="http://www.w3.org/2000/svg">
+              {/* Camera body */}
+              <g className="animate-float-slow">
+                <rect x="20" y="40" width="80" height="55" rx="6" stroke="hsl(0, 0%, 40%)" strokeWidth="3" fill="none" />
+                <circle cx="60" cy="67" r="20" stroke="hsl(0, 0%, 35%)" strokeWidth="3" fill="none" />
+                <circle cx="60" cy="67" r="12" stroke="hsl(0, 0%, 45%)" strokeWidth="2" fill="none" />
+                <circle cx="60" cy="67" r="5" fill="hsl(200, 70%, 50%)" className="animate-pulse-glow" />
+                <rect x="30" y="30" width="20" height="10" rx="2" fill="hsl(0, 0%, 40%)" />
+                <circle cx="90" cy="50" r="4" fill="hsl(0, 0%, 50%)" />
+              </g>
+              
+              {/* Film strip */}
+              <g className="animate-sway">
+                <rect x="30" y="150" width="60" height="80" fill="hsl(0, 0%, 15%)" rx="2" />
+                <rect x="35" y="155" width="20" height="15" fill="hsl(35, 60%, 70%)" rx="1" />
+                <rect x="60" y="155" width="20" height="15" fill="hsl(200, 50%, 65%)" rx="1" />
+                <rect x="35" y="175" width="20" height="15" fill="hsl(140, 50%, 60%)" rx="1" />
+                <rect x="60" y="175" width="20" height="15" fill="hsl(0, 60%, 65%)" rx="1" />
+                <rect x="35" y="195" width="20" height="15" fill="hsl(280, 50%, 65%)" rx="1" />
+                <rect x="60" y="195" width="20" height="15" fill="hsl(45, 70%, 70%)" rx="1" />
+              </g>
+              
+              {/* Aperture icon */}
+              <g className="animate-spin-slow" style={{ transformOrigin: '60px 300px' }}>
+                <circle cx="60" cy="300" r="30" stroke="hsl(0, 0%, 40%)" strokeWidth="2" fill="none" />
+                <path d="M60 275 L65 290 L60 285 L55 290 Z" fill="hsl(0, 0%, 50%)" />
+                <path d="M85 300 L70 295 L75 300 L70 305 Z" fill="hsl(0, 0%, 50%)" />
+                <path d="M60 325 L55 310 L60 315 L65 310 Z" fill="hsl(0, 0%, 50%)" />
+                <path d="M35 300 L50 305 L45 300 L50 295 Z" fill="hsl(0, 0%, 50%)" />
+              </g>
+            </svg>
+            
+            {/* Right side photo frames */}
+            <svg className="absolute top-10 -right-6 w-64 h-80" xmlns="http://www.w3.org/2000/svg">
+              <g className="animate-float-delayed">
+                <rect x="150" y="30" width="70" height="90" stroke="hsl(0, 0%, 35%)" strokeWidth="3" fill="hsl(0, 0%, 98%)" transform="rotate(5 185 75)" />
+                <rect x="158" y="38" width="54" height="65" fill="hsl(200, 50%, 80%)" transform="rotate(5 185 75)" />
+              </g>
+              <g className="animate-float-slow" style={{ animationDelay: '1s' }}>
+                <rect x="140" y="150" width="65" height="85" stroke="hsl(0, 0%, 35%)" strokeWidth="3" fill="hsl(0, 0%, 98%)" transform="rotate(-8 172 192)" />
+                <rect x="147" y="157" width="51" height="62" fill="hsl(35, 60%, 75%)" transform="rotate(-8 172 192)" />
+              </g>
+            </svg>
+            
+            {/* Subtle glows */}
+            <div className="absolute top-0 left-0 w-64 h-64 rounded-full bg-gray-400/15 blur-3xl animate-pulse-glow" />
+            <div className="absolute bottom-0 right-0 w-56 h-56 rounded-full bg-amber-300/15 blur-3xl animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
+          </>
+        );
+
+      case 'travel':
+        return (
+          <>
+            {/* Left side travel elements */}
+            <svg className="absolute top-10 -left-4 w-80 h-[450px]" xmlns="http://www.w3.org/2000/svg">
+              {/* Airplane */}
+              <g className="animate-drift">
+                <path d="M80 60 L40 80 L45 85 L75 75 L70 100 L80 95 L90 100 L85 75 L115 85 L120 80 L80 60" fill="hsl(200, 80%, 55%)" />
+                <line x1="55" y1="82" x2="30" y2="95" stroke="hsl(200, 70%, 70%)" strokeWidth="1" strokeDasharray="3,2" />
+              </g>
+              
+              {/* Hot air balloon */}
+              <g className="animate-float-slow">
+                <ellipse cx="60" cy="180" rx="35" ry="45" fill="hsl(0, 70%, 60%)" />
+                <path d="M25 180 Q60 230, 95 180" fill="hsl(45, 80%, 60%)" />
+                <ellipse cx="60" cy="180" rx="35" ry="45" stroke="hsl(0, 60%, 50%)" strokeWidth="2" fill="none" />
+                <line x1="35" y1="220" x2="40" y2="245" stroke="hsl(30, 40%, 40%)" strokeWidth="2" />
+                <line x1="85" y1="220" x2="80" y2="245" stroke="hsl(30, 40%, 40%)" strokeWidth="2" />
+                <rect x="38" y="245" width="44" height="20" stroke="hsl(30, 50%, 45%)" strokeWidth="2" fill="none" rx="3" />
+              </g>
+              
+              {/* Compass */}
+              <g className="animate-spin-slow" style={{ transformOrigin: '55px 360px' }}>
+                <circle cx="55" cy="360" r="30" stroke="hsl(35, 60%, 50%)" strokeWidth="3" fill="none" />
+                <polygon points="55,335 50,360 55,355 60,360" fill="hsl(0, 70%, 55%)" />
+                <polygon points="55,385 60,360 55,365 50,360" fill="hsl(0, 0%, 90%)" />
+              </g>
+            </svg>
+            
+            {/* Right side - map and luggage */}
+            <svg className="absolute top-20 -right-6 w-64 h-80" xmlns="http://www.w3.org/2000/svg">
+              {/* Suitcase */}
+              <g className="animate-bounce-slow">
+                <rect x="160" y="40" width="50" height="70" rx="5" fill="hsl(200, 70%, 50%)" stroke="hsl(200, 60%, 40%)" strokeWidth="2" />
+                <rect x="175" y="30" width="20" height="12" rx="3" stroke="hsl(200, 60%, 40%)" strokeWidth="2" fill="none" />
+                <line x1="160" y1="65" x2="210" y2="65" stroke="hsl(200, 60%, 40%)" strokeWidth="2" />
+                <line x1="160" y1="85" x2="210" y2="85" stroke="hsl(200, 60%, 40%)" strokeWidth="2" />
+              </g>
+              
+              {/* Location pin */}
+              <g className="animate-bounce-slow" style={{ animationDelay: '0.5s' }}>
+                <path d="M185 170 Q185 140, 210 140 Q235 140, 235 170 Q235 200, 210 230 Q185 200, 185 170" fill="hsl(0, 70%, 55%)" />
+                <circle cx="210" cy="165" r="12" fill="hsl(0, 0%, 100%)" />
+              </g>
+            </svg>
+            
+            {/* Glows */}
+            <div className="absolute top-0 left-0 w-72 h-72 rounded-full bg-sky-400/25 blur-3xl animate-pulse-glow" />
+            <div className="absolute bottom-0 right-0 w-64 h-64 rounded-full bg-amber-400/20 blur-3xl animate-pulse-glow" style={{ animationDelay: '2s' }} />
+            <div className="absolute top-1/2 -left-20 w-48 h-80 rounded-full bg-cyan-300/15 blur-3xl animate-drift" />
+          </>
+        );
+
+      case 'cinema':
+        return (
+          <>
+            {/* Left film elements */}
+            <svg className="absolute top-10 -left-4 w-80 h-[450px]" xmlns="http://www.w3.org/2000/svg">
+              {/* Film reel */}
+              <g className="animate-spin-slow" style={{ transformOrigin: '70px 80px' }}>
+                <circle cx="70" cy="80" r="45" stroke="hsl(0, 0%, 30%)" strokeWidth="4" fill="none" />
+                <circle cx="70" cy="80" r="15" fill="hsl(0, 0%, 25%)" />
+                <circle cx="70" cy="40" r="8" fill="hsl(0, 0%, 20%)" />
+                <circle cx="110" cy="80" r="8" fill="hsl(0, 0%, 20%)" />
+                <circle cx="70" cy="120" r="8" fill="hsl(0, 0%, 20%)" />
+                <circle cx="30" cy="80" r="8" fill="hsl(0, 0%, 20%)" />
+              </g>
+              
+              {/* Film strip */}
+              <g className="animate-sway">
+                <rect x="30" y="180" width="80" height="120" fill="hsl(0, 0%, 10%)" rx="2" />
+                {[0, 1, 2].map((i) => (
+                  <g key={i}>
+                    <rect x="35" y={185 + i * 38} width="70" height="32" fill="hsl(45, 20%, 15%)" rx="1" />
+                    <rect x="30" y={188 + i * 38} width="4" height="6" fill="hsl(0, 0%, 15%)" />
+                    <rect x="30" y={200 + i * 38} width="4" height="6" fill="hsl(0, 0%, 15%)" />
+                    <rect x="106" y={188 + i * 38} width="4" height="6" fill="hsl(0, 0%, 15%)" />
+                    <rect x="106" y={200 + i * 38} width="4" height="6" fill="hsl(0, 0%, 15%)" />
+                  </g>
+                ))}
+              </g>
+              
+              {/* Clapperboard */}
+              <g className="animate-float-slow">
+                <rect x="25" y="340" width="90" height="60" fill="hsl(0, 0%, 15%)" rx="3" />
+                <rect x="25" y="340" width="90" height="20" fill="hsl(0, 0%, 10%)" rx="3" />
+                <line x1="35" y1="340" x2="45" y2="360" stroke="hsl(0, 0%, 95%)" strokeWidth="3" />
+                <line x1="55" y1="340" x2="65" y2="360" stroke="hsl(0, 0%, 95%)" strokeWidth="3" />
+                <line x1="75" y1="340" x2="85" y2="360" stroke="hsl(0, 0%, 95%)" strokeWidth="3" />
+                <line x1="95" y1="340" x2="105" y2="360" stroke="hsl(0, 0%, 95%)" strokeWidth="3" />
+              </g>
+            </svg>
+            
+            {/* Right side - popcorn and star */}
+            <svg className="absolute top-20 -right-6 w-64 h-80" xmlns="http://www.w3.org/2000/svg">
+              {/* Popcorn */}
+              <g className="animate-bounce-slow">
+                <path d="M160 120 L150 200 L220 200 L210 120 Z" fill="hsl(0, 75%, 50%)" stroke="hsl(0, 65%, 40%)" strokeWidth="2" />
+                <ellipse cx="170" cy="105" r="12" fill="hsl(45, 90%, 85%)" />
+                <ellipse cx="190" cy="100" r="14" fill="hsl(45, 90%, 80%)" />
+                <ellipse cx="205" cy="108" r="11" fill="hsl(45, 90%, 85%)" />
+                <ellipse cx="180" cy="115" r="13" fill="hsl(45, 90%, 82%)" />
+                <ellipse cx="195" cy="112" r="10" fill="hsl(45, 90%, 88%)" />
+              </g>
+              
+              {/* Hollywood star */}
+              <g className="animate-pulse-glow">
+                <polygon points="185,250 190,270 210,270 194,282 200,302 185,290 170,302 176,282 160,270 180,270" 
+                         fill="hsl(45, 80%, 55%)" stroke="hsl(45, 70%, 45%)" strokeWidth="2" />
+              </g>
+            </svg>
+            
+            {/* Dramatic glows */}
+            <div className="absolute top-0 left-0 w-72 h-72 rounded-full bg-red-600/20 blur-3xl animate-pulse-glow" />
+            <div className="absolute bottom-0 right-0 w-64 h-64 rounded-full bg-yellow-500/20 blur-3xl animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
+            <div className="absolute top-1/2 -right-20 w-48 h-80 rounded-full bg-red-400/10 blur-3xl animate-drift" />
+          </>
+        );
+
       default:
         return null;
     }
   };
 
-  const themedStyles = ['spring', 'summer', 'autumn', 'winter', 'crypto', 'gaming', 'sports', 'music', 'coffee', 'nature'];
+  const themedStyles = ['spring', 'summer', 'autumn', 'winter', 'crypto', 'gaming', 'sports', 'music', 'coffee', 'nature', 'space', 'photography', 'travel', 'cinema'];
   
   if (!themedStyles.includes(style)) {
     return null;
   }
 
+  // Get animation speed multiplier
+  const { animationSpeed, animationIntensity } = useTheme();
+  
+  const getAnimationStyle = () => {
+    if (animationSpeed === 'off') return { display: 'none' };
+    
+    const speedMultiplier = animationSpeed === 'slow' ? 2 : animationSpeed === 'fast' ? 0.5 : 1;
+    const opacityMultiplier = animationIntensity === 'subtle' ? 0.5 : animationIntensity === 'vibrant' ? 1.3 : 1;
+    
+    return {
+      '--animation-speed': speedMultiplier,
+      opacity: Math.min(1, opacityMultiplier),
+    } as React.CSSProperties;
+  };
+
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={getAnimationStyle()}>
       {renderPattern()}
     </div>
   );
