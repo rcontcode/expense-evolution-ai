@@ -9,6 +9,7 @@ import {
   Asset,
   Liability
 } from '@/hooks/data/useNetWorth';
+import { useConversionReminders } from '@/hooks/data/useConversionReminders';
 import { NetWorthSummary } from '@/components/net-worth/NetWorthSummary';
 import { NetWorthChart } from '@/components/net-worth/NetWorthChart';
 import { AssetsList } from '@/components/net-worth/AssetsList';
@@ -28,6 +29,9 @@ export default function NetWorth() {
   const { data: liabilities = [], isLoading: liabilitiesLoading } = useLiabilities();
   const { data: snapshots = [], isLoading: snapshotsLoading } = useNetWorthSnapshots();
   const createSnapshot = useCreateSnapshot();
+  
+  // Enable conversion reminders - checks and creates notifications for stale conversions
+  useConversionReminders();
 
   const [assetDialogOpen, setAssetDialogOpen] = useState(false);
   const [liabilityDialogOpen, setLiabilityDialogOpen] = useState(false);
