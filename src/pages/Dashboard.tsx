@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download, Scale, ArrowUpRight, ArrowDownRight, UserCircle, Building2, MapPin, CheckCircle, RefreshCw } from 'lucide-react';
+import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download, Scale, ArrowUpRight, ArrowDownRight, UserCircle, Building2, MapPin, CheckCircle, RefreshCw, Landmark } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useClients } from '@/hooks/data/useClients';
@@ -34,6 +34,7 @@ const SubscriptionTracker = lazy(() => import('@/components/subscriptions/Subscr
 const TaxOptimizerCard = lazy(() => import('@/components/dashboard/TaxOptimizerCard').then(m => ({ default: m.TaxOptimizerCard })));
 const RrspTfsaOptimizerCard = lazy(() => import('@/components/dashboard/RrspTfsaOptimizerCard').then(m => ({ default: m.RrspTfsaOptimizerCard })));
 const FIRECalculatorCard = lazy(() => import('@/components/dashboard/FIRECalculatorCard').then(m => ({ default: m.FIRECalculatorCard })));
+const DebtManagerCard = lazy(() => import('@/components/dashboard/DebtManagerCard').then(m => ({ default: m.DebtManagerCard })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -340,7 +341,7 @@ export default function Dashboard() {
           </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <InfoTooltip content={TOOLTIP_CONTENT.chartsTab} variant="wrapper" side="bottom">
               <TabsTrigger value="charts" className="cursor-pointer">{t('taxAnalysis.charts')}</TabsTrigger>
             </InfoTooltip>
@@ -357,6 +358,10 @@ export default function Dashboard() {
             <TabsTrigger value="fire" className="cursor-pointer flex items-center gap-1">
               <TrendingUp className="h-3 w-3" />
               FIRE
+            </TabsTrigger>
+            <TabsTrigger value="debt" className="cursor-pointer flex items-center gap-1">
+              <Landmark className="h-3 w-3" />
+              {language === 'es' ? 'Deudas' : 'Debt'}
             </TabsTrigger>
           </TabsList>
 
@@ -416,6 +421,14 @@ export default function Dashboard() {
             {activeTab === 'fire' && (
               <Suspense fallback={<Skeleton className="h-[600px]" />}>
                 <FIRECalculatorCard />
+              </Suspense>
+            )}
+          </TabsContent>
+
+          <TabsContent value="debt" className="space-y-4">
+            {activeTab === 'debt' && (
+              <Suspense fallback={<Skeleton className="h-[600px]" />}>
+                <DebtManagerCard />
               </Suspense>
             )}
           </TabsContent>
