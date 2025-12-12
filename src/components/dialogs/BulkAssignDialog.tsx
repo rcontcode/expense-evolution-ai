@@ -60,7 +60,7 @@ export function BulkAssignDialog({ open, onClose, expenses }: BulkAssignDialogPr
       }
       
       // Category filter
-      if (categoryFilter && e.category !== categoryFilter) {
+      if (categoryFilter && categoryFilter !== '__all__' && e.category !== categoryFilter) {
         return false;
       }
       
@@ -88,7 +88,7 @@ export function BulkAssignDialog({ open, onClose, expenses }: BulkAssignDialogPr
     setDateTo('');
   };
 
-  const hasActiveFilters = categoryFilter || dateFrom || dateTo;
+  const hasActiveFilters = (categoryFilter && categoryFilter !== '__all__') || dateFrom || dateTo;
 
   // Filter projects and contracts by selected client
   const filteredProjects = useMemo(() => {
@@ -348,7 +348,7 @@ export function BulkAssignDialog({ open, onClose, expenses }: BulkAssignDialogPr
                     <SelectValue placeholder={language === 'es' ? 'Todas...' : 'All...'} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">{language === 'es' ? 'Todas las categorías' : 'All categories'}</SelectItem>
+                    <SelectItem value="__all__">{language === 'es' ? 'Todas las categorías' : 'All categories'}</SelectItem>
                     {availableCategories.map(cat => (
                       <SelectItem key={cat} value={cat}>
                         {getCategoryLabel(cat as any)}
@@ -387,10 +387,10 @@ export function BulkAssignDialog({ open, onClose, expenses }: BulkAssignDialogPr
             
             {hasActiveFilters && (
               <div className="flex items-center gap-2 flex-wrap">
-                {categoryFilter && (
+                {categoryFilter && categoryFilter !== '__all__' && (
                   <Badge variant="secondary" className="text-xs">
                     {getCategoryLabel(categoryFilter as any)}
-                    <button onClick={() => setCategoryFilter('')} className="ml-1 hover:text-destructive">
+                    <button onClick={() => setCategoryFilter('__all__')} className="ml-1 hover:text-destructive">
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>
