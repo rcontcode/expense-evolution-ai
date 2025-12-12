@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { MessageCircle, X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,7 +12,9 @@ import { useClients } from '@/hooks/data/useClients';
 import { useProjects } from '@/hooks/data/useProjects';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useVoiceAssistant } from '@/hooks/utils/useVoiceAssistant';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -39,6 +41,7 @@ export const ChatAssistant: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [autoSpeak, setAutoSpeak] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -55,6 +58,29 @@ export const ChatAssistant: React.FC = () => {
   const userName = profile?.full_name?.split(' ')[0] || 'Usuario';
   const quickQuestions = QUICK_QUESTIONS[language as keyof typeof QUICK_QUESTIONS] || QUICK_QUESTIONS.es;
 
+  // Voice assistant hook
+  const {
+    isListening,
+    isSpeaking,
+    isSupported: isVoiceSupported,
+    transcript,
+    toggleListening,
+    speak,
+    stopSpeaking,
+  } = useVoiceAssistant({
+    onTranscript: (text) => {
+      setInput('');
+      sendMessage(text);
+    },
+  });
+
+  // Update input with live transcript
+  useEffect(() => {
+    if (transcript && isListening) {
+      setInput(transcript);
+    }
+  }, [transcript, isListening]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -67,7 +93,7 @@ export const ChatAssistant: React.FC = () => {
     }
   }, [isOpen]);
 
-  const sendMessage = async (text: string) => {
+  const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isLoading) return;
 
     const userMessage: Message = { role: 'user', content: text };
@@ -97,26 +123,34 @@ export const ChatAssistant: React.FC = () => {
 
       if (error) throw error;
 
+      const responseText = data.message || (language === 'es' 
+        ? 'Lo siento, no pude procesar tu pregunta.' 
+        : 'Sorry, I could not process your question.');
+
       const assistantMessage: Message = {
         role: 'assistant',
-        content: data.message || (language === 'es' 
-          ? 'Lo siento, no pude procesar tu pregunta.' 
-          : 'Sorry, I could not process your question.'),
+        content: responseText,
       };
       setMessages(prev => [...prev, assistantMessage]);
+
+      // Auto-speak response if enabled
+      if (autoSpeak && isVoiceSupported) {
+        speak(responseText);
+      }
     } catch (error) {
       console.error('Chat error:', error);
+      const errorText = language === 'es'
+        ? 'Lo siento, ocurrió un error. Por favor intenta de nuevo.'
+        : 'Sorry, an error occurred. Please try again.';
       const errorMessage: Message = {
         role: 'assistant',
-        content: language === 'es'
-          ? 'Lo siento, ocurrió un error. Por favor intenta de nuevo.'
-          : 'Sorry, an error occurred. Please try again.',
+        content: errorText,
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLoading, userName, stats, totalIncome, clients, projects, messages, language, autoSpeak, isVoiceSupported, speak]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,6 +159,13 @@ export const ChatAssistant: React.FC = () => {
 
   const handleQuickQuestion = (question: string) => {
     sendMessage(question);
+  };
+
+  const handleMicClick = () => {
+    if (isSpeaking) {
+      stopSpeaking();
+    }
+    toggleListening();
   };
 
   return (
@@ -156,22 +197,72 @@ export const ChatAssistant: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b bg-primary/5">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-primary" />
+              <div className={cn(
+                "h-10 w-10 rounded-full flex items-center justify-center transition-colors",
+                isSpeaking ? "bg-primary animate-pulse" : "bg-primary/10"
+              )}>
+                <Sparkles className={cn(
+                  "h-5 w-5",
+                  isSpeaking ? "text-primary-foreground" : "text-primary"
+                )} />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground">
                   {language === 'es' ? 'Asistente Financiero' : 'Financial Assistant'}
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  {language === 'es' ? `Hola ${userName}, ¿en qué te ayudo?` : `Hi ${userName}, how can I help?`}
+                  {isListening 
+                    ? (language === 'es' ? '🎤 Escuchando...' : '🎤 Listening...')
+                    : isSpeaking 
+                      ? (language === 'es' ? '🔊 Hablando...' : '🔊 Speaking...')
+                      : (language === 'es' ? `Hola ${userName}, ¿en qué te ayudo?` : `Hi ${userName}, how can I help?`)
+                  }
                 </p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
-              <X className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              {/* Auto-speak toggle */}
+              {isVoiceSupported && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => {
+                        setAutoSpeak(!autoSpeak);
+                        if (isSpeaking) stopSpeaking();
+                      }}
+                      className={cn(
+                        "h-8 w-8",
+                        autoSpeak && "text-primary"
+                      )}
+                    >
+                      {autoSpeak ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {autoSpeak 
+                      ? (language === 'es' ? 'Desactivar voz' : 'Disable voice')
+                      : (language === 'es' ? 'Activar voz' : 'Enable voice')
+                    }
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="h-8 w-8">
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
+
+          {/* Voice Mode Banner */}
+          {isVoiceSupported && (
+            <div className="px-4 py-2 bg-muted/50 border-b text-xs text-center text-muted-foreground">
+              {language === 'es' 
+                ? '🎙️ Modo manos libres: toca el micrófono para hablar'
+                : '🎙️ Hands-free mode: tap the microphone to speak'
+              }
+            </div>
+          )}
 
           {/* Messages */}
           <ScrollArea className="flex-1 p-4" ref={scrollRef}>
@@ -220,6 +311,27 @@ export const ChatAssistant: React.FC = () => {
                       )}
                     >
                       <p className="whitespace-pre-wrap">{msg.content}</p>
+                      {/* Play button for assistant messages */}
+                      {msg.role === 'assistant' && isVoiceSupported && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (isSpeaking) {
+                              stopSpeaking();
+                            } else {
+                              speak(msg.content);
+                            }
+                          }}
+                          className="h-6 px-2 mt-1 text-xs opacity-70 hover:opacity-100"
+                        >
+                          {isSpeaking ? <VolumeX className="h-3 w-3 mr-1" /> : <Volume2 className="h-3 w-3 mr-1" />}
+                          {isSpeaking 
+                            ? (language === 'es' ? 'Detener' : 'Stop')
+                            : (language === 'es' ? 'Escuchar' : 'Listen')
+                          }
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -237,13 +349,46 @@ export const ChatAssistant: React.FC = () => {
           {/* Input */}
           <form onSubmit={handleSubmit} className="p-4 border-t bg-background/50">
             <div className="flex gap-2">
+              {/* Voice input button */}
+              {isVoiceSupported && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant={isListening ? "default" : "outline"}
+                      size="icon"
+                      onClick={handleMicClick}
+                      disabled={isLoading}
+                      className={cn(
+                        "flex-shrink-0 transition-all",
+                        isListening && "bg-red-500 hover:bg-red-600 animate-pulse"
+                      )}
+                    >
+                      {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {isListening 
+                      ? (language === 'es' ? 'Detener grabación' : 'Stop recording')
+                      : (language === 'es' ? 'Hablar' : 'Speak')
+                    }
+                  </TooltipContent>
+                </Tooltip>
+              )}
               <Input
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={language === 'es' ? 'Escribe tu pregunta...' : 'Type your question...'}
+                placeholder={
+                  isListening 
+                    ? (language === 'es' ? 'Escuchando...' : 'Listening...')
+                    : (language === 'es' ? 'Escribe o habla tu pregunta...' : 'Type or speak your question...')
+                }
                 disabled={isLoading}
-                className="flex-1"
+                className={cn(
+                  "flex-1",
+                  isListening && "border-red-500 bg-red-50 dark:bg-red-950/20"
+                )}
               />
               <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
                 <Send className="h-4 w-4" />
