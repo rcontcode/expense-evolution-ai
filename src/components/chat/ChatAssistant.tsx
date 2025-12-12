@@ -15,6 +15,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useVoiceAssistant } from '@/hooks/utils/useVoiceAssistant';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -36,6 +38,50 @@ const QUICK_QUESTIONS = {
   ],
 };
 
+// Voice navigation commands
+const VOICE_COMMANDS = {
+  es: [
+    { patterns: ['ir a gastos', 'gastos', 'ver gastos', 'mostrar gastos', 'abrir gastos'], route: '/expenses', name: 'Gastos' },
+    { patterns: ['ir a ingresos', 'ingresos', 'ver ingresos', 'mostrar ingresos'], route: '/income', name: 'Ingresos' },
+    { patterns: ['ir a clientes', 'clientes', 'ver clientes', 'mostrar clientes'], route: '/clients', name: 'Clientes' },
+    { patterns: ['ir a proyectos', 'proyectos', 'ver proyectos'], route: '/projects', name: 'Proyectos' },
+    { patterns: ['ir a contratos', 'contratos', 'ver contratos'], route: '/contracts', name: 'Contratos' },
+    { patterns: ['ir al dashboard', 'dashboard', 'inicio', 'ir al inicio', 'panel'], route: '/dashboard', name: 'Dashboard' },
+    { patterns: ['ir a kilometraje', 'kilometraje', 'millas', 'kilómetros'], route: '/mileage', name: 'Kilometraje' },
+    { patterns: ['ir a patrimonio', 'patrimonio', 'patrimonio neto', 'net worth'], route: '/net-worth', name: 'Patrimonio' },
+    { patterns: ['ir a banca', 'banca', 'banco', 'transacciones bancarias'], route: '/banking', name: 'Banca' },
+    { patterns: ['ir a configuración', 'configuración', 'ajustes', 'settings'], route: '/settings', name: 'Configuración' },
+    { patterns: ['capturar', 'capturar gasto', 'tomar foto', 'escanear recibo'], route: '/capture', name: 'Captura Rápida' },
+    { patterns: ['agregar gasto', 'nuevo gasto', 'añadir gasto'], route: '/expenses', action: 'add-expense', name: 'Agregar Gasto' },
+    { patterns: ['agregar ingreso', 'nuevo ingreso', 'añadir ingreso'], route: '/income', action: 'add-income', name: 'Agregar Ingreso' },
+    { patterns: ['agregar cliente', 'nuevo cliente'], route: '/clients', action: 'add-client', name: 'Agregar Cliente' },
+    { patterns: ['bandeja', 'bandeja de caos', 'revisar recibos', 'chaos inbox'], route: '/chaos-inbox', name: 'Bandeja de Caos' },
+    { patterns: ['reconciliación', 'reconciliar', 'conciliación'], route: '/reconciliation', name: 'Reconciliación' },
+    { patterns: ['perfil de negocio', 'perfil empresarial', 'mi negocio'], route: '/business-profile', name: 'Perfil de Negocio' },
+    { patterns: ['notificaciones', 'alertas', 'ver notificaciones'], route: '/notifications', name: 'Notificaciones' },
+  ],
+  en: [
+    { patterns: ['go to expenses', 'expenses', 'show expenses', 'open expenses'], route: '/expenses', name: 'Expenses' },
+    { patterns: ['go to income', 'income', 'show income'], route: '/income', name: 'Income' },
+    { patterns: ['go to clients', 'clients', 'show clients'], route: '/clients', name: 'Clients' },
+    { patterns: ['go to projects', 'projects', 'show projects'], route: '/projects', name: 'Projects' },
+    { patterns: ['go to contracts', 'contracts', 'show contracts'], route: '/contracts', name: 'Contracts' },
+    { patterns: ['go to dashboard', 'dashboard', 'home', 'go home'], route: '/dashboard', name: 'Dashboard' },
+    { patterns: ['go to mileage', 'mileage', 'miles', 'kilometers'], route: '/mileage', name: 'Mileage' },
+    { patterns: ['go to net worth', 'net worth', 'wealth', 'assets'], route: '/net-worth', name: 'Net Worth' },
+    { patterns: ['go to banking', 'banking', 'bank', 'bank transactions'], route: '/banking', name: 'Banking' },
+    { patterns: ['go to settings', 'settings', 'configuration'], route: '/settings', name: 'Settings' },
+    { patterns: ['capture', 'capture expense', 'take photo', 'scan receipt'], route: '/capture', name: 'Quick Capture' },
+    { patterns: ['add expense', 'new expense', 'create expense'], route: '/expenses', action: 'add-expense', name: 'Add Expense' },
+    { patterns: ['add income', 'new income', 'create income'], route: '/income', action: 'add-income', name: 'Add Income' },
+    { patterns: ['add client', 'new client', 'create client'], route: '/clients', action: 'add-client', name: 'Add Client' },
+    { patterns: ['inbox', 'chaos inbox', 'review receipts'], route: '/chaos-inbox', name: 'Chaos Inbox' },
+    { patterns: ['reconciliation', 'reconcile', 'bank reconciliation'], route: '/reconciliation', name: 'Reconciliation' },
+    { patterns: ['business profile', 'my business'], route: '/business-profile', name: 'Business Profile' },
+    { patterns: ['notifications', 'alerts', 'show notifications'], route: '/notifications', name: 'Notifications' },
+  ],
+};
+
 export const ChatAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -44,6 +90,7 @@ export const ChatAssistant: React.FC = () => {
   const [autoSpeak, setAutoSpeak] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const { user } = useAuth();
   const { data: profile } = useProfile();
@@ -57,6 +104,40 @@ export const ChatAssistant: React.FC = () => {
 
   const userName = profile?.full_name?.split(' ')[0] || 'Usuario';
   const quickQuestions = QUICK_QUESTIONS[language as keyof typeof QUICK_QUESTIONS] || QUICK_QUESTIONS.es;
+
+  // Check if text matches a voice command
+  const checkVoiceCommand = useCallback((text: string): { matched: boolean; route?: string; name?: string; action?: string } => {
+    const normalizedText = text.toLowerCase().trim();
+    const commands = VOICE_COMMANDS[language as keyof typeof VOICE_COMMANDS] || VOICE_COMMANDS.es;
+    
+    for (const command of commands) {
+      for (const pattern of command.patterns) {
+        if (normalizedText.includes(pattern)) {
+          return { matched: true, route: command.route, name: command.name, action: command.action };
+        }
+      }
+    }
+    return { matched: false };
+  }, [language]);
+
+  // Handle voice command execution
+  const executeVoiceCommand = useCallback((route: string, name: string, action?: string) => {
+    const confirmMsg = language === 'es' 
+      ? `Navegando a ${name}`
+      : `Navigating to ${name}`;
+    
+    toast.success(confirmMsg);
+    
+    // Navigate to route
+    navigate(route);
+    
+    // If there's an action, dispatch a custom event after navigation
+    if (action) {
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('voice-command-action', { detail: { action } }));
+      }, 500);
+    }
+  }, [navigate, language]);
 
   // Voice assistant hook
   const {
@@ -72,6 +153,19 @@ export const ChatAssistant: React.FC = () => {
     stopSpeaking,
   } = useVoiceAssistant({
     onTranscript: (text) => {
+      // First check if it's a navigation command
+      const command = checkVoiceCommand(text);
+      if (command.matched && command.route && command.name) {
+        setInput('');
+        const confirmMsg = language === 'es' 
+          ? `Entendido. Navegando a ${command.name}.`
+          : `Got it. Navigating to ${command.name}.`;
+        speak(confirmMsg);
+        executeVoiceCommand(command.route, command.name, command.action);
+        return;
+      }
+      
+      // Otherwise, send as a chat message
       setInput('');
       sendMessage(text);
     },
