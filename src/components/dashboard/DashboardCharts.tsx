@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
@@ -6,18 +6,6 @@ import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, Cart
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
-
-const categoryChartConfig = {
-  total: { label: "Total" },
-} satisfies ChartConfig;
-
-const clientChartConfig = {
-  total: { label: "Total", color: "hsl(var(--chart-1))" },
-} satisfies ChartConfig;
-
-const trendChartConfig = {
-  total: { label: "Total", color: "hsl(var(--chart-1))" },
-} satisfies ChartConfig;
 
 interface CategoryStats {
   category: string;
@@ -47,7 +35,21 @@ export const DashboardCharts = memo(({
   monthlyTrends, 
   isLoading 
 }: DashboardChartsProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  const totalLabel = language === 'es' ? 'Total' : 'Total';
+
+  const categoryChartConfig = useMemo(() => ({
+    total: { label: totalLabel },
+  } satisfies ChartConfig), [totalLabel]);
+
+  const clientChartConfig = useMemo(() => ({
+    total: { label: totalLabel, color: "hsl(var(--chart-1))" },
+  } satisfies ChartConfig), [totalLabel]);
+
+  const trendChartConfig = useMemo(() => ({
+    total: { label: totalLabel, color: "hsl(var(--chart-1))" },
+  } satisfies ChartConfig), [totalLabel]);
 
   return (
     <div className="space-y-4">

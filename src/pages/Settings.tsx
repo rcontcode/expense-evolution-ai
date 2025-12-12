@@ -460,11 +460,23 @@ export default function Settings() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                {language === 'es' 
-                  ? 'Genera datos estructurados: 2 clientes, 2 proyectos por cliente, 20 gastos variados, 12 ingresos, 8 registros de kilometraje, 10 activos, 5 pasivos, 30 transacciones bancarias, 4 metas de inversión, 3 metas de ahorro, 6 etiquetas y notificaciones.'
-                  : 'Generate structured data: 2 clients, 2 projects per client, 20 varied expenses, 12 income entries, 8 mileage records, 10 assets, 5 liabilities, 30 bank transactions, 4 investment goals, 3 savings goals, 6 tags and notifications.'}
-              </p>
+              <div className="text-sm text-muted-foreground space-y-2">
+                <p className="font-medium">
+                  {language === 'es' ? 'Datos incluidos:' : 'Included data:'}
+                </p>
+                <ul className="list-disc list-inside space-y-1 text-xs">
+                  <li>{language === 'es' ? '2 clientes con información completa' : '2 clients with complete information'}</li>
+                  <li>{language === 'es' ? '4 proyectos (2 por cliente)' : '4 projects (2 per client)'}</li>
+                  <li>{language === 'es' ? '2 contratos con términos de reembolso AI' : '2 contracts with AI reimbursement terms'}</li>
+                  <li>{language === 'es' ? '20 gastos variados (deducibles, reembolsables, pendientes)' : '20 varied expenses (deductible, reimbursable, pending)'}</li>
+                  <li>{language === 'es' ? '12 ingresos (pagos de clientes, inversiones, pasivos)' : '12 income entries (client payments, investments, passive)'}</li>
+                  <li>{language === 'es' ? '8 registros de kilometraje' : '8 mileage records'}</li>
+                  <li>{language === 'es' ? '10 activos y 5 pasivos para patrimonio neto' : '10 assets and 5 liabilities for net worth'}</li>
+                  <li>{language === 'es' ? '30 transacciones bancarias para reconciliación' : '30 bank transactions for reconciliation'}</li>
+                  <li>{language === 'es' ? '4 metas de inversión y 3 de ahorro' : '4 investment goals and 3 savings goals'}</li>
+                  <li>{language === 'es' ? '6 etiquetas y notificaciones' : '6 tags and notifications'}</li>
+                </ul>
+              </div>
               <div className="flex gap-2">
                 <Button 
                   onClick={() => generateSampleData.mutate()}
@@ -497,11 +509,16 @@ export default function Settings() {
                   ) : (
                     <>
                       <Trash2 className="mr-2 h-4 w-4" />
-                      {language === 'es' ? 'Eliminar Datos de Ejemplo' : 'Delete Sample Data'}
+                      {language === 'es' ? 'Eliminar Datos' : 'Delete Data'}
                     </>
                   )}
                 </Button>
               </div>
+              <p className="text-xs text-muted-foreground italic">
+                {language === 'es' 
+                  ? 'Los datos de ejemplo están marcados con [SAMPLE] y se eliminan sin afectar tus datos reales.' 
+                  : 'Sample data is marked with [SAMPLE] and can be deleted without affecting your real data.'}
+              </p>
             </div>
           </CardContent>
         </Card>
