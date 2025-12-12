@@ -3,3 +3,4 @@ export { MissingDataAlert } from './MissingDataAlert';
 export { ContextualTip } from './ContextualTip';
 export { InteractiveWelcome } from './InteractiveWelcome';
 export { PageContextGuide, PAGE_GUIDES } from './PageContextGuide';
+export { OnboardingTutorial, resetOnboardingTutorial } from './OnboardingTutorial';

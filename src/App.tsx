@@ -29,6 +29,7 @@ import NetWorth from "./pages/NetWorth";
 import Banking from "./pages/Banking";
 import Notifications from "./pages/Notifications";
 import { ChatAssistant } from "./components/chat/ChatAssistant";
+import { OnboardingTutorial } from "./components/guidance/OnboardingTutorial";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <ChatAssistant />
+              <OnboardingTutorial />
             </AuthProvider>
           </LanguageProvider>
         </BrowserRouter>
