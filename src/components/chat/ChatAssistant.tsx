@@ -10,7 +10,7 @@ import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useClients } from '@/hooks/data/useClients';
 import { useProjects } from '@/hooks/data/useProjects';
-import { useExpenses } from '@/hooks/data/useExpenses';
+import { useExpenses, useCreateExpense } from '@/hooks/data/useExpenses';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { ExpenseCategory } from '@/types/expense.types';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -129,6 +130,76 @@ const VOICE_QUERIES: { es: VoiceQuery[]; en: VoiceQuery[] } = {
   ],
 };
 
+// Category mappings for voice expense creation
+const CATEGORY_KEYWORDS: Record<string, { keywords: string[]; category: ExpenseCategory }> = {
+  meals: { keywords: ['restaurante', 'restaurant', 'comida', 'food', 'almuerzo', 'lunch', 'cena', 'dinner', 'desayuno', 'breakfast', 'cafe', 'café', 'coffee'], category: 'meals' },
+  travel: { keywords: ['viaje', 'travel', 'vuelo', 'flight', 'hotel', 'hospedaje', 'avión', 'airplane', 'tren', 'train', 'bus', 'taxi', 'uber', 'transporte', 'transport'], category: 'travel' },
+  equipment: { keywords: ['equipo', 'equipment', 'computadora', 'computer', 'laptop', 'teléfono', 'phone', 'tablet', 'monitor', 'teclado', 'keyboard', 'herramienta', 'tool'], category: 'equipment' },
+  software: { keywords: ['software', 'licencia', 'license', 'suscripción', 'subscription', 'app', 'aplicación', 'programa'], category: 'software' },
+  fuel: { keywords: ['gasolina', 'gas', 'fuel', 'combustible', 'diesel', 'nafta', 'bencina'], category: 'fuel' },
+  office_supplies: { keywords: ['oficina', 'office', 'papelería', 'stationery', 'papel', 'paper', 'tinta', 'ink', 'material'], category: 'office_supplies' },
+  utilities: { keywords: ['servicios', 'utilities', 'luz', 'electricity', 'agua', 'water', 'internet', 'teléfono fijo', 'landline'], category: 'utilities' },
+  professional_services: { keywords: ['servicio', 'service', 'consultoría', 'consulting', 'abogado', 'lawyer', 'contador', 'accountant', 'profesional'], category: 'professional_services' },
+};
+
+// Parse voice expense command
+interface ParsedExpense {
+  amount: number;
+  category: ExpenseCategory;
+  vendor: string;
+}
+
+function parseVoiceExpense(text: string): ParsedExpense | null {
+  const normalizedText = text.toLowerCase().trim();
+  
+  // Patterns: "gasto de X en Y", "expense of X at Y", "X dólares en Y", "X dollars at Y"
+  const patterns = [
+    /(?:gasto de|expense of|gasté)\s*\$?\s*(\d+(?:[.,]\d+)?)\s*(?:dólares?|dollars?|pesos?)?\s*(?:en|at|de)\s+(.+)/i,
+    /\$?\s*(\d+(?:[.,]\d+)?)\s*(?:dólares?|dollars?|pesos?)?\s*(?:en|at|de)\s+(.+)/i,
+    /(?:gasto|expense|gasté)\s+(.+)\s+(?:por|for)\s*\$?\s*(\d+(?:[.,]\d+)?)/i,
+  ];
+  
+  let amount: number | null = null;
+  let vendorText: string = '';
+  
+  for (const pattern of patterns) {
+    const match = normalizedText.match(pattern);
+    if (match) {
+      if (pattern.source.includes('por|for')) {
+        // Pattern: "gasto restaurante por 50"
+        vendorText = match[1].trim();
+        amount = parseFloat(match[2].replace(',', '.'));
+      } else {
+        // Pattern: "gasto de 50 en restaurante"
+        amount = parseFloat(match[1].replace(',', '.'));
+        vendorText = match[2].trim();
+      }
+      break;
+    }
+  }
+  
+  if (!amount || amount <= 0 || !vendorText) {
+    return null;
+  }
+  
+  // Detect category from vendor text
+  let category: ExpenseCategory = 'other';
+  for (const [, config] of Object.entries(CATEGORY_KEYWORDS)) {
+    for (const keyword of config.keywords) {
+      if (vendorText.includes(keyword)) {
+        category = config.category;
+        break;
+      }
+    }
+    if (category !== 'other') break;
+  }
+  
+  // Capitalize vendor name
+  const vendor = vendorText.charAt(0).toUpperCase() + vendorText.slice(1);
+  
+  return { amount, category, vendor };
+}
+
 export const ChatAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -147,6 +218,7 @@ export const ChatAssistant: React.FC = () => {
   const { data: projects } = useProjects();
   const { data: expenses } = useExpenses();
   const { language } = useLanguage();
+  const createExpense = useCreateExpense();
 
   // Calculate financial data for queries
   const now = new Date();
@@ -360,7 +432,45 @@ export const ChatAssistant: React.FC = () => {
     stopSpeaking,
   } = useVoiceAssistant({
     onTranscript: (text) => {
-      // First check if it's a data query command
+      // First check if it's an expense creation command
+      const parsedExpense = parseVoiceExpense(text);
+      if (parsedExpense) {
+        setInput('');
+        
+        // Create the expense (user_id is added by the hook)
+        createExpense.mutate({
+          amount: parsedExpense.amount,
+          vendor: parsedExpense.vendor,
+          category: parsedExpense.category,
+          date: new Date().toISOString().split('T')[0],
+          status: 'pending',
+          reimbursement_type: 'pending_classification',
+          user_id: '', // Will be overwritten by the hook
+        }, {
+          onSuccess: () => {
+            const confirmMsg = language === 'es'
+              ? `Gasto creado: $${parsedExpense.amount} en ${parsedExpense.vendor}, categoría ${parsedExpense.category}.`
+              : `Expense created: $${parsedExpense.amount} at ${parsedExpense.vendor}, category ${parsedExpense.category}.`;
+            
+            // Add to chat messages
+            const userMessage: Message = { role: 'user', content: text };
+            const assistantMessage: Message = { role: 'assistant', content: confirmMsg };
+            setMessages(prev => [...prev, userMessage, assistantMessage]);
+            
+            speak(confirmMsg);
+            toast.success(language === 'es' ? 'Gasto creado por voz' : 'Expense created by voice');
+          },
+          onError: () => {
+            const errorMsg = language === 'es'
+              ? 'No pude crear el gasto. Intenta de nuevo.'
+              : 'Could not create the expense. Please try again.';
+            speak(errorMsg);
+          }
+        });
+        return;
+      }
+      
+      // Then check if it's a data query command
       const query = checkVoiceQuery(text);
       if (query.matched && query.queryType) {
         setInput('');
