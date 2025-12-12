@@ -41,6 +41,10 @@ function getPersonalizedApplication(
         es: 'Clientes recurrentes generan ingresos pasivos predecibles',
         en: 'Recurring clients generate predictable passive income',
       },
+      onboarding: {
+        es: 'Configura tu perfil para empezar a generar ingresos inteligentes',
+        en: 'Set up your profile to start generating smart income',
+      },
       general: {
         es: 'Busca oportunidades para generar ingresos mientras duermes',
         en: 'Look for opportunities to earn money while you sleep',
@@ -62,6 +66,10 @@ function getPersonalizedApplication(
       clients: {
         es: 'Cada cliente es una oportunidad de crecimiento mutuo',
         en: 'Every client is an opportunity for mutual growth',
+      },
+      onboarding: {
+        es: 'Empieza con la mentalidad correcta desde el primer día',
+        en: 'Start with the right mindset from day one',
       },
       general: {
         es: 'Tu forma de pensar determina tus resultados financieros',
@@ -85,6 +93,10 @@ function getPersonalizedApplication(
         es: 'Invierte en relaciones con clientes de alto valor',
         en: 'Invest in relationships with high-value clients',
       },
+      onboarding: {
+        es: 'Configura tus metas de inversión desde ahora',
+        en: 'Set up your investment goals from now',
+      },
       general: {
         es: 'La paciencia en inversiones genera los mejores retornos',
         en: 'Patience in investments generates the best returns',
@@ -106,6 +118,10 @@ function getPersonalizedApplication(
       clients: {
         es: 'Cada pago de cliente es una oportunidad de ahorrar',
         en: 'Every client payment is an opportunity to save',
+      },
+      onboarding: {
+        es: 'Define tu porcentaje de ahorro ideal desde el inicio',
+        en: 'Define your ideal savings percentage from the start',
       },
       general: {
         es: 'El ahorro constante construye riqueza a largo plazo',
@@ -129,6 +145,10 @@ function getPersonalizedApplication(
         es: 'Una cartera de clientes leales es tu activo más valioso',
         en: 'A loyal client portfolio is your most valuable asset',
       },
+      onboarding: {
+        es: 'Empieza a identificar qué son activos vs pasivos',
+        en: 'Start identifying what are assets vs liabilities',
+      },
       general: {
         es: 'Enfócate en adquirir activos que generen flujo de efectivo',
         en: 'Focus on acquiring assets that generate cash flow',
@@ -151,14 +171,174 @@ function getPersonalizedApplication(
         es: 'La confianza con clientes se construye con pequeñas acciones constantes',
         en: 'Client trust is built with small consistent actions',
       },
+      onboarding: {
+        es: 'El tiempo es tu aliado - empieza hoy para maximizar el compuesto',
+        en: 'Time is your ally - start today to maximize compounding',
+      },
       general: {
         es: 'El tiempo es tu mejor aliado cuando inviertes consistentemente',
         en: 'Time is your best ally when you invest consistently',
       },
     },
+    entrepreneurship: {
+      dashboard: {
+        es: 'Analiza tus métricas como un empresario analiza su negocio',
+        en: 'Analyze your metrics like an entrepreneur analyzes their business',
+      },
+      expenses: {
+        es: 'Cada gasto de negocio es una inversión - asegúrate que genere retorno',
+        en: 'Every business expense is an investment - ensure it generates return',
+      },
+      income: {
+        es: 'Diversifica tus fuentes de ingreso como un empresario diversifica productos',
+        en: 'Diversify your income sources like an entrepreneur diversifies products',
+      },
+      clients: {
+        es: 'Tus clientes son la base de tu imperio - cuídalos',
+        en: 'Your clients are the foundation of your empire - take care of them',
+      },
+      onboarding: {
+        es: 'Configura tu negocio desde el inicio como un emprendedor',
+        en: 'Set up your business from the start like an entrepreneur',
+      },
+      general: {
+        es: 'Piensa como dueño de negocio, no como empleado',
+        en: 'Think like a business owner, not an employee',
+      },
+    },
+    risk: {
+      dashboard: {
+        es: 'Revisa tus números para identificar riesgos antes de que sean problemas',
+        en: 'Review your numbers to identify risks before they become problems',
+      },
+      expenses: {
+        es: 'Controla tus gastos para reducir el riesgo financiero',
+        en: 'Control your expenses to reduce financial risk',
+      },
+      income: {
+        es: 'Múltiples fuentes de ingreso reducen tu riesgo total',
+        en: 'Multiple income sources reduce your total risk',
+      },
+      clients: {
+        es: 'No dependas de un solo cliente - diversifica tu cartera',
+        en: "Don't depend on a single client - diversify your portfolio",
+      },
+      onboarding: {
+        es: 'Aprende a gestionar riesgos desde el principio',
+        en: 'Learn to manage risks from the beginning',
+      },
+      general: {
+        es: 'El riesgo calculado es diferente a la imprudencia',
+        en: 'Calculated risk is different from recklessness',
+      },
+    },
+    freedom: {
+      dashboard: {
+        es: 'Cada número positivo te acerca más a la libertad financiera',
+        en: 'Every positive number brings you closer to financial freedom',
+      },
+      expenses: {
+        es: 'Menos gastos innecesarios = más libertad de elección',
+        en: 'Fewer unnecessary expenses = more freedom of choice',
+      },
+      income: {
+        es: 'Cada ingreso pasivo es un paso hacia tu independencia',
+        en: 'Every passive income is a step towards your independence',
+      },
+      clients: {
+        es: 'Clientes que valoran tu trabajo te dan libertad de elegir proyectos',
+        en: 'Clients who value your work give you freedom to choose projects',
+      },
+      onboarding: {
+        es: 'Define qué significa libertad financiera para ti',
+        en: 'Define what financial freedom means to you',
+      },
+      general: {
+        es: 'La libertad financiera es trabajar porque quieres, no porque debes',
+        en: 'Financial freedom is working because you want to, not because you have to',
+      },
+    },
+    planning: {
+      dashboard: {
+        es: 'Tu dashboard es tu plan financiero en tiempo real',
+        en: 'Your dashboard is your financial plan in real time',
+      },
+      expenses: {
+        es: 'Planifica tus gastos antes de gastar - presupuesta',
+        en: 'Plan your expenses before spending - budget',
+      },
+      income: {
+        es: 'Proyecta tus ingresos futuros y planifica en base a ellos',
+        en: 'Project your future income and plan based on it',
+      },
+      clients: {
+        es: 'Planifica el crecimiento de tu cartera de clientes',
+        en: 'Plan the growth of your client portfolio',
+      },
+      onboarding: {
+        es: 'Este es el primer paso de tu plan financiero',
+        en: 'This is the first step of your financial plan',
+      },
+      general: {
+        es: 'Un buen plan hoy es mejor que un plan perfecto mañana',
+        en: 'A good plan today is better than a perfect plan tomorrow',
+      },
+    },
+    self_investment: {
+      dashboard: {
+        es: 'Analiza cuánto estás invirtiendo en tu desarrollo personal',
+        en: 'Analyze how much you are investing in your personal development',
+      },
+      expenses: {
+        es: 'Los gastos en educación son inversiones en ti mismo',
+        en: 'Education expenses are investments in yourself',
+      },
+      income: {
+        es: 'Tu conocimiento es tu mayor fuente de ingresos',
+        en: 'Your knowledge is your greatest source of income',
+      },
+      clients: {
+        es: 'Invierte en aprender más sobre tu industria y tus clientes',
+        en: 'Invest in learning more about your industry and clients',
+      },
+      onboarding: {
+        es: 'Este sistema es una inversión en tu educación financiera',
+        en: 'This system is an investment in your financial education',
+      },
+      general: {
+        es: 'Nunca dejes de aprender - el conocimiento paga los mejores dividendos',
+        en: 'Never stop learning - knowledge pays the best dividends',
+      },
+    },
+    general: {
+      dashboard: {
+        es: 'Mantén el control de tus finanzas revisando tu dashboard regularmente',
+        en: 'Keep control of your finances by reviewing your dashboard regularly',
+      },
+      expenses: {
+        es: 'Cada gasto bien registrado es información valiosa',
+        en: 'Every well-recorded expense is valuable information',
+      },
+      income: {
+        es: 'Celebra cada ingreso, pero planifica su uso',
+        en: 'Celebrate each income, but plan its use',
+      },
+      clients: {
+        es: 'Las buenas relaciones con clientes son la base del éxito',
+        en: 'Good client relationships are the foundation of success',
+      },
+      onboarding: {
+        es: 'Bienvenido al camino hacia el control de tus finanzas',
+        en: 'Welcome to the path towards financial control',
+      },
+      general: {
+        es: 'La consistencia pequeña supera al esfuerzo ocasional grande',
+        en: 'Small consistency beats occasional big effort',
+      },
+    },
   };
 
-  const categoryApps = applications[quote.category] || applications.mindset;
+  const categoryApps = applications[quote.category] || applications.general;
   const contextApp = categoryApps[context] || categoryApps.general;
   
   // Personalize based on investment goals if available
