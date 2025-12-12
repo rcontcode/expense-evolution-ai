@@ -457,12 +457,169 @@ export function useGenerateSampleData() {
       if (snapshotError) throw snapshotError;
 
       // ============================================
-      // 13. CREATE SAMPLE NOTIFICATIONS
+      // 13. CREATE SAMPLE CONTRACTS WITH REIMBURSEMENT TERMS
+      // ============================================
+      const contracts = [
+        {
+          file_name: `${SAMPLE_MARKER} TechCorp-Services-Agreement.pdf`,
+          file_path: 'sample/techcorp-services.pdf',
+          file_type: 'application/pdf',
+          title: `${SAMPLE_MARKER} TechCorp Services Agreement`,
+          client_id: clientsData[0].id,
+          contract_type: 'services',
+          status: 'ready' as const,
+          value: 75000,
+          start_date: new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split('T')[0],
+          end_date: new Date(today.getFullYear(), today.getMonth() + 10, 30).toISOString().split('T')[0],
+          auto_renew: true,
+          renewal_notice_days: 30,
+          description: 'Master services agreement for software development',
+          user_notes: `${SAMPLE_MARKER} Me reembolsarán cualquier compra de materiales, herramientas, software o insumos necesarios para el proyecto. También cubren viajes y kilometraje para visitas al cliente. Comidas de trabajo están cubiertas al 100%.`,
+          extracted_terms: {
+            parties: ['TechCorp Solutions', 'Contractor'],
+            effective_date: new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split('T')[0],
+            termination_date: new Date(today.getFullYear(), today.getMonth() + 10, 30).toISOString().split('T')[0],
+            payment_terms: 'Net 30 days from invoice date',
+            key_clauses: [
+              'All work product becomes property of TechCorp',
+              'Confidentiality obligations for 5 years',
+              'Expense reimbursement within 15 business days'
+            ]
+          },
+          reimbursement_terms: {
+            policies: [
+              {
+                category: 'software',
+                reimbursable: true,
+                percentage: 100,
+                requires_approval: false,
+                documentation: 'Receipt required',
+                notes: 'Any software licenses or subscriptions needed for the project'
+              },
+              {
+                category: 'equipment',
+                reimbursable: true,
+                percentage: 100,
+                requires_approval: true,
+                approval_threshold: 500,
+                documentation: 'Receipt and purchase order required',
+                notes: 'Hardware and equipment purchases over $500 require pre-approval'
+              },
+              {
+                category: 'travel',
+                reimbursable: true,
+                percentage: 100,
+                requires_approval: false,
+                documentation: 'Receipts and itinerary',
+                notes: 'Business class for flights over 4 hours'
+              },
+              {
+                category: 'meals_entertainment',
+                reimbursable: true,
+                percentage: 100,
+                requires_approval: false,
+                max_per_day: 75,
+                documentation: 'Receipt with attendees listed',
+                notes: 'Business meals with client or team'
+              },
+              {
+                category: 'mileage',
+                reimbursable: true,
+                rate_per_km: 0.70,
+                documentation: 'Mileage log',
+                notes: 'CRA 2024 rate for business travel'
+              },
+              {
+                category: 'materials',
+                reimbursable: true,
+                percentage: 100,
+                requires_approval: false,
+                documentation: 'Receipt required',
+                notes: 'Office supplies and project materials'
+              }
+            ],
+            submission_deadline: 30,
+            payment_method: 'Direct deposit with next invoice'
+          },
+          ai_processed_at: new Date().toISOString()
+        },
+        {
+          file_name: `${SAMPLE_MARKER} CreativeDesign-Retainer-Contract.pdf`,
+          file_path: 'sample/creative-retainer.pdf',
+          file_type: 'application/pdf',
+          title: `${SAMPLE_MARKER} Creative Design Monthly Retainer`,
+          client_id: clientsData[1].id,
+          contract_type: 'retainer',
+          status: 'ready' as const,
+          value: 36000,
+          start_date: new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0],
+          end_date: new Date(today.getFullYear(), 11, 31).toISOString().split('T')[0],
+          auto_renew: false,
+          renewal_notice_days: 60,
+          description: 'Annual retainer for design and marketing services',
+          user_notes: `${SAMPLE_MARKER} Reembolso de materiales de diseño y subscripciones de software creativo. Viajes para sesiones de fotos están incluidos. NO reembolsan comidas excepto durante eventos.`,
+          extracted_terms: {
+            parties: ['Creative Design Studio', 'Contractor'],
+            effective_date: new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0],
+            termination_date: new Date(today.getFullYear(), 11, 31).toISOString().split('T')[0],
+            payment_terms: 'Monthly retainer due on 1st of each month',
+            key_clauses: [
+              'Minimum 20 hours per month',
+              'Unused hours roll over for 2 months',
+              'Materials and creative software reimbursed'
+            ]
+          },
+          reimbursement_terms: {
+            policies: [
+              {
+                category: 'software',
+                reimbursable: true,
+                percentage: 100,
+                requires_approval: false,
+                documentation: 'Receipt required',
+                notes: 'Adobe Creative Cloud, Figma, and other design tools'
+              },
+              {
+                category: 'materials',
+                reimbursable: true,
+                percentage: 100,
+                requires_approval: true,
+                approval_threshold: 200,
+                documentation: 'Receipt and description',
+                notes: 'Design materials, printing, prototypes'
+              },
+              {
+                category: 'travel',
+                reimbursable: true,
+                percentage: 100,
+                requires_approval: true,
+                documentation: 'Receipts and prior approval email',
+                notes: 'Only for approved photo shoots and events'
+              },
+              {
+                category: 'meals_entertainment',
+                reimbursable: false,
+                notes: 'Not covered except during client events'
+              }
+            ],
+            submission_deadline: 15,
+            payment_method: 'Added to monthly invoice'
+          },
+          ai_processed_at: new Date().toISOString()
+        }
+      ];
+
+      const { error: contractsError } = await supabase.from('contracts').insert(contracts.map(c => ({ ...c, user_id: userId })));
+      if (contractsError) throw contractsError;
+
+      // ============================================
+      // 14. CREATE SAMPLE NOTIFICATIONS
       // ============================================
       const notifications = [
         { type: 'goal_milestone', title: `${SAMPLE_MARKER} ¡Meta al 75%!`, message: 'Tu fondo de emergencia está al 73% de completarse.', read: false },
         { type: 'achievement', title: `${SAMPLE_MARKER} ¡Nuevo logro!`, message: 'Desbloqueaste "Primer Objetivo" por crear tu primera meta.', read: true },
         { type: 'reminder', title: `${SAMPLE_MARKER} Revisar gastos`, message: 'Tienes 3 gastos pendientes de clasificación.', read: false },
+        { type: 'contract', title: `${SAMPLE_MARKER} Contrato procesado`, message: 'El contrato de TechCorp ha sido analizado. Términos de reembolso detectados.', read: false },
       ];
 
       const { error: notifError } = await supabase.from('notifications').insert(notifications.map(n => ({ ...n, user_id: userId })));
@@ -529,13 +686,16 @@ export function useDeleteSampleData() {
         await supabase.from('project_clients').delete().in('project_id', projectIds);
       }
 
-      // 7. Delete projects
+      // 7. Delete contracts (may reference clients)
+      await supabase.from('contracts').delete().eq('user_id', userId).like('file_name', `%${SAMPLE_MARKER}%`);
+
+      // 8. Delete projects
       await supabase.from('projects').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
 
-      // 8. Delete clients
+      // 9. Delete clients
       await supabase.from('clients').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
 
-      // 9. Delete other sample data
+      // 10. Delete other sample data
       await supabase.from('assets').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
       await supabase.from('liabilities').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
       await supabase.from('investment_goals').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
@@ -562,6 +722,7 @@ export function useDeleteSampleData() {
 function invalidateAllQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: ['clients'] });
   queryClient.invalidateQueries({ queryKey: ['projects'] });
+  queryClient.invalidateQueries({ queryKey: ['contracts'] });
   queryClient.invalidateQueries({ queryKey: ['expenses'] });
   queryClient.invalidateQueries({ queryKey: ['income'] });
   queryClient.invalidateQueries({ queryKey: ['mileage'] });
