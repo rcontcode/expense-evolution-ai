@@ -1,7 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
-export type ThemeStyle = 'modern' | 'vintage' | 'ocean' | 'forest' | 'sunset' | 'minimal';
+export type ThemeStyle = 
+  | 'modern' | 'vintage' | 'ocean' | 'forest' | 'sunset' | 'minimal'
+  // Seasons
+  | 'spring' | 'summer' | 'autumn' | 'winter'
+  // Interests
+  | 'crypto' | 'gaming' | 'sports' | 'music' | 'coffee' | 'nature';
 export type PremiumTheme = 'theme_midnight' | 'theme_aurora' | 'theme_golden' | 'theme_neon' | null;
 
 interface ThemeContextType {
@@ -92,6 +97,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     root.classList.remove('light', 'dark');
     root.classList.remove(
       'theme-modern', 'theme-vintage', 'theme-ocean', 'theme-forest', 'theme-sunset', 'theme-minimal',
+      'theme-spring', 'theme-summer', 'theme-autumn', 'theme-winter',
+      'theme-crypto', 'theme-gaming', 'theme-sports', 'theme-music', 'theme-coffee', 'theme-nature',
       'theme-premium-midnight', 'theme-premium-aurora', 'theme-premium-golden', 'theme-premium-neon'
     );
 
