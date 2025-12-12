@@ -8,9 +8,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/data/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Check, Sparkles } from 'lucide-react';
+import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 
 const PROVINCES = [
   'British Columbia', 'Alberta', 'Saskatchewan', 'Manitoba',
@@ -26,9 +28,12 @@ export default function Onboarding() {
   const [clients, setClients] = useState<string[]>(['']);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
+  const { data: profile } = useProfile();
 
+  // Get user's first name for personalized greeting
+  const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || '';
   const handleWorkTypeToggle = (type: 'employee' | 'contractor' | 'corporation') => {
     setWorkTypes(prev =>
       prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
@@ -199,7 +204,33 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-hero p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-hero p-4 gap-6">
+      {/* Personalized Welcome */}
+      <div className="text-center space-y-2 max-w-2xl">
+        <div className="flex items-center justify-center gap-2 text-primary">
+          <Sparkles className="h-6 w-6" />
+          <span className="text-sm font-medium uppercase tracking-wider">
+            {language === 'es' ? 'Bienvenida' : 'Welcome'}
+          </span>
+          <Sparkles className="h-6 w-6" />
+        </div>
+        <h1 className="text-3xl font-bold">
+          {language === 'es' 
+            ? `¡Hola${firstName ? `, ${firstName}` : ''}! 👋`
+            : `Hello${firstName ? `, ${firstName}` : ''}! 👋`
+          }
+        </h1>
+        <p className="text-muted-foreground">
+          {language === 'es'
+            ? 'Vamos a configurar tu perfil para optimizar tu gestión financiera'
+            : "Let's set up your profile to optimize your financial management"
+          }
+        </p>
+      </div>
+
+      {/* Mentor Quote Banner */}
+      <MentorQuoteBanner className="w-full max-w-2xl" />
+
       <Card className="w-full max-w-2xl shadow-xl">
         {renderStep()}
         
