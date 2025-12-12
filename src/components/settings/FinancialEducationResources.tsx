@@ -1,7 +1,10 @@
-import { Book, Film, Tv, Headphones, Mic, Video, ExternalLink, Play } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Book, Film, Tv, Headphones, Mic, Video, ExternalLink, Play, Star, Filter } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface Resource {
   title: string;
@@ -316,6 +319,8 @@ const YOUTUBE_CHANNELS: Resource[] = [
   }
 ];
 
+const ALL_RESOURCES = [...BOOKS, ...DOCUMENTARIES, ...MOVIES, ...SERIES, ...PODCASTS, ...TED_TALKS, ...YOUTUBE_CHANNELS];
+
 const getPlatformColor = (platform: string) => {
   switch (platform.toLowerCase()) {
     case 'spotify': return 'bg-green-500/10 text-green-600 border-green-500/20';
@@ -328,45 +333,123 @@ const getPlatformColor = (platform: string) => {
   }
 };
 
-const ResourceCard = ({ resource }: { resource: Resource }) => (
-  <a
-    href={resource.link}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="block p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors group"
-  >
-    <div className="flex items-start justify-between gap-2">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <h4 className="font-medium text-sm group-hover:text-primary transition-colors">
-            {resource.title}
-          </h4>
-          <Badge variant="outline" className={`text-xs ${getPlatformColor(resource.platform)}`}>
-            {resource.platform}
-          </Badge>
-          <Badge variant="outline" className="text-xs">
-            {resource.language === 'es' ? '🇪🇸 ES' : '🇬🇧 EN'}
-          </Badge>
-        </div>
-        {resource.author && (
-          <p className="text-xs text-muted-foreground mt-0.5">{resource.author}</p>
-        )}
-        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{resource.description}</p>
-      </div>
-      <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
-    </div>
-  </a>
-);
+const getResourceKey = (resource: Resource) => `${resource.title}-${resource.link}`;
 
-const ResourceSection = ({ resources, icon: Icon }: { resources: Resource[], icon: React.ElementType }) => (
-  <div className="grid gap-2">
-    {resources.map((resource, index) => (
-      <ResourceCard key={index} resource={resource} />
-    ))}
+const ResourceCard = ({ 
+  resource, 
+  isFavorite, 
+  onToggleFavorite 
+}: { 
+  resource: Resource; 
+  isFavorite: boolean;
+  onToggleFavorite: (resource: Resource) => void;
+}) => (
+  <div className="flex items-start gap-2 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors group">
+    <a
+      href={resource.link}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex-1 min-w-0"
+    >
+      <div className="flex items-center gap-2 flex-wrap">
+        <h4 className="font-medium text-sm group-hover:text-primary transition-colors">
+          {resource.title}
+        </h4>
+        <Badge variant="outline" className={`text-xs ${getPlatformColor(resource.platform)}`}>
+          {resource.platform}
+        </Badge>
+        <Badge variant="outline" className="text-xs">
+          {resource.language === 'es' ? '🇪🇸 ES' : '🇬🇧 EN'}
+        </Badge>
+      </div>
+      {resource.author && (
+        <p className="text-xs text-muted-foreground mt-0.5">{resource.author}</p>
+      )}
+      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{resource.description}</p>
+    </a>
+    <div className="flex items-center gap-1 flex-shrink-0">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        onClick={(e) => {
+          e.preventDefault();
+          onToggleFavorite(resource);
+        }}
+      >
+        <Star className={`h-4 w-4 ${isFavorite ? 'fill-yellow-500 text-yellow-500' : 'text-muted-foreground'}`} />
+      </Button>
+      <a href={resource.link} target="_blank" rel="noopener noreferrer">
+        <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+      </a>
+    </div>
   </div>
 );
 
+const ResourceSection = ({ 
+  resources, 
+  favorites,
+  onToggleFavorite,
+  languageFilter
+}: { 
+  resources: Resource[]; 
+  favorites: string[];
+  onToggleFavorite: (resource: Resource) => void;
+  languageFilter: 'all' | 'es' | 'en';
+}) => {
+  const filteredResources = resources.filter(r => 
+    languageFilter === 'all' || r.language === languageFilter
+  );
+
+  if (filteredResources.length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        No hay recursos disponibles en este idioma
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-2">
+      {filteredResources.map((resource, index) => (
+        <ResourceCard 
+          key={index} 
+          resource={resource} 
+          isFavorite={favorites.includes(getResourceKey(resource))}
+          onToggleFavorite={onToggleFavorite}
+        />
+      ))}
+    </div>
+  );
+};
+
 export function FinancialEducationResources() {
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [languageFilter, setLanguageFilter] = useState<'all' | 'es' | 'en'>('all');
+  const [activeTab, setActiveTab] = useState('books');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('financial-education-favorites');
+    if (saved) {
+      setFavorites(JSON.parse(saved));
+    }
+  }, []);
+
+  const toggleFavorite = (resource: Resource) => {
+    const key = getResourceKey(resource);
+    const newFavorites = favorites.includes(key)
+      ? favorites.filter(f => f !== key)
+      : [...favorites, key];
+    
+    setFavorites(newFavorites);
+    localStorage.setItem('financial-education-favorites', JSON.stringify(newFavorites));
+  };
+
+  const favoriteResources = ALL_RESOURCES.filter(r => 
+    favorites.includes(getResourceKey(r)) &&
+    (languageFilter === 'all' || r.language === languageFilter)
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -377,10 +460,35 @@ export function FinancialEducationResources() {
         <CardDescription>
           Libros, documentales, películas, series, podcasts y canales para aprender sobre finanzas e inversiones
         </CardDescription>
+        
+        <div className="flex items-center gap-4 pt-2">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Idioma:</span>
+          </div>
+          <ToggleGroup 
+            type="single" 
+            value={languageFilter} 
+            onValueChange={(value) => value && setLanguageFilter(value as 'all' | 'es' | 'en')}
+          >
+            <ToggleGroupItem value="all" size="sm">Todos</ToggleGroupItem>
+            <ToggleGroupItem value="es" size="sm">🇪🇸 Español</ToggleGroupItem>
+            <ToggleGroupItem value="en" size="sm">🇬🇧 English</ToggleGroupItem>
+          </ToggleGroup>
+        </div>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="books" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full flex-wrap h-auto gap-1 p-1">
+            <TabsTrigger value="favorites" className="flex items-center gap-1 text-xs">
+              <Star className="h-3 w-3" />
+              Favoritos
+              {favorites.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">
+                  {favorites.length}
+                </Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="books" className="flex items-center gap-1 text-xs">
               <Book className="h-3 w-3" />
               Libros
@@ -412,26 +520,81 @@ export function FinancialEducationResources() {
           </TabsList>
 
           <div className="mt-4 max-h-[400px] overflow-y-auto pr-1">
+            <TabsContent value="favorites" className="mt-0">
+              {favoriteResources.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Star className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>No tienes favoritos guardados</p>
+                  <p className="text-xs mt-1">Haz clic en la estrella ⭐ de cualquier recurso para agregarlo</p>
+                </div>
+              ) : (
+                <div className="grid gap-2">
+                  {favoriteResources.map((resource, index) => (
+                    <ResourceCard 
+                      key={index} 
+                      resource={resource} 
+                      isFavorite={true}
+                      onToggleFavorite={toggleFavorite}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
             <TabsContent value="books" className="mt-0">
-              <ResourceSection resources={BOOKS} icon={Book} />
+              <ResourceSection 
+                resources={BOOKS} 
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
+                languageFilter={languageFilter}
+              />
             </TabsContent>
             <TabsContent value="documentaries" className="mt-0">
-              <ResourceSection resources={DOCUMENTARIES} icon={Film} />
+              <ResourceSection 
+                resources={DOCUMENTARIES} 
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
+                languageFilter={languageFilter}
+              />
             </TabsContent>
             <TabsContent value="movies" className="mt-0">
-              <ResourceSection resources={MOVIES} icon={Video} />
+              <ResourceSection 
+                resources={MOVIES} 
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
+                languageFilter={languageFilter}
+              />
             </TabsContent>
             <TabsContent value="series" className="mt-0">
-              <ResourceSection resources={SERIES} icon={Tv} />
+              <ResourceSection 
+                resources={SERIES} 
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
+                languageFilter={languageFilter}
+              />
             </TabsContent>
             <TabsContent value="podcasts" className="mt-0">
-              <ResourceSection resources={PODCASTS} icon={Headphones} />
+              <ResourceSection 
+                resources={PODCASTS} 
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
+                languageFilter={languageFilter}
+              />
             </TabsContent>
             <TabsContent value="ted" className="mt-0">
-              <ResourceSection resources={TED_TALKS} icon={Mic} />
+              <ResourceSection 
+                resources={TED_TALKS} 
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
+                languageFilter={languageFilter}
+              />
             </TabsContent>
             <TabsContent value="youtube" className="mt-0">
-              <ResourceSection resources={YOUTUBE_CHANNELS} icon={Play} />
+              <ResourceSection 
+                resources={YOUTUBE_CHANNELS} 
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
+                languageFilter={languageFilter}
+              />
             </TabsContent>
           </div>
         </Tabs>
