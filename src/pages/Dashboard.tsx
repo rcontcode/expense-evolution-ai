@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download, Scale, ArrowUpRight, ArrowDownRight, UserCircle, Building2, MapPin, CheckCircle } from 'lucide-react';
+import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download, Scale, ArrowUpRight, ArrowDownRight, UserCircle, Building2, MapPin, CheckCircle, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useClients } from '@/hooks/data/useClients';
@@ -30,6 +30,7 @@ import { useAuth } from '@/contexts/AuthContext';
 // Lazy load chart components for better performance
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
 const MileageTabContent = lazy(() => import('@/components/dashboard/MileageTabContent').then(m => ({ default: m.MileageTabContent })));
+const SubscriptionTracker = lazy(() => import('@/components/subscriptions/SubscriptionTracker').then(m => ({ default: m.SubscriptionTracker })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -47,6 +48,17 @@ const MileageSkeleton = () => (
     <Skeleton className="h-32" />
     <Skeleton className="h-32" />
     <Skeleton className="h-32" />
+  </div>
+);
+
+const SubscriptionsSkeleton = () => (
+  <div className="space-y-4">
+    <div className="grid gap-4 md:grid-cols-3">
+      <Skeleton className="h-28" />
+      <Skeleton className="h-28" />
+      <Skeleton className="h-28" />
+    </div>
+    <Skeleton className="h-64" />
   </div>
 );
 
@@ -326,7 +338,7 @@ export default function Dashboard() {
 
         {/* Tabs para Gráficos y Análisis Fiscal */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <InfoTooltip content={TOOLTIP_CONTENT.chartsTab} variant="wrapper" side="bottom">
               <TabsTrigger value="charts" className="cursor-pointer">{t('taxAnalysis.charts')}</TabsTrigger>
             </InfoTooltip>
@@ -336,6 +348,10 @@ export default function Dashboard() {
             <InfoTooltip content={TOOLTIP_CONTENT.mileageTab} variant="wrapper" side="bottom">
               <TabsTrigger value="mileage" className="cursor-pointer">{t('mileage.title')}</TabsTrigger>
             </InfoTooltip>
+            <TabsTrigger value="subscriptions" className="cursor-pointer flex items-center gap-1">
+              <RefreshCw className="h-3 w-3" />
+              {language === 'es' ? 'Suscripciones' : 'Subscriptions'}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="charts" className="space-y-4">
@@ -362,6 +378,14 @@ export default function Dashboard() {
                   mileageSummary={mileageSummary}
                   isLoading={mileageLoading}
                 />
+              </Suspense>
+            )}
+          </TabsContent>
+
+          <TabsContent value="subscriptions" className="space-y-4">
+            {activeTab === 'subscriptions' && (
+              <Suspense fallback={<SubscriptionsSkeleton />}>
+                <SubscriptionTracker />
               </Suspense>
             )}
           </TabsContent>
