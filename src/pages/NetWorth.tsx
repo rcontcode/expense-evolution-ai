@@ -15,13 +15,15 @@ import { AssetsList } from '@/components/net-worth/AssetsList';
 import { LiabilitiesList } from '@/components/net-worth/LiabilitiesList';
 import { AssetDialog } from '@/components/net-worth/AssetDialog';
 import { LiabilityDialog } from '@/components/net-worth/LiabilityDialog';
+import { InvestmentOnboardingWizard } from '@/components/investments/InvestmentOnboardingWizard';
 import { OnboardingGuide } from '@/components/ui/onboarding-guide';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Scale, Lightbulb } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Scale, Lightbulb, Sparkles } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function NetWorth() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { data: assets = [], isLoading: assetsLoading } = useAssets();
   const { data: liabilities = [], isLoading: liabilitiesLoading } = useLiabilities();
   const { data: snapshots = [], isLoading: snapshotsLoading } = useNetWorthSnapshots();
@@ -31,6 +33,18 @@ export default function NetWorth() {
   const [liabilityDialogOpen, setLiabilityDialogOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [editingLiability, setEditingLiability] = useState<Liability | null>(null);
+  
+  // Investment onboarding state
+  const [showInvestmentOnboarding, setShowInvestmentOnboarding] = useState(false);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(() => {
+    return localStorage.getItem('investment-onboarding-completed') === 'true';
+  });
+
+  // Check if user has investment assets
+  const investmentCategories = ['stocks', 'crypto', 'bonds', 'mutual_funds', 'etf', 'commodities', 'investments', 'retirement'];
+  const hasInvestmentAssets = assets.some(a => 
+    investmentCategories.some(cat => a.category.toLowerCase().includes(cat))
+  );
 
   const totalAssets = useMemo(() => 
     assets.reduce((sum, a) => sum + a.current_value, 0), 
@@ -79,7 +93,35 @@ export default function NetWorth() {
     setLiabilityDialogOpen(true);
   };
 
+  const handleCompleteOnboarding = () => {
+    localStorage.setItem('investment-onboarding-completed', 'true');
+    setHasCompletedOnboarding(true);
+    setShowInvestmentOnboarding(false);
+  };
+
+  const handleSkipOnboarding = () => {
+    setShowInvestmentOnboarding(false);
+  };
+
+  const handleStartOnboarding = () => {
+    setShowInvestmentOnboarding(true);
+  };
+
   const isLoading = assetsLoading || liabilitiesLoading || snapshotsLoading;
+
+  // Show investment onboarding wizard
+  if (showInvestmentOnboarding) {
+    return (
+      <Layout>
+        <div className="py-8">
+          <InvestmentOnboardingWizard 
+            onComplete={handleCompleteOnboarding}
+            onSkip={handleSkipOnboarding}
+          />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -89,12 +131,25 @@ export default function NetWorth() {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Scale className="h-6 w-6 text-primary" />
-              Patrimonio Neto
+              {language === 'es' ? 'Patrimonio Neto' : 'Net Worth'}
             </h1>
             <p className="text-muted-foreground">
-              Visualiza y administra tus activos y pasivos
+              {language === 'es' 
+                ? 'Visualiza y administra tus activos y pasivos'
+                : 'View and manage your assets and liabilities'}
             </p>
           </div>
+          
+          {/* Investment Onboarding Button */}
+          {!hasInvestmentAssets && !hasCompletedOnboarding && (
+            <Button 
+              onClick={handleStartOnboarding}
+              className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              {language === 'es' ? 'Configurar Inversiones' : 'Setup Investments'}
+            </Button>
+          )}
         </div>
 
         {/* Onboarding */}
