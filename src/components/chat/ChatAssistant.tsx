@@ -82,6 +82,37 @@ const VOICE_COMMANDS = {
   ],
 };
 
+// Voice query commands (return data directly)
+type QueryType = 'expenses_month' | 'expenses_year' | 'income_month' | 'income_year' | 'balance' | 'client_count' | 'project_count' | 'pending_receipts';
+
+interface VoiceQuery {
+  patterns: string[];
+  queryType: QueryType;
+}
+
+const VOICE_QUERIES: { es: VoiceQuery[]; en: VoiceQuery[] } = {
+  es: [
+    { patterns: ['cuánto gasté este mes', 'gastos del mes', 'gastos este mes', 'cuánto he gastado este mes'], queryType: 'expenses_month' },
+    { patterns: ['cuánto gasté este año', 'gastos del año', 'gastos este año', 'cuánto he gastado este año'], queryType: 'expenses_year' },
+    { patterns: ['cuánto gané este mes', 'ingresos del mes', 'ingresos este mes'], queryType: 'income_month' },
+    { patterns: ['cuánto gané este año', 'ingresos del año', 'ingresos este año'], queryType: 'income_year' },
+    { patterns: ['mostrar balance', 'cuál es mi balance', 'mi balance', 'balance actual', 'cómo estoy financieramente'], queryType: 'balance' },
+    { patterns: ['cuántos clientes tengo', 'número de clientes', 'total de clientes', 'mis clientes'], queryType: 'client_count' },
+    { patterns: ['cuántos proyectos tengo', 'número de proyectos', 'total de proyectos', 'mis proyectos'], queryType: 'project_count' },
+    { patterns: ['recibos pendientes', 'cuántos recibos pendientes', 'pendientes de revisar'], queryType: 'pending_receipts' },
+  ],
+  en: [
+    { patterns: ['how much did i spend this month', 'monthly expenses', 'expenses this month', 'spending this month'], queryType: 'expenses_month' },
+    { patterns: ['how much did i spend this year', 'yearly expenses', 'expenses this year', 'spending this year'], queryType: 'expenses_year' },
+    { patterns: ['how much did i earn this month', 'monthly income', 'income this month'], queryType: 'income_month' },
+    { patterns: ['how much did i earn this year', 'yearly income', 'income this year'], queryType: 'income_year' },
+    { patterns: ['show balance', 'what is my balance', 'my balance', 'current balance', 'how am i doing financially'], queryType: 'balance' },
+    { patterns: ['how many clients do i have', 'number of clients', 'total clients', 'my clients count'], queryType: 'client_count' },
+    { patterns: ['how many projects do i have', 'number of projects', 'total projects', 'my projects count'], queryType: 'project_count' },
+    { patterns: ['pending receipts', 'how many pending receipts', 'receipts to review'], queryType: 'pending_receipts' },
+  ],
+};
+
 export const ChatAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -100,10 +131,106 @@ export const ChatAssistant: React.FC = () => {
   const { data: projects } = useProjects();
   const { language } = useLanguage();
 
+  // Calculate financial data for queries
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const monthlyExpenses = stats?.monthlyTotal || 0;
+  const yearlyExpenses = stats?.totalExpenses || 0; // Using totalExpenses as yearly approximation
+  const monthlyIncome = incomeData?.filter(inc => {
+    const incDate = new Date(inc.date);
+    return incDate.getMonth() === currentMonth && incDate.getFullYear() === currentYear;
+  }).reduce((sum, inc) => sum + Number(inc.amount), 0) || 0;
+
+  const yearlyIncome = incomeData?.filter(inc => {
+    const incDate = new Date(inc.date);
+    return incDate.getFullYear() === currentYear;
+  }).reduce((sum, inc) => sum + Number(inc.amount), 0) || 0;
+
   const totalIncome = incomeData?.reduce((sum, inc) => sum + Number(inc.amount), 0) || 0;
+  const balance = yearlyIncome - yearlyExpenses;
+  const pendingReceipts = stats?.pendingDocs || 0;
 
   const userName = profile?.full_name?.split(' ')[0] || 'Usuario';
   const quickQuestions = QUICK_QUESTIONS[language as keyof typeof QUICK_QUESTIONS] || QUICK_QUESTIONS.es;
+
+  // Check if text matches a voice query command
+  const checkVoiceQuery = useCallback((text: string): { matched: boolean; queryType?: QueryType } => {
+    const normalizedText = text.toLowerCase().trim();
+    const queries = VOICE_QUERIES[language as keyof typeof VOICE_QUERIES] || VOICE_QUERIES.es;
+    
+    for (const query of queries) {
+      for (const pattern of query.patterns) {
+        if (normalizedText.includes(pattern)) {
+          return { matched: true, queryType: query.queryType };
+        }
+      }
+    }
+    return { matched: false };
+  }, [language]);
+
+  // Generate response for voice query
+  const getQueryResponse = useCallback((queryType: QueryType): string => {
+    const formatCurrency = (amount: number) => `$${amount.toFixed(2)}`;
+    
+    const responses: Record<QueryType, { es: string; en: string }> = {
+      expenses_month: {
+        es: `Este mes has gastado ${formatCurrency(monthlyExpenses)}.`,
+        en: `This month you've spent ${formatCurrency(monthlyExpenses)}.`,
+      },
+      expenses_year: {
+        es: `Este año has gastado ${formatCurrency(yearlyExpenses)} en total.`,
+        en: `This year you've spent ${formatCurrency(yearlyExpenses)} in total.`,
+      },
+      income_month: {
+        es: `Este mes has ingresado ${formatCurrency(monthlyIncome)}.`,
+        en: `This month you've earned ${formatCurrency(monthlyIncome)}.`,
+      },
+      income_year: {
+        es: `Este año has ingresado ${formatCurrency(yearlyIncome)} en total.`,
+        en: `This year you've earned ${formatCurrency(yearlyIncome)} in total.`,
+      },
+      balance: {
+        es: balance >= 0 
+          ? `Tu balance anual es positivo: ${formatCurrency(balance)}. ¡Vas bien!`
+          : `Tu balance anual es negativo: ${formatCurrency(Math.abs(balance))}. Considera revisar tus gastos.`,
+        en: balance >= 0
+          ? `Your yearly balance is positive: ${formatCurrency(balance)}. You're doing great!`
+          : `Your yearly balance is negative: ${formatCurrency(Math.abs(balance))}. Consider reviewing your expenses.`,
+      },
+      client_count: {
+        es: clients?.length === 1 
+          ? `Tienes 1 cliente registrado.`
+          : `Tienes ${clients?.length || 0} clientes registrados.`,
+        en: clients?.length === 1
+          ? `You have 1 registered client.`
+          : `You have ${clients?.length || 0} registered clients.`,
+      },
+      project_count: {
+        es: projects?.length === 1
+          ? `Tienes 1 proyecto activo.`
+          : `Tienes ${projects?.length || 0} proyectos registrados.`,
+        en: projects?.length === 1
+          ? `You have 1 active project.`
+          : `You have ${projects?.length || 0} registered projects.`,
+      },
+      pending_receipts: {
+        es: pendingReceipts === 0
+          ? `No tienes recibos pendientes de revisar. ¡Todo al día!`
+          : pendingReceipts === 1
+            ? `Tienes 1 recibo pendiente de revisar.`
+            : `Tienes ${pendingReceipts} recibos pendientes de revisar.`,
+        en: pendingReceipts === 0
+          ? `You have no pending receipts to review. All caught up!`
+          : pendingReceipts === 1
+            ? `You have 1 pending receipt to review.`
+            : `You have ${pendingReceipts} pending receipts to review.`,
+      },
+    };
+
+    return responses[queryType][language as 'es' | 'en'] || responses[queryType].es;
+  }, [monthlyExpenses, yearlyExpenses, monthlyIncome, yearlyIncome, balance, clients?.length, projects?.length, pendingReceipts, language]);
 
   // Check if text matches a voice command
   const checkVoiceCommand = useCallback((text: string): { matched: boolean; route?: string; name?: string; action?: string } => {
@@ -153,7 +280,23 @@ export const ChatAssistant: React.FC = () => {
     stopSpeaking,
   } = useVoiceAssistant({
     onTranscript: (text) => {
-      // First check if it's a navigation command
+      // First check if it's a data query command
+      const query = checkVoiceQuery(text);
+      if (query.matched && query.queryType) {
+        setInput('');
+        const response = getQueryResponse(query.queryType);
+        
+        // Add to chat messages
+        const userMessage: Message = { role: 'user', content: text };
+        const assistantMessage: Message = { role: 'assistant', content: response };
+        setMessages(prev => [...prev, userMessage, assistantMessage]);
+        
+        // Speak the response
+        speak(response);
+        return;
+      }
+      
+      // Then check if it's a navigation command
       const command = checkVoiceCommand(text);
       if (command.matched && command.route && command.name) {
         setInput('');
