@@ -11,7 +11,7 @@ import { useSavingsGoals, useCreateSavingsGoal, useUpdateSavingsGoal, useDeleteS
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { Target, Plus, Edit, Trash2, PiggyBank, DollarSign, Palette, Sun, Moon, Monitor, RotateCcw, BookOpen, Globe, Database, Loader2 } from 'lucide-react';
-import { useGenerateSampleData } from '@/hooks/data/useGenerateSampleData';
+import { useGenerateSampleData, useDeleteSampleData } from '@/hooks/data/useGenerateSampleData';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { InvestmentSection } from '@/components/investments/InvestmentSection';
@@ -41,6 +41,7 @@ export default function Settings() {
   const deleteGoal = useDeleteSavingsGoal();
   const addToGoal = useAddToSavingsGoal();
   const generateSampleData = useGenerateSampleData();
+  const deleteSampleData = useDeleteSampleData();
 
   // Savings goal dialog state
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
@@ -461,26 +462,46 @@ export default function Settings() {
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
                 {language === 'es' 
-                  ? 'Esto creará: 4 clientes, 4 proyectos, 30 gastos, 15 ingresos, 10 registros de kilometraje, 8 activos, 4 pasivos, 40 transacciones bancarias, 4 metas de inversión y 5 etiquetas.'
-                  : 'This will create: 4 clients, 4 projects, 30 expenses, 15 income entries, 10 mileage records, 8 assets, 4 liabilities, 40 bank transactions, 4 investment goals, and 5 tags.'}
+                  ? 'Genera datos estructurados: 2 clientes, 2 proyectos por cliente, 20 gastos variados, 12 ingresos, 8 registros de kilometraje, 10 activos, 5 pasivos, 30 transacciones bancarias, 4 metas de inversión, 3 metas de ahorro, 6 etiquetas y notificaciones.'
+                  : 'Generate structured data: 2 clients, 2 projects per client, 20 varied expenses, 12 income entries, 8 mileage records, 10 assets, 5 liabilities, 30 bank transactions, 4 investment goals, 3 savings goals, 6 tags and notifications.'}
               </p>
-              <Button 
-                onClick={() => generateSampleData.mutate()}
-                disabled={generateSampleData.isPending}
-                className="w-full"
-              >
-                {generateSampleData.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {language === 'es' ? 'Generando...' : 'Generating...'}
-                  </>
-                ) : (
-                  <>
-                    <Database className="mr-2 h-4 w-4" />
-                    {language === 'es' ? 'Generar Datos de Ejemplo' : 'Generate Sample Data'}
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => generateSampleData.mutate()}
+                  disabled={generateSampleData.isPending || deleteSampleData.isPending}
+                  className="flex-1"
+                >
+                  {generateSampleData.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {language === 'es' ? 'Generando...' : 'Generating...'}
+                    </>
+                  ) : (
+                    <>
+                      <Database className="mr-2 h-4 w-4" />
+                      {language === 'es' ? 'Generar Datos' : 'Generate Data'}
+                    </>
+                  )}
+                </Button>
+                <Button 
+                  variant="destructive"
+                  onClick={() => deleteSampleData.mutate()}
+                  disabled={deleteSampleData.isPending || generateSampleData.isPending}
+                  className="flex-1"
+                >
+                  {deleteSampleData.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {language === 'es' ? 'Eliminando...' : 'Deleting...'}
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      {language === 'es' ? 'Eliminar Datos de Ejemplo' : 'Delete Sample Data'}
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
