@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCreateAsset, ASSET_CATEGORIES } from '@/hooks/data/useNetWorth';
+import { useUpsertFinancialProfile } from '@/hooks/data/useFinancialProfile';
 import { 
   Sparkles, 
   AlertTriangle, 
@@ -25,7 +26,8 @@ import {
   Info,
   Shield,
   Target,
-  GraduationCap
+  GraduationCap,
+  Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -75,7 +77,9 @@ const INVESTMENT_GOALS = [
 export function InvestmentOnboardingWizard({ onComplete, onSkip }: InvestmentOnboardingWizardProps) {
   const { language } = useLanguage();
   const createAsset = useCreateAsset();
+  const upsertProfile = useUpsertFinancialProfile();
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
   const [state, setState] = useState<WizardState>({
     experienceLevel: null,
     riskTolerance: null,
@@ -100,9 +104,21 @@ export function InvestmentOnboardingWizard({ onComplete, onSkip }: InvestmentOnb
   };
 
   const handleComplete = async () => {
-    // Save first asset if provided
-    if (state.firstAsset && state.firstAsset.name && state.firstAsset.currentValue) {
-      try {
+    setIsSaving(true);
+    try {
+      // Save investment profile to database
+      await upsertProfile.mutateAsync({
+        financial_education_level: state.experienceLevel || 'beginner',
+        risk_tolerance: state.riskTolerance || 'moderate',
+        interests: state.investmentTypes,
+        passions: state.goals,
+        preferred_income_type: state.investmentTypes.includes('crypto') ? 'mixed' : 
+                               state.investmentTypes.includes('real_estate') ? 'passive' : 'active',
+        time_availability: state.experienceLevel === 'advanced' ? 'full_time' : 'part_time',
+      });
+
+      // Save first asset if provided
+      if (state.firstAsset && state.firstAsset.name && state.firstAsset.currentValue) {
         await createAsset.mutateAsync({
           name: state.firstAsset.name,
           category: state.firstAsset.category || 'investments',
@@ -110,12 +126,18 @@ export function InvestmentOnboardingWizard({ onComplete, onSkip }: InvestmentOnb
           purchase_value: state.firstAsset.purchaseValue ? parseFloat(state.firstAsset.purchaseValue) : null,
           is_liquid: true,
         });
-        toast.success(language === 'es' ? '¡Primer activo agregado!' : 'First asset added!');
-      } catch (error) {
-        console.error('Error adding asset:', error);
+        toast.success(language === 'es' ? '¡Perfil y primer activo guardados!' : 'Profile and first asset saved!');
+      } else {
+        toast.success(language === 'es' ? '¡Perfil de inversión guardado!' : 'Investment profile saved!');
       }
+      
+      onComplete();
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast.error(language === 'es' ? 'Error al guardar el perfil' : 'Error saving profile');
+    } finally {
+      setIsSaving(false);
     }
-    onComplete();
   };
 
   const toggleInvestmentType = (type: InvestmentType) => {
@@ -452,8 +474,12 @@ export function InvestmentOnboardingWizard({ onComplete, onSkip }: InvestmentOnb
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             ) : (
-              <Button onClick={handleComplete} className="bg-gradient-to-r from-primary to-purple-600">
-                <CheckCircle className="h-4 w-4 mr-2" />
+              <Button onClick={handleComplete} className="bg-gradient-to-r from-primary to-purple-600" disabled={isSaving}>
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                )}
                 {language === 'es' ? 'Completar' : 'Complete'}
               </Button>
             )}
