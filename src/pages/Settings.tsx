@@ -14,6 +14,7 @@ import { Target, Plus, Edit, Trash2, PiggyBank, DollarSign, Palette, Sun, Moon, 
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { InvestmentSection } from '@/components/investments/InvestmentSection';
+import { FinancialEducationResources } from '@/components/settings/FinancialEducationResources';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -368,6 +369,9 @@ export default function Settings() {
 
         {/* Investment Goals Section */}
         <InvestmentSection />
+
+        {/* Financial Education Resources */}
+        <FinancialEducationResources />
 
         {/* Goal Dialog */}
         <Dialog open={goalDialogOpen} onOpenChange={setGoalDialogOpen}>
