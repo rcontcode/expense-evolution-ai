@@ -41,6 +41,7 @@ const PersonalizedInvestmentTips = lazy(() => import('@/components/investments/P
 const SpendingHeatmap = lazy(() => import('@/components/analytics/SpendingHeatmap').then(m => ({ default: m.SpendingHeatmap })));
 const SeasonalityChart = lazy(() => import('@/components/analytics/SeasonalityChart').then(m => ({ default: m.SeasonalityChart })));
 const MonthComparisonChart = lazy(() => import('@/components/analytics/MonthComparisonChart').then(m => ({ default: m.MonthComparisonChart })));
+const FinancialHealthRadar = lazy(() => import('@/components/analytics/FinancialHealthRadar').then(m => ({ default: m.FinancialHealthRadar })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -406,6 +407,7 @@ export default function Dashboard() {
             {activeTab === 'analytics' && (
               <Suspense fallback={<AnalyticsSkeleton />}>
                 <div className="space-y-6">
+                  <FinancialHealthRadar />
                   <SpendingHeatmap expenses={allExpenses || []} isLoading={isLoading} />
                   <div className="grid gap-6 lg:grid-cols-2">
                     <SeasonalityChart expenses={allExpenses || []} isLoading={isLoading} />
