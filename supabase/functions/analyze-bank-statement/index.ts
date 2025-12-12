@@ -52,7 +52,7 @@ serve(async (req) => {
   }
 
   try {
-    const { content, contentType, bankName, existingTransactions } = await req.json();
+const { content, contentType, bankName, existingTransactions } = await req.json();
 
     if (!content) {
       return new Response(
@@ -62,6 +62,78 @@ serve(async (req) => {
     }
 
     console.log('Analyzing bank statement...', { contentType, bankName });
+
+    // Handle question/search mode
+    if (contentType === 'question') {
+      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+      if (!LOVABLE_API_KEY) {
+        throw new Error('LOVABLE_API_KEY not configured');
+      }
+
+      const questionData = JSON.parse(content);
+      
+      const searchPrompt = `You are a helpful financial assistant. Answer the user's question based on their transaction data.
+
+User's question: "${questionData.question}"
+
+Transaction data (last 100):
+${JSON.stringify(questionData.transactions?.slice(0, 50) || [], null, 2)}
+
+Recurring payments detected:
+${JSON.stringify(questionData.recurringPayments || [], null, 2)}
+
+Top vendors by spending:
+${JSON.stringify(questionData.topVendors || [], null, 2)}
+
+Provide a clear, helpful answer in the same language as the question. Be specific with amounts, dates, and vendor names when available.
+If the data doesn't contain enough information to answer, say so clearly.
+
+Return your answer as JSON:
+{
+  "insights": ["Your detailed answer here"],
+  "transactions": [relevant transactions if any, max 5]
+}`;
+
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [{ role: 'user', content: searchPrompt }],
+          max_tokens: 2048,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('AI API error:', errorText);
+        throw new Error(`AI API error: ${response.status}`);
+      }
+
+      const aiResponse = await response.json();
+      const responseContent = aiResponse.choices?.[0]?.message?.content || '{}';
+      
+      try {
+        let jsonStr = responseContent;
+        const jsonMatch = responseContent.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) {
+          jsonStr = jsonMatch[1].trim();
+        }
+        const result = JSON.parse(jsonStr);
+        return new Response(
+          JSON.stringify(result),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch {
+        return new Response(
+          JSON.stringify({ insights: [responseContent], transactions: [] }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {

@@ -18,12 +18,17 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Clock,
-  CheckCircle
+  CheckCircle,
+  MessageCircle,
+  BarChart3
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { useBankInsights, CATEGORY_LABELS, BankAlert, RecurringPayment } from '@/hooks/data/useBankAnalysis';
 import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
+import { SmartSearchChat } from './SmartSearchChat';
+import { CategoryTrendsChart } from './CategoryTrendsChart';
+import { AnomalyAlerts } from './AnomalyAlerts';
 import { Input } from '@/components/ui/input';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -207,10 +212,18 @@ export function BankAnalysisDashboard() {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview" className="flex items-center gap-1">
             <PieChart className="h-3 w-3" />
             {language === 'es' ? 'Resumen' : 'Overview'}
+          </TabsTrigger>
+          <TabsTrigger value="search" className="flex items-center gap-1">
+            <MessageCircle className="h-3 w-3" />
+            {language === 'es' ? 'Preguntar' : 'Ask'}
+          </TabsTrigger>
+          <TabsTrigger value="trends" className="flex items-center gap-1">
+            <BarChart3 className="h-3 w-3" />
+            {language === 'es' ? 'Tendencias' : 'Trends'}
           </TabsTrigger>
           <TabsTrigger value="recurring" className="flex items-center gap-1">
             <RefreshCw className="h-3 w-3" />
@@ -218,13 +231,25 @@ export function BankAnalysisDashboard() {
           </TabsTrigger>
           <TabsTrigger value="transactions" className="flex items-center gap-1">
             <Wallet className="h-3 w-3" />
-            {language === 'es' ? 'Transacciones' : 'Transactions'}
+            {language === 'es' ? 'Lista' : 'List'}
           </TabsTrigger>
           <TabsTrigger value="alerts" className="flex items-center gap-1">
             <Bell className="h-3 w-3" />
             {language === 'es' ? 'Alertas' : 'Alerts'}
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="search">
+          <SmartSearchChat />
+        </TabsContent>
+
+        <TabsContent value="trends">
+          <CategoryTrendsChart />
+        </TabsContent>
+
+        <TabsContent value="alerts">
+          <AnomalyAlerts />
+        </TabsContent>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">

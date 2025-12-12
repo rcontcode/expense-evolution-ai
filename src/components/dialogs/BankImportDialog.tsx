@@ -16,7 +16,8 @@ import {
   Trash2,
   Calendar,
   DollarSign,
-  FileText
+  FileText,
+  File
 } from 'lucide-react';
 import { parseCSV, ParsedTransaction, useCreateBankTransactions } from '@/hooks/data/useBankTransactions';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,12 +31,13 @@ interface BankImportDialogProps {
 
 export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
   const { language } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'csv' | 'photo'>('csv');
+  const [activeTab, setActiveTab] = useState<'csv' | 'photo' | 'pdf'>('csv');
   const [isLoading, setIsLoading] = useState(false);
   const [parsedTransactions, setParsedTransactions] = useState<ParsedTransaction[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const csvInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
   
   const createTransactions = useCreateBankTransactions();
 
@@ -126,6 +128,63 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
     }
   };
 
+  const handlePDFUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+    setIsLoading(true);
+
+    try {
+      // Convert PDF to base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // Call edge function to process PDF with AI
+      const { data, error } = await supabase.functions.invoke('analyze-bank-statement', {
+        body: { 
+          content: base64, 
+          contentType: 'pdf',
+          bankName: file.name.replace('.pdf', ''),
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.transactions && data.transactions.length > 0) {
+        setParsedTransactions(data.transactions.map((t: any) => ({
+          date: t.date,
+          amount: Math.abs(t.amount),
+          description: t.description,
+        })));
+        toast.success(
+          language === 'es'
+            ? `${data.transactions.length} transacciones extraídas del PDF`
+            : `${data.transactions.length} transactions extracted from PDF`
+        );
+      } else {
+        toast.error(
+          language === 'es'
+            ? 'No se pudieron extraer transacciones del PDF'
+            : 'Could not extract transactions from PDF'
+        );
+      }
+    } catch (error) {
+      console.error('PDF processing error:', error);
+      toast.error(
+        language === 'es'
+          ? 'Error al procesar el PDF. Verifica que sea un estado de cuenta válido.'
+          : 'Error processing PDF. Make sure it is a valid bank statement.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const removeTransaction = (index: number) => {
     setParsedTransactions(prev => prev.filter((_, i) => i !== index));
   };
@@ -169,15 +228,19 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'csv' | 'photo')}>
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'csv' | 'photo' | 'pdf')}>
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="csv" className="flex items-center gap-2">
               <FileSpreadsheet className="h-4 w-4" />
-              {language === 'es' ? 'Archivo CSV' : 'CSV File'}
+              CSV
+            </TabsTrigger>
+            <TabsTrigger value="pdf" className="flex items-center gap-2">
+              <File className="h-4 w-4" />
+              PDF
             </TabsTrigger>
             <TabsTrigger value="photo" className="flex items-center gap-2">
               <Camera className="h-4 w-4" />
-              {language === 'es' ? 'Foto con IA' : 'Photo with AI'}
+              {language === 'es' ? 'Foto' : 'Photo'}
             </TabsTrigger>
           </TabsList>
 
@@ -232,6 +295,61 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
             </div>
           </TabsContent>
 
+          <TabsContent value="pdf" className="mt-4">
+            <Card className="border-dashed border-2 hover:border-primary/50 transition-colors">
+              <CardContent className="p-6">
+                <input
+                  ref={pdfInputRef}
+                  type="file"
+                  accept=".pdf"
+                  onChange={handlePDFUpload}
+                  className="hidden"
+                />
+                <div 
+                  className="flex flex-col items-center gap-4 cursor-pointer"
+                  onClick={() => pdfInputRef.current?.click()}
+                >
+                  {isLoading ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                      <p className="text-sm text-muted-foreground">
+                        {language === 'es' ? 'Procesando PDF con IA...' : 'Processing PDF with AI...'}
+                      </p>
+                    </div>
+                  ) : (
+                    <File className="h-12 w-12 text-muted-foreground" />
+                  )}
+                  <div className="text-center">
+                    <p className="font-medium">
+                      {language === 'es' 
+                        ? 'Sube el PDF de tu estado de cuenta' 
+                        : 'Upload your bank statement PDF'}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {language === 'es'
+                        ? 'La IA extraerá y clasificará las transacciones'
+                        : 'AI will extract and classify transactions'}
+                    </p>
+                  </div>
+                  <Badge variant="secondary" className="bg-primary/10 text-primary">
+                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    {language === 'es' ? 'Powered by Gemini AI' : 'Powered by Gemini AI'}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+              <h4 className="font-medium text-sm mb-2">
+                {language === 'es' ? 'PDFs compatibles' : 'Compatible PDFs'}
+              </h4>
+              <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                <li>{language === 'es' ? 'Estados de cuenta de cualquier banco' : 'Bank statements from any bank'}</li>
+                <li>{language === 'es' ? 'Extractos de tarjetas de crédito' : 'Credit card statements'}</li>
+                <li>{language === 'es' ? 'Reportes de PayPal, Stripe, etc.' : 'PayPal, Stripe reports, etc.'}</li>
+              </ul>
+            </div>
+          </TabsContent>
           <TabsContent value="photo" className="mt-4">
             <Card className="border-dashed border-2 hover:border-primary/50 transition-colors">
               <CardContent className="p-6">
