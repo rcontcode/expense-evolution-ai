@@ -10,7 +10,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useSavingsGoals, useCreateSavingsGoal, useUpdateSavingsGoal, useDeleteSavingsGoal, useAddToSavingsGoal } from '@/hooks/data/useSavingsGoals';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { Target, Plus, Edit, Trash2, PiggyBank, DollarSign, Palette, Sun, Moon, Monitor, RotateCcw, BookOpen, Globe } from 'lucide-react';
+import { Target, Plus, Edit, Trash2, PiggyBank, DollarSign, Palette, Sun, Moon, Monitor, RotateCcw, BookOpen, Globe, Database, Loader2 } from 'lucide-react';
+import { useGenerateSampleData } from '@/hooks/data/useGenerateSampleData';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { InvestmentSection } from '@/components/investments/InvestmentSection';
@@ -39,6 +40,7 @@ export default function Settings() {
   const updateGoal = useUpdateSavingsGoal();
   const deleteGoal = useDeleteSavingsGoal();
   const addToGoal = useAddToSavingsGoal();
+  const generateSampleData = useGenerateSampleData();
 
   // Savings goal dialog state
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
@@ -437,6 +439,49 @@ export default function Settings() {
                 ? 'Puedes restablecer las guías contextuales de cada página o volver a ver el tutorial interactivo de bienvenida.'
                 : 'You can reset the contextual guides on each page or view the interactive welcome tutorial again.'}
             </p>
+          </CardContent>
+        </Card>
+
+        {/* Sample Data Generator */}
+        <Card className="border-dashed border-2 border-primary/30">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Database className="h-5 w-5 text-primary" />
+              <div>
+                <CardTitle>{language === 'es' ? 'Datos de Ejemplo' : 'Sample Data'}</CardTitle>
+                <CardDescription>
+                  {language === 'es' 
+                    ? 'Genera datos de demostración para explorar todas las funcionalidades' 
+                    : 'Generate demo data to explore all features'}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                {language === 'es' 
+                  ? 'Esto creará: 4 clientes, 4 proyectos, 30 gastos, 15 ingresos, 10 registros de kilometraje, 8 activos, 4 pasivos, 40 transacciones bancarias, 4 metas de inversión y 5 etiquetas.'
+                  : 'This will create: 4 clients, 4 projects, 30 expenses, 15 income entries, 10 mileage records, 8 assets, 4 liabilities, 40 bank transactions, 4 investment goals, and 5 tags.'}
+              </p>
+              <Button 
+                onClick={() => generateSampleData.mutate()}
+                disabled={generateSampleData.isPending}
+                className="w-full"
+              >
+                {generateSampleData.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {language === 'es' ? 'Generando...' : 'Generating...'}
+                  </>
+                ) : (
+                  <>
+                    <Database className="mr-2 h-4 w-4" />
+                    {language === 'es' ? 'Generar Datos de Ejemplo' : 'Generate Sample Data'}
+                  </>
+                )}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
