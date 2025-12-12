@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -69,6 +69,22 @@ export default function Income() {
   const { data: projects, isLoading: projectsLoading } = useProjects();
   const { data: summary } = useIncomeSummary();
   const deleteIncomeMutation = useDeleteIncome();
+
+  // Listen for voice command actions
+  useEffect(() => {
+    const handleVoiceAction = (event: CustomEvent<{ action: string }>) => {
+      if (event.detail.action === 'add-income') {
+        setSelectedIncome(undefined);
+        setIncomeDialogOpen(true);
+      }
+    };
+
+    window.addEventListener('voice-command-action', handleVoiceAction as EventListener);
+    return () => {
+      window.removeEventListener('voice-command-action', handleVoiceAction as EventListener);
+    };
+  }, []);
+
 
   const handleEditIncome = (income: IncomeWithRelations) => {
     setSelectedIncome(income);
