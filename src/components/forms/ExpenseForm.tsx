@@ -22,6 +22,7 @@ import { useContractReimbursementSuggestion } from '@/hooks/data/useContractReim
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { TagSelect } from '@/components/forms/TagSelect';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { GlossaryLabel, TermHelp } from '@/components/ui/glossary-term';
 
 interface ExpenseFormProps {
   expense?: ExpenseWithRelations;
@@ -239,7 +240,12 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
             name="category"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('expenses.categoryLabel')} *</FormLabel>
+                <FormLabel className="flex items-center gap-1">
+                  <GlossaryLabel termKey="category" showIcon={false}>
+                    {t('expenses.categoryLabel')}
+                  </GlossaryLabel>
+                  <TermHelp termKey="category" /> *
+                </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -265,7 +271,10 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
-                  {language === 'es' ? 'Tipo de Reembolso' : 'Reimbursement Type'} *
+                  <GlossaryLabel termKey="reimbursable" showIcon={false}>
+                    {language === 'es' ? 'Tipo de Reembolso' : 'Reimbursement Type'}
+                  </GlossaryLabel>
+                  <TermHelp termKey="reimbursable" /> *
                 </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value || 'pending_classification'}>
                   <FormControl>
