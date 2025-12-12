@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFinancialProfile } from '@/hooks/data/useFinancialProfile';
+import { useInvestmentGoals, InvestmentGoal } from '@/hooks/data/useInvestmentGoals';
 import { 
   Lightbulb, 
   TrendingUp, 
@@ -17,7 +18,18 @@ import {
   PiggyBank,
   BarChart3,
   Gem,
-  ChevronRight
+  ChevronRight,
+  Flame,
+  Clock,
+  Wallet,
+  TrendingDown,
+  Rocket,
+  Heart,
+  Briefcase,
+  Home,
+  Car,
+  Plane,
+  BookOpen
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -33,6 +45,7 @@ interface Tip {
   };
   category: 'beginner' | 'intermediate' | 'advanced' | 'all';
   interests?: string[];
+  goalTypes?: string[];
 }
 
 const ALL_TIPS: Tip[] = [
@@ -63,6 +76,14 @@ const ALL_TIPS: Tip[] = [
     color: 'text-purple-500',
     category: 'beginner',
   },
+  {
+    id: 'pay_yourself_first',
+    title: 'Págate a ti mismo primero',
+    description: 'Automatiza tus inversiones. Transfiere dinero a inversiones antes de gastar en otras cosas.',
+    icon: Wallet,
+    color: 'text-emerald-500',
+    category: 'beginner',
+  },
   // Crypto tips
   {
     id: 'crypto_dca',
@@ -91,6 +112,15 @@ const ALL_TIPS: Tip[] = [
     category: 'beginner',
     interests: ['crypto'],
   },
+  {
+    id: 'crypto_research',
+    title: 'DYOR: Investiga antes de comprar',
+    description: 'No sigas consejos ciegamente. Lee whitepapers, entiende el proyecto y su utilidad real.',
+    icon: BookOpen,
+    color: 'text-amber-500',
+    category: 'intermediate',
+    interests: ['crypto'],
+  },
   // Stocks tips
   {
     id: 'stocks_diversify',
@@ -110,6 +140,24 @@ const ALL_TIPS: Tip[] = [
     category: 'intermediate',
     interests: ['stocks'],
   },
+  {
+    id: 'stocks_long_term',
+    title: 'Invierte a largo plazo',
+    description: 'El tiempo en el mercado supera el timing del mercado. Mantén tus inversiones por años, no meses.',
+    icon: Clock,
+    color: 'text-green-500',
+    category: 'beginner',
+    interests: ['stocks'],
+  },
+  {
+    id: 'stocks_volatility',
+    title: 'La volatilidad es tu amiga',
+    description: 'Las caídas del mercado son oportunidades de compra si tienes un horizonte largo.',
+    icon: TrendingDown,
+    color: 'text-green-500',
+    category: 'intermediate',
+    interests: ['stocks'],
+  },
   // Real estate tips
   {
     id: 'real_estate_reits',
@@ -118,6 +166,15 @@ const ALL_TIPS: Tip[] = [
     icon: Building2,
     color: 'text-blue-500',
     category: 'intermediate',
+    interests: ['real_estate'],
+  },
+  {
+    id: 'real_estate_leverage',
+    title: 'El poder del apalancamiento inmobiliario',
+    description: 'Con 20% de enganche puedes controlar una propiedad completa. El inquilino paga tu hipoteca.',
+    icon: Home,
+    color: 'text-blue-500',
+    category: 'advanced',
     interests: ['real_estate'],
   },
   // Retirement tips
@@ -139,6 +196,79 @@ const ALL_TIPS: Tip[] = [
     category: 'intermediate',
     interests: ['retirement'],
   },
+  // Goal-based tips
+  {
+    id: 'goal_passive_income',
+    title: 'Ingreso pasivo: La clave de la libertad',
+    description: 'Enfócate en activos que generen flujo de efectivo: dividendos, rentas, royalties.',
+    icon: Flame,
+    color: 'text-orange-500',
+    category: 'all',
+    goalTypes: ['passive_income'],
+  },
+  {
+    id: 'goal_passive_diversify',
+    title: 'Diversifica tus fuentes de ingreso pasivo',
+    description: 'No dependas de una sola fuente. Combina dividendos, rentas y negocios automatizados.',
+    icon: Briefcase,
+    color: 'text-orange-500',
+    category: 'intermediate',
+    goalTypes: ['passive_income'],
+  },
+  {
+    id: 'goal_fire_aggressive',
+    title: 'FIRE: Ahorra agresivamente',
+    description: 'Para retirarte temprano, apunta a ahorrar 50%+ de tus ingresos e invertir la diferencia.',
+    icon: Rocket,
+    color: 'text-red-500',
+    category: 'intermediate',
+    goalTypes: ['early_retirement', 'financial_independence'],
+  },
+  {
+    id: 'goal_fire_withdrawal',
+    title: 'La regla del 4%',
+    description: 'Necesitas 25x tus gastos anuales para retirarte. Retira 4% anual para vivir indefinidamente.',
+    icon: Target,
+    color: 'text-red-500',
+    category: 'intermediate',
+    goalTypes: ['early_retirement', 'financial_independence'],
+  },
+  {
+    id: 'goal_house_saving',
+    title: 'Para tu casa: FHSA + TFSA',
+    description: 'En Canadá usa FHSA (libre de impuestos para primera casa) + TFSA para maximizar ahorro.',
+    icon: Home,
+    color: 'text-teal-500',
+    category: 'beginner',
+    goalTypes: ['house', 'property'],
+  },
+  {
+    id: 'goal_education',
+    title: 'RESP para educación',
+    description: 'El gobierno aporta 20% en grants hasta $500/año. Dinero gratis para educación.',
+    icon: GraduationCap,
+    color: 'text-indigo-500',
+    category: 'beginner',
+    goalTypes: ['education'],
+  },
+  {
+    id: 'goal_travel',
+    title: 'Fondo de viajes separado',
+    description: 'Mantén un fondo específico para viajes. No toques tus inversiones a largo plazo.',
+    icon: Plane,
+    color: 'text-sky-500',
+    category: 'beginner',
+    goalTypes: ['travel', 'vacation'],
+  },
+  {
+    id: 'goal_car',
+    title: 'Ahorra para el auto, no financies',
+    description: 'Los autos se deprecian rápido. Pagar cash te ahorra miles en intereses.',
+    icon: Car,
+    color: 'text-slate-500',
+    category: 'beginner',
+    goalTypes: ['car', 'vehicle'],
+  },
   // Advanced tips
   {
     id: 'advanced_rebalance',
@@ -156,23 +286,110 @@ const ALL_TIPS: Tip[] = [
     color: 'text-blue-500',
     category: 'advanced',
   },
+  {
+    id: 'advanced_asset_location',
+    title: 'Ubicación de activos',
+    description: 'Pon bonos en RRSP (impuestos diferidos) y acciones de crecimiento en TFSA (libre de impuestos).',
+    icon: Gem,
+    color: 'text-violet-500',
+    category: 'advanced',
+  },
+  {
+    id: 'compound_power',
+    title: 'El poder del interés compuesto',
+    description: 'Einstein lo llamó la 8va maravilla. $500/mes al 8% = $1.4M en 30 años.',
+    icon: Sparkles,
+    color: 'text-yellow-500',
+    category: 'all',
+  },
+  {
+    id: 'emotional_investing',
+    title: 'No inviertas con emociones',
+    description: 'El miedo y la codicia son enemigos del inversor. Sigue tu plan, no las noticias.',
+    icon: Heart,
+    color: 'text-pink-500',
+    category: 'intermediate',
+  },
 ];
+
+// Generate tips based on specific goals
+function generateGoalSpecificTips(goals: InvestmentGoal[]): Tip[] {
+  const tips: Tip[] = [];
+  
+  goals.forEach(goal => {
+    const progress = goal.target_amount > 0 
+      ? (goal.current_amount / goal.target_amount) * 100 
+      : 0;
+    
+    // Almost there tip
+    if (progress >= 75 && progress < 100) {
+      tips.push({
+        id: `goal_almost_${goal.id}`,
+        title: `¡Casi llegas a "${goal.name}"!`,
+        description: `Te falta solo ${(100 - progress).toFixed(0)}% para alcanzar tu meta. ¡No te rindas ahora!`,
+        icon: Rocket,
+        color: 'text-green-500',
+        category: 'all',
+      });
+    }
+    
+    // Behind schedule tip
+    if (goal.deadline && goal.monthly_target > 0) {
+      const monthsLeft = Math.max(0, 
+        (new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 30)
+      );
+      const remaining = goal.target_amount - goal.current_amount;
+      const neededMonthly = remaining / Math.max(1, monthsLeft);
+      
+      if (neededMonthly > goal.monthly_target * 1.5 && monthsLeft > 1) {
+        tips.push({
+          id: `goal_behind_${goal.id}`,
+          title: `Acelera tu meta "${goal.name}"`,
+          description: `Necesitas $${neededMonthly.toFixed(0)}/mes para cumplir a tiempo. Considera aumentar tus aportes.`,
+          icon: Clock,
+          color: 'text-amber-500',
+          category: 'all',
+        });
+      }
+    }
+    
+    // Just started tip
+    if (progress < 10 && progress > 0) {
+      tips.push({
+        id: `goal_started_${goal.id}`,
+        title: `Buen inicio con "${goal.name}"`,
+        description: 'El primer paso es el más importante. Mantén la constancia y verás resultados.',
+        icon: Sparkles,
+        color: 'text-purple-500',
+        category: 'all',
+      });
+    }
+  });
+  
+  return tips;
+}
 
 export function PersonalizedInvestmentTips() {
   const { language } = useLanguage();
-  const { data: profile, isLoading } = useFinancialProfile();
+  const { data: profile, isLoading: profileLoading } = useFinancialProfile();
+  const { data: goals, isLoading: goalsLoading } = useInvestmentGoals();
   const navigate = useNavigate();
 
   const personalizedTips = useMemo(() => {
     if (!profile) {
-      // Return generic tips if no profile
       return ALL_TIPS.filter(tip => tip.category === 'beginner').slice(0, 3);
     }
 
     const userLevel = profile.financial_education_level || 'beginner';
     const userInterests = profile.interests || [];
+    
+    // Get goal types from user's investment goals
+    const userGoalTypes = goals?.map(g => g.goal_type) || [];
+    
+    // Generate dynamic tips based on actual goals
+    const goalSpecificTips = goals ? generateGoalSpecificTips(goals) : [];
 
-    // Filter tips based on user level and interests
+    // Filter tips based on user level, interests, and goal types
     const relevantTips = ALL_TIPS.filter(tip => {
       // Check if tip matches user level or is for all levels
       const levelMatch = tip.category === 'all' || 
@@ -180,22 +397,43 @@ export function PersonalizedInvestmentTips() {
                         (userLevel === 'advanced' && tip.category !== 'beginner') ||
                         (userLevel === 'intermediate' && tip.category === 'beginner');
 
-      // Check if tip matches user interests (or has no interest requirement)
+      // Check if tip matches user interests
       const interestMatch = !tip.interests || 
                            tip.interests.some(interest => userInterests.includes(interest));
 
-      return levelMatch && interestMatch;
+      // Check if tip matches user goal types
+      const goalMatch = !tip.goalTypes ||
+                       tip.goalTypes.some(gt => userGoalTypes.includes(gt));
+
+      return levelMatch && (interestMatch || goalMatch);
     });
 
-    // Prioritize tips that match user interests
-    const sortedTips = relevantTips.sort((a, b) => {
+    // Combine with goal-specific dynamic tips
+    const allRelevantTips = [...goalSpecificTips, ...relevantTips];
+
+    // Prioritize tips that match user interests or goals
+    const sortedTips = allRelevantTips.sort((a, b) => {
+      // Goal-specific tips first
+      const aIsGoalSpecific = a.id.startsWith('goal_') ? 2 : 0;
+      const bIsGoalSpecific = b.id.startsWith('goal_') ? 2 : 0;
+      
       const aMatchesInterest = a.interests?.some(i => userInterests.includes(i)) ? 1 : 0;
       const bMatchesInterest = b.interests?.some(i => userInterests.includes(i)) ? 1 : 0;
-      return bMatchesInterest - aMatchesInterest;
+      
+      const aMatchesGoal = a.goalTypes?.some(gt => userGoalTypes.includes(gt)) ? 1 : 0;
+      const bMatchesGoal = b.goalTypes?.some(gt => userGoalTypes.includes(gt)) ? 1 : 0;
+      
+      return (bIsGoalSpecific + bMatchesInterest + bMatchesGoal) - 
+             (aIsGoalSpecific + aMatchesInterest + aMatchesGoal);
     });
 
-    return sortedTips.slice(0, 3);
-  }, [profile]);
+    // Remove duplicates and limit
+    const uniqueTips = sortedTips.filter((tip, index, self) => 
+      index === self.findIndex(t => t.id === tip.id)
+    );
+
+    return uniqueTips.slice(0, 4);
+  }, [profile, goals]);
 
   const getLevelBadge = () => {
     if (!profile?.financial_education_level) return null;
@@ -216,11 +454,10 @@ export function PersonalizedInvestmentTips() {
     );
   };
 
-  if (isLoading) {
+  if (profileLoading || goalsLoading) {
     return null;
   }
 
-  // Don't show if user hasn't completed the investment onboarding
   if (!profile) {
     return null;
   }
@@ -235,15 +472,19 @@ export function PersonalizedInvestmentTips() {
           </CardTitle>
           {getLevelBadge()}
         </div>
-        {profile.interests && profile.interests.length > 0 && (
-          <div className="flex gap-1 flex-wrap mt-2">
-            {profile.interests.slice(0, 4).map(interest => (
-              <Badge key={interest} variant="secondary" className="text-xs">
-                {interest}
-              </Badge>
-            ))}
-          </div>
-        )}
+        <div className="flex gap-1 flex-wrap mt-2">
+          {profile.interests && profile.interests.slice(0, 3).map(interest => (
+            <Badge key={interest} variant="secondary" className="text-xs">
+              {interest}
+            </Badge>
+          ))}
+          {goals && goals.length > 0 && (
+            <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-0">
+              <Target className="h-3 w-3 mr-1" />
+              {goals.length} {language === 'es' ? 'metas' : 'goals'}
+            </Badge>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {personalizedTips.map((tip) => {
