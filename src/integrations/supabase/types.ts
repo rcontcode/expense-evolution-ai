@@ -65,6 +65,51 @@ export type Database = {
           },
         ]
       }
+      assets: {
+        Row: {
+          category: string
+          created_at: string | null
+          currency: string | null
+          current_value: number
+          id: string
+          is_liquid: boolean | null
+          name: string
+          notes: string | null
+          purchase_date: string | null
+          purchase_value: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string | null
+          currency?: string | null
+          current_value?: number
+          id?: string
+          is_liquid?: boolean | null
+          name: string
+          notes?: string | null
+          purchase_date?: string | null
+          purchase_value?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          currency?: string | null
+          current_value?: number
+          id?: string
+          is_liquid?: boolean | null
+          name?: string
+          notes?: string | null
+          purchase_date?: string | null
+          purchase_value?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       bank_transactions: {
         Row: {
           amount: number
@@ -673,6 +718,54 @@ export type Database = {
         }
         Relationships: []
       }
+      liabilities: {
+        Row: {
+          category: string
+          created_at: string | null
+          currency: string | null
+          current_balance: number
+          due_date: string | null
+          id: string
+          interest_rate: number | null
+          minimum_payment: number | null
+          name: string
+          notes: string | null
+          original_amount: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string | null
+          currency?: string | null
+          current_balance?: number
+          due_date?: string | null
+          id?: string
+          interest_rate?: number | null
+          minimum_payment?: number | null
+          name: string
+          notes?: string | null
+          original_amount?: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          currency?: string | null
+          current_balance?: number
+          due_date?: string | null
+          id?: string
+          interest_rate?: number | null
+          minimum_payment?: number | null
+          name?: string
+          notes?: string | null
+          original_amount?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       mileage: {
         Row: {
           client_id: string | null
@@ -723,6 +816,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      net_worth_snapshots: {
+        Row: {
+          created_at: string | null
+          id: string
+          net_worth: number
+          snapshot_date: string
+          total_assets: number
+          total_liabilities: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          net_worth?: number
+          snapshot_date: string
+          total_assets?: number
+          total_liabilities?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          net_worth?: number
+          snapshot_date?: string
+          total_assets?: number
+          total_liabilities?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
