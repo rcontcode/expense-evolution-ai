@@ -251,6 +251,58 @@ const ACHIEVEMENT_DETAILS: Record<string, {
     description_es: 'Gurú del Presupuesto', description_en: 'Budget Guru',
     requirement_es: 'Mantén gastos bajo presupuesto 3 meses', requirement_en: 'Keep expenses under budget for 3 months'
   },
+  
+  // Goal completion achievements
+  first_goal_complete: { 
+    icon: '🏁', points: 50, category: 'savings', rarity: 'uncommon',
+    description_es: 'Primera Victoria', description_en: 'First Victory',
+    requirement_es: 'Completa tu primera meta', requirement_en: 'Complete your first goal'
+  },
+  goal_achiever_1: { 
+    icon: '🎯', points: 30, category: 'savings', rarity: 'uncommon',
+    description_es: 'Cumplidor', description_en: 'Goal Getter',
+    requirement_es: 'Completa 1 meta de ahorro o inversión', requirement_en: 'Complete 1 savings or investment goal'
+  },
+  goal_achiever_3: { 
+    icon: '🏆', points: 75, category: 'savings', rarity: 'rare',
+    description_es: 'Tri-Campeón', description_en: 'Triple Champion',
+    requirement_es: 'Completa 3 metas', requirement_en: 'Complete 3 goals'
+  },
+  goal_achiever_5: { 
+    icon: '⭐', points: 125, category: 'savings', rarity: 'epic',
+    description_es: 'Estrella de Metas', description_en: 'Goal Star',
+    requirement_es: 'Completa 5 metas', requirement_en: 'Complete 5 goals'
+  },
+  goal_master: { 
+    icon: '👑', points: 250, category: 'savings', rarity: 'legendary',
+    description_es: 'Maestro de Metas', description_en: 'Goal Master',
+    requirement_es: 'Completa 10 metas', requirement_en: 'Complete 10 goals'
+  },
+  goal_complete_passive_income: { 
+    icon: '💸', points: 100, category: 'investment', rarity: 'epic',
+    description_es: 'Flujo Pasivo Logrado', description_en: 'Passive Flow Achieved',
+    requirement_es: 'Completa una meta de ingreso pasivo', requirement_en: 'Complete a passive income goal'
+  },
+  goal_complete_early_retirement: { 
+    icon: '🏖️', points: 200, category: 'investment', rarity: 'legendary',
+    description_es: 'Camino a FIRE', description_en: 'Path to FIRE',
+    requirement_es: 'Completa una meta de retiro temprano', requirement_en: 'Complete an early retirement goal'
+  },
+  goal_complete_financial_independence: { 
+    icon: '🗽', points: 200, category: 'investment', rarity: 'legendary',
+    description_es: 'Libertad Financiera', description_en: 'Financial Freedom',
+    requirement_es: 'Completa una meta de independencia financiera', requirement_en: 'Complete a financial independence goal'
+  },
+  goal_complete_house: { 
+    icon: '🏠', points: 150, category: 'savings', rarity: 'epic',
+    description_es: 'Dueño de Casa', description_en: 'Homeowner',
+    requirement_es: 'Completa una meta de compra de casa', requirement_en: 'Complete a house purchase goal'
+  },
+  goal_complete_education: { 
+    icon: '🎓', points: 100, category: 'savings', rarity: 'rare',
+    description_es: 'Inversor en Educación', description_en: 'Education Investor',
+    requirement_es: 'Completa una meta de educación', requirement_en: 'Complete an education goal'
+  },
 };
 
 const RARITY_STYLES = {
