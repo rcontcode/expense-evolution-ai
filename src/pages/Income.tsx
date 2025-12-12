@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIncome, useIncomeSummary, useDeleteIncome } from '@/hooks/data/useIncome';
 import { OnboardingGuide } from '@/components/ui/onboarding-guide';
+import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { useProjects } from '@/hooks/data/useProjects';
 import { INCOME_CATEGORIES, INCOME_GROUPS, getIncomeCategory } from '@/lib/constants/income-categories';
 import { IncomeDialog } from '@/components/dialogs/IncomeDialog';
@@ -125,6 +126,9 @@ export default function Income() {
             </Button>
           </div>
         </div>
+
+        {/* Mentor Quote Banner */}
+        <MentorQuoteBanner context="income" className="mb-2" />
 
         {/* Onboarding Guide */}
         <OnboardingGuide pageKey="income" />

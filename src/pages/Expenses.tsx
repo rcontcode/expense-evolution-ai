@@ -19,6 +19,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
 import { OnboardingGuide } from '@/components/ui/onboarding-guide';
 import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
+import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 
 export default function Expenses() {
   const { t } = useLanguage();
@@ -97,6 +98,9 @@ export default function Expenses() {
               </InfoTooltip>
             </div>
           </div>
+
+          {/* Mentor Quote Banner */}
+          <MentorQuoteBanner context="expenses" className="mb-2" />
 
           {/* Setup Progress Banner - Compact */}
           <SetupProgressBanner variant="compact" />
