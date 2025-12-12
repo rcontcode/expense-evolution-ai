@@ -616,8 +616,52 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
         )}
 
         {/* Conversion History */}
-        {(convertedAssets.length > 0 || assetsInConversion.length > 0) && (
+        {(convertedAssets.length > 0 || assetsInConversion.length > 0) && (() => {
+          // Calculate conversion statistics
+          const totalConversions = convertedAssets.length + assetsInConversion.length;
+          const successRate = totalConversions > 0 
+            ? Math.round((convertedAssets.length / totalConversions) * 100) 
+            : 0;
+          
+          const completedWithTime = convertedAssets.filter(a => {
+            const info = parseConversionInfo(a);
+            return info.elapsedDays !== undefined;
+          });
+          
+          const avgConversionDays = completedWithTime.length > 0
+            ? Math.round(
+                completedWithTime.reduce((sum, a) => {
+                  const info = parseConversionInfo(a);
+                  return sum + (info.elapsedDays || 0);
+                }, 0) / completedWithTime.length
+              )
+            : 0;
+          
+          const totalConvertedValue = convertedAssets.reduce((sum, a) => sum + a.current_value, 0);
+          const valueInProgress = assetsInConversion.reduce((sum, a) => sum + a.current_value, 0);
+          
+          return (
           <div className="mt-4 space-y-3">
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/20 text-center">
+                <p className="text-2xl font-bold text-green-600">{successRate}%</p>
+                <p className="text-xs text-muted-foreground">Tasa de éxito</p>
+              </div>
+              <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20 text-center">
+                <p className="text-2xl font-bold text-blue-600">{avgConversionDays}</p>
+                <p className="text-xs text-muted-foreground">Días promedio</p>
+              </div>
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-center">
+                <p className="text-2xl font-bold text-primary">{formatCurrency(totalConvertedValue)}</p>
+                <p className="text-xs text-muted-foreground">Valor convertido</p>
+              </div>
+              <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20 text-center">
+                <p className="text-2xl font-bold text-amber-600">{formatCurrency(valueInProgress)}</p>
+                <p className="text-xs text-muted-foreground">En conversión</p>
+              </div>
+            </div>
+
             <div className="flex items-center gap-2 text-sm font-medium text-primary">
               <RotateCw className="h-4 w-4" />
               <span>Historial de Conversiones</span>
@@ -711,8 +755,8 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
               );
             })}
           </div>
-        )}
-
+          );
+        })()}
         {/* Personalized Recommendations */}
         {nonProductiveAssets.length > 0 && (() => {
           const userName = userProfile?.full_name?.split(' ')[0] || 'Amigo';
