@@ -5,14 +5,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Car, Plus } from 'lucide-react';
+import { Car, Plus, Download, MapPin, DollarSign } from 'lucide-react';
 import { useMileage, useMileageSummary, MileageWithClient } from '@/hooks/data/useMileage';
 import { MileageDialog } from '@/components/dialogs/MileageDialog';
 import { MileageTable } from '@/components/tables/MileageTable';
 import { MileageSummaryCard } from '@/components/dashboard/MileageSummaryCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
-import { OnboardingGuide } from '@/components/ui/onboarding-guide';
+import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import {
   Select,
   SelectContent,
@@ -87,8 +87,16 @@ export default function Mileage() {
             </div>
           </div>
 
-          {/* Onboarding Guide */}
-          <OnboardingGuide pageKey="mileage" />
+          {/* Contextual Page Guide */}
+          <PageContextGuide
+            {...PAGE_GUIDES.mileage}
+            actions={[
+              { icon: Plus, title: { es: 'Nuevo Viaje', en: 'New Trip' }, description: { es: 'Registrar', en: 'Log trip' }, action: handleCreate },
+              { icon: Car, title: { es: 'Ver Resumen', en: 'View Summary' }, description: { es: 'Deducciones', en: 'Deductions' }, action: () => {} },
+              { icon: DollarSign, title: { es: 'Cálculo CRA', en: 'CRA Calculation' }, description: { es: 'Tarifas 2024', en: '2024 rates' }, path: '/dashboard' },
+              { icon: Download, title: { es: 'Exportar', en: 'Export' }, description: { es: 'Para impuestos', en: 'For taxes' }, path: '/dashboard' }
+            ]}
+          />
 
           <Tabs defaultValue="records" className="space-y-4">
             <TabsList>

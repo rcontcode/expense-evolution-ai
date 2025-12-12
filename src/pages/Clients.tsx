@@ -16,7 +16,7 @@ import { Client } from '@/types/expense.types';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { Badge } from '@/components/ui/badge';
-import { OnboardingGuide } from '@/components/ui/onboarding-guide';
+import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -119,8 +119,16 @@ export default function Clients() {
           {/* Mentor Quote Banner */}
           <MentorQuoteBanner context="clients" className="mb-2" />
 
-          {/* Onboarding Guide */}
-          <OnboardingGuide pageKey="clients" />
+          {/* Contextual Page Guide */}
+          <PageContextGuide
+            {...PAGE_GUIDES.clients}
+            actions={[
+              { icon: Plus, title: { es: 'Nuevo Cliente', en: 'New Client' }, description: { es: 'Agregar cliente', en: 'Add client' }, action: handleCreate },
+              { icon: FileText, title: { es: 'Ver Contratos', en: 'View Contracts' }, description: { es: 'Términos y acuerdos', en: 'Terms and agreements' }, path: '/contracts' },
+              { icon: PieChart, title: { es: 'Panorama', en: 'Overview' }, description: { es: 'Financiero por cliente', en: 'Financial by client' }, action: () => clients?.[0] && setFinancialClient(clients[0]) },
+              { icon: Users, title: { es: 'Ver Proyectos', en: 'View Projects' }, description: { es: 'Por cliente', en: 'By client' }, path: '/projects' }
+            ]}
+          />
 
           {/* Legend */}
           <Card className="bg-muted/30">

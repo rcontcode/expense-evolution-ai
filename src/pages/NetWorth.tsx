@@ -17,10 +17,10 @@ import { LiabilitiesList } from '@/components/net-worth/LiabilitiesList';
 import { AssetDialog } from '@/components/net-worth/AssetDialog';
 import { LiabilityDialog } from '@/components/net-worth/LiabilityDialog';
 import { InvestmentOnboardingWizard } from '@/components/investments/InvestmentOnboardingWizard';
-import { OnboardingGuide } from '@/components/ui/onboarding-guide';
+import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Scale, Lightbulb, Sparkles } from 'lucide-react';
+import { Scale, Lightbulb, Sparkles, Plus, Wallet, TrendingUp, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function NetWorth() {
@@ -156,8 +156,16 @@ export default function NetWorth() {
           )}
         </div>
 
-        {/* Onboarding */}
-        <OnboardingGuide pageKey="dashboard" />
+        {/* Contextual Page Guide */}
+        <PageContextGuide
+          {...PAGE_GUIDES['net-worth']}
+          actions={[
+            { icon: Plus, title: { es: 'Agregar Activo', en: 'Add Asset' }, description: { es: 'Inversiones, propiedades', en: 'Investments, properties' }, action: handleAddAsset },
+            { icon: Wallet, title: { es: 'Agregar Pasivo', en: 'Add Liability' }, description: { es: 'Deudas, hipotecas', en: 'Debts, mortgages' }, action: handleAddLiability },
+            { icon: TrendingUp, title: { es: 'Ver Proyección', en: 'View Projection' }, description: { es: '6 meses adelante', en: '6 months ahead' }, action: () => {} },
+            { icon: RefreshCw, title: { es: 'Conversiones', en: 'Conversions' }, description: { es: 'Activos no productivos', en: 'Non-productive assets' }, action: () => {} }
+          ]}
+        />
 
         {isLoading ? (
           <div className="space-y-4">
