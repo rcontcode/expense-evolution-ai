@@ -4,14 +4,14 @@ import { ExternalLink, Calculator, TrendingDown, TrendingUp, AlertCircle, Receip
 import { Button } from '@/components/ui/button';
 import { TaxSummary, TAX_DEDUCTION_RULES } from '@/hooks/data/useTaxCalculations';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getCategoryLabelByLanguage, ExpenseCategory } from '@/lib/constants/expense-categories';
 
 interface TaxSummaryCardsProps {
   taxSummary: TaxSummary;
 }
 
 export const TaxSummaryCards = memo(({ taxSummary }: TaxSummaryCardsProps) => {
-  const { t } = useLanguage();
-  
+  const { t, language } = useLanguage();
   return (
     <div className="space-y-4">
       {/* Resumen General */}
@@ -111,7 +111,7 @@ export const TaxSummaryCards = memo(({ taxSummary }: TaxSummaryCardsProps) => {
               <div className="space-y-2">
                 {taxSummary.categoryBreakdown.map((item) => (
                   <div key={item.category} className="flex items-center justify-between text-sm">
-                    <span className="capitalize text-muted-foreground">{item.category.replace('_', ' ')}</span>
+                    <span className="text-muted-foreground">{getCategoryLabelByLanguage(item.category as ExpenseCategory, language)}</span>
                     <div className="text-right">
                       <span className="font-medium">${item.itc.toFixed(2)}</span>
                       <span className="text-xs text-muted-foreground ml-2">
@@ -145,7 +145,7 @@ export const TaxSummaryCards = memo(({ taxSummary }: TaxSummaryCardsProps) => {
                 <div key={item.category} className="border-b pb-4 last:border-0">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
-                      <h4 className="font-medium capitalize">{item.category.replace('_', ' ')}</h4>
+                      <h4 className="font-medium">{getCategoryLabelByLanguage(item.category as ExpenseCategory, language)}</h4>
                       <p className="text-sm text-muted-foreground mt-1">
                         {rule?.description}
                       </p>
