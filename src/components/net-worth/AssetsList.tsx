@@ -2,13 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Asset, ASSET_CATEGORIES, useDeleteAsset } from '@/hooks/data/useNetWorth';
+import { Asset, ASSET_CATEGORIES, useDeleteAsset, useUpdateAsset } from '@/hooks/data/useNetWorth';
 import { useFinancialProfile } from '@/hooks/data/useFinancialProfile';
 import { useProfile } from '@/hooks/data/useProfile';
 import { 
   Plus, Pencil, Trash2, Wallet, TrendingUp, TrendingDown, Home, Car, PiggyBank, Bitcoin, 
   Gem, Building2, Package, Droplets, Hexagon, CircleDollarSign, Coins, Layers, ImageIcon,
-  Zap, AlertTriangle, DollarSign, Lightbulb, ArrowRight, Sparkles
+  Zap, AlertTriangle, DollarSign, Lightbulb, ArrowRight, Sparkles, Loader2, Check, RotateCw
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -137,8 +137,24 @@ const generateRecommendations = (
   return recommendations;
 };
 
+// Conversion status helpers
+const CONVERSION_MARKERS = {
+  IN_PROGRESS: '[EN CONVERSIÓN]',
+  COMPLETED: '[CONVERTIDO]',
+  GENERATES_INCOME: '[GENERA INGRESOS]'
+};
+
+const getConversionStatus = (asset: Asset): 'none' | 'in_progress' | 'completed' | 'productive' => {
+  const notes = asset.notes?.toUpperCase() || '';
+  if (notes.includes(CONVERSION_MARKERS.GENERATES_INCOME.toUpperCase()) || 
+      notes.includes(CONVERSION_MARKERS.COMPLETED.toUpperCase())) return 'productive';
+  if (notes.includes(CONVERSION_MARKERS.IN_PROGRESS.toUpperCase())) return 'in_progress';
+  return 'none';
+};
+
 export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
   const deleteAsset = useDeleteAsset();
+  const updateAsset = useUpdateAsset();
   const { data: financialProfile } = useFinancialProfile();
   const { data: userProfile } = useProfile();
 
@@ -156,11 +172,10 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
 
   // Calculate productive vs non-productive
   const isProductive = (asset: Asset) => {
+    const notes = asset.notes?.toLowerCase() || '';
     // Check if notes indicate it generates income
-    if (asset.notes?.toLowerCase().includes('[genera ingresos]')) return true;
-    if (asset.notes?.toLowerCase().includes('ingreso') || 
-        asset.notes?.toLowerCase().includes('renta') ||
-        asset.notes?.toLowerCase().includes('dividendo')) return true;
+    if (notes.includes('[genera ingresos]') || notes.includes('[convertido]')) return true;
+    if (notes.includes('ingreso') || notes.includes('renta') || notes.includes('dividendo')) return true;
     // Check if category is typically productive
     return PRODUCTIVE_CATEGORIES.includes(asset.category);
   };
@@ -193,6 +208,31 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
   const isDepreciating = (asset: Asset) => {
     return DEPRECIATING_CATEGORIES.includes(asset.category);
   };
+
+  // Handle conversion status toggle
+  const handleStartConversion = (asset: Asset) => {
+    const currentNotes = asset.notes || '';
+    const newNotes = `${CONVERSION_MARKERS.IN_PROGRESS} ${currentNotes}`.trim();
+    updateAsset.mutate({ id: asset.id, notes: newNotes });
+  };
+
+  const handleCompleteConversion = (asset: Asset) => {
+    let currentNotes = asset.notes || '';
+    // Remove IN_PROGRESS marker and add COMPLETED/GENERATES_INCOME
+    currentNotes = currentNotes.replace(/\[EN CONVERSIÓN\]\s*/gi, '');
+    const newNotes = `${CONVERSION_MARKERS.GENERATES_INCOME} ${currentNotes}`.trim();
+    updateAsset.mutate({ id: asset.id, notes: newNotes });
+  };
+
+  const handleCancelConversion = (asset: Asset) => {
+    let currentNotes = asset.notes || '';
+    // Remove conversion markers
+    currentNotes = currentNotes.replace(/\[EN CONVERSIÓN\]\s*/gi, '');
+    updateAsset.mutate({ id: asset.id, notes: currentNotes.trim() });
+  };
+
+  // Count assets in conversion
+  const assetsInConversion = assets.filter(a => getConversionStatus(a) === 'in_progress');
 
   return (
     <Card>
@@ -253,6 +293,19 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
                 </span>
               </div>
             )}
+
+            {/* Conversion Progress */}
+            {assetsInConversion.length > 0 && (
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-500/10 border border-blue-500/30 text-sm">
+                <RotateCw className="h-4 w-4 text-blue-500 animate-spin" />
+                <span className="text-blue-600 dark:text-blue-400">
+                  <strong>{assetsInConversion.length}</strong> activo{assetsInConversion.length > 1 ? 's' : ''} en proceso de conversión a productivo
+                </span>
+                <span className="text-xs text-blue-500/70 ml-auto">
+                  ({assetsInConversion.map(a => a.name).join(', ')})
+                </span>
+              </div>
+            )}
           </div>
         )}
       </CardHeader>
@@ -272,40 +325,66 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
               const productive = isProductive(asset);
               const depreciating = isDepreciating(asset);
               const hasDepreciated = gainLoss && gainLoss.diff < 0;
+              const conversionStatus = getConversionStatus(asset);
+              const isConverting = conversionStatus === 'in_progress';
 
               return (
                 <div
                   key={asset.id}
                   className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
-                    hasDepreciated 
-                      ? 'bg-red-500/5 hover:bg-red-500/10 border border-red-500/20' 
-                      : 'bg-muted/50 hover:bg-muted'
+                    isConverting
+                      ? 'bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/30 ring-1 ring-blue-500/20'
+                      : hasDepreciated 
+                        ? 'bg-red-500/5 hover:bg-red-500/10 border border-red-500/20' 
+                        : 'bg-muted/50 hover:bg-muted'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`p-2 rounded-full relative ${
-                      category.group === 'crypto' 
-                        ? 'bg-amber-500/10' 
-                        : productive 
-                          ? 'bg-green-500/10' 
-                          : 'bg-muted'
+                      isConverting
+                        ? 'bg-blue-500/10'
+                        : category.group === 'crypto' 
+                          ? 'bg-amber-500/10' 
+                          : productive 
+                            ? 'bg-green-500/10' 
+                            : 'bg-muted'
                     }`}>
                       <IconComponent className={`h-4 w-4 ${
-                        category.group === 'crypto' 
-                          ? 'text-amber-500' 
-                          : productive 
-                            ? 'text-green-500' 
-                            : 'text-muted-foreground'
+                        isConverting
+                          ? 'text-blue-500'
+                          : category.group === 'crypto' 
+                            ? 'text-amber-500' 
+                            : productive 
+                              ? 'text-green-500' 
+                              : 'text-muted-foreground'
                       }`} />
                       {productive && (
                         <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center">
                           <Zap className="h-2 w-2 text-white" />
                         </div>
                       )}
+                      {isConverting && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center animate-pulse">
+                          <RotateCw className="h-2 w-2 text-white" />
+                        </div>
+                      )}
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium">{asset.name}</span>
+                        {isConverting && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/30 animate-pulse">
+                                <RotateCw className="h-3 w-3 mr-1" />
+                                En conversión
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs">Estás trabajando en convertir este activo en productivo</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                         {productive ? (
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -318,7 +397,7 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
                               <p className="text-xs">Este activo genera o puede generar ingresos pasivos</p>
                             </TooltipContent>
                           </Tooltip>
-                        ) : (
+                        ) : !isConverting && (
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Badge variant="outline" className="text-xs text-muted-foreground">
@@ -336,7 +415,7 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
                             Líquido
                           </Badge>
                         )}
-                        {depreciating && !productive && (
+                        {depreciating && !productive && !isConverting && (
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/30">
@@ -386,6 +465,61 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
                       )}
                     </div>
                     <div className="flex gap-1">
+                      {/* Conversion action buttons */}
+                      {!productive && !isConverting && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
+                              onClick={() => handleStartConversion(asset)}
+                              disabled={updateAsset.isPending}
+                            >
+                              <RotateCw className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">Iniciar conversión a productivo</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                      {isConverting && (
+                        <>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-500/10"
+                                onClick={() => handleCompleteConversion(asset)}
+                                disabled={updateAsset.isPending}
+                              >
+                                <Check className="h-3 w-3" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs">¡Marcar como convertido! Ya genera ingresos</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                onClick={() => handleCancelConversion(asset)}
+                                disabled={updateAsset.isPending}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs">Cancelar conversión</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </>
+                      )}
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(asset)}>
                         <Pencil className="h-3 w-3" />
                       </Button>
