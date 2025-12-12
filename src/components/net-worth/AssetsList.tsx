@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Asset, ASSET_CATEGORIES, useDeleteAsset } from '@/hooks/data/useNetWorth';
+import { useFinancialProfile } from '@/hooks/data/useFinancialProfile';
+import { useProfile } from '@/hooks/data/useProfile';
 import { 
   Plus, Pencil, Trash2, Wallet, TrendingUp, TrendingDown, Home, Car, PiggyBank, Bitcoin, 
   Gem, Building2, Package, Droplets, Hexagon, CircleDollarSign, Coins, Layers, ImageIcon,
-  Zap, AlertTriangle, DollarSign
+  Zap, AlertTriangle, DollarSign, Lightbulb, ArrowRight, Sparkles
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -43,8 +45,102 @@ const DEPRECIATING_CATEGORIES = ['vehicles', 'collectibles'];
 // Categories that are typically productive (generate income)
 const PRODUCTIVE_CATEGORIES = ['investments', 'real_estate', 'business', 'retirement', 'crypto_defi'];
 
+// Recommendations generator based on profile and assets
+const generateRecommendations = (
+  nonProductiveAssets: Asset[],
+  profile: { risk_tolerance?: string; interests?: string[]; time_availability?: string } | null,
+  userName: string
+) => {
+  const recommendations: Array<{
+    asset: Asset;
+    suggestion: string;
+    strategy: string;
+    icon: React.ReactNode;
+    difficulty: 'fácil' | 'moderado' | 'avanzado';
+  }> = [];
+
+  const riskLevel = profile?.risk_tolerance || 'moderate';
+  const interests = profile?.interests || [];
+  const timeAvailable = profile?.time_availability || 'moderate';
+
+  nonProductiveAssets.forEach(asset => {
+    if (asset.category === 'vehicles') {
+      // Vehicle recommendations
+      if (riskLevel === 'aggressive' || interests.includes('business')) {
+        recommendations.push({
+          asset,
+          suggestion: `${userName}, tu ${asset.name} podría generar ingresos`,
+          strategy: 'Considera registrarte en plataformas como Uber, Lyft, o servicios de delivery. También podrías rentarlo cuando no lo uses a través de Turo o similar.',
+          icon: <Car className="h-4 w-4" />,
+          difficulty: 'moderado'
+        });
+      } else {
+        recommendations.push({
+          asset,
+          suggestion: `${userName}, tu ${asset.name} está depreciándose`,
+          strategy: 'Evalúa si realmente necesitas este vehículo. Podrías venderlo e invertir el dinero en activos que generen ingresos pasivos como ETFs o REITs.',
+          icon: <Car className="h-4 w-4" />,
+          difficulty: 'fácil'
+        });
+      }
+    } else if (asset.category === 'collectibles') {
+      recommendations.push({
+        asset,
+        suggestion: `${userName}, tus coleccionables podrían trabajar para ti`,
+        strategy: 'Considera exhibirlos en museos por una tarifa, alquilarlos para eventos o producciones, o fraccionarlos para venta parcial si tienen alto valor.',
+        icon: <Gem className="h-4 w-4" />,
+        difficulty: 'avanzado'
+      });
+    } else if (asset.category === 'bank_accounts') {
+      const value = asset.current_value;
+      if (value > 5000) {
+        if (riskLevel === 'conservative') {
+          recommendations.push({
+            asset,
+            suggestion: `${userName}, tu efectivo podría generar intereses`,
+            strategy: 'Mueve parte de este dinero a una cuenta de ahorro de alto rendimiento (HISA) o GICs. Obtendrás 4-5% anual sin riesgo.',
+            icon: <DollarSign className="h-4 w-4" />,
+            difficulty: 'fácil'
+          });
+        } else {
+          recommendations.push({
+            asset,
+            suggestion: `${userName}, tienes efectivo que no está trabajando`,
+            strategy: 'Considera invertir el excedente en ETFs de dividendos o índices. Mantén solo 3-6 meses de gastos como emergencia.',
+            icon: <TrendingUp className="h-4 w-4" />,
+            difficulty: 'moderado'
+          });
+        }
+      }
+    } else if (asset.category === 'other') {
+      recommendations.push({
+        asset,
+        suggestion: `${userName}, evalúa si "${asset.name}" puede generar valor`,
+        strategy: 'Pregúntate: ¿Puedo rentarlo? ¿Puedo usarlo para crear un negocio? ¿Genera flujo de efectivo? Si no, considera venderlo e invertir.',
+        icon: <Lightbulb className="h-4 w-4" />,
+        difficulty: 'moderado'
+      });
+    }
+  });
+
+  // Add general recommendation if no specific ones
+  if (recommendations.length === 0 && nonProductiveAssets.length > 0) {
+    recommendations.push({
+      asset: nonProductiveAssets[0],
+      suggestion: `${userName}, convierte tus activos en generadores de ingresos`,
+      strategy: 'Robert Kiyosaki dice: "Los ricos adquieren activos que generan ingresos. Los pobres y clase media adquieren pasivos pensando que son activos." Evalúa cada posesión preguntándote: ¿Esto pone dinero en mi bolsillo?',
+      icon: <Sparkles className="h-4 w-4" />,
+      difficulty: 'moderado'
+    });
+  }
+
+  return recommendations;
+};
+
 export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
   const deleteAsset = useDeleteAsset();
+  const { data: financialProfile } = useFinancialProfile();
+  const { data: userProfile } = useProfile();
 
   const formatCurrency = (value: number, currency: string = 'CAD') => {
     return new Intl.NumberFormat('es-CA', {
@@ -325,18 +421,64 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
           </TooltipProvider>
         )}
 
-        {/* Educational footer */}
-        {assets.length > 0 && nonProductiveAssets.length > productiveAssets.length && (
-          <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-sm">
-            <p className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-              <AlertTriangle className="h-4 w-4 flex-shrink-0" />
-              <span>
-                <strong>Consejo:</strong> La mayoría de tus activos no generan ingresos. 
-                Considera convertir activos no productivos en inversiones que generen flujo de efectivo.
-              </span>
-            </p>
-          </div>
-        )}
+        {/* Personalized Recommendations */}
+        {nonProductiveAssets.length > 0 && (() => {
+          const userName = userProfile?.full_name?.split(' ')[0] || 'Amigo';
+          const recommendations = generateRecommendations(nonProductiveAssets, financialProfile, userName);
+          
+          if (recommendations.length === 0) return null;
+          
+          return (
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                <Lightbulb className="h-4 w-4" />
+                <span>Recomendaciones personalizadas para ti</span>
+              </div>
+              
+              {recommendations.slice(0, 3).map((rec, index) => (
+                <div 
+                  key={index}
+                  className="p-3 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-full bg-primary/10 text-primary mt-0.5">
+                      {rec.icon}
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-medium text-sm">{rec.suggestion}</p>
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${
+                            rec.difficulty === 'fácil' 
+                              ? 'bg-green-500/10 text-green-600 border-green-500/30' 
+                              : rec.difficulty === 'moderado'
+                                ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                                : 'bg-red-500/10 text-red-600 border-red-500/30'
+                          }`}
+                        >
+                          {rec.difficulty}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {rec.strategy}
+                      </p>
+                      <div className="flex items-center gap-1 text-xs text-primary/70 pt-1">
+                        <ArrowRight className="h-3 w-3" />
+                        <span>Activo: {rec.asset.name}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {/* Kiyosaki Quote */}
+              <div className="p-3 rounded-lg bg-muted/50 border text-xs text-muted-foreground italic">
+                <p>"Un activo pone dinero en tu bolsillo. Un pasivo saca dinero de tu bolsillo." — Robert Kiyosaki</p>
+              </div>
+            </div>
+          );
+        })()}
       </CardContent>
     </Card>
   );
