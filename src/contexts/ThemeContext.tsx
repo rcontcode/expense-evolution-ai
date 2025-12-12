@@ -6,15 +6,23 @@ export type ThemeStyle =
   // Seasons
   | 'spring' | 'summer' | 'autumn' | 'winter'
   // Interests
-  | 'crypto' | 'gaming' | 'sports' | 'music' | 'coffee' | 'nature';
+  | 'crypto' | 'gaming' | 'sports' | 'music' | 'coffee' | 'nature'
+  // Creative themes
+  | 'space' | 'photography' | 'travel' | 'cinema';
 export type PremiumTheme = 'theme_midnight' | 'theme_aurora' | 'theme_golden' | 'theme_neon' | null;
+export type AnimationSpeed = 'off' | 'slow' | 'normal' | 'fast';
+export type AnimationIntensity = 'subtle' | 'normal' | 'vibrant';
 
 interface ThemeContextType {
   mode: ThemeMode;
   style: ThemeStyle;
   premiumTheme: PremiumTheme;
+  animationSpeed: AnimationSpeed;
+  animationIntensity: AnimationIntensity;
   setMode: (mode: ThemeMode) => void;
   setStyle: (style: ThemeStyle) => void;
+  setAnimationSpeed: (speed: AnimationSpeed) => void;
+  setAnimationIntensity: (intensity: AnimationIntensity) => void;
   resolvedMode: 'light' | 'dark';
 }
 
@@ -22,6 +30,8 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const THEME_MODE_KEY = 'expense-tracker-theme-mode';
 const THEME_STYLE_KEY = 'expense-tracker-theme-style';
+const ANIMATION_SPEED_KEY = 'expense-tracker-animation-speed';
+const ANIMATION_INTENSITY_KEY = 'expense-tracker-animation-intensity';
 const REWARDS_STORAGE_KEY = 'user_rewards';
 
 // Helper to get equipped premium theme from rewards
@@ -55,6 +65,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       return (localStorage.getItem(THEME_STYLE_KEY) as ThemeStyle) || 'modern';
     }
     return 'modern';
+  });
+
+  const [animationSpeed, setAnimationSpeedState] = useState<AnimationSpeed>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem(ANIMATION_SPEED_KEY) as AnimationSpeed) || 'normal';
+    }
+    return 'normal';
+  });
+
+  const [animationIntensity, setAnimationIntensityState] = useState<AnimationIntensity>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem(ANIMATION_INTENSITY_KEY) as AnimationIntensity) || 'normal';
+    }
+    return 'normal';
   });
 
   const [premiumTheme, setPremiumTheme] = useState<PremiumTheme>(() => {
@@ -99,6 +123,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       'theme-modern', 'theme-vintage', 'theme-ocean', 'theme-forest', 'theme-sunset', 'theme-minimal',
       'theme-spring', 'theme-summer', 'theme-autumn', 'theme-winter',
       'theme-crypto', 'theme-gaming', 'theme-sports', 'theme-music', 'theme-coffee', 'theme-nature',
+      'theme-space', 'theme-photography', 'theme-travel', 'theme-cinema',
       'theme-premium-midnight', 'theme-premium-aurora', 'theme-premium-golden', 'theme-premium-neon'
     );
 
@@ -137,8 +162,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(THEME_STYLE_KEY, newStyle);
   };
 
+  const setAnimationSpeed = (speed: AnimationSpeed) => {
+    setAnimationSpeedState(speed);
+    localStorage.setItem(ANIMATION_SPEED_KEY, speed);
+  };
+
+  const setAnimationIntensity = (intensity: AnimationIntensity) => {
+    setAnimationIntensityState(intensity);
+    localStorage.setItem(ANIMATION_INTENSITY_KEY, intensity);
+  };
+
   return (
-    <ThemeContext.Provider value={{ mode, style, premiumTheme, setMode, setStyle, resolvedMode }}>
+    <ThemeContext.Provider value={{ 
+      mode, style, premiumTheme, animationSpeed, animationIntensity,
+      setMode, setStyle, setAnimationSpeed, setAnimationIntensity, resolvedMode 
+    }}>
       {children}
     </ThemeContext.Provider>
   );

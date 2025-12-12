@@ -33,7 +33,7 @@ const GOAL_COLORS = [
 
 export default function Settings() {
   const { t, language, setLanguage } = useLanguage();
-  const { mode, style, setMode, setStyle } = useTheme();
+  const { mode, style, setMode, setStyle, animationSpeed, animationIntensity, setAnimationSpeed, setAnimationIntensity } = useTheme();
   const { data: savingsGoals, isLoading: goalsLoading } = useSavingsGoals();
   const createGoal = useCreateSavingsGoal();
   const updateGoal = useUpdateSavingsGoal();
@@ -287,6 +287,93 @@ export default function Settings() {
                     )}
                   </button>
                 ))}
+              </div>
+              
+              <p className="text-xs text-muted-foreground mb-2 mt-4">
+                {language === 'es' ? '🚀 Temas Creativos' : '🚀 Creative Themes'}
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {([
+                  { value: 'space', gradient: 'from-indigo-900 via-purple-800 to-blue-900', emoji: '🚀', label: { es: 'Espacio', en: 'Space' } },
+                  { value: 'photography', gradient: 'from-gray-700 to-gray-500', emoji: '📷', label: { es: 'Fotografía', en: 'Photography' } },
+                  { value: 'travel', gradient: 'from-sky-500 to-amber-400', emoji: '✈️', label: { es: 'Viajes', en: 'Travel' } },
+                  { value: 'cinema', gradient: 'from-red-900 via-black to-yellow-600', emoji: '🎬', label: { es: 'Cine', en: 'Cinema' } },
+                ] as const).map(({ value, gradient, emoji, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setStyle(value)}
+                    className={`relative p-3 rounded-lg border-2 transition-all ${
+                      style === value 
+                        ? 'border-primary ring-2 ring-primary/20' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className={`w-full h-6 rounded bg-gradient-to-r ${gradient} mb-2`} />
+                    <span className="text-sm font-medium flex items-center gap-1">
+                      {emoji} {label[language as 'es' | 'en']}
+                    </span>
+                    {style === value && (
+                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Animation Controls */}
+              <div className="border-t pt-4 mt-6">
+                <Label className="text-sm font-medium mb-3 block">
+                  {language === 'es' ? '⚡ Control de Animaciones' : '⚡ Animation Controls'}
+                </Label>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">
+                      {language === 'es' ? 'Velocidad' : 'Speed'}
+                    </Label>
+                    <div className="flex gap-2">
+                      {(['off', 'slow', 'normal', 'fast'] as const).map((speed) => (
+                        <Button
+                          key={speed}
+                          variant={animationSpeed === speed ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setAnimationSpeed(speed)}
+                          className="flex-1"
+                        >
+                          {speed === 'off' ? (language === 'es' ? 'Sin' : 'Off') : 
+                           speed === 'slow' ? (language === 'es' ? 'Lenta' : 'Slow') :
+                           speed === 'normal' ? 'Normal' :
+                           (language === 'es' ? 'Rápida' : 'Fast')}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">
+                      {language === 'es' ? 'Intensidad' : 'Intensity'}
+                    </Label>
+                    <div className="flex gap-2">
+                      {(['subtle', 'normal', 'vibrant'] as const).map((intensity) => (
+                        <Button
+                          key={intensity}
+                          variant={animationIntensity === intensity ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setAnimationIntensity(intensity)}
+                          className="flex-1"
+                        >
+                          {intensity === 'subtle' ? (language === 'es' ? 'Sutil' : 'Subtle') : 
+                           intensity === 'normal' ? 'Normal' :
+                           (language === 'es' ? 'Vibrante' : 'Vibrant')}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {language === 'es' 
+                    ? 'Controla la velocidad e intensidad de las animaciones de fondo del tema' 
+                    : 'Control the speed and intensity of theme background animations'}
+                </p>
               </div>
             </div>
           </CardContent>
