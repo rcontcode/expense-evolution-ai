@@ -23,7 +23,8 @@ import {
   AlertTriangle,
   FolderKanban,
   UserCircle,
-  Building2
+  Building2,
+  Scale
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -70,6 +71,7 @@ const getNavSections = (t: (key: string) => string) => [
   {
     titleKey: 'layout.tracking',
     items: [
+      { icon: Scale, label: 'Patrimonio', path: '/net-worth', badge: 'Nuevo', tooltipKey: 'dashboard' as const },
       { icon: Car, label: 'nav.mileage', path: '/mileage', badge: 'CRA', tooltipKey: 'mileage' as const },
       { icon: RefreshCw, label: 'nav.reconciliation', path: '/reconciliation', badge: null, tooltipKey: 'reconciliation' as const },
     ]

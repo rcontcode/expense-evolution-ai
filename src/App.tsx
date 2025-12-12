@@ -25,6 +25,7 @@ import Income from "./pages/Income";
 import Install from "./pages/Install";
 import MobileCapture from "./pages/MobileCapture";
 import NotFound from "./pages/NotFound";
+import NetWorth from "./pages/NetWorth";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
                 <Route path="/reconciliation" element={<ProtectedRoute><Reconciliation /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/business-profile" element={<ProtectedRoute><BusinessProfile /></ProtectedRoute>} />
+                <Route path="/net-worth" element={<ProtectedRoute><NetWorth /></ProtectedRoute>} />
                 <Route path="/install" element={<Install />} />
                 <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
