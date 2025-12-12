@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
-import { useIncome } from '@/hooks/data/useIncome';
+import { useIncome, useCreateIncome } from '@/hooks/data/useIncome';
 import { useClients } from '@/hooks/data/useClients';
 import { useProjects } from '@/hooks/data/useProjects';
 import { useExpenses, useCreateExpense } from '@/hooks/data/useExpenses';
@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ExpenseCategory } from '@/types/expense.types';
+import { IncomeType } from '@/types/income.types';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -142,6 +143,21 @@ const CATEGORY_KEYWORDS: Record<string, { keywords: string[]; category: ExpenseC
   professional_services: { keywords: ['servicio', 'service', 'consultoría', 'consulting', 'abogado', 'lawyer', 'contador', 'accountant', 'profesional'], category: 'professional_services' },
 };
 
+// Income type mappings for voice income creation
+const INCOME_TYPE_KEYWORDS: Record<string, { keywords: string[]; incomeType: IncomeType }> = {
+  client_payment: { keywords: ['cliente', 'client', 'pago de cliente', 'client payment', 'factura', 'invoice'], incomeType: 'client_payment' },
+  salary: { keywords: ['salario', 'salary', 'sueldo', 'nómina', 'payroll', 'wage'], incomeType: 'salary' },
+  bonus: { keywords: ['bono', 'bonus', 'aguinaldo', 'prima'], incomeType: 'bonus' },
+  freelance: { keywords: ['freelance', 'proyecto', 'project', 'trabajo independiente', 'independiente'], incomeType: 'freelance' },
+  investment_stocks: { keywords: ['dividendos', 'dividends', 'inversión', 'investment', 'acciones', 'stocks', 'bolsa'], incomeType: 'investment_stocks' },
+  investment_crypto: { keywords: ['crypto', 'cripto', 'bitcoin', 'ethereum', 'criptomoneda'], incomeType: 'investment_crypto' },
+  passive_rental: { keywords: ['alquiler', 'renta', 'rental', 'arrendamiento', 'rent'], incomeType: 'passive_rental' },
+  passive_royalties: { keywords: ['regalías', 'royalties', 'derechos de autor', 'royalty'], incomeType: 'passive_royalties' },
+  gift: { keywords: ['regalo', 'gift', 'donación', 'donation'], incomeType: 'gift' },
+  refund: { keywords: ['reembolso', 'refund', 'devolución', 'return'], incomeType: 'refund' },
+  online_business: { keywords: ['online', 'ecommerce', 'tienda online', 'negocio online'], incomeType: 'online_business' },
+};
+
 // Parse voice expense command
 interface ParsedExpense {
   amount: number;
@@ -200,6 +216,59 @@ function parseVoiceExpense(text: string): ParsedExpense | null {
   return { amount, category, vendor };
 }
 
+// Parse voice income command
+interface ParsedIncome {
+  amount: number;
+  incomeType: IncomeType;
+  source: string;
+}
+
+function parseVoiceIncome(text: string): ParsedIncome | null {
+  const normalizedText = text.toLowerCase().trim();
+  
+  // Patterns: "ingreso de X de cliente", "income of X from client", "recibí X por proyecto"
+  const patterns = [
+    /(?:ingreso de|income of|recibí|gané|recibí pago de)\s*\$?\s*(\d+(?:[.,]\d+)?)\s*(?:dólares?|dollars?|pesos?)?\s*(?:de|from|por|by)\s+(.+)/i,
+    /(?:me pagaron|pago de)\s*\$?\s*(\d+(?:[.,]\d+)?)\s*(?:dólares?|dollars?|pesos?)?\s*(?:de|por|from)\s+(.+)/i,
+    /\$?\s*(\d+(?:[.,]\d+)?)\s*(?:dólares?|dollars?|pesos?)?\s*(?:de ingreso|de sueldo|de salario)\s*(?:de|por)?\s*(.+)?/i,
+  ];
+  
+  let amount: number | null = null;
+  let sourceText: string = '';
+  
+  for (const pattern of patterns) {
+    const match = normalizedText.match(pattern);
+    if (match) {
+      amount = parseFloat(match[1].replace(',', '.'));
+      sourceText = (match[2] || '').trim();
+      break;
+    }
+  }
+  
+  if (!amount || amount <= 0) {
+    return null;
+  }
+  
+  // Detect income type from source text
+  let incomeType: IncomeType = 'other';
+  const combinedText = `${normalizedText} ${sourceText}`;
+  
+  for (const [, config] of Object.entries(INCOME_TYPE_KEYWORDS)) {
+    for (const keyword of config.keywords) {
+      if (combinedText.includes(keyword)) {
+        incomeType = config.incomeType;
+        break;
+      }
+    }
+    if (incomeType !== 'other') break;
+  }
+  
+  // Capitalize source name
+  const source = sourceText ? sourceText.charAt(0).toUpperCase() + sourceText.slice(1) : '';
+  
+  return { amount, incomeType, source };
+}
+
 export const ChatAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -219,6 +288,7 @@ export const ChatAssistant: React.FC = () => {
   const { data: expenses } = useExpenses();
   const { language } = useLanguage();
   const createExpense = useCreateExpense();
+  const createIncome = useCreateIncome();
 
   // Calculate financial data for queries
   const now = new Date();
@@ -464,6 +534,50 @@ export const ChatAssistant: React.FC = () => {
             const errorMsg = language === 'es'
               ? 'No pude crear el gasto. Intenta de nuevo.'
               : 'Could not create the expense. Please try again.';
+            speak(errorMsg);
+          }
+        });
+        return;
+      }
+      
+      // Check if it's an income creation command
+      const parsedIncome = parseVoiceIncome(text);
+      if (parsedIncome) {
+        setInput('');
+        
+        // Create the income
+        createIncome.mutate({
+          amount: parsedIncome.amount,
+          currency: 'CAD',
+          date: new Date(),
+          income_type: parsedIncome.incomeType,
+          source: parsedIncome.source || undefined,
+          description: parsedIncome.source || undefined,
+          recurrence: 'one_time',
+          is_taxable: true,
+        }, {
+          onSuccess: () => {
+            const incomeTypeLabel = parsedIncome.incomeType === 'client_payment' ? (language === 'es' ? 'pago de cliente' : 'client payment') :
+              parsedIncome.incomeType === 'salary' ? (language === 'es' ? 'salario' : 'salary') :
+              parsedIncome.incomeType === 'freelance' ? 'freelance' :
+              parsedIncome.incomeType;
+            
+            const confirmMsg = language === 'es'
+              ? `Ingreso registrado: $${parsedIncome.amount}${parsedIncome.source ? ` de ${parsedIncome.source}` : ''}, tipo: ${incomeTypeLabel}.`
+              : `Income recorded: $${parsedIncome.amount}${parsedIncome.source ? ` from ${parsedIncome.source}` : ''}, type: ${incomeTypeLabel}.`;
+            
+            // Add to chat messages
+            const userMessage: Message = { role: 'user', content: text };
+            const assistantMessage: Message = { role: 'assistant', content: confirmMsg };
+            setMessages(prev => [...prev, userMessage, assistantMessage]);
+            
+            speak(confirmMsg);
+            toast.success(language === 'es' ? 'Ingreso creado por voz' : 'Income created by voice');
+          },
+          onError: () => {
+            const errorMsg = language === 'es'
+              ? 'No pude registrar el ingreso. Intenta de nuevo.'
+              : 'Could not create the income. Please try again.';
             speak(errorMsg);
           }
         });
