@@ -33,6 +33,7 @@ const MileageTabContent = lazy(() => import('@/components/dashboard/MileageTabCo
 const SubscriptionTracker = lazy(() => import('@/components/subscriptions/SubscriptionTracker').then(m => ({ default: m.SubscriptionTracker })));
 const TaxOptimizerCard = lazy(() => import('@/components/dashboard/TaxOptimizerCard').then(m => ({ default: m.TaxOptimizerCard })));
 const RrspTfsaOptimizerCard = lazy(() => import('@/components/dashboard/RrspTfsaOptimizerCard').then(m => ({ default: m.RrspTfsaOptimizerCard })));
+const FIRECalculatorCard = lazy(() => import('@/components/dashboard/FIRECalculatorCard').then(m => ({ default: m.FIRECalculatorCard })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -338,9 +339,8 @@ export default function Dashboard() {
             </InfoTooltip>
           </div>
 
-        {/* Tabs para Gráficos y Análisis Fiscal */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <InfoTooltip content={TOOLTIP_CONTENT.chartsTab} variant="wrapper" side="bottom">
               <TabsTrigger value="charts" className="cursor-pointer">{t('taxAnalysis.charts')}</TabsTrigger>
             </InfoTooltip>
@@ -353,6 +353,10 @@ export default function Dashboard() {
             <TabsTrigger value="subscriptions" className="cursor-pointer flex items-center gap-1">
               <RefreshCw className="h-3 w-3" />
               {language === 'es' ? 'Suscripciones' : 'Subscriptions'}
+            </TabsTrigger>
+            <TabsTrigger value="fire" className="cursor-pointer flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" />
+              FIRE
             </TabsTrigger>
           </TabsList>
 
@@ -404,6 +408,14 @@ export default function Dashboard() {
             {activeTab === 'subscriptions' && (
               <Suspense fallback={<SubscriptionsSkeleton />}>
                 <SubscriptionTracker />
+              </Suspense>
+            )}
+          </TabsContent>
+
+          <TabsContent value="fire" className="space-y-4">
+            {activeTab === 'fire' && (
+              <Suspense fallback={<Skeleton className="h-[600px]" />}>
+                <FIRECalculatorCard />
               </Suspense>
             )}
           </TabsContent>
