@@ -1,4 +1,5 @@
 export { SpendingHeatmap } from './SpendingHeatmap';
+export { ExpensePredictions } from './ExpensePredictions';
 export { SeasonalityChart } from './SeasonalityChart';
 export { MonthComparisonChart } from './MonthComparisonChart';
 export { FinancialHealthRadar } from './FinancialHealthRadar';

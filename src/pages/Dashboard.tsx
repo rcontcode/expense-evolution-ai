@@ -49,6 +49,7 @@ const NetWorthTreemap = lazy(() => import('@/components/analytics/NetWorthTreema
 const TransactionTimeline = lazy(() => import('@/components/analytics/TransactionTimeline').then(m => ({ default: m.TransactionTimeline })));
 const ClientProfitability = lazy(() => import('@/components/analytics/ClientProfitability').then(m => ({ default: m.ClientProfitability })));
 const FinancialCorrelations = lazy(() => import('@/components/analytics/FinancialCorrelations').then(m => ({ default: m.FinancialCorrelations })));
+const ExpensePredictions = lazy(() => import('@/components/analytics/ExpensePredictions').then(m => ({ default: m.ExpensePredictions })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -414,6 +415,7 @@ export default function Dashboard() {
             {activeTab === 'analytics' && (
               <Suspense fallback={<AnalyticsSkeleton />}>
                 <div className="space-y-6">
+                  <ExpensePredictions expenses={allExpenses || []} isLoading={isLoading} />
                   <CashFlowProjection />
                   <div className="grid gap-6 lg:grid-cols-2">
                     <FinancialHealthRadar />

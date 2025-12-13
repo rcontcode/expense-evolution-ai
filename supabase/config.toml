@@ -20,3 +20,6 @@ verify_jwt = true
 
 [functions.optimize-rrsp-tfsa]
 verify_jwt = true
+
+[functions.predict-expenses]
+verify_jwt = true
