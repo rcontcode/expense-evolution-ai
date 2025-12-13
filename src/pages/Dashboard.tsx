@@ -46,6 +46,9 @@ const CashFlowSankey = lazy(() => import('@/components/analytics/CashFlowSankey'
 const ProjectProfitability = lazy(() => import('@/components/analytics/ProjectProfitability').then(m => ({ default: m.ProjectProfitability })));
 const CashFlowProjection = lazy(() => import('@/components/analytics/CashFlowProjection').then(m => ({ default: m.CashFlowProjection })));
 const NetWorthTreemap = lazy(() => import('@/components/analytics/NetWorthTreemap').then(m => ({ default: m.NetWorthTreemap })));
+const TransactionTimeline = lazy(() => import('@/components/analytics/TransactionTimeline').then(m => ({ default: m.TransactionTimeline })));
+const ClientProfitability = lazy(() => import('@/components/analytics/ClientProfitability').then(m => ({ default: m.ClientProfitability })));
+const FinancialCorrelations = lazy(() => import('@/components/analytics/FinancialCorrelations').then(m => ({ default: m.FinancialCorrelations })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -418,9 +421,14 @@ export default function Dashboard() {
                   </div>
                   <div className="grid gap-6 lg:grid-cols-2">
                     <ProjectProfitability />
-                    <NetWorthTreemap />
+                    <ClientProfitability />
                   </div>
-                  <SpendingHeatmap expenses={allExpenses || []} isLoading={isLoading} />
+                  <FinancialCorrelations />
+                  <TransactionTimeline />
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <NetWorthTreemap />
+                    <SpendingHeatmap expenses={allExpenses || []} isLoading={isLoading} />
+                  </div>
                   <div className="grid gap-6 lg:grid-cols-2">
                     <SeasonalityChart expenses={allExpenses || []} isLoading={isLoading} />
                     <MonthComparisonChart expenses={allExpenses || []} isLoading={isLoading} />

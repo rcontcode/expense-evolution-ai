@@ -6,3 +6,6 @@ export { CashFlowSankey } from './CashFlowSankey';
 export { ProjectProfitability } from './ProjectProfitability';
 export { CashFlowProjection } from './CashFlowProjection';
 export { NetWorthTreemap } from './NetWorthTreemap';
+export { TransactionTimeline } from './TransactionTimeline';
+export { ClientProfitability } from './ClientProfitability';
+export { FinancialCorrelations } from './FinancialCorrelations';
