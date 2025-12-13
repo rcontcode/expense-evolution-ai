@@ -5,3 +5,4 @@ export { FinancialHealthRadar } from './FinancialHealthRadar';
 export { CashFlowSankey } from './CashFlowSankey';
 export { ProjectProfitability } from './ProjectProfitability';
 export { CashFlowProjection } from './CashFlowProjection';
+export { NetWorthTreemap } from './NetWorthTreemap';
