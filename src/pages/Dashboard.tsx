@@ -44,6 +44,7 @@ const MonthComparisonChart = lazy(() => import('@/components/analytics/MonthComp
 const FinancialHealthRadar = lazy(() => import('@/components/analytics/FinancialHealthRadar').then(m => ({ default: m.FinancialHealthRadar })));
 const CashFlowSankey = lazy(() => import('@/components/analytics/CashFlowSankey').then(m => ({ default: m.CashFlowSankey })));
 const ProjectProfitability = lazy(() => import('@/components/analytics/ProjectProfitability').then(m => ({ default: m.ProjectProfitability })));
+const CashFlowProjection = lazy(() => import('@/components/analytics/CashFlowProjection').then(m => ({ default: m.CashFlowProjection })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -409,6 +410,7 @@ export default function Dashboard() {
             {activeTab === 'analytics' && (
               <Suspense fallback={<AnalyticsSkeleton />}>
                 <div className="space-y-6">
+                  <CashFlowProjection />
                   <div className="grid gap-6 lg:grid-cols-2">
                     <FinancialHealthRadar />
                     <CashFlowSankey />
