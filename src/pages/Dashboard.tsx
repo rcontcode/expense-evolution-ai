@@ -25,6 +25,7 @@ import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
 import { OnboardingGuide } from '@/components/ui/onboarding-guide';
 import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
 import { InteractiveWelcome } from '@/components/guidance/InteractiveWelcome';
+import { WorkflowVisualizer } from '@/components/guidance/WorkflowVisualizer';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -191,6 +192,12 @@ export default function Dashboard() {
 
           {/* Interactive Welcome - Proactive Guidance */}
           <InteractiveWelcome />
+
+          {/* Workflow Visualizer - Clear Step-by-Step Flows */}
+          <WorkflowVisualizer 
+            selectedWorkflows={['expense-capture', 'client-billing', 'tax-preparation']}
+            showAll={false}
+          />
 
           {/* Setup Progress Banner */}
           <SetupProgressBanner variant="compact" />
