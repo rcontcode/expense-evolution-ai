@@ -32,13 +32,16 @@ import {
   Download,
   ChevronRight,
   Play,
-  Circle
+  Circle,
+  Loader2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProfile } from "@/hooks/data/useProfile";
+import { useWorkflowProgress } from "@/hooks/data/useWorkflowProgress";
 import { cn } from "@/lib/utils";
 
 interface WorkflowStep {
@@ -513,35 +516,138 @@ export function SingleWorkflow({ workflowId }: { workflowId: string }) {
   return <WorkflowCard workflow={workflow} />;
 }
 
-// Mini workflow for inline use
+// Mini workflow with dynamic progress indicator
 export function MiniWorkflow({ workflowId }: { workflowId: string }) {
   const { language } = useLanguage();
+  const { data: progress, isLoading } = useWorkflowProgress(workflowId);
   const workflow = WORKFLOWS.find(w => w.id === workflowId);
   if (!workflow) return null;
 
+  // Get step status from progress data
+  const getStepStatus = (stepId: string): 'completed' | 'current' | 'pending' => {
+    if (!progress) return 'pending';
+    const stepDetail = progress.stepDetails.find(s => s.stepId === stepId);
+    return stepDetail?.status || 'pending';
+  };
+
+  const getStepCount = (stepId: string): number | undefined => {
+    if (!progress) return undefined;
+    const stepDetail = progress.stepDetails.find(s => s.stepId === stepId);
+    return stepDetail?.count;
+  };
+
+  const progressPercent = progress 
+    ? Math.round((progress.currentStep / (progress.totalSteps - 1)) * 100)
+    : 0;
+
   return (
-    <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 overflow-x-auto">
-      {workflow.steps.map((step, idx) => {
-        const StepIcon = step.icon;
-        return (
-          <React.Fragment key={step.id}>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <div className={cn(
-                "w-7 h-7 rounded-full flex items-center justify-center",
-                step.bgColor
-              )}>
-                <StepIcon className={cn("h-3.5 w-3.5", step.color)} />
-              </div>
-              <span className="text-xs font-medium whitespace-nowrap">
-                {step.title[language]}
-              </span>
-            </div>
-            {idx < workflow.steps.length - 1 && (
-              <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+    <div className="space-y-2">
+      {/* Progress bar with stats */}
+      <div className="flex items-center justify-between gap-4 px-3 py-2 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 text-primary animate-spin" />
+            ) : (
+              <span className="text-sm font-bold text-primary">{progressPercent}%</span>
             )}
-          </React.Fragment>
-        );
-      })}
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-primary truncate">
+              {workflow.title[language]}
+            </p>
+            <Progress value={progressPercent} className="h-1.5 w-24 mt-1" />
+          </div>
+        </div>
+        
+        {/* Stats badges */}
+        {progress && progress.stats.length > 0 && (
+          <div className="hidden md:flex items-center gap-2 shrink-0">
+            {progress.stats.slice(0, 3).map((stat, idx) => (
+              <Badge 
+                key={idx} 
+                variant="outline" 
+                className={cn(
+                  "text-xs",
+                  stat.value > 0 && stat.type === 'count' && idx === 0 
+                    ? "bg-warning/10 text-warning border-warning/30" 
+                    : "bg-muted/50"
+                )}
+              >
+                {stat.type === 'currency' 
+                  ? `$${stat.value.toLocaleString()}`
+                  : stat.value
+                } {stat.label[language]}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Steps with dynamic status */}
+      <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 overflow-x-auto">
+        {workflow.steps.map((step, idx) => {
+          const StepIcon = step.icon;
+          const status = getStepStatus(step.id);
+          const count = getStepCount(step.id);
+          
+          return (
+            <React.Fragment key={step.id}>
+              <div className="flex items-center gap-1.5 shrink-0 relative">
+                <div className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center relative transition-all",
+                  status === 'completed' && "bg-success/20 ring-2 ring-success/50",
+                  status === 'current' && "bg-primary/20 ring-2 ring-primary animate-pulse",
+                  status === 'pending' && step.bgColor
+                )}>
+                  {status === 'completed' ? (
+                    <CheckCircle2 className="h-4 w-4 text-success" />
+                  ) : (
+                    <StepIcon className={cn(
+                      "h-4 w-4",
+                      status === 'current' ? "text-primary" : step.color
+                    )} />
+                  )}
+                  
+                  {/* Count badge */}
+                  {count !== undefined && count > 0 && status !== 'completed' && (
+                    <span className={cn(
+                      "absolute -top-1 -right-1 w-4 h-4 rounded-full text-[10px] font-bold",
+                      "flex items-center justify-center",
+                      status === 'current' 
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-warning text-warning-foreground"
+                    )}>
+                      {count > 9 ? '9+' : count}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-col">
+                  <span className={cn(
+                    "text-xs font-medium whitespace-nowrap",
+                    status === 'completed' && "text-success",
+                    status === 'current' && "text-primary font-semibold",
+                    status === 'pending' && "text-muted-foreground"
+                  )}>
+                    {step.title[language]}
+                  </span>
+                  {status === 'current' && (
+                    <span className="text-[10px] text-primary/70">
+                      {language === 'es' ? 'Paso actual' : 'Current'}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {idx < workflow.steps.length - 1 && (
+                <ArrowRight className={cn(
+                  "h-4 w-4 shrink-0 transition-colors",
+                  status === 'completed' ? "text-success" : "text-muted-foreground/50"
+                )} />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
     </div>
   );
 }
