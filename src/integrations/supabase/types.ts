@@ -592,6 +592,194 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_education: {
+        Row: {
+          author: string | null
+          completed_date: string | null
+          created_at: string
+          id: string
+          impact_rating: number | null
+          key_lessons: string | null
+          notes: string | null
+          resource_type: string
+          started_date: string | null
+          status: string | null
+          title: string
+          updated_at: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          author?: string | null
+          completed_date?: string | null
+          created_at?: string
+          id?: string
+          impact_rating?: number | null
+          key_lessons?: string | null
+          notes?: string | null
+          resource_type?: string
+          started_date?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          author?: string | null
+          completed_date?: string | null
+          created_at?: string
+          id?: string
+          impact_rating?: number | null
+          key_lessons?: string | null
+          notes?: string | null
+          resource_type?: string
+          started_date?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      financial_habit_logs: {
+        Row: {
+          completed_at: string
+          habit_id: string
+          id: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          habit_id: string
+          id?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          habit_id?: string
+          id?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_habit_logs_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "financial_habits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_habits: {
+        Row: {
+          best_streak: number | null
+          created_at: string
+          current_streak: number | null
+          frequency: string
+          habit_description: string | null
+          habit_name: string
+          id: string
+          is_active: boolean | null
+          last_completed_at: string | null
+          target_per_period: number | null
+          updated_at: string
+          user_id: string
+          xp_reward: number | null
+        }
+        Insert: {
+          best_streak?: number | null
+          created_at?: string
+          current_streak?: number | null
+          frequency?: string
+          habit_description?: string | null
+          habit_name: string
+          id?: string
+          is_active?: boolean | null
+          last_completed_at?: string | null
+          target_per_period?: number | null
+          updated_at?: string
+          user_id: string
+          xp_reward?: number | null
+        }
+        Update: {
+          best_streak?: number | null
+          created_at?: string
+          current_streak?: number | null
+          frequency?: string
+          habit_description?: string | null
+          habit_name?: string
+          id?: string
+          is_active?: boolean | null
+          last_completed_at?: string | null
+          target_per_period?: number | null
+          updated_at?: string
+          user_id?: string
+          xp_reward?: number | null
+        }
+        Relationships: []
+      }
+      financial_journal: {
+        Row: {
+          content: string
+          created_at: string
+          entry_date: string
+          entry_type: string
+          id: string
+          lessons_learned: string | null
+          mood: string | null
+          related_expense_id: string | null
+          related_income_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          entry_date?: string
+          entry_type?: string
+          id?: string
+          lessons_learned?: string | null
+          mood?: string | null
+          related_expense_id?: string | null
+          related_income_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          entry_date?: string
+          entry_type?: string
+          id?: string
+          lessons_learned?: string | null
+          mood?: string | null
+          related_expense_id?: string | null
+          related_income_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_journal_related_expense_id_fkey"
+            columns: ["related_expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_journal_related_income_id_fkey"
+            columns: ["related_income_id"]
+            isOneToOne: false
+            referencedRelation: "income"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       income: {
         Row: {
           amount: number
@@ -673,9 +861,14 @@ export type Database = {
           deadline: string | null
           goal_type: string
           id: string
+          is_achievable: boolean | null
+          is_measurable: boolean | null
+          is_relevant: boolean | null
+          is_specific: boolean | null
           monthly_target: number | null
           name: string
           notes: string | null
+          relevance_reason: string | null
           risk_level: string | null
           status: string | null
           target_amount: number
@@ -690,9 +883,14 @@ export type Database = {
           deadline?: string | null
           goal_type?: string
           id?: string
+          is_achievable?: boolean | null
+          is_measurable?: boolean | null
+          is_relevant?: boolean | null
+          is_specific?: boolean | null
           monthly_target?: number | null
           name: string
           notes?: string | null
+          relevance_reason?: string | null
           risk_level?: string | null
           status?: string | null
           target_amount?: number
@@ -707,9 +905,14 @@ export type Database = {
           deadline?: string | null
           goal_type?: string
           id?: string
+          is_achievable?: boolean | null
+          is_measurable?: boolean | null
+          is_relevant?: boolean | null
+          is_specific?: boolean | null
           monthly_target?: number | null
           name?: string
           notes?: string | null
+          relevance_reason?: string | null
           risk_level?: string | null
           status?: string | null
           target_amount?: number
@@ -724,10 +927,13 @@ export type Database = {
           created_at: string | null
           currency: string | null
           current_balance: number
+          debt_type: string | null
           due_date: string | null
+          generates_income: boolean | null
           id: string
           interest_rate: number | null
           minimum_payment: number | null
+          monthly_income_generated: number | null
           name: string
           notes: string | null
           original_amount: number
@@ -739,10 +945,13 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           current_balance?: number
+          debt_type?: string | null
           due_date?: string | null
+          generates_income?: boolean | null
           id?: string
           interest_rate?: number | null
           minimum_payment?: number | null
+          monthly_income_generated?: number | null
           name: string
           notes?: string | null
           original_amount?: number
@@ -754,10 +963,13 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           current_balance?: number
+          debt_type?: string | null
           due_date?: string | null
+          generates_income?: boolean | null
           id?: string
           interest_rate?: number | null
           minimum_payment?: number | null
+          monthly_income_generated?: number | null
           name?: string
           notes?: string | null
           original_amount?: number
@@ -876,6 +1088,45 @@ export type Database = {
           read?: boolean | null
           title?: string
           type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pay_yourself_first_settings: {
+        Row: {
+          best_streak_months: number | null
+          created_at: string
+          current_month_income: number | null
+          current_month_saved: number | null
+          id: string
+          last_payment_date: string | null
+          streak_months: number | null
+          target_percentage: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          best_streak_months?: number | null
+          created_at?: string
+          current_month_income?: number | null
+          current_month_saved?: number | null
+          id?: string
+          last_payment_date?: string | null
+          streak_months?: number | null
+          target_percentage?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          best_streak_months?: number | null
+          created_at?: string
+          current_month_income?: number | null
+          current_month_saved?: number | null
+          id?: string
+          last_payment_date?: string | null
+          streak_months?: number | null
+          target_percentage?: number | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -1030,8 +1281,13 @@ export type Database = {
           current_amount: number | null
           deadline: string | null
           id: string
+          is_achievable: boolean | null
+          is_measurable: boolean | null
+          is_relevant: boolean | null
+          is_specific: boolean | null
           name: string
           priority: number | null
+          relevance_reason: string | null
           status: string | null
           target_amount: number
           updated_at: string | null
@@ -1043,8 +1299,13 @@ export type Database = {
           current_amount?: number | null
           deadline?: string | null
           id?: string
+          is_achievable?: boolean | null
+          is_measurable?: boolean | null
+          is_relevant?: boolean | null
+          is_specific?: boolean | null
           name: string
           priority?: number | null
+          relevance_reason?: string | null
           status?: string | null
           target_amount: number
           updated_at?: string | null
@@ -1056,8 +1317,13 @@ export type Database = {
           current_amount?: number | null
           deadline?: string | null
           id?: string
+          is_achievable?: boolean | null
+          is_measurable?: boolean | null
+          is_relevant?: boolean | null
+          is_specific?: boolean | null
           name?: string
           priority?: number | null
+          relevance_reason?: string | null
           status?: string | null
           target_amount?: number
           updated_at?: string | null
