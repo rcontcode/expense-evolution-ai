@@ -8,6 +8,7 @@ import { ContractsTable } from '@/components/tables/ContractsTable';
 import { useContracts } from '@/hooks/data/useContracts';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function Contracts() {
   const { t } = useLanguage();
@@ -17,16 +18,15 @@ export default function Contracts() {
   return (
     <Layout>
       <div className="p-8 space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">{t('nav.contracts')}</h1>
-            <p className="text-muted-foreground mt-2">{t('contracts.description')}</p>
-          </div>
+        <PageHeader
+          title={t('nav.contracts')}
+          description={t('contracts.description')}
+        >
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             {t('contracts.uploadContract')}
           </Button>
-        </div>
+        </PageHeader>
 
         <MentorQuoteBanner context="clients" className="mb-2" />
 

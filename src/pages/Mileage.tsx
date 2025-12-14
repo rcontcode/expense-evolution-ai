@@ -13,6 +13,7 @@ import { MileageSummaryCard } from '@/components/dashboard/MileageSummaryCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
+import { PageHeader } from '@/components/PageHeader';
 import {
   Select,
   SelectContent,
@@ -52,14 +53,10 @@ export default function Mileage() {
     <Layout>
       <TooltipProvider>
         <div className="p-8 space-y-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div>
-                <h1 className="text-3xl font-bold">{t('mileage.title')}</h1>
-                <p className="text-muted-foreground mt-2">{t('mileage.description')}</p>
-              </div>
-              <InfoTooltip content={TOOLTIP_CONTENT.mileage} />
-            </div>
+          <PageHeader
+            title={t('mileage.title')}
+            description={t('mileage.description')}
+          >
             <div className="flex items-center gap-2">
               <InfoTooltip content={TOOLTIP_CONTENT.yearSelector} variant="wrapper">
                 <Select
@@ -85,7 +82,7 @@ export default function Mileage() {
                 </Button>
               </InfoTooltip>
             </div>
-          </div>
+          </PageHeader>
 
           {/* Contextual Page Guide */}
           <PageContextGuide

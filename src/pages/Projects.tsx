@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Progress } from '@/components/ui/progress';
+import { PageHeader } from '@/components/PageHeader';
 import { 
   Plus, 
   FolderKanban, 
@@ -200,23 +201,17 @@ export default function Projects() {
   return (
     <Layout>
       <div className="p-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <FolderKanban className="h-8 w-8 text-primary" />
-              {language === 'es' ? 'Proyectos' : 'Projects'}
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              {language === 'es' 
-                ? 'Organiza tu trabajo por proyectos y asigna múltiples clientes'
-                : 'Organize your work by projects and assign multiple clients'}
-            </p>
-          </div>
+        <PageHeader
+          title={language === 'es' ? 'Proyectos' : 'Projects'}
+          description={language === 'es' 
+            ? 'Organiza tu trabajo por proyectos y asigna múltiples clientes'
+            : 'Organize your work by projects and assign multiple clients'}
+        >
           <Button onClick={handleCreate}>
             <Plus className="mr-2 h-4 w-4" />
             {language === 'es' ? 'Nuevo Proyecto' : 'New Project'}
           </Button>
-        </div>
+        </PageHeader>
 
         <SetupProgressBanner variant="compact" />
 

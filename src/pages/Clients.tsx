@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { PageHeader } from '@/components/PageHeader';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -115,21 +116,17 @@ export default function Clients() {
     <Layout>
       <TooltipProvider>
         <div className="p-8 space-y-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div>
-                <h1 className="text-3xl font-bold">{t('clients.title')}</h1>
-                <p className="text-muted-foreground mt-2">{t('clients.description')}</p>
-              </div>
-              <InfoTooltip content={TOOLTIP_CONTENT.clients} />
-            </div>
+          <PageHeader
+            title={t('clients.title')}
+            description={t('clients.description')}
+          >
             <InfoTooltip content={TOOLTIP_CONTENT.addClient} variant="wrapper">
               <Button onClick={handleCreate}>
                 <Plus className="mr-2 h-4 w-4" />
                 {t('clients.addClient')}
               </Button>
             </InfoTooltip>
-          </div>
+          </PageHeader>
 
           {/* Mentor Quote Banner */}
           <MentorQuoteBanner context="clients" className="mb-2" />

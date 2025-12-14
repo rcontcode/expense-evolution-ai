@@ -20,6 +20,7 @@ import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
 import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function Expenses() {
   const { t } = useLanguage();
@@ -74,14 +75,10 @@ export default function Expenses() {
     <Layout>
       <TooltipProvider delayDuration={200}>
         <div className="p-8 space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div>
-                <h1 className="text-3xl font-bold">{t('expenses.title')}</h1>
-                <p className="text-muted-foreground mt-2">{t('expenses.manageExpenses')}</p>
-              </div>
-              <InfoTooltip content={TOOLTIP_CONTENT.expenses} />
-            </div>
+          <PageHeader
+            title={t('expenses.title')}
+            description={t('expenses.manageExpenses')}
+          >
             <div className="flex gap-2 flex-wrap">
               <Button variant="outline" onClick={() => setBulkAssignOpen(true)}>
                 <Users className="mr-2 h-4 w-4" />
@@ -112,7 +109,7 @@ export default function Expenses() {
                 </Button>
               </InfoTooltip>
             </div>
-          </div>
+          </PageHeader>
 
           {/* Mentor Quote Banner */}
           <MentorQuoteBanner context="expenses" className="mb-2" />
