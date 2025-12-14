@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,8 +18,11 @@ import {
   useLogDailyProgress,
   useLogPractice,
   usePracticeLogs,
+  useEducationReminders,
+  useCheckEducationAchievements,
   FinancialEducationResource,
 } from '@/hooks/data/useFinancialEducation';
+import { useUserLevel } from '@/hooks/data/useGamification';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   SUGGESTED_RESOURCES, 
@@ -30,7 +33,7 @@ import {
 import { 
   GraduationCap, Book, Video, Headphones, FileText, Plus, Star, Check, Clock, Trash2,
   Sparkles, Target, Lightbulb, TrendingUp, CheckCircle2, ChevronDown, BookOpen, Flame,
-  Zap, Trophy, Calendar
+  Zap, Trophy, Calendar, Award
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -54,7 +57,7 @@ export function FinancialEducationCard() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedResource, setSelectedResource] = useState<FinancialEducationResource | null>(null);
   const [dailyProgress, setDailyProgress] = useState({ pages: 0, minutes: 0, notes: '' });
-  const [practiceInput, setPracticeInput] = useState({ description: '', outcome: '' });
+  const [practiceInput, setPracticeInput] = useState({ description: '', outcome: '', rating: 0 });
   const [newResource, setNewResource] = useState({
     resource_type: 'book',
     title: '',
@@ -71,11 +74,26 @@ export function FinancialEducationCard() {
   const { data: resources, isLoading } = useFinancialEducation();
   const { data: stats } = useEducationStats();
   const { data: practiceLogs } = usePracticeLogs();
+  const { data: userLevel } = useUserLevel();
   const createResource = useCreateEducationResource();
   const updateResource = useUpdateEducationResource();
   const deleteResource = useDeleteEducationResource();
   const logDailyProgress = useLogDailyProgress();
   const logPractice = useLogPractice();
+  const checkReminders = useEducationReminders();
+  const checkAchievements = useCheckEducationAchievements();
+
+  // Check for reminders on mount
+  useEffect(() => {
+    checkReminders.mutate();
+  }, []);
+
+  // Check achievements when resources change
+  useEffect(() => {
+    if (resources && resources.length > 0) {
+      checkAchievements.mutate();
+    }
+  }, [resources?.length]);
 
   // Random motivational quote
   const motivationalQuote = useMemo(() => {
@@ -164,8 +182,9 @@ export function FinancialEducationCard() {
         suggested_resource_id: selectedResource?.suggested_resource_id || undefined,
         practice_description: practiceInput.description,
         outcome: practiceInput.outcome,
+        impact_rating: practiceInput.rating || undefined,
       });
-      setPracticeInput({ description: '', outcome: '' });
+      setPracticeInput({ description: '', outcome: '', rating: 0 });
     }
   };
 
@@ -217,7 +236,7 @@ export function FinancialEducationCard() {
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats with XP */}
         <div className="flex items-center justify-around py-2 bg-muted/30 rounded-lg">
           <div className="text-center">
             <span className="text-xl font-bold text-green-600">{stats?.completed || 0}</span>
@@ -235,12 +254,10 @@ export function FinancialEducationCard() {
           <div className="h-8 w-px bg-border" />
           <div className="text-center">
             <div className="flex items-center gap-1 justify-center">
-              <Star className="h-4 w-4 text-yellow-500" />
-              <span className="text-xl font-bold">{stats?.avgImpactRating?.toFixed(1) || '-'}</span>
+              <Award className="h-4 w-4 text-purple-500" />
+              <span className="text-xl font-bold text-purple-600">{userLevel?.experience_points || 0}</span>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {language === 'es' ? 'Impacto' : 'Impact'}
-            </p>
+            <p className="text-xs text-muted-foreground">XP</p>
           </div>
         </div>
 
@@ -511,9 +528,21 @@ export function FinancialEducationCard() {
                         placeholder={language === 'es' ? 'Notas de hoy (opcional)...' : 'Today\'s notes (optional)...'}
                         rows={2}
                       />
+                      {/* XP Preview */}
+                      {(dailyProgress.pages > 0 || dailyProgress.minutes > 0) && (
+                        <div className="flex items-center justify-between p-2 bg-purple-500/10 rounded-lg border border-purple-200 dark:border-purple-800">
+                          <span className="text-sm text-purple-700 dark:text-purple-300 flex items-center gap-2">
+                            <Award className="h-4 w-4" />
+                            {language === 'es' ? 'XP a ganar:' : 'XP to earn:'}
+                          </span>
+                          <span className="text-lg font-bold text-purple-600">
+                            +{dailyProgress.pages + Math.floor(dailyProgress.minutes / 2)} XP
+                          </span>
+                        </div>
+                      )}
                       <Button onClick={handleLogProgress} className="w-full" size="sm">
                         <Flame className="h-4 w-4 mr-2" />
-                        {language === 'es' ? '¡Registrar progreso!' : 'Log progress!'}
+                        {language === 'es' ? '¡Registrar y ganar XP!' : 'Log and earn XP!'}
                       </Button>
                     </div>
 
@@ -615,6 +644,33 @@ export function FinancialEducationCard() {
                           : 'What was the outcome? (optional)'}
                         rows={2}
                       />
+                      {/* Impact Rating for bonus XP */}
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">
+                          {language === 'es' ? '¿Qué tan impactante fue? (más estrellas = más XP)' : 'How impactful was it? (more stars = more XP)'}
+                        </label>
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Button
+                              key={star}
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="p-1 h-8 w-8"
+                              onClick={() => setPracticeInput({ ...practiceInput, rating: star })}
+                            >
+                              <Star 
+                                className={`h-5 w-5 ${star <= practiceInput.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} 
+                              />
+                            </Button>
+                          ))}
+                          {practiceInput.rating > 0 && (
+                            <span className="text-xs text-muted-foreground ml-2 self-center">
+                              +{15 + practiceInput.rating * 5} XP
+                            </span>
+                          )}
+                        </div>
+                      </div>
                       <Button 
                         onClick={handleLogPractice} 
                         className="w-full" 
@@ -622,7 +678,7 @@ export function FinancialEducationCard() {
                         disabled={!practiceInput.description.trim()}
                       >
                         <CheckCircle2 className="h-4 w-4 mr-2" />
-                        {language === 'es' ? 'Registrar práctica' : 'Log practice'}
+                        {language === 'es' ? 'Registrar práctica y ganar XP' : 'Log practice and earn XP'}
                       </Button>
                     </div>
 
