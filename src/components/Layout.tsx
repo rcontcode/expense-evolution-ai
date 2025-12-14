@@ -25,7 +25,8 @@ import {
   UserCircle,
   Building2,
   Scale,
-  Bell
+  Bell,
+  GraduationCap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -78,6 +79,12 @@ const getNavSections = (t: (key: string) => string) => [
       { icon: Building2, label: 'Bancos', path: '/banking', badge: 'IA', tooltipKey: 'dashboard' as const },
       { icon: Car, label: 'nav.mileage', path: '/mileage', badge: 'CRA', tooltipKey: 'mileage' as const },
       { icon: RefreshCw, label: 'nav.reconciliation', path: '/reconciliation', badge: null, tooltipKey: 'reconciliation' as const },
+    ]
+  },
+  {
+    titleKey: 'layout.mentorship',
+    items: [
+      { icon: GraduationCap, label: 'Mentoría Financiera', path: '/mentorship', badge: 'Nuevo', tooltipKey: 'dashboard' as const },
     ]
   },
   {
