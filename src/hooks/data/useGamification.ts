@@ -79,6 +79,21 @@ export const ACHIEVEMENTS = {
   weekend_warrior: { icon: '⚔️', points: 25 },
   consistent_saver: { icon: '🎖️', points: 100 },
   budget_guru: { icon: '🧮', points: 80 },
+
+  // Education achievements
+  first_book: { icon: '📖', points: 15 },
+  bookworm_5: { icon: '📚', points: 50 },
+  bookworm_10: { icon: '🎓', points: 100 },
+  bookworm_25: { icon: '🏛️', points: 250 },
+  first_practice: { icon: '💡', points: 20 },
+  practitioner_10: { icon: '⚡', points: 75 },
+  practitioner_50: { icon: '🔥', points: 200 },
+  reading_streak_7: { icon: '📅', points: 35 },
+  reading_streak_30: { icon: '🗓️', points: 100 },
+  pages_100: { icon: '📄', points: 25 },
+  pages_500: { icon: '📑', points: 75 },
+  pages_1000: { icon: '📒', points: 150 },
+  knowledge_master: { icon: '🧠', points: 300 },
 };
 
 export const LEVELS = [
@@ -175,7 +190,7 @@ export function useUnlockAchievement() {
   });
 }
 
-async function addExperience(userId: string, points: number) {
+export async function addExperience(userId: string, points: number) {
   const { data: current } = await supabase
     .from('user_financial_level')
     .select('*')
