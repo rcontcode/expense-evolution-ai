@@ -27,6 +27,7 @@ import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
 import { InteractiveWelcome } from '@/components/guidance/InteractiveWelcome';
 import { WorkflowVisualizer } from '@/components/guidance/WorkflowVisualizer';
 import { WorkflowSummaryWidget } from '@/components/dashboard/WorkflowSummaryWidget';
+import { ControlCenterTour } from '@/components/guidance/ControlCenterTour';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -390,20 +391,23 @@ export default function Dashboard() {
         {/* Dashboard Module Tabs - Centro de Control Financiero */}
         <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 via-background to-accent/5 overflow-hidden">
           <CardHeader className="pb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-accent text-white">
-                <BarChart3 className="h-6 w-6" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-accent text-white">
+                  <BarChart3 className="h-6 w-6" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">
+                    {language === 'es' ? '🎛️ Centro de Control Financiero' : '🎛️ Financial Control Center'}
+                  </CardTitle>
+                  <CardDescription>
+                    {language === 'es' 
+                      ? 'Explora todas las herramientas disponibles para gestionar tus finanzas' 
+                      : 'Explore all available tools to manage your finances'}
+                  </CardDescription>
+                </div>
               </div>
-              <div>
-                <CardTitle className="text-xl">
-                  {language === 'es' ? '🎛️ Centro de Control Financiero' : '🎛️ Financial Control Center'}
-                </CardTitle>
-                <CardDescription>
-                  {language === 'es' 
-                    ? 'Explora todas las herramientas disponibles para gestionar tus finanzas' 
-                    : 'Explore all available tools to manage your finances'}
-                </CardDescription>
-              </div>
+              <ControlCenterTour onTabChange={setActiveTab} />
             </div>
           </CardHeader>
           <CardContent className="pt-0">
