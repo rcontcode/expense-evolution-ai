@@ -11,3 +11,4 @@ export { ReadingReminderSettings } from './ReadingReminderSettings';
 export { ReadingPaceComparison } from './ReadingPaceComparison';
 export { SMARTGoalsCard } from './SMARTGoalsCard';
 export { SMARTGoalWizard } from './SMARTGoalWizard';
+export { TracyGoalWizard } from './TracyGoalWizard';
