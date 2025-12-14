@@ -49,6 +49,7 @@ export interface ExpenseFilters {
   clientIds?: string[];
   statuses?: ExpenseStatus[];
   tagIds?: string[];
+  tagFilterMode?: 'AND' | 'OR';
   minAmount?: number;
   maxAmount?: number;
   searchQuery?: string;

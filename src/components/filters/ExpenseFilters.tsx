@@ -2,7 +2,7 @@ import { ExpenseFilters as Filters, ExpenseCategory, ExpenseStatus, Reimbursemen
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, X, Clock, FileCheck, Landmark, Ban, Building2, XCircle, AlertCircle, CheckCircle2, Filter, Receipt, AlertTriangle, User } from 'lucide-react';
+import { Search, X, Clock, FileCheck, Landmark, Ban, Building2, XCircle, AlertCircle, CheckCircle2, Filter, Receipt, AlertTriangle, User, Tag } from 'lucide-react';
 import { useClients } from '@/hooks/data/useClients';
 import { useTags } from '@/hooks/data/useTags';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
@@ -13,6 +13,8 @@ import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const QUICK_STATUS_FILTERS = [
   { value: 'all', label: 'Todos', labelEn: 'All', icon: Filter, color: 'bg-muted text-muted-foreground' },
@@ -74,6 +76,11 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
     onChange({ ...filters, tagIds: newTags.length > 0 ? newTags : undefined });
   };
 
+  const handleTagFilterModeToggle = () => {
+    const newMode = filters.tagFilterMode === 'AND' ? 'OR' : 'AND';
+    onChange({ ...filters, tagFilterMode: newMode });
+  };
+
   const handleReceiptFilterToggle = () => {
     onChange({ ...filters, hasReceipt: filters.hasReceipt ? undefined : true });
   };
@@ -103,6 +110,8 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
   };
 
   const activeStatus = filters.statuses?.[0] || 'all';
+  const selectedTags = tags?.filter(t => filters.tagIds?.includes(t.id)) || [];
+  const tagFilterMode = filters.tagFilterMode || 'OR';
 
   return (
     <div className="flex flex-col gap-4 mb-6">
@@ -226,17 +235,53 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
 
         <Popover open={tagPopoverOpen} onOpenChange={setTagPopoverOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="w-[180px] justify-between">
-              <span>
-                {filters.tagIds?.length ? `${filters.tagIds.length} etiquetas` : 'Etiquetas'}
-              </span>
+            <Button variant="outline" className="w-[200px] justify-between">
+              <div className="flex items-center gap-2">
+                <Tag className="h-4 w-4 text-muted-foreground" />
+                <span>
+                  {filters.tagIds?.length 
+                    ? `${filters.tagIds.length} ${language === 'es' ? 'etiquetas' : 'tags'}` 
+                    : language === 'es' ? 'Etiquetas' : 'Tags'}
+                </span>
+              </div>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0" align="start">
+          <PopoverContent className="w-[280px] p-0" align="start">
             <Command>
-              <CommandInput placeholder="Buscar etiquetas..." />
-              <CommandEmpty>No se encontraron etiquetas.</CommandEmpty>
+              <CommandInput placeholder={language === 'es' ? 'Buscar etiquetas...' : 'Search tags...'} />
+              <CommandEmpty>{language === 'es' ? 'No se encontraron etiquetas.' : 'No tags found.'}</CommandEmpty>
+              
+              {/* AND/OR Toggle */}
+              {(filters.tagIds?.length || 0) > 0 && (
+                <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs text-muted-foreground">
+                      {language === 'es' ? 'Modo de filtro:' : 'Filter mode:'}
+                    </Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={cn("text-xs font-medium", tagFilterMode === 'OR' && "text-primary")}>OR</span>
+                    <Switch 
+                      checked={tagFilterMode === 'AND'}
+                      onCheckedChange={handleTagFilterModeToggle}
+                      className="data-[state=checked]:bg-primary"
+                    />
+                    <span className={cn("text-xs font-medium", tagFilterMode === 'AND' && "text-primary")}>AND</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Help Text */}
+              {(filters.tagIds?.length || 0) > 1 && (
+                <div className="px-3 py-1.5 text-[10px] text-muted-foreground bg-muted/30 border-b">
+                  {tagFilterMode === 'AND' 
+                    ? (language === 'es' ? '✓ Muestra gastos con TODAS las etiquetas seleccionadas' : '✓ Shows expenses with ALL selected tags')
+                    : (language === 'es' ? '✓ Muestra gastos con CUALQUIERA de las etiquetas' : '✓ Shows expenses with ANY of the selected tags')
+                  }
+                </div>
+              )}
+
               <CommandGroup>
                 {tags?.map((tag) => (
                   <CommandItem
@@ -270,6 +315,37 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
           </Button>
         )}
       </div>
+
+      {/* Selected Tags Display with AND/OR indicator */}
+      {selectedTags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted-foreground">
+            {language === 'es' ? 'Filtrado por:' : 'Filtered by:'}
+          </span>
+          {selectedTags.map((tag, idx) => (
+            <div key={tag.id} className="flex items-center gap-1">
+              {idx > 0 && (
+                <span className={cn(
+                  "text-[10px] font-bold px-1.5 py-0.5 rounded",
+                  tagFilterMode === 'AND' 
+                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" 
+                    : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+                )}>
+                  {tagFilterMode}
+                </span>
+              )}
+              <Badge
+                style={{ backgroundColor: tag.color || '#3B82F6' }}
+                className="text-white text-xs cursor-pointer hover:opacity-80"
+                onClick={() => handleTagToggle(tag.id)}
+              >
+                {tag.name}
+                <X className="h-3 w-3 ml-1" />
+              </Badge>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

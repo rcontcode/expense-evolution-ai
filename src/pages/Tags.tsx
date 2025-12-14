@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Plus, Tag as TagIcon, Edit, Trash2, Sparkles, Filter, Receipt, Search, BarChart3, Lightbulb, ArrowRight, AlertCircle, Plane, RefreshCw, Star, Briefcase, User } from 'lucide-react';
+import { Plus, Tag as TagIcon, Edit, Trash2, Sparkles, Filter, Receipt, Search, BarChart3, Lightbulb, ArrowRight, AlertCircle, Plane, RefreshCw, Star, Briefcase, User, ChartPie } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTagsWithExpenseCount, useDeleteTag, useSeedDefaultTags } from '@/hooks/data/useTags';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +14,8 @@ import { TAG_COLOR_PALETTE, DEFAULT_TAGS } from '@/lib/constants/default-tags';
 import { PageHeader } from '@/components/PageHeader';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { MiniWorkflow } from '@/components/guidance/WorkflowVisualizer';
+import { TagAnalytics } from '@/components/analytics/TagAnalytics';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -193,7 +195,21 @@ export default function Tags() {
             </InfoTooltip>
           </PageHeader>
 
-          {isLoading ? (
+          {/* Tabs for Tags and Analytics */}
+          <Tabs defaultValue="tags" className="w-full">
+            <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsTrigger value="tags" className="flex items-center gap-2">
+                <TagIcon className="h-4 w-4" />
+                {language === 'es' ? 'Mis Etiquetas' : 'My Tags'}
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <ChartPie className="h-4 w-4" />
+                {language === 'es' ? 'Estadísticas' : 'Analytics'}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="tags" className="mt-6">
+              {isLoading ? (
             <Card className="border-dashed">
               <CardContent className="flex items-center justify-center py-12">
                 <p className="text-muted-foreground">{t('common.loading')}</p>
@@ -370,6 +386,12 @@ export default function Tags() {
               </Card>
             </div>
           )}
+            </TabsContent>
+
+            <TabsContent value="analytics" className="mt-6">
+              <TagAnalytics />
+            </TabsContent>
+          </Tabs>
 
           <TagDialog open={dialogOpen} onClose={handleClose} tag={selectedTag} />
 
