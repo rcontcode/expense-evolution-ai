@@ -15,7 +15,6 @@ import {
   ChevronRight,
   Sparkles,
   HelpCircle,
-  Zap,
   TrendingUp,
   Camera,
   Menu,
@@ -47,6 +46,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/s
 import { SyncStatusIndicator } from '@/components/SyncStatusIndicator';
 import { useUnreadNotifications } from '@/hooks/data/useUnreadNotifications';
 import { ThemeBackground } from '@/components/ThemeBackground';
+import evofinzLogo from '@/assets/evofinz-logo.png';
 
 interface LayoutProps {
   children: ReactNode;
@@ -127,10 +127,7 @@ export const Layout = ({ children }: LayoutProps) => {
         <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <Zap className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <span className="font-bold text-lg">EvoFinz</span>
+              <img src={evofinzLogo} alt="EvoFinz" className="h-10 w-auto object-contain" />
             </div>
 
             <div className="flex items-center gap-2">
@@ -298,19 +295,9 @@ export const Layout = ({ children }: LayoutProps) => {
             collapsed ? "justify-center" : "px-6"
           )}>
             {collapsed ? (
-              <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
-                <Zap className="h-5 w-5 text-primary-foreground" />
-              </div>
+              <img src={evofinzLogo} alt="EvoFinz" className="h-10 w-auto object-contain" />
             ) : (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
-                  <Zap className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-display font-bold gradient-text">EvoFinz</h1>
-                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Evoluciona tus Finanzas' : 'Evolve Your Finances'}</span>
-                </div>
-              </div>
+              <img src={evofinzLogo} alt="EvoFinz" className="h-12 w-auto object-contain" />
             )}
           </div>
 
