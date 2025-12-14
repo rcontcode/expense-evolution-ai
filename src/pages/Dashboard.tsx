@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download, Scale, ArrowUpRight, ArrowDownRight, UserCircle, Building2, MapPin, CheckCircle, RefreshCw, Landmark, Briefcase, BarChart3 } from 'lucide-react';
+import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download, Scale, ArrowUpRight, ArrowDownRight, UserCircle, Building2, MapPin, CheckCircle, RefreshCw, Landmark, Briefcase, BarChart3, GraduationCap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useClients } from '@/hooks/data/useClients';
@@ -50,6 +50,10 @@ const TransactionTimeline = lazy(() => import('@/components/analytics/Transactio
 const ClientProfitability = lazy(() => import('@/components/analytics/ClientProfitability').then(m => ({ default: m.ClientProfitability })));
 const FinancialCorrelations = lazy(() => import('@/components/analytics/FinancialCorrelations').then(m => ({ default: m.FinancialCorrelations })));
 const ExpensePredictions = lazy(() => import('@/components/analytics/ExpensePredictions').then(m => ({ default: m.ExpensePredictions })));
+const CashflowQuadrantCard = lazy(() => import('@/components/mentorship/CashflowQuadrantCard').then(m => ({ default: m.CashflowQuadrantCard })));
+const FinancialFreedomCard = lazy(() => import('@/components/mentorship/FinancialFreedomCard').then(m => ({ default: m.FinancialFreedomCard })));
+const PayYourselfFirstCard = lazy(() => import('@/components/mentorship/PayYourselfFirstCard').then(m => ({ default: m.PayYourselfFirstCard })));
+const DebtClassificationCard = lazy(() => import('@/components/mentorship/DebtClassificationCard').then(m => ({ default: m.DebtClassificationCard })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -366,13 +370,17 @@ export default function Dashboard() {
           </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="flex w-full overflow-x-auto">
             <InfoTooltip content={TOOLTIP_CONTENT.chartsTab} variant="wrapper" side="bottom">
               <TabsTrigger value="charts" className="cursor-pointer">{t('taxAnalysis.charts')}</TabsTrigger>
             </InfoTooltip>
             <TabsTrigger value="analytics" className="cursor-pointer flex items-center gap-1">
               <BarChart3 className="h-3 w-3" />
               {language === 'es' ? 'Análisis' : 'Analytics'}
+            </TabsTrigger>
+            <TabsTrigger value="mentorship" className="cursor-pointer flex items-center gap-1">
+              <GraduationCap className="h-3 w-3" />
+              {language === 'es' ? 'Mentoría' : 'Mentorship'}
             </TabsTrigger>
             <InfoTooltip content={TOOLTIP_CONTENT.taxTab} variant="wrapper" side="bottom">
               <TabsTrigger value="tax" className="cursor-pointer">{t('taxAnalysis.taxAnalysis')}</TabsTrigger>
@@ -434,6 +442,23 @@ export default function Dashboard() {
                   <div className="grid gap-6 lg:grid-cols-2">
                     <SeasonalityChart expenses={allExpenses || []} isLoading={isLoading} />
                     <MonthComparisonChart expenses={allExpenses || []} isLoading={isLoading} />
+                  </div>
+                </div>
+              </Suspense>
+            )}
+          </TabsContent>
+
+          <TabsContent value="mentorship" className="space-y-4">
+            {activeTab === 'mentorship' && (
+              <Suspense fallback={<AnalyticsSkeleton />}>
+                <div className="space-y-6">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <CashflowQuadrantCard />
+                    <FinancialFreedomCard />
+                  </div>
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <PayYourselfFirstCard />
+                    <DebtClassificationCard />
                   </div>
                 </div>
               </Suspense>
