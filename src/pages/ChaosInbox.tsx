@@ -1,22 +1,23 @@
 import { useState, useRef, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
+import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { 
-  Upload, FileText, Camera, Loader2, RefreshCw, 
-  CheckCircle2, Clock, AlertTriangle, X, Sparkles,
-  Smartphone, Monitor, Video, Layers, ArrowRight,
-  Eye, Edit3, ThumbsUp, MessageSquare, Info, ChevronDown, ChevronUp
+  Upload, Camera, Loader2, RefreshCw, 
+  CheckCircle2, Clock, AlertTriangle, X,
+  Smartphone, Monitor, Layers, ArrowRight, Video,
+  Edit3, ChevronDown, ChevronUp, Eye, MessageSquare
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { ReceiptReviewCard, ReceiptDocument, ExtractedData } from '@/components/capture/ReceiptReviewCard';
 import { 
@@ -406,47 +407,36 @@ export default function ChaosInbox() {
       <TooltipProvider>
         <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto">
           {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-                  <Sparkles className="h-7 w-7 text-primary" />
-                  {language === 'es' ? 'Bandeja de Recibos' : 'Receipt Inbox'}
-                </h1>
-                <p className="text-muted-foreground mt-1 text-sm md:text-base">
-                  {language === 'es' 
-                    ? 'Captura, revisa y aprueba tus recibos'
-                    : 'Capture, review and approve your receipts'}
-                </p>
-              </div>
-              <InfoTooltip content={TOOLTIP_CONTENT.chaosInbox} />
+          <PageHeader
+            title={language === 'es' ? 'Bandeja de Recibos' : 'Receipt Inbox'}
+            description={language === 'es' 
+              ? 'Captura, revisa y aprueba tus recibos'
+              : 'Capture, review and approve your receipts'}
+          >
+            <InfoTooltip content={TOOLTIP_CONTENT.chaosInbox} />
+            <ScanSessionHistory />
+            
+            <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50">
+              <Switch
+                id="multi-receipt"
+                checked={detectMultipleReceipts}
+                onCheckedChange={setDetectMultipleReceipts}
+              />
+              <Label htmlFor="multi-receipt" className="flex items-center gap-1 text-xs cursor-pointer">
+                <Layers className="h-3 w-3" />
+                {language === 'es' ? 'Multi-recibo' : 'Multi-receipt'}
+              </Label>
             </div>
             
-            <div className="flex flex-wrap items-center gap-2">
-              <ScanSessionHistory />
-              
-              <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50">
-                <Switch
-                  id="multi-receipt"
-                  checked={detectMultipleReceipts}
-                  onCheckedChange={setDetectMultipleReceipts}
-                />
-                <Label htmlFor="multi-receipt" className="flex items-center gap-1 text-xs cursor-pointer">
-                  <Layers className="h-3 w-3" />
-                  {language === 'es' ? 'Multi-recibo' : 'Multi-receipt'}
-                </Label>
-              </div>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => refetch()}
-                disabled={isLoading}
-              >
-                <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-              </Button>
-            </div>
-          </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => refetch()}
+              disabled={isLoading}
+            >
+              <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+            </Button>
+          </PageHeader>
 
           {/* Contextual Page Guide */}
           <PageContextGuide
