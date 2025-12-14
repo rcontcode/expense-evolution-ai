@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { PageHeader } from '@/components/PageHeader';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
+import { MiniWorkflow } from '@/components/guidance/WorkflowVisualizer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -344,6 +345,9 @@ export default function Reconciliation() {
             { icon: AlertTriangle, title: { es: 'Discrepancias', en: 'Discrepancies' }, description: { es: 'Sin emparejar', en: 'Unmatched' }, action: () => {} }
           ]}
         />
+
+        {/* Workflow Visualizer - Bank Reconciliation Flow */}
+        <MiniWorkflow workflowId="bank-reconciliation" />
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
