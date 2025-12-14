@@ -28,6 +28,7 @@ import NotFound from "./pages/NotFound";
 import NetWorth from "./pages/NetWorth";
 import Banking from "./pages/Banking";
 import Notifications from "./pages/Notifications";
+import Mentorship from "./pages/Mentorship";
 import { ChatAssistant } from "./components/chat/ChatAssistant";
 import { OnboardingTutorial } from "./components/guidance/OnboardingTutorial";
 
@@ -68,6 +69,7 @@ const App = () => (
                 <Route path="/net-worth" element={<ProtectedRoute><NetWorth /></ProtectedRoute>} />
                 <Route path="/banking" element={<ProtectedRoute><Banking /></ProtectedRoute>} />
                 <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+                <Route path="/mentorship" element={<ProtectedRoute><Mentorship /></ProtectedRoute>} />
                 <Route path="/install" element={<Install />} />
                 <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
