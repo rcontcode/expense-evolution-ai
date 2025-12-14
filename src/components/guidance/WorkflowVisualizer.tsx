@@ -366,6 +366,66 @@ const WORKFLOWS: Workflow[] = [
         borderColor: 'border-orange-300 dark:border-orange-700'
       }
     ]
+  },
+  {
+    id: 'tag-management',
+    title: { es: '🏷️ Gestión de Etiquetas', en: '🏷️ Tag Management' },
+    subtitle: { 
+      es: 'Organiza gastos con etiquetas personalizadas', 
+      en: 'Organize expenses with custom tags' 
+    },
+    icon: Tag,
+    accentColor: 'text-pink-600 dark:text-pink-400',
+    bgGradient: 'from-pink-500/10 via-pink-500/5 to-transparent',
+    ctaPath: '/tags',
+    ctaLabel: { es: 'Gestionar Etiquetas', en: 'Manage Tags' },
+    steps: [
+      {
+        id: 'create',
+        icon: Tag,
+        title: { es: 'Crear', en: 'Create' },
+        description: { es: 'Nombre + color', en: 'Name + color' },
+        color: 'text-pink-600',
+        bgColor: 'bg-pink-100 dark:bg-pink-900/40',
+        borderColor: 'border-pink-300 dark:border-pink-700'
+      },
+      {
+        id: 'assign',
+        icon: Receipt,
+        title: { es: 'Asignar', en: 'Assign' },
+        description: { es: 'A gastos', en: 'To expenses' },
+        color: 'text-purple-600',
+        bgColor: 'bg-purple-100 dark:bg-purple-900/40',
+        borderColor: 'border-purple-300 dark:border-purple-700'
+      },
+      {
+        id: 'filter',
+        icon: Search,
+        title: { es: 'Filtrar', en: 'Filter' },
+        description: { es: 'Por etiqueta', en: 'By tag' },
+        color: 'text-blue-600',
+        bgColor: 'bg-blue-100 dark:bg-blue-900/40',
+        borderColor: 'border-blue-300 dark:border-blue-700'
+      },
+      {
+        id: 'analyze',
+        icon: BarChart3,
+        title: { es: 'Analizar', en: 'Analyze' },
+        description: { es: 'Ver patrones', en: 'See patterns' },
+        color: 'text-amber-600',
+        bgColor: 'bg-amber-100 dark:bg-amber-900/40',
+        borderColor: 'border-amber-300 dark:border-amber-700'
+      },
+      {
+        id: 'optimize',
+        icon: Sparkles,
+        title: { es: 'Optimizar', en: 'Optimize' },
+        description: { es: 'Organización', en: 'Organization' },
+        color: 'text-green-600',
+        bgColor: 'bg-green-100 dark:bg-green-900/40',
+        borderColor: 'border-green-300 dark:border-green-700'
+      }
+    ]
   }
 ];
 

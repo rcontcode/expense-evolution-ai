@@ -402,6 +402,31 @@ export const PAGE_GUIDES = {
       { es: 'puedes crear gastos directamente desde transacciones no emparejadas.', en: 'you can create expenses directly from unmatched transactions.' }
     ]
   },
+  tags: {
+    pageKey: 'tags',
+    pageTitle: { es: 'aquí organizas tus gastos con etiquetas', en: 'here you organize expenses with tags' },
+    pageDescription: { 
+      es: 'Las etiquetas te permiten marcar, agrupar y filtrar gastos de forma flexible', 
+      en: 'Tags allow you to mark, group and filter expenses flexibly' 
+    },
+    goals: [
+      { es: 'Marcar gastos urgentes', en: 'Mark urgent expenses' },
+      { es: 'Identificar reembolsados', en: 'Identify reimbursed' },
+      { es: 'Filtrar por prioridad', en: 'Filter by priority' },
+      { es: 'Organizar por proyecto', en: 'Organize by project' }
+    ],
+    workflows: [
+      { step: 1, title: { es: 'Crear', en: 'Create' }, description: { es: 'Nombre y color', en: 'Name and color' } },
+      { step: 2, title: { es: 'Asignar', en: 'Assign' }, description: { es: 'A gastos', en: 'To expenses' } },
+      { step: 3, title: { es: 'Filtrar', en: 'Filter' }, description: { es: 'En tablas', en: 'In tables' } },
+      { step: 4, title: { es: 'Analizar', en: 'Analyze' }, description: { es: 'Patrones', en: 'Patterns' } }
+    ],
+    tips: [
+      { es: 'usa colores distintivos para identificar etiquetas de un vistazo.', en: 'use distinctive colors to identify tags at a glance.' },
+      { es: 'puedes asignar múltiples etiquetas a un mismo gasto para mayor flexibilidad.', en: 'you can assign multiple tags to the same expense for more flexibility.' },
+      { es: 'las etiquetas "Urgente" y "Pendiente" te ayudan a priorizar qué revisar primero.', en: '"Urgent" and "Pending" tags help you prioritize what to review first.' }
+    ]
+  },
   'chaos-inbox': {
     pageKey: 'chaos-inbox',
     pageTitle: { es: 'aquí revisas tus recibos capturados', en: 'here you review your captured receipts' },

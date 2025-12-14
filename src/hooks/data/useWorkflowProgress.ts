@@ -35,6 +35,8 @@ export function useWorkflowProgress(workflowId: string) {
           return await getBankReconciliationProgress(user.id);
         case 'wealth-building':
           return await getWealthBuildingProgress(user.id);
+        case 'tag-management':
+          return await getTagManagementProgress(user.id);
         default:
           return getDefaultProgress(workflowId);
       }
@@ -268,6 +270,51 @@ async function getWealthBuildingProgress(userId: string): Promise<WorkflowProgre
       { label: { es: 'Patrimonio neto', en: 'Net worth' }, value: netWorth, type: 'currency' },
       { label: { es: 'Activos', en: 'Assets' }, value: assets?.length || 0, type: 'count' },
       { label: { es: 'Metas activas', en: 'Active goals' }, value: goals?.length || 0, type: 'count' },
+    ],
+  };
+}
+
+async function getTagManagementProgress(userId: string): Promise<WorkflowProgress> {
+  // Get tags and expense_tags
+  const [
+    { data: tags },
+    { data: expenseTags },
+    { data: expenses }
+  ] = await Promise.all([
+    supabase.from('tags').select('id').eq('user_id', userId),
+    supabase.from('expense_tags').select('id, tag_id, expense_id'),
+    supabase.from('expenses').select('id').eq('user_id', userId),
+  ]);
+
+  const tagCount = tags?.length || 0;
+  const assignedExpenses = new Set(expenseTags?.map(et => et.expense_id) || []).size;
+  const totalExpenses = expenses?.length || 0;
+  const untaggedExpenses = totalExpenses - assignedExpenses;
+  const tagsUsed = new Set(expenseTags?.map(et => et.tag_id) || []).size;
+  const coveragePercent = totalExpenses > 0 ? Math.round((assignedExpenses / totalExpenses) * 100) : 0;
+
+  let currentStep = 0;
+  if (tagCount === 0) currentStep = 0;
+  else if (assignedExpenses === 0) currentStep = 1;
+  else if (coveragePercent < 50) currentStep = 2;
+  else if (coveragePercent < 80) currentStep = 3;
+  else currentStep = 4;
+
+  return {
+    workflowId: 'tag-management',
+    currentStep,
+    totalSteps: 5,
+    stepDetails: [
+      { stepId: 'create', status: tagCount > 0 ? 'completed' : 'current', count: tagCount },
+      { stepId: 'assign', status: assignedExpenses > 0 ? 'completed' : (currentStep >= 1 ? 'current' : 'pending'), count: assignedExpenses },
+      { stepId: 'filter', status: currentStep >= 2 ? (currentStep === 2 ? 'current' : 'completed') : 'pending' },
+      { stepId: 'analyze', status: currentStep >= 3 ? (currentStep === 3 ? 'current' : 'completed') : 'pending' },
+      { stepId: 'optimize', status: currentStep >= 4 ? 'completed' : 'pending' },
+    ],
+    stats: [
+      { label: { es: 'Etiquetas', en: 'Tags' }, value: tagCount, type: 'count' },
+      { label: { es: 'Gastos etiquetados', en: 'Tagged expenses' }, value: assignedExpenses, type: 'count' },
+      { label: { es: 'Sin etiquetar', en: 'Untagged' }, value: untaggedExpenses, type: 'count' },
     ],
   };
 }
