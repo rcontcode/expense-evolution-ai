@@ -12,6 +12,7 @@ import {
   ReadingReminderSettings,
   ReadingPaceComparison,
   SMARTGoalsCard,
+  TracyGoalWizard,
 } from '@/components/mentorship';
 import { Target, Sparkles, PiggyBank, Scale, BookOpen, ListChecks, GraduationCap } from 'lucide-react';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
@@ -98,9 +99,12 @@ export default function Mentorship() {
           </div>
           <p className="text-sm text-muted-foreground -mt-4">
             {language === 'es' 
-              ? 'Hábitos de éxito, metas SMART y productividad financiera'
-              : 'Success habits, SMART goals, and financial productivity'}
+              ? 'Los 7 pasos para el éxito, método ABCDE y productividad financiera'
+              : 'The 7 steps to success, ABCDE method, and financial productivity'}
           </p>
+          
+          {/* Tracy Goal Wizard - Full Width */}
+          <TracyGoalWizard />
           
           <div className="grid gap-6 md:grid-cols-2">
             <SMARTGoalsCard />
