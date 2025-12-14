@@ -57,6 +57,7 @@ const DebtClassificationCard = lazy(() => import('@/components/mentorship/DebtCl
 const FinancialJournalCard = lazy(() => import('@/components/mentorship/FinancialJournalCard').then(m => ({ default: m.FinancialJournalCard })));
 const FinancialHabitsCard = lazy(() => import('@/components/mentorship/FinancialHabitsCard').then(m => ({ default: m.FinancialHabitsCard })));
 const FinancialEducationCard = lazy(() => import('@/components/mentorship/FinancialEducationCard').then(m => ({ default: m.FinancialEducationCard })));
+const SMARTGoalsCard = lazy(() => import('@/components/mentorship/SMARTGoalsCard').then(m => ({ default: m.SMARTGoalsCard })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -463,7 +464,8 @@ export default function Dashboard() {
                     <PayYourselfFirstCard />
                     <DebtClassificationCard />
                   </div>
-                  <div className="grid gap-6 md:grid-cols-3">
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <SMARTGoalsCard />
                     <FinancialJournalCard />
                     <FinancialHabitsCard />
                     <FinancialEducationCard />

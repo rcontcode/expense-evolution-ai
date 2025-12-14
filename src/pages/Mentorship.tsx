@@ -8,6 +8,7 @@ import {
   FinancialJournalCard,
   FinancialHabitsCard,
   FinancialEducationCard,
+  SMARTGoalsCard,
 } from '@/components/mentorship';
 import { Target, Sparkles, PiggyBank, Scale, BookOpen, ListChecks, GraduationCap } from 'lucide-react';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
@@ -94,6 +95,7 @@ export default function Mentorship() {
           </p>
           
           <div className="grid gap-6 md:grid-cols-2">
+            <SMARTGoalsCard />
             <FinancialHabitsCard />
             <FinancialEducationCard />
           </div>
