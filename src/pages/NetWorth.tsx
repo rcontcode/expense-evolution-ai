@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Layout } from '@/components/Layout';
+import { PageHeader } from '@/components/PageHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   useAssets, 
@@ -20,7 +21,7 @@ import { InvestmentOnboardingWizard } from '@/components/investments/InvestmentO
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Scale, Lightbulb, Sparkles, Plus, Wallet, TrendingUp, RefreshCw } from 'lucide-react';
+import { Lightbulb, Sparkles, Plus, Wallet, TrendingUp, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function NetWorth() {
@@ -131,20 +132,12 @@ export default function NetWorth() {
     <Layout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Scale className="h-6 w-6 text-primary" />
-              {language === 'es' ? 'Patrimonio Neto' : 'Net Worth'}
-            </h1>
-            <p className="text-muted-foreground">
-              {language === 'es' 
-                ? 'Visualiza y administra tus activos y pasivos'
-                : 'View and manage your assets and liabilities'}
-            </p>
-          </div>
-          
-          {/* Investment Onboarding Button */}
+        <PageHeader
+          title={language === 'es' ? 'Patrimonio Neto' : 'Net Worth'}
+          description={language === 'es' 
+            ? 'Visualiza y administra tus activos y pasivos'
+            : 'View and manage your assets and liabilities'}
+        >
           {!hasInvestmentAssets && !hasCompletedOnboarding && (
             <Button 
               onClick={handleStartOnboarding}
@@ -154,7 +147,7 @@ export default function NetWorth() {
               {language === 'es' ? 'Configurar Inversiones' : 'Setup Investments'}
             </Button>
           )}
-        </div>
+        </PageHeader>
 
         {/* Contextual Page Guide */}
         <PageContextGuide

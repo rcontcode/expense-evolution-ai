@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
+import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -167,14 +168,10 @@ export default function BusinessProfile() {
     <Layout>
       <div className="p-8 space-y-6 max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Building2 className="h-8 w-8 text-primary" />
-              {t('businessProfile.title')}
-            </h1>
-            <p className="text-muted-foreground mt-1">{t('businessProfile.description')}</p>
-          </div>
+        <PageHeader
+          title={t('businessProfile.title')}
+          description={t('businessProfile.description')}
+        >
           <div className="text-right">
             <div className="text-sm text-muted-foreground">{t('businessProfile.completeness')}</div>
             <div className="flex items-center gap-2">
@@ -187,7 +184,7 @@ export default function BusinessProfile() {
               <span className="font-semibold text-primary">{completeness}%</span>
             </div>
           </div>
-        </div>
+        </PageHeader>
 
         {/* Personal Information Section */}
         <Card>

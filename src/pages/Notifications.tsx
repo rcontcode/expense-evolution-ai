@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Layout } from '@/components/Layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/PageHeader';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -16,7 +17,6 @@ import {
   Target, 
   TrendingUp, 
   Clock, 
-  Check, 
   CheckCheck, 
   Trash2,
   Sparkles,
@@ -187,55 +187,46 @@ export default function Notifications() {
     <Layout>
       <div className="p-6 max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-display font-bold flex items-center gap-3">
-              <Bell className="h-8 w-8 text-primary" />
-              {language === 'es' ? 'Notificaciones' : 'Notifications'}
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              {language === 'es' 
-                ? 'Tu historial de logros, alertas y recordatorios' 
-                : 'Your history of achievements, alerts and reminders'}
-            </p>
-          </div>
+        <PageHeader
+          title={language === 'es' ? 'Notificaciones' : 'Notifications'}
+          description={language === 'es' 
+            ? 'Tu historial de logros, alertas y recordatorios' 
+            : 'Your history of achievements, alerts and reminders'}
+        >
+          {unreadCount > 0 && (
+            <Button variant="outline" size="sm" onClick={() => markAllAsRead.mutate()}>
+              <CheckCheck className="h-4 w-4 mr-2" />
+              {language === 'es' ? 'Marcar todo leído' : 'Mark all read'}
+            </Button>
+          )}
           
-          <div className="flex items-center gap-2">
-            {unreadCount > 0 && (
-              <Button variant="outline" size="sm" onClick={() => markAllAsRead.mutate()}>
-                <CheckCheck className="h-4 w-4 mr-2" />
-                {language === 'es' ? 'Marcar todo leído' : 'Mark all read'}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                <Trash2 className="h-4 w-4 mr-2" />
+                {language === 'es' ? 'Limpiar' : 'Clear'}
               </Button>
-            )}
-            
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  {language === 'es' ? 'Limpiar' : 'Clear'}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    {language === 'es' ? '¿Eliminar todas las notificaciones?' : 'Delete all notifications?'}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {language === 'es' 
-                      ? 'Esta acción no se puede deshacer. Se eliminarán todas tus notificaciones.'
-                      : 'This action cannot be undone. All your notifications will be deleted.'}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{language === 'es' ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => clearAllNotifications.mutate()}>
-                    {language === 'es' ? 'Eliminar todo' : 'Delete all'}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </div>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {language === 'es' ? '¿Eliminar todas las notificaciones?' : 'Delete all notifications?'}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {language === 'es' 
+                    ? 'Esta acción no se puede deshacer. Se eliminarán todas tus notificaciones.'
+                    : 'This action cannot be undone. All your notifications will be deleted.'}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{language === 'es' ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
+                <AlertDialogAction onClick={() => clearAllNotifications.mutate()}>
+                  {language === 'es' ? 'Eliminar todo' : 'Delete all'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </PageHeader>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

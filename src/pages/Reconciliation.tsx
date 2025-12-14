@@ -1,21 +1,19 @@
 import { useState } from 'react';
 import { Layout } from '@/components/Layout';
+import { PageHeader } from '@/components/PageHeader';
+import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
-  RefreshCw, 
   Upload, 
-  FileSpreadsheet, 
   ArrowLeftRight,
   CheckCircle2,
   XCircle,
   Clock,
   AlertTriangle,
-  HelpCircle,
   Banknote,
   Receipt,
-  Sparkles,
   Trash2,
   Calendar,
   DollarSign,
@@ -24,10 +22,12 @@ import {
   ChevronDown,
   ChevronUp,
   Wand2,
-  LayoutGrid
+  LayoutGrid,
+  RefreshCw,
+  HelpCircle,
+  FileSpreadsheet
 } from 'lucide-react';
 import { EmptyStateWithGuide } from '@/components/ui/feature-guide';
-import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
@@ -278,21 +278,16 @@ export default function Reconciliation() {
       <Layout>
         <div className="p-8 space-y-6">
           {/* Header with mode toggle */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold">{t('nav.reconciliation')}</h1>
-                <Badge variant="secondary" className="bg-primary/10 text-primary border-0">
-                  <Wand2 className="h-3 w-3 mr-1" />
-                  {language === 'es' ? 'Modo Asistente' : 'Assistant Mode'}
-                </Badge>
-              </div>
-              <p className="text-muted-foreground mt-2">
-                {language === 'es' 
-                  ? 'Tu asistente de contabilidad personal te guiará paso a paso'
-                  : 'Your personal accounting assistant will guide you step by step'}
-              </p>
-            </div>
+          <PageHeader
+            title={t('nav.reconciliation')}
+            description={language === 'es' 
+              ? 'Tu asistente de contabilidad personal te guiará paso a paso'
+              : 'Your personal accounting assistant will guide you step by step'}
+          >
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-0">
+              <Wand2 className="h-3 w-3 mr-1" />
+              {language === 'es' ? 'Modo Asistente' : 'Assistant Mode'}
+            </Badge>
             <Button 
               variant="outline"
               onClick={() => setWizardMode(false)}
@@ -300,7 +295,7 @@ export default function Reconciliation() {
               <LayoutGrid className="h-4 w-4 mr-2" />
               {language === 'es' ? 'Modo Avanzado' : 'Advanced Mode'}
             </Button>
-          </div>
+          </PageHeader>
 
           {/* Wizard content */}
           <ReconciliationWizard onExitWizard={() => setWizardMode(false)} />
@@ -313,38 +308,31 @@ export default function Reconciliation() {
     <Layout>
       <div className="p-8 space-y-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold">{t('nav.reconciliation')}</h1>
-              <Badge variant="secondary" className="bg-muted text-muted-foreground border-0">
-                <LayoutGrid className="h-3 w-3 mr-1" />
-                {language === 'es' ? 'Modo Avanzado' : 'Advanced Mode'}
-              </Badge>
-            </div>
-            <p className="text-muted-foreground mt-2">
-              {language === 'es' 
-                ? 'Compara tus transacciones bancarias con los gastos registrados para mantener tu contabilidad perfecta'
-                : 'Compare your bank transactions with recorded expenses to keep your accounting perfect'}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline"
-              onClick={() => setWizardMode(true)}
-            >
-              <Wand2 className="h-4 w-4 mr-2" />
-              {language === 'es' ? 'Modo Asistente' : 'Assistant Mode'}
-            </Button>
-            <Button 
-              onClick={() => setImportDialogOpen(true)}
-              className="bg-gradient-primary hover:opacity-90 shadow-glow"
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              {language === 'es' ? 'Importar Estado Bancario' : 'Import Bank Statement'}
-            </Button>
-          </div>
-        </div>
+        <PageHeader
+          title={t('nav.reconciliation')}
+          description={language === 'es' 
+            ? 'Compara tus transacciones bancarias con los gastos registrados para mantener tu contabilidad perfecta'
+            : 'Compare your bank transactions with recorded expenses to keep your accounting perfect'}
+        >
+          <Badge variant="secondary" className="bg-muted text-muted-foreground border-0">
+            <LayoutGrid className="h-3 w-3 mr-1" />
+            {language === 'es' ? 'Modo Avanzado' : 'Advanced Mode'}
+          </Badge>
+          <Button 
+            variant="outline"
+            onClick={() => setWizardMode(true)}
+          >
+            <Wand2 className="h-4 w-4 mr-2" />
+            {language === 'es' ? 'Modo Asistente' : 'Assistant Mode'}
+          </Button>
+          <Button 
+            onClick={() => setImportDialogOpen(true)}
+            className="bg-gradient-primary hover:opacity-90 shadow-glow"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            {language === 'es' ? 'Importar Estado Bancario' : 'Import Bank Statement'}
+          </Button>
+        </PageHeader>
 
         {/* Contextual Page Guide */}
         <PageContextGuide
