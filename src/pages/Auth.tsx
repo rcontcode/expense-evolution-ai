@@ -9,7 +9,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Zap, ArrowRight, CheckCircle2, Sparkles, Receipt, TrendingUp } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Sparkles, Receipt, TrendingUp } from 'lucide-react';
+import evofinzLogo from '@/assets/evofinz-logo.png';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -108,13 +109,7 @@ export default function Auth() {
         <div className="relative z-10 flex flex-col justify-center px-12 text-white">
           {/* Logo */}
           <div className="flex items-center gap-4 mb-12">
-            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
-              <Zap className="h-8 w-8" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-display font-bold">EvoFinz</h1>
-              <span className="text-white/70 text-sm">Evoluciona tus Finanzas</span>
-            </div>
+            <img src={evofinzLogo} alt="EvoFinz" className="h-16 w-auto object-contain drop-shadow-lg" />
           </div>
 
           {/* Main headline */}
@@ -153,11 +148,8 @@ export default function Auth() {
         
         <div className="w-full max-w-md space-y-8 animate-fade-in">
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
-              <Zap className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <h1 className="text-2xl font-display font-bold gradient-text">EvoFinz</h1>
+          <div className="lg:hidden flex items-center justify-center mb-8">
+            <img src={evofinzLogo} alt="EvoFinz" className="h-14 w-auto object-contain" />
           </div>
 
           <div className="text-center lg:text-left">
