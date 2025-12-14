@@ -20,7 +20,7 @@ import { TaxSummaryCards } from '@/components/dashboard/TaxSummaryCards';
 import { CompletenessCard } from '@/components/dashboard/CompletenessCard';
 import { ExportDialog } from '@/components/export/ExportDialog';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
 import { OnboardingGuide } from '@/components/ui/onboarding-guide';
 import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
@@ -410,114 +410,234 @@ export default function Dashboard() {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
               <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-2 h-auto bg-transparent p-0">
                 {/* Gráficos */}
-                <TabsTrigger 
-                  value="charts" 
-                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                >
-                  <div className="p-2 rounded-lg bg-blue-500/20 data-[state=active]:bg-white/20">
-                    <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <span className="text-xs font-medium">{t('taxAnalysis.charts')}</span>
-                </TabsTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger 
+                      value="charts" 
+                      className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                    >
+                      <div className="p-2 rounded-lg bg-blue-500/20 data-[state=active]:bg-white/20">
+                        <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <span className="text-xs font-medium">{t('taxAnalysis.charts')}</span>
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p className="font-semibold">{language === 'es' ? '📊 Gráficos Principales' : '📊 Main Charts'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'es' 
+                        ? 'Visualiza tus gastos por categoría, cliente y tendencias mensuales. Ideal para ver el panorama general de tus finanzas.' 
+                        : 'View your expenses by category, client, and monthly trends. Ideal for seeing the overall picture of your finances.'}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
 
                 {/* Análisis */}
-                <TabsTrigger 
-                  value="analytics" 
-                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 data-[state=active]:text-white bg-purple-50 dark:bg-purple-950/30 border-2 border-purple-200 dark:border-purple-800 hover:border-purple-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                >
-                  <div className="p-2 rounded-lg bg-purple-500/20">
-                    <TrendingUp className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <span className="text-xs font-medium">{language === 'es' ? 'Análisis' : 'Analytics'}</span>
-                </TabsTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger 
+                      value="analytics" 
+                      className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 data-[state=active]:text-white bg-purple-50 dark:bg-purple-950/30 border-2 border-purple-200 dark:border-purple-800 hover:border-purple-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                    >
+                      <div className="p-2 rounded-lg bg-purple-500/20">
+                        <TrendingUp className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <span className="text-xs font-medium">{language === 'es' ? 'Análisis' : 'Analytics'}</span>
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p className="font-semibold">{language === 'es' ? '🔍 Análisis Avanzado' : '🔍 Advanced Analytics'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'es' 
+                        ? 'Predicciones de gastos con IA, flujo de caja, rentabilidad por proyecto/cliente, correlaciones financieras y más de 10 visualizaciones.' 
+                        : 'AI expense predictions, cash flow, project/client profitability, financial correlations, and 10+ visualizations.'}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
 
                 {/* Mentoría */}
-                <TabsTrigger 
-                  value="mentorship" 
-                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white bg-amber-50 dark:bg-amber-950/30 border-2 border-amber-200 dark:border-amber-800 hover:border-amber-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                >
-                  <div className="p-2 rounded-lg bg-amber-500/20">
-                    <GraduationCap className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                  </div>
-                  <span className="text-xs font-medium">{language === 'es' ? 'Mentoría' : 'Mentorship'}</span>
-                </TabsTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger 
+                      value="mentorship" 
+                      className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white bg-amber-50 dark:bg-amber-950/30 border-2 border-amber-200 dark:border-amber-800 hover:border-amber-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                    >
+                      <div className="p-2 rounded-lg bg-amber-500/20">
+                        <GraduationCap className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <span className="text-xs font-medium">{language === 'es' ? 'Mentoría' : 'Mentorship'}</span>
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p className="font-semibold">{language === 'es' ? '🧠 Sistema de Mentoría' : '🧠 Mentorship System'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'es' 
+                        ? 'Metodología Kiyosaki/Tracy: Cuadrante del Flujo de Caja, Libertad Financiera, Págate Primero, Clasificación de Deudas, Metas SMART y Diario Financiero.' 
+                        : 'Kiyosaki/Tracy methodology: Cashflow Quadrant, Financial Freedom, Pay Yourself First, Debt Classification, SMART Goals, and Financial Journal.'}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
 
                 {/* Análisis Fiscal */}
-                <TabsTrigger 
-                  value="tax" 
-                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white bg-green-50 dark:bg-green-950/30 border-2 border-green-200 dark:border-green-800 hover:border-green-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                >
-                  <div className="p-2 rounded-lg bg-green-500/20">
-                    <Receipt className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  </div>
-                  <span className="text-xs font-medium">{t('taxAnalysis.taxAnalysis')}</span>
-                </TabsTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger 
+                      value="tax" 
+                      className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white bg-green-50 dark:bg-green-950/30 border-2 border-green-200 dark:border-green-800 hover:border-green-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                    >
+                      <div className="p-2 rounded-lg bg-green-500/20">
+                        <Receipt className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      </div>
+                      <span className="text-xs font-medium">{t('taxAnalysis.taxAnalysis')}</span>
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p className="font-semibold">{language === 'es' ? '💰 Optimización Fiscal' : '💰 Tax Optimization'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'es' 
+                        ? 'Optimizador de impuestos con IA, calculadora RRSP/TFSA, deducciones CRA y resumen fiscal completo para maximizar tus ahorros.' 
+                        : 'AI tax optimizer, RRSP/TFSA calculator, CRA deductions, and complete tax summary to maximize your savings.'}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
 
                 {/* Kilometraje */}
-                <TabsTrigger 
-                  value="mileage" 
-                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-cyan-500 data-[state=active]:to-teal-500 data-[state=active]:text-white bg-cyan-50 dark:bg-cyan-950/30 border-2 border-cyan-200 dark:border-cyan-800 hover:border-cyan-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                >
-                  <div className="p-2 rounded-lg bg-cyan-500/20">
-                    <MapPin className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
-                  </div>
-                  <span className="text-xs font-medium">{t('mileage.title')}</span>
-                </TabsTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger 
+                      value="mileage" 
+                      className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-cyan-500 data-[state=active]:to-teal-500 data-[state=active]:text-white bg-cyan-50 dark:bg-cyan-950/30 border-2 border-cyan-200 dark:border-cyan-800 hover:border-cyan-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                    >
+                      <div className="p-2 rounded-lg bg-cyan-500/20">
+                        <MapPin className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+                      </div>
+                      <span className="text-xs font-medium">{t('mileage.title')}</span>
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p className="font-semibold">{language === 'es' ? '🚗 Registro de Kilometraje' : '🚗 Mileage Tracking'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'es' 
+                        ? 'Registra viajes de negocios con tasas CRA 2024 ($0.70/km primeros 5,000km). Calcula deducciones automáticamente para tu declaración de impuestos.' 
+                        : 'Track business trips with CRA 2024 rates ($0.70/km first 5,000km). Calculate deductions automatically for your tax return.'}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
 
                 {/* Suscripciones */}
-                <TabsTrigger 
-                  value="subscriptions" 
-                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-pink-500 data-[state=active]:to-rose-500 data-[state=active]:text-white bg-pink-50 dark:bg-pink-950/30 border-2 border-pink-200 dark:border-pink-800 hover:border-pink-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                >
-                  <div className="p-2 rounded-lg bg-pink-500/20">
-                    <RefreshCw className="h-5 w-5 text-pink-600 dark:text-pink-400" />
-                  </div>
-                  <span className="text-xs font-medium">{language === 'es' ? 'Suscripciones' : 'Subscriptions'}</span>
-                </TabsTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger 
+                      value="subscriptions" 
+                      className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-pink-500 data-[state=active]:to-rose-500 data-[state=active]:text-white bg-pink-50 dark:bg-pink-950/30 border-2 border-pink-200 dark:border-pink-800 hover:border-pink-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                    >
+                      <div className="p-2 rounded-lg bg-pink-500/20">
+                        <RefreshCw className="h-5 w-5 text-pink-600 dark:text-pink-400" />
+                      </div>
+                      <span className="text-xs font-medium">{language === 'es' ? 'Suscripciones' : 'Subscriptions'}</span>
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p className="font-semibold">{language === 'es' ? '🔄 Detector de Suscripciones' : '🔄 Subscription Detector'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'es' 
+                        ? 'Detecta automáticamente pagos recurrentes en tus gastos. Ve el costo anual total y encuentra oportunidades de ahorro cancelando suscripciones.' 
+                        : 'Automatically detect recurring payments in your expenses. See total annual cost and find savings opportunities by canceling subscriptions.'}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
 
                 {/* FIRE */}
-                <TabsTrigger 
-                  value="fire" 
-                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white bg-orange-50 dark:bg-orange-950/30 border-2 border-orange-200 dark:border-orange-800 hover:border-orange-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                >
-                  <div className="p-2 rounded-lg bg-orange-500/20">
-                    <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                  </div>
-                  <span className="text-xs font-medium">🔥 FIRE</span>
-                </TabsTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger 
+                      value="fire" 
+                      className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white bg-orange-50 dark:bg-orange-950/30 border-2 border-orange-200 dark:border-orange-800 hover:border-orange-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                    >
+                      <div className="p-2 rounded-lg bg-orange-500/20">
+                        <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                      </div>
+                      <span className="text-xs font-medium">🔥 FIRE</span>
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p className="font-semibold">{language === 'es' ? '🔥 Calculadora FIRE' : '🔥 FIRE Calculator'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'es' 
+                        ? 'Financial Independence, Retire Early. Calcula cuánto necesitas ahorrar para retirarte temprano con proyecciones Lean/Standard/Fat FIRE.' 
+                        : 'Financial Independence, Retire Early. Calculate how much you need to save to retire early with Lean/Standard/Fat FIRE projections.'}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
 
                 {/* Deudas */}
-                <TabsTrigger 
-                  value="debt" 
-                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-red-500 data-[state=active]:to-rose-600 data-[state=active]:text-white bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-800 hover:border-red-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                >
-                  <div className="p-2 rounded-lg bg-red-500/20">
-                    <Landmark className="h-5 w-5 text-red-600 dark:text-red-400" />
-                  </div>
-                  <span className="text-xs font-medium">{language === 'es' ? 'Deudas' : 'Debt'}</span>
-                </TabsTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger 
+                      value="debt" 
+                      className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-red-500 data-[state=active]:to-rose-600 data-[state=active]:text-white bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-800 hover:border-red-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                    >
+                      <div className="p-2 rounded-lg bg-red-500/20">
+                        <Landmark className="h-5 w-5 text-red-600 dark:text-red-400" />
+                      </div>
+                      <span className="text-xs font-medium">{language === 'es' ? 'Deudas' : 'Debt'}</span>
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p className="font-semibold">{language === 'es' ? '💳 Gestor de Deudas' : '💳 Debt Manager'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'es' 
+                        ? 'Estrategias de pago de deudas: Avalancha (interés alto primero) vs Bola de Nieve (saldo bajo primero). Ve cuánto pagarás y cuándo estarás libre.' 
+                        : 'Debt payoff strategies: Avalanche (high interest first) vs Snowball (low balance first). See how much you\'ll pay and when you\'ll be debt-free.'}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
 
                 {/* Portfolio */}
-                <TabsTrigger 
-                  value="portfolio" 
-                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-indigo-500 data-[state=active]:to-violet-500 data-[state=active]:text-white bg-indigo-50 dark:bg-indigo-950/30 border-2 border-indigo-200 dark:border-indigo-800 hover:border-indigo-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                >
-                  <div className="p-2 rounded-lg bg-indigo-500/20">
-                    <Briefcase className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                  <span className="text-xs font-medium">Portfolio</span>
-                </TabsTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger 
+                      value="portfolio" 
+                      className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-indigo-500 data-[state=active]:to-violet-500 data-[state=active]:text-white bg-indigo-50 dark:bg-indigo-950/30 border-2 border-indigo-200 dark:border-indigo-800 hover:border-indigo-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                    >
+                      <div className="p-2 rounded-lg bg-indigo-500/20">
+                        <Briefcase className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                      </div>
+                      <span className="text-xs font-medium">Portfolio</span>
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p className="font-semibold">{language === 'es' ? '📈 Portfolio de Inversiones' : '📈 Investment Portfolio'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'es' 
+                        ? 'Rastrea tus inversiones: acciones, crypto, fondos. Ve rendimiento, distribución de activos y recibe tips personalizados según tu perfil de riesgo.' 
+                        : 'Track your investments: stocks, crypto, funds. See performance, asset allocation, and get personalized tips based on your risk profile.'}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
 
                 {/* Educación */}
-                <TabsTrigger 
-                  value="education" 
-                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-teal-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white bg-teal-50 dark:bg-teal-950/30 border-2 border-teal-200 dark:border-teal-800 hover:border-teal-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                >
-                  <div className="p-2 rounded-lg bg-teal-500/20">
-                    <GraduationCap className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-                  </div>
-                  <span className="text-xs font-medium">{language === 'es' ? 'Educación' : 'Education'}</span>
-                </TabsTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger 
+                      value="education" 
+                      className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-teal-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white bg-teal-50 dark:bg-teal-950/30 border-2 border-teal-200 dark:border-teal-800 hover:border-teal-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                    >
+                      <div className="p-2 rounded-lg bg-teal-500/20">
+                        <GraduationCap className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                      </div>
+                      <span className="text-xs font-medium">{language === 'es' ? 'Educación' : 'Education'}</span>
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p className="font-semibold">{language === 'es' ? '📚 Educación Financiera' : '📚 Financial Education'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'es' 
+                        ? 'Rastrea tu progreso de lectura de libros financieros. Ve estadísticas de aprendizaje, rachas de lectura y configura recordatorios diarios.' 
+                        : 'Track your financial book reading progress. See learning statistics, reading streaks, and set up daily reminders.'}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
               </TabsList>
 
           <TabsContent value="charts" className="space-y-4">
