@@ -108,8 +108,8 @@ export default function Install() {
             </CardTitle>
             <CardDescription>
               {language === 'es'
-                ? 'Estás usando EvoExpense como app instalada'
-                : 'You are using EvoExpense as an installed app'
+                ? 'Estás usando EvoFinz como app instalada'
+                : 'You are using EvoFinz as an installed app'
               }
             </CardDescription>
           </CardHeader>
@@ -133,7 +133,7 @@ export default function Install() {
             <Smartphone className="h-12 w-12 text-primary" />
           </div>
           <h1 className="text-3xl font-bold">
-            {language === 'es' ? 'Instala EvoExpense' : 'Install EvoExpense'}
+            {language === 'es' ? 'Instala EvoFinz' : 'Install EvoFinz'}
           </h1>
           <p className="text-muted-foreground">
             {language === 'es'
@@ -171,8 +171,8 @@ export default function Install() {
                 </p>
                 <p className="text-sm text-green-700 dark:text-green-300">
                   {language === 'es' 
-                    ? 'Busca EvoExpense en tu pantalla de inicio'
-                    : 'Look for EvoExpense on your home screen'
+                    ? 'Busca EvoFinz en tu pantalla de inicio'
+                    : 'Look for EvoFinz on your home screen'
                   }
                 </p>
               </div>

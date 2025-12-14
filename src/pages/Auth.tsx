@@ -112,8 +112,8 @@ export default function Auth() {
               <Zap className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-3xl font-display font-bold">EvoExpense</h1>
-              <span className="text-white/70 text-sm">AI Finance</span>
+              <h1 className="text-3xl font-display font-bold">EvoFinz</h1>
+              <span className="text-white/70 text-sm">Evoluciona tus Finanzas</span>
             </div>
           </div>
 
@@ -157,7 +157,7 @@ export default function Auth() {
             <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
               <Zap className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-display font-bold gradient-text">EvoExpense</h1>
+            <h1 className="text-2xl font-display font-bold gradient-text">EvoFinz</h1>
           </div>
 
           <div className="text-center lg:text-left">

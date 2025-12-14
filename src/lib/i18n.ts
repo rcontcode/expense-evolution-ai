@@ -304,7 +304,7 @@ export const translations = {
       quickCaptureSubtitle: 'Foto, voz o texto',
       logout: 'Cerrar sesión',
       help: 'Ayuda',
-      aiFinance: 'AI Finanzas',
+      aiFinance: 'Evoluciona tus Finanzas',
     },
     // Dashboard labels
     dashboardLabels: {
@@ -1130,7 +1130,7 @@ export const translations = {
       quickCaptureSubtitle: 'Photo, voice or text',
       logout: 'Logout',
       help: 'Help',
-      aiFinance: 'AI Finance',
+      aiFinance: 'Evolve Your Finances',
     },
     // Dashboard labels
     dashboardLabels: {
