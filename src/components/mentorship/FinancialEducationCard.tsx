@@ -33,9 +33,10 @@ import {
 import { 
   GraduationCap, Book, Video, Headphones, FileText, Plus, Star, Check, Clock, Trash2,
   Sparkles, Target, Lightbulb, TrendingUp, CheckCircle2, ChevronDown, BookOpen, Flame,
-  Zap, Trophy, Calendar, Award
+  Zap, Trophy, Calendar, Award, LineChart
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ReadingProgressTracker } from './ReadingProgressTracker';
 
 const RESOURCE_TYPES = [
   { value: 'book', icon: Book, labelEs: 'Libro', labelEn: 'Book' },
@@ -443,282 +444,194 @@ export function FinancialEducationCard() {
           </div>
         )}
 
-        {/* Resource Detail Dialog */}
+        {/* Resource Detail Dialog with Enhanced Tracking */}
         <Dialog open={!!selectedResource} onOpenChange={(open) => !open && setSelectedResource(null)}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
             {selectedResource && (
-              <>
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5 text-primary" />
-                    {selectedResource.title}
-                  </DialogTitle>
-                </DialogHeader>
-                
-                <Tabs defaultValue="progress" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="progress" className="text-xs">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      {language === 'es' ? 'Progreso' : 'Progress'}
-                    </TabsTrigger>
-                    <TabsTrigger value="tips" className="text-xs">
-                      <Lightbulb className="h-3 w-3 mr-1" />
-                      {language === 'es' ? 'Tips' : 'Tips'}
-                    </TabsTrigger>
-                    <TabsTrigger value="practice" className="text-xs">
-                      <Target className="h-3 w-3 mr-1" />
-                      {language === 'es' ? 'Práctica' : 'Practice'}
-                    </TabsTrigger>
-                  </TabsList>
+              <Tabs defaultValue="progress" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 mb-4">
+                  <TabsTrigger value="progress" className="text-xs">
+                    <LineChart className="h-3 w-3 mr-1" />
+                    {language === 'es' ? 'Progreso' : 'Progress'}
+                  </TabsTrigger>
+                  <TabsTrigger value="tips" className="text-xs">
+                    <Lightbulb className="h-3 w-3 mr-1" />
+                    {language === 'es' ? 'Tips' : 'Tips'}
+                  </TabsTrigger>
+                  <TabsTrigger value="practice" className="text-xs">
+                    <Target className="h-3 w-3 mr-1" />
+                    {language === 'es' ? 'Práctica' : 'Practice'}
+                  </TabsTrigger>
+                </TabsList>
 
-                  <TabsContent value="progress" className="space-y-4 mt-4">
-                    {/* Current Progress */}
-                    <div className="p-3 bg-muted/30 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">
-                          {language === 'es' ? 'Progreso actual' : 'Current progress'}
-                        </span>
-                        <span className="text-lg font-bold text-primary">
-                          {selectedResource.progress_percentage || 0}%
-                        </span>
-                      </div>
-                      <Progress value={selectedResource.progress_percentage || 0} className="h-3" />
-                      <p className="text-xs text-muted-foreground mt-2">
-                        📖 {selectedResource.pages_read || 0}/{selectedResource.total_pages || '?'} {language === 'es' ? 'páginas' : 'pages'}
-                      </p>
-                    </div>
+                <TabsContent value="progress">
+                  <ReadingProgressTracker 
+                    resource={selectedResource} 
+                    onClose={() => setSelectedResource(null)}
+                  />
+                </TabsContent>
 
-                    {/* Log Daily Progress */}
-                    <div className="space-y-3">
-                      <p className="text-sm font-medium flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        {language === 'es' ? 'Registrar progreso de hoy' : 'Log today\'s progress'}
-                      </p>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-xs text-muted-foreground">
-                            {language === 'es' ? 'Páginas leídas' : 'Pages read'}
-                          </label>
-                          <Input
-                            type="number"
-                            min={0}
-                            value={dailyProgress.pages || ''}
-                            onChange={(e) => setDailyProgress({ ...dailyProgress, pages: parseInt(e.target.value) || 0 })}
-                            placeholder="0"
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-muted-foreground">
-                            {language === 'es' ? 'Minutos dedicados' : 'Minutes spent'}
-                          </label>
-                          <Input
-                            type="number"
-                            min={0}
-                            value={dailyProgress.minutes || ''}
-                            onChange={(e) => setDailyProgress({ ...dailyProgress, minutes: parseInt(e.target.value) || 0 })}
-                            placeholder="0"
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
-                      <Textarea
-                        value={dailyProgress.notes}
-                        onChange={(e) => setDailyProgress({ ...dailyProgress, notes: e.target.value })}
-                        placeholder={language === 'es' ? 'Notas de hoy (opcional)...' : 'Today\'s notes (optional)...'}
-                        rows={2}
-                      />
-                      {/* XP Preview */}
-                      {(dailyProgress.pages > 0 || dailyProgress.minutes > 0) && (
-                        <div className="flex items-center justify-between p-2 bg-purple-500/10 rounded-lg border border-purple-200 dark:border-purple-800">
-                          <span className="text-sm text-purple-700 dark:text-purple-300 flex items-center gap-2">
-                            <Award className="h-4 w-4" />
-                            {language === 'es' ? 'XP a ganar:' : 'XP to earn:'}
-                          </span>
-                          <span className="text-lg font-bold text-purple-600">
-                            +{dailyProgress.pages + Math.floor(dailyProgress.minutes / 2)} XP
-                          </span>
-                        </div>
-                      )}
-                      <Button onClick={handleLogProgress} className="w-full" size="sm">
-                        <Flame className="h-4 w-4 mr-2" />
-                        {language === 'es' ? '¡Registrar y ganar XP!' : 'Log and earn XP!'}
-                      </Button>
-                    </div>
-
-                    {/* Motivational Message */}
-                    <div className="p-3 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg border border-green-200 dark:border-green-800">
-                      <p className="text-sm text-green-700 dark:text-green-300 flex items-center gap-2">
-                        <Sparkles className="h-4 w-4" />
-                        {language === 'es' 
-                          ? '¡Sigue así! Cada página te acerca más a tus metas financieras.'
-                          : 'Keep it up! Every page brings you closer to your financial goals.'}
-                      </p>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="tips" className="space-y-4 mt-4">
-                    {(() => {
-                      const suggestedInfo = getSuggestedResourceInfo(selectedResource.suggested_resource_id);
-                      if (suggestedInfo) {
-                        return (
-                          <>
-                            {/* Summary */}
-                            <div className="p-3 bg-muted/50 rounded-lg">
-                              <p className="text-sm font-medium flex items-center gap-1 mb-2">
-                                <Target className="h-4 w-4" />
-                                {language === 'es' ? 'Resumen clave' : 'Key summary'}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {language === 'es' ? suggestedInfo.summaryEs : suggestedInfo.summaryEn}
-                              </p>
-                            </div>
-
-                            {/* Practical Tips */}
-                            <div>
-                              <p className="text-sm font-medium flex items-center gap-2 mb-3">
-                                <Zap className="h-4 w-4 text-yellow-500" />
-                                {language === 'es' ? '¡Ponlo en práctica YA!' : 'Put it into practice NOW!'}
-                              </p>
-                              <ul className="space-y-2">
-                                {(language === 'es' ? suggestedInfo.practicalTipsEs : suggestedInfo.practicalTipsEn).map((tip, i) => (
-                                  <li 
-                                    key={i} 
-                                    className="text-sm p-2 bg-muted/30 rounded-lg flex items-start gap-2"
-                                  >
-                                    <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                    {tip}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </>
-                        );
-                      }
-                      
-                      // Generic tips for custom resources
-                      const category = selectedResource.category || 'mindset';
-                      const suggestions = getPracticeSuggestions(category);
+                <TabsContent value="tips" className="space-y-4">
+                  {(() => {
+                    const suggestedInfo = getSuggestedResourceInfo(selectedResource.suggested_resource_id);
+                    if (suggestedInfo) {
                       return (
-                        <div>
-                          <p className="text-sm font-medium flex items-center gap-2 mb-3">
-                            <Lightbulb className="h-4 w-4 text-yellow-500" />
-                            {language === 'es' ? 'Sugerencias para aplicar' : 'Suggestions to apply'}
-                          </p>
-                          <ul className="space-y-2">
-                            {(language === 'es' ? suggestions.es : suggestions.en).map((tip, i) => (
-                              <li 
-                                key={i} 
-                                className="text-sm p-2 bg-muted/30 rounded-lg flex items-start gap-2"
-                              >
-                                <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                {tip}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
+                        <>
+                          {/* Summary */}
+                          <div className="p-3 bg-muted/50 rounded-lg">
+                            <p className="text-sm font-medium flex items-center gap-1 mb-2">
+                              <Target className="h-4 w-4" />
+                              {language === 'es' ? 'Resumen clave' : 'Key summary'}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {language === 'es' ? suggestedInfo.summaryEs : suggestedInfo.summaryEn}
+                            </p>
+                          </div>
+
+                          {/* Practical Tips */}
+                          <div>
+                            <p className="text-sm font-medium flex items-center gap-2 mb-3">
+                              <Zap className="h-4 w-4 text-yellow-500" />
+                              {language === 'es' ? '¡Ponlo en práctica YA!' : 'Put it into practice NOW!'}
+                            </p>
+                            <ul className="space-y-2">
+                              {(language === 'es' ? suggestedInfo.practicalTipsEs : suggestedInfo.practicalTipsEn).map((tip, i) => (
+                                <li 
+                                  key={i} 
+                                  className="text-sm p-2 bg-muted/30 rounded-lg flex items-start gap-2"
+                                >
+                                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                                  {tip}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </>
                       );
-                    })()}
-                  </TabsContent>
-
-                  <TabsContent value="practice" className="space-y-4 mt-4">
-                    {/* Log Practice */}
-                    <div className="space-y-3">
-                      <p className="text-sm font-medium flex items-center gap-2">
-                        <Target className="h-4 w-4" />
-                        {language === 'es' ? '¿Qué pusiste en práctica hoy?' : 'What did you practice today?'}
-                      </p>
-                      <Textarea
-                        value={practiceInput.description}
-                        onChange={(e) => setPracticeInput({ ...practiceInput, description: e.target.value })}
-                        placeholder={language === 'es' 
-                          ? 'Ej: Hice una lista de mis activos y pasivos...' 
-                          : 'Ex: I made a list of my assets and liabilities...'}
-                        rows={3}
-                      />
-                      <Textarea
-                        value={practiceInput.outcome}
-                        onChange={(e) => setPracticeInput({ ...practiceInput, outcome: e.target.value })}
-                        placeholder={language === 'es' 
-                          ? '¿Cuál fue el resultado? (opcional)' 
-                          : 'What was the outcome? (optional)'}
-                        rows={2}
-                      />
-                      {/* Impact Rating for bonus XP */}
+                    }
+                    
+                    // Generic tips for custom resources
+                    const category = selectedResource.category || 'mindset';
+                    const suggestions = getPracticeSuggestions(category);
+                    return (
                       <div>
-                        <label className="text-xs text-muted-foreground mb-1 block">
-                          {language === 'es' ? '¿Qué tan impactante fue? (más estrellas = más XP)' : 'How impactful was it? (more stars = more XP)'}
-                        </label>
-                        <div className="flex gap-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Button
-                              key={star}
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="p-1 h-8 w-8"
-                              onClick={() => setPracticeInput({ ...practiceInput, rating: star })}
-                            >
-                              <Star 
-                                className={`h-5 w-5 ${star <= practiceInput.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} 
-                              />
-                            </Button>
-                          ))}
-                          {practiceInput.rating > 0 && (
-                            <span className="text-xs text-muted-foreground ml-2 self-center">
-                              +{15 + practiceInput.rating * 5} XP
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <Button 
-                        onClick={handleLogPractice} 
-                        className="w-full" 
-                        size="sm"
-                        disabled={!practiceInput.description.trim()}
-                      >
-                        <CheckCircle2 className="h-4 w-4 mr-2" />
-                        {language === 'es' ? 'Registrar práctica y ganar XP' : 'Log practice and earn XP'}
-                      </Button>
-                    </div>
-
-                    {/* Practice History */}
-                    {practiceLogs && practiceLogs.filter(l => l.resource_id === selectedResource.id).length > 0 && (
-                      <div className="mt-4">
-                        <p className="text-sm font-medium mb-2">
-                          {language === 'es' ? 'Historial de práctica' : 'Practice history'}
+                        <p className="text-sm font-medium flex items-center gap-2 mb-3">
+                          <Lightbulb className="h-4 w-4 text-yellow-500" />
+                          {language === 'es' ? 'Sugerencias para aplicar' : 'Suggestions to apply'}
                         </p>
-                        <div className="space-y-2 max-h-32 overflow-y-auto">
-                          {practiceLogs
-                            .filter(l => l.resource_id === selectedResource.id)
-                            .slice(0, 5)
-                            .map((log) => (
-                              <div key={log.id} className="text-xs p-2 bg-muted/30 rounded">
-                                <p className="font-medium">{log.practice_description}</p>
-                                {log.outcome && (
-                                  <p className="text-muted-foreground mt-1">→ {log.outcome}</p>
-                                )}
-                                <p className="text-muted-foreground mt-1">
-                                  📅 {new Date(log.practice_date).toLocaleDateString()}
-                                </p>
-                              </div>
-                            ))}
-                        </div>
+                        <ul className="space-y-2">
+                          {(language === 'es' ? suggestions.es : suggestions.en).map((tip, i) => (
+                            <li 
+                              key={i} 
+                              className="text-sm p-2 bg-muted/30 rounded-lg flex items-start gap-2"
+                            >
+                              <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                              {tip}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                    )}
+                    );
+                  })()}
+                </TabsContent>
 
-                    {/* Encouragement */}
-                    <div className="p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-200 dark:border-purple-800">
-                      <p className="text-sm text-purple-700 dark:text-purple-300 flex items-center gap-2">
-                        <Trophy className="h-4 w-4" />
-                        {language === 'es' 
-                          ? '¡El conocimiento sin acción es inútil! Practica lo aprendido.'
-                          : 'Knowledge without action is useless! Practice what you learned.'}
-                      </p>
+                <TabsContent value="practice" className="space-y-4">
+                  {/* Log Practice */}
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium flex items-center gap-2">
+                      <Target className="h-4 w-4" />
+                      {language === 'es' ? '¿Qué pusiste en práctica hoy?' : 'What did you practice today?'}
+                    </p>
+                    <Textarea
+                      value={practiceInput.description}
+                      onChange={(e) => setPracticeInput({ ...practiceInput, description: e.target.value })}
+                      placeholder={language === 'es' 
+                        ? 'Ej: Hice una lista de mis activos y pasivos...' 
+                        : 'Ex: I made a list of my assets and liabilities...'}
+                      rows={3}
+                    />
+                    <Textarea
+                      value={practiceInput.outcome}
+                      onChange={(e) => setPracticeInput({ ...practiceInput, outcome: e.target.value })}
+                      placeholder={language === 'es' 
+                        ? '¿Cuál fue el resultado? (opcional)' 
+                        : 'What was the outcome? (optional)'}
+                      rows={2}
+                    />
+                    {/* Impact Rating for bonus XP */}
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">
+                        {language === 'es' ? '¿Qué tan impactante fue? (más estrellas = más XP)' : 'How impactful was it? (more stars = more XP)'}
+                      </label>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Button
+                            key={star}
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="p-1 h-8 w-8"
+                            onClick={() => setPracticeInput({ ...practiceInput, rating: star })}
+                          >
+                            <Star 
+                              className={`h-5 w-5 ${star <= practiceInput.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} 
+                            />
+                          </Button>
+                        ))}
+                        {practiceInput.rating > 0 && (
+                          <span className="text-xs text-muted-foreground ml-2 self-center">
+                            +{15 + practiceInput.rating * 5} XP
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </TabsContent>
-                </Tabs>
-              </>
+                    <Button 
+                      onClick={handleLogPractice} 
+                      className="w-full" 
+                      size="sm"
+                      disabled={!practiceInput.description.trim()}
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      {language === 'es' ? 'Registrar práctica y ganar XP' : 'Log practice and earn XP'}
+                    </Button>
+                  </div>
+
+                  {/* Practice History */}
+                  {practiceLogs && practiceLogs.filter(l => l.resource_id === selectedResource.id).length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium mb-2">
+                        {language === 'es' ? 'Historial de práctica' : 'Practice history'}
+                      </p>
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {practiceLogs
+                          .filter(l => l.resource_id === selectedResource.id)
+                          .slice(0, 5)
+                          .map((log) => (
+                            <div key={log.id} className="text-xs p-2 bg-muted/30 rounded">
+                              <p className="font-medium">{log.practice_description}</p>
+                              {log.outcome && (
+                                <p className="text-muted-foreground mt-1">→ {log.outcome}</p>
+                              )}
+                              <p className="text-muted-foreground mt-1">
+                                📅 {new Date(log.practice_date).toLocaleDateString()}
+                              </p>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Encouragement */}
+                  <div className="p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-200 dark:border-purple-800">
+                    <p className="text-sm text-purple-700 dark:text-purple-300 flex items-center gap-2">
+                      <Trophy className="h-4 w-4" />
+                      {language === 'es' 
+                        ? '¡El conocimiento sin acción es inútil! Practica lo aprendido.'
+                        : 'Knowledge without action is useless! Practice what you learned.'}
+                    </p>
+                  </div>
+                </TabsContent>
+              </Tabs>
             )}
           </DialogContent>
         </Dialog>
