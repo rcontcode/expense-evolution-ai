@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { InvestmentSection } from '@/components/investments/InvestmentSection';
 import { FinancialEducationResources } from '@/components/settings/FinancialEducationResources';
 import { resetOnboardingTutorial } from '@/components/guidance/OnboardingTutorial';
+import { PageHeader } from '@/components/PageHeader';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -110,14 +111,12 @@ export default function Settings() {
   return (
     <Layout>
       <div className="p-8 space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold">{t('nav.settings')}</h1>
-          <p className="text-muted-foreground mt-2">
-            {language === 'es' 
-              ? 'Personaliza la apariencia y preferencias de la aplicación' 
-              : 'Customize app appearance and preferences'}
-          </p>
-        </div>
+        <PageHeader
+          title={t('nav.settings')}
+          description={language === 'es' 
+            ? 'Personaliza la apariencia y preferencias de la aplicación' 
+            : 'Customize app appearance and preferences'}
+        />
 
         {/* Language Section */}
         <Card>

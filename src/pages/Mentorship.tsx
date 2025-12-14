@@ -16,24 +16,23 @@ import {
 } from '@/components/mentorship';
 import { Target, Sparkles, PiggyBank, Scale, BookOpen, ListChecks, GraduationCap } from 'lucide-react';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
+import { Layout } from '@/components/Layout';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function Mentorship() {
   const { language } = useLanguage();
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold">
-          {language === 'es' ? 'Mentoría Financiera' : 'Financial Mentorship'}
-        </h1>
-        <p className="text-muted-foreground">
-          {language === 'es' 
+    <Layout>
+      <div className="container mx-auto p-4 md:p-6 space-y-6">
+        <PageHeader
+          title={language === 'es' ? 'Mentoría Financiera' : 'Financial Mentorship'}
+          description={language === 'es' 
             ? 'Herramientas inspiradas en Kiyosaki, Jim Rohn y Brian Tracy'
             : 'Tools inspired by Kiyosaki, Jim Rohn, and Brian Tracy'}
-        </p>
-      </div>
+        />
 
-      <MentorQuoteBanner context="dashboard" />
+        <MentorQuoteBanner context="dashboard" />
 
       <Tabs defaultValue="kiyosaki" className="space-y-4">
         <TabsList className="grid grid-cols-3 w-full max-w-lg">
@@ -113,6 +112,7 @@ export default function Mentorship() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </Layout>
   );
 }

@@ -11,6 +11,7 @@ import { Tag } from '@/types/expense.types';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TAG_COLOR_PALETTE } from '@/lib/constants/default-tags';
+import { PageHeader } from '@/components/PageHeader';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,21 +58,17 @@ export default function Tags() {
     <Layout>
       <TooltipProvider>
         <div className="p-8 space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div>
-                <h1 className="text-3xl font-bold">{t('tags.title')}</h1>
-                <p className="text-muted-foreground mt-2">{t('tags.description')}</p>
-              </div>
-              <InfoTooltip content={TOOLTIP_CONTENT.tags} />
-            </div>
+          <PageHeader
+            title={t('tags.title')}
+            description={t('tags.description')}
+          >
             <InfoTooltip content={TOOLTIP_CONTENT.createTag} variant="wrapper">
               <Button onClick={handleCreate}>
                 <Plus className="mr-2 h-4 w-4" />
                 {t('tags.createTag')}
               </Button>
             </InfoTooltip>
-          </div>
+          </PageHeader>
 
           {isLoading ? (
             <Card className="border-dashed">

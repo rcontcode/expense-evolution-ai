@@ -4,6 +4,7 @@ import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function Banking() {
   const { language } = useLanguage();
@@ -11,17 +12,12 @@ export default function Banking() {
   return (
     <Layout>
       <div className="p-8 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold">
-            {language === 'es' ? 'Análisis Bancario' : 'Bank Analysis'}
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            {language === 'es' 
-              ? 'Importa tus estados de cuenta y obtén insights inteligentes'
-              : 'Import your bank statements and get smart insights'}
-          </p>
-        </div>
+        <PageHeader
+          title={language === 'es' ? 'Análisis Bancario' : 'Bank Analysis'}
+          description={language === 'es' 
+            ? 'Importa tus estados de cuenta y obtén insights inteligentes'
+            : 'Import your bank statements and get smart insights'}
+        />
 
         <MentorQuoteBanner context="dashboard" className="mb-2" />
         

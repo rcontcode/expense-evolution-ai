@@ -16,6 +16,7 @@ import { ProjectDialog } from '@/components/dialogs/ProjectDialog';
 import { IncomeWithRelations, ProjectWithRelations } from '@/types/income.types';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
+import { PageHeader } from '@/components/PageHeader';
 import {
   Plus,
   TrendingUp,
@@ -125,12 +126,10 @@ export default function Income() {
   return (
     <Layout>
       <div className="p-8 space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">{t('income.title')}</h1>
-            <p className="text-muted-foreground mt-2">{t('income.description')}</p>
-          </div>
+        <PageHeader
+          title={t('income.title')}
+          description={t('income.description')}
+        >
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setProjectDialogOpen(true)}>
               <FolderKanban className="mr-2 h-4 w-4" />
@@ -141,7 +140,7 @@ export default function Income() {
               {t('income.addIncome')}
             </Button>
           </div>
-        </div>
+        </PageHeader>
 
         {/* Mentor Quote Banner */}
         <MentorQuoteBanner context="income" className="mb-2" />
