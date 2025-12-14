@@ -23,3 +23,6 @@ verify_jwt = true
 
 [functions.predict-expenses]
 verify_jwt = true
+
+[functions.app-assistant]
+verify_jwt = true
