@@ -387,46 +387,138 @@ export default function Dashboard() {
             </InfoTooltip>
           </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="flex w-full overflow-x-auto">
-            <InfoTooltip content={TOOLTIP_CONTENT.chartsTab} variant="wrapper" side="bottom">
-              <TabsTrigger value="charts" className="cursor-pointer">{t('taxAnalysis.charts')}</TabsTrigger>
-            </InfoTooltip>
-            <TabsTrigger value="analytics" className="cursor-pointer flex items-center gap-1">
-              <BarChart3 className="h-3 w-3" />
-              {language === 'es' ? 'Análisis' : 'Analytics'}
-            </TabsTrigger>
-            <TabsTrigger value="mentorship" className="cursor-pointer flex items-center gap-1">
-              <GraduationCap className="h-3 w-3" />
-              {language === 'es' ? 'Mentoría' : 'Mentorship'}
-            </TabsTrigger>
-            <InfoTooltip content={TOOLTIP_CONTENT.taxTab} variant="wrapper" side="bottom">
-              <TabsTrigger value="tax" className="cursor-pointer">{t('taxAnalysis.taxAnalysis')}</TabsTrigger>
-            </InfoTooltip>
-            <InfoTooltip content={TOOLTIP_CONTENT.mileageTab} variant="wrapper" side="bottom">
-              <TabsTrigger value="mileage" className="cursor-pointer">{t('mileage.title')}</TabsTrigger>
-            </InfoTooltip>
-            <TabsTrigger value="subscriptions" className="cursor-pointer flex items-center gap-1">
-              <RefreshCw className="h-3 w-3" />
-              {language === 'es' ? 'Suscripciones' : 'Subscriptions'}
-            </TabsTrigger>
-            <TabsTrigger value="fire" className="cursor-pointer flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" />
-              FIRE
-            </TabsTrigger>
-            <TabsTrigger value="debt" className="cursor-pointer flex items-center gap-1">
-              <Landmark className="h-3 w-3" />
-              {language === 'es' ? 'Deudas' : 'Debt'}
-            </TabsTrigger>
-            <TabsTrigger value="portfolio" className="cursor-pointer flex items-center gap-1">
-              <Briefcase className="h-3 w-3" />
-              {language === 'es' ? 'Portfolio' : 'Portfolio'}
-            </TabsTrigger>
-            <TabsTrigger value="education" className="cursor-pointer flex items-center gap-1">
-              <GraduationCap className="h-3 w-3" />
-              {language === 'es' ? 'Educación' : 'Education'}
-            </TabsTrigger>
-          </TabsList>
+        {/* Dashboard Module Tabs - Centro de Control Financiero */}
+        <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 via-background to-accent/5 overflow-hidden">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-accent text-white">
+                <BarChart3 className="h-6 w-6" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">
+                  {language === 'es' ? '🎛️ Centro de Control Financiero' : '🎛️ Financial Control Center'}
+                </CardTitle>
+                <CardDescription>
+                  {language === 'es' 
+                    ? 'Explora todas las herramientas disponibles para gestionar tus finanzas' 
+                    : 'Explore all available tools to manage your finances'}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+              <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-2 h-auto bg-transparent p-0">
+                {/* Gráficos */}
+                <TabsTrigger 
+                  value="charts" 
+                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200 dark:border-blue-800 hover:border-blue-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="p-2 rounded-lg bg-blue-500/20 data-[state=active]:bg-white/20">
+                    <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <span className="text-xs font-medium">{t('taxAnalysis.charts')}</span>
+                </TabsTrigger>
+
+                {/* Análisis */}
+                <TabsTrigger 
+                  value="analytics" 
+                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 data-[state=active]:text-white bg-purple-50 dark:bg-purple-950/30 border-2 border-purple-200 dark:border-purple-800 hover:border-purple-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="p-2 rounded-lg bg-purple-500/20">
+                    <TrendingUp className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <span className="text-xs font-medium">{language === 'es' ? 'Análisis' : 'Analytics'}</span>
+                </TabsTrigger>
+
+                {/* Mentoría */}
+                <TabsTrigger 
+                  value="mentorship" 
+                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white bg-amber-50 dark:bg-amber-950/30 border-2 border-amber-200 dark:border-amber-800 hover:border-amber-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="p-2 rounded-lg bg-amber-500/20">
+                    <GraduationCap className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <span className="text-xs font-medium">{language === 'es' ? 'Mentoría' : 'Mentorship'}</span>
+                </TabsTrigger>
+
+                {/* Análisis Fiscal */}
+                <TabsTrigger 
+                  value="tax" 
+                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white bg-green-50 dark:bg-green-950/30 border-2 border-green-200 dark:border-green-800 hover:border-green-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="p-2 rounded-lg bg-green-500/20">
+                    <Receipt className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  </div>
+                  <span className="text-xs font-medium">{t('taxAnalysis.taxAnalysis')}</span>
+                </TabsTrigger>
+
+                {/* Kilometraje */}
+                <TabsTrigger 
+                  value="mileage" 
+                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-cyan-500 data-[state=active]:to-teal-500 data-[state=active]:text-white bg-cyan-50 dark:bg-cyan-950/30 border-2 border-cyan-200 dark:border-cyan-800 hover:border-cyan-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="p-2 rounded-lg bg-cyan-500/20">
+                    <MapPin className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+                  </div>
+                  <span className="text-xs font-medium">{t('mileage.title')}</span>
+                </TabsTrigger>
+
+                {/* Suscripciones */}
+                <TabsTrigger 
+                  value="subscriptions" 
+                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-pink-500 data-[state=active]:to-rose-500 data-[state=active]:text-white bg-pink-50 dark:bg-pink-950/30 border-2 border-pink-200 dark:border-pink-800 hover:border-pink-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="p-2 rounded-lg bg-pink-500/20">
+                    <RefreshCw className="h-5 w-5 text-pink-600 dark:text-pink-400" />
+                  </div>
+                  <span className="text-xs font-medium">{language === 'es' ? 'Suscripciones' : 'Subscriptions'}</span>
+                </TabsTrigger>
+
+                {/* FIRE */}
+                <TabsTrigger 
+                  value="fire" 
+                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white bg-orange-50 dark:bg-orange-950/30 border-2 border-orange-200 dark:border-orange-800 hover:border-orange-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="p-2 rounded-lg bg-orange-500/20">
+                    <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <span className="text-xs font-medium">🔥 FIRE</span>
+                </TabsTrigger>
+
+                {/* Deudas */}
+                <TabsTrigger 
+                  value="debt" 
+                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-red-500 data-[state=active]:to-rose-600 data-[state=active]:text-white bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-800 hover:border-red-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="p-2 rounded-lg bg-red-500/20">
+                    <Landmark className="h-5 w-5 text-red-600 dark:text-red-400" />
+                  </div>
+                  <span className="text-xs font-medium">{language === 'es' ? 'Deudas' : 'Debt'}</span>
+                </TabsTrigger>
+
+                {/* Portfolio */}
+                <TabsTrigger 
+                  value="portfolio" 
+                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-indigo-500 data-[state=active]:to-violet-500 data-[state=active]:text-white bg-indigo-50 dark:bg-indigo-950/30 border-2 border-indigo-200 dark:border-indigo-800 hover:border-indigo-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="p-2 rounded-lg bg-indigo-500/20">
+                    <Briefcase className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <span className="text-xs font-medium">Portfolio</span>
+                </TabsTrigger>
+
+                {/* Educación */}
+                <TabsTrigger 
+                  value="education" 
+                  className="flex flex-col items-center gap-2 p-4 h-auto data-[state=active]:bg-gradient-to-br data-[state=active]:from-teal-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white bg-teal-50 dark:bg-teal-950/30 border-2 border-teal-200 dark:border-teal-800 hover:border-teal-400 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="p-2 rounded-lg bg-teal-500/20">
+                    <GraduationCap className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                  </div>
+                  <span className="text-xs font-medium">{language === 'es' ? 'Educación' : 'Education'}</span>
+                </TabsTrigger>
+              </TabsList>
 
           <TabsContent value="charts" className="space-y-4">
             {activeTab === 'charts' && (
@@ -579,7 +671,9 @@ export default function Dashboard() {
               </Suspense>
             )}
           </TabsContent>
-        </Tabs>
+            </Tabs>
+          </CardContent>
+        </Card>
 
         {/* Quick Actions */}
         <Card>
