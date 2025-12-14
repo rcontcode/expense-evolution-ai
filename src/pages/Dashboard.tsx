@@ -58,6 +58,7 @@ const FinancialJournalCard = lazy(() => import('@/components/mentorship/Financia
 const FinancialHabitsCard = lazy(() => import('@/components/mentorship/FinancialHabitsCard').then(m => ({ default: m.FinancialHabitsCard })));
 const FinancialEducationCard = lazy(() => import('@/components/mentorship/FinancialEducationCard').then(m => ({ default: m.FinancialEducationCard })));
 const SMARTGoalsCard = lazy(() => import('@/components/mentorship/SMARTGoalsCard').then(m => ({ default: m.SMARTGoalsCard })));
+const GlobalLearningChart = lazy(() => import('@/components/mentorship/GlobalLearningChart').then(m => ({ default: m.GlobalLearningChart })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -408,6 +409,10 @@ export default function Dashboard() {
               <Briefcase className="h-3 w-3" />
               {language === 'es' ? 'Portfolio' : 'Portfolio'}
             </TabsTrigger>
+            <TabsTrigger value="education" className="cursor-pointer flex items-center gap-1">
+              <GraduationCap className="h-3 w-3" />
+              {language === 'es' ? 'Educación' : 'Education'}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="charts" className="space-y-4">
@@ -544,6 +549,19 @@ export default function Dashboard() {
                   </Suspense>
                 </div>
               </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="education" className="space-y-4">
+            {activeTab === 'education' && (
+              <Suspense fallback={<AnalyticsSkeleton />}>
+                <div className="space-y-6">
+                  <GlobalLearningChart />
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <FinancialEducationCard />
+                  </div>
+                </div>
+              </Suspense>
             )}
           </TabsContent>
         </Tabs>
