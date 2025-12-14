@@ -26,6 +26,7 @@ import { OnboardingGuide } from '@/components/ui/onboarding-guide';
 import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
 import { InteractiveWelcome } from '@/components/guidance/InteractiveWelcome';
 import { WorkflowVisualizer } from '@/components/guidance/WorkflowVisualizer';
+import { WorkflowSummaryWidget } from '@/components/dashboard/WorkflowSummaryWidget';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -216,6 +217,9 @@ export default function Dashboard() {
 
           {/* Completeness Card */}
           <CompletenessCard expenses={allExpenses || []} isLoading={isLoading} />
+
+          {/* Workflow Summary Widget */}
+          <WorkflowSummaryWidget />
 
           {/* Profile Summary Card */}
           {profile && (
