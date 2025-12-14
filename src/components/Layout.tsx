@@ -130,7 +130,7 @@ export const Layout = ({ children }: LayoutProps) => {
               <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
                 <Zap className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="font-bold text-lg">EvoExpense</span>
+              <span className="font-bold text-lg">EvoFinz</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -307,8 +307,8 @@ export const Layout = ({ children }: LayoutProps) => {
                   <Zap className="h-5 w-5 text-primary-foreground" />
                 </div>
                 <div>
-                  <h1 className="text-lg font-display font-bold gradient-text">EvoExpense</h1>
-                  <span className="text-xs text-muted-foreground">{t('layout.aiFinance')}</span>
+                  <h1 className="text-lg font-display font-bold gradient-text">EvoFinz</h1>
+                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Evoluciona tus Finanzas' : 'Evolve Your Finances'}</span>
                 </div>
               </div>
             )}

@@ -17,9 +17,9 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
       manifest: {
-        name: "EvoExpense AI",
-        short_name: "EvoExpense",
-        description: "Captura inteligente de gastos con IA - Fotografía, voz y sincronización en tiempo real",
+        name: "EvoFinz - Evoluciona tus Finanzas",
+        short_name: "EvoFinz",
+        description: "La plataforma inteligente de gestión financiera personal y empresarial - Gastos, ingresos, impuestos y más",
         theme_color: "#8B5CF6",
         background_color: "#0f0f23",
         display: "standalone",
