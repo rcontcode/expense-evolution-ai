@@ -117,6 +117,43 @@ export function useDeleteTag() {
   });
 }
 
+export function useTagsWithExpenseCount() {
+  return useQuery({
+    queryKey: ['tags-with-expense-count'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Get all tags
+      const { data: tags, error: tagsError } = await supabase
+        .from('tags')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('name', { ascending: true });
+      
+      if (tagsError) throw tagsError;
+
+      // Get expense counts per tag
+      const { data: expenseTags, error: etError } = await supabase
+        .from('expense_tags')
+        .select('tag_id');
+
+      if (etError) throw etError;
+
+      // Count expenses per tag
+      const countMap: Record<string, number> = {};
+      expenseTags?.forEach(et => {
+        countMap[et.tag_id] = (countMap[et.tag_id] || 0) + 1;
+      });
+
+      return (tags || []).map(tag => ({
+        ...tag,
+        expenseCount: countMap[tag.id] || 0,
+      }));
+    },
+  });
+}
+
 export function useSeedDefaultTags() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
