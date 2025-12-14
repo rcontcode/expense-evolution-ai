@@ -26,3 +26,6 @@ verify_jwt = true
 
 [functions.app-assistant]
 verify_jwt = true
+
+[functions.suggest-tags]
+verify_jwt = true

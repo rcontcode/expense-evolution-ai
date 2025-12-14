@@ -70,15 +70,37 @@ export function useExpenses(filters?: ExpenseFilters) {
         // First get expense IDs that have the selected tags
         const { data: expenseTagData } = await supabase
           .from('expense_tags')
-          .select('expense_id')
+          .select('expense_id, tag_id')
           .in('tag_id', filters.tagIds);
         
-        const expenseIds = expenseTagData?.map(et => et.expense_id) || [];
-        if (expenseIds.length > 0) {
-          query = query.in('id', expenseIds);
+        const tagFilterMode = filters.tagFilterMode || 'OR';
+        
+        if (tagFilterMode === 'AND') {
+          // AND mode: expense must have ALL selected tags
+          const expenseTagCounts = new Map<string, Set<string>>();
+          expenseTagData?.forEach(et => {
+            const tags = expenseTagCounts.get(et.expense_id) || new Set();
+            tags.add(et.tag_id);
+            expenseTagCounts.set(et.expense_id, tags);
+          });
+          
+          const expenseIds = Array.from(expenseTagCounts.entries())
+            .filter(([, tagSet]) => filters.tagIds!.every(tagId => tagSet.has(tagId)))
+            .map(([expenseId]) => expenseId);
+          
+          if (expenseIds.length > 0) {
+            query = query.in('id', expenseIds);
+          } else {
+            return [];
+          }
         } else {
-          // No expenses match the tag filter, return empty
-          return [];
+          // OR mode: expense must have ANY of the selected tags
+          const expenseIds = [...new Set(expenseTagData?.map(et => et.expense_id) || [])];
+          if (expenseIds.length > 0) {
+            query = query.in('id', expenseIds);
+          } else {
+            return [];
+          }
         }
       }
       
