@@ -427,6 +427,94 @@ export type Database = {
           },
         ]
       }
+      education_daily_logs: {
+        Row: {
+          created_at: string
+          id: string
+          log_date: string
+          minutes_consumed: number | null
+          notes: string | null
+          pages_read: number | null
+          resource_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          log_date?: string
+          minutes_consumed?: number | null
+          notes?: string | null
+          pages_read?: number | null
+          resource_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          log_date?: string
+          minutes_consumed?: number | null
+          notes?: string | null
+          pages_read?: number | null
+          resource_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "education_daily_logs_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "financial_education"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      education_practice_logs: {
+        Row: {
+          created_at: string
+          id: string
+          impact_rating: number | null
+          outcome: string | null
+          practice_date: string
+          practice_description: string
+          practice_type: string | null
+          resource_id: string | null
+          suggested_resource_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          impact_rating?: number | null
+          outcome?: string | null
+          practice_date?: string
+          practice_description: string
+          practice_type?: string | null
+          resource_id?: string | null
+          suggested_resource_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          impact_rating?: number | null
+          outcome?: string | null
+          practice_date?: string
+          practice_description?: string
+          practice_type?: string | null
+          resource_id?: string | null
+          suggested_resource_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "education_practice_logs_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "financial_education"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expense_tags: {
         Row: {
           created_at: string | null
@@ -595,48 +683,75 @@ export type Database = {
       financial_education: {
         Row: {
           author: string | null
+          category: string | null
           completed_date: string | null
           created_at: string
+          daily_goal_minutes: number | null
+          daily_goal_pages: number | null
           id: string
           impact_rating: number | null
           key_lessons: string | null
+          minutes_consumed: number | null
           notes: string | null
+          pages_read: number | null
+          progress_percentage: number | null
           resource_type: string
           started_date: string | null
           status: string | null
+          suggested_resource_id: string | null
           title: string
+          total_minutes: number | null
+          total_pages: number | null
           updated_at: string
           url: string | null
           user_id: string
         }
         Insert: {
           author?: string | null
+          category?: string | null
           completed_date?: string | null
           created_at?: string
+          daily_goal_minutes?: number | null
+          daily_goal_pages?: number | null
           id?: string
           impact_rating?: number | null
           key_lessons?: string | null
+          minutes_consumed?: number | null
           notes?: string | null
+          pages_read?: number | null
+          progress_percentage?: number | null
           resource_type?: string
           started_date?: string | null
           status?: string | null
+          suggested_resource_id?: string | null
           title: string
+          total_minutes?: number | null
+          total_pages?: number | null
           updated_at?: string
           url?: string | null
           user_id: string
         }
         Update: {
           author?: string | null
+          category?: string | null
           completed_date?: string | null
           created_at?: string
+          daily_goal_minutes?: number | null
+          daily_goal_pages?: number | null
           id?: string
           impact_rating?: number | null
           key_lessons?: string | null
+          minutes_consumed?: number | null
           notes?: string | null
+          pages_read?: number | null
+          progress_percentage?: number | null
           resource_type?: string
           started_date?: string | null
           status?: string | null
+          suggested_resource_id?: string | null
           title?: string
+          total_minutes?: number | null
+          total_pages?: number | null
           updated_at?: string
           url?: string | null
           user_id?: string
