@@ -60,6 +60,7 @@ const FinancialEducationCard = lazy(() => import('@/components/mentorship/Financ
 const SMARTGoalsCard = lazy(() => import('@/components/mentorship/SMARTGoalsCard').then(m => ({ default: m.SMARTGoalsCard })));
 const GlobalLearningChart = lazy(() => import('@/components/mentorship/GlobalLearningChart').then(m => ({ default: m.GlobalLearningChart })));
 const ReadingReminderSettings = lazy(() => import('@/components/mentorship/ReadingReminderSettings').then(m => ({ default: m.ReadingReminderSettings })));
+const ReadingPaceComparison = lazy(() => import('@/components/mentorship/ReadingPaceComparison').then(m => ({ default: m.ReadingPaceComparison })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -559,9 +560,10 @@ export default function Dashboard() {
                 <div className="space-y-6">
                   <GlobalLearningChart />
                   <div className="grid gap-6 md:grid-cols-2">
-                    <FinancialEducationCard />
+                    <ReadingPaceComparison />
                     <ReadingReminderSettings />
                   </div>
+                  <FinancialEducationCard />
                 </div>
               </Suspense>
             )}

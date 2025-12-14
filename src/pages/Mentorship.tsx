@@ -10,6 +10,7 @@ import {
   FinancialEducationCard,
   GlobalLearningChart,
   ReadingReminderSettings,
+  ReadingPaceComparison,
   SMARTGoalsCard,
 } from '@/components/mentorship';
 import { Target, Sparkles, PiggyBank, Scale, BookOpen, ListChecks, GraduationCap } from 'lucide-react';
@@ -82,6 +83,7 @@ export default function Mentorship() {
             <FinancialJournalCard />
             <FinancialEducationCard />
             <ReadingReminderSettings />
+            <ReadingPaceComparison />
             <div className="md:col-span-2">
               <GlobalLearningChart />
             </div>

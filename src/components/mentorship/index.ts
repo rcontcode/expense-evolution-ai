@@ -8,5 +8,6 @@ export { FinancialEducationCard } from './FinancialEducationCard';
 export { GlobalLearningChart } from './GlobalLearningChart';
 export { ReadingProgressTracker } from './ReadingProgressTracker';
 export { ReadingReminderSettings } from './ReadingReminderSettings';
+export { ReadingPaceComparison } from './ReadingPaceComparison';
 export { SMARTGoalsCard } from './SMARTGoalsCard';
 export { SMARTGoalWizard } from './SMARTGoalWizard';
