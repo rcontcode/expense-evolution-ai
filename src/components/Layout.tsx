@@ -127,7 +127,7 @@ export const Layout = ({ children }: LayoutProps) => {
         <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <img src={evofinzLogo} alt="EvoFinz" className="h-10 w-auto object-contain" />
+              <img src={evofinzLogo} alt="EvoFinz" className="h-20 w-auto object-contain" />
             </div>
 
             <div className="flex items-center gap-2">
@@ -295,9 +295,9 @@ export const Layout = ({ children }: LayoutProps) => {
             collapsed ? "justify-center" : "px-6"
           )}>
             {collapsed ? (
-              <img src={evofinzLogo} alt="EvoFinz" className="h-10 w-auto object-contain" />
-            ) : (
               <img src={evofinzLogo} alt="EvoFinz" className="h-12 w-auto object-contain" />
+            ) : (
+              <img src={evofinzLogo} alt="EvoFinz" className="h-20 w-auto object-contain" />
             )}
           </div>
 
