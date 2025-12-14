@@ -12,7 +12,8 @@ import {
   Clock,
   Zap,
   TrendingUp,
-  ArrowRight
+  ArrowRight,
+  PartyPopper
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,9 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useWorkflowProgress } from "@/hooks/data/useWorkflowProgress";
+import { useCelebrationSound } from "@/hooks/utils/useCelebrationSound";
 import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
 
 interface WorkflowConfig {
   id: string;
@@ -80,15 +83,32 @@ const WORKFLOW_CONFIGS: WorkflowConfig[] = [
   }
 ];
 
-function WorkflowMiniCard({ config }: { config: WorkflowConfig }) {
+function WorkflowMiniCard({ 
+  config, 
+  onComplete 
+}: { 
+  config: WorkflowConfig;
+  onComplete?: (workflowId: string) => void;
+}) {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const { data: progress, isLoading } = useWorkflowProgress(config.id);
+  const previousProgressRef = React.useRef<number | null>(null);
   
   const Icon = config.icon;
   const progressPercent = progress 
     ? Math.round((progress.currentStep / (progress.totalSteps - 1)) * 100)
     : 0;
+
+  // Detect when workflow reaches 100%
+  React.useEffect(() => {
+    if (previousProgressRef.current !== null && 
+        previousProgressRef.current < 100 && 
+        progressPercent === 100) {
+      onComplete?.(config.id);
+    }
+    previousProgressRef.current = progressPercent;
+  }, [progressPercent, config.id, onComplete]);
 
   // Determine status
   const getStatus = () => {
@@ -164,6 +184,9 @@ function WorkflowMiniCard({ config }: { config: WorkflowConfig }) {
 export function WorkflowSummaryWidget({ className }: { className?: string }) {
   const { language } = useLanguage();
   const navigate = useNavigate();
+  const { playCelebrationSound, playFullCelebration } = useCelebrationSound();
+  const [showCelebration, setShowCelebration] = React.useState(false);
+  const [celebratedWorkflow, setCelebratedWorkflow] = React.useState<string | null>(null);
 
   // Get all workflow progress data
   const workflows = WORKFLOW_CONFIGS.map(config => {
@@ -187,6 +210,62 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
     const actionCount = w.progress.stats.find(s => s.value > 0 && s.type === 'count')?.value || 0;
     return sum + actionCount;
   }, 0);
+
+  // Handle workflow completion celebration
+  const handleWorkflowComplete = React.useCallback((workflowId: string) => {
+    setCelebratedWorkflow(workflowId);
+    setShowCelebration(true);
+    
+    // Play celebration sound
+    playFullCelebration();
+    
+    // Fire confetti from both sides
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    
+    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+    
+    const interval = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+      
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        return;
+      }
+      
+      const particleCount = 50 * (timeLeft / duration);
+      
+      // Confetti from left
+      confetti({
+        particleCount: Math.floor(particleCount / 2),
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.7 },
+        colors: ['#60a5fa', '#a78bfa', '#34d399', '#fbbf24', '#f472b6']
+      });
+      
+      // Confetti from right  
+      confetti({
+        particleCount: Math.floor(particleCount / 2),
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.7 },
+        colors: ['#60a5fa', '#a78bfa', '#34d399', '#fbbf24', '#f472b6']
+      });
+    }, 250);
+    
+    // Hide celebration message after 5 seconds
+    setTimeout(() => {
+      setShowCelebration(false);
+      setCelebratedWorkflow(null);
+    }, 5000);
+  }, [playFullCelebration]);
+
+  // Get workflow name for celebration message
+  const getCelebratedWorkflowName = () => {
+    const workflow = WORKFLOW_CONFIGS.find(w => w.id === celebratedWorkflow);
+    return workflow?.title[language] || '';
+  };
 
   return (
     <Card className={cn(
@@ -255,10 +334,30 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
       </div>
 
       <CardContent className="p-4">
+        {/* Celebration banner */}
+        {showCelebration && (
+          <div className="mb-3 p-3 rounded-xl bg-gradient-to-r from-success/20 via-primary/20 to-warning/20 border-2 border-success/40 animate-fade-in">
+            <div className="flex items-center justify-center gap-2">
+              <PartyPopper className="h-5 w-5 text-success animate-bounce" />
+              <span className="font-bold text-success">
+                {language === 'es' 
+                  ? `¡Felicidades! Completaste el flujo de ${getCelebratedWorkflowName()}!`
+                  : `Congratulations! You completed the ${getCelebratedWorkflowName()} workflow!`
+                }
+              </span>
+              <PartyPopper className="h-5 w-5 text-success animate-bounce" />
+            </div>
+          </div>
+        )}
+
         {/* Workflow grid */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
           {WORKFLOW_CONFIGS.map(config => (
-            <WorkflowMiniCard key={config.id} config={config} />
+            <WorkflowMiniCard 
+              key={config.id} 
+              config={config} 
+              onComplete={handleWorkflowComplete}
+            />
           ))}
         </div>
 
