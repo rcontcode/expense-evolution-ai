@@ -19,6 +19,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
 import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
+import { MiniWorkflow } from '@/components/guidance/WorkflowVisualizer';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { PageHeader } from '@/components/PageHeader';
 
@@ -124,6 +125,9 @@ export default function Expenses() {
               { icon: Download, title: { es: 'Exportar', en: 'Export' }, description: { es: 'Para CRA o Excel', en: 'For CRA or Excel' }, action: () => setExportDialogOpen(true) }
             ]}
           />
+
+          {/* Workflow Visualizer - Expense Capture Flow */}
+          <MiniWorkflow workflowId="expense-capture" />
 
           {/* Setup Progress Banner - Compact */}
           <SetupProgressBanner variant="compact" />

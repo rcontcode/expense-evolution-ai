@@ -2,6 +2,7 @@ import { Layout } from '@/components/Layout';
 import { BankAnalysisDashboard } from '@/components/banking/BankAnalysisDashboard';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
+import { MiniWorkflow } from '@/components/guidance/WorkflowVisualizer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
@@ -31,6 +32,9 @@ export default function Banking() {
             { icon: TrendingDown, title: { es: 'Suscripciones', en: 'Subscriptions' }, description: { es: 'Detectadas', en: 'Detected' }, path: '/dashboard' }
           ]}
         />
+
+        {/* Workflow Visualizer - Bank Reconciliation Flow */}
+        <MiniWorkflow workflowId="bank-reconciliation" />
         
         <BankAnalysisDashboard />
       </div>
