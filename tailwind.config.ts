@@ -176,9 +176,12 @@ export default {
           "50%": { transform: "translateY(-10px)" },
         },
         "shimmer": {
-          "0%": { opacity: "0.4" },
-          "50%": { opacity: "0.7" },
-          "100%": { opacity: "0.4" },
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
+        "glow-pulse": {
+          "0%, 100%": { boxShadow: "0 0 20px rgba(251, 191, 36, 0.3)" },
+          "50%": { boxShadow: "0 0 40px rgba(251, 191, 36, 0.6)" },
         },
       },
       animation: {
@@ -200,7 +203,8 @@ export default {
         "drift": "drift 12s ease-in-out infinite",
         "spin-slow": "spin-slow 20s linear infinite",
         "bounce-slow": "bounce-slow 3s ease-in-out infinite",
-        "shimmer": "shimmer 3s ease-in-out infinite",
+        "shimmer": "shimmer 2s infinite",
+        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
       },
     },
   },
