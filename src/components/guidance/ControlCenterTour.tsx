@@ -198,6 +198,7 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [hasCompletedTour, setHasCompletedTour] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
   const { playFullCelebration } = useCelebrationSound();
 
   useEffect(() => {
@@ -304,6 +305,16 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
     handleComplete(false); // No celebration when skipping
   };
 
+  const handleElegantClose = () => {
+    setIsExiting(true);
+    // Wait for animation to complete before hiding
+    setTimeout(() => {
+      setShowCelebration(false);
+      setIsOpen(false);
+      setIsExiting(false);
+    }, 700);
+  };
+
   const step = TOUR_STEPS[currentStep];
   const progress = ((currentStep + 1) / TOUR_STEPS.length) * 100;
 
@@ -330,26 +341,39 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
     );
   }
 
-  // Show celebration screen
-  if (showCelebration) {
+  // Show celebration screen with elegant exit animation
+  if (showCelebration || isExiting) {
     return (
       <>
-        {/* Overlay */}
-        <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" />
+        {/* Overlay with fade effect */}
+        <div 
+          className={`fixed inset-0 bg-black/60 z-40 backdrop-blur-sm transition-opacity duration-700 ${
+            isExiting ? 'opacity-0' : 'opacity-100'
+          }`} 
+        />
         
-        {/* Celebration Card */}
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md shadow-2xl border-2 border-amber-400 animate-in zoom-in-95 duration-500">
-            <CardHeader className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white rounded-t-lg text-center py-8">
-              <div className="flex justify-center mb-4">
-                <div className="p-4 bg-white/20 rounded-full animate-bounce">
+        {/* Celebration Card with elegant transitions */}
+        <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-700 ${
+          isExiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+        }`}>
+          <Card className={`w-full max-w-md shadow-2xl border-2 border-amber-400 transition-all duration-700 ${
+            isExiting 
+              ? 'translate-y-8 blur-sm' 
+              : 'animate-in zoom-in-95 duration-500'
+          }`}>
+            <CardHeader className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white rounded-t-lg text-center py-8 overflow-hidden relative">
+              {/* Shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite] -skew-x-12" />
+              
+              <div className="relative flex justify-center mb-4">
+                <div className={`p-4 bg-white/20 rounded-full ${isExiting ? '' : 'animate-bounce'}`}>
                   <PartyPopper className="h-12 w-12" />
                 </div>
               </div>
-              <CardTitle className="text-3xl mb-2">
+              <CardTitle className="relative text-3xl mb-2">
                 {language === 'es' ? '🎉 ¡Felicidades!' : '🎉 Congratulations!'}
               </CardTitle>
-              <CardDescription className="text-white/90 text-lg">
+              <CardDescription className="relative text-white/90 text-lg">
                 {language === 'es' 
                   ? '¡Has completado el tour del Centro de Control!' 
                   : 'You have completed the Control Center tour!'}
@@ -371,21 +395,19 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
               </div>
               
               <div className="flex flex-wrap justify-center gap-2 py-4">
-                <Badge className="bg-blue-500/20 text-blue-700 border-blue-300">📊 Gráficos</Badge>
-                <Badge className="bg-purple-500/20 text-purple-700 border-purple-300">🔍 Análisis</Badge>
-                <Badge className="bg-amber-500/20 text-amber-700 border-amber-300">🧠 Mentoría</Badge>
-                <Badge className="bg-green-500/20 text-green-700 border-green-300">💰 Impuestos</Badge>
-                <Badge className="bg-orange-500/20 text-orange-700 border-orange-300">🔥 FIRE</Badge>
+                <Badge className="bg-blue-500/20 text-blue-700 border-blue-300 transition-all hover:scale-110">📊 Gráficos</Badge>
+                <Badge className="bg-purple-500/20 text-purple-700 border-purple-300 transition-all hover:scale-110">🔍 Análisis</Badge>
+                <Badge className="bg-amber-500/20 text-amber-700 border-amber-300 transition-all hover:scale-110">🧠 Mentoría</Badge>
+                <Badge className="bg-green-500/20 text-green-700 border-green-300 transition-all hover:scale-110">💰 Impuestos</Badge>
+                <Badge className="bg-orange-500/20 text-orange-700 border-orange-300 transition-all hover:scale-110">🔥 FIRE</Badge>
               </div>
               
               <Button
-                onClick={() => {
-                  setShowCelebration(false);
-                  setIsOpen(false);
-                }}
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-lg py-6"
+                onClick={handleElegantClose}
+                disabled={isExiting}
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-lg py-6 transition-all hover:scale-[1.02] hover:shadow-lg disabled:opacity-70"
               >
-                <Sparkles className="h-5 w-5 mr-2" />
+                <Sparkles className={`h-5 w-5 mr-2 ${isExiting ? '' : 'animate-pulse'}`} />
                 {language === 'es' ? '¡Comenzar a explorar!' : 'Start exploring!'}
               </Button>
             </CardContent>
