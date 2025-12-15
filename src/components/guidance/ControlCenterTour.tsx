@@ -341,6 +341,16 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
     );
   }
 
+  // Generate floating particles
+  const goldenParticles = Array.from({ length: 30 }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    delay: Math.random() * 3,
+    duration: 3 + Math.random() * 4,
+    size: 4 + Math.random() * 8,
+    type: Math.random() > 0.5 ? 'circle' : 'star',
+  }));
+
   // Show celebration screen with elegant exit animation
   if (showCelebration || isExiting) {
     return (
@@ -351,6 +361,62 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
             isExiting ? 'opacity-0' : 'opacity-100'
           }`} 
         />
+        
+        {/* Floating Golden Particles */}
+        {!isExiting && (
+          <div className="fixed inset-0 z-45 pointer-events-none overflow-hidden">
+            {goldenParticles.map((particle) => (
+              <div
+                key={particle.id}
+                className="absolute animate-float-particle"
+                style={{
+                  left: `${particle.left}%`,
+                  bottom: '-20px',
+                  animationDelay: `${particle.delay}s`,
+                  animationDuration: `${particle.duration}s`,
+                }}
+              >
+                {particle.type === 'star' ? (
+                  <svg 
+                    width={particle.size} 
+                    height={particle.size} 
+                    viewBox="0 0 24 24" 
+                    fill="none"
+                    className="text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]"
+                  >
+                    <path 
+                      d="M12 2L14.09 8.26L21 9.27L16 14.14L17.18 21.02L12 17.77L6.82 21.02L8 14.14L3 9.27L9.91 8.26L12 2Z" 
+                      fill="currentColor"
+                    />
+                  </svg>
+                ) : (
+                  <div 
+                    className="rounded-full bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-500 shadow-[0_0_12px_rgba(251,191,36,0.8)]"
+                    style={{ 
+                      width: particle.size, 
+                      height: particle.size,
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+            
+            {/* Sparkle bursts */}
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={`sparkle-${i}`}
+                className="absolute animate-sparkle-burst"
+                style={{
+                  left: `${10 + Math.random() * 80}%`,
+                  top: `${10 + Math.random() * 80}%`,
+                  animationDelay: `${i * 0.4}s`,
+                }}
+              >
+                <Sparkles className="h-6 w-6 text-amber-300 drop-shadow-[0_0_10px_rgba(251,191,36,1)]" />
+              </div>
+            ))}
+          </div>
+        )}
         
         {/* Celebration Card with elegant transitions */}
         <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-700 ${
