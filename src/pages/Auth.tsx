@@ -1,33 +1,92 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowRight, CheckCircle2, Sparkles, Receipt, TrendingUp } from 'lucide-react';
+import { ArrowRight, Sparkles, Receipt, TrendingUp, ChevronDown, Gift, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import evofinzLogo from '@/assets/evofinz-logo.png';
 
 export default function Auth() {
+  const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Beta code states
+  const [showBetaSection, setShowBetaSection] = useState(false);
+  const [betaCode, setBetaCode] = useState('');
+  const [codeStatus, setCodeStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
+  
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { signIn, signUp, user } = useAuth();
+
+  // Pre-fill beta code from URL
+  useEffect(() => {
+    const urlBetaCode = searchParams.get('beta');
+    if (urlBetaCode) {
+      setBetaCode(urlBetaCode.toUpperCase());
+      setShowBetaSection(true);
+      setIsLogin(false); // Switch to signup mode
+      validateBetaCode(urlBetaCode);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (user) {
       navigate('/dashboard');
     }
   }, [user, navigate]);
+
+  const validateBetaCode = async (code: string) => {
+    if (!code.trim()) {
+      setCodeStatus('idle');
+      return;
+    }
+
+    setCodeStatus('checking');
+    
+    try {
+      const { data, error } = await supabase.rpc('validate_beta_invitation_code', {
+        p_code: code.trim()
+      });
+
+      if (error) {
+        setCodeStatus('invalid');
+        return;
+      }
+
+      const result = data as { valid: boolean; reason: string } | null;
+      setCodeStatus(result?.valid ? 'valid' : 'invalid');
+    } catch {
+      setCodeStatus('invalid');
+    }
+  };
+
+  const handleBetaCodeChange = (value: string) => {
+    const upperValue = value.toUpperCase();
+    setBetaCode(upperValue);
+    
+    // Debounce validation
+    if (upperValue.length > 5) {
+      const timeoutId = setTimeout(() => {
+        validateBetaCode(upperValue);
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    } else {
+      setCodeStatus('idle');
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     try {
@@ -79,6 +138,33 @@ export default function Auth() {
         if (error) {
           toast.error(error.message);
         } else {
+          // Check if beta code was provided and is valid
+          if (betaCode.trim() && codeStatus === 'valid') {
+            // Wait a moment for the user to be created
+            const { data: { user: newUser } } = await supabase.auth.getUser();
+            
+            if (newUser) {
+              // Use the beta code
+              const { data: useResult, error: useError } = await supabase.rpc('use_beta_invitation_code', {
+                p_code: betaCode.trim(),
+                p_user_id: newUser.id
+              });
+
+              if (useError) {
+                console.error('Error using beta code:', useError);
+                toast.error('Error al activar código beta');
+              } else {
+                const result = useResult as { success: boolean; message?: string } | null;
+                if (result?.success) {
+                  toast.success('¡Acceso beta activado!');
+                  navigate('/beta-welcome');
+                  return;
+                }
+              }
+            }
+          }
+          
+          // Normal signup flow
           toast.success(t('common.success'));
           navigate('/onboarding');
         }
@@ -219,6 +305,52 @@ export default function Auth() {
                     />
                   </div>
                 )}
+
+                {/* Beta Code Section - Only show on signup */}
+                {!isLogin && !isForgotPassword && (
+                  <Collapsible open={showBetaSection} onOpenChange={setShowBetaSection}>
+                    <CollapsibleTrigger asChild>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        className="w-full justify-between text-muted-foreground hover:text-foreground"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Gift className="h-4 w-4" />
+                          ¿Tienes un código de invitación?
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition-transform ${showBetaSection ? 'rotate-180' : ''}`} />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pt-2">
+                      <div className="relative">
+                        <Input
+                          placeholder="EVOFINZ-BETA-2025-XX"
+                          value={betaCode}
+                          onChange={(e) => handleBetaCodeChange(e.target.value)}
+                          className={`h-12 rounded-xl text-center font-mono uppercase ${
+                            codeStatus === 'valid' 
+                              ? 'border-green-500 bg-green-50 dark:bg-green-950/30' 
+                              : codeStatus === 'invalid'
+                                ? 'border-red-500 bg-red-50 dark:bg-red-950/30'
+                                : ''
+                          }`}
+                        />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                          {codeStatus === 'checking' && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
+                          {codeStatus === 'valid' && <CheckCircle2 className="h-5 w-5 text-green-500" />}
+                          {codeStatus === 'invalid' && <XCircle className="h-5 w-5 text-red-500" />}
+                        </div>
+                      </div>
+                      {codeStatus === 'valid' && (
+                        <p className="text-green-600 text-xs mt-2 text-center">¡Código válido! Tendrás acceso beta completo.</p>
+                      )}
+                      {codeStatus === 'invalid' && (
+                        <p className="text-red-600 text-xs mt-2 text-center">Código inválido o expirado.</p>
+                      )}
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
                 
                 {isLogin && !isForgotPassword && (
                   <div className="flex justify-end">
@@ -246,7 +378,9 @@ export default function Auth() {
                         ? t('auth.resetPassword') 
                         : isLogin 
                           ? 'Iniciar Sesión' 
-                          : 'Crear Cuenta'}
+                          : codeStatus === 'valid'
+                            ? 'Crear Cuenta + Activar Beta'
+                            : 'Crear Cuenta'}
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </>
                   )}
