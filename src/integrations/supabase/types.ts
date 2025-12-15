@@ -158,6 +158,78 @@ export type Database = {
           },
         ]
       }
+      beta_code_uses: {
+        Row: {
+          code_id: string | null
+          id: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code_id?: string | null
+          id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code_id?: string | null
+          id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beta_code_uses_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "beta_invitation_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "beta_code_uses_used_by_fkey"
+            columns: ["used_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      beta_invitation_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          created_by: string | null
+          current_uses: number
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_uses: number
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          created_by?: string | null
+          current_uses?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          created_by?: string | null
+          current_uses?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           billing_profile: Json | null
@@ -1257,6 +1329,7 @@ export type Database = {
           full_name: string | null
           gst_hst_registered: boolean | null
           id: string
+          is_beta_tester: boolean | null
           language: string | null
           onboarding_completed: boolean | null
           province: string | null
@@ -1273,6 +1346,7 @@ export type Database = {
           full_name?: string | null
           gst_hst_registered?: boolean | null
           id: string
+          is_beta_tester?: boolean | null
           language?: string | null
           onboarding_completed?: boolean | null
           province?: string | null
@@ -1289,6 +1363,7 @@ export type Database = {
           full_name?: string | null
           gst_hst_registered?: boolean | null
           id?: string
+          is_beta_tester?: boolean | null
           language?: string | null
           onboarding_completed?: boolean | null
           province?: string | null
@@ -1718,6 +1793,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      use_beta_invitation_code: {
+        Args: { p_code: string; p_user_id: string }
+        Returns: Json
+      }
+      validate_beta_invitation_code: { Args: { p_code: string }; Returns: Json }
     }
     Enums: {
       contract_status: "uploaded" | "pending_ai" | "ready"
