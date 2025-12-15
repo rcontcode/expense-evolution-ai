@@ -7,8 +7,10 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   BarChart3, TrendingUp, GraduationCap, Receipt, MapPin, 
   RefreshCw, Landmark, Briefcase, X, ChevronRight, ChevronLeft,
-  Sparkles, Play, RotateCcw
+  Sparkles, Play, RotateCcw, PartyPopper
 } from 'lucide-react';
+import confetti from 'canvas-confetti';
+import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
 
 interface TourStep {
   id: string;
@@ -195,6 +197,8 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [hasCompletedTour, setHasCompletedTour] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const { playFullCelebration } = useCelebrationSound();
 
   useEffect(() => {
     const completed = localStorage.getItem(STORAGE_KEY);
@@ -206,6 +210,51 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  const triggerCelebration = () => {
+    // Play celebration sound
+    playFullCelebration();
+    
+    // Fire multiple confetti bursts
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+
+    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+    const interval = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        return;
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+
+      // Confetti from both sides
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        colors: ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444']
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        colors: ['#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#6366f1']
+      });
+    }, 250);
+
+    // Center burst
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96e6a1']
+    });
+  };
 
   const handleNext = () => {
     if (currentStep < TOUR_STEPS.length - 1) {
@@ -225,10 +274,24 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
     }
   };
 
-  const handleComplete = () => {
+  const handleComplete = (isFirstCompletion = true) => {
+    const wasCompletedBefore = localStorage.getItem(STORAGE_KEY) === 'true';
     localStorage.setItem(STORAGE_KEY, 'true');
     setHasCompletedTour(true);
-    setIsOpen(false);
+    
+    // Only celebrate on first-ever completion
+    if (!wasCompletedBefore && isFirstCompletion) {
+      setShowCelebration(true);
+      triggerCelebration();
+      
+      // Hide celebration after animation
+      setTimeout(() => {
+        setShowCelebration(false);
+        setIsOpen(false);
+      }, 4000);
+    } else {
+      setIsOpen(false);
+    }
   };
 
   const handleRestart = () => {
@@ -238,7 +301,7 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
   };
 
   const handleSkip = () => {
-    handleComplete();
+    handleComplete(false); // No celebration when skipping
   };
 
   const step = TOUR_STEPS[currentStep];
@@ -264,6 +327,71 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
           </>
         )}
       </Button>
+    );
+  }
+
+  // Show celebration screen
+  if (showCelebration) {
+    return (
+      <>
+        {/* Overlay */}
+        <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" />
+        
+        {/* Celebration Card */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md shadow-2xl border-2 border-amber-400 animate-in zoom-in-95 duration-500">
+            <CardHeader className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white rounded-t-lg text-center py-8">
+              <div className="flex justify-center mb-4">
+                <div className="p-4 bg-white/20 rounded-full animate-bounce">
+                  <PartyPopper className="h-12 w-12" />
+                </div>
+              </div>
+              <CardTitle className="text-3xl mb-2">
+                {language === 'es' ? '🎉 ¡Felicidades!' : '🎉 Congratulations!'}
+              </CardTitle>
+              <CardDescription className="text-white/90 text-lg">
+                {language === 'es' 
+                  ? '¡Has completado el tour del Centro de Control!' 
+                  : 'You have completed the Control Center tour!'}
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="pt-6 text-center space-y-4">
+              <div className="space-y-2">
+                <p className="text-lg font-medium text-foreground">
+                  {language === 'es' 
+                    ? 'Ahora conoces todas las herramientas disponibles para gestionar tus finanzas.' 
+                    : 'Now you know all the tools available to manage your finances.'}
+                </p>
+                <p className="text-muted-foreground">
+                  {language === 'es' 
+                    ? '¡Explora cada módulo y comienza a tomar el control de tu futuro financiero!' 
+                    : 'Explore each module and start taking control of your financial future!'}
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap justify-center gap-2 py-4">
+                <Badge className="bg-blue-500/20 text-blue-700 border-blue-300">📊 Gráficos</Badge>
+                <Badge className="bg-purple-500/20 text-purple-700 border-purple-300">🔍 Análisis</Badge>
+                <Badge className="bg-amber-500/20 text-amber-700 border-amber-300">🧠 Mentoría</Badge>
+                <Badge className="bg-green-500/20 text-green-700 border-green-300">💰 Impuestos</Badge>
+                <Badge className="bg-orange-500/20 text-orange-700 border-orange-300">🔥 FIRE</Badge>
+              </div>
+              
+              <Button
+                onClick={() => {
+                  setShowCelebration(false);
+                  setIsOpen(false);
+                }}
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-lg py-6"
+              >
+                <Sparkles className="h-5 w-5 mr-2" />
+                {language === 'es' ? '¡Comenzar a explorar!' : 'Start exploring!'}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </>
     );
   }
 
