@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -10,7 +11,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useSavingsGoals, useCreateSavingsGoal, useUpdateSavingsGoal, useDeleteSavingsGoal, useAddToSavingsGoal } from '@/hooks/data/useSavingsGoals';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { Target, Plus, Edit, Trash2, PiggyBank, DollarSign, Palette, Sun, Moon, Monitor, RotateCcw, BookOpen, Globe, Database, Loader2 } from 'lucide-react';
+import { Target, Plus, Edit, Trash2, PiggyBank, DollarSign, Palette, Sun, Moon, Monitor, RotateCcw, BookOpen, Globe, Database, Loader2, Shield, Ticket } from 'lucide-react';
 import { useGenerateSampleData, useDeleteSampleData } from '@/hooks/data/useGenerateSampleData';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -18,6 +19,7 @@ import { InvestmentSection } from '@/components/investments/InvestmentSection';
 import { FinancialEducationResources } from '@/components/settings/FinancialEducationResources';
 import { resetOnboardingTutorial } from '@/components/guidance/OnboardingTutorial';
 import { PageHeader } from '@/components/PageHeader';
+import { useIsAdmin } from '@/hooks/data/useIsAdmin';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +36,7 @@ const GOAL_COLORS = [
 ];
 
 export default function Settings() {
+  const navigate = useNavigate();
   const { t, language, setLanguage } = useLanguage();
   const { mode, style, setMode, setStyle, animationSpeed, animationIntensity, setAnimationSpeed, setAnimationIntensity } = useTheme();
   const { data: savingsGoals, isLoading: goalsLoading } = useSavingsGoals();
@@ -43,6 +46,7 @@ export default function Settings() {
   const addToGoal = useAddToSavingsGoal();
   const generateSampleData = useGenerateSampleData();
   const deleteSampleData = useDeleteSampleData();
+  const { data: isAdmin } = useIsAdmin();
 
   // Savings goal dialog state
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
@@ -521,6 +525,36 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Admin Section - Only visible for admins */}
+        {isAdmin && (
+          <Card className="border-primary/50 bg-primary/5">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    {language === 'es' ? 'Administración' : 'Administration'}
+                  </CardTitle>
+                  <CardDescription>
+                    {language === 'es' 
+                      ? 'Herramientas de administración del sistema' 
+                      : 'System administration tools'}
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={() => navigate('/admin/beta-codes')}
+                className="gap-2"
+              >
+                <Ticket className="h-4 w-4" />
+                {language === 'es' ? 'Gestionar Códigos Beta' : 'Manage Beta Codes'}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Savings Goals Section */}
         <Card>
