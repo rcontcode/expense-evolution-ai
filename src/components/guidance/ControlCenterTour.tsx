@@ -422,11 +422,25 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
         <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-700 ${
           isExiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
         }`}>
-          <Card className={`w-full max-w-md shadow-2xl border-2 border-amber-400 transition-all duration-700 ${
-            isExiting 
-              ? 'translate-y-8 blur-sm' 
-              : 'animate-in zoom-in-95 duration-500'
-          }`}>
+          {/* Golden pulsing glow wrapper */}
+          <div className={`relative ${isExiting ? '' : 'animate-glow-pulse'}`}>
+            {/* Outer glow rings */}
+            {!isExiting && (
+              <>
+                <div className="absolute -inset-4 bg-gradient-to-r from-amber-400/30 via-yellow-300/40 to-amber-400/30 rounded-2xl blur-xl animate-pulse" />
+                <div className="absolute -inset-2 bg-gradient-to-r from-amber-500/20 via-orange-400/30 to-amber-500/20 rounded-xl blur-md animate-[pulse_1.5s_ease-in-out_infinite]" />
+                <div className="absolute -inset-1 bg-gradient-to-r from-amber-400/40 to-orange-400/40 rounded-lg blur-sm animate-[pulse_2s_ease-in-out_infinite_0.5s]" />
+              </>
+            )}
+            
+            <Card className={`relative w-full max-w-md shadow-2xl border-2 border-amber-400 transition-all duration-700 ${
+              isExiting 
+                ? 'translate-y-8 blur-sm' 
+                : 'animate-in zoom-in-95 duration-500'
+            }`}
+            style={{
+              boxShadow: isExiting ? undefined : '0 0 30px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.3), 0 0 90px rgba(251, 191, 36, 0.1)'
+            }}>
             <CardHeader className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white rounded-t-lg text-center py-8 overflow-hidden relative">
               {/* Shimmer effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite] -skew-x-12" />
@@ -478,6 +492,7 @@ export function ControlCenterTour({ onTabChange }: ControlCenterTourProps) {
               </Button>
             </CardContent>
           </Card>
+          </div>
         </div>
       </>
     );
