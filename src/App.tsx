@@ -32,6 +32,7 @@ import Notifications from "./pages/Notifications";
 import Mentorship from "./pages/Mentorship";
 import BetaWelcome from "./pages/BetaWelcome";
 import BetaFeatures from "./pages/BetaFeatures";
+import BetaCodesAdmin from "./pages/admin/BetaCodes";
 import { ChatAssistant } from "./components/chat/ChatAssistant";
 import { OnboardingTutorial } from "./components/guidance/OnboardingTutorial";
 
@@ -77,6 +78,7 @@ const App = () => (
                 <Route path="/mentorship" element={<ProtectedRoute><Mentorship /></ProtectedRoute>} />
                 <Route path="/install" element={<Install />} />
                 <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
+                <Route path="/admin/beta-codes" element={<ProtectedRoute><BetaCodesAdmin /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <ChatAssistant />
