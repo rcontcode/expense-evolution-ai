@@ -42,7 +42,7 @@ const COUNTRIES = [
   { code: 'co', name: 'Colombia', flag: '🇨🇴' },
   { code: 'cl', name: 'Chile', flag: '🇨🇱' },
   { code: 'pe', name: 'Perú', flag: '🇵🇪' },
-  { code: '', name: 'Global', flag: '🌍' },
+  { code: 'global', name: 'Global', flag: '🌍' },
 ];
 
 interface AddressAutocompleteProps {
@@ -158,7 +158,7 @@ export function AddressAutocomplete({
 
       setIsLoading(true);
       try {
-        const countryParam = countryCode ? `&countrycodes=${countryCode}` : '';
+        const countryParam = countryCode && countryCode !== 'global' ? `&countrycodes=${countryCode}` : '';
         const response = await fetch(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(debouncedSearch)}&limit=5&addressdetails=1${countryParam}`,
           {
@@ -322,7 +322,7 @@ export function AddressAutocomplete({
           </SelectTrigger>
           <SelectContent>
             {COUNTRIES.map((country) => (
-              <SelectItem key={country.code || 'global'} value={country.code}>
+              <SelectItem key={country.code} value={country.code}>
                 <span className="flex items-center gap-2">
                   <span>{country.flag}</span>
                   <span>{country.name}</span>
