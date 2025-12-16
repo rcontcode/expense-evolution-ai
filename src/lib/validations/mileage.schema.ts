@@ -18,6 +18,12 @@ export const mileageSchema = z.object({
     .trim()
     .optional(),
   client_id: z.string().uuid().optional().nullable(),
+  start_address: z.string().max(500).trim().optional().nullable(),
+  end_address: z.string().max(500).trim().optional().nullable(),
+  start_lat: z.number().min(-90).max(90).optional().nullable(),
+  start_lng: z.number().min(-180).max(180).optional().nullable(),
+  end_lat: z.number().min(-90).max(90).optional().nullable(),
+  end_lng: z.number().min(-180).max(180).optional().nullable(),
 });
 
 export type MileageFormValues = z.infer<typeof mileageSchema>;
