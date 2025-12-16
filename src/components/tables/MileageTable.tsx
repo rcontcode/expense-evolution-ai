@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Pencil, Trash2, MapPin } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -29,6 +29,8 @@ import { Badge } from '@/components/ui/badge';
 import { MileageWithClient, useDeleteMileage, calculateMileageDeduction } from '@/hooks/data/useMileage';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useState } from 'react';
+import { MileageRoutePreview } from '@/components/mileage/MileageRoutePreview';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 interface MileageTableProps {
   data: MileageWithClient[];
@@ -64,8 +66,11 @@ export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
     }
   };
 
+  // Check if record is sample data
+  const isSample = (route: string) => route.includes('[SAMPLE]');
+
   return (
-    <>
+    <TooltipProvider>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -81,12 +86,32 @@ export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
           </TableHeader>
           <TableBody>
             {dataWithDeductions.map((record) => (
-              <TableRow key={record.id}>
+              <TableRow key={record.id} className={isSample(record.route) ? 'bg-muted/30' : ''}>
                 <TableCell className="font-medium">
                   {format(new Date(record.date), 'dd/MM/yyyy')}
                 </TableCell>
-                <TableCell className="max-w-[200px] truncate">
-                  {record.route}
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <MileageRoutePreview
+                      startAddress={(record as any).start_address}
+                      endAddress={(record as any).end_address}
+                      startLat={(record as any).start_lat}
+                      startLng={(record as any).start_lng}
+                      endLat={(record as any).end_lat}
+                      endLng={(record as any).end_lng}
+                      kilometers={parseFloat(record.kilometers.toString())}
+                      route={record.route}
+                      compact
+                    />
+                    <span className="max-w-[150px] truncate text-sm">
+                      {record.route.replace('[SAMPLE] ', '')}
+                    </span>
+                    {isSample(record.route) && (
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        SAMPLE
+                      </Badge>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-right">
                   {parseFloat(record.kilometers.toString()).toFixed(1)} km
@@ -103,7 +128,7 @@ export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
                 </TableCell>
                 <TableCell>
                   {record.client?.name ? (
-                    <Badge variant="outline">{record.client.name}</Badge>
+                    <Badge variant="outline">{record.client.name.replace('[SAMPLE] ', '')}</Badge>
                   ) : (
                     <span className="text-muted-foreground">-</span>
                   )}
@@ -158,6 +183,6 @@ export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </TooltipProvider>
   );
 };

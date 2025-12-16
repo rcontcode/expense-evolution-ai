@@ -629,14 +629,40 @@ export function useGenerateSampleData() {
       if (contractsError) throw contractsError;
 
       // ============================================
-      // 14. CREATE SAMPLE NOTIFICATIONS
+      // 14. CREATE SAMPLE NOTIFICATIONS (diverse types)
       // ============================================
       console.log('[SAMPLE DATA] Creating notifications...');
       const notifications = [
-        { type: 'goal_milestone', title: `${SAMPLE_MARKER} ¡Meta al 75%!`, message: 'Tu fondo de emergencia está al 73% de completarse.', read: false },
-        { type: 'achievement', title: `${SAMPLE_MARKER} ¡Nuevo logro!`, message: 'Desbloqueaste "Primer Objetivo" por crear tu primera meta.', read: true },
-        { type: 'reminder', title: `${SAMPLE_MARKER} Revisar gastos`, message: 'Tienes 3 gastos pendientes de clasificación.', read: false },
-        { type: 'contract', title: `${SAMPLE_MARKER} Contrato procesado`, message: 'El contrato de TechCorp ha sido analizado. Términos de reembolso detectados.', read: false },
+        // Goal notifications
+        { type: 'goal_milestone', title: `${SAMPLE_MARKER} ¡Meta al 75%!`, message: 'Tu fondo de emergencia está al 73% de completarse. ¡Sigue así!', read: false, action_url: '/dashboard' },
+        { type: 'goal_deadline', title: `${SAMPLE_MARKER} Meta próxima a vencer`, message: 'Tu meta "Vacaciones" vence en 7 días. Faltan $2,200 por alcanzar.', read: false, action_url: '/dashboard' },
+        
+        // Achievement notifications
+        { type: 'achievement', title: `${SAMPLE_MARKER} 🏆 ¡Nuevo logro desbloqueado!`, message: 'Desbloqueaste "Primer Objetivo" por crear tu primera meta de ahorro.', read: true, action_url: '/notifications' },
+        { type: 'achievement', title: `${SAMPLE_MARKER} 🔥 Racha de 7 días`, message: '¡Has registrado gastos por 7 días consecutivos! Tu organización es admirable.', read: false, action_url: '/expenses' },
+        
+        // Expense reminders
+        { type: 'reminder', title: `${SAMPLE_MARKER} Gastos pendientes`, message: 'Tienes 3 gastos pendientes de clasificación. Revísalos para mantener tus registros al día.', read: false, action_url: '/expenses?incomplete=true' },
+        { type: 'reminder', title: `${SAMPLE_MARKER} Recibos sin revisar`, message: 'Hay 2 recibos capturados esperando tu revisión en el Inbox.', read: false, action_url: '/chaos' },
+        
+        // Contract notifications
+        { type: 'contract', title: `${SAMPLE_MARKER} Contrato analizado`, message: 'El contrato de TechCorp ha sido analizado. Se detectaron términos de reembolso para software, viajes y materiales.', read: false, action_url: '/contracts' },
+        { type: 'contract', title: `${SAMPLE_MARKER} Contrato próximo a renovar`, message: 'El contrato con Creative Design vence en 60 días. Revisa los términos de renovación.', read: true, action_url: '/contracts' },
+        
+        // Tax reminders
+        { type: 'tax', title: `${SAMPLE_MARKER} 📅 Recordatorio fiscal`, message: 'La fecha límite para declaración de impuestos personales (T1) es el 30 de abril. Prepara tus documentos.', read: false, action_url: '/tax-calendar' },
+        { type: 'tax', title: `${SAMPLE_MARKER} GST/HST trimestral`, message: 'El trimestre Q1 finaliza pronto. Recuerda presentar tu declaración GST/HST antes del 30 de abril.', read: false, action_url: '/tax-calendar' },
+        
+        // Financial insights
+        { type: 'insight', title: `${SAMPLE_MARKER} 💡 Oportunidad de ahorro`, message: 'Detectamos $156 en subscripciones recurrentes este mes. ¿Revisas si todas son necesarias?', read: false, action_url: '/banking' },
+        { type: 'insight', title: `${SAMPLE_MARKER} Gasto inusual detectado`, message: 'Tu gasto en "Comidas" este mes es 45% mayor que el promedio. Revisa los detalles.', read: false, action_url: '/expenses' },
+        
+        // Mentorship/Education
+        { type: 'education', title: `${SAMPLE_MARKER} 📚 Continúa tu lectura`, message: 'Llevas 3 días sin registrar progreso en "Rich Dad Poor Dad". ¡No pierdas el hábito!', read: false, action_url: '/mentorship' },
+        { type: 'tip', title: `${SAMPLE_MARKER} Consejo del día`, message: '"Los ricos adquieren activos. Los pobres y la clase media adquieren pasivos que creen son activos." - Robert Kiyosaki', read: true },
+        
+        // System notifications
+        { type: 'system', title: `${SAMPLE_MARKER} Bienvenido a EvoFinz`, message: '¡Gracias por unirte! Explora los datos de ejemplo para conocer todas las funcionalidades.', read: true, action_url: '/dashboard' },
       ];
 
       const { error: notifError } = await supabase.from('notifications').insert(notifications.map(n => ({ ...n, user_id: userId })));
@@ -923,6 +949,120 @@ export function useDeleteSampleData() {
     },
     onError: (error: any) => {
       console.error('Error deleting sample data:', error);
+      toast.error(language === 'es' ? 'Error eliminando datos: ' + error.message : 'Error deleting data: ' + error.message);
+    },
+  });
+}
+
+export function useDeleteSampleDataBySection() {
+  const queryClient = useQueryClient();
+  const { language } = useLanguage();
+
+  return useMutation({
+    mutationFn: async (sections: string[]) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
+      const userId = user.id;
+      const SAMPLE_MARKER = '[SAMPLE]';
+
+      for (const section of sections) {
+        console.log(`[SAMPLE DATA] Deleting section: ${section}`);
+        
+        switch (section) {
+          case 'clients':
+            // First delete dependent records
+            const { data: clientExpenses } = await supabase
+              .from('expenses')
+              .select('id')
+              .eq('user_id', userId)
+              .like('description', `%${SAMPLE_MARKER}%`);
+            if (clientExpenses && clientExpenses.length > 0) {
+              await supabase.from('expense_tags').delete().in('expense_id', clientExpenses.map(e => e.id));
+            }
+            await supabase.from('expenses').delete().eq('user_id', userId).like('description', `%${SAMPLE_MARKER}%`);
+            await supabase.from('income').delete().eq('user_id', userId).like('description', `%${SAMPLE_MARKER}%`);
+            await supabase.from('mileage').delete().eq('user_id', userId).like('route', `%${SAMPLE_MARKER}%`);
+            await supabase.from('contracts').delete().eq('user_id', userId).like('file_name', `%${SAMPLE_MARKER}%`);
+            const { data: sampleProjects } = await supabase.from('projects').select('id').eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
+            if (sampleProjects && sampleProjects.length > 0) {
+              await supabase.from('project_clients').delete().in('project_id', sampleProjects.map(p => p.id));
+            }
+            await supabase.from('projects').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
+            await supabase.from('clients').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
+            break;
+            
+          case 'projects':
+            const { data: projData } = await supabase.from('projects').select('id').eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
+            if (projData && projData.length > 0) {
+              await supabase.from('project_clients').delete().in('project_id', projData.map(p => p.id));
+            }
+            await supabase.from('projects').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
+            break;
+            
+          case 'expenses':
+            const { data: expData } = await supabase.from('expenses').select('id').eq('user_id', userId).like('description', `%${SAMPLE_MARKER}%`);
+            if (expData && expData.length > 0) {
+              await supabase.from('expense_tags').delete().in('expense_id', expData.map(e => e.id));
+            }
+            await supabase.from('expenses').delete().eq('user_id', userId).like('description', `%${SAMPLE_MARKER}%`);
+            break;
+            
+          case 'income':
+            await supabase.from('income').delete().eq('user_id', userId).like('description', `%${SAMPLE_MARKER}%`);
+            break;
+            
+          case 'mileage':
+            await supabase.from('mileage').delete().eq('user_id', userId).like('route', `%${SAMPLE_MARKER}%`);
+            break;
+            
+          case 'assets':
+            await supabase.from('assets').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
+            break;
+            
+          case 'liabilities':
+            await supabase.from('liabilities').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
+            break;
+            
+          case 'goals':
+            await supabase.from('investment_goals').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
+            await supabase.from('savings_goals').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
+            break;
+            
+          case 'contracts':
+            await supabase.from('contracts').delete().eq('user_id', userId).like('file_name', `%${SAMPLE_MARKER}%`);
+            break;
+            
+          case 'notifications':
+            await supabase.from('notifications').delete().eq('user_id', userId).like('title', `%${SAMPLE_MARKER}%`);
+            break;
+            
+          case 'education':
+            const { data: eduData } = await supabase.from('financial_education').select('id').eq('user_id', userId).like('title', `%${SAMPLE_MARKER}%`);
+            if (eduData && eduData.length > 0) {
+              await supabase.from('education_daily_logs').delete().in('resource_id', eduData.map(e => e.id));
+            }
+            await supabase.from('financial_education').delete().eq('user_id', userId).like('title', `%${SAMPLE_MARKER}%`);
+            break;
+            
+          case 'bank_transactions':
+            await supabase.from('bank_transactions').delete().eq('user_id', userId).like('description', `%${SAMPLE_MARKER}%`);
+            break;
+        }
+      }
+
+      return { success: true, deletedSections: sections };
+    },
+    onSuccess: (data) => {
+      invalidateAllQueries(queryClient);
+      toast.success(
+        language === 'es' 
+          ? `¡${data.deletedSections.length} secciones eliminadas!` 
+          : `${data.deletedSections.length} sections deleted!`
+      );
+    },
+    onError: (error: any) => {
+      console.error('Error deleting sample data by section:', error);
       toast.error(language === 'es' ? 'Error eliminando datos: ' + error.message : 'Error deleting data: ' + error.message);
     },
   });

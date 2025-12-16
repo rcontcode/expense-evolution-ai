@@ -232,6 +232,9 @@ export type Database = {
       }
       clients: {
         Row: {
+          address: string | null
+          address_lat: number | null
+          address_lng: number | null
           billing_profile: Json | null
           client_type: string | null
           contact_email: string | null
@@ -251,6 +254,9 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          address?: string | null
+          address_lat?: number | null
+          address_lng?: number | null
           billing_profile?: Json | null
           client_type?: string | null
           contact_email?: string | null
@@ -270,6 +276,9 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          address?: string | null
+          address_lat?: number | null
+          address_lng?: number | null
           billing_profile?: Json | null
           client_type?: string | null
           contact_email?: string | null
@@ -1170,10 +1179,17 @@ export type Database = {
           client_id: string | null
           created_at: string | null
           date: string
+          end_address: string | null
+          end_lat: number | null
+          end_lng: number | null
           id: string
           kilometers: number
           purpose: string | null
           route: string
+          route_snapshot_url: string | null
+          start_address: string | null
+          start_lat: number | null
+          start_lng: number | null
           updated_at: string | null
           user_id: string
         }
@@ -1181,10 +1197,17 @@ export type Database = {
           client_id?: string | null
           created_at?: string | null
           date: string
+          end_address?: string | null
+          end_lat?: number | null
+          end_lng?: number | null
           id?: string
           kilometers: number
           purpose?: string | null
           route: string
+          route_snapshot_url?: string | null
+          start_address?: string | null
+          start_lat?: number | null
+          start_lng?: number | null
           updated_at?: string | null
           user_id: string
         }
@@ -1192,10 +1215,17 @@ export type Database = {
           client_id?: string | null
           created_at?: string | null
           date?: string
+          end_address?: string | null
+          end_lat?: number | null
+          end_lng?: number | null
           id?: string
           kilometers?: number
           purpose?: string | null
           route?: string
+          route_snapshot_url?: string | null
+          start_address?: string | null
+          start_lat?: number | null
+          start_lng?: number | null
           updated_at?: string | null
           user_id?: string
         }
