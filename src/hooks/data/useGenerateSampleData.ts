@@ -50,7 +50,10 @@ export function useGenerateSampleData() {
           website: 'https://techcorp-sample.com',
           tax_id: '123456789',
           notes: `${SAMPLE_MARKER} Large technology company specializing in software development. Has contracts for monthly retainer and project-based work.`,
-          currency: 'CAD'
+          currency: 'CAD',
+          address: '456 Bay Street, Toronto, ON M5J 2T3',
+          address_lat: 43.6519,
+          address_lng: -79.3815,
         },
         { 
           name: `${SAMPLE_MARKER} Creative Design Studio`, 
@@ -63,7 +66,10 @@ export function useGenerateSampleData() {
           country: 'Canada',
           website: 'https://creative-sample.com',
           notes: `${SAMPLE_MARKER} Boutique design agency. Reimburses materials and travel expenses per contract.`,
-          currency: 'CAD'
+          currency: 'CAD',
+          address: '789 Queen Street W, Toronto, ON M6J 1G1',
+          address_lat: 43.6469,
+          address_lng: -79.4112,
         },
       ];
 
@@ -269,14 +275,14 @@ export function useGenerateSampleData() {
       // 6. CREATE 8 MILEAGE ENTRIES
       // ============================================
       const mileageData = [
-        { route: 'Home → TechCorp Office', km: 45.5, purpose: 'Client meeting - project kickoff', clientIdx: 0, daysAgo: 5 },
-        { route: 'Home → Creative Design Studio', km: 28.3, purpose: 'Design review meeting', clientIdx: 1, daysAgo: 8 },
-        { route: 'TechCorp → Airport', km: 62.0, purpose: 'Business travel - conference', clientIdx: 0, daysAgo: 20 },
-        { route: 'Home → Staples → Home', km: 15.2, purpose: 'Office supplies pickup', clientIdx: null, daysAgo: 12 },
-        { route: 'Home → TechCorp → Creative Design', km: 78.5, purpose: 'Multiple client visits', clientIdx: 0, daysAgo: 15 },
-        { route: 'Downtown Meeting Location', km: 22.0, purpose: 'Networking event', clientIdx: null, daysAgo: 25 },
-        { route: 'Home → Best Buy → Client Site', km: 35.8, purpose: 'Equipment delivery', clientIdx: 1, daysAgo: 30 },
-        { route: 'Client Site Inspection', km: 18.5, purpose: 'Project site visit', clientIdx: 0, daysAgo: 40 },
+        { route: 'Home → TechCorp Office', km: 45.5, purpose: 'Client meeting - project kickoff', clientIdx: 0, daysAgo: 5, startAddress: '123 Maple Street, Toronto, ON M5V 2K1', endAddress: '456 Bay Street, Toronto, ON M5J 2T3', startLat: 43.6426, startLng: -79.3871, endLat: 43.6519, endLng: -79.3815 },
+        { route: 'Home → Creative Design Studio', km: 28.3, purpose: 'Design review meeting', clientIdx: 1, daysAgo: 8, startAddress: '123 Maple Street, Toronto, ON M5V 2K1', endAddress: '789 Queen Street W, Toronto, ON M6J 1G1', startLat: 43.6426, startLng: -79.3871, endLat: 43.6469, endLng: -79.4112 },
+        { route: 'TechCorp → Airport', km: 62.0, purpose: 'Business travel - conference', clientIdx: 0, daysAgo: 20, startAddress: '456 Bay Street, Toronto, ON M5J 2T3', endAddress: 'Toronto Pearson Airport, Mississauga, ON', startLat: 43.6519, startLng: -79.3815, endLat: 43.6777, endLng: -79.6248 },
+        { route: 'Home → Staples → Home', km: 15.2, purpose: 'Office supplies pickup', clientIdx: null, daysAgo: 12, startAddress: '123 Maple Street, Toronto, ON M5V 2K1', endAddress: 'Staples, 255 Yonge Street, Toronto, ON', startLat: 43.6426, startLng: -79.3871, endLat: 43.6544, endLng: -79.3807 },
+        { route: 'Home → TechCorp → Creative Design', km: 78.5, purpose: 'Multiple client visits', clientIdx: 0, daysAgo: 15, startAddress: '123 Maple Street, Toronto, ON M5V 2K1', endAddress: '789 Queen Street W, Toronto, ON M6J 1G1', startLat: 43.6426, startLng: -79.3871, endLat: 43.6469, endLng: -79.4112 },
+        { route: 'Downtown Meeting Location', km: 22.0, purpose: 'Networking event', clientIdx: null, daysAgo: 25, startAddress: '123 Maple Street, Toronto, ON M5V 2K1', endAddress: 'Metro Toronto Convention Centre, Toronto, ON', startLat: 43.6426, startLng: -79.3871, endLat: 43.6445, endLng: -79.3877 },
+        { route: 'Home → Best Buy → Client Site', km: 35.8, purpose: 'Equipment delivery', clientIdx: 1, daysAgo: 30, startAddress: '123 Maple Street, Toronto, ON M5V 2K1', endAddress: '789 Queen Street W, Toronto, ON M6J 1G1', startLat: 43.6426, startLng: -79.3871, endLat: 43.6469, endLng: -79.4112 },
+        { route: 'Client Site Inspection', km: 18.5, purpose: 'Project site visit', clientIdx: 0, daysAgo: 40, startAddress: '123 Maple Street, Toronto, ON M5V 2K1', endAddress: '456 Bay Street, Toronto, ON M5J 2T3', startLat: 43.6426, startLng: -79.3871, endLat: 43.6519, endLng: -79.3815 },
       ];
 
       const mileageEntries = mileageData.map(m => {
@@ -289,6 +295,12 @@ export function useGenerateSampleData() {
           route: `${SAMPLE_MARKER} ${m.route}`,
           purpose: m.purpose,
           client_id: m.clientIdx !== null ? clientsData[m.clientIdx].id : null,
+          start_address: m.startAddress,
+          end_address: m.endAddress,
+          start_lat: m.startLat,
+          start_lng: m.startLng,
+          end_lat: m.endLat,
+          end_lng: m.endLng,
         };
       });
 
