@@ -207,55 +207,459 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
 
   const exportToExcel = () => {
     const workbook = XLSX.utils.book_new();
-
-    // Summary sheet
-    const summaryData = clientGroups.map((group) => ({
-      Cliente: group.clientName,
-      'Total Gastos': group.count,
-      'Monto Total': group.total,
-      'Promedio por Gasto': group.total / group.count,
-    }));
-    summaryData.push({
-      Cliente: 'TOTAL',
-      'Total Gastos': totalExpenses,
-      'Monto Total': totalReimbursable,
-      'Promedio por Gasto': totalReimbursable / totalExpenses || 0,
-    });
-    const summarySheet = XLSX.utils.json_to_sheet(summaryData);
-    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Resumen por Cliente');
-
-    // Detailed sheet
-    const detailData = clientGroups.flatMap((group) =>
-      group.expenses.map((expense) => ({
-        Cliente: group.clientName,
-        Fecha: expense.date,
-        Vendedor: expense.vendor || '',
-        Categoría: CATEGORY_LABELS[expense.category || 'other'] || expense.category,
-        Descripción: expense.description || '',
-        Monto: Number(expense.amount),
-        Estado: expense.status || 'pending',
-        Notas: expense.notes || '',
-      }))
-    );
-    const detailSheet = XLSX.utils.json_to_sheet(detailData);
-    XLSX.utils.book_append_sheet(workbook, detailSheet, 'Detalle de Gastos');
-
-    // Category breakdown per client
-    const categoryData = clientGroups.flatMap((group) =>
-      Object.entries(group.categories).map(([category, data]) => ({
-        Cliente: group.clientName,
-        Categoría: CATEGORY_LABELS[category] || category,
-        'Cantidad de Gastos': data.count,
-        'Monto Total': data.total,
-      }))
-    );
-    const categorySheet = XLSX.utils.json_to_sheet(categoryData);
-    XLSX.utils.book_append_sheet(workbook, categorySheet, 'Por Categoría');
-
     const dateStr = dateRange.from && dateRange.to 
       ? `${format(dateRange.from, 'yyyy-MM-dd')}_${format(dateRange.to, 'yyyy-MM-dd')}`
       : format(new Date(), 'yyyy-MM-dd');
-    const filename = `reporte-reembolsos-cliente-${dateStr}.xlsx`;
+    const reportDate = format(new Date(), "dd 'de' MMMM 'de' yyyy, HH:mm", { locale: dateLocale });
+    const periodStart = dateRange.from ? format(dateRange.from, "dd 'de' MMMM 'de' yyyy", { locale: dateLocale }) : 'Sin definir';
+    const periodEnd = dateRange.to ? format(dateRange.to, "dd 'de' MMMM 'de' yyyy", { locale: dateLocale }) : 'Sin definir';
+
+    // ========== SHEET 1: PORTADA Y RESUMEN EJECUTIVO ==========
+    const coverData = [
+      ['═══════════════════════════════════════════════════════════════════════'],
+      ['                    REPORTE DE GASTOS REEMBOLSABLES                    '],
+      ['                          EvoFinz - Finanzas Inteligentes               '],
+      ['═══════════════════════════════════════════════════════════════════════'],
+      [''],
+      ['INFORMACIÓN DEL REPORTE'],
+      ['────────────────────────────────────────────────────────────────────────'],
+      ['Fecha de generación:', reportDate],
+      ['Período del reporte:', `${periodStart} al ${periodEnd}`],
+      ['Total de clientes:', clientGroups.length],
+      ['Total de gastos:', totalExpenses],
+      [''],
+      ['═══════════════════════════════════════════════════════════════════════'],
+      ['                           RESUMEN EJECUTIVO                            '],
+      ['═══════════════════════════════════════════════════════════════════════'],
+      [''],
+      ['TOTALES GENERALES'],
+      ['────────────────────────────────────────────────────────────────────────'],
+      ['Total a Facturar:', `$${totalReimbursable.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`],
+      ['Promedio por Gasto:', `$${averagePerExpense.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`],
+      ['Gastos Procesados:', totalExpenses],
+      ['Clientes Activos:', clientGroups.length],
+      [''],
+      ['ANÁLISIS POR CATEGORÍA'],
+      ['────────────────────────────────────────────────────────────────────────'],
+    ];
+
+    // Add category summary
+    const sortedCategories = Object.entries(categoryTotals)
+      .sort(([, a], [, b]) => b - a);
+    
+    sortedCategories.forEach(([category, total]) => {
+      const percentage = totalReimbursable > 0 ? ((total / totalReimbursable) * 100).toFixed(1) : '0';
+      coverData.push([
+        CATEGORY_LABELS[category] || category, 
+        `$${total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`,
+        `${percentage}%`
+      ]);
+    });
+
+    coverData.push(['']);
+    coverData.push(['TOP 5 CLIENTES POR MONTO']);
+    coverData.push(['────────────────────────────────────────────────────────────────────────']);
+    
+    clientGroups.slice(0, 5).forEach((group, idx) => {
+      const percentage = totalReimbursable > 0 ? ((group.total / totalReimbursable) * 100).toFixed(1) : '0';
+      coverData.push([
+        `${idx + 1}. ${group.clientName}`,
+        `$${group.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`,
+        `${percentage}%`,
+        `${group.count} gastos`
+      ]);
+    });
+
+    const coverSheet = XLSX.utils.aoa_to_sheet(coverData);
+    coverSheet['!cols'] = [{ wch: 35 }, { wch: 25 }, { wch: 15 }, { wch: 15 }];
+    XLSX.utils.book_append_sheet(workbook, coverSheet, 'Resumen Ejecutivo');
+
+    // ========== SHEET 2: ANÁLISIS POR CLIENTE ==========
+    const clientAnalysisData: (string | number)[][] = [
+      ['ANÁLISIS DETALLADO POR CLIENTE'],
+      ['Generado:', reportDate],
+      ['Período:', `${periodStart} al ${periodEnd}`],
+      [''],
+      ['Cliente', 'Total Gastos', 'Monto Total', 'Promedio', '% del Total', 'Categoría Principal', 'Monto Cat. Principal'],
+    ];
+
+    clientGroups.forEach((group) => {
+      const percentage = totalReimbursable > 0 ? ((group.total / totalReimbursable) * 100).toFixed(2) : '0';
+      const topCategory = Object.entries(group.categories)
+        .sort(([, a], [, b]) => b.total - a.total)[0];
+      
+      clientAnalysisData.push([
+        group.clientName,
+        group.count,
+        group.total,
+        group.total / group.count,
+        `${percentage}%`,
+        topCategory ? (CATEGORY_LABELS[topCategory[0]] || topCategory[0]) : 'N/A',
+        topCategory ? topCategory[1].total : 0
+      ]);
+    });
+
+    // Add totals row
+    clientAnalysisData.push(['']);
+    clientAnalysisData.push([
+      'TOTAL GENERAL',
+      totalExpenses,
+      totalReimbursable,
+      averagePerExpense,
+      '100%',
+      '',
+      ''
+    ]);
+
+    const clientSheet = XLSX.utils.aoa_to_sheet(clientAnalysisData);
+    clientSheet['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 18 }, { wch: 15 }, { wch: 12 }, { wch: 25 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(workbook, clientSheet, 'Análisis por Cliente');
+
+    // ========== SHEET 3: ANÁLISIS POR CATEGORÍA ==========
+    const categoryAnalysisData: (string | number)[][] = [
+      ['ANÁLISIS DETALLADO POR CATEGORÍA'],
+      ['Generado:', reportDate],
+      [''],
+      ['Categoría', 'Cantidad', 'Monto Total', '% del Total', 'Promedio por Gasto', 'Clientes con esta Categoría'],
+    ];
+
+    const categoryStats: Record<string, { count: number; total: number; clients: Set<string> }> = {};
+    filteredExpenses.forEach(e => {
+      const cat = e.category || 'other';
+      if (!categoryStats[cat]) {
+        categoryStats[cat] = { count: 0, total: 0, clients: new Set() };
+      }
+      categoryStats[cat].count += 1;
+      categoryStats[cat].total += Number(e.amount);
+      categoryStats[cat].clients.add(e.client?.name || 'Desconocido');
+    });
+
+    Object.entries(categoryStats)
+      .sort(([, a], [, b]) => b.total - a.total)
+      .forEach(([category, stats]) => {
+        const percentage = totalReimbursable > 0 ? ((stats.total / totalReimbursable) * 100).toFixed(2) : '0';
+        categoryAnalysisData.push([
+          CATEGORY_LABELS[category] || category,
+          stats.count,
+          stats.total,
+          `${percentage}%`,
+          stats.total / stats.count,
+          stats.clients.size
+        ]);
+      });
+
+    categoryAnalysisData.push(['']);
+    categoryAnalysisData.push([
+      'TOTAL',
+      totalExpenses,
+      totalReimbursable,
+      '100%',
+      averagePerExpense,
+      clientGroups.length
+    ]);
+
+    const categorySheet = XLSX.utils.aoa_to_sheet(categoryAnalysisData);
+    categorySheet['!cols'] = [{ wch: 25 }, { wch: 12 }, { wch: 18 }, { wch: 12 }, { wch: 18 }, { wch: 25 }];
+    XLSX.utils.book_append_sheet(workbook, categorySheet, 'Análisis por Categoría');
+
+    // ========== SHEET 4: ANÁLISIS POR PROVEEDOR ==========
+    const vendorStats: Record<string, { count: number; total: number; categories: Set<string>; clients: Set<string> }> = {};
+    filteredExpenses.forEach(e => {
+      const vendor = e.vendor || 'Sin especificar';
+      if (!vendorStats[vendor]) {
+        vendorStats[vendor] = { count: 0, total: 0, categories: new Set(), clients: new Set() };
+      }
+      vendorStats[vendor].count += 1;
+      vendorStats[vendor].total += Number(e.amount);
+      vendorStats[vendor].categories.add(CATEGORY_LABELS[e.category || 'other'] || e.category || 'Otro');
+      vendorStats[vendor].clients.add(e.client?.name || 'Desconocido');
+    });
+
+    const vendorAnalysisData: (string | number)[][] = [
+      ['ANÁLISIS POR PROVEEDOR / VENDEDOR'],
+      ['Generado:', reportDate],
+      [''],
+      ['Proveedor', 'Cantidad', 'Monto Total', '% del Total', 'Promedio', 'Categorías', 'Clientes'],
+    ];
+
+    Object.entries(vendorStats)
+      .sort(([, a], [, b]) => b.total - a.total)
+      .forEach(([vendor, stats]) => {
+        const percentage = totalReimbursable > 0 ? ((stats.total / totalReimbursable) * 100).toFixed(2) : '0';
+        vendorAnalysisData.push([
+          vendor,
+          stats.count,
+          stats.total,
+          `${percentage}%`,
+          stats.total / stats.count,
+          Array.from(stats.categories).join(', '),
+          Array.from(stats.clients).join(', ')
+        ]);
+      });
+
+    const vendorSheet = XLSX.utils.aoa_to_sheet(vendorAnalysisData);
+    vendorSheet['!cols'] = [{ wch: 25 }, { wch: 12 }, { wch: 18 }, { wch: 12 }, { wch: 15 }, { wch: 35 }, { wch: 35 }];
+    XLSX.utils.book_append_sheet(workbook, vendorSheet, 'Análisis por Proveedor');
+
+    // ========== SHEET 5: ANÁLISIS POR ESTADO ==========
+    const statusStats: Record<string, { count: number; total: number }> = {};
+    filteredExpenses.forEach(e => {
+      const status = e.status || 'pending';
+      if (!statusStats[status]) {
+        statusStats[status] = { count: 0, total: 0 };
+      }
+      statusStats[status].count += 1;
+      statusStats[status].total += Number(e.amount);
+    });
+
+    const STATUS_LABELS: Record<string, string> = {
+      pending: 'Pendiente',
+      classified: 'Clasificado',
+      deductible: 'Deducible CRA',
+      non_deductible: 'No Deducible',
+      reimbursable: 'Reembolsable',
+      rejected: 'Rechazado',
+      under_review: 'En Revisión',
+      finalized: 'Finalizado',
+      client_reimbursable: 'Reembolsable Cliente'
+    };
+
+    const statusAnalysisData: (string | number)[][] = [
+      ['ANÁLISIS POR ESTADO'],
+      ['Generado:', reportDate],
+      [''],
+      ['Estado', 'Cantidad', 'Monto Total', '% del Total', 'Promedio'],
+    ];
+
+    Object.entries(statusStats)
+      .sort(([, a], [, b]) => b.total - a.total)
+      .forEach(([status, stats]) => {
+        const percentage = totalReimbursable > 0 ? ((stats.total / totalReimbursable) * 100).toFixed(2) : '0';
+        statusAnalysisData.push([
+          STATUS_LABELS[status] || status,
+          stats.count,
+          stats.total,
+          `${percentage}%`,
+          stats.total / stats.count
+        ]);
+      });
+
+    const statusSheet = XLSX.utils.aoa_to_sheet(statusAnalysisData);
+    statusSheet['!cols'] = [{ wch: 25 }, { wch: 12 }, { wch: 18 }, { wch: 12 }, { wch: 15 }];
+    XLSX.utils.book_append_sheet(workbook, statusSheet, 'Análisis por Estado');
+
+    // ========== SHEET 6: ANÁLISIS MENSUAL ==========
+    const monthlyStats: Record<string, { count: number; total: number }> = {};
+    filteredExpenses.forEach(e => {
+      const monthKey = format(parseISO(e.date), 'yyyy-MM');
+      if (!monthlyStats[monthKey]) {
+        monthlyStats[monthKey] = { count: 0, total: 0 };
+      }
+      monthlyStats[monthKey].count += 1;
+      monthlyStats[monthKey].total += Number(e.amount);
+    });
+
+    const monthlyAnalysisData: (string | number)[][] = [
+      ['ANÁLISIS MENSUAL / TENDENCIA'],
+      ['Generado:', reportDate],
+      [''],
+      ['Mes', 'Cantidad de Gastos', 'Monto Total', '% del Total', 'Promedio', 'Variación vs Mes Anterior'],
+    ];
+
+    const sortedMonths = Object.entries(monthlyStats).sort(([a], [b]) => a.localeCompare(b));
+    let previousTotal = 0;
+    sortedMonths.forEach(([monthKey, stats], idx) => {
+      const percentage = totalReimbursable > 0 ? ((stats.total / totalReimbursable) * 100).toFixed(2) : '0';
+      const monthLabel = format(parseISO(`${monthKey}-01`), "MMMM yyyy", { locale: dateLocale });
+      const variation = idx > 0 && previousTotal > 0 
+        ? `${((stats.total - previousTotal) / previousTotal * 100).toFixed(1)}%`
+        : 'N/A';
+      
+      monthlyAnalysisData.push([
+        monthLabel,
+        stats.count,
+        stats.total,
+        `${percentage}%`,
+        stats.total / stats.count,
+        variation
+      ]);
+      previousTotal = stats.total;
+    });
+
+    const monthlySheet = XLSX.utils.aoa_to_sheet(monthlyAnalysisData);
+    monthlySheet['!cols'] = [{ wch: 20 }, { wch: 18 }, { wch: 18 }, { wch: 12 }, { wch: 15 }, { wch: 22 }];
+    XLSX.utils.book_append_sheet(workbook, monthlySheet, 'Tendencia Mensual');
+
+    // ========== SHEET 7: DETALLE COMPLETO DE GASTOS ==========
+    const detailData: (string | number)[][] = [
+      ['DETALLE COMPLETO DE GASTOS REEMBOLSABLES'],
+      ['Generado:', reportDate],
+      ['Período:', `${periodStart} al ${periodEnd}`],
+      ['Total de registros:', filteredExpenses.length],
+      [''],
+      ['#', 'Fecha', 'Cliente', 'Proveedor', 'Categoría', 'Descripción', 'Monto', 'Moneda', 'Estado', 'Tipo Reembolso', 'ID Proyecto', 'ID Contrato', 'Notas'],
+    ];
+
+    filteredExpenses
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .forEach((expense, idx) => {
+        detailData.push([
+          idx + 1,
+          format(parseISO(expense.date), 'dd/MM/yyyy'),
+          expense.client?.name || 'Sin asignar',
+          expense.vendor || '',
+          CATEGORY_LABELS[expense.category || 'other'] || expense.category || 'Otro',
+          expense.description || '',
+          Number(expense.amount),
+          expense.currency || 'CAD',
+          STATUS_LABELS[expense.status || 'pending'] || expense.status || '',
+          expense.reimbursement_type || 'Sin clasificar',
+          expense.project_id || '',
+          expense.contract_id || '',
+          expense.notes || ''
+        ]);
+      });
+
+    // Add totals row
+    detailData.push(['']);
+    detailData.push([
+      '',
+      'TOTAL',
+      '',
+      '',
+      '',
+      '',
+      totalReimbursable,
+      '',
+      '',
+      '',
+      '',
+      '',
+      ''
+    ]);
+
+    const detailSheet = XLSX.utils.aoa_to_sheet(detailData);
+    detailSheet['!cols'] = [
+      { wch: 5 }, { wch: 12 }, { wch: 25 }, { wch: 20 }, { wch: 20 }, 
+      { wch: 35 }, { wch: 15 }, { wch: 8 }, { wch: 15 }, { wch: 18 },
+      { wch: 20 }, { wch: 20 }, { wch: 30 }
+    ];
+    XLSX.utils.book_append_sheet(workbook, detailSheet, 'Detalle Completo');
+
+    // ========== SHEET 8: DESGLOSE POR CLIENTE-CATEGORÍA ==========
+    const clientCategoryData: (string | number)[][] = [
+      ['DESGLOSE CLIENTE - CATEGORÍA'],
+      ['Generado:', reportDate],
+      [''],
+      ['Cliente', 'Categoría', 'Cantidad', 'Monto Total', '% del Cliente', '% del Total General'],
+    ];
+
+    clientGroups.forEach((group) => {
+      Object.entries(group.categories)
+        .sort(([, a], [, b]) => b.total - a.total)
+        .forEach(([category, data]) => {
+          const clientPercentage = ((data.total / group.total) * 100).toFixed(2);
+          const totalPercentage = totalReimbursable > 0 ? ((data.total / totalReimbursable) * 100).toFixed(2) : '0';
+          clientCategoryData.push([
+            group.clientName,
+            CATEGORY_LABELS[category] || category,
+            data.count,
+            data.total,
+            `${clientPercentage}%`,
+            `${totalPercentage}%`
+          ]);
+        });
+    });
+
+    const clientCategorySheet = XLSX.utils.aoa_to_sheet(clientCategoryData);
+    clientCategorySheet['!cols'] = [{ wch: 30 }, { wch: 25 }, { wch: 12 }, { wch: 18 }, { wch: 15 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(workbook, clientCategorySheet, 'Cliente-Categoría');
+
+    // ========== SHEET 9: RANGOS DE MONTOS ==========
+    const ranges = [
+      { label: '$0 - $50', min: 0, max: 50 },
+      { label: '$50 - $100', min: 50, max: 100 },
+      { label: '$100 - $250', min: 100, max: 250 },
+      { label: '$250 - $500', min: 250, max: 500 },
+      { label: '$500 - $1,000', min: 500, max: 1000 },
+      { label: '$1,000 - $2,500', min: 1000, max: 2500 },
+      { label: '$2,500 - $5,000', min: 2500, max: 5000 },
+      { label: '$5,000+', min: 5000, max: Infinity },
+    ];
+
+    const rangeStats = ranges.map(range => {
+      const expensesInRange = filteredExpenses.filter(
+        e => Number(e.amount) >= range.min && Number(e.amount) < range.max
+      );
+      const total = expensesInRange.reduce((sum, e) => sum + Number(e.amount), 0);
+      return {
+        ...range,
+        count: expensesInRange.length,
+        total,
+        percentage: totalReimbursable > 0 ? ((total / totalReimbursable) * 100).toFixed(2) : '0'
+      };
+    });
+
+    const rangeData: (string | number)[][] = [
+      ['ANÁLISIS POR RANGO DE MONTOS'],
+      ['Generado:', reportDate],
+      [''],
+      ['Rango', 'Cantidad', 'Monto Total', '% del Total', 'Promedio'],
+    ];
+
+    rangeStats.forEach(range => {
+      if (range.count > 0) {
+        rangeData.push([
+          range.label,
+          range.count,
+          range.total,
+          `${range.percentage}%`,
+          range.total / range.count
+        ]);
+      }
+    });
+
+    const rangeSheet = XLSX.utils.aoa_to_sheet(rangeData);
+    rangeSheet['!cols'] = [{ wch: 18 }, { wch: 12 }, { wch: 18 }, { wch: 12 }, { wch: 15 }];
+    XLSX.utils.book_append_sheet(workbook, rangeSheet, 'Rangos de Montos');
+
+    // ========== SHEET 10: DATOS PARA GRÁFICOS ==========
+    const chartDataSheet: (string | number)[][] = [
+      ['DATOS PARA GRÁFICOS Y ANÁLISIS'],
+      ['Estos datos pueden usarse para crear gráficos en Excel'],
+      [''],
+      ['--- DISTRIBUCIÓN POR CATEGORÍA ---'],
+      ['Categoría', 'Monto', 'Porcentaje'],
+    ];
+
+    sortedCategories.forEach(([category, total]) => {
+      const percentage = totalReimbursable > 0 ? (total / totalReimbursable) * 100 : 0;
+      chartDataSheet.push([CATEGORY_LABELS[category] || category, total, percentage]);
+    });
+
+    chartDataSheet.push(['']);
+    chartDataSheet.push(['--- DISTRIBUCIÓN POR CLIENTE ---']);
+    chartDataSheet.push(['Cliente', 'Monto', 'Porcentaje', 'Cantidad']);
+
+    clientGroups.forEach(group => {
+      const percentage = totalReimbursable > 0 ? (group.total / totalReimbursable) * 100 : 0;
+      chartDataSheet.push([group.clientName, group.total, percentage, group.count]);
+    });
+
+    chartDataSheet.push(['']);
+    chartDataSheet.push(['--- TENDENCIA MENSUAL ---']);
+    chartDataSheet.push(['Mes', 'Monto', 'Cantidad']);
+
+    sortedMonths.forEach(([monthKey, stats]) => {
+      const monthLabel = format(parseISO(`${monthKey}-01`), "MMM yyyy", { locale: dateLocale });
+      chartDataSheet.push([monthLabel, stats.total, stats.count]);
+    });
+
+    const chartSheet = XLSX.utils.aoa_to_sheet(chartDataSheet);
+    chartSheet['!cols'] = [{ wch: 25 }, { wch: 18 }, { wch: 15 }, { wch: 12 }];
+    XLSX.utils.book_append_sheet(workbook, chartSheet, 'Datos para Gráficos');
+
+    const filename = `reporte-reembolsos-profesional-${dateStr}.xlsx`;
     XLSX.writeFile(workbook, filename);
   };
 
