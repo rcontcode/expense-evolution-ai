@@ -30,6 +30,7 @@ import NetWorth from "./pages/NetWorth";
 import Banking from "./pages/Banking";
 import Notifications from "./pages/Notifications";
 import Mentorship from "./pages/Mentorship";
+import TaxCalendar from "./pages/TaxCalendar";
 import BetaWelcome from "./pages/BetaWelcome";
 import BetaFeatures from "./pages/BetaFeatures";
 import BetaCodesAdmin from "./pages/admin/BetaCodes";
@@ -76,6 +77,7 @@ const App = () => (
                 <Route path="/banking" element={<ProtectedRoute><Banking /></ProtectedRoute>} />
                 <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
                 <Route path="/mentorship" element={<ProtectedRoute><Mentorship /></ProtectedRoute>} />
+                <Route path="/tax-calendar" element={<ProtectedRoute><TaxCalendar /></ProtectedRoute>} />
                 <Route path="/install" element={<Install />} />
                 <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
                 <Route path="/admin/beta-codes" element={<ProtectedRoute><BetaCodesAdmin /></ProtectedRoute>} />
