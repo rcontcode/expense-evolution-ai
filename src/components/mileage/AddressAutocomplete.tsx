@@ -271,12 +271,12 @@ export function AddressAutocomplete({
 
         const getGeoBiasParams = () => {
           if (!userLocation) return '';
-          // ~50km-ish box: enough to prioritize local results.
+          // ~50km-ish box: enough to prioritize local results, but without excluding valid matches.
           const latDelta = 0.5;
           const lngDelta = 0.5;
           const viewbox = `${userLocation.lng - lngDelta},${userLocation.lat + latDelta},${userLocation.lng + lngDelta},${userLocation.lat - latDelta}`;
-          // Bounded ensures results must be within the box (critical for house-number precision).
-          return `&viewbox=${viewbox}&bounded=1`;
+          // Note: don't use bounded=1 here — Nominatim often returns street/house interpolation slightly outside the box.
+          return `&viewbox=${viewbox}`;
         };
 
         const headers = {
@@ -291,8 +291,10 @@ export function AddressAutocomplete({
         const postalCode = postalFromParts?.match(/[A-Z]\d[A-Z]\s?\d[A-Z]\d/i)?.[0] ?? null;
 
         const geoBias = getGeoBiasParams();
+        // When searching with a house number, `dedupe=1` can collapse house matches into just the street.
+        const dedupeParam = leadingHouseNumber ? '&dedupe=0' : '&dedupe=1';
         const makeUrl = (params: string) =>
-          `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10&dedupe=1${countryParam}${params}`;
+          `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10${dedupeParam}${countryParam}${params}`;
 
         const q = searchTerm.length > 80 && parts.length > 2 ? parts.slice(0, 3).join(', ') : searchTerm;
 
@@ -331,11 +333,12 @@ export function AddressAutocomplete({
           if (data.length > 0) break;
         }
 
-        // If a house number is provided, only show matches that include that number.
+        // If a house number is provided, prefer exact matches, but don't hide everything if Nominatim can't return it.
         if (leadingHouseNumber) {
           const hn = leadingHouseNumber;
           const re = new RegExp(`\\b${hn}\\b`);
-          data = data.filter(r => r.address?.house_number === hn || re.test(r.display_name));
+          const exact = data.filter(r => r.address?.house_number === hn || re.test(r.display_name));
+          if (exact.length > 0) data = exact;
         }
 
         // Ranking: house number match (if provided) first, then proximity
