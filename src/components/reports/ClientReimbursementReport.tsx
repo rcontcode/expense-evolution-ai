@@ -33,6 +33,7 @@ import {
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
+import { exportReimbursementReportWithCharts } from '@/lib/export/reimbursement-excel-export';
 
 interface ClientReimbursementReportProps {
   expenses: ExpenseWithRelations[];
@@ -663,6 +664,19 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
     XLSX.writeFile(workbook, filename);
   };
 
+  const exportProfessionalReport = async () => {
+    await exportReimbursementReportWithCharts({
+      clientGroups,
+      totalReimbursable,
+      totalExpenses,
+      filteredExpenses,
+      categoryTotals,
+      averagePerExpense,
+      dateRange,
+      language
+    });
+  };
+
   if (clientGroups.length === 0) {
     return (
       <Card className="border-dashed border-2 bg-gradient-to-br from-muted/30 to-muted/10">
@@ -715,12 +729,12 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
             </p>
           </div>
           <Button 
-            onClick={exportToExcel} 
+            onClick={exportProfessionalReport} 
             variant="secondary" 
             className="bg-white/20 hover:bg-white/30 text-white border-white/30"
           >
             <Download className="mr-2 h-4 w-4" />
-            Exportar Excel
+            Exportar Excel Pro
           </Button>
         </div>
       </div>
@@ -1142,9 +1156,9 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                 </p>
               </div>
             </div>
-            <Button onClick={exportToExcel} className="gap-2">
+            <Button onClick={exportProfessionalReport} className="gap-2">
               <Download className="h-4 w-4" />
-              Descargar Reporte Excel
+              Descargar Reporte Excel Pro
             </Button>
           </div>
         </CardContent>
