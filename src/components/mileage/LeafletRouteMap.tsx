@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -54,6 +54,8 @@ export function LeafletRouteMap({
 }: LeafletRouteMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const routeLayerRef = useRef<L.Polyline | null>(null);
+  const [isLoadingRoute, setIsLoadingRoute] = useState(true);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -95,18 +97,58 @@ export function LeafletRouteMap({
       endMarker.bindPopup(`<strong>Destino:</strong><br/>${endAddress}`);
     }
 
-    // Draw line between points
-    const polyline = L.polyline(
-      [[startLat, startLng], [endLat, endLng]],
-      { 
-        color: '#3b82f6', 
-        weight: 4, 
-        opacity: 0.7,
-        dashArray: '10, 10'
-      }
-    ).addTo(map);
-
     mapInstanceRef.current = map;
+
+    // Fetch real route from OSRM
+    const fetchRoute = async () => {
+      try {
+        setIsLoadingRoute(true);
+        const response = await fetch(
+          `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`
+        );
+        
+        if (!response.ok) throw new Error('Route fetch failed');
+        
+        const data = await response.json();
+        
+        if (data.routes && data.routes.length > 0) {
+          const routeCoords = data.routes[0].geometry.coordinates.map(
+            (coord: [number, number]) => [coord[1], coord[0]] as L.LatLngTuple
+          );
+          
+          // Remove old route if exists
+          if (routeLayerRef.current) {
+            routeLayerRef.current.remove();
+          }
+          
+          // Draw real route
+          routeLayerRef.current = L.polyline(routeCoords, {
+            color: '#3b82f6',
+            weight: 4,
+            opacity: 0.8
+          }).addTo(map);
+          
+          // Fit bounds to include full route
+          map.fitBounds(routeLayerRef.current.getBounds(), { padding: [30, 30] });
+        }
+      } catch (error) {
+        console.warn('Could not fetch real route, using straight line:', error);
+        // Fallback to straight line
+        routeLayerRef.current = L.polyline(
+          [[startLat, startLng], [endLat, endLng]],
+          { 
+            color: '#3b82f6', 
+            weight: 4, 
+            opacity: 0.7,
+            dashArray: '10, 10'
+          }
+        ).addTo(map);
+      } finally {
+        setIsLoadingRoute(false);
+      }
+    };
+
+    fetchRoute();
 
     return () => {
       if (mapInstanceRef.current) {
@@ -117,10 +159,17 @@ export function LeafletRouteMap({
   }, [startLat, startLng, endLat, endLng, startAddress, endAddress]);
 
   return (
-    <div 
-      ref={mapRef} 
-      className={`w-full rounded-lg overflow-hidden ${className}`}
-      style={{ minHeight: '150px' }}
-    />
+    <div className="relative">
+      <div 
+        ref={mapRef} 
+        className={`w-full rounded-lg overflow-hidden ${className}`}
+        style={{ minHeight: '150px' }}
+      />
+      {isLoadingRoute && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/50 rounded-lg">
+          <span className="text-xs text-muted-foreground">Cargando ruta...</span>
+        </div>
+      )}
+    </div>
   );
 }
