@@ -31,13 +31,13 @@ export function MileageRoutePreview({
 }: MileageRoutePreviewProps) {
   const [showFullMap, setShowFullMap] = useState(false);
 
-  // Generate Google Maps directions URL
-  const googleMapsUrl = useMemo(() => {
-    if (startAddress && endAddress) {
-      return `https://www.google.com/maps/dir/${encodeURIComponent(startAddress)}/${encodeURIComponent(endAddress)}`;
-    }
+  // Generate OpenStreetMap directions URL (works without blocking issues)
+  const mapsUrl = useMemo(() => {
     if (startLat && startLng && endLat && endLng) {
-      return `https://www.google.com/maps/dir/${startLat},${startLng}/${endLat},${endLng}`;
+      return `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${startLat},${startLng};${endLat},${endLng}`;
+    }
+    if (startAddress && endAddress) {
+      return `https://www.openstreetmap.org/directions?from=${encodeURIComponent(startAddress)}&to=${encodeURIComponent(endAddress)}`;
     }
     return null;
   }, [startAddress, endAddress, startLat, startLng, endLat, endLng]);
@@ -142,11 +142,11 @@ export function MileageRoutePreview({
                   </div>
                 </div>
               </div>
-              {googleMapsUrl && (
+              {mapsUrl && (
                 <Button variant="outline" className="w-full gap-2" asChild>
-                  <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                  <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="h-4 w-4" />
-                    Ver en Google Maps
+                    Ver en OpenStreetMap
                   </a>
                 </Button>
               )}
@@ -215,12 +215,12 @@ export function MileageRoutePreview({
         )}
       </div>
 
-      {/* Google Maps Link */}
-      {googleMapsUrl && (
+      {/* OpenStreetMap Link */}
+      {mapsUrl && (
         <Button variant="outline" size="sm" className="w-full gap-2" asChild>
-          <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+          <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
             <ExternalLink className="h-4 w-4" />
-            Ver en Google Maps
+            Ver en OpenStreetMap
           </a>
         </Button>
       )}
@@ -244,11 +244,11 @@ export function MileageRoutePreview({
               endAddress={endAddress}
               className="h-96"
             />
-            {googleMapsUrl && (
+            {mapsUrl && (
               <Button variant="outline" className="w-full gap-2" asChild>
-                <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4" />
-                  Ver en Google Maps
+                  Ver en OpenStreetMap
                 </a>
               </Button>
             )}
