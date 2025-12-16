@@ -76,7 +76,7 @@ export function AddressAutocomplete({
   const [isDetectingCountry, setIsDetectingCountry] = useState(true);
   const wrapperRef = useRef<HTMLDivElement>(null);
   
-  const debouncedSearch = useDebounce(inputValue, 400);
+  const debouncedSearch = useDebounce(inputValue, 300);
 
   // Auto-detect country from user's location on mount
   useEffect(() => {
@@ -217,11 +217,15 @@ export function AddressAutocomplete({
           {
             headers: {
               'Accept-Language': 'es,en',
+              'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
             }
           }
         );
         
-        if (!response.ok) throw new Error('Nominatim fetch failed');
+        if (!response.ok) {
+          console.warn('Nominatim response not ok:', response.status, response.statusText);
+          throw new Error('Nominatim fetch failed');
+        }
         
         const data: NominatimResult[] = await response.json();
         setSuggestions(data);
@@ -321,6 +325,7 @@ export function AddressAutocomplete({
         {
           headers: {
             'Accept-Language': 'es,en',
+            'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
           }
         }
       );
