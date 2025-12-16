@@ -39,6 +39,39 @@ interface NominatimResult {
   };
 }
 
+type GeocodeSource = 'photon' | 'nominatim';
+
+interface GeocodeSuggestion {
+  id: string;
+  display: string;
+  lat: number;
+  lng: number;
+  source: GeocodeSource;
+  houseNumber?: string;
+}
+
+interface PhotonResponse {
+  features?: Array<{
+    properties?: {
+      name?: string;
+      housenumber?: string;
+      street?: string;
+      city?: string;
+      state?: string;
+      postcode?: string;
+      country?: string;
+      countrycode?: string;
+      osm_id?: number;
+      osm_type?: string;
+    };
+    geometry?: {
+      type: 'Point';
+      coordinates: [number, number];
+    };
+  }>;
+}
+
+
 interface SavedAddress {
   id: string;
   address: string;
@@ -81,7 +114,7 @@ export function AddressAutocomplete({
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [inputValue, setInputValue] = useState(value);
-  const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
+  const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -250,7 +283,7 @@ export function AddressAutocomplete({
     setInputValue(value);
   }, [value]);
 
-  // Fetch suggestions from Nominatim
+  // Fetch suggestions (Photon primary + Nominatim fallback)
   useEffect(() => {
     const fetchSuggestions = async () => {
       const searchTerm = debouncedSearch?.trim() ?? '';
@@ -260,124 +293,196 @@ export function AddressAutocomplete({
         return;
       }
 
-      // Cancel any in-flight request to avoid rate limiting / slow 503s.
+      // Cancel any in-flight request to avoid race conditions.
       fetchAbortRef.current?.abort();
       const controller = new AbortController();
       fetchAbortRef.current = controller;
 
       setIsLoading(true);
-      try {
-        const countryParam = countryCode && countryCode !== 'global' ? `&countrycodes=${countryCode}` : '';
 
-        const getGeoBiasParams = () => {
-          if (!userLocation) return '';
-          // ~50km-ish box: enough to prioritize local results, but without excluding valid matches.
-          const latDelta = 0.5;
-          const lngDelta = 0.5;
-          const viewbox = `${userLocation.lng - lngDelta},${userLocation.lat + latDelta},${userLocation.lng + lngDelta},${userLocation.lat - latDelta}`;
-          // Note: don't use bounded=1 here — Nominatim often returns street/house interpolation slightly outside the box.
-          return `&viewbox=${viewbox}`;
-        };
+      try {
+        const leadingHouseNumber = searchTerm.match(/^(\d{1,6})\s+/)?.[1] ?? null;
 
         const headers = {
           'Accept-Language': 'es,en',
+          // Some browsers ignore this header, but keeping it doesn't hurt.
           'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
         } as const;
 
-        const leadingHouseNumber = searchTerm.match(/^(\d{1,6})\s+/)?.[1] ?? null;
-        const parts = searchTerm.split(',').map(p => p.trim()).filter(Boolean);
+        const rankByHouseAndProximity = (items: GeocodeSuggestion[]) => {
+          if (items.length <= 1) return items;
 
-        const postalFromParts = parts.find(p => /[A-Z]\d[A-Z]\s?\d[A-Z]\d/i.test(p));
-        const postalCode = postalFromParts?.match(/[A-Z]\d[A-Z]\s?\d[A-Z]\d/i)?.[0] ?? null;
-
-        const geoBias = getGeoBiasParams();
-        // When searching with a house number, `dedupe=1` can collapse house matches into just the street.
-        const dedupeParam = leadingHouseNumber ? '&dedupe=0' : '&dedupe=1';
-        const makeUrl = (params: string) =>
-          `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10${dedupeParam}${countryParam}${params}`;
-
-        const q = searchTerm.length > 80 && parts.length > 2 ? parts.slice(0, 3).join(', ') : searchTerm;
-
-        const urls: string[] = [];
-
-        if (leadingHouseNumber) {
-          const street = parts[0] ?? searchTerm;
-          const cityGuess = parts.slice(1).find(p => /vancouver/i.test(p)) ?? parts[1] ?? '';
-          const cityParam = cityGuess ? `&city=${encodeURIComponent(cityGuess)}` : '';
-          const postalParam = postalCode ? `&postalcode=${encodeURIComponent(postalCode)}` : '';
-
-          // 1) Structured query, bounded to the local area
-          urls.push(makeUrl(`&street=${encodeURIComponent(street)}${cityParam}${postalParam}${geoBias}`));
-          // 2) Structured query without city/postal (for partial input)
-          urls.push(makeUrl(`&street=${encodeURIComponent(street)}${geoBias}`));
-          // 3) Free-text fallback (sometimes better for exact civic addresses)
-          urls.push(makeUrl(`&q=${encodeURIComponent(q)}${geoBias}`));
-        } else {
-          urls.push(makeUrl(`&q=${encodeURIComponent(q)}${geoBias}`));
-          urls.push(makeUrl(`&q=${encodeURIComponent(q)}`));
-        }
-
-        const tryFetch = async (url: string) => {
-          const response = await fetch(url, { headers, signal: controller.signal });
-          if (!response.ok) {
-            // Nominatim occasionally returns 503 "Query took too long".
-            console.warn('Nominatim response not ok:', response.status, response.statusText);
-            return [] as NominatimResult[];
-          }
-          return (await response.json()) as NominatimResult[];
-        };
-
-        let data: NominatimResult[] = [];
-        for (const url of urls) {
-          data = await tryFetch(url);
-          if (data.length > 0) break;
-        }
-
-        // If a house number is provided, prefer exact matches, but don't hide everything if Nominatim can't return it.
-        if (leadingHouseNumber) {
-          const hn = leadingHouseNumber;
-          const re = new RegExp(`\\b${hn}\\b`);
-          const exact = data.filter(r => r.address?.house_number === hn || re.test(r.display_name));
-          if (exact.length > 0) data = exact;
-        }
-
-        // Ranking: house number match (if provided) first, then proximity
-        if (data.length > 1) {
           const hn = leadingHouseNumber;
           const userLat = userLocation?.lat ?? null;
           const userLng = userLocation?.lng ?? null;
 
-          const score = (r: NominatimResult) => {
+          const score = (r: GeocodeSuggestion) => {
             let s = 0;
 
             if (hn) {
-              const hasExactHouse = r.address?.house_number === hn;
-              const hasInText = new RegExp(`\\b${hn}\\b`).test(r.display_name);
-
-              if (hasExactHouse) s += 1000;
-              if (hasInText) s += 500;
-              if (r.address?.house_number) s += 50;
-              if (r.type === 'house') s += 30;
+              if (r.houseNumber === hn) s += 1000;
+              if (r.houseNumber) s += 40;
             }
 
             if (userLat != null && userLng != null) {
-              const dist = Math.abs(parseFloat(r.lat) - userLat) + Math.abs(parseFloat(r.lon) - userLng);
+              const dist = Math.abs(r.lat - userLat) + Math.abs(r.lng - userLng);
               s -= dist * 10;
             }
 
             return s;
           };
 
-          data = [...data].sort((a, b) => score(b) - score(a));
-        }
+          return [...items].sort((a, b) => score(b) - score(a));
+        };
 
-        const top = data.slice(0, 5);
+        const fetchPhoton = async (): Promise<GeocodeSuggestion[]> => {
+          const params = new URLSearchParams({
+            q: searchTerm,
+            limit: '10',
+            lang: 'es'
+          });
+
+          if (userLocation) {
+            params.set('lat', String(userLocation.lat));
+            params.set('lon', String(userLocation.lng));
+          }
+
+          const url = `https://photon.komoot.io/api/?${params.toString()}`;
+          const res = await fetch(url, { headers, signal: controller.signal });
+          if (!res.ok) return [];
+
+          const json = (await res.json()) as PhotonResponse;
+          const features = json.features ?? [];
+
+          const items: GeocodeSuggestion[] = features
+            .map((f) => {
+              const coords = f.geometry?.coordinates;
+              const p = f.properties ?? {};
+              if (!coords || coords.length !== 2) return null;
+
+              const [lng, lat] = coords;
+              const houseNumber = p.housenumber?.toString();
+              const street = p.street || p.name || '';
+              const city = p.city || '';
+              const state = p.state || '';
+              const postcode = p.postcode || '';
+              const country = p.country || '';
+
+              const displayParts = [
+                `${houseNumber ? `${houseNumber} ` : ''}${street}`.trim(),
+                city,
+                state,
+                postcode,
+                country
+              ].filter(Boolean);
+
+              const display = displayParts.join(', ');
+
+              return {
+                id: `photon-${p.osm_type ?? 'osm'}-${p.osm_id ?? `${lat},${lng}`}`,
+                display,
+                lat: Number(lat),
+                lng: Number(lng),
+                source: 'photon' as const,
+                houseNumber
+              } satisfies GeocodeSuggestion;
+            })
+            .filter(Boolean) as GeocodeSuggestion[];
+
+          // If the user typed a house number, prefer results that include it.
+          if (leadingHouseNumber) {
+            const exact = items.filter((i) => i.houseNumber === leadingHouseNumber);
+            if (exact.length > 0) return rankByHouseAndProximity(exact);
+          }
+
+          return rankByHouseAndProximity(items);
+        };
+
+        const fetchNominatim = async (): Promise<GeocodeSuggestion[]> => {
+          const countryParam = countryCode && countryCode !== 'global' ? `&countrycodes=${countryCode}` : '';
+
+          const getGeoBiasParams = () => {
+            if (!userLocation) return '';
+            const latDelta = 0.5;
+            const lngDelta = 0.5;
+            const viewbox = `${userLocation.lng - lngDelta},${userLocation.lat + latDelta},${userLocation.lng + lngDelta},${userLocation.lat - latDelta}`;
+            return `&viewbox=${viewbox}`;
+          };
+
+          const parts = searchTerm.split(',').map((p) => p.trim()).filter(Boolean);
+          const postalFromParts = parts.find((p) => /[A-Z]\d[A-Z]\s?\d[A-Z]\d/i.test(p));
+          const postalCode = postalFromParts?.match(/[A-Z]\d[A-Z]\s?\d[A-Z]\d/i)?.[0] ?? null;
+
+          const geoBias = getGeoBiasParams();
+          const dedupeParam = leadingHouseNumber ? '&dedupe=0' : '&dedupe=1';
+          const makeUrl = (params: string) =>
+            `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10${dedupeParam}${countryParam}${params}`;
+
+          const q = searchTerm.length > 80 && parts.length > 2 ? parts.slice(0, 3).join(', ') : searchTerm;
+
+          const urls: string[] = [];
+          if (leadingHouseNumber) {
+            const street = parts[0] ?? searchTerm;
+            const cityGuess = parts.slice(1).find((p) => /vancouver/i.test(p)) ?? parts[1] ?? '';
+            const cityParam = cityGuess ? `&city=${encodeURIComponent(cityGuess)}` : '';
+            const postalParam = postalCode ? `&postalcode=${encodeURIComponent(postalCode)}` : '';
+
+            urls.push(makeUrl(`&street=${encodeURIComponent(street)}${cityParam}${postalParam}${geoBias}`));
+            urls.push(makeUrl(`&street=${encodeURIComponent(street)}${geoBias}`));
+            urls.push(makeUrl(`&q=${encodeURIComponent(q)}${geoBias}`));
+          } else {
+            urls.push(makeUrl(`&q=${encodeURIComponent(q)}${geoBias}`));
+            urls.push(makeUrl(`&q=${encodeURIComponent(q)}`));
+          }
+
+          const tryFetch = async (url: string) => {
+            const response = await fetch(url, { headers, signal: controller.signal });
+            if (!response.ok) return [] as NominatimResult[];
+            return (await response.json()) as NominatimResult[];
+          };
+
+          let data: NominatimResult[] = [];
+          for (const url of urls) {
+            data = await tryFetch(url);
+            if (data.length > 0) break;
+          }
+
+          const items: GeocodeSuggestion[] = data.map((r) => {
+            const lat = Number.parseFloat(r.lat);
+            const lng = Number.parseFloat(r.lon);
+            const houseNumber = r.address?.house_number;
+
+            return {
+              id: `nominatim-${r.place_id}`,
+              display: r.display_name,
+              lat,
+              lng,
+              source: 'nominatim',
+              houseNumber
+            } satisfies GeocodeSuggestion;
+          });
+
+          // If the user typed a house number, prefer exact matches.
+          if (leadingHouseNumber) {
+            const exact = items.filter((i) => i.houseNumber === leadingHouseNumber || new RegExp(`\\b${leadingHouseNumber}\\b`).test(i.display));
+            if (exact.length > 0) return rankByHouseAndProximity(exact);
+          }
+
+          return rankByHouseAndProximity(items);
+        };
+
+        // Primary provider (generally more "autocomplete-like" for civic addresses)
+        let items = await fetchPhoton();
+
+        // Fallback
+        if (items.length === 0) items = await fetchNominatim();
+
+        const top = items.slice(0, 5);
         setSuggestions(top);
-        setShowSuggestions(top.length > 0 || filteredSavedAddresses.length > 0);
+        setShowSuggestions(top.length > 0);
       } catch (error: any) {
-        // Ignore abort errors (expected while typing)
         if (error?.name !== 'AbortError') {
-          console.warn('Nominatim geocoding error:', error);
+          console.warn('Address search error:', error);
         }
         setSuggestions([]);
       } finally {
@@ -387,6 +492,7 @@ export function AddressAutocomplete({
 
     fetchSuggestions();
   }, [debouncedSearch, countryCode, userLocation]);
+
 
   // Filter saved addresses based on input
   const filteredSavedAddresses = savedAddresses.filter(addr => 
@@ -405,19 +511,19 @@ export function AddressAutocomplete({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelect = (result: NominatimResult) => {
-    const address = result.display_name;
-    const lat = parseFloat(result.lat);
-    const lng = parseFloat(result.lon);
-    
+  const handleSelect = (result: GeocodeSuggestion) => {
+    const address = result.display;
+    const lat = result.lat;
+    const lng = result.lng;
+
     setInputValue(address);
     onChange(address);
     onCoordinatesChange(lat, lng);
     setShowSuggestions(false);
     setSuggestions([]);
-    
+
     // Show save option for new addresses
-    const isAlreadySaved = savedAddresses.some(a => a.address === address);
+    const isAlreadySaved = savedAddresses.some((a) => a.address === address);
     if (!isAlreadySaved) {
       setPendingAddress({ address, lat, lng });
       setShowSaveOption(true);
@@ -546,6 +652,12 @@ export function AddressAutocomplete({
             value={inputValue}
             onChange={handleInputChange}
             onFocus={handleFocus}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && suggestions[0]) {
+                e.preventDefault();
+                handleSelect(suggestions[0]);
+              }
+            }}
             placeholder={placeholder}
             className="pr-8"
           />
@@ -700,13 +812,13 @@ export function AddressAutocomplete({
               )}
               {suggestions.map((result) => (
                 <button
-                  key={result.place_id}
+                  key={result.id}
                   type="button"
                   className="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-start gap-2 transition-colors"
                   onClick={() => handleSelect(result)}
                 >
                   <MapPin className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                  <span className="line-clamp-2">{result.display_name}</span>
+                  <span className="line-clamp-2">{result.display}</span>
                 </button>
               ))}
             </>
