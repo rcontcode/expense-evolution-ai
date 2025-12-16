@@ -1185,6 +1185,9 @@ export type Database = {
           id: string
           kilometers: number
           purpose: string | null
+          recurrence: string | null
+          recurrence_days: number[] | null
+          recurrence_end_date: string | null
           route: string
           route_snapshot_url: string | null
           start_address: string | null
@@ -1203,6 +1206,9 @@ export type Database = {
           id?: string
           kilometers: number
           purpose?: string | null
+          recurrence?: string | null
+          recurrence_days?: number[] | null
+          recurrence_end_date?: string | null
           route: string
           route_snapshot_url?: string | null
           start_address?: string | null
@@ -1221,6 +1227,9 @@ export type Database = {
           id?: string
           kilometers?: number
           purpose?: string | null
+          recurrence?: string | null
+          recurrence_days?: number[] | null
+          recurrence_end_date?: string | null
           route?: string
           route_snapshot_url?: string | null
           start_address?: string | null

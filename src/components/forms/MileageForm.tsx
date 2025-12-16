@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { CalendarIcon, MapPin, Navigation, Sparkles, Building2, Loader2, Route, RotateCcw } from 'lucide-react';
+import { CalendarIcon, MapPin, Navigation, Sparkles, Building2, Loader2, Route, RotateCcw, Repeat } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,7 +33,8 @@ import {
   AlertDescription,
 } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
-import { mileageSchema, MileageFormValues } from '@/lib/validations/mileage.schema';
+import { mileageSchema, MileageFormValues, RECURRENCE_TYPES } from '@/lib/validations/mileage.schema';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useClients } from '@/hooks/data/useClients';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { MileageWithClient, calculateMileageDeduction, CRA_MILEAGE_RATES } from '@/hooks/data/useMileage';
@@ -71,8 +72,13 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
       start_lng: initialData?.start_lng || null,
       end_lat: initialData?.end_lat || null,
       end_lng: initialData?.end_lng || null,
+      recurrence: (initialData as any)?.recurrence || 'one_time',
+      recurrence_end_date: (initialData as any)?.recurrence_end_date ? new Date((initialData as any).recurrence_end_date) : null,
+      recurrence_days: (initialData as any)?.recurrence_days || null,
     },
   });
+
+  const watchRecurrence = form.watch('recurrence');
 
   const watchKilometers = form.watch('kilometers');
   const watchClientId = form.watch('client_id');
@@ -479,6 +485,136 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
             </FormItem>
           )}
         />
+
+        {/* Recurrence Section */}
+        <div className="space-y-3 rounded-lg border p-4 bg-muted/30">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Repeat className="h-4 w-4 text-muted-foreground" />
+            {t('mileage.recurrence')}
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="recurrence"
+            render={({ field }) => (
+              <FormItem>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="one_time">{t('mileage.recurrenceOneTime')}</SelectItem>
+                    <SelectItem value="daily">{t('mileage.recurrenceDaily')}</SelectItem>
+                    <SelectItem value="weekly">{t('mileage.recurrenceWeekly')}</SelectItem>
+                    <SelectItem value="biweekly">{t('mileage.recurrenceBiweekly')}</SelectItem>
+                    <SelectItem value="monthly">{t('mileage.recurrenceMonthly')}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Days of week selection for weekly recurrence */}
+          {watchRecurrence === 'weekly' && (
+            <FormField
+              control={form.control}
+              name="recurrence_days"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs">{t('mileage.selectDays')}</FormLabel>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { day: 0, label: t('mileage.daySun') },
+                      { day: 1, label: t('mileage.dayMon') },
+                      { day: 2, label: t('mileage.dayTue') },
+                      { day: 3, label: t('mileage.dayWed') },
+                      { day: 4, label: t('mileage.dayThu') },
+                      { day: 5, label: t('mileage.dayFri') },
+                      { day: 6, label: t('mileage.daySat') },
+                    ].map(({ day, label }) => {
+                      const isSelected = (field.value || []).includes(day);
+                      return (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => {
+                            const currentDays = field.value || [];
+                            const newDays = isSelected
+                              ? currentDays.filter((d: number) => d !== day)
+                              : [...currentDays, day].sort();
+                            field.onChange(newDays.length > 0 ? newDays : null);
+                          }}
+                          className={cn(
+                            "px-3 py-1.5 text-xs rounded-md border transition-colors",
+                            isSelected
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-background hover:bg-muted"
+                          )}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {/* End date for recurring trips */}
+          {watchRecurrence !== 'one_time' && (
+            <FormField
+              control={form.control}
+              name="recurrence_end_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs">{t('mileage.recurrenceEndDate')}</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={cn(
+                            'w-full pl-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, 'PPP')
+                          ) : (
+                            <span>{t('mileage.noEndDate')}</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value || undefined}
+                        onSelect={field.onChange}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormDescription className="text-xs">
+                    {t('mileage.recurrenceEndDateHint')}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+        </div>
 
         {/* Deduction Preview */}
         {watchKilometers > 0 && (
