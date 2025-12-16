@@ -73,9 +73,62 @@ export function AddressAutocomplete({
   const [showSaveOption, setShowSaveOption] = useState(false);
   const [pendingAddress, setPendingAddress] = useState<{ address: string; lat: number; lng: number } | null>(null);
   const [countryCode, setCountryCode] = useState('ca');
+  const [isDetectingCountry, setIsDetectingCountry] = useState(true);
   const wrapperRef = useRef<HTMLDivElement>(null);
   
   const debouncedSearch = useDebounce(inputValue, 400);
+
+  // Auto-detect country from user's location on mount
+  useEffect(() => {
+    const detectCountry = async () => {
+      if (!navigator.geolocation) {
+        setIsDetectingCountry(false);
+        return;
+      }
+
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: false,
+            timeout: 5000,
+            maximumAge: 300000 // Cache for 5 minutes
+          });
+        });
+
+        const { latitude, longitude } = position.coords;
+        
+        // Reverse geocode to get country
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=3`,
+          {
+            headers: {
+              'Accept-Language': 'en',
+              'User-Agent': 'EvoFinz/1.0'
+            }
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const detectedCountryCode = data.address?.country_code?.toLowerCase();
+          
+          if (detectedCountryCode) {
+            const matchingCountry = COUNTRIES.find(c => c.code === detectedCountryCode);
+            if (matchingCountry) {
+              setCountryCode(detectedCountryCode);
+            }
+          }
+        }
+      } catch (error) {
+        // Silently fail - will default to 'ca'
+        console.log('Country detection failed, using default');
+      } finally {
+        setIsDetectingCountry(false);
+      }
+    };
+
+    detectCountry();
+  }, []);
 
   // Fetch saved addresses
   const { data: savedAddresses = [] } = useQuery({
@@ -314,10 +367,14 @@ export function AddressAutocomplete({
   return (
     <div ref={wrapperRef} className={cn('relative', className)}>
       <div className="flex gap-2">
-        <Select value={countryCode} onValueChange={setCountryCode}>
-          <SelectTrigger className="w-[70px] shrink-0">
+        <Select value={countryCode} onValueChange={setCountryCode} disabled={isDetectingCountry}>
+          <SelectTrigger className="w-[70px] shrink-0" title={isDetectingCountry ? 'Detectando ubicación...' : 'Cambiar país'}>
             <SelectValue>
-              {COUNTRIES.find(c => c.code === countryCode)?.flag || '🌍'}
+              {isDetectingCountry ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                COUNTRIES.find(c => c.code === countryCode)?.flag || '🌍'
+              )}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
