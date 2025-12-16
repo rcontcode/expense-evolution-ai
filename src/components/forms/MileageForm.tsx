@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { CalendarIcon, MapPin, Navigation, Sparkles, Building2, Loader2, Route } from 'lucide-react';
+import { CalendarIcon, MapPin, Navigation, Sparkles, Building2, Loader2, Route, RotateCcw } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,6 +55,7 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
   const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
   const [calculatedDistance, setCalculatedDistance] = useState<number | null>(null);
   const [calculatedDuration, setCalculatedDuration] = useState<number | null>(null);
+  const [isRoundTrip, setIsRoundTrip] = useState(false);
 
   const form = useForm<MileageFormValues>({
     resolver: zodResolver(mileageSchema),
@@ -122,11 +123,15 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
     }
   }, [watchStartLat, watchStartLng, watchEndLat, watchEndLng, calculateRouteDistance]);
 
-  const applyCalculatedDistance = () => {
+  const applyCalculatedDistance = (roundTrip: boolean = isRoundTrip) => {
     if (calculatedDistance) {
-      form.setValue('kilometers', calculatedDistance);
+      const distance = roundTrip ? calculatedDistance * 2 : calculatedDistance;
+      form.setValue('kilometers', Math.round(distance * 10) / 10);
     }
   };
+
+  const displayDistance = isRoundTrip && calculatedDistance ? calculatedDistance * 2 : calculatedDistance;
+  const displayDuration = isRoundTrip && calculatedDuration ? calculatedDuration * 2 : calculatedDuration;
 
   // Auto-update route when addresses change
   useEffect(() => {
@@ -362,35 +367,63 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
         {(isCalculatingDistance || calculatedDistance) && (
           <Alert className="bg-chart-1/10 border-chart-1/30">
             <Route className="h-4 w-4 text-chart-1" />
-            <AlertDescription className="flex items-center justify-between">
+            <AlertDescription className="flex flex-col gap-3">
               {isCalculatingDistance ? (
                 <div className="flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm">{t('mileage.calculatingDistance')}</span>
                 </div>
               ) : calculatedDistance ? (
-                <div className="flex items-center justify-between w-full gap-4">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-medium">
-                      {t('mileage.calculatedDistance')}: <strong>{calculatedDistance} km</strong>
-                    </span>
-                    {calculatedDuration && (
-                      <span className="text-xs text-muted-foreground">
-                        {t('mileage.estimatedTime')}: ~{calculatedDuration} min
+                <>
+                  <div className="flex items-center justify-between w-full gap-4">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-sm font-medium">
+                        {t('mileage.calculatedDistance')}: <strong>{displayDistance} km</strong>
+                        {isRoundTrip && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({calculatedDistance} km × 2)
+                          </span>
+                        )}
                       </span>
-                    )}
+                      {displayDuration && (
+                        <span className="text-xs text-muted-foreground">
+                          {t('mileage.estimatedTime')}: ~{displayDuration} min
+                        </span>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => applyCalculatedDistance()}
+                      className="text-xs shrink-0"
+                    >
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      {t('mileage.applyDistance')}
+                    </Button>
                   </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={applyCalculatedDistance}
-                    className="text-xs shrink-0"
-                  >
-                    <Sparkles className="h-3 w-3 mr-1" />
-                    {t('mileage.applyDistance')}
-                  </Button>
-                </div>
+                  <div className="flex items-center justify-between border-t pt-2">
+                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                      <RotateCcw className="h-4 w-4 text-muted-foreground" />
+                      {t('mileage.roundTrip')}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsRoundTrip(!isRoundTrip)}
+                      className={cn(
+                        "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
+                        isRoundTrip ? "bg-chart-1" : "bg-muted"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-lg ring-0 transition-transform",
+                          isRoundTrip ? "translate-x-4" : "translate-x-0"
+                        )}
+                      />
+                    </button>
+                  </div>
+                </>
               ) : null}
             </AlertDescription>
           </Alert>

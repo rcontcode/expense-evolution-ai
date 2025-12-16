@@ -820,6 +820,7 @@ export const translations = {
       calculatedDistance: 'Distancia calculada',
       estimatedTime: 'Tiempo estimado',
       applyDistance: 'Aplicar distancia',
+      roundTrip: 'Ida y vuelta',
     },
     quickCapture: {
       title: 'Captura Rápida de Gastos',
@@ -1660,6 +1661,7 @@ export const translations = {
       calculatedDistance: 'Calculated distance',
       estimatedTime: 'Estimated time',
       applyDistance: 'Apply distance',
+      roundTrip: 'Round trip',
     },
     quickCapture: {
       title: 'AI Quick Capture',
