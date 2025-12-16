@@ -1,8 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { CalendarIcon, MapPin, Navigation, Sparkles, Building2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { CalendarIcon, MapPin, Navigation, Sparkles, Building2, Loader2, Route } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -52,6 +52,9 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
   const { data: clients } = useClients();
   const [showClientAddressSuggestion, setShowClientAddressSuggestion] = useState(false);
   const [selectedClientAddress, setSelectedClientAddress] = useState<string | null>(null);
+  const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
+  const [calculatedDistance, setCalculatedDistance] = useState<number | null>(null);
+  const [calculatedDuration, setCalculatedDuration] = useState<number | null>(null);
 
   const form = useForm<MileageFormValues>({
     resolver: zodResolver(mileageSchema),
@@ -82,6 +85,48 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
   const estimatedDeduction = watchKilometers 
     ? calculateMileageDeduction(watchKilometers, yearToDateKm)
     : { deductible: 0, rate: CRA_MILEAGE_RATES.first5000 };
+
+  // Calculate distance using OSRM when both coordinates are available
+  const calculateRouteDistance = useCallback(async (
+    startLat: number,
+    startLng: number,
+    endLat: number,
+    endLng: number
+  ) => {
+    setIsCalculatingDistance(true);
+    try {
+      const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=false`;
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+        const distanceKm = data.routes[0].distance / 1000;
+        const durationMin = Math.round(data.routes[0].duration / 60);
+        setCalculatedDistance(Math.round(distanceKm * 10) / 10);
+        setCalculatedDuration(durationMin);
+      }
+    } catch (error) {
+      console.error('Error calculating route distance:', error);
+    } finally {
+      setIsCalculatingDistance(false);
+    }
+  }, []);
+
+  // Auto-calculate distance when both coordinates are set
+  useEffect(() => {
+    if (watchStartLat && watchStartLng && watchEndLat && watchEndLng) {
+      calculateRouteDistance(watchStartLat, watchStartLng, watchEndLat, watchEndLng);
+    } else {
+      setCalculatedDistance(null);
+      setCalculatedDuration(null);
+    }
+  }, [watchStartLat, watchStartLng, watchEndLat, watchEndLng, calculateRouteDistance]);
+
+  const applyCalculatedDistance = () => {
+    if (calculatedDistance) {
+      form.setValue('kilometers', calculatedDistance);
+    }
+  };
 
   // Auto-update route when addresses change
   useEffect(() => {
@@ -312,6 +357,44 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
             )}
           />
         </div>
+
+        {/* OSRM Distance Calculation Result */}
+        {(isCalculatingDistance || calculatedDistance) && (
+          <Alert className="bg-chart-1/10 border-chart-1/30">
+            <Route className="h-4 w-4 text-chart-1" />
+            <AlertDescription className="flex items-center justify-between">
+              {isCalculatingDistance ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm">{t('mileage.calculatingDistance')}</span>
+                </div>
+              ) : calculatedDistance ? (
+                <div className="flex items-center justify-between w-full gap-4">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm font-medium">
+                      {t('mileage.calculatedDistance')}: <strong>{calculatedDistance} km</strong>
+                    </span>
+                    {calculatedDuration && (
+                      <span className="text-xs text-muted-foreground">
+                        {t('mileage.estimatedTime')}: ~{calculatedDuration} min
+                      </span>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={applyCalculatedDistance}
+                    className="text-xs shrink-0"
+                  >
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    {t('mileage.applyDistance')}
+                  </Button>
+                </div>
+              ) : null}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Route Preview */}
         {watchStartAddress && watchEndAddress && (
