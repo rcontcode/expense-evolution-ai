@@ -5,11 +5,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Car, Plus, Download, MapPin, DollarSign } from 'lucide-react';
+import { Car, Plus, Download, MapPin, DollarSign, Upload } from 'lucide-react';
 import { useMileage, useMileageSummary, MileageWithClient } from '@/hooks/data/useMileage';
 import { MileageDialog } from '@/components/dialogs/MileageDialog';
 import { MileageTable } from '@/components/tables/MileageTable';
 import { MileageSummaryCard } from '@/components/dashboard/MileageSummaryCard';
+import { MileageImportDialog } from '@/components/mileage/MileageImportDialog';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
@@ -27,6 +28,7 @@ export default function Mileage() {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedMileage, setSelectedMileage] = useState<MileageWithClient | null>(null);
 
   const { data: mileageRecords, isLoading } = useMileage(selectedYear);
@@ -75,6 +77,10 @@ export default function Mileage() {
                   </SelectContent>
                 </Select>
               </InfoTooltip>
+              <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+                <Upload className="mr-2 h-4 w-4" />
+                {t('mileage.import')}
+              </Button>
               <InfoTooltip content={TOOLTIP_CONTENT.addTrip} variant="wrapper">
                 <Button onClick={handleCreate}>
                   <Plus className="mr-2 h-4 w-4" />
@@ -155,6 +161,11 @@ export default function Mileage() {
             onClose={handleClose}
             mileage={selectedMileage}
             yearToDateKm={summary?.yearToDateKm || 0}
+          />
+
+          <MileageImportDialog
+            open={importDialogOpen}
+            onClose={() => setImportDialogOpen(false)}
           />
         </div>
       </TooltipProvider>

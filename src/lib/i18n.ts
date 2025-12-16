@@ -852,6 +852,7 @@ export const translations = {
       saveAddressQuestion: '¿Guardar esta dirección?',
       saveAddress: 'Guardar',
       addressSaved: 'Dirección guardada',
+      import: 'Importar',
     },
     quickCapture: {
       title: 'Captura Rápida de Gastos',
@@ -1724,6 +1725,7 @@ export const translations = {
       saveAddressQuestion: 'Save this address?',
       saveAddress: 'Save',
       addressSaved: 'Address saved',
+      import: 'Import',
     },
     quickCapture: {
       title: 'AI Quick Capture',
