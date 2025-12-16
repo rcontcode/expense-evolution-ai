@@ -92,6 +92,7 @@ export function AddressAutocomplete({
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationStatus, setLocationStatus] = useState<'unknown' | 'granted' | 'denied' | 'unavailable'>('unknown');
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const fetchAbortRef = useRef<AbortController | null>(null);
   
   const debouncedSearch = useDebounce(inputValue, 250);
 
@@ -259,17 +260,23 @@ export function AddressAutocomplete({
         return;
       }
 
+      // Cancel any in-flight request to avoid rate limiting / slow 503s.
+      fetchAbortRef.current?.abort();
+      const controller = new AbortController();
+      fetchAbortRef.current = controller;
+
       setIsLoading(true);
       try {
         const countryParam = countryCode && countryCode !== 'global' ? `&countrycodes=${countryCode}` : '';
 
-        const buildViewbox = () => {
+        const getGeoBiasParams = () => {
           if (!userLocation) return '';
-          // ~50km-ish box: enough to prioritize local results without excluding valid matches.
+          // ~50km-ish box: enough to prioritize local results.
           const latDelta = 0.5;
           const lngDelta = 0.5;
           const viewbox = `${userLocation.lng - lngDelta},${userLocation.lat + latDelta},${userLocation.lng + lngDelta},${userLocation.lat - latDelta}`;
-          return `&viewbox=${viewbox}`;
+          // Bounded ensures results must be within the box (critical for house-number precision).
+          return `&viewbox=${viewbox}&bounded=1`;
         };
 
         const headers = {
@@ -277,43 +284,58 @@ export function AddressAutocomplete({
           'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
         } as const;
 
-        // If user starts with a house number, use structured query (much better for exact addresses)
         const leadingHouseNumber = searchTerm.match(/^(\d{1,6})\s+/)?.[1] ?? null;
         const parts = searchTerm.split(',').map(p => p.trim()).filter(Boolean);
 
         const postalFromParts = parts.find(p => /[A-Z]\d[A-Z]\s?\d[A-Z]\d/i.test(p));
         const postalCode = postalFromParts?.match(/[A-Z]\d[A-Z]\s?\d[A-Z]\d/i)?.[0] ?? null;
 
-        const buildBaseUrl = () => {
-          if (leadingHouseNumber) {
-            const street = parts[0] ?? searchTerm;
-            const city = parts[1] ?? '';
-            const cityParam = city ? `&city=${encodeURIComponent(city)}` : '';
-            const postalParam = postalCode ? `&postalcode=${encodeURIComponent(postalCode)}` : '';
-            return `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=20${countryParam}&street=${encodeURIComponent(street)}${cityParam}${postalParam}`;
-          }
+        const geoBias = getGeoBiasParams();
+        const makeUrl = (params: string) =>
+          `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10&dedupe=1${countryParam}${params}`;
 
-          // Long full addresses can time out on Nominatim; keep it focused.
-          const q = searchTerm.length > 80 && parts.length > 2 ? parts.slice(0, 3).join(', ') : searchTerm;
-          return `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(q)}&addressdetails=1&limit=20${countryParam}`;
-        };
+        const q = searchTerm.length > 80 && parts.length > 2 ? parts.slice(0, 3).join(', ') : searchTerm;
 
-        const baseUrl = buildBaseUrl();
+        const urls: string[] = [];
 
-        const tryFetch = async (suffix: string) => {
-          const response = await fetch(`${baseUrl}${suffix}`, { headers });
+        if (leadingHouseNumber) {
+          const street = parts[0] ?? searchTerm;
+          const cityGuess = parts.slice(1).find(p => /vancouver/i.test(p)) ?? parts[1] ?? '';
+          const cityParam = cityGuess ? `&city=${encodeURIComponent(cityGuess)}` : '';
+          const postalParam = postalCode ? `&postalcode=${encodeURIComponent(postalCode)}` : '';
+
+          // 1) Structured query, bounded to the local area
+          urls.push(makeUrl(`&street=${encodeURIComponent(street)}${cityParam}${postalParam}${geoBias}`));
+          // 2) Structured query without city/postal (for partial input)
+          urls.push(makeUrl(`&street=${encodeURIComponent(street)}${geoBias}`));
+          // 3) Free-text fallback (sometimes better for exact civic addresses)
+          urls.push(makeUrl(`&q=${encodeURIComponent(q)}${geoBias}`));
+        } else {
+          urls.push(makeUrl(`&q=${encodeURIComponent(q)}${geoBias}`));
+          urls.push(makeUrl(`&q=${encodeURIComponent(q)}`));
+        }
+
+        const tryFetch = async (url: string) => {
+          const response = await fetch(url, { headers, signal: controller.signal });
           if (!response.ok) {
-            // Nominatim occasionally returns 503 "Query took too long". Treat as empty and fall back.
+            // Nominatim occasionally returns 503 "Query took too long".
             console.warn('Nominatim response not ok:', response.status, response.statusText);
             return [] as NominatimResult[];
           }
           return (await response.json()) as NominatimResult[];
         };
 
-        // Prefer local bias first (viewbox), but DO NOT bound the search (too many false negatives).
-        let data = await tryFetch(buildViewbox());
-        if (data.length === 0) {
-          data = await tryFetch('');
+        let data: NominatimResult[] = [];
+        for (const url of urls) {
+          data = await tryFetch(url);
+          if (data.length > 0) break;
+        }
+
+        // If a house number is provided, only show matches that include that number.
+        if (leadingHouseNumber) {
+          const hn = leadingHouseNumber;
+          const re = new RegExp(`\\b${hn}\\b`);
+          data = data.filter(r => r.address?.house_number === hn || re.test(r.display_name));
         }
 
         // Ranking: house number match (if provided) first, then proximity
@@ -349,8 +371,11 @@ export function AddressAutocomplete({
         const top = data.slice(0, 5);
         setSuggestions(top);
         setShowSuggestions(top.length > 0 || filteredSavedAddresses.length > 0);
-      } catch (error) {
-        console.warn('Nominatim geocoding error:', error);
+      } catch (error: any) {
+        // Ignore abort errors (expected while typing)
+        if (error?.name !== 'AbortError') {
+          console.warn('Nominatim geocoding error:', error);
+        }
         setSuggestions([]);
       } finally {
         setIsLoading(false);
