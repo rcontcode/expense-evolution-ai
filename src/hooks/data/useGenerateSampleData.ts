@@ -17,8 +17,19 @@ export function useGenerateSampleData() {
 
   return useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No authenticated user');
+      console.log('[SAMPLE DATA] Starting generation...');
+      
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) {
+        console.error('[SAMPLE DATA] Auth error:', authError);
+        throw new Error('Authentication error: ' + authError.message);
+      }
+      if (!user) {
+        console.error('[SAMPLE DATA] No user found');
+        throw new Error('No authenticated user');
+      }
+      
+      console.log('[SAMPLE DATA] User authenticated:', user.id);
 
       const userId = user.id;
       const today = new Date();
@@ -56,12 +67,17 @@ export function useGenerateSampleData() {
         },
       ];
 
+      console.log('[SAMPLE DATA] Creating clients...');
       const { data: clientsData, error: clientsError } = await supabase
         .from('clients')
         .insert(clients.map(c => ({ ...c, user_id: userId })))
         .select();
 
-      if (clientsError) throw clientsError;
+      if (clientsError) {
+        console.error('[SAMPLE DATA] Clients error:', clientsError);
+        throw new Error('Error creating clients: ' + clientsError.message);
+      }
+      console.log('[SAMPLE DATA] Clients created:', clientsData?.length);
 
       // ============================================
       // 2. CREATE 2 PROJECTS PER CLIENT (4 total)
@@ -627,11 +643,16 @@ export function useGenerateSampleData() {
 
       return { success: true };
     },
+    onMutate: () => {
+      toast.loading(language === 'es' ? 'Generando datos de ejemplo...' : 'Generating sample data...', { id: 'sample-data-gen' });
+    },
     onSuccess: () => {
+      toast.dismiss('sample-data-gen');
       invalidateAllQueries(queryClient);
       toast.success(language === 'es' ? '¡Datos de ejemplo generados! (2 clientes, 4 proyectos, 20 gastos, 12 ingresos, y más)' : 'Sample data generated! (2 clients, 4 projects, 20 expenses, 12 incomes, and more)');
     },
     onError: (error: any) => {
+      toast.dismiss('sample-data-gen');
       console.error('Error generating sample data:', error);
       toast.error(language === 'es' ? 'Error generando datos: ' + error.message : 'Error generating data: ' + error.message);
     },
