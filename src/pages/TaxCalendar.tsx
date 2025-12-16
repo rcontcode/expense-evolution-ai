@@ -8,17 +8,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Calendar, CalendarDays, Clock, AlertTriangle, CheckCircle2, Info, ExternalLink, Building2, User, Briefcase, HelpCircle, Bell, FileText, Calculator, BookOpen, ChevronRight, Target, Lightbulb } from "lucide-react";
+import { Calendar, CalendarDays, Clock, AlertTriangle, CheckCircle2, Info, ExternalLink, Building2, User, Briefcase, HelpCircle, BookOpen, Calculator, Lightbulb, Sparkles } from "lucide-react";
 import { useProfile } from "@/hooks/data/useProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { format, addDays, differenceInDays, setMonth, setDate, addMonths, isBefore, isAfter, startOfYear, endOfYear } from "date-fns";
+import { format, addMonths, differenceInDays, isAfter } from "date-fns";
 import { es, enCA } from "date-fns/locale";
 import { TaxDeadlineTimeline } from "@/components/tax-calendar/TaxDeadlineTimeline";
 import { TaxDeadlineCards } from "@/components/tax-calendar/TaxDeadlineCards";
-import { TaxProfileSetup } from "@/components/tax-calendar/TaxProfileSetup";
+import { TaxSituationWizard } from "@/components/tax-calendar/TaxSituationWizard";
 import { TaxResources } from "@/components/tax-calendar/TaxResources";
+import { TaxEstimator } from "@/components/tax-calendar/TaxEstimator";
 
 export default function TaxCalendar() {
   const { data: profile } = useProfile();
@@ -26,7 +26,7 @@ export default function TaxCalendar() {
   const locale = language === 'es' ? es : enCA;
   
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [showSetup, setShowSetup] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
 
   // Determine user's business type from profile
   const workTypes = profile?.work_types || [];
@@ -34,17 +34,22 @@ export default function TaxCalendar() {
   const hasContractor = workTypes.includes('contractor');
   const hasEmployee = workTypes.includes('employee');
   const fiscalYearEnd = profile?.fiscal_year_end;
+  const businessStartDate = profile?.business_start_date;
 
   // Check if profile is complete for tax purposes
   const profileComplete = workTypes.length > 0;
 
+  // Check if business started recently (first year)
+  const isFirstTaxYear = businessStartDate && 
+    new Date(businessStartDate).getFullYear() >= new Date().getFullYear() - 1;
+
   return (
     <Layout>
       <PageHeader
-        title={language === 'es' ? "Calendario Fiscal CRA" : "CRA Tax Calendar"}
+        title={language === 'es' ? "Centro Fiscal CRA" : "CRA Tax Center"}
         description={language === 'es' 
-          ? "Fechas límites, recordatorios y guía completa para tus obligaciones fiscales"
-          : "Deadlines, reminders and complete guide for your tax obligations"
+          ? "Calendario, estimador, recordatorios y guía completa para tus obligaciones fiscales"
+          : "Calendar, estimator, reminders and complete guide for your tax obligations"
         }
       />
 
@@ -54,19 +59,44 @@ export default function TaxCalendar() {
           <Alert variant="destructive" className="border-amber-500/50 bg-amber-500/10">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             <AlertTitle className="text-amber-500">
-              {language === 'es' ? "Perfil Incompleto" : "Incomplete Profile"}
+              {language === 'es' ? "Configuración Requerida" : "Setup Required"}
             </AlertTitle>
             <AlertDescription className="text-amber-400">
               {language === 'es' 
-                ? "Para mostrarte las fechas correctas, necesitamos conocer tu tipo de negocio. Completa tu perfil fiscal abajo."
-                : "To show you the correct dates, we need to know your business type. Complete your tax profile below."
+                ? "Para mostrarte información personalizada, necesitamos conocer tu situación fiscal. Usa el asistente de configuración."
+                : "To show you personalized information, we need to know your tax situation. Use the setup wizard."
+              }
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="ml-2 mt-2"
+                onClick={() => setShowWizard(true)}
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                {language === 'es' ? "Configurar Ahora" : "Configure Now"}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* First Tax Year Alert */}
+        {isFirstTaxYear && profileComplete && (
+          <Alert className="border-blue-500/50 bg-blue-500/10">
+            <Info className="h-4 w-4 text-blue-500" />
+            <AlertTitle className="text-blue-500">
+              {language === 'es' ? "Primer Año Fiscal" : "First Tax Year"}
+            </AlertTitle>
+            <AlertDescription className="text-blue-400">
+              {language === 'es' 
+                ? `Tu negocio comenzó en ${format(new Date(businessStartDate!), "MMMM yyyy", { locale })}. Tu primera declaración cubrirá solo desde esa fecha. Las fechas mostradas aplican desde tu siguiente año fiscal completo.`
+                : `Your business started in ${format(new Date(businessStartDate!), "MMMM yyyy", { locale })}. Your first return will cover only from that date. Dates shown apply from your next full fiscal year.`
               }
             </AlertDescription>
           </Alert>
         )}
 
         {/* Quick Status Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
           <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -97,11 +127,16 @@ export default function TaxCalendar() {
             </CardHeader>
             <CardContent>
               <p className="text-lg font-semibold">
-                {fiscalYearEnd 
+                {hasCorporation && fiscalYearEnd 
                   ? format(new Date(fiscalYearEnd), "MMMM d", { locale })
-                  : (language === 'es' ? "Diciembre 31 (por defecto)" : "December 31 (default)")
+                  : (language === 'es' ? "Diciembre 31" : "December 31")
                 }
               </p>
+              {!hasCorporation && (
+                <p className="text-xs text-muted-foreground">
+                  {language === 'es' ? "(Año calendario)" : "(Calendar year)"}
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -120,10 +155,27 @@ export default function TaxCalendar() {
               />
             </CardContent>
           </Card>
+
+          <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Calculator className="h-4 w-4 text-purple-500" />
+                {language === 'es' ? "GST/HST" : "GST/HST Status"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg font-semibold">
+                {profile?.gst_hst_registered 
+                  ? (language === 'es' ? "Registrado" : "Registered")
+                  : (language === 'es' ? "No registrado" : "Not Registered")
+                }
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Year Selector */}
-        <div className="flex items-center gap-4">
+        {/* Year Selector & Config Button */}
+        <div className="flex items-center gap-4 flex-wrap">
           <Label>{language === 'es' ? "Año Fiscal:" : "Tax Year:"}</Label>
           <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
             <SelectTrigger className="w-32">
@@ -135,20 +187,26 @@ export default function TaxCalendar() {
               ))}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm" onClick={() => setShowSetup(!showSetup)}>
+          <Button variant="outline" size="sm" onClick={() => setShowWizard(true)}>
             <HelpCircle className="h-4 w-4 mr-2" />
-            {language === 'es' ? "Configurar Perfil Fiscal" : "Configure Tax Profile"}
+            {language === 'es' 
+              ? (profileComplete ? "Actualizar Configuración" : "Asistente de Configuración")
+              : (profileComplete ? "Update Configuration" : "Setup Wizard")
+            }
           </Button>
         </div>
 
-        {/* Tax Profile Setup Panel */}
-        {showSetup && (
-          <TaxProfileSetup onClose={() => setShowSetup(false)} />
+        {/* Tax Situation Wizard */}
+        {showWizard && (
+          <TaxSituationWizard 
+            onClose={() => setShowWizard(false)} 
+            onComplete={() => setShowWizard(false)}
+          />
         )}
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="timeline" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="timeline" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">Timeline</span>
@@ -156,7 +214,13 @@ export default function TaxCalendar() {
             <TabsTrigger value="deadlines" className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span className="hidden sm:inline">
-                {language === 'es' ? "Fechas Límites" : "Deadlines"}
+                {language === 'es' ? "Fechas" : "Deadlines"}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger value="estimator" className="flex items-center gap-2">
+              <Calculator className="h-4 w-4" />
+              <span className="hidden sm:inline">
+                {language === 'es' ? "Estimador" : "Estimator"}
               </span>
             </TabsTrigger>
             <TabsTrigger value="guide" className="flex items-center gap-2">
@@ -187,6 +251,10 @@ export default function TaxCalendar() {
               workTypes={workTypes}
               fiscalYearEnd={fiscalYearEnd}
             />
+          </TabsContent>
+
+          <TabsContent value="estimator" className="space-y-4">
+            <TaxEstimator />
           </TabsContent>
 
           <TabsContent value="guide" className="space-y-4">
