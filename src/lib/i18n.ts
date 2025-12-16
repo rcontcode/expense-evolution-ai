@@ -846,6 +846,12 @@ export const translations = {
       locationUnavailable: 'No se pudo obtener la ubicación. Verifica tu GPS',
       locationTimeout: 'Tiempo de espera agotado. Intenta de nuevo',
       locationError: 'Error al obtener ubicación',
+      // Saved addresses
+      recentAddresses: 'Direcciones recientes',
+      searchResults: 'Resultados de búsqueda',
+      saveAddressQuestion: '¿Guardar esta dirección?',
+      saveAddress: 'Guardar',
+      addressSaved: 'Dirección guardada',
     },
     quickCapture: {
       title: 'Captura Rápida de Gastos',
@@ -1712,6 +1718,12 @@ export const translations = {
       locationUnavailable: 'Could not get location. Check your GPS',
       locationTimeout: 'Location request timed out. Try again',
       locationError: 'Error getting location',
+      // Saved addresses
+      recentAddresses: 'Recent addresses',
+      searchResults: 'Search results',
+      saveAddressQuestion: 'Save this address?',
+      saveAddress: 'Save',
+      addressSaved: 'Address saved',
     },
     quickCapture: {
       title: 'AI Quick Capture',

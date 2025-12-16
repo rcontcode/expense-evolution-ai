@@ -1696,6 +1696,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_addresses: {
+        Row: {
+          address: string
+          created_at: string | null
+          id: string
+          label: string | null
+          last_used_at: string | null
+          lat: number | null
+          lng: number | null
+          use_count: number | null
+          user_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string | null
+          id?: string
+          label?: string | null
+          last_used_at?: string | null
+          lat?: number | null
+          lng?: number | null
+          use_count?: number | null
+          user_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string | null
+          id?: string
+          label?: string | null
+          last_used_at?: string | null
+          lat?: number | null
+          lng?: number | null
+          use_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_financial_level: {
         Row: {
           created_at: string | null

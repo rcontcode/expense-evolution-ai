@@ -1,17 +1,29 @@
 import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, MapPin, Navigation, LocateFixed } from 'lucide-react';
+import { Loader2, MapPin, LocateFixed, Star, Clock, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/utils/useDebounce';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface NominatimResult {
   place_id: number;
   display_name: string;
   lat: string;
   lon: string;
+}
+
+interface SavedAddress {
+  id: string;
+  address: string;
+  lat: number | null;
+  lng: number | null;
+  label: string | null;
+  use_count: number;
 }
 
 interface AddressAutocompleteProps {
@@ -32,14 +44,84 @@ export function AddressAutocomplete({
   showLocationButton = true
 }: AddressAutocompleteProps) {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [inputValue, setInputValue] = useState(value);
   const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showSaveOption, setShowSaveOption] = useState(false);
+  const [pendingAddress, setPendingAddress] = useState<{ address: string; lat: number; lng: number } | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   
   const debouncedSearch = useDebounce(inputValue, 400);
+
+  // Fetch saved addresses
+  const { data: savedAddresses = [] } = useQuery({
+    queryKey: ['user-addresses', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('user_addresses')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('use_count', { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return data as SavedAddress[];
+    },
+    enabled: !!user?.id
+  });
+
+  // Save address mutation
+  const saveAddressMutation = useMutation({
+    mutationFn: async (addressData: { address: string; lat: number; lng: number; label?: string }) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      
+      // Check if address already exists
+      const { data: existing } = await supabase
+        .from('user_addresses')
+        .select('id, use_count')
+        .eq('user_id', user.id)
+        .eq('address', addressData.address)
+        .single();
+
+      if (existing) {
+        // Update use count
+        await supabase
+          .from('user_addresses')
+          .update({ use_count: existing.use_count + 1, last_used_at: new Date().toISOString() })
+          .eq('id', existing.id);
+      } else {
+        // Insert new address
+        await supabase
+          .from('user_addresses')
+          .insert({
+            user_id: user.id,
+            address: addressData.address,
+            lat: addressData.lat,
+            lng: addressData.lng,
+            label: addressData.label
+          });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-addresses'] });
+      toast.success(t('mileage.addressSaved'));
+      setShowSaveOption(false);
+      setPendingAddress(null);
+    }
+  });
+
+  // Update use count when selecting saved address
+  const updateUseCount = async (addressId: string, currentCount: number) => {
+    await supabase
+      .from('user_addresses')
+      .update({ use_count: currentCount + 1, last_used_at: new Date().toISOString() })
+      .eq('id', addressId);
+    queryClient.invalidateQueries({ queryKey: ['user-addresses'] });
+  };
 
   // Sync external value
   useEffect(() => {
@@ -69,7 +151,7 @@ export function AddressAutocomplete({
         
         const data: NominatimResult[] = await response.json();
         setSuggestions(data);
-        setShowSuggestions(data.length > 0);
+        setShowSuggestions(data.length > 0 || filteredSavedAddresses.length > 0);
       } catch (error) {
         console.warn('Nominatim geocoding error:', error);
         setSuggestions([]);
@@ -80,6 +162,11 @@ export function AddressAutocomplete({
 
     fetchSuggestions();
   }, [debouncedSearch]);
+
+  // Filter saved addresses based on input
+  const filteredSavedAddresses = savedAddresses.filter(addr => 
+    !debouncedSearch || addr.address.toLowerCase().includes(debouncedSearch.toLowerCase())
+  );
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -95,19 +182,44 @@ export function AddressAutocomplete({
 
   const handleSelect = (result: NominatimResult) => {
     const address = result.display_name;
+    const lat = parseFloat(result.lat);
+    const lng = parseFloat(result.lon);
+    
     setInputValue(address);
     onChange(address);
-    onCoordinatesChange(parseFloat(result.lat), parseFloat(result.lon));
+    onCoordinatesChange(lat, lng);
     setShowSuggestions(false);
     setSuggestions([]);
+    
+    // Show save option for new addresses
+    const isAlreadySaved = savedAddresses.some(a => a.address === address);
+    if (!isAlreadySaved) {
+      setPendingAddress({ address, lat, lng });
+      setShowSaveOption(true);
+    }
+  };
+
+  const handleSelectSaved = (saved: SavedAddress) => {
+    setInputValue(saved.address);
+    onChange(saved.address);
+    onCoordinatesChange(saved.lat, saved.lng);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    updateUseCount(saved.id, saved.use_count);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInputValue(newValue);
     onChange(newValue);
-    // Clear coordinates when manually typing (will be set when selecting)
     onCoordinatesChange(null, null);
+    setShowSaveOption(false);
+  };
+
+  const handleFocus = () => {
+    if (filteredSavedAddresses.length > 0 || suggestions.length > 0) {
+      setShowSuggestions(true);
+    }
   };
 
   // Get current location using Geolocation API + reverse geocoding
@@ -130,7 +242,6 @@ export function AddressAutocomplete({
 
       const { latitude, longitude } = position.coords;
       
-      // Reverse geocoding with Nominatim
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
         {
@@ -149,8 +260,14 @@ export function AddressAutocomplete({
         onChange(data.display_name);
         onCoordinatesChange(latitude, longitude);
         toast.success(t('mileage.locationObtained'));
+        
+        // Show save option
+        const isAlreadySaved = savedAddresses.some(a => a.address === data.display_name);
+        if (!isAlreadySaved) {
+          setPendingAddress({ address: data.display_name, lat: latitude, lng: longitude });
+          setShowSaveOption(true);
+        }
       } else {
-        // Fallback: use coordinates as address
         const coordsAddress = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
         setInputValue(coordsAddress);
         onChange(coordsAddress);
@@ -180,7 +297,7 @@ export function AddressAutocomplete({
           <Input
             value={inputValue}
             onChange={handleInputChange}
-            onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+            onFocus={handleFocus}
             placeholder={placeholder}
             className="pr-8"
           />
@@ -208,19 +325,74 @@ export function AddressAutocomplete({
         )}
       </div>
 
-      {showSuggestions && suggestions.length > 0 && (
+      {/* Save address option */}
+      {showSaveOption && pendingAddress && (
+        <div className="mt-1 p-2 bg-primary/5 border border-primary/20 rounded-md flex items-center justify-between gap-2">
+          <span className="text-xs text-muted-foreground truncate flex-1">
+            {t('mileage.saveAddressQuestion')}
+          </span>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="h-6 text-xs"
+            onClick={() => saveAddressMutation.mutate(pendingAddress)}
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            {t('mileage.saveAddress')}
+          </Button>
+        </div>
+      )}
+
+      {showSuggestions && (filteredSavedAddresses.length > 0 || suggestions.length > 0) && (
         <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-auto">
-          {suggestions.map((result) => (
-            <button
-              key={result.place_id}
-              type="button"
-              className="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-start gap-2 transition-colors"
-              onClick={() => handleSelect(result)}
-            >
-              <MapPin className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-              <span className="line-clamp-2">{result.display_name}</span>
-            </button>
-          ))}
+          {/* Saved addresses first */}
+          {filteredSavedAddresses.length > 0 && (
+            <>
+              <div className="px-3 py-1.5 text-xs font-medium text-muted-foreground bg-muted/50 flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {t('mileage.recentAddresses')}
+              </div>
+              {filteredSavedAddresses.map((saved) => (
+                <button
+                  key={saved.id}
+                  type="button"
+                  className="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-start gap-2 transition-colors"
+                  onClick={() => handleSelectSaved(saved)}
+                >
+                  <Star className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    {saved.label && (
+                      <span className="text-xs font-medium text-primary mr-1">{saved.label}:</span>
+                    )}
+                    <span className="line-clamp-2">{saved.address}</span>
+                  </div>
+                </button>
+              ))}
+            </>
+          )}
+          
+          {/* Nominatim suggestions */}
+          {suggestions.length > 0 && (
+            <>
+              {filteredSavedAddresses.length > 0 && (
+                <div className="px-3 py-1.5 text-xs font-medium text-muted-foreground bg-muted/50">
+                  {t('mileage.searchResults')}
+                </div>
+              )}
+              {suggestions.map((result) => (
+                <button
+                  key={result.place_id}
+                  type="button"
+                  className="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-start gap-2 transition-colors"
+                  onClick={() => handleSelect(result)}
+                >
+                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                  <span className="line-clamp-2">{result.display_name}</span>
+                </button>
+              ))}
+            </>
+          )}
         </div>
       )}
     </div>
