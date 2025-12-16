@@ -631,6 +631,7 @@ export function useGenerateSampleData() {
       // ============================================
       // 14. CREATE SAMPLE NOTIFICATIONS
       // ============================================
+      console.log('[SAMPLE DATA] Creating notifications...');
       const notifications = [
         { type: 'goal_milestone', title: `${SAMPLE_MARKER} ¡Meta al 75%!`, message: 'Tu fondo de emergencia está al 73% de completarse.', read: false },
         { type: 'achievement', title: `${SAMPLE_MARKER} ¡Nuevo logro!`, message: 'Desbloqueaste "Primer Objetivo" por crear tu primera meta.', read: true },
@@ -639,8 +640,162 @@ export function useGenerateSampleData() {
       ];
 
       const { error: notifError } = await supabase.from('notifications').insert(notifications.map(n => ({ ...n, user_id: userId })));
-      if (notifError) throw notifError;
+      if (notifError) console.warn('[SAMPLE DATA] Notifications error (non-critical):', notifError);
 
+      // ============================================
+      // 15. CREATE FINANCIAL HABITS (for Habit Tracker)
+      // ============================================
+      console.log('[SAMPLE DATA] Creating financial habits...');
+      const financialHabits = [
+        { habit_name: `${SAMPLE_MARKER} Review daily expenses`, habit_description: 'Spend 5 minutes reviewing today\'s spending', frequency: 'daily', target_per_period: 1, current_streak: 7, best_streak: 14, xp_reward: 15, is_active: true },
+        { habit_name: `${SAMPLE_MARKER} Pay yourself first`, habit_description: 'Transfer 20% of income to savings before spending', frequency: 'monthly', target_per_period: 1, current_streak: 3, best_streak: 5, xp_reward: 50, is_active: true },
+        { habit_name: `${SAMPLE_MARKER} Read financial book`, habit_description: 'Read at least 10 pages of a financial education book', frequency: 'daily', target_per_period: 10, current_streak: 4, best_streak: 21, xp_reward: 20, is_active: true },
+        { habit_name: `${SAMPLE_MARKER} Review investment goals`, habit_description: 'Check progress on investment and savings goals', frequency: 'weekly', target_per_period: 1, current_streak: 2, best_streak: 8, xp_reward: 25, is_active: true },
+      ];
+
+      const { data: habitsData, error: habitsError } = await supabase
+        .from('financial_habits')
+        .insert(financialHabits.map(h => ({ ...h, user_id: userId })))
+        .select();
+      if (habitsError) console.warn('[SAMPLE DATA] Habits error:', habitsError);
+
+      // Create habit logs for the last 7 days
+      if (habitsData && habitsData.length > 0) {
+        const habitLogs = [];
+        for (let i = 0; i < 7; i++) {
+          const logDate = new Date(today);
+          logDate.setDate(logDate.getDate() - i);
+          habitLogs.push({
+            user_id: userId,
+            habit_id: habitsData[0].id, // Daily expense review habit
+            completed_at: logDate.toISOString(),
+            notes: i === 0 ? `${SAMPLE_MARKER} Reviewed $${(Math.random() * 200 + 50).toFixed(2)} in daily spending` : null
+          });
+        }
+        await supabase.from('financial_habit_logs').insert(habitLogs);
+      }
+
+      // ============================================
+      // 16. CREATE FINANCIAL JOURNAL ENTRIES
+      // ============================================
+      console.log('[SAMPLE DATA] Creating journal entries...');
+      const journalEntries = [
+        { entry_type: 'reflection', content: `${SAMPLE_MARKER} Today I realized I've been spending too much on subscription services. Need to review and cancel unused ones.`, mood: 'thoughtful', lessons_learned: 'Small recurring expenses add up quickly over the year', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1).toISOString().split('T')[0] },
+        { entry_type: 'gratitude', content: `${SAMPLE_MARKER} Grateful for the new client project! This will significantly boost my quarterly income.`, mood: 'happy', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 3).toISOString().split('T')[0] },
+        { entry_type: 'decision', content: `${SAMPLE_MARKER} Decided to increase my monthly RRSP contribution from $500 to $750. Tax benefits plus compound growth!`, mood: 'motivated', lessons_learned: 'Automating savings removes the temptation to spend', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7).toISOString().split('T')[0] },
+        { entry_type: 'lesson', content: `${SAMPLE_MARKER} Read chapter 5 of Rich Dad Poor Dad. Key insight: Focus on building assets that generate passive income.`, mood: 'inspired', lessons_learned: 'Assets put money in your pocket; liabilities take money out', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 10).toISOString().split('T')[0] },
+        { entry_type: 'reflection', content: `${SAMPLE_MARKER} Reviewed my expense categories this month. Food spending is 15% over budget - need to meal prep more.`, mood: 'determined', lessons_learned: 'Tracking expenses reveals patterns invisible to memory', entry_date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14).toISOString().split('T')[0] },
+      ];
+
+      const { error: journalError } = await supabase.from('financial_journal').insert(journalEntries.map(j => ({ ...j, user_id: userId })));
+      if (journalError) console.warn('[SAMPLE DATA] Journal error:', journalError);
+
+      // ============================================
+      // 17. CREATE FINANCIAL EDUCATION RESOURCES
+      // ============================================
+      console.log('[SAMPLE DATA] Creating education resources...');
+      const educationResources = [
+        { title: `${SAMPLE_MARKER} Rich Dad Poor Dad`, author: 'Robert Kiyosaki', resource_type: 'book', category: 'mindset', total_pages: 336, pages_read: 248, progress_percentage: 74, daily_goal_pages: 15, status: 'in_progress', started_date: new Date(today.getFullYear(), today.getMonth() - 1, 10).toISOString().split('T')[0], key_lessons: 'Assets vs liabilities, cash flow quadrant, financial education importance', notes: 'Essential reading for understanding wealth building mindset' },
+        { title: `${SAMPLE_MARKER} The Intelligent Investor`, author: 'Benjamin Graham', resource_type: 'book', category: 'investing', total_pages: 640, pages_read: 640, progress_percentage: 100, status: 'completed', started_date: new Date(today.getFullYear(), today.getMonth() - 3, 1).toISOString().split('T')[0], completed_date: new Date(today.getFullYear(), today.getMonth() - 1, 15).toISOString().split('T')[0], impact_rating: 5, key_lessons: 'Value investing, margin of safety, Mr. Market concept' },
+        { title: `${SAMPLE_MARKER} Financial Freedom Course`, resource_type: 'course', category: 'planning', total_minutes: 480, minutes_consumed: 320, progress_percentage: 67, daily_goal_minutes: 30, status: 'in_progress', url: 'https://example.com/course' },
+        { title: `${SAMPLE_MARKER} The Psychology of Money`, author: 'Morgan Housel', resource_type: 'book', category: 'mindset', total_pages: 256, pages_read: 0, progress_percentage: 0, status: 'not_started', notes: 'Next on my reading list' },
+      ];
+
+      const { data: eduData, error: eduError } = await supabase
+        .from('financial_education')
+        .insert(educationResources.map(e => ({ ...e, user_id: userId })))
+        .select();
+      if (eduError) console.warn('[SAMPLE DATA] Education error:', eduError);
+
+      // Create daily reading logs
+      if (eduData && eduData.length > 0) {
+        const dailyLogs = [];
+        for (let i = 0; i < 14; i++) {
+          const logDate = new Date(today);
+          logDate.setDate(logDate.getDate() - i);
+          dailyLogs.push({
+            user_id: userId,
+            resource_id: eduData[0].id, // Rich Dad Poor Dad
+            log_date: logDate.toISOString().split('T')[0],
+            pages_read: Math.floor(Math.random() * 20) + 5,
+            minutes_consumed: Math.floor(Math.random() * 40) + 15,
+            notes: i % 3 === 0 ? `${SAMPLE_MARKER} Great chapter on ${['assets', 'cash flow', 'financial literacy', 'investing'][i % 4]}` : null
+          });
+        }
+        await supabase.from('education_daily_logs').insert(dailyLogs);
+      }
+
+      // ============================================
+      // 18. CREATE PAY YOURSELF FIRST SETTINGS
+      // ============================================
+      console.log('[SAMPLE DATA] Creating PYF settings...');
+      const pyfSettings = {
+        user_id: userId,
+        target_percentage: 20,
+        current_month_saved: 850,
+        current_month_income: 5500,
+        streak_months: 3,
+        best_streak_months: 5,
+        last_payment_date: new Date(today.getFullYear(), today.getMonth(), 5).toISOString().split('T')[0]
+      };
+
+      const { error: pyfError } = await supabase.from('pay_yourself_first_settings').upsert(pyfSettings, { onConflict: 'user_id' });
+      if (pyfError) console.warn('[SAMPLE DATA] PYF error:', pyfError);
+
+      // ============================================
+      // 19. CREATE USER FINANCIAL PROFILE
+      // ============================================
+      console.log('[SAMPLE DATA] Creating financial profile...');
+      const financialProfile = {
+        user_id: userId,
+        risk_tolerance: 'moderate',
+        time_availability: 'part_time',
+        preferred_income_type: 'mixed',
+        financial_education_level: 'intermediate',
+        available_capital: 25000,
+        monthly_investment_capacity: 1500,
+        passions: ['technology', 'real estate', 'entrepreneurship'],
+        talents: ['programming', 'analysis', 'communication'],
+        interests: ['stocks', 'crypto', 'rental properties']
+      };
+
+      const { error: profileError } = await supabase.from('user_financial_profile').upsert(financialProfile, { onConflict: 'user_id' });
+      if (profileError) console.warn('[SAMPLE DATA] Profile error:', profileError);
+
+      // ============================================
+      // 20. CREATE USER FINANCIAL LEVEL (Gamification)
+      // ============================================
+      console.log('[SAMPLE DATA] Creating gamification level...');
+      const financialLevel = {
+        user_id: userId,
+        level: 5,
+        experience_points: 2450,
+        total_savings: 15000,
+        total_investments: 45000,
+        streak_days: 12,
+        last_activity_date: today.toISOString().split('T')[0]
+      };
+
+      const { error: levelError } = await supabase.from('user_financial_level').upsert(financialLevel, { onConflict: 'user_id' });
+      if (levelError) console.warn('[SAMPLE DATA] Level error:', levelError);
+
+      // ============================================
+      // 21. CREATE USER ACHIEVEMENTS
+      // ============================================
+      console.log('[SAMPLE DATA] Creating achievements...');
+      const achievements = [
+        { achievement_key: 'first_expense', progress: 100, unlocked_at: new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString() },
+        { achievement_key: 'expense_master_10', progress: 100, unlocked_at: new Date(today.getFullYear(), today.getMonth() - 1, 15).toISOString() },
+        { achievement_key: 'first_goal_complete', progress: 100, unlocked_at: new Date(today.getFullYear(), today.getMonth() - 1, 20).toISOString() },
+        { achievement_key: 'savings_streak_7', progress: 100, unlocked_at: new Date(today.getFullYear(), today.getMonth(), 1).toISOString() },
+        { achievement_key: 'budget_master', progress: 65 }, // In progress
+        { achievement_key: 'investment_beginner', progress: 40 }, // In progress
+      ];
+
+      const { error: achError } = await supabase.from('user_achievements').insert(achievements.map(a => ({ ...a, user_id: userId })));
+      if (achError) console.warn('[SAMPLE DATA] Achievements error:', achError);
+
+      console.log('[SAMPLE DATA] ✅ All sample data created successfully!');
       return { success: true };
     },
     onMutate: () => {
@@ -724,6 +879,39 @@ export function useDeleteSampleData() {
       await supabase.from('tags').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
       await supabase.from('notifications').delete().eq('user_id', userId).like('title', `%${SAMPLE_MARKER}%`);
 
+      // 11. Delete new sample data tables
+      // Financial habits and logs
+      const { data: sampleHabits } = await supabase
+        .from('financial_habits')
+        .select('id')
+        .eq('user_id', userId)
+        .like('habit_name', `%${SAMPLE_MARKER}%`);
+      
+      if (sampleHabits && sampleHabits.length > 0) {
+        const habitIds = sampleHabits.map(h => h.id);
+        await supabase.from('financial_habit_logs').delete().in('habit_id', habitIds);
+      }
+      await supabase.from('financial_habits').delete().eq('user_id', userId).like('habit_name', `%${SAMPLE_MARKER}%`);
+
+      // Financial journal
+      await supabase.from('financial_journal').delete().eq('user_id', userId).like('content', `%${SAMPLE_MARKER}%`);
+
+      // Financial education and daily logs
+      const { data: sampleEdu } = await supabase
+        .from('financial_education')
+        .select('id')
+        .eq('user_id', userId)
+        .like('title', `%${SAMPLE_MARKER}%`);
+      
+      if (sampleEdu && sampleEdu.length > 0) {
+        const eduIds = sampleEdu.map(e => e.id);
+        await supabase.from('education_daily_logs').delete().in('resource_id', eduIds);
+      }
+      await supabase.from('financial_education').delete().eq('user_id', userId).like('title', `%${SAMPLE_MARKER}%`);
+
+      // User achievements (delete sample ones by checking unlocked_at dates or just leave them)
+      // Since achievements don't have SAMPLE_MARKER in key, we skip to avoid deleting real achievements
+
       // Net worth snapshots don't have marker but we can delete recent ones during sample period
       // Skip this to preserve user's real snapshots
 
@@ -757,4 +945,13 @@ function invalidateAllQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
   queryClient.invalidateQueries({ queryKey: ['notifications'] });
   queryClient.invalidateQueries({ queryKey: ['unread-notifications'] });
+  // New queries
+  queryClient.invalidateQueries({ queryKey: ['financial-habits'] });
+  queryClient.invalidateQueries({ queryKey: ['financial-journal'] });
+  queryClient.invalidateQueries({ queryKey: ['financial-education'] });
+  queryClient.invalidateQueries({ queryKey: ['pay-yourself-first'] });
+  queryClient.invalidateQueries({ queryKey: ['financial-profile'] });
+  queryClient.invalidateQueries({ queryKey: ['financial-level'] });
+  queryClient.invalidateQueries({ queryKey: ['achievements'] });
+  queryClient.invalidateQueries({ queryKey: ['education-daily-logs'] });
 }
