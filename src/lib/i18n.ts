@@ -838,6 +838,14 @@ export const translations = {
       recurrenceEndDate: 'Fecha de fin (opcional)',
       noEndDate: 'Sin fecha de fin',
       recurrenceEndDateHint: 'Deja vacío para viajes indefinidos',
+      // GPS Location
+      useMyLocation: 'Usar mi ubicación',
+      locationObtained: 'Ubicación obtenida correctamente',
+      geolocationNotSupported: 'Tu navegador no soporta geolocalización',
+      locationPermissionDenied: 'Permiso de ubicación denegado. Actívalo en la configuración del navegador',
+      locationUnavailable: 'No se pudo obtener la ubicación. Verifica tu GPS',
+      locationTimeout: 'Tiempo de espera agotado. Intenta de nuevo',
+      locationError: 'Error al obtener ubicación',
     },
     quickCapture: {
       title: 'Captura Rápida de Gastos',
@@ -1696,6 +1704,14 @@ export const translations = {
       recurrenceEndDate: 'End date (optional)',
       noEndDate: 'No end date',
       recurrenceEndDateHint: 'Leave empty for indefinite trips',
+      // GPS Location
+      useMyLocation: 'Use my location',
+      locationObtained: 'Location obtained successfully',
+      geolocationNotSupported: 'Your browser does not support geolocation',
+      locationPermissionDenied: 'Location permission denied. Enable it in browser settings',
+      locationUnavailable: 'Could not get location. Check your GPS',
+      locationTimeout: 'Location request timed out. Try again',
+      locationError: 'Error getting location',
     },
     quickCapture: {
       title: 'AI Quick Capture',
