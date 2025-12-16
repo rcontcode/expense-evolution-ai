@@ -38,6 +38,7 @@ import { useClients } from '@/hooks/data/useClients';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { MileageWithClient, calculateMileageDeduction, CRA_MILEAGE_RATES } from '@/hooks/data/useMileage';
 import { MileageRoutePreview } from '@/components/mileage/MileageRoutePreview';
+import { AddressAutocomplete } from '@/components/mileage/AddressAutocomplete';
 
 interface MileageFormProps {
   initialData?: MileageWithClient | null;
@@ -73,6 +74,10 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
   const watchClientId = form.watch('client_id');
   const watchStartAddress = form.watch('start_address');
   const watchEndAddress = form.watch('end_address');
+  const watchStartLat = form.watch('start_lat');
+  const watchStartLng = form.watch('start_lng');
+  const watchEndLat = form.watch('end_lat');
+  const watchEndLng = form.watch('end_lng');
   
   const estimatedDeduction = watchKilometers 
     ? calculateMileageDeduction(watchKilometers, yearToDateKm)
@@ -251,7 +256,7 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
           </Alert>
         )}
 
-        {/* Address Fields */}
+        {/* Address Fields with Geocoding */}
         <div className="space-y-3">
           <FormField
             control={form.control}
@@ -265,10 +270,14 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
                   {t('mileage.startAddress')}
                 </FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder={t('mileage.startAddressPlaceholder')} 
-                    {...field} 
+                  <AddressAutocomplete
                     value={field.value || ''}
+                    onChange={(address) => field.onChange(address)}
+                    onCoordinatesChange={(lat, lng) => {
+                      form.setValue('start_lat', lat);
+                      form.setValue('start_lng', lng);
+                    }}
+                    placeholder={t('mileage.startAddressPlaceholder')}
                   />
                 </FormControl>
                 <FormMessage />
@@ -288,10 +297,14 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
                   {t('mileage.endAddress')}
                 </FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder={t('mileage.endAddressPlaceholder')} 
-                    {...field}
+                  <AddressAutocomplete
                     value={field.value || ''}
+                    onChange={(address) => field.onChange(address)}
+                    onCoordinatesChange={(lat, lng) => {
+                      form.setValue('end_lat', lat);
+                      form.setValue('end_lng', lng);
+                    }}
+                    placeholder={t('mileage.endAddressPlaceholder')}
                   />
                 </FormControl>
                 <FormMessage />
@@ -306,6 +319,10 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
             <MileageRoutePreview
               startAddress={watchStartAddress}
               endAddress={watchEndAddress}
+              startLat={watchStartLat}
+              startLng={watchStartLng}
+              endLat={watchEndLat}
+              endLng={watchEndLng}
               kilometers={watchKilometers || 0}
               compact={false}
             />
