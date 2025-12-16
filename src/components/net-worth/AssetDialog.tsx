@@ -1,18 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProfile } from '@/hooks/data/useProfile';
-import { Asset, ASSET_CATEGORIES, useCreateAsset, useUpdateAsset } from '@/hooks/data/useNetWorth';
+import { Asset, ASSET_CATEGORIES, ASSET_CATEGORY_GROUPS, useCreateAsset, useUpdateAsset } from '@/hooks/data/useNetWorth';
+import { cn } from '@/lib/utils';
 import { 
   Wallet, TrendingUp, Home, Car, PiggyBank, Bitcoin, Gem, Building2, Package,
-  Hexagon, CircleDollarSign, Coins, Layers, ImageIcon, AlertTriangle, Lightbulb, BookOpen
+  Hexagon, CircleDollarSign, Coins, Layers, ImageIcon, AlertTriangle, Lightbulb, BookOpen,
+  Check, ChevronsUpDown, Building, Mountain, Castle, Bike, Ship, Caravan,
+  Plane, Circle, Diamond, Sparkles, Palette, Clock, Watch, Wine, Square, Stamp, Trophy,
+  Music, ShoppingBag, Store, FileText, Award, Crown, Globe, Wrench, Dog, Leaf, Shield,
+  Calendar, FileCheck, Waves, Sun, Zap, Send, CircleDot, Pentagon, Link, Star, Repeat,
+  Eye, HardDrive, Box, Network, Triangle, BarChart, Ghost, MapPin, Gamepad2, Video, X,
+  Droplet, Cpu, Syringe, Hammer, Activity, LineChart, Landmark, Users, Orbit, Copyright,
+  Smile, BarChart3
 } from 'lucide-react';
 
 interface AssetDialogProps {
@@ -21,13 +33,20 @@ interface AssetDialogProps {
   editingAsset?: Asset | null;
 }
 
+// Extended icon map
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Wallet, TrendingUp, Home, Car, PiggyBank, Bitcoin, Gem, Building2, Package,
-  Hexagon, CircleDollarSign, Coins, Layers, ImageIcon
+  Hexagon, CircleDollarSign, Coins, Layers, ImageIcon, Building, Mountain,
+  Castle, Bike, Ship, Caravan, Plane, Circle, Diamond, Sparkles, Palette, Clock,
+  Watch, Wine, Square, Stamp, Trophy, Music, ShoppingBag, Store, FileText, Award,
+  Crown, Globe, Wrench, Dog, Leaf, Shield, Calendar, FileCheck, Waves, Sun, Zap,
+  Send, CircleDot, Pentagon, Link, Star, Repeat, Eye, HardDrive, Box, Network,
+  Triangle, BarChart, Ghost, MapPin, Gamepad2, Video, X, Droplet, Cpu, Syringe,
+  Hammer, Activity, LineChart, Landmark, Users, Orbit, Copyright, Smile, Check, BarChart3
 };
 
 // Categories that require educational warning
-const DEPRECIATING_CATEGORIES = ['vehicles'];
+const DEPRECIATING_CATEGORIES = ['vehicles', 'motorcycle', 'boat', 'rv', 'aircraft'];
 
 // Educational content for asset understanding
 const ASSET_EDUCATION = {
@@ -75,6 +94,8 @@ export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogPro
   const [showWarning, setShowWarning] = useState(false);
   const [acknowledgedWarning, setAcknowledgedWarning] = useState(false);
   const [generatesIncome, setGeneratesIncome] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const userName = profile?.full_name?.split(' ')[0] || 'Usuario';
 
@@ -109,9 +130,32 @@ export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogPro
   // Check if category requires warning
   useEffect(() => {
     const needsWarning = DEPRECIATING_CATEGORIES.includes(formData.category) || 
-                         formData.category === 'collectibles';
+                         formData.category.includes('collectible') ||
+                         formData.category === 'art' ||
+                         formData.category === 'jewelry' ||
+                         formData.category === 'watches';
     setShowWarning(needsWarning && !acknowledgedWarning);
   }, [formData.category, acknowledgedWarning]);
+
+  // Filter and group categories
+  const filteredCategories = useMemo(() => {
+    const query = searchQuery.toLowerCase();
+    return ASSET_CATEGORIES.filter(cat => 
+      cat.label.toLowerCase().includes(query) || 
+      cat.value.toLowerCase().includes(query)
+    );
+  }, [searchQuery]);
+
+  const groupedCategories = useMemo(() => {
+    const groups: Record<string, typeof ASSET_CATEGORIES> = {};
+    filteredCategories.forEach(cat => {
+      if (!groups[cat.group]) {
+        groups[cat.group] = [];
+      }
+      groups[cat.group].push(cat);
+    });
+    return groups;
+  }, [filteredCategories]);
 
   const handleSave = async () => {
     if (!formData.name || formData.current_value <= 0) return;
@@ -139,14 +183,21 @@ export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogPro
   };
 
   const selectedCategory = ASSET_CATEGORIES.find(c => c.value === formData.category);
-  const IconComponent = selectedCategory ? iconMap[selectedCategory.icon] : Package;
-  const educationContent = ASSET_EDUCATION[formData.category as keyof typeof ASSET_EDUCATION];
+  const IconComponent = selectedCategory ? (iconMap[selectedCategory.icon] || Package) : Package;
+  const educationContent = ASSET_EDUCATION[formData.category as keyof typeof ASSET_EDUCATION] ||
+    (formData.category.includes('collectible') || formData.category === 'art' || 
+     formData.category === 'jewelry' || formData.category === 'watches' 
+      ? ASSET_EDUCATION.collectibles : null);
 
   const canProceed = !showWarning || acknowledgedWarning;
 
+  const getGroupLabel = (groupKey: string) => {
+    return ASSET_CATEGORY_GROUPS[groupKey as keyof typeof ASSET_CATEGORY_GROUPS]?.label || groupKey;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {IconComponent && <IconComponent className="h-5 w-5 text-primary" />}
@@ -161,61 +212,79 @@ export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogPro
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Ej: Cuenta de Ahorros, Portafolio de Inversión..."
+              placeholder="Ej: Cuenta de Ahorros, Bitcoin, Casa..."
             />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="category">Categoría</Label>
-            <Select
-              value={formData.category}
-              onValueChange={(value) => {
-                setFormData({ ...formData, category: value });
-                setAcknowledgedWarning(false);
-                setGeneratesIncome(false);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel className="text-xs text-muted-foreground">Activos Generales</SelectLabel>
-                  {ASSET_CATEGORIES.filter(c => c.group === 'general').map((cat) => {
-                    const CatIcon = iconMap[cat.icon];
-                    const isDepreciating = DEPRECIATING_CATEGORIES.includes(cat.value);
-                    return (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        <div className="flex items-center gap-2">
-                          {CatIcon && <CatIcon className="h-4 w-4" />}
-                          {cat.label}
-                          {isDepreciating && (
-                            <AlertTriangle className="h-3 w-3 text-amber-500 ml-1" />
-                          )}
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectGroup>
-                <SelectGroup>
-                  <SelectLabel className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Bitcoin className="h-3 w-3" />
-                    Criptomonedas
-                  </SelectLabel>
-                  {ASSET_CATEGORIES.filter(c => c.group === 'crypto').map((cat) => {
-                    const CatIcon = iconMap[cat.icon];
-                    return (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        <div className="flex items-center gap-2">
-                          {CatIcon && <CatIcon className="h-4 w-4 text-amber-500" />}
-                          {cat.label}
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+            <Label>Categoría</Label>
+            <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={categoryOpen}
+                  className="justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    {IconComponent && <IconComponent className="h-4 w-4 text-muted-foreground" />}
+                    {selectedCategory?.label || 'Seleccionar categoría...'}
+                  </div>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[400px] p-0" align="start">
+                <Command>
+                  <CommandInput 
+                    placeholder="Buscar categoría..." 
+                    value={searchQuery}
+                    onValueChange={setSearchQuery}
+                  />
+                  <CommandList>
+                    <CommandEmpty>No se encontraron categorías.</CommandEmpty>
+                    <ScrollArea className="h-[300px]">
+                      {Object.entries(groupedCategories).map(([groupKey, categories]) => (
+                        <CommandGroup key={groupKey} heading={getGroupLabel(groupKey)}>
+                          {categories.map((cat) => {
+                            const CatIcon = iconMap[cat.icon] || Package;
+                            const isCrypto = groupKey.includes('crypto');
+                            return (
+                              <CommandItem
+                                key={cat.value}
+                                value={cat.value}
+                                onSelect={(value) => {
+                                  setFormData({ ...formData, category: value });
+                                  setAcknowledgedWarning(false);
+                                  setGeneratesIncome(false);
+                                  setCategoryOpen(false);
+                                  setSearchQuery('');
+                                }}
+                                className="flex items-center gap-2"
+                              >
+                                <CatIcon className={cn(
+                                  "h-4 w-4",
+                                  isCrypto ? "text-amber-500" : "text-muted-foreground"
+                                )} />
+                                <span className="flex-1">{cat.label}</span>
+                                {formData.category === cat.value && (
+                                  <Check className="h-4 w-4 text-primary" />
+                                )}
+                                {DEPRECIATING_CATEGORIES.includes(cat.value) && (
+                                  <AlertTriangle className="h-3 w-3 text-amber-500" />
+                                )}
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      ))}
+                    </ScrollArea>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <p className="text-xs text-muted-foreground">
+              {ASSET_CATEGORIES.length} categorías disponibles incluyendo {ASSET_CATEGORIES.filter(c => c.group.includes('crypto')).length} criptomonedas
+            </p>
           </div>
 
           {/* Educational Warning for Depreciating Assets */}
@@ -257,7 +326,7 @@ export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogPro
                       onCheckedChange={setGeneratesIncome}
                     />
                     <Label htmlFor="generates-income" className="text-sm font-medium">
-                      Sí, este {formData.category === 'vehicles' ? 'vehículo' : 'activo'} genera ingresos
+                      Sí, este activo genera ingresos
                     </Label>
                   </div>
 
@@ -286,7 +355,7 @@ export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogPro
                   </span>
                 ) : (
                   <span>
-                    Recuerda: Este {formData.category === 'vehicles' ? 'vehículo' : 'activo'} se depreciará con el tiempo. 
+                    Recuerda: Este activo se depreciará con el tiempo. 
                     Considera invertir en activos que generen flujo de efectivo.
                   </span>
                 )}
@@ -334,6 +403,21 @@ export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogPro
             </Alert>
           )}
 
+          {/* Show appreciation */}
+          {formData.purchase_value > 0 && formData.current_value > formData.purchase_value && (
+            <Alert className="border-green-500/30 bg-green-500/5">
+              <TrendingUp className="h-4 w-4 text-green-500" />
+              <AlertDescription className="text-sm text-green-600 dark:text-green-400">
+                Este activo ha ganado {' '}
+                <strong>
+                  ${(formData.current_value - formData.purchase_value).toLocaleString()} 
+                  ({((formData.current_value / formData.purchase_value - 1) * 100).toFixed(1)}%)
+                </strong>
+                {' '}desde su compra. 🎉
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="purchase_date">Fecha de Adquisición</Label>
@@ -354,9 +438,14 @@ export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogPro
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CAD">CAD</SelectItem>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="CAD">CAD - Dólar Canadiense</SelectItem>
+                  <SelectItem value="USD">USD - Dólar Americano</SelectItem>
+                  <SelectItem value="EUR">EUR - Euro</SelectItem>
+                  <SelectItem value="MXN">MXN - Peso Mexicano</SelectItem>
+                  <SelectItem value="CLP">CLP - Peso Chileno</SelectItem>
+                  <SelectItem value="ARS">ARS - Peso Argentino</SelectItem>
+                  <SelectItem value="COP">COP - Peso Colombiano</SelectItem>
+                  <SelectItem value="BRL">BRL - Real Brasileño</SelectItem>
                 </SelectContent>
               </Select>
             </div>
