@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
-import { MapPin, Navigation, ExternalLink } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { MapPin, Navigation, ExternalLink, Maximize2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { LeafletRouteMap } from './LeafletRouteMap';
 
 interface MileageRoutePreviewProps {
   startAddress?: string | null;
@@ -27,28 +29,7 @@ export function MileageRoutePreview({
   compact = false,
   route
 }: MileageRoutePreviewProps) {
-  // Generate static map URL using OpenStreetMap tiles via a free service
-  const mapUrl = useMemo(() => {
-    if (!startLat || !startLng || !endLat || !endLng) return null;
-    
-    // Use OpenStreetMap static map API alternative
-    // Calculate center point
-    const centerLat = (startLat + endLat) / 2;
-    const centerLng = (startLng + endLng) / 2;
-    
-    // Calculate zoom based on distance
-    const latDiff = Math.abs(startLat - endLat);
-    const lngDiff = Math.abs(startLng - endLng);
-    const maxDiff = Math.max(latDiff, lngDiff);
-    let zoom = 12;
-    if (maxDiff > 1) zoom = 8;
-    else if (maxDiff > 0.5) zoom = 9;
-    else if (maxDiff > 0.2) zoom = 10;
-    else if (maxDiff > 0.1) zoom = 11;
-    
-    // Using staticmap.io or similar service (free tier)
-    return `https://staticmap.io/api/v1/staticmap?center=${centerLat},${centerLng}&zoom=${zoom}&size=200x100&markers=${startLat},${startLng}|${endLat},${endLng}&format=png`;
-  }, [startLat, startLng, endLat, endLng]);
+  const [showFullMap, setShowFullMap] = useState(false);
 
   // Generate Google Maps directions URL
   const googleMapsUrl = useMemo(() => {
@@ -76,90 +57,133 @@ export function MileageRoutePreview({
     }
 
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex items-center gap-2 cursor-pointer">
-            {hasCoordinates ? (
-              <div className="relative w-16 h-10 rounded overflow-hidden border bg-muted">
-                {mapUrl ? (
-                  <img 
-                    src={mapUrl} 
-                    alt="Route preview" 
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
+      <>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div 
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => hasCoordinates && setShowFullMap(true)}
+            >
+              {hasCoordinates ? (
+                <div className="relative w-16 h-10 rounded overflow-hidden border bg-muted group">
+                  <LeafletRouteMap
+                    startLat={startLat!}
+                    startLng={startLng!}
+                    endLat={endLat!}
+                    endLng={endLng!}
+                    className="h-10 pointer-events-none"
                   />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Navigation className="h-4 w-4 text-muted-foreground" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition-colors">
+                    <span className="text-[10px] font-bold text-white drop-shadow">
+                      {kilometers.toFixed(0)}km
+                    </span>
                   </div>
-                )}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                  <span className="text-[10px] font-bold text-white drop-shadow">
-                    {kilometers.toFixed(0)}km
-                  </span>
+                </div>
+              ) : (
+                <Badge variant="secondary" className="gap-1">
+                  <MapPin className="h-3 w-3" />
+                  {kilometers.toFixed(1)}km
+                </Badge>
+              )}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="right" className="max-w-xs">
+            <div className="space-y-1 text-xs">
+              {startAddress && (
+                <p><strong>Desde:</strong> {startAddress}</p>
+              )}
+              {endAddress && (
+                <p><strong>Hasta:</strong> {endAddress}</p>
+              )}
+              {!startAddress && !endAddress && route && (
+                <p>{route}</p>
+              )}
+              {hasCoordinates && (
+                <p className="text-primary">Click para ver mapa interactivo</p>
+              )}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+
+        {/* Full Map Dialog */}
+        <Dialog open={showFullMap} onOpenChange={setShowFullMap}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Navigation className="h-5 w-5" />
+                Ruta: {kilometers.toFixed(1)} km
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {hasCoordinates && (
+                <LeafletRouteMap
+                  startLat={startLat!}
+                  startLng={startLng!}
+                  endLat={endLat!}
+                  endLng={endLng!}
+                  startAddress={startAddress}
+                  endAddress={endAddress}
+                  className="h-64"
+                />
+              )}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="flex items-start gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-500 shrink-0 mt-1" />
+                  <div>
+                    <span className="text-muted-foreground text-xs">Inicio</span>
+                    <p className="font-medium">{startAddress || 'N/A'}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-4 h-4 rounded-full bg-red-500 shrink-0 mt-1" />
+                  <div>
+                    <span className="text-muted-foreground text-xs">Destino</span>
+                    <p className="font-medium">{endAddress || 'N/A'}</p>
+                  </div>
                 </div>
               </div>
-            ) : (
-              <Badge variant="secondary" className="gap-1">
-                <MapPin className="h-3 w-3" />
-                {kilometers.toFixed(1)}km
-              </Badge>
-            )}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="right" className="max-w-xs">
-          <div className="space-y-1 text-xs">
-            {startAddress && (
-              <p><strong>Desde:</strong> {startAddress}</p>
-            )}
-            {endAddress && (
-              <p><strong>Hasta:</strong> {endAddress}</p>
-            )}
-            {!startAddress && !endAddress && route && (
-              <p>{route}</p>
-            )}
-            {googleMapsUrl && (
-              <a 
-                href={googleMapsUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline flex items-center gap-1 mt-1"
-              >
-                Ver en Google Maps
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            )}
-          </div>
-        </TooltipContent>
-      </Tooltip>
+              {googleMapsUrl && (
+                <Button variant="outline" className="w-full gap-2" asChild>
+                  <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4" />
+                    Ver en Google Maps
+                  </a>
+                </Button>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
   // Full view for detail dialog or form
   return (
     <div className="space-y-3">
-      {/* Map Preview */}
+      {/* Interactive Map */}
       {hasCoordinates && (
-        <div className="relative w-full h-32 rounded-lg overflow-hidden border bg-muted">
-          {mapUrl ? (
-            <img 
-              src={mapUrl} 
-              alt="Route map" 
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Navigation className="h-8 w-8 text-muted-foreground" />
-            </div>
-          )}
-          <div className="absolute bottom-2 right-2">
-            <Badge variant="secondary" className="bg-background/80">
+        <div className="relative">
+          <LeafletRouteMap
+            startLat={startLat!}
+            startLng={startLng!}
+            endLat={endLat!}
+            endLng={endLng!}
+            startAddress={startAddress}
+            endAddress={endAddress}
+            className="h-40"
+          />
+          <div className="absolute bottom-2 right-2 flex gap-2">
+            <Badge variant="secondary" className="bg-background/90">
               {kilometers.toFixed(1)} km
             </Badge>
+            <Button 
+              size="icon" 
+              variant="secondary" 
+              className="h-6 w-6 bg-background/90"
+              onClick={() => setShowFullMap(true)}
+            >
+              <Maximize2 className="h-3 w-3" />
+            </Button>
           </div>
         </div>
       )}
@@ -199,6 +223,37 @@ export function MileageRoutePreview({
             Ver en Google Maps
           </a>
         </Button>
+      )}
+
+      {/* Full Map Dialog */}
+      {hasCoordinates && (
+        <Dialog open={showFullMap} onOpenChange={setShowFullMap}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Navigation className="h-5 w-5" />
+                Ruta: {kilometers.toFixed(1)} km
+              </DialogTitle>
+            </DialogHeader>
+            <LeafletRouteMap
+              startLat={startLat!}
+              startLng={startLng!}
+              endLat={endLat!}
+              endLng={endLng!}
+              startAddress={startAddress}
+              endAddress={endAddress}
+              className="h-96"
+            />
+            {googleMapsUrl && (
+              <Button variant="outline" className="w-full gap-2" asChild>
+                <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4" />
+                  Ver en Google Maps
+                </a>
+              </Button>
+            )}
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
