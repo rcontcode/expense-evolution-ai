@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { InvestmentSection } from '@/components/investments/InvestmentSection';
 import { FinancialEducationResources } from '@/components/settings/FinancialEducationResources';
+import { SampleDataManager } from '@/components/settings/SampleDataManager';
 import { resetOnboardingTutorial } from '@/components/guidance/OnboardingTutorial';
 import { PageHeader } from '@/components/PageHeader';
 import { useIsAdmin } from '@/hooks/data/useIsAdmin';
@@ -447,85 +448,8 @@ export default function Settings() {
         </Card>
 
         {/* Sample Data Generator */}
-        <Card className="border-dashed border-2 border-primary/30">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Database className="h-5 w-5 text-primary" />
-              <div>
-                <CardTitle>{language === 'es' ? 'Datos de Ejemplo' : 'Sample Data'}</CardTitle>
-                <CardDescription>
-                  {language === 'es' 
-                    ? 'Genera datos de demostración para explorar todas las funcionalidades' 
-                    : 'Generate demo data to explore all features'}
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="text-sm text-muted-foreground space-y-2">
-                <p className="font-medium">
-                  {language === 'es' ? 'Datos incluidos:' : 'Included data:'}
-                </p>
-                <ul className="list-disc list-inside space-y-1 text-xs">
-                  <li>{language === 'es' ? '2 clientes con información completa' : '2 clients with complete information'}</li>
-                  <li>{language === 'es' ? '4 proyectos (2 por cliente)' : '4 projects (2 per client)'}</li>
-                  <li>{language === 'es' ? '2 contratos con términos de reembolso AI' : '2 contracts with AI reimbursement terms'}</li>
-                  <li>{language === 'es' ? '20 gastos variados (deducibles, reembolsables, pendientes)' : '20 varied expenses (deductible, reimbursable, pending)'}</li>
-                  <li>{language === 'es' ? '12 ingresos (pagos de clientes, inversiones, pasivos)' : '12 income entries (client payments, investments, passive)'}</li>
-                  <li>{language === 'es' ? '8 registros de kilometraje' : '8 mileage records'}</li>
-                  <li>{language === 'es' ? '10 activos y 5 pasivos para patrimonio neto' : '10 assets and 5 liabilities for net worth'}</li>
-                  <li>{language === 'es' ? '30 transacciones bancarias para reconciliación' : '30 bank transactions for reconciliation'}</li>
-                  <li>{language === 'es' ? '4 metas de inversión y 3 de ahorro' : '4 investment goals and 3 savings goals'}</li>
-                  <li>{language === 'es' ? '6 etiquetas y notificaciones' : '6 tags and notifications'}</li>
-                </ul>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => generateSampleData.mutate()}
-                  disabled={generateSampleData.isPending || deleteSampleData.isPending}
-                  className="flex-1"
-                >
-                  {generateSampleData.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {language === 'es' ? 'Generando...' : 'Generating...'}
-                    </>
-                  ) : (
-                    <>
-                      <Database className="mr-2 h-4 w-4" />
-                      {language === 'es' ? 'Generar Datos' : 'Generate Data'}
-                    </>
-                  )}
-                </Button>
-                <Button 
-                  variant="destructive"
-                  onClick={() => deleteSampleData.mutate()}
-                  disabled={deleteSampleData.isPending || generateSampleData.isPending}
-                  className="flex-1"
-                >
-                  {deleteSampleData.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {language === 'es' ? 'Eliminando...' : 'Deleting...'}
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      {language === 'es' ? 'Eliminar Datos' : 'Delete Data'}
-                    </>
-                  )}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground italic">
-                {language === 'es' 
-                  ? 'Los datos de ejemplo están marcados con [SAMPLE] y se eliminan sin afectar tus datos reales.' 
-                  : 'Sample data is marked with [SAMPLE] and can be deleted without affecting your real data.'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
+        {/* Sample Data Manager - Enhanced with per-section deletion */}
+        <SampleDataManager />
         {/* Admin Section - Only visible for admins */}
         {isAdmin && (
           <Card className="border-primary/50 bg-primary/5">
