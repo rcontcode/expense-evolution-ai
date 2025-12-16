@@ -74,11 +74,12 @@ export function AddressAutocomplete({
   const [pendingAddress, setPendingAddress] = useState<{ address: string; lat: number; lng: number } | null>(null);
   const [countryCode, setCountryCode] = useState('ca');
   const [isDetectingCountry, setIsDetectingCountry] = useState(true);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   
-  const debouncedSearch = useDebounce(inputValue, 300);
+  const debouncedSearch = useDebounce(inputValue, 250);
 
-  // Auto-detect country from user's location on mount
+  // Auto-detect country from user's location on mount (and store location for better search results)
   useEffect(() => {
     const detectCountry = async () => {
       if (!navigator.geolocation) {
@@ -96,14 +97,15 @@ export function AddressAutocomplete({
         });
 
         const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
         
         // Reverse geocode to get country
         const response = await fetch(
           `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=3`,
           {
             headers: {
-              'Accept-Language': 'en',
-              'User-Agent': 'EvoFinz/1.0'
+              'Accept-Language': 'es,en',
+              'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
             }
           }
         );
@@ -204,7 +206,7 @@ export function AddressAutocomplete({
   // Fetch suggestions from Nominatim
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (!debouncedSearch || debouncedSearch.length < 3) {
+      if (!debouncedSearch || debouncedSearch.trim().length < 2) {
         setSuggestions([]);
         return;
       }
@@ -212,24 +214,55 @@ export function AddressAutocomplete({
       setIsLoading(true);
       try {
         const countryParam = countryCode && countryCode !== 'global' ? `&countrycodes=${countryCode}` : '';
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(debouncedSearch)}&limit=5&addressdetails=1${countryParam}`,
-          {
-            headers: {
-              'Accept-Language': 'es,en',
-              'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
-            }
+
+        // Bias results around user's approximate area (feels like Google autocomplete)
+        // We try a bounded search first; if it returns nothing, we fall back to a global search.
+        const buildLocationBias = (bounded: boolean) => {
+          if (!userLocation) return '';
+
+          // ~50km-ish box. Good enough to prioritize "mi zona" without being too strict.
+          const latDelta = 0.5;
+          const lngDelta = 0.5;
+          const viewbox = `${userLocation.lng - lngDelta},${userLocation.lat + latDelta},${userLocation.lng + lngDelta},${userLocation.lat - latDelta}`;
+          return `&viewbox=${viewbox}${bounded ? '&bounded=1' : ''}`;
+        };
+
+        const baseUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          debouncedSearch.trim()
+        )}&addressdetails=1&limit=10${countryParam}`;
+
+        const headers = {
+          'Accept-Language': 'es,en',
+          'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
+        } as const;
+
+        const tryFetch = async (bounded: boolean) => {
+          const response = await fetch(`${baseUrl}${buildLocationBias(bounded)}`, { headers });
+          if (!response.ok) {
+            console.warn('Nominatim response not ok:', response.status, response.statusText);
+            throw new Error('Nominatim fetch failed');
           }
-        );
-        
-        if (!response.ok) {
-          console.warn('Nominatim response not ok:', response.status, response.statusText);
-          throw new Error('Nominatim fetch failed');
+          return (await response.json()) as NominatimResult[];
+        };
+
+        let data = await tryFetch(true);
+        if (data.length === 0) {
+          data = await tryFetch(false);
         }
-        
-        const data: NominatimResult[] = await response.json();
-        setSuggestions(data);
-        setShowSuggestions(data.length > 0 || filteredSavedAddresses.length > 0);
+
+        // If we have user location, sort results by distance so local matches appear first
+        if (userLocation && data.length > 1) {
+          const { lat, lng } = userLocation;
+          data = [...data].sort((a, b) => {
+            const distA = Math.abs(parseFloat(a.lat) - lat) + Math.abs(parseFloat(a.lon) - lng);
+            const distB = Math.abs(parseFloat(b.lat) - lat) + Math.abs(parseFloat(b.lon) - lng);
+            return distA - distB;
+          });
+        }
+
+        const top = data.slice(0, 5);
+        setSuggestions(top);
+        setShowSuggestions(top.length > 0 || filteredSavedAddresses.length > 0);
       } catch (error) {
         console.warn('Nominatim geocoding error:', error);
         setSuggestions([]);
@@ -239,7 +272,7 @@ export function AddressAutocomplete({
     };
 
     fetchSuggestions();
-  }, [debouncedSearch, countryCode]);
+  }, [debouncedSearch, countryCode, userLocation]);
 
   // Filter saved addresses based on input
   const filteredSavedAddresses = savedAddresses.filter(addr => 
