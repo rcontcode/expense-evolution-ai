@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
-import { Loader2, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, MapPin, Navigation, LocateFixed } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/utils/useDebounce';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { toast } from 'sonner';
 
 interface NominatimResult {
   place_id: number;
@@ -17,6 +20,7 @@ interface AddressAutocompleteProps {
   onCoordinatesChange: (lat: number | null, lng: number | null) => void;
   placeholder?: string;
   className?: string;
+  showLocationButton?: boolean;
 }
 
 export function AddressAutocomplete({
@@ -24,11 +28,14 @@ export function AddressAutocomplete({
   onChange,
   onCoordinatesChange,
   placeholder = 'Buscar dirección...',
-  className
+  className,
+  showLocationButton = true
 }: AddressAutocompleteProps) {
+  const { t } = useLanguage();
   const [inputValue, setInputValue] = useState(value);
   const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   
@@ -103,18 +110,101 @@ export function AddressAutocomplete({
     onCoordinatesChange(null, null);
   };
 
+  // Get current location using Geolocation API + reverse geocoding
+  const getCurrentLocation = async () => {
+    if (!navigator.geolocation) {
+      toast.error(t('mileage.geolocationNotSupported'));
+      return;
+    }
+
+    setIsGettingLocation(true);
+    
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      
+      // Reverse geocoding with Nominatim
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
+        {
+          headers: {
+            'Accept-Language': 'es,en',
+          }
+        }
+      );
+
+      if (!response.ok) throw new Error('Reverse geocoding failed');
+
+      const data = await response.json();
+      
+      if (data.display_name) {
+        setInputValue(data.display_name);
+        onChange(data.display_name);
+        onCoordinatesChange(latitude, longitude);
+        toast.success(t('mileage.locationObtained'));
+      } else {
+        // Fallback: use coordinates as address
+        const coordsAddress = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+        setInputValue(coordsAddress);
+        onChange(coordsAddress);
+        onCoordinatesChange(latitude, longitude);
+        toast.success(t('mileage.locationObtained'));
+      }
+    } catch (error: any) {
+      console.error('Geolocation error:', error);
+      if (error.code === 1) {
+        toast.error(t('mileage.locationPermissionDenied'));
+      } else if (error.code === 2) {
+        toast.error(t('mileage.locationUnavailable'));
+      } else if (error.code === 3) {
+        toast.error(t('mileage.locationTimeout'));
+      } else {
+        toast.error(t('mileage.locationError'));
+      }
+    } finally {
+      setIsGettingLocation(false);
+    }
+  };
+
   return (
     <div ref={wrapperRef} className={cn('relative', className)}>
-      <div className="relative">
-        <Input
-          value={inputValue}
-          onChange={handleInputChange}
-          onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-          placeholder={placeholder}
-          className="pr-8"
-        />
-        {isLoading && (
-          <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Input
+            value={inputValue}
+            onChange={handleInputChange}
+            onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+            placeholder={placeholder}
+            className="pr-8"
+          />
+          {isLoading && (
+            <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+          )}
+        </div>
+        
+        {showLocationButton && (
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={getCurrentLocation}
+            disabled={isGettingLocation}
+            title={t('mileage.useMyLocation')}
+            className="shrink-0"
+          >
+            {isGettingLocation ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <LocateFixed className="h-4 w-4" />
+            )}
+          </Button>
         )}
       </div>
 
