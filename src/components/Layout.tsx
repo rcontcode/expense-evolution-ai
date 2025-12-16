@@ -82,6 +82,12 @@ const getNavSections = (t: (key: string) => string) => [
     ]
   },
   {
+    titleKey: 'layout.tax',
+    items: [
+      { icon: FileText, label: 'Calendario Fiscal', path: '/tax-calendar', badge: 'CRA', tooltipKey: 'dashboard' as const },
+    ]
+  },
+  {
     titleKey: 'layout.mentorship',
     items: [
       { icon: GraduationCap, label: 'Mentoría Financiera', path: '/mentorship', badge: 'Nuevo', tooltipKey: 'dashboard' as const },
