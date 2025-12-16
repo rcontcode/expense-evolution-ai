@@ -816,6 +816,10 @@ export const translations = {
       clientHasAddress: 'Este cliente tiene dirección registrada',
       useAsDestination: 'Usar como destino',
       useAsOrigin: 'Usar como origen',
+      calculatingDistance: 'Calculando distancia...',
+      calculatedDistance: 'Distancia calculada',
+      estimatedTime: 'Tiempo estimado',
+      applyDistance: 'Aplicar distancia',
     },
     quickCapture: {
       title: 'Captura Rápida de Gastos',
@@ -1652,6 +1656,10 @@ export const translations = {
       clientHasAddress: 'This client has a registered address',
       useAsDestination: 'Use as destination',
       useAsOrigin: 'Use as origin',
+      calculatingDistance: 'Calculating distance...',
+      calculatedDistance: 'Calculated distance',
+      estimatedTime: 'Estimated time',
+      applyDistance: 'Apply distance',
     },
     quickCapture: {
       title: 'AI Quick Capture',
