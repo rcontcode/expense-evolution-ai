@@ -27,6 +27,16 @@ interface NominatimResult {
   display_name: string;
   lat: string;
   lon: string;
+  class?: string;
+  type?: string;
+  address?: {
+    house_number?: string;
+    road?: string;
+    city?: string;
+    town?: string;
+    village?: string;
+    postcode?: string;
+  };
 }
 
 interface SavedAddress {
@@ -242,7 +252,9 @@ export function AddressAutocomplete({
   // Fetch suggestions from Nominatim
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (!debouncedSearch || debouncedSearch.trim().length < 2) {
+      const searchTerm = debouncedSearch?.trim() ?? '';
+
+      if (!searchTerm || searchTerm.length < 2) {
         setSuggestions([]);
         return;
       }
@@ -251,49 +263,87 @@ export function AddressAutocomplete({
       try {
         const countryParam = countryCode && countryCode !== 'global' ? `&countrycodes=${countryCode}` : '';
 
-        // Bias results around user's approximate area (feels like Google autocomplete)
-        // We try a bounded search first; if it returns nothing, we fall back to a global search.
-        const buildLocationBias = (bounded: boolean) => {
+        const buildViewbox = () => {
           if (!userLocation) return '';
-
-          // ~50km-ish box. Good enough to prioritize "mi zona" without being too strict.
+          // ~50km-ish box: enough to prioritize local results without excluding valid matches.
           const latDelta = 0.5;
           const lngDelta = 0.5;
           const viewbox = `${userLocation.lng - lngDelta},${userLocation.lat + latDelta},${userLocation.lng + lngDelta},${userLocation.lat - latDelta}`;
-          return `&viewbox=${viewbox}${bounded ? '&bounded=1' : ''}`;
+          return `&viewbox=${viewbox}`;
         };
-
-        const baseUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          debouncedSearch.trim()
-        )}&addressdetails=1&limit=10${countryParam}`;
 
         const headers = {
           'Accept-Language': 'es,en',
           'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
         } as const;
 
-        const tryFetch = async (bounded: boolean) => {
-          const response = await fetch(`${baseUrl}${buildLocationBias(bounded)}`, { headers });
+        // If user starts with a house number, use structured query (much better for exact addresses)
+        const leadingHouseNumber = searchTerm.match(/^(\d{1,6})\s+/)?.[1] ?? null;
+        const parts = searchTerm.split(',').map(p => p.trim()).filter(Boolean);
+
+        const postalFromParts = parts.find(p => /[A-Z]\d[A-Z]\s?\d[A-Z]\d/i.test(p));
+        const postalCode = postalFromParts?.match(/[A-Z]\d[A-Z]\s?\d[A-Z]\d/i)?.[0] ?? null;
+
+        const buildBaseUrl = () => {
+          if (leadingHouseNumber) {
+            const street = parts[0] ?? searchTerm;
+            const city = parts[1] ?? '';
+            const cityParam = city ? `&city=${encodeURIComponent(city)}` : '';
+            const postalParam = postalCode ? `&postalcode=${encodeURIComponent(postalCode)}` : '';
+            return `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=20${countryParam}&street=${encodeURIComponent(street)}${cityParam}${postalParam}`;
+          }
+
+          // Long full addresses can time out on Nominatim; keep it focused.
+          const q = searchTerm.length > 80 && parts.length > 2 ? parts.slice(0, 3).join(', ') : searchTerm;
+          return `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(q)}&addressdetails=1&limit=20${countryParam}`;
+        };
+
+        const baseUrl = buildBaseUrl();
+
+        const tryFetch = async (suffix: string) => {
+          const response = await fetch(`${baseUrl}${suffix}`, { headers });
           if (!response.ok) {
+            // Nominatim occasionally returns 503 "Query took too long". Treat as empty and fall back.
             console.warn('Nominatim response not ok:', response.status, response.statusText);
-            throw new Error('Nominatim fetch failed');
+            return [] as NominatimResult[];
           }
           return (await response.json()) as NominatimResult[];
         };
 
-        let data = await tryFetch(true);
+        // Prefer local bias first (viewbox), but DO NOT bound the search (too many false negatives).
+        let data = await tryFetch(buildViewbox());
         if (data.length === 0) {
-          data = await tryFetch(false);
+          data = await tryFetch('');
         }
 
-        // If we have user location, sort results by distance so local matches appear first
-        if (userLocation && data.length > 1) {
-          const { lat, lng } = userLocation;
-          data = [...data].sort((a, b) => {
-            const distA = Math.abs(parseFloat(a.lat) - lat) + Math.abs(parseFloat(a.lon) - lng);
-            const distB = Math.abs(parseFloat(b.lat) - lat) + Math.abs(parseFloat(b.lon) - lng);
-            return distA - distB;
-          });
+        // Ranking: house number match (if provided) first, then proximity
+        if (data.length > 1) {
+          const hn = leadingHouseNumber;
+          const userLat = userLocation?.lat ?? null;
+          const userLng = userLocation?.lng ?? null;
+
+          const score = (r: NominatimResult) => {
+            let s = 0;
+
+            if (hn) {
+              const hasExactHouse = r.address?.house_number === hn;
+              const hasInText = new RegExp(`\\b${hn}\\b`).test(r.display_name);
+
+              if (hasExactHouse) s += 1000;
+              if (hasInText) s += 500;
+              if (r.address?.house_number) s += 50;
+              if (r.type === 'house') s += 30;
+            }
+
+            if (userLat != null && userLng != null) {
+              const dist = Math.abs(parseFloat(r.lat) - userLat) + Math.abs(parseFloat(r.lon) - userLng);
+              s -= dist * 10;
+            }
+
+            return s;
+          };
+
+          data = [...data].sort((a, b) => score(b) - score(a));
         }
 
         const top = data.slice(0, 5);
