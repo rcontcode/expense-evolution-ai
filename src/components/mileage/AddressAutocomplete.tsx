@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, MapPin, LocateFixed, Star, Clock, Plus, Globe } from 'lucide-react';
+import { Loader2, MapPin, LocateFixed, Star, Clock, Plus, Globe, MapPinOff, Info, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/utils/useDebounce';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -16,6 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 interface NominatimResult {
   place_id: number;
@@ -75,6 +80,7 @@ export function AddressAutocomplete({
   const [countryCode, setCountryCode] = useState('ca');
   const [isDetectingCountry, setIsDetectingCountry] = useState(true);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationStatus, setLocationStatus] = useState<'unknown' | 'granted' | 'denied' | 'unavailable'>('unknown');
   const wrapperRef = useRef<HTMLDivElement>(null);
   
   const debouncedSearch = useDebounce(inputValue, 250);
@@ -84,7 +90,31 @@ export function AddressAutocomplete({
     const detectCountry = async () => {
       if (!navigator.geolocation) {
         setIsDetectingCountry(false);
+        setLocationStatus('unavailable');
         return;
+      }
+
+      // Check permission status if available
+      if (navigator.permissions) {
+        try {
+          const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+          if (permissionStatus.state === 'denied') {
+            setLocationStatus('denied');
+            setIsDetectingCountry(false);
+            return;
+          }
+          // Listen for permission changes
+          permissionStatus.onchange = () => {
+            if (permissionStatus.state === 'denied') {
+              setLocationStatus('denied');
+              setUserLocation(null);
+            } else if (permissionStatus.state === 'granted') {
+              setLocationStatus('granted');
+            }
+          };
+        } catch (e) {
+          // Some browsers don't support permissions API for geolocation
+        }
       }
 
       try {
@@ -98,6 +128,7 @@ export function AddressAutocomplete({
 
         const { latitude, longitude } = position.coords;
         setUserLocation({ lat: latitude, lng: longitude });
+        setLocationStatus('granted');
         
         // Reverse geocode to get country
         const response = await fetch(
@@ -121,8 +152,13 @@ export function AddressAutocomplete({
             }
           }
         }
-      } catch (error) {
-        // Silently fail - will default to 'ca'
+      } catch (error: any) {
+        // Check if it was a permission denial
+        if (error.code === 1) {
+          setLocationStatus('denied');
+        } else {
+          setLocationStatus('unavailable');
+        }
         console.log('Country detection failed, using default');
       } finally {
         setIsDetectingCountry(false);
@@ -441,21 +477,91 @@ export function AddressAutocomplete({
         </div>
         
         {showLocationButton && (
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={getCurrentLocation}
-            disabled={isGettingLocation}
-            title={t('mileage.useMyLocation')}
-            className="shrink-0"
-          >
-            {isGettingLocation ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <LocateFixed className="h-4 w-4" />
-            )}
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={getCurrentLocation}
+              disabled={isGettingLocation}
+              title={t('mileage.useMyLocation')}
+              className="shrink-0"
+            >
+              {isGettingLocation ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <LocateFixed className="h-4 w-4" />
+              )}
+            </Button>
+            
+            {/* Location status indicator */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "flex items-center justify-center h-8 w-8 rounded-full transition-colors",
+                    locationStatus === 'granted' && "bg-green-500/10 text-green-600 hover:bg-green-500/20",
+                    locationStatus === 'denied' && "bg-destructive/10 text-destructive hover:bg-destructive/20",
+                    (locationStatus === 'unknown' || locationStatus === 'unavailable') && "bg-muted text-muted-foreground hover:bg-muted/80"
+                  )}
+                  title={
+                    locationStatus === 'granted' 
+                      ? t('mileage.locationActive') 
+                      : locationStatus === 'denied' 
+                        ? t('mileage.locationBlocked')
+                        : t('mileage.locationUnknown')
+                  }
+                >
+                  {locationStatus === 'granted' ? (
+                    <CheckCircle2 className="h-4 w-4" />
+                  ) : locationStatus === 'denied' ? (
+                    <MapPinOff className="h-4 w-4" />
+                  ) : (
+                    <Info className="h-4 w-4" />
+                  )}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-4" align="end">
+                {locationStatus === 'granted' ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-green-600">
+                      <CheckCircle2 className="h-5 w-5" />
+                      <span className="font-medium">{t('mileage.locationActiveTitle')}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {t('mileage.locationActiveDesc')}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-destructive">
+                      <MapPinOff className="h-5 w-5" />
+                      <span className="font-medium">{t('mileage.locationBlockedTitle')}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {t('mileage.locationBlockedDesc')}
+                    </p>
+                    <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                      <p className="text-sm font-medium">{t('mileage.howToEnable')}</p>
+                      <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
+                        <li>{t('mileage.enableStep1')}</li>
+                        <li>{t('mileage.enableStep2')}</li>
+                        <li>{t('mileage.enableStep3')}</li>
+                      </ol>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => window.location.reload()}
+                    >
+                      {t('mileage.reloadPage')}
+                    </Button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
+          </div>
         )}
       </div>
 
