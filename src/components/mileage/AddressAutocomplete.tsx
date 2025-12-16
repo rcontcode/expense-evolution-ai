@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, MapPin, LocateFixed, Star, Clock, Plus } from 'lucide-react';
+import { Loader2, MapPin, LocateFixed, Star, Clock, Plus, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/utils/useDebounce';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -9,6 +9,13 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface NominatimResult {
   place_id: number;
@@ -25,6 +32,18 @@ interface SavedAddress {
   label: string | null;
   use_count: number;
 }
+
+const COUNTRIES = [
+  { code: 'ca', name: 'Canadá', flag: '🇨🇦' },
+  { code: 'mx', name: 'México', flag: '🇲🇽' },
+  { code: 'es', name: 'España', flag: '🇪🇸' },
+  { code: 'us', name: 'Estados Unidos', flag: '🇺🇸' },
+  { code: 'ar', name: 'Argentina', flag: '🇦🇷' },
+  { code: 'co', name: 'Colombia', flag: '🇨🇴' },
+  { code: 'cl', name: 'Chile', flag: '🇨🇱' },
+  { code: 'pe', name: 'Perú', flag: '🇵🇪' },
+  { code: '', name: 'Global', flag: '🌍' },
+];
 
 interface AddressAutocompleteProps {
   value: string;
@@ -53,6 +72,7 @@ export function AddressAutocomplete({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showSaveOption, setShowSaveOption] = useState(false);
   const [pendingAddress, setPendingAddress] = useState<{ address: string; lat: number; lng: number } | null>(null);
+  const [countryCode, setCountryCode] = useState('ca');
   const wrapperRef = useRef<HTMLDivElement>(null);
   
   const debouncedSearch = useDebounce(inputValue, 400);
@@ -138,8 +158,9 @@ export function AddressAutocomplete({
 
       setIsLoading(true);
       try {
+        const countryParam = countryCode ? `&countrycodes=${countryCode}` : '';
         const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(debouncedSearch)}&limit=5&addressdetails=1&countrycodes=ca`,
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(debouncedSearch)}&limit=5&addressdetails=1${countryParam}`,
           {
             headers: {
               'Accept-Language': 'es,en',
@@ -161,7 +182,7 @@ export function AddressAutocomplete({
     };
 
     fetchSuggestions();
-  }, [debouncedSearch]);
+  }, [debouncedSearch, countryCode]);
 
   // Filter saved addresses based on input
   const filteredSavedAddresses = savedAddresses.filter(addr => 
@@ -293,6 +314,24 @@ export function AddressAutocomplete({
   return (
     <div ref={wrapperRef} className={cn('relative', className)}>
       <div className="flex gap-2">
+        <Select value={countryCode} onValueChange={setCountryCode}>
+          <SelectTrigger className="w-[70px] shrink-0">
+            <SelectValue>
+              {COUNTRIES.find(c => c.code === countryCode)?.flag || '🌍'}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {COUNTRIES.map((country) => (
+              <SelectItem key={country.code || 'global'} value={country.code}>
+                <span className="flex items-center gap-2">
+                  <span>{country.flag}</span>
+                  <span>{country.name}</span>
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
         <div className="relative flex-1">
           <Input
             value={inputValue}
