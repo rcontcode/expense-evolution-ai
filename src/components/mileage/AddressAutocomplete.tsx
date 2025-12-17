@@ -48,6 +48,7 @@ interface GeocodeSuggestion {
   lng: number;
   source: GeocodeSource;
   houseNumber?: string;
+  countryCode?: string;
 }
 
 interface PhotonResponse {
@@ -175,11 +176,12 @@ export function AddressAutocomplete({
         setLocationStatus('granted');
         
         // Reverse geocode to get country
+        const acceptLanguage = language === 'en' ? 'en,es' : 'es,en';
         const response = await fetch(
           `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=3`,
           {
             headers: {
-              'Accept-Language': 'es,en',
+              'Accept-Language': acceptLanguage,
             },
           }
         );
@@ -383,13 +385,14 @@ export function AddressAutocomplete({
               const state = p.state || '';
               const postcode = p.postcode || '';
               const country = p.country || '';
+              const countryCode = p.countrycode?.toLowerCase();
 
               const displayParts = [
                 `${houseNumber ? `${houseNumber} ` : ''}${street}`.trim(),
                 city,
                 state,
                 postcode,
-                country
+                country,
               ].filter(Boolean);
 
               const display = displayParts.join(', ');
@@ -400,18 +403,25 @@ export function AddressAutocomplete({
                 lat: Number(lat),
                 lng: Number(lng),
                 source: 'photon' as const,
-                houseNumber
+                houseNumber,
+                countryCode,
               } satisfies GeocodeSuggestion;
             })
             .filter(Boolean) as GeocodeSuggestion[];
 
+          // If the user selected a country, hide results from other countries (Photon is global).
+          const countryFiltered =
+            countryCode && countryCode !== 'global'
+              ? items.filter((i) => (i.countryCode ?? '').toLowerCase() === countryCode)
+              : items;
+
           // If the user typed a house number, prefer results that include it.
           if (leadingHouseNumber) {
-            const exact = items.filter((i) => i.houseNumber === leadingHouseNumber);
+            const exact = countryFiltered.filter((i) => i.houseNumber === leadingHouseNumber);
             if (exact.length > 0) return rankByHouseAndProximity(exact);
           }
 
-          return rankByHouseAndProximity(items);
+          return rankByHouseAndProximity(countryFiltered);
         };
 
         const fetchNominatim = async (): Promise<GeocodeSuggestion[]> => {
