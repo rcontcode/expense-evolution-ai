@@ -36,6 +36,7 @@ interface NominatimResult {
     town?: string;
     village?: string;
     postcode?: string;
+    country_code?: string;
   };
 }
 
@@ -306,6 +307,13 @@ export function AddressAutocomplete({
 
       try {
         const leadingHouseNumber = searchTerm.match(/^(\d{1,6})(?=[\s,])/ )?.[1] ?? null;
+        
+        // Extract Canadian postal code (format: V7T 2K3 or V7T2K3)
+        const canadianPostalCodeMatch = searchTerm.match(/\b([A-Z]\d[A-Z])\s?(\d[A-Z]\d)\b/i);
+        const canadianPostalCode = canadianPostalCodeMatch 
+          ? `${canadianPostalCodeMatch[1].toUpperCase()} ${canadianPostalCodeMatch[2].toUpperCase()}`
+          : null;
+        const canadianPostalCodeNormalized = canadianPostalCode?.replace(/\s/g, '').toUpperCase() ?? null;
 
         const headers = {
           'Accept-Language': 'es,en',
@@ -328,6 +336,14 @@ export function AddressAutocomplete({
             // Prioritize results from selected country
             if (selectedCountry && r.countryCode === selectedCountry) {
               s += 500;
+            }
+
+            // Prioritize results matching Canadian postal code
+            if (canadianPostalCodeNormalized) {
+              const displayNormalized = r.display.replace(/\s/g, '').toUpperCase();
+              if (displayNormalized.includes(canadianPostalCodeNormalized)) {
+                s += 800; // High priority for postal code match
+              }
             }
 
             if (hn) {
@@ -439,8 +455,8 @@ export function AddressAutocomplete({
           };
 
           const parts = searchTerm.split(',').map((p) => p.trim()).filter(Boolean);
-          const postalFromParts = parts.find((p) => /[A-Z]\d[A-Z]\s?\d[A-Z]\d/i.test(p));
-          const postalCode = postalFromParts?.match(/[A-Z]\d[A-Z]\s?\d[A-Z]\d/i)?.[0] ?? null;
+          // Use already extracted Canadian postal code or try to find one in parts
+          const postalCode = canadianPostalCode ?? parts.find((p) => /[A-Z]\d[A-Z]\s?\d[A-Z]\d/i.test(p))?.match(/[A-Z]\d[A-Z]\s?\d[A-Z]\d/i)?.[0] ?? null;
 
           const geoBias = getGeoBiasParams();
           const dedupeParam = leadingHouseNumber ? '&dedupe=0' : '&dedupe=1';
@@ -450,13 +466,24 @@ export function AddressAutocomplete({
           const q = searchTerm.length > 80 && parts.length > 2 ? parts.slice(0, 3).join(', ') : searchTerm;
 
           const urls: string[] = [];
+          
+          // If we have a Canadian postal code, prioritize postal code-based searches
+          if (postalCode) {
+            const postalParam = `&postalcode=${encodeURIComponent(postalCode)}`;
+            if (leadingHouseNumber) {
+              const street = parts[0] ?? searchTerm;
+              urls.push(makeUrl(`&street=${encodeURIComponent(street)}${postalParam}${geoBias}`));
+            }
+            // Search with just postal code for area
+            urls.push(makeUrl(`&q=${encodeURIComponent(q)}${geoBias}`));
+          }
+          
           if (leadingHouseNumber) {
             const street = parts[0] ?? searchTerm;
-            const cityGuess = parts.slice(1).find((p) => /vancouver/i.test(p)) ?? parts[1] ?? '';
+            const cityGuess = parts.slice(1).find((p) => /vancouver|burnaby|surrey|richmond|coquitlam|north\s*vancouver|west\s*vancouver/i.test(p)) ?? parts[1] ?? '';
             const cityParam = cityGuess ? `&city=${encodeURIComponent(cityGuess)}` : '';
-            const postalParam = postalCode ? `&postalcode=${encodeURIComponent(postalCode)}` : '';
 
-            urls.push(makeUrl(`&street=${encodeURIComponent(street)}${cityParam}${postalParam}${geoBias}`));
+            urls.push(makeUrl(`&street=${encodeURIComponent(street)}${cityParam}${geoBias}`));
             urls.push(makeUrl(`&street=${encodeURIComponent(street)}${geoBias}`));
             urls.push(makeUrl(`&q=${encodeURIComponent(q)}${geoBias}`));
           } else {
@@ -480,6 +507,7 @@ export function AddressAutocomplete({
             const lat = Number.parseFloat(r.lat);
             const lng = Number.parseFloat(r.lon);
             const houseNumber = r.address?.house_number;
+            const itemCountryCode = r.address?.country_code?.toLowerCase();
 
             return {
               id: `nominatim-${r.place_id}`,
@@ -487,7 +515,8 @@ export function AddressAutocomplete({
               lat,
               lng,
               source: 'nominatim',
-              houseNumber
+              houseNumber,
+              countryCode: itemCountryCode
             } satisfies GeocodeSuggestion;
           });
 
