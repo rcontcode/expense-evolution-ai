@@ -41,6 +41,7 @@ import { MileageWithClient, calculateMileageDeduction, CRA_MILEAGE_RATES } from 
 import { MileageRoutePreview } from '@/components/mileage/MileageRoutePreview';
 import { AddressAutocomplete } from '@/components/mileage/AddressAutocomplete';
 import { LeafletRouteMap } from '@/components/mileage/LeafletRouteMap';
+import { TripCalendarPreview } from '@/components/mileage/TripCalendarPreview';
 
 interface MileageFormProps {
   initialData?: MileageWithClient | null;
@@ -920,6 +921,20 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
               </div>
             )}
           </div>
+        )}
+
+        {/* Visual Calendar Preview */}
+        {watchRecurrence !== 'one_time' && tripSummary.totalTrips > 0 && watchKilometers > 0 && (
+          <TripCalendarPreview
+            startDate={watchDate || new Date()}
+            endDate={watchRecurrenceEndDate}
+            recurrence={watchRecurrence}
+            recurrenceDays={watchRecurrenceDays}
+            exceptionDates={watchExceptionDates}
+            specificDates={watchSpecificDates}
+            kilometers={watchKilometers}
+            deductionPerTrip={estimatedDeduction.deductible}
+          />
         )}
 
         {/* Deduction Preview - Single trip */}
