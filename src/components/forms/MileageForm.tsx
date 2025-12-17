@@ -76,6 +76,8 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
       recurrence: (initialData as any)?.recurrence || 'one_time',
       recurrence_end_date: (initialData as any)?.recurrence_end_date ? new Date((initialData as any).recurrence_end_date) : null,
       recurrence_days: (initialData as any)?.recurrence_days || null,
+      exception_dates: (initialData as any)?.exception_dates?.map((d: string) => new Date(d)) || null,
+      specific_dates: (initialData as any)?.specific_dates?.map((d: string) => new Date(d)) || null,
     },
   });
 
@@ -533,6 +535,7 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
                     <SelectItem value="weekly">{t('mileage.recurrenceWeekly')}</SelectItem>
                     <SelectItem value="biweekly">{t('mileage.recurrenceBiweekly')}</SelectItem>
                     <SelectItem value="monthly">{t('mileage.recurrenceMonthly')}</SelectItem>
+                    <SelectItem value="irregular">{t('mileage.recurrenceIrregular')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -599,8 +602,158 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
             />
           )}
 
+          {/* Exception dates - days NOT traveled within the pattern */}
+          {(watchRecurrence === 'daily' || watchRecurrence === 'weekly' || watchRecurrence === 'biweekly' || watchRecurrence === 'monthly') && (
+            <FormField
+              control={form.control}
+              name="exception_dates"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs flex items-center gap-2">
+                    <CalendarIcon className="h-3 w-3 text-destructive" />
+                    {t('mileage.exceptionDates')}
+                  </FormLabel>
+                  <FormDescription className="text-xs">
+                    {t('mileage.exceptionDatesHint')}
+                  </FormDescription>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={cn(
+                            'w-full pl-3 text-left font-normal',
+                            !field.value?.length && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value?.length ? (
+                            <span>{field.value.length} {t('mileage.daysExcluded')}</span>
+                          ) : (
+                            <span>{t('mileage.noExceptions')}</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="multiple"
+                        selected={field.value || []}
+                        onSelect={(dates) => field.onChange(dates?.length ? dates : null)}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                      {field.value?.length > 0 && (
+                        <div className="p-2 border-t">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="w-full text-xs text-destructive"
+                            onClick={() => field.onChange(null)}
+                          >
+                            {t('mileage.clearExceptions')}
+                          </Button>
+                        </div>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                  {field.value?.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {field.value.slice(0, 5).map((date, idx) => (
+                        <span key={idx} className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded">
+                          {format(date, 'dd/MM')}
+                        </span>
+                      ))}
+                      {field.value.length > 5 && (
+                        <span className="text-xs text-muted-foreground">+{field.value.length - 5} más</span>
+                      )}
+                    </div>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {/* Specific dates calendar for irregular trips */}
+          {watchRecurrence === 'irregular' && (
+            <FormField
+              control={form.control}
+              name="specific_dates"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs flex items-center gap-2">
+                    <CheckCircle2 className="h-3 w-3 text-chart-1" />
+                    {t('mileage.specificDates')}
+                  </FormLabel>
+                  <FormDescription className="text-xs">
+                    {t('mileage.specificDatesHint')}
+                  </FormDescription>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={cn(
+                            'w-full pl-3 text-left font-normal',
+                            !field.value?.length && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value?.length ? (
+                            <span className="text-chart-1 font-medium">{field.value.length} {t('mileage.daysSelected')}</span>
+                          ) : (
+                            <span>{t('mileage.selectDatesOnCalendar')}</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="multiple"
+                        selected={field.value || []}
+                        onSelect={(dates) => field.onChange(dates?.length ? dates : null)}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                      {field.value?.length > 0 && (
+                        <div className="p-2 border-t">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="w-full text-xs text-destructive"
+                            onClick={() => field.onChange(null)}
+                          >
+                            {t('mileage.clearSelection')}
+                          </Button>
+                        </div>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                  {field.value?.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {field.value.slice(0, 8).map((date, idx) => (
+                        <span key={idx} className="text-xs bg-chart-1/10 text-chart-1 px-2 py-0.5 rounded">
+                          {format(date, 'dd/MM')}
+                        </span>
+                      ))}
+                      {field.value.length > 8 && (
+                        <span className="text-xs text-muted-foreground">+{field.value.length - 8} más</span>
+                      )}
+                    </div>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
           {/* End date for recurring trips */}
-          {watchRecurrence !== 'one_time' && (
+          {watchRecurrence !== 'one_time' && watchRecurrence !== 'irregular' && (
             <FormField
               control={form.control}
               name="recurrence_end_date"
@@ -634,6 +787,7 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date()}
                         initialFocus
+                        className="pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>
