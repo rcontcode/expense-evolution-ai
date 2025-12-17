@@ -180,8 +180,7 @@ export function AddressAutocomplete({
           {
             headers: {
               'Accept-Language': 'es,en',
-              'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
-            }
+            },
           }
         );
 
@@ -287,8 +286,19 @@ export function AddressAutocomplete({
   useEffect(() => {
     const fetchSuggestions = async () => {
       const rawTerm = debouncedSearch?.trim() ?? '';
-      const normalizeForGeocoder = (term: string) =>
-        term.replace(/^([0-9]{1,6})(?:\s*[,;]\s*|\s+-\s+)/, '$1 ');
+      const normalizeForGeocoder = (term: string) => {
+        let t = term.trim();
+
+        // If the user types "905, Lawson Ave" or "905 - Lawson Ave" normalize to "905 Lawson Ave"
+        t = t.replace(/^([0-9]{1,6})(?:\s*[,;]\s*|\s+-\s+)/, '$1 ');
+
+        // If the user types "Lawson Ave 905", reorder to "905 Lawson Ave" for better civic matching
+        if (!/^\d{1,6}\b/.test(t)) {
+          t = t.replace(/^(.+?)\s+(\d{1,6})$/, '$2 $1');
+        }
+
+        return t.replace(/\s{2,}/g, ' ');
+      };
       const searchTerm = normalizeForGeocoder(rawTerm);
 
       if (!searchTerm || searchTerm.length < 2) {
@@ -306,10 +316,9 @@ export function AddressAutocomplete({
       try {
         const leadingHouseNumber = searchTerm.match(/^(\d{1,6})(?=[\s,])/ )?.[1] ?? null;
 
+        const acceptLanguage = language === 'en' ? 'en,es' : 'es,en';
         const headers = {
-          'Accept-Language': 'es,en',
-          // Some browsers ignore this header, but keeping it doesn't hurt.
-          'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
+          'Accept-Language': acceptLanguage,
         } as const;
 
         const rankByHouseAndProximity = (items: GeocodeSuggestion[]) => {
@@ -591,13 +600,14 @@ export function AddressAutocomplete({
 
       const { latitude, longitude } = position.coords;
       
+      const acceptLanguage = language === 'en' ? 'en,es' : 'es,en';
+
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
         {
           headers: {
-            'Accept-Language': 'es,en',
-            'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
-          }
+            'Accept-Language': acceptLanguage,
+          },
         }
       );
 
