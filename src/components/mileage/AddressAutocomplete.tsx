@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/popover';
 
 // Mapbox public token (safe for client-side use)
-const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoicmdjbDMyMjEiLCJhIjoiY21qOW5rdmNiMGVpbjNsZ2RjbDNocXJxNiJ9.cgAf15mQXuooK2HiDASEzA';
+const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoicmdjbDMyMjEiLCJhIjoiY21qOW83eDI0MGV3czNncTFtb25jaWNvNSJ9.wqE8j7kcgR6ZVbATyrYOwQ';
 
 type GeocodeSource = 'mapbox' | 'saved';
 
