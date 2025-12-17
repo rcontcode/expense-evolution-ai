@@ -110,7 +110,7 @@ export function AddressAutocomplete({
   className,
   showLocationButton = true
 }: AddressAutocompleteProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [inputValue, setInputValue] = useState(value);
@@ -286,7 +286,10 @@ export function AddressAutocomplete({
   // Fetch suggestions (Photon primary + Nominatim fallback)
   useEffect(() => {
     const fetchSuggestions = async () => {
-      const searchTerm = debouncedSearch?.trim() ?? '';
+      const rawTerm = debouncedSearch?.trim() ?? '';
+      const normalizeForGeocoder = (term: string) =>
+        term.replace(/^([0-9]{1,6})(?:\s*[,;]\s*|\s+-\s+)/, '$1 ');
+      const searchTerm = normalizeForGeocoder(rawTerm);
 
       if (!searchTerm || searchTerm.length < 2) {
         setSuggestions([]);
@@ -301,7 +304,7 @@ export function AddressAutocomplete({
       setIsLoading(true);
 
       try {
-        const leadingHouseNumber = searchTerm.match(/^(\d{1,6})\s+/)?.[1] ?? null;
+        const leadingHouseNumber = searchTerm.match(/^(\d{1,6})(?=[\s,])/ )?.[1] ?? null;
 
         const headers = {
           'Accept-Language': 'es,en',
@@ -336,11 +339,15 @@ export function AddressAutocomplete({
         };
 
         const fetchPhoton = async (): Promise<GeocodeSuggestion[]> => {
+          // Photon NO soporta lang=es (solo: default/en/de/fr). Si mandamos un lang no soportado, responde 400.
+          const photonLang = language === 'en' ? 'en' : 'default';
+
           const params = new URLSearchParams({
             q: searchTerm,
             limit: '10',
-            lang: 'es'
           });
+
+          if (photonLang !== 'default') params.set('lang', photonLang);
 
           if (userLocation) {
             params.set('lat', String(userLocation.lat));
@@ -474,6 +481,17 @@ export function AddressAutocomplete({
         // Primary provider (generally more "autocomplete-like" for civic addresses)
         let items = await fetchPhoton();
 
+        // If the user typed a house number, ensure we also try Nominatim for exact civic matches.
+        if (leadingHouseNumber) {
+          const hasExact = items.some(
+            (i) => i.houseNumber === leadingHouseNumber || new RegExp(`\\b${leadingHouseNumber}\\b`).test(i.display)
+          );
+          if (!hasExact) {
+            const nom = await fetchNominatim();
+            items = rankByHouseAndProximity([...nom, ...items]);
+          }
+        }
+
         // Fallback
         if (items.length === 0) items = await fetchNominatim();
 
@@ -491,7 +509,7 @@ export function AddressAutocomplete({
     };
 
     fetchSuggestions();
-  }, [debouncedSearch, countryCode, userLocation]);
+  }, [debouncedSearch, countryCode, userLocation, language]);
 
 
   // Filter saved addresses based on input
