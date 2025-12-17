@@ -547,7 +547,18 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
               name="recurrence_days"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-xs">{t('mileage.selectDays')}</FormLabel>
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="text-xs">{t('mileage.selectDays')}</FormLabel>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 text-xs text-primary"
+                      onClick={() => field.onChange([1, 2, 3, 4, 5])}
+                    >
+                      {t('mileage.monToFri')}
+                    </Button>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {[
                       { day: 0, label: t('mileage.daySun') },
