@@ -1,8 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { format } from 'date-fns';
-import { CalendarIcon, MapPin, Navigation, Sparkles, Building2, Loader2, Route, RotateCcw, Repeat, CheckCircle2, AlertCircle, Map } from 'lucide-react';
-import { useEffect, useState, useCallback } from 'react';
+import { format, eachDayOfInterval, getDay, addMonths, isSameDay } from 'date-fns';
+import { CalendarIcon, MapPin, Navigation, Sparkles, Building2, Loader2, Route, RotateCcw, Repeat, CheckCircle2, AlertCircle, Map, Calculator } from 'lucide-react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -82,6 +82,11 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
   });
 
   const watchRecurrence = form.watch('recurrence');
+  const watchRecurrenceDays = form.watch('recurrence_days');
+  const watchRecurrenceEndDate = form.watch('recurrence_end_date');
+  const watchExceptionDates = form.watch('exception_dates');
+  const watchSpecificDates = form.watch('specific_dates');
+  const watchDate = form.watch('date');
 
   const watchKilometers = form.watch('kilometers');
   const watchClientId = form.watch('client_id');
@@ -91,10 +96,90 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
   const watchStartLng = form.watch('start_lng');
   const watchEndLat = form.watch('end_lat');
   const watchEndLng = form.watch('end_lng');
+
+  // Calculate total trips based on recurrence pattern
+  const tripSummary = useMemo(() => {
+    if (watchRecurrence === 'one_time') {
+      return { totalTrips: 1, totalKm: watchKilometers || 0, description: null };
+    }
+
+    if (watchRecurrence === 'irregular') {
+      const trips = watchSpecificDates?.length || 0;
+      return {
+        totalTrips: trips,
+        totalKm: trips * (watchKilometers || 0),
+        description: trips > 0 ? `${trips} fechas seleccionadas` : null
+      };
+    }
+
+    // For regular patterns (daily, weekly, biweekly, monthly)
+    const startDate = watchDate || new Date();
+    const endDate = watchRecurrenceEndDate || addMonths(startDate, 3); // Default 3 months if no end date
+    
+    if (endDate <= startDate) {
+      return { totalTrips: 0, totalKm: 0, description: null };
+    }
+
+    try {
+      const allDays = eachDayOfInterval({ start: startDate, end: endDate });
+      let matchingDays: Date[] = [];
+
+      if (watchRecurrence === 'daily') {
+        // If specific days selected, filter by those days
+        if (watchRecurrenceDays?.length) {
+          matchingDays = allDays.filter(day => watchRecurrenceDays.includes(getDay(day)));
+        } else {
+          matchingDays = allDays;
+        }
+      } else if (watchRecurrence === 'weekly' || watchRecurrence === 'biweekly') {
+        const selectedDays = watchRecurrenceDays?.length ? watchRecurrenceDays : [getDay(startDate)];
+        matchingDays = allDays.filter(day => selectedDays.includes(getDay(day)));
+        
+        if (watchRecurrence === 'biweekly') {
+          // Keep every other occurrence
+          matchingDays = matchingDays.filter((_, idx) => idx % 2 === 0);
+        }
+      } else if (watchRecurrence === 'monthly') {
+        const dayOfMonth = startDate.getDate();
+        matchingDays = allDays.filter(day => day.getDate() === dayOfMonth);
+      }
+
+      // Remove exception dates
+      if (watchExceptionDates?.length) {
+        matchingDays = matchingDays.filter(day => 
+          !watchExceptionDates.some(excDate => isSameDay(day, excDate))
+        );
+      }
+
+      const totalTrips = matchingDays.length;
+      const totalKm = totalTrips * (watchKilometers || 0);
+      
+      const daysDesc = watchRecurrenceDays?.length 
+        ? watchRecurrenceDays.map(d => ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d]).join(', ')
+        : null;
+      const exceptionsDesc = watchExceptionDates?.length 
+        ? `- ${watchExceptionDates.length} excepciones` 
+        : '';
+
+      return {
+        totalTrips,
+        totalKm,
+        description: daysDesc ? `${daysDesc} ${exceptionsDesc}`.trim() : null
+      };
+    } catch {
+      return { totalTrips: 0, totalKm: 0, description: null };
+    }
+  }, [watchRecurrence, watchRecurrenceDays, watchRecurrenceEndDate, watchExceptionDates, watchSpecificDates, watchDate, watchKilometers]);
   
   const estimatedDeduction = watchKilometers 
     ? calculateMileageDeduction(watchKilometers, yearToDateKm)
     : { deductible: 0, rate: CRA_MILEAGE_RATES.first5000 };
+
+  // Calculate total deduction for all trips
+  const totalTripDeduction = useMemo(() => {
+    if (tripSummary.totalTrips <= 1) return null;
+    return calculateMileageDeduction(tripSummary.totalKm, yearToDateKm);
+  }, [tripSummary.totalTrips, tripSummary.totalKm, yearToDateKm]);
 
   // Calculate distance using OSRM when both coordinates are available
   const calculateRouteDistance = useCallback(async (
@@ -801,10 +886,48 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
           )}
         </div>
 
-        {/* Deduction Preview */}
+        {/* Trip Summary for recurring trips */}
+        {watchRecurrence !== 'one_time' && tripSummary.totalTrips > 0 && (
+          <div className="rounded-lg border bg-chart-1/5 border-chart-1/20 p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Calculator className="h-4 w-4 text-chart-1" />
+              <h4 className="font-medium text-sm">{t('mileage.tripSummary')}</h4>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-background/50 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-chart-1">{tripSummary.totalTrips}</div>
+                <div className="text-xs text-muted-foreground">{t('mileage.totalTrips')}</div>
+              </div>
+              <div className="bg-background/50 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-primary">{tripSummary.totalKm.toFixed(1)}</div>
+                <div className="text-xs text-muted-foreground">{t('mileage.totalKilometers')}</div>
+              </div>
+            </div>
+
+            {tripSummary.description && (
+              <p className="text-xs text-muted-foreground bg-background/30 px-2 py-1 rounded">
+                {tripSummary.description}
+              </p>
+            )}
+
+            {totalTripDeduction && (
+              <div className="border-t pt-3 mt-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{t('mileage.totalEstimatedDeduction')}</span>
+                  <span className="font-bold text-chart-1">${totalTripDeduction.deductible.toFixed(2)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Deduction Preview - Single trip */}
         {watchKilometers > 0 && (
           <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
-            <h4 className="font-medium text-sm">{t('mileage.deductionPreview')}</h4>
+            <h4 className="font-medium text-sm">
+              {watchRecurrence !== 'one_time' ? t('mileage.perTripDeduction') : t('mileage.deductionPreview')}
+            </h4>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <span className="text-muted-foreground">{t('mileage.estimatedDeduction')}</span>
               <span className="font-bold text-chart-1">${estimatedDeduction.deductible.toFixed(2)}</span>
