@@ -31,16 +31,26 @@ export function MileageRoutePreview({
 }: MileageRoutePreviewProps) {
   const [showFullMap, setShowFullMap] = useState(false);
 
-  // Generate OpenStreetMap directions URL (works without blocking issues)
-  const mapsUrl = useMemo(() => {
+  // Google Maps URL - shows route with directions (reliable, no blocking)
+  const googleMapsUrl = useMemo(() => {
     if (startLat && startLng && endLat && endLng) {
-      return `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${startLat},${startLng};${endLat},${endLng}`;
+      return `https://www.google.com/maps/dir/${startLat},${startLng}/${endLat},${endLng}`;
     }
     if (startAddress && endAddress) {
-      return `https://www.openstreetmap.org/directions?from=${encodeURIComponent(startAddress)}&to=${encodeURIComponent(endAddress)}`;
+      return `https://www.google.com/maps/dir/${encodeURIComponent(startAddress)}/${encodeURIComponent(endAddress)}`;
     }
     return null;
   }, [startAddress, endAddress, startLat, startLng, endLat, endLng]);
+
+  // OpenStreetMap URL - simple view centered on route (avoids /directions blocking)
+  const osmUrl = useMemo(() => {
+    if (startLat && startLng && endLat && endLng) {
+      const centerLat = (startLat + endLat) / 2;
+      const centerLng = (startLng + endLng) / 2;
+      return `https://www.openstreetmap.org/?mlat=${centerLat}&mlon=${centerLng}#map=13/${centerLat}/${centerLng}`;
+    }
+    return null;
+  }, [startLat, startLng, endLat, endLng]);
 
   const hasCoordinates = startLat && startLng && endLat && endLng;
   const hasAddresses = startAddress || endAddress;
@@ -142,16 +152,28 @@ export function MileageRoutePreview({
                   </div>
                 </div>
               </div>
-              {mapsUrl && (
-                <Button 
-                  variant="outline" 
-                  className="w-full gap-2"
-                  onClick={() => window.open(mapsUrl, '_blank', 'noopener,noreferrer')}
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Ver en OpenStreetMap
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {googleMapsUrl && (
+                  <Button 
+                    variant="default" 
+                    className="flex-1 gap-2"
+                    onClick={() => window.open(googleMapsUrl, '_blank', 'noopener,noreferrer')}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Google Maps
+                  </Button>
+                )}
+                {osmUrl && (
+                  <Button 
+                    variant="outline" 
+                    className="flex-1 gap-2"
+                    onClick={() => window.open(osmUrl, '_blank', 'noopener,noreferrer')}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    OpenStreetMap
+                  </Button>
+                )}
+              </div>
             </div>
           </DialogContent>
         </Dialog>
@@ -217,18 +239,31 @@ export function MileageRoutePreview({
         )}
       </div>
 
-      {/* OpenStreetMap Link */}
-      {mapsUrl && (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full gap-2"
-          onClick={() => window.open(mapsUrl, '_blank', 'noopener,noreferrer')}
-        >
-          <ExternalLink className="h-4 w-4" />
-          Ver en OpenStreetMap
-        </Button>
-      )}
+      {/* External Maps Links */}
+      <div className="flex gap-2">
+        {googleMapsUrl && (
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="flex-1 gap-2"
+            onClick={() => window.open(googleMapsUrl, '_blank', 'noopener,noreferrer')}
+          >
+            <ExternalLink className="h-4 w-4" />
+            Google Maps
+          </Button>
+        )}
+        {osmUrl && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1 gap-2"
+            onClick={() => window.open(osmUrl, '_blank', 'noopener,noreferrer')}
+          >
+            <ExternalLink className="h-4 w-4" />
+            OpenStreetMap
+          </Button>
+        )}
+      </div>
 
       {/* Full Map Dialog */}
       {hasCoordinates && (
@@ -249,16 +284,28 @@ export function MileageRoutePreview({
               endAddress={endAddress}
               className="h-96"
             />
-            {mapsUrl && (
-              <Button 
-                variant="outline" 
-                className="w-full gap-2"
-                onClick={() => window.open(mapsUrl, '_blank', 'noopener,noreferrer')}
-              >
-                <ExternalLink className="h-4 w-4" />
-                Ver en OpenStreetMap
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {googleMapsUrl && (
+                <Button 
+                  variant="default" 
+                  className="flex-1 gap-2"
+                  onClick={() => window.open(googleMapsUrl, '_blank', 'noopener,noreferrer')}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Google Maps
+                </Button>
+              )}
+              {osmUrl && (
+                <Button 
+                  variant="outline" 
+                  className="flex-1 gap-2"
+                  onClick={() => window.open(osmUrl, '_blank', 'noopener,noreferrer')}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  OpenStreetMap
+                </Button>
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       )}
