@@ -244,6 +244,68 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
           />
         </div>
 
+        {/* Address Fields with Geocoding - PRIMERO para entrada rápida */}
+        <div className="space-y-3 p-3 rounded-lg border bg-muted/30">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Navigation className="h-4 w-4 text-primary" />
+            {t('mileage.routeAddresses')}
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="start_address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2">
+                  <div className="h-5 w-5 rounded-full bg-chart-1 flex items-center justify-center">
+                    <span className="text-xs text-white font-bold">A</span>
+                  </div>
+                  {t('mileage.startAddress')}
+                </FormLabel>
+                <FormControl>
+                  <AddressAutocomplete
+                    value={field.value || ''}
+                    onChange={(address) => field.onChange(address)}
+                    onCoordinatesChange={(lat, lng) => {
+                      form.setValue('start_lat', lat);
+                      form.setValue('start_lng', lng);
+                    }}
+                    placeholder={t('mileage.startAddressPlaceholder')}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="end_address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2">
+                  <div className="h-5 w-5 rounded-full bg-chart-2 flex items-center justify-center">
+                    <span className="text-xs text-white font-bold">B</span>
+                  </div>
+                  {t('mileage.endAddress')}
+                </FormLabel>
+                <FormControl>
+                  <AddressAutocomplete
+                    value={field.value || ''}
+                    onChange={(address) => field.onChange(address)}
+                    onCoordinatesChange={(lat, lng) => {
+                      form.setValue('end_lat', lat);
+                      form.setValue('end_lng', lng);
+                    }}
+                    placeholder={t('mileage.endAddressPlaceholder')}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         <FormField
           control={form.control}
           name="client_id"
@@ -311,63 +373,6 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
             </AlertDescription>
           </Alert>
         )}
-
-        {/* Address Fields with Geocoding */}
-        <div className="space-y-3">
-          <FormField
-            control={form.control}
-            name="start_address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-2">
-                  <div className="h-5 w-5 rounded-full bg-chart-1 flex items-center justify-center">
-                    <span className="text-xs text-white font-bold">A</span>
-                  </div>
-                  {t('mileage.startAddress')}
-                </FormLabel>
-                <FormControl>
-                  <AddressAutocomplete
-                    value={field.value || ''}
-                    onChange={(address) => field.onChange(address)}
-                    onCoordinatesChange={(lat, lng) => {
-                      form.setValue('start_lat', lat);
-                      form.setValue('start_lng', lng);
-                    }}
-                    placeholder={t('mileage.startAddressPlaceholder')}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="end_address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-2">
-                  <div className="h-5 w-5 rounded-full bg-chart-2 flex items-center justify-center">
-                    <span className="text-xs text-white font-bold">B</span>
-                  </div>
-                  {t('mileage.endAddress')}
-                </FormLabel>
-                <FormControl>
-                  <AddressAutocomplete
-                    value={field.value || ''}
-                    onChange={(address) => field.onChange(address)}
-                    onCoordinatesChange={(lat, lng) => {
-                      form.setValue('end_lat', lat);
-                      form.setValue('end_lng', lng);
-                    }}
-                    placeholder={t('mileage.endAddressPlaceholder')}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
 
         {/* OSRM Distance Calculation Result */}
         {(isCalculatingDistance || calculatedDistance) && (
