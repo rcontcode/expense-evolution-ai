@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, MapPin, LocateFixed, Star, Clock, Plus, Globe, MapPinOff, Info, CheckCircle2 } from 'lucide-react';
+import { Loader2, MapPin, LocateFixed, Star, Clock, Plus, MapPinOff, Info, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/utils/useDebounce';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -22,25 +22,10 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 
-interface NominatimResult {
-  place_id: number;
-  display_name: string;
-  lat: string;
-  lon: string;
-  class?: string;
-  type?: string;
-  address?: {
-    house_number?: string;
-    road?: string;
-    city?: string;
-    town?: string;
-    village?: string;
-    postcode?: string;
-    country_code?: string;
-  };
-}
+// Mapbox public token (safe for client-side use)
+const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoicmdjbDMyMjEiLCJhIjoiY21qOW5rdmNiMGVpbjNsZ2RjbDNocXJxNiJ9.cgAf15mQXuooK2HiDASEzA';
 
-type GeocodeSource = 'photon' | 'nominatim';
+type GeocodeSource = 'mapbox' | 'saved';
 
 interface GeocodeSuggestion {
   id: string;
@@ -52,27 +37,18 @@ interface GeocodeSuggestion {
   countryCode?: string;
 }
 
-interface PhotonResponse {
-  features?: Array<{
-    properties?: {
-      name?: string;
-      housenumber?: string;
-      street?: string;
-      city?: string;
-      state?: string;
-      postcode?: string;
-      country?: string;
-      countrycode?: string;
-      osm_id?: number;
-      osm_type?: string;
-    };
-    geometry?: {
-      type: 'Point';
-      coordinates: [number, number];
-    };
+interface MapboxFeature {
+  id: string;
+  place_name: string;
+  center: [number, number]; // [lng, lat]
+  address?: string; // house number
+  text?: string; // street name
+  context?: Array<{
+    id: string;
+    text: string;
+    short_code?: string;
   }>;
 }
-
 
 interface SavedAddress {
   id: string;
@@ -131,7 +107,7 @@ export function AddressAutocomplete({
   
   const debouncedSearch = useDebounce(inputValue, 250);
 
-  // Auto-detect country from user's location on mount (and store location for better search results)
+  // Auto-detect country from user's location on mount
   useEffect(() => {
     const detectCountry = async () => {
       if (!navigator.geolocation) {
@@ -140,7 +116,6 @@ export function AddressAutocomplete({
         return;
       }
 
-      // Check permission status if available
       if (navigator.permissions) {
         try {
           const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
@@ -149,7 +124,6 @@ export function AddressAutocomplete({
             setIsDetectingCountry(false);
             return;
           }
-          // Listen for permission changes
           permissionStatus.onchange = () => {
             if (permissionStatus.state === 'denied') {
               setLocationStatus('denied');
@@ -159,7 +133,7 @@ export function AddressAutocomplete({
             }
           };
         } catch (e) {
-          // Some browsers don't support permissions API for geolocation
+          // Some browsers don't support permissions API
         }
       }
 
@@ -168,7 +142,7 @@ export function AddressAutocomplete({
           navigator.geolocation.getCurrentPosition(resolve, reject, {
             enableHighAccuracy: false,
             timeout: 5000,
-            maximumAge: 300000 // Cache for 5 minutes
+            maximumAge: 300000
           });
         });
 
@@ -176,30 +150,23 @@ export function AddressAutocomplete({
         setUserLocation({ lat: latitude, lng: longitude });
         setLocationStatus('granted');
         
-        // Reverse geocode to get country
+        // Use Mapbox reverse geocoding to detect country
         const response = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=3`,
-          {
-            headers: {
-              'Accept-Language': 'es,en',
-              'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
-            }
-          }
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?types=country&access_token=${MAPBOX_ACCESS_TOKEN}`
         );
 
         if (response.ok) {
           const data = await response.json();
-          const detectedCountryCode = data.address?.country_code?.toLowerCase();
-          
-          if (detectedCountryCode) {
-            const matchingCountry = COUNTRIES.find(c => c.code === detectedCountryCode);
+          const countryFeature = data.features?.[0];
+          if (countryFeature?.properties?.short_code) {
+            const detectedCode = countryFeature.properties.short_code.toLowerCase();
+            const matchingCountry = COUNTRIES.find(c => c.code === detectedCode);
             if (matchingCountry) {
-              setCountryCode(detectedCountryCode);
+              setCountryCode(detectedCode);
             }
           }
         }
       } catch (error: any) {
-        // Check if it was a permission denial
         if (error.code === 1) {
           setLocationStatus('denied');
         } else {
@@ -236,7 +203,6 @@ export function AddressAutocomplete({
     mutationFn: async (addressData: { address: string; lat: number; lng: number; label?: string }) => {
       if (!user?.id) throw new Error('Not authenticated');
       
-      // Check if address already exists
       const { data: existing } = await supabase
         .from('user_addresses')
         .select('id, use_count')
@@ -245,13 +211,11 @@ export function AddressAutocomplete({
         .single();
 
       if (existing) {
-        // Update use count
         await supabase
           .from('user_addresses')
           .update({ use_count: existing.use_count + 1, last_used_at: new Date().toISOString() })
           .eq('id', existing.id);
       } else {
-        // Insert new address
         await supabase
           .from('user_addresses')
           .insert({
@@ -285,20 +249,16 @@ export function AddressAutocomplete({
     setInputValue(value);
   }, [value]);
 
-  // Fetch suggestions (Photon primary + Nominatim fallback)
+  // Fetch suggestions using Mapbox Geocoding API
   useEffect(() => {
     const fetchSuggestions = async () => {
-      const rawTerm = debouncedSearch?.trim() ?? '';
-      const normalizeForGeocoder = (term: string) =>
-        term.replace(/^([0-9]{1,6})(?:\s*[,;]\s*|\s+-\s+)/, '$1 ');
-      const searchTerm = normalizeForGeocoder(rawTerm);
+      const searchTerm = debouncedSearch?.trim() ?? '';
 
       if (!searchTerm || searchTerm.length < 2) {
         setSuggestions([]);
         return;
       }
 
-      // Cancel any in-flight request to avoid race conditions.
       fetchAbortRef.current?.abort();
       const controller = new AbortController();
       fetchAbortRef.current = controller;
@@ -306,249 +266,54 @@ export function AddressAutocomplete({
       setIsLoading(true);
 
       try {
-        const leadingHouseNumber = searchTerm.match(/^(\d{1,6})(?=[\s,])/ )?.[1] ?? null;
-        
-        // Extract Canadian postal code (format: V7T 2K3 or V7T2K3)
-        const canadianPostalCodeMatch = searchTerm.match(/\b([A-Z]\d[A-Z])\s?(\d[A-Z]\d)\b/i);
-        const canadianPostalCode = canadianPostalCodeMatch 
-          ? `${canadianPostalCodeMatch[1].toUpperCase()} ${canadianPostalCodeMatch[2].toUpperCase()}`
-          : null;
-        const canadianPostalCodeNormalized = canadianPostalCode?.replace(/\s/g, '').toUpperCase() ?? null;
+        const params = new URLSearchParams({
+          access_token: MAPBOX_ACCESS_TOKEN,
+          autocomplete: 'true',
+          types: 'address,place,locality,neighborhood,poi',
+          limit: '8',
+          language: language === 'es' ? 'es' : 'en'
+        });
 
-        const headers = {
-          'Accept-Language': 'es,en',
-          // Some browsers ignore this header, but keeping it doesn't hurt.
-          'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
-        } as const;
-
-        const selectedCountry = countryCode && countryCode !== 'global' ? countryCode.toLowerCase() : null;
-
-        const rankByHouseAndProximity = (items: GeocodeSuggestion[]) => {
-          if (items.length <= 1) return items;
-
-          const hn = leadingHouseNumber;
-          const userLat = userLocation?.lat ?? null;
-          const userLng = userLocation?.lng ?? null;
-
-          const score = (r: GeocodeSuggestion) => {
-            let s = 0;
-
-            // Prioritize results from selected country
-            if (selectedCountry && r.countryCode === selectedCountry) {
-              s += 500;
-            }
-
-            // Prioritize results matching Canadian postal code
-            if (canadianPostalCodeNormalized) {
-              const displayNormalized = r.display.replace(/\s/g, '').toUpperCase();
-              if (displayNormalized.includes(canadianPostalCodeNormalized)) {
-                s += 800; // High priority for postal code match
-              }
-            }
-
-            if (hn) {
-              if (r.houseNumber === hn) s += 1000;
-              if (r.houseNumber) s += 40;
-            }
-
-            if (userLat != null && userLng != null) {
-              const dist = Math.abs(r.lat - userLat) + Math.abs(r.lng - userLng);
-              s -= dist * 10;
-            }
-
-            return s;
-          };
-
-          return [...items].sort((a, b) => score(b) - score(a));
-        };
-
-        const fetchPhoton = async (): Promise<GeocodeSuggestion[]> => {
-          // Photon NO soporta lang=es (solo: default/en/de/fr). Si mandamos un lang no soportado, responde 400.
-          const photonLang = language === 'en' ? 'en' : 'default';
-
-          const params = new URLSearchParams({
-            q: searchTerm,
-            limit: '10',
-          });
-
-          if (photonLang !== 'default') params.set('lang', photonLang);
-
-          if (userLocation) {
-            params.set('lat', String(userLocation.lat));
-            params.set('lon', String(userLocation.lng));
-          }
-
-          const url = `https://photon.komoot.io/api/?${params.toString()}`;
-          const res = await fetch(url, { headers, signal: controller.signal });
-          if (!res.ok) return [];
-
-          const json = (await res.json()) as PhotonResponse;
-          const features = json.features ?? [];
-
-          let items: GeocodeSuggestion[] = features
-            .map((f) => {
-              const coords = f.geometry?.coordinates;
-              const p = f.properties ?? {};
-              if (!coords || coords.length !== 2) return null;
-
-              const [lng, lat] = coords;
-              const houseNumber = p.housenumber?.toString();
-              const street = p.street || p.name || '';
-              const city = p.city || '';
-              const state = p.state || '';
-              const postcode = p.postcode || '';
-              const country = p.country || '';
-              const itemCountryCode = p.countrycode?.toLowerCase();
-
-              const displayParts = [
-                `${houseNumber ? `${houseNumber} ` : ''}${street}`.trim(),
-                city,
-                state,
-                postcode,
-                country
-              ].filter(Boolean);
-
-              const display = displayParts.join(', ');
-
-              return {
-                id: `photon-${p.osm_type ?? 'osm'}-${p.osm_id ?? `${lat},${lng}`}`,
-                display,
-                lat: Number(lat),
-                lng: Number(lng),
-                source: 'photon' as const,
-                houseNumber,
-                countryCode: itemCountryCode
-              } satisfies GeocodeSuggestion;
-            })
-            .filter(Boolean) as GeocodeSuggestion[];
-
-          // Filter by selected country
-          if (selectedCountry) {
-            const countryFiltered = items.filter((i) => i.countryCode === selectedCountry);
-            // Only use filtered results if we got some, otherwise fall through to Nominatim
-            if (countryFiltered.length > 0) {
-              items = countryFiltered;
-            } else {
-              // No results from selected country - return empty to trigger Nominatim fallback
-              return [];
-            }
-          }
-
-          // If the user typed a house number, prefer results that include it.
-          if (leadingHouseNumber) {
-            const exact = items.filter((i) => i.houseNumber === leadingHouseNumber);
-            if (exact.length > 0) return rankByHouseAndProximity(exact);
-          }
-
-          return rankByHouseAndProximity(items);
-        };
-
-        const fetchNominatim = async (): Promise<GeocodeSuggestion[]> => {
-          const countryParam = countryCode && countryCode !== 'global' ? `&countrycodes=${countryCode}` : '';
-
-          const getGeoBiasParams = () => {
-            if (!userLocation) return '';
-            const latDelta = 0.5;
-            const lngDelta = 0.5;
-            const viewbox = `${userLocation.lng - lngDelta},${userLocation.lat + latDelta},${userLocation.lng + lngDelta},${userLocation.lat - latDelta}`;
-            return `&viewbox=${viewbox}`;
-          };
-
-          const parts = searchTerm.split(',').map((p) => p.trim()).filter(Boolean);
-          // Use already extracted Canadian postal code or try to find one in parts
-          const postalCode = canadianPostalCode ?? parts.find((p) => /[A-Z]\d[A-Z]\s?\d[A-Z]\d/i.test(p))?.match(/[A-Z]\d[A-Z]\s?\d[A-Z]\d/i)?.[0] ?? null;
-
-          const geoBias = getGeoBiasParams();
-          const dedupeParam = leadingHouseNumber ? '&dedupe=0' : '&dedupe=1';
-          const makeUrl = (params: string) =>
-            `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10${dedupeParam}${countryParam}${params}`;
-
-          const q = searchTerm.length > 80 && parts.length > 2 ? parts.slice(0, 3).join(', ') : searchTerm;
-
-          const urls: string[] = [];
-          
-          // If we have a Canadian postal code, prioritize postal code-based searches
-          if (postalCode) {
-            const postalParam = `&postalcode=${encodeURIComponent(postalCode)}`;
-            if (leadingHouseNumber) {
-              const street = parts[0] ?? searchTerm;
-              urls.push(makeUrl(`&street=${encodeURIComponent(street)}${postalParam}${geoBias}`));
-            }
-            // Search with just postal code for area
-            urls.push(makeUrl(`&q=${encodeURIComponent(q)}${geoBias}`));
-          }
-          
-          if (leadingHouseNumber) {
-            const street = parts[0] ?? searchTerm;
-            const cityGuess = parts.slice(1).find((p) => /vancouver|burnaby|surrey|richmond|coquitlam|north\s*vancouver|west\s*vancouver/i.test(p)) ?? parts[1] ?? '';
-            const cityParam = cityGuess ? `&city=${encodeURIComponent(cityGuess)}` : '';
-
-            urls.push(makeUrl(`&street=${encodeURIComponent(street)}${cityParam}${geoBias}`));
-            urls.push(makeUrl(`&street=${encodeURIComponent(street)}${geoBias}`));
-            urls.push(makeUrl(`&q=${encodeURIComponent(q)}${geoBias}`));
-          } else {
-            urls.push(makeUrl(`&q=${encodeURIComponent(q)}${geoBias}`));
-            urls.push(makeUrl(`&q=${encodeURIComponent(q)}`));
-          }
-
-          const tryFetch = async (url: string) => {
-            const response = await fetch(url, { headers, signal: controller.signal });
-            if (!response.ok) return [] as NominatimResult[];
-            return (await response.json()) as NominatimResult[];
-          };
-
-          let data: NominatimResult[] = [];
-          for (const url of urls) {
-            data = await tryFetch(url);
-            if (data.length > 0) break;
-          }
-
-          const items: GeocodeSuggestion[] = data.map((r) => {
-            const lat = Number.parseFloat(r.lat);
-            const lng = Number.parseFloat(r.lon);
-            const houseNumber = r.address?.house_number;
-            const itemCountryCode = r.address?.country_code?.toLowerCase();
-
-            return {
-              id: `nominatim-${r.place_id}`,
-              display: r.display_name,
-              lat,
-              lng,
-              source: 'nominatim',
-              houseNumber,
-              countryCode: itemCountryCode
-            } satisfies GeocodeSuggestion;
-          });
-
-          // If the user typed a house number, prefer exact matches.
-          if (leadingHouseNumber) {
-            const exact = items.filter((i) => i.houseNumber === leadingHouseNumber || new RegExp(`\\b${leadingHouseNumber}\\b`).test(i.display));
-            if (exact.length > 0) return rankByHouseAndProximity(exact);
-          }
-
-          return rankByHouseAndProximity(items);
-        };
-
-        // Primary provider (generally more "autocomplete-like" for civic addresses)
-        let items = await fetchPhoton();
-
-        // If the user typed a house number, ensure we also try Nominatim for exact civic matches.
-        if (leadingHouseNumber) {
-          const hasExact = items.some(
-            (i) => i.houseNumber === leadingHouseNumber || new RegExp(`\\b${leadingHouseNumber}\\b`).test(i.display)
-          );
-          if (!hasExact) {
-            const nom = await fetchNominatim();
-            items = rankByHouseAndProximity([...nom, ...items]);
-          }
+        // Filter by country (unless global)
+        if (countryCode && countryCode !== 'global') {
+          params.set('country', countryCode);
         }
 
-        // Fallback
-        if (items.length === 0) items = await fetchNominatim();
+        // Add proximity bias if we have user location
+        if (userLocation) {
+          params.set('proximity', `${userLocation.lng},${userLocation.lat}`);
+        }
 
-        const top = items.slice(0, 5);
-        setSuggestions(top);
-        setShowSuggestions(top.length > 0);
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchTerm)}.json?${params}`;
+        
+        const response = await fetch(url, { signal: controller.signal });
+        
+        if (!response.ok) {
+          console.warn('Mapbox API error:', response.status);
+          setSuggestions([]);
+          return;
+        }
+
+        const json = await response.json();
+        const features: MapboxFeature[] = json.features || [];
+
+        const items: GeocodeSuggestion[] = features.map((f) => {
+          const [lng, lat] = f.center;
+          const countryContext = f.context?.find(c => c.id.startsWith('country.'));
+          
+          return {
+            id: f.id,
+            display: f.place_name,
+            lat,
+            lng,
+            source: 'mapbox' as const,
+            houseNumber: f.address,
+            countryCode: countryContext?.short_code?.toLowerCase()
+          };
+        });
+
+        setSuggestions(items);
+        setShowSuggestions(items.length > 0);
       } catch (error: any) {
         if (error?.name !== 'AbortError') {
           console.warn('Address search error:', error);
@@ -561,7 +326,6 @@ export function AddressAutocomplete({
 
     fetchSuggestions();
   }, [debouncedSearch, countryCode, userLocation, language]);
-
 
   // Filter saved addresses based on input
   const filteredSavedAddresses = savedAddresses.filter(addr => 
@@ -591,7 +355,6 @@ export function AddressAutocomplete({
     setShowSuggestions(false);
     setSuggestions([]);
 
-    // Show save option for new addresses
     const isAlreadySaved = savedAddresses.some((a) => a.address === address);
     if (!isAlreadySaved) {
       setPendingAddress({ address, lat, lng });
@@ -622,7 +385,7 @@ export function AddressAutocomplete({
     }
   };
 
-  // Get current location using Geolocation API + reverse geocoding
+  // Get current location using Geolocation API + Mapbox reverse geocoding
   const getCurrentLocation = async () => {
     if (!navigator.geolocation) {
       toast.error(t('mileage.geolocationNotSupported'));
@@ -642,30 +405,25 @@ export function AddressAutocomplete({
 
       const { latitude, longitude } = position.coords;
       
+      // Use Mapbox reverse geocoding
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
-        {
-          headers: {
-            'Accept-Language': 'es,en',
-            'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
-          }
-        }
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?types=address&access_token=${MAPBOX_ACCESS_TOKEN}&language=${language === 'es' ? 'es' : 'en'}`
       );
 
       if (!response.ok) throw new Error('Reverse geocoding failed');
 
       const data = await response.json();
+      const feature = data.features?.[0];
       
-      if (data.display_name) {
-        setInputValue(data.display_name);
-        onChange(data.display_name);
+      if (feature?.place_name) {
+        setInputValue(feature.place_name);
+        onChange(feature.place_name);
         onCoordinatesChange(latitude, longitude);
         toast.success(t('mileage.locationObtained'));
         
-        // Show save option
-        const isAlreadySaved = savedAddresses.some(a => a.address === data.display_name);
+        const isAlreadySaved = savedAddresses.some(a => a.address === feature.place_name);
         if (!isAlreadySaved) {
-          setPendingAddress({ address: data.display_name, lat: latitude, lng: longitude });
+          setPendingAddress({ address: feature.place_name, lat: latitude, lng: longitude });
           setShowSaveOption(true);
         }
       } else {
@@ -753,7 +511,6 @@ export function AddressAutocomplete({
               )}
             </Button>
             
-            {/* Location status indicator */}
             <Popover>
               <PopoverTrigger asChild>
                 <button
@@ -871,7 +628,7 @@ export function AddressAutocomplete({
             </>
           )}
           
-          {/* Nominatim suggestions */}
+          {/* Mapbox suggestions */}
           {suggestions.length > 0 && (
             <>
               {filteredSavedAddresses.length > 0 && (
