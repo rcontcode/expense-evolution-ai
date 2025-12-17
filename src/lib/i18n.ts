@@ -809,6 +809,7 @@ export const translations = {
       deleteConfirm: '¿Eliminar viaje?',
       deleteWarning: 'Esta acción no se puede deshacer.',
       // Address fields
+      routeAddresses: 'Direcciones de la Ruta',
       startAddress: 'Dirección de Origen',
       startAddressPlaceholder: 'Ej: 123 Main St, Toronto, ON',
       endAddress: 'Dirección de Destino',
@@ -1695,6 +1696,7 @@ export const translations = {
       deleteConfirm: 'Delete trip?',
       deleteWarning: 'This action cannot be undone.',
       // Address fields
+      routeAddresses: 'Route Addresses',
       startAddress: 'Start Address',
       startAddressPlaceholder: 'E.g: 123 Main St, Toronto, ON',
       endAddress: 'End Address',
