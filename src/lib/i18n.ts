@@ -859,6 +859,8 @@ export const translations = {
       totalKilometers: 'km totales',
       totalEstimatedDeduction: 'Deducción total estimada',
       perTripDeduction: 'Deducción por viaje',
+      tripDay: 'Día de viaje',
+      exceptionDay: 'Excepción',
       // GPS Location
       useMyLocation: 'Usar mi ubicación',
       locationObtained: 'Ubicación obtenida correctamente',
@@ -1766,6 +1768,8 @@ export const translations = {
       totalKilometers: 'total km',
       totalEstimatedDeduction: 'Total estimated deduction',
       perTripDeduction: 'Per-trip deduction',
+      tripDay: 'Trip day',
+      exceptionDay: 'Exception',
       // GPS Location
       useMyLocation: 'Use my location',
       locationObtained: 'Location obtained successfully',
