@@ -271,6 +271,7 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
                       form.setValue('start_lng', lng);
                     }}
                     placeholder={t('mileage.startAddressPlaceholder')}
+                    showLocationButton={false}
                   />
                 </FormControl>
                 <FormMessage />
@@ -298,6 +299,7 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
                       form.setValue('end_lng', lng);
                     }}
                     placeholder={t('mileage.endAddressPlaceholder')}
+                    showLocationButton={false}
                   />
                 </FormControl>
                 <FormMessage />
