@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { MapPin, Navigation, ExternalLink, Maximize2 } from 'lucide-react';
+import { MapPin, Navigation, Maximize2, Map, Globe } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -159,7 +159,7 @@ export function MileageRoutePreview({
                     className="flex-1 gap-2"
                     onClick={() => window.open(googleMapsUrl, '_blank', 'noopener,noreferrer')}
                   >
-                    <ExternalLink className="h-4 w-4" />
+                    <Map className="h-4 w-4" />
                     Google Maps
                   </Button>
                 )}
@@ -169,7 +169,7 @@ export function MileageRoutePreview({
                     className="flex-1 gap-2"
                     onClick={() => window.open(osmUrl, '_blank', 'noopener,noreferrer')}
                   >
-                    <ExternalLink className="h-4 w-4" />
+                    <Globe className="h-4 w-4" />
                     OpenStreetMap
                   </Button>
                 )}
@@ -248,7 +248,7 @@ export function MileageRoutePreview({
             className="flex-1 gap-2"
             onClick={() => window.open(googleMapsUrl, '_blank', 'noopener,noreferrer')}
           >
-            <ExternalLink className="h-4 w-4" />
+            <Map className="h-4 w-4" />
             Google Maps
           </Button>
         )}
@@ -259,7 +259,7 @@ export function MileageRoutePreview({
             className="flex-1 gap-2"
             onClick={() => window.open(osmUrl, '_blank', 'noopener,noreferrer')}
           >
-            <ExternalLink className="h-4 w-4" />
+            <Globe className="h-4 w-4" />
             OpenStreetMap
           </Button>
         )}
@@ -291,7 +291,7 @@ export function MileageRoutePreview({
                   className="flex-1 gap-2"
                   onClick={() => window.open(googleMapsUrl, '_blank', 'noopener,noreferrer')}
                 >
-                  <ExternalLink className="h-4 w-4" />
+                  <Map className="h-4 w-4" />
                   Google Maps
                 </Button>
               )}
@@ -301,7 +301,7 @@ export function MileageRoutePreview({
                   className="flex-1 gap-2"
                   onClick={() => window.open(osmUrl, '_blank', 'noopener,noreferrer')}
                 >
-                  <ExternalLink className="h-4 w-4" />
+                  <Globe className="h-4 w-4" />
                   OpenStreetMap
                 </Button>
               )}
