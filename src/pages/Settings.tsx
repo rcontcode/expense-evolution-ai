@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { InvestmentSection } from '@/components/investments/InvestmentSection';
 import { FinancialEducationResources } from '@/components/settings/FinancialEducationResources';
 import { SampleDataManager } from '@/components/settings/SampleDataManager';
+import { NotificationPreferences } from '@/components/settings/NotificationPreferences';
 import { resetOnboardingTutorial } from '@/components/guidance/OnboardingTutorial';
 import { PageHeader } from '@/components/PageHeader';
 import { useIsAdmin } from '@/hooks/data/useIsAdmin';
@@ -446,6 +447,9 @@ export default function Settings() {
             </p>
           </CardContent>
         </Card>
+
+        {/* Notification Preferences */}
+        <NotificationPreferences />
 
         {/* Sample Data Generator */}
         {/* Sample Data Manager - Enhanced with per-section deletion */}
