@@ -2,6 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
+interface RouteInfo {
+  duration: number; // in seconds
+  distance: number; // in meters
+}
+
 interface LeafletRouteMapProps {
   startLat: number;
   startLng: number;
@@ -10,6 +15,7 @@ interface LeafletRouteMapProps {
   startAddress?: string | null;
   endAddress?: string | null;
   className?: string;
+  onRouteInfo?: (info: RouteInfo | null) => void;
 }
 
 // Fix for default marker icons in Leaflet with webpack/vite
@@ -50,7 +56,8 @@ export function LeafletRouteMap({
   endLng,
   startAddress,
   endAddress,
-  className = ''
+  className = '',
+  onRouteInfo
 }: LeafletRouteMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -112,9 +119,18 @@ export function LeafletRouteMap({
         const data = await response.json();
         
         if (data.routes && data.routes.length > 0) {
-          const routeCoords = data.routes[0].geometry.coordinates.map(
+          const route = data.routes[0];
+          const routeCoords = route.geometry.coordinates.map(
             (coord: [number, number]) => [coord[1], coord[0]] as L.LatLngTuple
           );
+          
+          // Pass route info to parent
+          if (onRouteInfo) {
+            onRouteInfo({
+              duration: route.duration, // seconds
+              distance: route.distance  // meters
+            });
+          }
           
           // Remove old route if exists
           if (routeLayerRef.current) {
@@ -134,6 +150,9 @@ export function LeafletRouteMap({
       } catch (error) {
         console.warn('Could not fetch real route, using straight line:', error);
         // Fallback to straight line
+        if (onRouteInfo) {
+          onRouteInfo(null);
+        }
         routeLayerRef.current = L.polyline(
           [[startLat, startLng], [endLat, endLng]],
           { 

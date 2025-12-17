@@ -1,10 +1,21 @@
-import { useMemo, useState } from 'react';
-import { MapPin, Navigation, Maximize2, Map, Globe } from 'lucide-react';
+import { useMemo, useState, useCallback } from 'react';
+import { MapPin, Navigation, Maximize2, Map, Globe, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { LeafletRouteMap } from './LeafletRouteMap';
+
+// Helper to format duration in seconds to human readable
+const formatDuration = (seconds: number): string => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.round((seconds % 3600) / 60);
+  
+  if (hours > 0) {
+    return `${hours}h ${minutes}min`;
+  }
+  return `${minutes} min`;
+};
 
 interface MileageRoutePreviewProps {
   startAddress?: string | null;
@@ -30,6 +41,13 @@ export function MileageRoutePreview({
   route
 }: MileageRoutePreviewProps) {
   const [showFullMap, setShowFullMap] = useState(false);
+  const [estimatedTime, setEstimatedTime] = useState<number | null>(null);
+
+  const handleRouteInfo = useCallback((info: { duration: number; distance: number } | null) => {
+    if (info) {
+      setEstimatedTime(info.duration);
+    }
+  }, []);
 
   // Google Maps URL - shows route with directions (reliable, no blocking)
   const googleMapsUrl = useMemo(() => {
@@ -122,6 +140,12 @@ export function MileageRoutePreview({
               <DialogTitle className="flex items-center gap-2">
                 <Navigation className="h-5 w-5" />
                 Ruta: {kilometers.toFixed(1)} km
+                {estimatedTime && (
+                  <Badge variant="outline" className="ml-2 gap-1">
+                    <Clock className="h-3 w-3" />
+                    {formatDuration(estimatedTime)}
+                  </Badge>
+                )}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
@@ -134,6 +158,7 @@ export function MileageRoutePreview({
                   startAddress={startAddress}
                   endAddress={endAddress}
                   className="h-64"
+                  onRouteInfo={handleRouteInfo}
                 />
               )}
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -195,8 +220,15 @@ export function MileageRoutePreview({
             startAddress={startAddress}
             endAddress={endAddress}
             className="h-40"
+            onRouteInfo={handleRouteInfo}
           />
           <div className="absolute bottom-2 right-2 flex gap-2">
+            {estimatedTime && (
+              <Badge variant="secondary" className="bg-background/90 gap-1">
+                <Clock className="h-3 w-3" />
+                {formatDuration(estimatedTime)}
+              </Badge>
+            )}
             <Badge variant="secondary" className="bg-background/90">
               {kilometers.toFixed(1)} km
             </Badge>
@@ -273,6 +305,12 @@ export function MileageRoutePreview({
               <DialogTitle className="flex items-center gap-2">
                 <Navigation className="h-5 w-5" />
                 Ruta: {kilometers.toFixed(1)} km
+                {estimatedTime && (
+                  <Badge variant="outline" className="ml-2 gap-1">
+                    <Clock className="h-3 w-3" />
+                    {formatDuration(estimatedTime)}
+                  </Badge>
+                )}
               </DialogTitle>
             </DialogHeader>
             <LeafletRouteMap
@@ -283,6 +321,7 @@ export function MileageRoutePreview({
               startAddress={startAddress}
               endAddress={endAddress}
               className="h-96"
+              onRouteInfo={handleRouteInfo}
             />
             <div className="flex gap-2">
               {googleMapsUrl && (
