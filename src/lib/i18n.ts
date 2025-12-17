@@ -854,6 +854,11 @@ export const translations = {
       recurrenceEndDate: 'Fecha de fin (opcional)',
       noEndDate: 'Sin fecha de fin',
       recurrenceEndDateHint: 'Deja vacío para viajes indefinidos',
+      tripSummary: 'Resumen de viajes',
+      totalTrips: 'viajes totales',
+      totalKilometers: 'km totales',
+      totalEstimatedDeduction: 'Deducción total estimada',
+      perTripDeduction: 'Deducción por viaje',
       // GPS Location
       useMyLocation: 'Usar mi ubicación',
       locationObtained: 'Ubicación obtenida correctamente',
@@ -1756,6 +1761,11 @@ export const translations = {
       recurrenceEndDate: 'End date (optional)',
       noEndDate: 'No end date',
       recurrenceEndDateHint: 'Leave empty for indefinite trips',
+      tripSummary: 'Trip summary',
+      totalTrips: 'total trips',
+      totalKilometers: 'total km',
+      totalEstimatedDeduction: 'Total estimated deduction',
+      perTripDeduction: 'Per-trip deduction',
       // GPS Location
       useMyLocation: 'Use my location',
       locationObtained: 'Location obtained successfully',
