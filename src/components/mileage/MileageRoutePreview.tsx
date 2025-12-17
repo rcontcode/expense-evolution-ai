@@ -143,11 +143,13 @@ export function MileageRoutePreview({
                 </div>
               </div>
               {mapsUrl && (
-                <Button variant="outline" className="w-full gap-2" asChild>
-                  <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4" />
-                    Ver en OpenStreetMap
-                  </a>
+                <Button 
+                  variant="outline" 
+                  className="w-full gap-2"
+                  onClick={() => window.open(mapsUrl, '_blank', 'noopener,noreferrer')}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Ver en OpenStreetMap
                 </Button>
               )}
             </div>
@@ -217,11 +219,14 @@ export function MileageRoutePreview({
 
       {/* OpenStreetMap Link */}
       {mapsUrl && (
-        <Button variant="outline" size="sm" className="w-full gap-2" asChild>
-          <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
-            <ExternalLink className="h-4 w-4" />
-            Ver en OpenStreetMap
-          </a>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full gap-2"
+          onClick={() => window.open(mapsUrl, '_blank', 'noopener,noreferrer')}
+        >
+          <ExternalLink className="h-4 w-4" />
+          Ver en OpenStreetMap
         </Button>
       )}
 
@@ -245,11 +250,13 @@ export function MileageRoutePreview({
               className="h-96"
             />
             {mapsUrl && (
-              <Button variant="outline" className="w-full gap-2" asChild>
-                <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4" />
-                  Ver en OpenStreetMap
-                </a>
+              <Button 
+                variant="outline" 
+                className="w-full gap-2"
+                onClick={() => window.open(mapsUrl, '_blank', 'noopener,noreferrer')}
+              >
+                <ExternalLink className="h-4 w-4" />
+                Ver en OpenStreetMap
               </Button>
             )}
           </DialogContent>
