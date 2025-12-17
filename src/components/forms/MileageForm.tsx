@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { CalendarIcon, MapPin, Navigation, Sparkles, Building2, Loader2, Route, RotateCcw, Repeat } from 'lucide-react';
+import { CalendarIcon, MapPin, Navigation, Sparkles, Building2, Loader2, Route, RotateCcw, Repeat, CheckCircle2, AlertCircle, Map } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +40,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { MileageWithClient, calculateMileageDeduction, CRA_MILEAGE_RATES } from '@/hooks/data/useMileage';
 import { MileageRoutePreview } from '@/components/mileage/MileageRoutePreview';
 import { AddressAutocomplete } from '@/components/mileage/AddressAutocomplete';
+import { LeafletRouteMap } from '@/components/mileage/LeafletRouteMap';
 
 interface MileageFormProps {
   initialData?: MileageWithClient | null;
@@ -119,7 +120,7 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
     }
   }, []);
 
-  // Auto-calculate distance when both coordinates are set
+  // Auto-calculate distance when both coordinates are set and AUTO-APPLY
   useEffect(() => {
     if (watchStartLat && watchStartLng && watchEndLat && watchEndLng) {
       calculateRouteDistance(watchStartLat, watchStartLng, watchEndLat, watchEndLng);
@@ -129,12 +130,13 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
     }
   }, [watchStartLat, watchStartLng, watchEndLat, watchEndLng, calculateRouteDistance]);
 
-  const applyCalculatedDistance = (roundTrip: boolean = isRoundTrip) => {
-    if (calculatedDistance) {
-      const distance = roundTrip ? calculatedDistance * 2 : calculatedDistance;
+  // Auto-apply calculated distance when it changes
+  useEffect(() => {
+    if (calculatedDistance && calculatedDistance > 0) {
+      const distance = isRoundTrip ? calculatedDistance * 2 : calculatedDistance;
       form.setValue('kilometers', Math.round(distance * 10) / 10);
     }
-  };
+  }, [calculatedDistance, isRoundTrip, form]);
 
   const displayDistance = isRoundTrip && calculatedDistance ? calculatedDistance * 2 : calculatedDistance;
   const displayDuration = isRoundTrip && calculatedDuration ? calculatedDuration * 2 : calculatedDuration;
@@ -244,7 +246,7 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
           />
         </div>
 
-        {/* Address Fields with Geocoding - PRIMERO para entrada rápida */}
+        {/* Address Fields with Geocoding + Map */}
         <div className="space-y-3 p-3 rounded-lg border bg-muted/30">
           <div className="flex items-center gap-2 text-sm font-medium">
             <Navigation className="h-4 w-4 text-primary" />
@@ -261,6 +263,11 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
                     <span className="text-xs text-white font-bold">A</span>
                   </div>
                   {t('mileage.startAddress')}
+                  {watchStartLat && watchStartLng ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  ) : watchStartAddress ? (
+                    <AlertCircle className="h-4 w-4 text-amber-500" />
+                  ) : null}
                 </FormLabel>
                 <FormControl>
                   <AddressAutocomplete
@@ -273,6 +280,9 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
                     placeholder={t('mileage.startAddressPlaceholder')}
                   />
                 </FormControl>
+                {watchStartAddress && !watchStartLat && (
+                  <p className="text-xs text-amber-600">{t('mileage.selectAddressFromList')}</p>
+                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -288,6 +298,11 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
                     <span className="text-xs text-white font-bold">B</span>
                   </div>
                   {t('mileage.endAddress')}
+                  {watchEndLat && watchEndLng ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  ) : watchEndAddress ? (
+                    <AlertCircle className="h-4 w-4 text-amber-500" />
+                  ) : null}
                 </FormLabel>
                 <FormControl>
                   <AddressAutocomplete
@@ -300,10 +315,37 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
                     placeholder={t('mileage.endAddressPlaceholder')}
                   />
                 </FormControl>
+                {watchEndAddress && !watchEndLat && (
+                  <p className="text-xs text-amber-600">{t('mileage.selectAddressFromList')}</p>
+                )}
                 <FormMessage />
               </FormItem>
             )}
           />
+
+          {/* Integrated Map - Shows when both coordinates are available */}
+          {watchStartLat && watchStartLng && watchEndLat && watchEndLng && (
+            <div className="mt-3 rounded-lg overflow-hidden border">
+              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 border-b">
+                <Map className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">{t('mileage.routeMap')}</span>
+                {calculatedDistance && (
+                  <span className="ml-auto text-sm font-bold text-chart-1">
+                    {isRoundTrip ? (calculatedDistance * 2).toFixed(1) : calculatedDistance.toFixed(1)} km
+                  </span>
+                )}
+              </div>
+              <LeafletRouteMap
+                startLat={watchStartLat}
+                startLng={watchStartLng}
+                endLat={watchEndLat}
+                endLng={watchEndLng}
+                startAddress={watchStartAddress}
+                endAddress={watchEndAddress}
+                className="h-48"
+              />
+            </div>
+          )}
         </div>
 
         <FormField
@@ -374,7 +416,7 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
           </Alert>
         )}
 
-        {/* OSRM Distance Calculation Result */}
+        {/* Distance Calculation Status + Round Trip Toggle */}
         {(isCalculatingDistance || calculatedDistance) && (
           <Alert className="bg-chart-1/10 border-chart-1/30">
             <Route className="h-4 w-4 text-chart-1" />
@@ -386,32 +428,21 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
                 </div>
               ) : calculatedDistance ? (
                 <>
-                  <div className="flex items-center justify-between w-full gap-4">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-medium">
-                        {t('mileage.calculatedDistance')}: <strong>{displayDistance} km</strong>
-                        {isRoundTrip && (
-                          <span className="text-xs text-muted-foreground ml-1">
-                            ({calculatedDistance} km × 2)
-                          </span>
-                        )}
-                      </span>
-                      {displayDuration && (
-                        <span className="text-xs text-muted-foreground">
-                          {t('mileage.estimatedTime')}: ~{displayDuration} min
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <span className="text-sm">
+                      {t('mileage.distanceAutoApplied')}: <strong>{displayDistance} km</strong>
+                      {isRoundTrip && (
+                        <span className="text-xs text-muted-foreground ml-1">
+                          ({calculatedDistance} km × 2)
                         </span>
                       )}
-                    </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => applyCalculatedDistance()}
-                      className="text-xs shrink-0"
-                    >
-                      <Sparkles className="h-3 w-3 mr-1" />
-                      {t('mileage.applyDistance')}
-                    </Button>
+                    </span>
+                    {displayDuration && (
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        ~{displayDuration} min
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center justify-between border-t pt-2">
                     <label className="flex items-center gap-2 text-sm cursor-pointer">
@@ -438,22 +469,6 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
               ) : null}
             </AlertDescription>
           </Alert>
-        )}
-
-        {/* Route Preview */}
-        {watchStartAddress && watchEndAddress && (
-          <div className="rounded-lg border p-3">
-            <MileageRoutePreview
-              startAddress={watchStartAddress}
-              endAddress={watchEndAddress}
-              startLat={watchStartLat}
-              startLng={watchStartLng}
-              endLat={watchEndLat}
-              endLng={watchEndLng}
-              kilometers={watchKilometers || 0}
-              compact={false}
-            />
-          </div>
         )}
 
         <FormField
