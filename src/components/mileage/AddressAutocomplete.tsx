@@ -319,37 +319,29 @@ export function AddressAutocomplete({
       setIsLoading(true);
 
       try {
-        const leadingHouseNumber = searchTerm.match(/^(\d{1,6})(?=[\s,])/ )?.[1] ?? null;
+        // Extract house number from start of search term - SIMPLE regex
+        const houseMatch = searchTerm.match(/^(\d{1,6})\s+/);
+        const userHouseNumber = houseMatch?.[1] ?? null;
+        const streetPart = userHouseNumber 
+          ? searchTerm.replace(/^\d{1,6}\s+/, '').toLowerCase().trim()
+          : searchTerm.toLowerCase().trim();
 
         const acceptLanguage = language === 'en' ? 'en,es' : 'es,en';
         const headers = {
           'Accept-Language': acceptLanguage,
         } as const;
 
-        const rankByHouseAndProximity = (items: GeocodeSuggestion[]) => {
+        const rankByProximity = (items: GeocodeSuggestion[]) => {
           if (items.length <= 1) return items;
-
-          const hn = leadingHouseNumber;
           const userLat = userLocation?.lat ?? null;
           const userLng = userLocation?.lng ?? null;
+          if (userLat == null || userLng == null) return items;
 
-          const score = (r: GeocodeSuggestion) => {
-            let s = 0;
-
-            if (hn) {
-              if (r.houseNumber === hn) s += 1000;
-              if (r.houseNumber) s += 40;
-            }
-
-            if (userLat != null && userLng != null) {
-              const dist = Math.abs(r.lat - userLat) + Math.abs(r.lng - userLng);
-              s -= dist * 10;
-            }
-
-            return s;
-          };
-
-          return [...items].sort((a, b) => score(b) - score(a));
+          return [...items].sort((a, b) => {
+            const distA = Math.abs(a.lat - userLat) + Math.abs(a.lng - userLng);
+            const distB = Math.abs(b.lat - userLat) + Math.abs(b.lng - userLng);
+            return distA - distB;
+          });
         };
 
         const fetchPhoton = async (): Promise<GeocodeSuggestion[]> => {
@@ -419,12 +411,12 @@ export function AddressAutocomplete({
               : items;
 
           // If the user typed a house number, prefer results that include it.
-          if (leadingHouseNumber) {
-            const exact = countryFiltered.filter((i) => i.houseNumber === leadingHouseNumber);
-            if (exact.length > 0) return rankByHouseAndProximity(exact);
+          if (userHouseNumber) {
+            const exact = countryFiltered.filter((i) => i.houseNumber === userHouseNumber);
+            if (exact.length > 0) return rankByProximity(exact);
           }
 
-          return rankByHouseAndProximity(countryFiltered);
+          return rankByProximity(countryFiltered);
         };
 
         const fetchNominatim = async (): Promise<GeocodeSuggestion[]> => {
@@ -443,14 +435,14 @@ export function AddressAutocomplete({
           const postalCode = postalFromParts?.match(/[A-Z]\d[A-Z]\s?\d[A-Z]\d/i)?.[0] ?? null;
 
           const geoBias = getGeoBiasParams();
-          const dedupeParam = leadingHouseNumber ? '&dedupe=0' : '&dedupe=1';
+          const dedupeParam = userHouseNumber ? '&dedupe=0' : '&dedupe=1';
           const makeUrl = (params: string) =>
             `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=10${dedupeParam}${countryParam}${params}`;
 
           const q = searchTerm.length > 80 && parts.length > 2 ? parts.slice(0, 3).join(', ') : searchTerm;
 
           const urls: string[] = [];
-          if (leadingHouseNumber) {
+          if (userHouseNumber) {
             const street = parts[0] ?? searchTerm;
             const cityGuess = parts.slice(1).find((p) => /vancouver/i.test(p)) ?? parts[1] ?? '';
             const cityParam = cityGuess ? `&city=${encodeURIComponent(cityGuess)}` : '';
@@ -492,49 +484,38 @@ export function AddressAutocomplete({
           });
 
           // If the user typed a house number, prefer exact matches.
-          if (leadingHouseNumber) {
-            const exact = items.filter((i) => i.houseNumber === leadingHouseNumber || new RegExp(`\\b${leadingHouseNumber}\\b`).test(i.display));
-            if (exact.length > 0) return rankByHouseAndProximity(exact);
+          if (userHouseNumber) {
+            const exact = items.filter((i) => i.houseNumber === userHouseNumber || new RegExp(`\\b${userHouseNumber}\\b`).test(i.display));
+            if (exact.length > 0) return rankByProximity(exact);
           }
 
-          return rankByHouseAndProximity(items);
+          return rankByProximity(items);
         };
 
         // Primary provider (generally more "autocomplete-like" for civic addresses)
         let items = await fetchPhoton();
 
         // If the user typed a house number, ensure we also try Nominatim for exact civic matches.
-        if (leadingHouseNumber) {
+        if (userHouseNumber) {
           const hasExact = items.some(
-            (i) => i.houseNumber === leadingHouseNumber || new RegExp(`\\b${leadingHouseNumber}\\b`).test(i.display)
+            (i) => i.houseNumber === userHouseNumber || new RegExp(`\\b${userHouseNumber}\\b`).test(i.display)
           );
           if (!hasExact) {
             const nom = await fetchNominatim();
-            items = rankByHouseAndProximity([...nom, ...items]);
+            items = rankByProximity([...nom, ...items]);
           }
         }
 
         // Fallback
         if (items.length === 0) items = await fetchNominatim();
 
-        const typedStreetKey = leadingHouseNumber
-          ? searchTerm
-              .replace(/^\d{1,6}\s+/, '')
-              .split(',')[0]
-              .trim()
-              .toLowerCase()
-          : null;
-
+        // SIMPLE FIX: Always prepend user's house number if they typed one and result doesn't have it
         const top = items.slice(0, 5).map((it) => {
-          if (!leadingHouseNumber) return it;
-          if (new RegExp(`\\b${leadingHouseNumber}\\b`).test(it.display)) return it;
-
-          // Only prepend the number when the suggestion appears to match the same street the user typed.
-          if (typedStreetKey && it.display.toLowerCase().includes(typedStreetKey)) {
-            return { ...it, display: `${leadingHouseNumber} ${it.display}`.replace(/\s{2,}/g, ' ').trim() };
-          }
-
-          return it;
+          if (!userHouseNumber) return it;
+          // If result already contains the house number, don't modify
+          if (new RegExp(`\\b${userHouseNumber}\\b`).test(it.display)) return it;
+          // Always prepend the user's house number
+          return { ...it, display: `${userHouseNumber} ${it.display}` };
         });
 
         setSuggestions(top);
