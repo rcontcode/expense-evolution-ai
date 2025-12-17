@@ -6,6 +6,7 @@ export const RECURRENCE_TYPES = [
   'weekly',
   'biweekly',
   'monthly',
+  'irregular', // Para fechas específicas marcadas en calendario
 ] as const;
 
 export type RecurrenceType = typeof RECURRENCE_TYPES[number];
@@ -37,6 +38,8 @@ export const mileageSchema = z.object({
   recurrence: z.enum(RECURRENCE_TYPES).default('one_time'),
   recurrence_end_date: z.date().optional().nullable(),
   recurrence_days: z.array(z.number().min(0).max(6)).optional().nullable(),
+  exception_dates: z.array(z.date()).optional().nullable(), // Días que NO se viajó
+  specific_dates: z.array(z.date()).optional().nullable(), // Fechas específicas para viajes irregulares
 });
 
 export type MileageFormValues = z.infer<typeof mileageSchema>;
