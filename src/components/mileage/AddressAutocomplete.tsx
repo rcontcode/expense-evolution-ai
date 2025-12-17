@@ -48,6 +48,7 @@ interface GeocodeSuggestion {
   lng: number;
   source: GeocodeSource;
   houseNumber?: string;
+  countryCode?: string;
 }
 
 interface PhotonResponse {
@@ -312,6 +313,8 @@ export function AddressAutocomplete({
           'User-Agent': 'EvoFinz/1.0 (https://evofinz.com)'
         } as const;
 
+        const selectedCountry = countryCode && countryCode !== 'global' ? countryCode.toLowerCase() : null;
+
         const rankByHouseAndProximity = (items: GeocodeSuggestion[]) => {
           if (items.length <= 1) return items;
 
@@ -321,6 +324,11 @@ export function AddressAutocomplete({
 
           const score = (r: GeocodeSuggestion) => {
             let s = 0;
+
+            // Prioritize results from selected country
+            if (selectedCountry && r.countryCode === selectedCountry) {
+              s += 500;
+            }
 
             if (hn) {
               if (r.houseNumber === hn) s += 1000;
@@ -361,7 +369,7 @@ export function AddressAutocomplete({
           const json = (await res.json()) as PhotonResponse;
           const features = json.features ?? [];
 
-          const items: GeocodeSuggestion[] = features
+          let items: GeocodeSuggestion[] = features
             .map((f) => {
               const coords = f.geometry?.coordinates;
               const p = f.properties ?? {};
@@ -374,6 +382,7 @@ export function AddressAutocomplete({
               const state = p.state || '';
               const postcode = p.postcode || '';
               const country = p.country || '';
+              const itemCountryCode = p.countrycode?.toLowerCase();
 
               const displayParts = [
                 `${houseNumber ? `${houseNumber} ` : ''}${street}`.trim(),
@@ -391,10 +400,23 @@ export function AddressAutocomplete({
                 lat: Number(lat),
                 lng: Number(lng),
                 source: 'photon' as const,
-                houseNumber
+                houseNumber,
+                countryCode: itemCountryCode
               } satisfies GeocodeSuggestion;
             })
             .filter(Boolean) as GeocodeSuggestion[];
+
+          // Filter by selected country
+          if (selectedCountry) {
+            const countryFiltered = items.filter((i) => i.countryCode === selectedCountry);
+            // Only use filtered results if we got some, otherwise fall through to Nominatim
+            if (countryFiltered.length > 0) {
+              items = countryFiltered;
+            } else {
+              // No results from selected country - return empty to trigger Nominatim fallback
+              return [];
+            }
+          }
 
           // If the user typed a house number, prefer results that include it.
           if (leadingHouseNumber) {
