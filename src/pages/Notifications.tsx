@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { PageHeader } from '@/components/PageHeader';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,8 +9,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, isToday, isYesterday, isThisWeek, isThisMonth } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Bell, 
   Trophy, 
@@ -22,7 +23,18 @@ import {
   Sparkles,
   ArrowUpRight,
   Filter,
-  BellOff
+  BellOff,
+  Flame,
+  AlertTriangle,
+  Lightbulb,
+  Calendar,
+  Receipt,
+  Wallet,
+  PiggyBank,
+  Car,
+  FileText,
+  ArrowRight,
+  Plus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -57,6 +69,15 @@ const NOTIFICATION_ICONS: Record<string, React.ComponentType<{ className?: strin
   savings_goal: Target,
   investment_goal: TrendingUp,
   goal_deadline: Clock,
+  streak: Flame,
+  reminder: Calendar,
+  expense: Receipt,
+  income: Wallet,
+  savings: PiggyBank,
+  mileage: Car,
+  contract: FileText,
+  tip: Lightbulb,
+  alert: AlertTriangle,
   default: Bell,
 };
 
@@ -67,6 +88,15 @@ const NOTIFICATION_COLORS: Record<string, string> = {
   savings_goal: 'text-blue-500 bg-blue-500/10',
   investment_goal: 'text-emerald-500 bg-emerald-500/10',
   goal_deadline: 'text-orange-500 bg-orange-500/10',
+  streak: 'text-red-500 bg-red-500/10',
+  reminder: 'text-cyan-500 bg-cyan-500/10',
+  expense: 'text-rose-500 bg-rose-500/10',
+  income: 'text-green-500 bg-green-500/10',
+  savings: 'text-blue-500 bg-blue-500/10',
+  mileage: 'text-indigo-500 bg-indigo-500/10',
+  contract: 'text-violet-500 bg-violet-500/10',
+  tip: 'text-yellow-500 bg-yellow-500/10',
+  alert: 'text-destructive bg-destructive/10',
   default: 'text-muted-foreground bg-muted',
 };
 
@@ -145,12 +175,36 @@ export default function Notifications() {
 
   const filteredNotifications = notifications?.filter(n => {
     if (filter === 'unread') return !n.read;
-    if (filter === 'achievements') return n.type === 'achievement' || n.type === 'level_up';
-    if (filter === 'goals') return n.type.includes('goal');
+    if (filter === 'achievements') return n.type === 'achievement' || n.type === 'level_up' || n.type === 'streak';
+    if (filter === 'goals') return n.type.includes('goal') || n.type === 'savings' || n.type === 'investment_goal';
     return true;
   });
 
   const unreadCount = notifications?.filter(n => !n.read).length || 0;
+
+  // Group notifications by date
+  const groupedNotifications = filteredNotifications?.reduce((groups, notification) => {
+    const date = new Date(notification.created_at);
+    let groupKey: string;
+    
+    if (isToday(date)) {
+      groupKey = language === 'es' ? 'Hoy' : 'Today';
+    } else if (isYesterday(date)) {
+      groupKey = language === 'es' ? 'Ayer' : 'Yesterday';
+    } else if (isThisWeek(date)) {
+      groupKey = language === 'es' ? 'Esta semana' : 'This week';
+    } else if (isThisMonth(date)) {
+      groupKey = language === 'es' ? 'Este mes' : 'This month';
+    } else {
+      groupKey = language === 'es' ? 'Anteriores' : 'Earlier';
+    }
+    
+    if (!groups[groupKey]) {
+      groups[groupKey] = [];
+    }
+    groups[groupKey].push(notification);
+    return groups;
+  }, {} as Record<string, Notification[]>);
 
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.read) {
@@ -182,6 +236,38 @@ export default function Notifications() {
     }
     return format(date, 'PP', { locale: language === 'es' ? es : enUS });
   };
+
+  // Quick actions for empty state
+  const quickActions = [
+    {
+      icon: Receipt,
+      label: language === 'es' ? 'Agregar gasto' : 'Add expense',
+      description: language === 'es' ? 'Registra un gasto para comenzar' : 'Record an expense to get started',
+      path: '/expenses',
+      color: 'text-rose-500 bg-rose-500/10'
+    },
+    {
+      icon: Target,
+      label: language === 'es' ? 'Crear meta' : 'Create goal',
+      description: language === 'es' ? 'Define una meta de ahorro o inversión' : 'Set a savings or investment goal',
+      path: '/net-worth',
+      color: 'text-green-500 bg-green-500/10'
+    },
+    {
+      icon: Car,
+      label: language === 'es' ? 'Registrar viaje' : 'Log trip',
+      description: language === 'es' ? 'Registra un viaje para deducción CRA' : 'Log a trip for CRA deduction',
+      path: '/mileage',
+      color: 'text-indigo-500 bg-indigo-500/10'
+    },
+    {
+      icon: TrendingUp,
+      label: language === 'es' ? 'Ver progreso' : 'View progress',
+      description: language === 'es' ? 'Revisa tu progreso financiero' : 'Check your financial progress',
+      path: '/dashboard',
+      color: 'text-emerald-500 bg-emerald-500/10'
+    },
+  ];
 
   return (
     <Layout>
@@ -229,7 +315,11 @@ export default function Notifications() {
         </PageHeader>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4"
+        >
           <Card className="bg-gradient-to-br from-primary/10 to-primary/5">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -238,9 +328,7 @@ export default function Notifications() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{notifications?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {language === 'es' ? 'Total' : 'Total'}
-                  </p>
+                  <p className="text-xs text-muted-foreground">Total</p>
                 </div>
               </div>
             </CardContent>
@@ -270,7 +358,7 @@ export default function Notifications() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">
-                    {notifications?.filter(n => n.type === 'achievement').length || 0}
+                    {notifications?.filter(n => n.type === 'achievement' || n.type === 'level_up').length || 0}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {language === 'es' ? 'Logros' : 'Achievements'}
@@ -288,7 +376,7 @@ export default function Notifications() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">
-                    {notifications?.filter(n => n.type === 'goal_complete').length || 0}
+                    {notifications?.filter(n => n.type.includes('goal')).length || 0}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {language === 'es' ? 'Metas' : 'Goals'}
@@ -297,7 +385,7 @@ export default function Notifications() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
 
         {/* Filters */}
         <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
@@ -328,7 +416,7 @@ export default function Notifications() {
 
         {/* Notifications List */}
         <Card>
-          <CardContent className="p-0 divide-y">
+          <CardContent className="p-0">
             {isLoading ? (
               <div className="p-4 space-y-4">
                 {[1, 2, 3, 4, 5].map(i => (
@@ -341,94 +429,213 @@ export default function Notifications() {
                   </div>
                 ))}
               </div>
-            ) : filteredNotifications && filteredNotifications.length > 0 ? (
-              filteredNotifications.map((notification) => {
-                const Icon = getNotificationIcon(notification.type);
-                const colorClass = getNotificationColor(notification.type);
-                
-                return (
-                  <div
-                    key={notification.id}
-                    className={cn(
-                      "p-4 flex items-start gap-4 hover:bg-muted/50 transition-colors cursor-pointer group",
-                      !notification.read && "bg-primary/5"
-                    )}
-                    onClick={() => handleNotificationClick(notification)}
+            ) : groupedNotifications && Object.keys(groupedNotifications).length > 0 ? (
+              <AnimatePresence>
+                {Object.entries(groupedNotifications).map(([group, groupNotifications], groupIndex) => (
+                  <motion.div
+                    key={group}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: groupIndex * 0.1 }}
                   >
-                    <div className={cn("p-2 rounded-lg", colorClass)}>
-                      <Icon className="h-5 w-5" />
+                    {/* Group Header */}
+                    <div className="px-4 py-2 bg-muted/30 border-b sticky top-0 z-10">
+                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        {group}
+                      </h3>
                     </div>
                     
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h4 className={cn(
-                            "font-medium text-sm",
-                            !notification.read && "font-semibold"
-                          )}>
-                            {notification.title}
-                          </h4>
-                          <p className="text-sm text-muted-foreground mt-0.5">
-                            {notification.message}
-                          </p>
-                        </div>
+                    {/* Group Notifications */}
+                    <div className="divide-y">
+                      {groupNotifications.map((notification, index) => {
+                        const Icon = getNotificationIcon(notification.type);
+                        const colorClass = getNotificationColor(notification.type);
                         
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <span className="text-xs text-muted-foreground">
-                            {formatDate(notification.created_at)}
-                          </span>
-                          {!notification.read && (
-                            <div className="w-2 h-2 rounded-full bg-primary" />
-                          )}
-                        </div>
-                      </div>
-                      
-                      {notification.action_url && (
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 mt-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleNotificationClick(notification);
-                          }}
-                        >
-                          {language === 'es' ? 'Ver detalles' : 'View details'}
-                          <ArrowUpRight className="h-3 w-3 ml-1" />
-                        </Button>
-                      )}
+                        return (
+                          <motion.div
+                            key={notification.id}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className={cn(
+                              "p-4 flex items-start gap-4 hover:bg-muted/50 transition-colors cursor-pointer group",
+                              !notification.read && "bg-primary/5"
+                            )}
+                            onClick={() => handleNotificationClick(notification)}
+                          >
+                            <motion.div 
+                              className={cn("p-2 rounded-lg", colorClass)}
+                              whileHover={{ scale: 1.1 }}
+                            >
+                              <Icon className="h-5 w-5" />
+                            </motion.div>
+                            
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <h4 className={cn(
+                                    "font-medium text-sm",
+                                    !notification.read && "font-semibold"
+                                  )}>
+                                    {notification.title}
+                                  </h4>
+                                  <p className="text-sm text-muted-foreground mt-0.5">
+                                    {notification.message}
+                                  </p>
+                                </div>
+                                
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatDate(notification.created_at)}
+                                  </span>
+                                  {!notification.read && (
+                                    <motion.div 
+                                      className="w-2 h-2 rounded-full bg-primary"
+                                      animate={{ scale: [1, 1.2, 1] }}
+                                      transition={{ repeat: Infinity, duration: 2 }}
+                                    />
+                                  )}
+                                </div>
+                              </div>
+                              
+                              {notification.action_url && (
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  className="h-auto p-0 mt-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleNotificationClick(notification);
+                                  }}
+                                >
+                                  {language === 'es' ? 'Ver detalles' : 'View details'}
+                                  <ArrowUpRight className="h-3 w-3 ml-1" />
+                                </Button>
+                              )}
+                            </div>
+                            
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteNotification.mutate(notification.id);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                            </Button>
+                          </motion.div>
+                        );
+                      })}
                     </div>
-                    
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteNotification.mutate(notification.id);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                    </Button>
-                  </div>
-                );
-              })
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             ) : (
-              <div className="p-12 text-center">
-                <BellOff className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <h3 className="font-medium text-lg mb-1">
-                  {language === 'es' ? 'Sin notificaciones' : 'No notifications'}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="p-8 text-center"
+              >
+                <motion.div
+                  animate={{ 
+                    rotate: [0, -10, 10, -10, 0],
+                    y: [0, -5, 0]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatDelay: 3
+                  }}
+                >
+                  <BellOff className="h-16 w-16 text-muted-foreground/20 mx-auto mb-4" />
+                </motion.div>
+                
+                <h3 className="font-semibold text-lg mb-2">
+                  {filter === 'unread' 
+                    ? (language === 'es' ? '¡Todo al día!' : 'All caught up!')
+                    : (language === 'es' ? 'Sin notificaciones aún' : 'No notifications yet')
+                  }
                 </h3>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
                   {filter === 'unread' 
                     ? (language === 'es' ? 'Has leído todas tus notificaciones' : "You've read all your notifications")
-                    : (language === 'es' ? 'Las notificaciones de logros y metas aparecerán aquí' : 'Achievement and goal notifications will appear here')
+                    : (language === 'es' 
+                        ? 'Comienza a usar la app para recibir notificaciones de logros, metas cumplidas, recordatorios y más' 
+                        : 'Start using the app to receive notifications about achievements, completed goals, reminders and more')
                   }
                 </p>
-              </div>
+
+                {filter === 'all' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">
+                    {quickActions.map((action, index) => (
+                      <motion.div
+                        key={action.path}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <Button
+                          variant="outline"
+                          className="w-full h-auto p-4 flex items-start gap-3 justify-start hover:bg-muted/50"
+                          onClick={() => navigate(action.path)}
+                        >
+                          <div className={cn("p-2 rounded-lg", action.color)}>
+                            <action.icon className="h-4 w-4" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-medium text-sm">{action.label}</p>
+                            <p className="text-xs text-muted-foreground">{action.description}</p>
+                          </div>
+                          <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
+                        </Button>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
             )}
           </CardContent>
         </Card>
+
+        {/* Tips Card */}
+        {(!notifications || notifications.length === 0) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="bg-gradient-to-br from-yellow-500/10 to-amber-500/5 border-yellow-500/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Lightbulb className="h-4 w-4 text-yellow-500" />
+                  {language === 'es' ? '¿Cómo ganar notificaciones?' : 'How to earn notifications?'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="text-sm text-muted-foreground space-y-2">
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    {language === 'es' ? 'Completa metas de ahorro o inversión' : 'Complete savings or investment goals'}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                    {language === 'es' ? 'Sube de nivel registrando actividad financiera' : 'Level up by recording financial activity'}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                    {language === 'es' ? 'Desbloquea logros por hábitos financieros' : 'Unlock achievements for financial habits'}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                    {language === 'es' ? 'Mantén rachas diarias de uso de la app' : 'Maintain daily app usage streaks'}
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </div>
     </Layout>
   );
