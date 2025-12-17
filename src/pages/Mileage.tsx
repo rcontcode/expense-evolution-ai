@@ -5,12 +5,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Car, Plus, Download, MapPin, DollarSign, Upload } from 'lucide-react';
+import { Car, Plus, Download, MapPin, DollarSign, Upload, BarChart3 } from 'lucide-react';
 import { useMileage, useMileageSummary, MileageWithClient } from '@/hooks/data/useMileage';
 import { MileageDialog } from '@/components/dialogs/MileageDialog';
 import { MileageTable } from '@/components/tables/MileageTable';
 import { MileageSummaryCard } from '@/components/dashboard/MileageSummaryCard';
 import { MileageImportDialog } from '@/components/mileage/MileageImportDialog';
+import { MileageMonthlyChart } from '@/components/mileage/MileageMonthlyChart';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
@@ -100,6 +101,11 @@ export default function Mileage() {
               { icon: Download, title: { es: 'Exportar', en: 'Export' }, description: { es: 'Para impuestos', en: 'For taxes' }, path: '/dashboard' }
             ]}
           />
+
+          {/* Monthly Chart */}
+          {mileageRecords && mileageRecords.length > 0 && (
+            <MileageMonthlyChart data={mileageRecords} year={selectedYear} />
+          )}
 
           <Tabs defaultValue="records" className="space-y-4">
             <TabsList>
