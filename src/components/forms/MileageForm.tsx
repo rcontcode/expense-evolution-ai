@@ -540,8 +540,8 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
             )}
           />
 
-          {/* Days of week selection for weekly recurrence */}
-          {watchRecurrence === 'weekly' && (
+          {/* Days of week selection for recurring trips */}
+          {(watchRecurrence === 'daily' || watchRecurrence === 'weekly' || watchRecurrence === 'biweekly') && (
             <FormField
               control={form.control}
               name="recurrence_days"
