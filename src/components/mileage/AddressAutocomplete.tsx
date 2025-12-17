@@ -291,6 +291,9 @@ export function AddressAutocomplete({
       const normalizeForGeocoder = (term: string) => {
         let t = term.trim();
 
+        // If the user types "1320taylor" (no space), normalize to "1320 taylor"
+        t = t.replace(/^(\d{1,6})([A-Za-z])/, '$1 $2');
+
         // If the user types "905, Lawson Ave" or "905 - Lawson Ave" normalize to "905 Lawson Ave"
         t = t.replace(/^([0-9]{1,6})(?:\s*[,;]\s*|\s+-\s+)/, '$1 ');
 
@@ -514,7 +517,26 @@ export function AddressAutocomplete({
         // Fallback
         if (items.length === 0) items = await fetchNominatim();
 
-        const top = items.slice(0, 5);
+        const typedStreetKey = leadingHouseNumber
+          ? searchTerm
+              .replace(/^\d{1,6}\s+/, '')
+              .split(',')[0]
+              .trim()
+              .toLowerCase()
+          : null;
+
+        const top = items.slice(0, 5).map((it) => {
+          if (!leadingHouseNumber) return it;
+          if (new RegExp(`\\b${leadingHouseNumber}\\b`).test(it.display)) return it;
+
+          // Only prepend the number when the suggestion appears to match the same street the user typed.
+          if (typedStreetKey && it.display.toLowerCase().includes(typedStreetKey)) {
+            return { ...it, display: `${leadingHouseNumber} ${it.display}`.replace(/\s{2,}/g, ' ').trim() };
+          }
+
+          return it;
+        });
+
         setSuggestions(top);
         setShowSuggestions(top.length > 0);
       } catch (error: any) {
@@ -549,7 +571,19 @@ export function AddressAutocomplete({
   }, []);
 
   const handleSelect = (result: GeocodeSuggestion) => {
-    const address = result.display;
+    const typed = inputValue.trim();
+    const typedHouseNumber = typed.match(/^(\d{1,6})\b/)?.[1] ?? null;
+    const resultContainsTypedNumber = typedHouseNumber
+      ? new RegExp(`\\b${typedHouseNumber}\\b`).test(result.display)
+      : false;
+
+    // If providers don't return the civic number (common in OSM data), keep the user's number
+    // but still use the provider's street/city/province for completeness.
+    const address =
+      typedHouseNumber && !resultContainsTypedNumber
+        ? `${typedHouseNumber} ${result.display}`.replace(/\s{2,}/g, ' ').trim()
+        : result.display;
+
     const lat = result.lat;
     const lng = result.lng;
 
