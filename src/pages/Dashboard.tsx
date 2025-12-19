@@ -56,6 +56,8 @@ const ExpensePredictions = lazy(() => import('@/components/analytics/ExpensePred
 const IncomeVsExpensesChart = lazy(() => import('@/components/analytics/IncomeVsExpensesChart').then(m => ({ default: m.IncomeVsExpensesChart })));
 const SavingsRateChart = lazy(() => import('@/components/analytics/SavingsRateChart').then(m => ({ default: m.SavingsRateChart })));
 const YearOverYearComparison = lazy(() => import('@/components/analytics/YearOverYearComparison').then(m => ({ default: m.YearOverYearComparison })));
+const CategoryTrendsChart = lazy(() => import('@/components/analytics/CategoryTrendsChart').then(m => ({ default: m.CategoryTrendsChart })));
+const BudgetProjectionChart = lazy(() => import('@/components/analytics/BudgetProjectionChart').then(m => ({ default: m.BudgetProjectionChart })));
 const CashflowQuadrantCard = lazy(() => import('@/components/mentorship/CashflowQuadrantCard').then(m => ({ default: m.CashflowQuadrantCard })));
 const FinancialFreedomCard = lazy(() => import('@/components/mentorship/FinancialFreedomCard').then(m => ({ default: m.FinancialFreedomCard })));
 const PayYourselfFirstCard = lazy(() => import('@/components/mentorship/PayYourselfFirstCard').then(m => ({ default: m.PayYourselfFirstCard })));
@@ -669,6 +671,11 @@ export default function Dashboard() {
                   <div className="grid gap-6 lg:grid-cols-2">
                     <SavingsRateChart />
                     <YearOverYearComparison />
+                  </div>
+                  {/* Category Trends and Budget Projection */}
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <CategoryTrendsChart />
+                    <BudgetProjectionChart />
                   </div>
                   <ExpensePredictions expenses={allExpenses || []} isLoading={isLoading} />
                   <CashFlowProjection />
