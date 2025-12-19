@@ -10,3 +10,6 @@ export { NetWorthTreemap } from './NetWorthTreemap';
 export { TransactionTimeline } from './TransactionTimeline';
 export { ClientProfitability } from './ClientProfitability';
 export { FinancialCorrelations } from './FinancialCorrelations';
+export { IncomeVsExpensesChart } from './IncomeVsExpensesChart';
+export { SavingsRateChart } from './SavingsRateChart';
+export { YearOverYearComparison } from './YearOverYearComparison';
