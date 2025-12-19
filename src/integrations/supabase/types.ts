@@ -230,6 +230,36 @@ export type Database = {
         }
         Relationships: []
       }
+      category_budgets: {
+        Row: {
+          alert_threshold: number
+          category: string
+          created_at: string | null
+          id: string
+          monthly_budget: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_threshold?: number
+          category: string
+          created_at?: string | null
+          id?: string
+          monthly_budget?: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_threshold?: number
+          category?: string
+          created_at?: string | null
+          id?: string
+          monthly_budget?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           address: string | null

@@ -69,6 +69,8 @@ const SMARTGoalsCard = lazy(() => import('@/components/mentorship/SMARTGoalsCard
 const GlobalLearningChart = lazy(() => import('@/components/mentorship/GlobalLearningChart').then(m => ({ default: m.GlobalLearningChart })));
 const ReadingReminderSettings = lazy(() => import('@/components/mentorship/ReadingReminderSettings').then(m => ({ default: m.ReadingReminderSettings })));
 const ReadingPaceComparison = lazy(() => import('@/components/mentorship/ReadingPaceComparison').then(m => ({ default: m.ReadingPaceComparison })));
+const BudgetAlertsCard = lazy(() => import('@/components/dashboard/BudgetAlertsCard').then(m => ({ default: m.BudgetAlertsCard })));
+const CategoryBudgetsCard = lazy(() => import('@/components/dashboard/CategoryBudgetsCard').then(m => ({ default: m.CategoryBudgetsCard })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -666,6 +668,11 @@ export default function Dashboard() {
             {activeTab === 'analytics' && (
               <Suspense fallback={<AnalyticsSkeleton />}>
                 <div className="space-y-6">
+                  {/* Budget Alerts and Category Goals */}
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <BudgetAlertsCard />
+                    <CategoryBudgetsCard />
+                  </div>
                   {/* New Charts - Income vs Expenses, Savings Rate, Year Comparison */}
                   <IncomeVsExpensesChart />
                   <div className="grid gap-6 lg:grid-cols-2">
