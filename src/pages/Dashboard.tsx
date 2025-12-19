@@ -53,6 +53,9 @@ const TransactionTimeline = lazy(() => import('@/components/analytics/Transactio
 const ClientProfitability = lazy(() => import('@/components/analytics/ClientProfitability').then(m => ({ default: m.ClientProfitability })));
 const FinancialCorrelations = lazy(() => import('@/components/analytics/FinancialCorrelations').then(m => ({ default: m.FinancialCorrelations })));
 const ExpensePredictions = lazy(() => import('@/components/analytics/ExpensePredictions').then(m => ({ default: m.ExpensePredictions })));
+const IncomeVsExpensesChart = lazy(() => import('@/components/analytics/IncomeVsExpensesChart').then(m => ({ default: m.IncomeVsExpensesChart })));
+const SavingsRateChart = lazy(() => import('@/components/analytics/SavingsRateChart').then(m => ({ default: m.SavingsRateChart })));
+const YearOverYearComparison = lazy(() => import('@/components/analytics/YearOverYearComparison').then(m => ({ default: m.YearOverYearComparison })));
 const CashflowQuadrantCard = lazy(() => import('@/components/mentorship/CashflowQuadrantCard').then(m => ({ default: m.CashflowQuadrantCard })));
 const FinancialFreedomCard = lazy(() => import('@/components/mentorship/FinancialFreedomCard').then(m => ({ default: m.FinancialFreedomCard })));
 const PayYourselfFirstCard = lazy(() => import('@/components/mentorship/PayYourselfFirstCard').then(m => ({ default: m.PayYourselfFirstCard })));
@@ -661,6 +664,12 @@ export default function Dashboard() {
             {activeTab === 'analytics' && (
               <Suspense fallback={<AnalyticsSkeleton />}>
                 <div className="space-y-6">
+                  {/* New Charts - Income vs Expenses, Savings Rate, Year Comparison */}
+                  <IncomeVsExpensesChart />
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <SavingsRateChart />
+                    <YearOverYearComparison />
+                  </div>
                   <ExpensePredictions expenses={allExpenses || []} isLoading={isLoading} />
                   <CashFlowProjection />
                   <div className="grid gap-6 lg:grid-cols-2">
