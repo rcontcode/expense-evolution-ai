@@ -13,3 +13,5 @@ export { FinancialCorrelations } from './FinancialCorrelations';
 export { IncomeVsExpensesChart } from './IncomeVsExpensesChart';
 export { SavingsRateChart } from './SavingsRateChart';
 export { YearOverYearComparison } from './YearOverYearComparison';
+export { CategoryTrendsChart } from './CategoryTrendsChart';
+export { BudgetProjectionChart } from './BudgetProjectionChart';
