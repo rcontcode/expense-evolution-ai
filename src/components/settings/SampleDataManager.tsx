@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
 import { 
   Database, 
   Trash2, 
@@ -21,7 +22,8 @@ import {
   Building2,
   Loader2,
   Info,
-  CheckCircle2
+  CheckCircle2,
+  Clock
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useGenerateSampleData, useDeleteSampleData, useDeleteSampleDataBySection } from '@/hooks/data/useGenerateSampleData';
@@ -51,6 +53,29 @@ const SAMPLE_SECTIONS = [
   { key: 'bank_transactions', icon: Building2, labelEs: 'Transacciones', labelEn: 'Transactions', color: 'text-slate-500' },
 ];
 
+const GENERATION_STEPS = [
+  { key: 'clients', labelEs: 'Creando clientes...', labelEn: 'Creating clients...' },
+  { key: 'projects', labelEs: 'Creando proyectos...', labelEn: 'Creating projects...' },
+  { key: 'tags', labelEs: 'Creando etiquetas...', labelEn: 'Creating tags...' },
+  { key: 'expenses', labelEs: 'Creando gastos (20 registros)...', labelEn: 'Creating expenses (20 records)...' },
+  { key: 'income', labelEs: 'Creando ingresos (12 registros)...', labelEn: 'Creating income (12 records)...' },
+  { key: 'mileage', labelEs: 'Creando kilometraje (8 viajes)...', labelEn: 'Creating mileage (8 trips)...' },
+  { key: 'assets', labelEs: 'Creando activos (10 registros)...', labelEn: 'Creating assets (10 records)...' },
+  { key: 'liabilities', labelEs: 'Creando pasivos (5 registros)...', labelEn: 'Creating liabilities (5 records)...' },
+  { key: 'bank', labelEs: 'Creando transacciones bancarias...', labelEn: 'Creating bank transactions...' },
+  { key: 'goals', labelEs: 'Creando metas financieras...', labelEn: 'Creating financial goals...' },
+  { key: 'snapshots', labelEs: 'Creando historial patrimonial...', labelEn: 'Creating net worth history...' },
+  { key: 'contracts', labelEs: 'Creando contratos...', labelEn: 'Creating contracts...' },
+  { key: 'notifications', labelEs: 'Creando notificaciones...', labelEn: 'Creating notifications...' },
+  { key: 'habits', labelEs: 'Creando hábitos financieros...', labelEn: 'Creating financial habits...' },
+  { key: 'journal', labelEs: 'Creando diario financiero...', labelEn: 'Creating financial journal...' },
+  { key: 'education', labelEs: 'Creando recursos educativos...', labelEn: 'Creating education resources...' },
+  { key: 'pyf', labelEs: 'Configurando págate primero...', labelEn: 'Setting up pay yourself first...' },
+  { key: 'profile', labelEs: 'Creando perfil financiero...', labelEn: 'Creating financial profile...' },
+  { key: 'gamification', labelEs: 'Configurando gamificación...', labelEn: 'Setting up gamification...' },
+  { key: 'done', labelEs: '¡Completado!', labelEn: 'Complete!' },
+];
+
 export function SampleDataManager() {
   const { language } = useLanguage();
   const isEs = language === 'es';
@@ -62,6 +87,44 @@ export function SampleDataManager() {
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
   const [showDeleteSelectedDialog, setShowDeleteSelectedDialog] = useState(false);
+  
+  // Progress simulation for better UX
+  const [currentStep, setCurrentStep] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Simulate progress when generating
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    let timeInterval: NodeJS.Timeout;
+    
+    if (generateSampleData.isPending) {
+      setCurrentStep(0);
+      setElapsedTime(0);
+      
+      // Update elapsed time every second
+      timeInterval = setInterval(() => {
+        setElapsedTime(prev => prev + 1);
+      }, 1000);
+      
+      // Simulate step progression (average ~1.5s per step, 20 steps)
+      interval = setInterval(() => {
+        setCurrentStep(prev => {
+          if (prev < GENERATION_STEPS.length - 1) {
+            return prev + 1;
+          }
+          return prev;
+        });
+      }, 1500);
+    } else {
+      setCurrentStep(0);
+      setElapsedTime(0);
+    }
+    
+    return () => {
+      clearInterval(interval);
+      clearInterval(timeInterval);
+    };
+  }, [generateSampleData.isPending]);
 
   const toggleSection = (key: string) => {
     setSelectedSections(prev => 
@@ -91,6 +154,9 @@ export function SampleDataManager() {
   };
 
   const isLoading = generateSampleData.isPending || deleteSampleData.isPending || deleteSampleDataBySection.isPending;
+  const progressPercent = generateSampleData.isPending 
+    ? Math.min(((currentStep + 1) / GENERATION_STEPS.length) * 100, 95) 
+    : 0;
 
   return (
     <Card>
@@ -107,16 +173,65 @@ export function SampleDataManager() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Info Alert */}
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            {isEs 
-              ? "Los datos de ejemplo están marcados con [SAMPLE] para identificarlos fácilmente. Puedes eliminarlos por sección para ir aprendiendo gradualmente sin perder ejemplos en otras áreas."
-              : "Sample data is marked with [SAMPLE] for easy identification. You can delete them by section to learn gradually without losing examples in other areas."
-            }
-          </AlertDescription>
-        </Alert>
+        {/* Progress Indicator when generating */}
+        {generateSampleData.isPending && (
+          <div className="space-y-4 p-4 bg-primary/5 border border-primary/20 rounded-lg animate-in fade-in duration-300">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <span className="font-medium text-primary">
+                  {isEs ? "Generando datos de ejemplo..." : "Generating sample data..."}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                {elapsedTime}s
+              </div>
+            </div>
+            
+            <Progress value={progressPercent} className="h-2" />
+            
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                {isEs ? GENERATION_STEPS[currentStep]?.labelEs : GENERATION_STEPS[currentStep]?.labelEn}
+              </span>
+              <span className="text-muted-foreground">
+                {currentStep + 1} / {GENERATION_STEPS.length}
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-5 gap-1">
+              {GENERATION_STEPS.slice(0, 10).map((step, idx) => (
+                <div 
+                  key={step.key}
+                  className={`h-1 rounded-full transition-colors ${
+                    idx <= currentStep ? 'bg-primary' : 'bg-muted'
+                  }`}
+                />
+              ))}
+            </div>
+            
+            <p className="text-xs text-muted-foreground text-center">
+              {isEs 
+                ? "Esto puede tomar entre 20-30 segundos dependiendo de la conexión..."
+                : "This may take 20-30 seconds depending on connection..."
+              }
+            </p>
+          </div>
+        )}
+
+        {/* Info Alert - hide when generating */}
+        {!generateSampleData.isPending && (
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              {isEs 
+                ? "Los datos de ejemplo están marcados con [SAMPLE] para identificarlos fácilmente. Puedes eliminarlos por sección para ir aprendiendo gradualmente sin perder ejemplos en otras áreas."
+                : "Sample data is marked with [SAMPLE] for easy identification. You can delete them by section to learn gradually without losing examples in other areas."
+              }
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Generate Button */}
         <div className="flex flex-wrap gap-2">
@@ -124,13 +239,19 @@ export function SampleDataManager() {
             onClick={() => generateSampleData.mutate()}
             disabled={isLoading}
             className="gap-2"
+            size="lg"
           >
             {generateSampleData.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {isEs ? "Generando..." : "Generating..."}
+              </>
             ) : (
-              <RefreshCw className="h-4 w-4" />
+              <>
+                <RefreshCw className="h-4 w-4" />
+                {isEs ? "Generar Datos de Ejemplo" : "Generate Sample Data"}
+              </>
             )}
-            {isEs ? "Generar Datos de Ejemplo" : "Generate Sample Data"}
           </Button>
           <Button 
             variant="destructive"
@@ -205,11 +326,25 @@ export function SampleDataManager() {
         </div>
 
         {/* Success State */}
-        {(deleteSampleData.isSuccess || deleteSampleDataBySection.isSuccess) && (
+        {(generateSampleData.isSuccess || deleteSampleData.isSuccess || deleteSampleDataBySection.isSuccess) && (
           <Alert className="bg-green-500/10 border-green-500/30">
             <CheckCircle2 className="h-4 w-4 text-green-500" />
             <AlertDescription className="text-green-600">
-              {isEs ? "¡Datos eliminados exitosamente!" : "Data deleted successfully!"}
+              {generateSampleData.isSuccess 
+                ? (isEs ? "¡Datos generados exitosamente! Revisa las secciones de la app." : "Data generated successfully! Check the app sections.")
+                : (isEs ? "¡Datos eliminados exitosamente!" : "Data deleted successfully!")
+              }
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Error State */}
+        {generateSampleData.isError && (
+          <Alert className="bg-destructive/10 border-destructive/30">
+            <Info className="h-4 w-4 text-destructive" />
+            <AlertDescription className="text-destructive">
+              {isEs ? "Error al generar datos: " : "Error generating data: "}
+              {generateSampleData.error?.message || 'Unknown error'}
             </AlertDescription>
           </Alert>
         )}
