@@ -4,13 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Target, Edit2, Check, X } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Plus, Trash2, Target, Edit2, Check, X, Sparkles, RefreshCw } from "lucide-react";
 import { useCategoryBudgets, useUpsertCategoryBudget, useDeleteCategoryBudget } from "@/hooks/data/useCategoryBudgets";
 import { useExpenses } from "@/hooks/data/useExpenses";
+import { useBudgetSuggestions, getCategorySuggestion } from "@/hooks/data/useBudgetSuggestions";
 import { EXPENSE_CATEGORIES, getCategoryLabel, ExpenseCategory } from "@/lib/constants/expense-categories";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { startOfMonth, endOfMonth, format } from "date-fns";
 import { es } from "date-fns/locale";
+import { toast } from "sonner";
 
 export function CategoryBudgetsCard() {
   const [isAdding, setIsAdding] = useState(false);
@@ -22,6 +25,7 @@ export function CategoryBudgetsCard() {
   const { data: budgets, isLoading } = useCategoryBudgets();
   const upsertBudget = useUpsertCategoryBudget();
   const deleteBudget = useDeleteCategoryBudget();
+  const budgetSuggestions = useBudgetSuggestions();
 
   const now = new Date();
   const monthStart = startOfMonth(now);
@@ -42,6 +46,38 @@ export function CategoryBudgetsCard() {
   // Get available categories (not already budgeted)
   const budgetedCategories = new Set(budgets?.map((b) => b.category) || []);
   const availableCategories = EXPENSE_CATEGORIES.filter((cat) => !budgetedCategories.has(cat.value));
+
+  const handleSuggestForCategory = (category: string) => {
+    const suggestion = getCategorySuggestion(budgetSuggestions, category);
+    if (suggestion && suggestion.suggestedBudget > 0) {
+      setNewBudget(suggestion.suggestedBudget.toString());
+      toast.success(`Sugerido: $${suggestion.suggestedBudget} (promedio $${Math.round(suggestion.averageSpent)} + 10%)`);
+    } else {
+      toast.info("No hay suficiente historial para esta categoría");
+    }
+  };
+
+  const handleAdjustAll = () => {
+    if (!budgets || budgets.length === 0) return;
+    
+    let updated = 0;
+    budgets.forEach((budget) => {
+      const suggestion = getCategorySuggestion(budgetSuggestions, budget.category);
+      if (suggestion && suggestion.suggestedBudget > 0) {
+        upsertBudget.mutate({ 
+          category: budget.category, 
+          monthly_budget: suggestion.suggestedBudget 
+        });
+        updated++;
+      }
+    });
+    
+    if (updated > 0) {
+      toast.success(`${updated} presupuestos ajustados automáticamente`);
+    } else {
+      toast.info("No hay suficiente historial para ajustar");
+    }
+  };
 
   const handleAdd = () => {
     if (!newCategory || !newBudget) return;
@@ -81,19 +117,38 @@ export function CategoryBudgetsCard() {
           <Target className="h-5 w-5 text-primary" />
           Metas por Categoría - {format(now, "MMMM yyyy", { locale: es })}
         </CardTitle>
-        {!isAdding && availableCategories.length > 0 && (
-          <Button size="sm" variant="outline" onClick={() => setIsAdding(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            Agregar
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {budgets && budgets.length > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="sm" variant="ghost" onClick={handleAdjustAll}>
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Ajustar todos automáticamente</TooltipContent>
+            </Tooltip>
+          )}
+          {!isAdding && availableCategories.length > 0 && (
+            <Button size="sm" variant="outline" onClick={() => setIsAdding(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Agregar
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {isAdding && (
-          <div className="flex gap-2 items-end p-3 bg-muted/50 rounded-lg">
-            <div className="flex-1 space-y-1">
+          <div className="flex gap-2 items-end p-3 bg-muted/50 rounded-lg flex-wrap">
+            <div className="flex-1 min-w-[120px] space-y-1">
               <label className="text-xs text-muted-foreground">Categoría</label>
-              <Select value={newCategory} onValueChange={setNewCategory}>
+              <Select value={newCategory} onValueChange={(val) => {
+                setNewCategory(val);
+                // Auto-suggest when category is selected
+                const suggestion = getCategorySuggestion(budgetSuggestions, val);
+                if (suggestion && suggestion.suggestedBudget > 0) {
+                  setNewBudget(suggestion.suggestedBudget.toString());
+                }
+              }}>
                 <SelectTrigger className="h-9">
                   <SelectValue placeholder="Seleccionar" />
                 </SelectTrigger>
@@ -107,7 +162,19 @@ export function CategoryBudgetsCard() {
               </Select>
             </div>
             <div className="w-32 space-y-1">
-              <label className="text-xs text-muted-foreground">Presupuesto</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs text-muted-foreground">Presupuesto</label>
+                {newCategory && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="icon" variant="ghost" className="h-5 w-5" onClick={() => handleSuggestForCategory(newCategory)}>
+                        <Sparkles className="h-3 w-3 text-primary" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Sugerir basado en historial</TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
               <Input
                 type="number"
                 placeholder="$0.00"

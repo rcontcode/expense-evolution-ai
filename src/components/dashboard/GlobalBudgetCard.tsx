@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, Edit2, Check, X, AlertTriangle, CheckCircle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Wallet, Edit2, Check, X, AlertTriangle, CheckCircle, Sparkles } from "lucide-react";
 import { useUserSettings, useUpdateUserPreferences, UserPreferences } from "@/hooks/data/useUserSettings";
 import { useExpenses } from "@/hooks/data/useExpenses";
+import { useBudgetSuggestions } from "@/hooks/data/useBudgetSuggestions";
 import { startOfMonth, endOfMonth, format } from "date-fns";
 import { es } from "date-fns/locale";
-
+import { toast } from "sonner";
 export function GlobalBudgetCard() {
   const [isEditing, setIsEditing] = useState(false);
   const [budgetValue, setBudgetValue] = useState("");
@@ -17,6 +19,7 @@ export function GlobalBudgetCard() {
 
   const { data: settings, isLoading } = useUserSettings();
   const updatePreferences = useUpdateUserPreferences();
+  const { globalSuggestion, globalAverage, isLoading: loadingSuggestion } = useBudgetSuggestions();
 
   const now = new Date();
   const monthStart = startOfMonth(now);
@@ -33,6 +36,15 @@ export function GlobalBudgetCard() {
   const totalSpent = expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
   const percentage = globalBudget > 0 ? (totalSpent / globalBudget) * 100 : 0;
   const remaining = globalBudget - totalSpent;
+
+  const handleAutoSuggest = () => {
+    if (globalSuggestion > 0) {
+      setBudgetValue(globalSuggestion.toString());
+      toast.success(`Sugerido: $${globalSuggestion.toFixed(0)} (promedio $${globalAverage.toFixed(0)} + 10%)`);
+    } else {
+      toast.info("No hay suficiente historial para sugerir un presupuesto");
+    }
+  };
 
   const startEdit = () => {
     setBudgetValue(globalBudget.toString());
@@ -90,7 +102,25 @@ export function GlobalBudgetCard() {
           <div className="space-y-4 p-3 bg-muted/50 rounded-lg">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">Presupuesto mensual</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-muted-foreground">Presupuesto mensual</label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="h-6 w-6"
+                        onClick={handleAutoSuggest}
+                        disabled={loadingSuggestion}
+                      >
+                        <Sparkles className="h-3 w-3 text-primary" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Sugerir basado en promedio de 3 meses + 10%</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Input
                   type="number"
                   placeholder="$0.00"
