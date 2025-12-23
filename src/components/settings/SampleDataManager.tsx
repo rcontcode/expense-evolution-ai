@@ -23,9 +23,12 @@ import {
   Loader2,
   Info,
   CheckCircle2,
-  Clock
+  Clock,
+  AlertTriangle,
+  LogIn
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useGenerateSampleData, useDeleteSampleData, useDeleteSampleDataBySection } from '@/hooks/data/useGenerateSampleData';
 import {
   AlertDialog,
@@ -37,6 +40,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Link } from 'react-router-dom';
 
 const SAMPLE_SECTIONS = [
   { key: 'clients', icon: Users, labelEs: 'Clientes', labelEn: 'Clients', color: 'text-blue-500' },
@@ -78,6 +82,7 @@ const GENERATION_STEPS = [
 
 export function SampleDataManager() {
   const { language } = useLanguage();
+  const { user, loading: authLoading } = useAuth();
   const isEs = language === 'es';
   
   const generateSampleData = useGenerateSampleData();
@@ -91,6 +96,9 @@ export function SampleDataManager() {
   // Progress simulation for better UX
   const [currentStep, setCurrentStep] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Check if user is authenticated
+  const isAuthenticated = !!user;
 
   // Simulate progress when generating
   useEffect(() => {
@@ -220,8 +228,29 @@ export function SampleDataManager() {
           </div>
         )}
 
+        {/* Auth Warning */}
+        {!isAuthenticated && !authLoading && (
+          <Alert className="border-amber-500/50 bg-amber-500/10">
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            <AlertDescription className="flex items-center justify-between">
+              <span className="text-amber-600">
+                {isEs 
+                  ? "Debes iniciar sesión para generar datos de ejemplo." 
+                  : "You must be logged in to generate sample data."
+                }
+              </span>
+              <Link to="/auth">
+                <Button size="sm" variant="outline" className="gap-2">
+                  <LogIn className="h-4 w-4" />
+                  {isEs ? "Iniciar Sesión" : "Log In"}
+                </Button>
+              </Link>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Info Alert - hide when generating */}
-        {!generateSampleData.isPending && (
+        {!generateSampleData.isPending && isAuthenticated && (
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
@@ -236,8 +265,8 @@ export function SampleDataManager() {
         {/* Generate Button */}
         <div className="flex flex-wrap gap-2">
           <Button 
-            onClick={() => generateSampleData.mutate()}
-            disabled={isLoading}
+            onClick={() => generateSampleData.mutate(undefined)}
+            disabled={isLoading || !isAuthenticated}
             className="gap-2"
             size="lg"
           >
@@ -256,7 +285,7 @@ export function SampleDataManager() {
           <Button 
             variant="destructive"
             onClick={() => setShowDeleteAllDialog(true)}
-            disabled={isLoading}
+            disabled={isLoading || !isAuthenticated}
             className="gap-2"
           >
             <Trash2 className="h-4 w-4" />

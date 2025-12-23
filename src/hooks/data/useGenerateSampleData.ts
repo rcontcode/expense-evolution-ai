@@ -16,20 +16,25 @@ export function useGenerateSampleData() {
   const { language } = useLanguage();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (onProgress?: (step: string, index: number) => void) => {
       console.log('[SAMPLE DATA] Starting generation...');
       
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError) {
         console.error('[SAMPLE DATA] Auth error:', authError);
-        throw new Error('Authentication error: ' + authError.message);
+        throw new Error(language === 'es' 
+          ? 'Error de autenticación. Por favor inicia sesión.' 
+          : 'Authentication error. Please log in.');
       }
       if (!user) {
         console.error('[SAMPLE DATA] No user found');
-        throw new Error('No authenticated user');
+        throw new Error(language === 'es' 
+          ? 'No hay usuario autenticado. Inicia sesión primero.' 
+          : 'No authenticated user. Please log in first.');
       }
       
       console.log('[SAMPLE DATA] User authenticated:', user.id);
+      onProgress?.('clients', 0);
 
       const userId = user.id;
       const today = new Date();
