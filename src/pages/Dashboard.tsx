@@ -73,6 +73,8 @@ const BudgetAlertsCard = lazy(() => import('@/components/dashboard/BudgetAlertsC
 const CategoryBudgetsCard = lazy(() => import('@/components/dashboard/CategoryBudgetsCard').then(m => ({ default: m.CategoryBudgetsCard })));
 const GlobalBudgetCard = lazy(() => import('@/components/dashboard/GlobalBudgetCard').then(m => ({ default: m.GlobalBudgetCard })));
 const BudgetHistoryChart = lazy(() => import('@/components/dashboard/BudgetHistoryChart').then(m => ({ default: m.BudgetHistoryChart })));
+const CategoryBudgetHistoryChart = lazy(() => import('@/components/dashboard/CategoryBudgetHistoryChart').then(m => ({ default: m.CategoryBudgetHistoryChart })));
+const CategoryYearComparison = lazy(() => import('@/components/analytics/CategoryYearComparison').then(m => ({ default: m.CategoryYearComparison })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
