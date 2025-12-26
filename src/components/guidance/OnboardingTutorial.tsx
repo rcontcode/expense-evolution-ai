@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProfile } from '@/hooks/data/useProfile';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -216,8 +217,13 @@ const TUTORIAL_STEPS: TutorialStep[] = [
 
 const STORAGE_KEY = 'onboarding-tutorial-completed';
 
+// Routes where tutorial should NOT show
+const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/beta-welcome', '/beta-features', '/install'];
+
 export function OnboardingTutorial() {
   const { language, t } = useLanguage();
+  const { user } = useAuth();
+  const location = useLocation();
   const profileQuery = useProfile();
   const profile = profileQuery.data;
   const navigate = useNavigate();
@@ -226,13 +232,22 @@ export function OnboardingTutorial() {
 
   const userName = profile?.full_name?.split(' ')[0] || t('user');
 
+  // Check if we're on a public route
+  const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname);
+
   useEffect(() => {
+    // Don't show on public routes or if user not authenticated
+    if (isPublicRoute || !user) {
+      setIsOpen(false);
+      return;
+    }
+
     const completed = localStorage.getItem(STORAGE_KEY);
     if (!completed) {
       const timer = setTimeout(() => setIsOpen(true), 1000);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [isPublicRoute, user]);
 
   const handleNext = () => {
     if (currentStep < TUTORIAL_STEPS.length - 1) {
