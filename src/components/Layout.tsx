@@ -44,6 +44,7 @@ import { TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { SyncStatusIndicator } from '@/components/SyncStatusIndicator';
+import { AuthStatusIndicator } from '@/components/AuthStatusIndicator';
 import { useUnreadNotifications } from '@/hooks/data/useUnreadNotifications';
 import { ThemeBackground } from '@/components/ThemeBackground';
 import evofinzLogo from '@/assets/evofinz-logo.png';
@@ -139,6 +140,7 @@ export const Layout = ({ children }: LayoutProps) => {
             <div className="flex items-center gap-2">
               <TooltipProvider>
                 <SyncStatusIndicator />
+                <AuthStatusIndicator compact />
               </TooltipProvider>
               
               {/* Notification Bell - Mobile */}
@@ -541,6 +543,9 @@ export const Layout = ({ children }: LayoutProps) => {
                 </div>
               </TooltipContent>
             </Tooltip>
+
+            {/* Auth Status */}
+            <AuthStatusIndicator collapsed={collapsed} />
 
             <div className={cn(
               "flex items-center gap-2 pt-2",
