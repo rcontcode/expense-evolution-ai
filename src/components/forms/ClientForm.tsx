@@ -57,7 +57,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
                 <FormItem>
                   <FormLabel className="flex items-center gap-1">
                     {t('clients.clientName')} *
-                    <InfoTooltip content={TOOLTIP_CONTENT.clientName} />
+                    <InfoTooltip content={TOOLTIP_CONTENT.clientName} side="right" />
                   </FormLabel>
                   <FormControl>
                     <Input placeholder={t('clients.clientNamePlaceholder')} {...field} />
@@ -75,7 +75,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
                   <FormItem>
                     <FormLabel className="flex items-center gap-1">
                       {t('formSections.clientType')}
-                      <InfoTooltip content={TOOLTIP_CONTENT.clientType} />
+                      <InfoTooltip content={TOOLTIP_CONTENT.clientType} side="right" />
                     </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value || 'private'}>
                       <FormControl>
@@ -106,7 +106,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
                   <FormItem>
                     <FormLabel className="flex items-center gap-1">
                       {t('formSections.industry')}
-                      <InfoTooltip content={TOOLTIP_CONTENT.clientIndustry} />
+                      <InfoTooltip content={TOOLTIP_CONTENT.clientIndustry} side="right" />
                     </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value || ''}>
                       <FormControl>
@@ -164,7 +164,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
             <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Mail className="h-4 w-4" />
               {t('formSections.contactInfo')}
-              <InfoTooltip content={TOOLTIP_CONTENT.clientContact} />
+              <InfoTooltip content={TOOLTIP_CONTENT.clientContact} side="right" />
             </h3>
 
             <div className="grid grid-cols-2 gap-4">
@@ -211,7 +211,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
                   <FormLabel className="flex items-center gap-1">
                     <Link className="h-3 w-3" />
                     {t('formSections.website')}
-                    <InfoTooltip content={TOOLTIP_CONTENT.clientWebsite} />
+                    <InfoTooltip content={TOOLTIP_CONTENT.clientWebsite} side="right" />
                   </FormLabel>
                   <FormControl>
                     <Input type="url" placeholder="https://www.empresa.com" {...field} value={field.value || ''} />
@@ -237,7 +237,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
                   <FormItem>
                     <FormLabel className="flex items-center gap-1">
                       {t('formSections.paymentTerms')}
-                      <InfoTooltip content={TOOLTIP_CONTENT.clientPaymentTerms} />
+                      <InfoTooltip content={TOOLTIP_CONTENT.clientPaymentTerms} side="right" />
                     </FormLabel>
                     <Select 
                       onValueChange={(value) => field.onChange(parseInt(value))} 
@@ -268,7 +268,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
                   <FormItem>
                     <FormLabel className="flex items-center gap-1">
                       {t('formSections.currency')}
-                      <InfoTooltip content={TOOLTIP_CONTENT.clientCurrency} />
+                      <InfoTooltip content={TOOLTIP_CONTENT.clientCurrency} side="right" />
                     </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value || 'CAD'}>
                       <FormControl>
@@ -296,7 +296,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
                     <FormLabel className="flex items-center gap-1">
                       <FileText className="h-3 w-3" />
                       {t('formSections.taxId')}
-                      <InfoTooltip content={TOOLTIP_CONTENT.clientTaxId} />
+                      <InfoTooltip content={TOOLTIP_CONTENT.clientTaxId} side="right" />
                     </FormLabel>
                     <FormControl>
                       <Input placeholder="GST/HST #" {...field} value={field.value || ''} />
@@ -317,7 +317,7 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
                 <FormItem>
                   <FormLabel className="flex items-center gap-1">
                     {t('clients.notesLabel')}
-                    <InfoTooltip content={TOOLTIP_CONTENT.clientNotes} />
+                    <InfoTooltip content={TOOLTIP_CONTENT.clientNotes} side="right" />
                   </FormLabel>
                   <FormControl>
                     <Textarea
