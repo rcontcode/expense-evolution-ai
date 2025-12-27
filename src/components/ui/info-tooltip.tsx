@@ -50,7 +50,13 @@ export function InfoTooltip({
     return (
       <Tooltip>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
-        <TooltipContent side={side} className="p-3">
+        <TooltipContent 
+          side={side} 
+          align="center"
+          avoidCollisions={true}
+          collisionPadding={16}
+          className="p-3 z-[9999]"
+        >
           {tooltipContent}
         </TooltipContent>
       </Tooltip>
@@ -70,7 +76,13 @@ export function InfoTooltip({
           <HelpCircle className="h-4 w-4" />
         </button>
       </TooltipTrigger>
-      <TooltipContent side={side} className="p-3">
+      <TooltipContent 
+        side={side} 
+        align="center"
+        avoidCollisions={true}
+        collisionPadding={16}
+        className="p-3 z-[9999]"
+      >
         {tooltipContent}
       </TooltipContent>
     </Tooltip>
