@@ -235,57 +235,60 @@ export default function Dashboard() {
 
           {/* Profile Summary Card */}
           {profile && (
-            <Card className="border-l-4 border-l-primary">
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground text-lg font-semibold">
-                      {profile.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">{profile.full_name || t('settings.profileTitle')}</h3>
-                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                        {profile.work_types && profile.work_types.length > 0 && (
-                          <span className="flex items-center gap-1">
-                            <Building2 className="h-3 w-3" />
-                            {profile.work_types.includes('contractor') ? 'Sole Proprietor' : 
-                             profile.work_types.includes('corporation') ? 'Corporation' : 'Employee'}
-                          </span>
-                        )}
-                        {profile.province && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {profile.province}
-                          </span>
-                        )}
-                        {profile.gst_hst_registered && (
-                          <span className="flex items-center gap-1 text-green-600">
-                            <CheckCircle className="h-3 w-3" />
-                            GST/HST
-                          </span>
-                        )}
+            <InfoTooltip content={TOOLTIP_CONTENT.profileCard} variant="wrapper" side="right">
+              <Card className="border-l-4 border-l-primary cursor-help transition-shadow hover:shadow-md">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground text-lg font-semibold">
+                        {profile.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{profile.full_name || t('settings.profileTitle')}</h3>
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                          {profile.work_types && profile.work_types.length > 0 && (
+                            <span className="flex items-center gap-1">
+                              <Building2 className="h-3 w-3" />
+                              {profile.work_types.includes('contractor') ? 'Sole Proprietor' : 
+                               profile.work_types.includes('corporation') ? 'Corporation' : 'Employee'}
+                            </span>
+                          )}
+                          {profile.province && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {profile.province}
+                            </span>
+                          )}
+                          {profile.gst_hst_registered && (
+                            <span className="flex items-center gap-1 text-green-600">
+                              <CheckCircle className="h-3 w-3" />
+                              GST/HST
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
+                    <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
+                      {t('common.edit')}
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
-                    {t('common.edit')}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </InfoTooltip>
           )}
 
           {/* Balance Card */}
-          <Card className={`border-2 ${balanceData.isPositive ? 'border-green-500/30 bg-green-50/50 dark:bg-green-900/10' : 'border-red-500/30 bg-red-50/50 dark:bg-red-900/10'}`}>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Scale className="h-5 w-5" />
-                  <CardTitle className="text-lg">{t('balance.title')}</CardTitle>
+          <InfoTooltip content={TOOLTIP_CONTENT.balanceCard} variant="wrapper" side="right">
+            <Card className={`border-2 cursor-help transition-shadow hover:shadow-md ${balanceData.isPositive ? 'border-green-500/30 bg-green-50/50 dark:bg-green-900/10' : 'border-red-500/30 bg-red-50/50 dark:bg-red-900/10'}`}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Scale className="h-5 w-5" />
+                    <CardTitle className="text-lg">{t('balance.title')}</CardTitle>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{t('balance.thisYear')}</span>
                 </div>
-                <span className="text-xs text-muted-foreground">{t('balance.thisYear')}</span>
-              </div>
-            </CardHeader>
+              </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1">
@@ -311,6 +314,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
+          </InfoTooltip>
 
           {/* Stats Cards */}
           <div className="grid gap-4 md:grid-cols-4">

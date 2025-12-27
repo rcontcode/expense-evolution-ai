@@ -106,6 +106,78 @@ export const TOOLTIP_CONTENT = {
   },
 
   // ========== DASHBOARD ==========
+  dashboard: {
+    es: {
+      title: "Panel de Control",
+      description: "Vista general de tus finanzas con estadísticas, gráficos y análisis fiscal.",
+      howToUse: "Tu punto de partida para entender tu situación financiera.",
+    },
+    en: {
+      title: "Dashboard",
+      description: "Overview of your finances with statistics, charts and tax analysis.",
+      howToUse: "Your starting point to understand your financial situation.",
+    },
+  },
+  balanceCard: {
+    es: {
+      title: "Balance Financiero",
+      description: "Muestra la diferencia entre tus ingresos totales y gastos del año actual. Un balance positivo indica que estás ahorrando dinero.",
+      howToUse: "Mantén un balance positivo para cumplir tus metas de ahorro. Si es negativo, revisa tus gastos.",
+    },
+    en: {
+      title: "Financial Balance",
+      description: "Shows the difference between your total income and expenses for the current year. A positive balance indicates you're saving money.",
+      howToUse: "Keep a positive balance to meet your savings goals. If negative, review your expenses.",
+    },
+  },
+  profileCard: {
+    es: {
+      title: "Tu Perfil de Negocio",
+      description: "Muestra tu información de negocio: tipo de trabajador, provincia y estado de GST/HST. Esto afecta los cálculos fiscales.",
+      howToUse: "Haz clic en 'Editar' para actualizar tu información y mejorar las recomendaciones fiscales.",
+    },
+    en: {
+      title: "Your Business Profile",
+      description: "Shows your business info: worker type, province and GST/HST status. This affects tax calculations.",
+      howToUse: "Click 'Edit' to update your info and improve tax recommendations.",
+    },
+  },
+  completenessCard: {
+    es: {
+      title: "Completitud de Datos",
+      description: "Indica qué porcentaje de tus gastos tienen toda la información necesaria para deducciones fiscales.",
+      howToUse: "Intenta mantener arriba del 80% para reportes fiscales precisos.",
+    },
+    en: {
+      title: "Data Completeness",
+      description: "Shows what percentage of your expenses have all necessary information for tax deductions.",
+      howToUse: "Try to keep above 80% for accurate tax reports.",
+    },
+  },
+  workflowWidget: {
+    es: {
+      title: "Flujos de Trabajo",
+      description: "Muestra el progreso en tus flujos de trabajo financieros: captura de gastos, facturación a clientes y preparación fiscal.",
+      howToUse: "Haz clic en cualquier flujo para ver los pasos detallados.",
+    },
+    en: {
+      title: "Workflows",
+      description: "Shows progress on your financial workflows: expense capture, client billing, and tax preparation.",
+      howToUse: "Click any workflow to see detailed steps.",
+    },
+  },
+  filtersPanel: {
+    es: {
+      title: "Filtros del Dashboard",
+      description: "Filtra todos los datos del dashboard por cliente, estado de gasto o categoría. Los filtros afectan las estadísticas y gráficos.",
+      howToUse: "Combina filtros para análisis específicos. Usa 'Limpiar' para resetear.",
+    },
+    en: {
+      title: "Dashboard Filters",
+      description: "Filter all dashboard data by client, expense status, or category. Filters affect statistics and charts.",
+      howToUse: "Combine filters for specific analysis. Use 'Clear' to reset.",
+    },
+  },
   monthlyTotal: {
     es: {
       title: "Total Mensual",
@@ -484,18 +556,6 @@ export const TOOLTIP_CONTENT = {
   },
 
   // ========== NAVIGATION ==========
-  dashboard: {
-    es: {
-      title: "Panel de Control",
-      description: "Vista general de tus finanzas con estadísticas, gráficos y análisis fiscal.",
-      howToUse: "Tu punto de partida para entender tu situación financiera.",
-    },
-    en: {
-      title: "Dashboard",
-      description: "Overview of your finances with statistics, charts and tax analysis.",
-      howToUse: "Your starting point to understand your financial situation.",
-    },
-  },
   expenses: {
     es: {
       title: "Gestión de Gastos",
