@@ -22,6 +22,8 @@ import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
 import { ExpenseSummary } from './ExpenseSummary';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 interface QuickCaptureProps {
   onSuccess?: () => void;
@@ -285,25 +287,32 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
   const hasClients = clients.length > 0;
 
   return (
-    <Card className="w-full">
-      <CardHeader><CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" />{t('quickCapture.title')}</CardTitle></CardHeader>
-      <CardContent className="space-y-6">
-        {editedExpenses.length === 0 ? (
-          <>
-            <div className="space-y-3">
-              <label className="text-sm font-medium">{t('quickCapture.uploadReceipt')}</label>
-              <div className={cn("border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors", imagePreview ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50")} onClick={() => fileInputRef.current?.click()}>
-                {imagePreview ? (<div className="space-y-3"><img src={imagePreview} alt="Preview" className="max-h-48 mx-auto rounded-lg object-contain" /><Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setImagePreview(null); setImageBase64(null); }}><X className="h-4 w-4 mr-1" />{t('common.remove')}</Button></div>) : (<div className="space-y-2"><ImageIcon className="h-10 w-10 mx-auto text-muted-foreground" /><p className="text-sm text-muted-foreground">{t('quickCapture.dropOrClick')}</p></div>)}
+    <TooltipProvider delayDuration={200}>
+      <Card className="w-full">
+        <CardHeader><CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" />{t('quickCapture.title')}</CardTitle></CardHeader>
+        <CardContent className="space-y-6">
+          {editedExpenses.length === 0 ? (
+            <>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium">{t('quickCapture.uploadReceipt')}</label>
+                  <InfoTooltip content={TOOLTIP_CONTENT.expenseUploadPhoto} />
+                </div>
+                <div className={cn("border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors", imagePreview ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50")} onClick={() => fileInputRef.current?.click()}>
+                  {imagePreview ? (<div className="space-y-3"><img src={imagePreview} alt="Preview" className="max-h-48 mx-auto rounded-lg object-contain" /><Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setImagePreview(null); setImageBase64(null); }}><X className="h-4 w-4 mr-1" />{t('common.remove')}</Button></div>) : (<div className="space-y-2"><ImageIcon className="h-10 w-10 mx-auto text-muted-foreground" /><p className="text-sm text-muted-foreground">{t('quickCapture.dropOrClick')}</p></div>)}
+                </div>
+                <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileSelect} className="hidden" />
               </div>
-              <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileSelect} className="hidden" />
-            </div>
-            <div className="space-y-3">
-              <label className="text-sm font-medium">{t('quickCapture.orDescribe')}</label>
-              <div className="flex gap-2">
-                <Textarea value={transcript} onChange={(e) => setTranscript(e.target.value)} placeholder={t('quickCapture.voicePlaceholder')} className="min-h-[80px]" />
-                {voiceSupported && <Button type="button" variant={isListening ? 'destructive' : 'outline'} size="icon" className="shrink-0 h-[80px] w-12" onClick={toggleListening}>{isListening ? <MicOff className="h-5 w-5 animate-pulse" /> : <Mic className="h-5 w-5" />}</Button>}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium">{t('quickCapture.orDescribe')}</label>
+                  <InfoTooltip content={TOOLTIP_CONTENT.expenseVoiceInput} />
+                </div>
+                <div className="flex gap-2">
+                  <Textarea value={transcript} onChange={(e) => setTranscript(e.target.value)} placeholder={t('quickCapture.voicePlaceholder')} className="min-h-[80px]" />
+                  {voiceSupported && <Button type="button" variant={isListening ? 'destructive' : 'outline'} size="icon" className="shrink-0 h-[80px] w-12" onClick={toggleListening}>{isListening ? <MicOff className="h-5 w-5 animate-pulse" /> : <Mic className="h-5 w-5" />}</Button>}
+                </div>
               </div>
-            </div>
             <div className="flex gap-3 pt-4">
               {onCancel && <Button variant="outline" onClick={onCancel} className="flex-1">{t('common.cancel')}</Button>}
               <Button onClick={handleProcess} disabled={isProcessing || (!imageBase64 && !transcript)} className="flex-1">{isProcessing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('quickCapture.processing')}</> : <><Sparkles className="mr-2 h-4 w-4" />{t('quickCapture.analyze')}</>}</Button>
@@ -332,31 +341,36 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
                       <p className="text-xs text-muted-foreground">{t('quickCapture.aiExtracted')}</p>
                     </div>
                   </div>
-                  <Badge variant={currentExpense.confidence === 'high' ? 'default' : currentExpense.confidence === 'low' ? 'destructive' : 'secondary'}>
-                    {currentExpense.confidence === 'high' ? 'Alta' : currentExpense.confidence === 'medium' ? 'Media' : 'Baja'} confianza
-                  </Badge>
+                  <InfoTooltip content={TOOLTIP_CONTENT.expenseConfidenceLevel} variant="wrapper" side="left">
+                    <Badge variant={currentExpense.confidence === 'high' ? 'default' : currentExpense.confidence === 'low' ? 'destructive' : 'secondary'} className="cursor-help">
+                      {currentExpense.confidence === 'high' ? 'Alta' : currentExpense.confidence === 'medium' ? 'Media' : 'Baja'} confianza
+                    </Badge>
+                  </InfoTooltip>
                 </div>
 
-                {/* Reimbursement Status Badges */}
                 <div className="flex flex-wrap gap-2">
-                  {currentExpense.typically_reimbursable ? (
-                    <Badge variant="default" className="bg-green-600">
-                      <Building2 className="h-3 w-3 mr-1" />Reembolsable por Cliente
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary">
-                      <User className="h-3 w-3 mr-1" />No Reembolsable
-                    </Badge>
-                  )}
-                  {currentExpense.cra_deductible ? (
-                    <Badge variant="default" className="bg-blue-600">
-                      <Landmark className="h-3 w-3 mr-1" />Deducible CRA {currentExpense.cra_deduction_rate}%
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline">
-                      <X className="h-3 w-3 mr-1" />No Deducible CRA
-                    </Badge>
-                  )}
+                  <InfoTooltip content={TOOLTIP_CONTENT.expenseReimbursementType} variant="wrapper" side="bottom">
+                    {currentExpense.typically_reimbursable ? (
+                      <Badge variant="default" className="bg-green-600 cursor-help">
+                        <Building2 className="h-3 w-3 mr-1" />Reembolsable por Cliente
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="cursor-help">
+                        <User className="h-3 w-3 mr-1" />No Reembolsable
+                      </Badge>
+                    )}
+                  </InfoTooltip>
+                  <InfoTooltip content={TOOLTIP_CONTENT.expenseCraDeductible} variant="wrapper" side="bottom">
+                    {currentExpense.cra_deductible ? (
+                      <Badge variant="default" className="bg-blue-600 cursor-help">
+                        <Landmark className="h-3 w-3 mr-1" />Deducible CRA {currentExpense.cra_deduction_rate}%
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="cursor-help">
+                        <X className="h-3 w-3 mr-1" />No Deducible CRA
+                      </Badge>
+                    )}
+                  </InfoTooltip>
                 </div>
 
                 {/* Missing Information Alert */}
@@ -531,5 +545,6 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
         )}
       </CardContent>
     </Card>
+    </TooltipProvider>
   );
 }

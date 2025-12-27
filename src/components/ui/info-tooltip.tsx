@@ -276,6 +276,114 @@ export const TOOLTIP_CONTENT = {
   },
 
   // ========== EXPENSES ==========
+  expenseUploadPhoto: {
+    es: {
+      title: "Subir Foto de Recibo",
+      description: "Toma o sube una foto de tu recibo. La IA extraerá automáticamente el monto, fecha, proveedor y categoría.",
+      howToUse: "Asegúrate de que la foto esté bien iluminada y el texto sea legible.",
+    },
+    en: {
+      title: "Upload Receipt Photo",
+      description: "Take or upload a photo of your receipt. AI will automatically extract the amount, date, vendor and category.",
+      howToUse: "Make sure the photo is well-lit and text is readable.",
+    },
+  },
+  expenseVoiceInput: {
+    es: {
+      title: "Entrada por Voz",
+      description: "Describe tu gasto hablando. Di algo como 'Almuerzo en restaurante, 25 dólares, hoy'.",
+      howToUse: "Mantén presionado el botón del micrófono mientras hablas.",
+    },
+    en: {
+      title: "Voice Input",
+      description: "Describe your expense by speaking. Say something like 'Lunch at restaurant, 25 dollars, today'.",
+      howToUse: "Hold the microphone button while speaking.",
+    },
+  },
+  expenseCategory: {
+    es: {
+      title: "Categoría de Gasto",
+      description: "Clasifica el gasto para análisis y deducciones fiscales. Cada categoría tiene diferentes reglas de deducción CRA.",
+      howToUse: "La categoría afecta el porcentaje de deducción fiscal (ej: comidas = 50%).",
+    },
+    en: {
+      title: "Expense Category",
+      description: "Classify the expense for analysis and tax deductions. Each category has different CRA deduction rules.",
+      howToUse: "The category affects the tax deduction percentage (e.g., meals = 50%).",
+    },
+  },
+  expenseReimbursementType: {
+    es: {
+      title: "Tipo de Reembolso",
+      description: "Define si el gasto es reembolsable por cliente, deducible de impuestos CRA, o personal.",
+      howToUse: "Marca 'Reembolsable por cliente' para incluirlo en reportes de facturación.",
+    },
+    en: {
+      title: "Reimbursement Type",
+      description: "Define if the expense is client reimbursable, CRA tax deductible, or personal.",
+      howToUse: "Mark 'Client reimbursable' to include it in billing reports.",
+    },
+  },
+  expenseClientAssociation: {
+    es: {
+      title: "Asociación con Cliente",
+      description: "Vincula el gasto a un cliente específico para generar reportes de reembolso y facturación.",
+      howToUse: "Selecciona cliente, proyecto y contrato para un tracking completo.",
+    },
+    en: {
+      title: "Client Association",
+      description: "Link the expense to a specific client to generate reimbursement and billing reports.",
+      howToUse: "Select client, project and contract for complete tracking.",
+    },
+  },
+  expenseConfidenceLevel: {
+    es: {
+      title: "Nivel de Confianza IA",
+      description: "Indica qué tan segura está la IA sobre los datos extraídos. Alta = muy seguro, Baja = requiere verificación.",
+      howToUse: "Revisa manualmente los campos cuando la confianza sea baja.",
+    },
+    en: {
+      title: "AI Confidence Level",
+      description: "Indicates how confident the AI is about the extracted data. High = very sure, Low = needs verification.",
+      howToUse: "Manually review fields when confidence is low.",
+    },
+  },
+  expenseCraDeductible: {
+    es: {
+      title: "Deducible CRA",
+      description: "Indica si el gasto es deducible de impuestos según las reglas del CRA de Canadá.",
+      howToUse: "Los porcentajes varían: 100% para equipo, 50% para comidas de negocio.",
+    },
+    en: {
+      title: "CRA Deductible",
+      description: "Indicates if the expense is tax deductible according to Canada's CRA rules.",
+      howToUse: "Percentages vary: 100% for equipment, 50% for business meals.",
+    },
+  },
+  expenseTags: {
+    es: {
+      title: "Etiquetas",
+      description: "Agrega etiquetas personalizadas para organizar y filtrar gastos de forma flexible.",
+      howToUse: "Crea etiquetas como 'Urgente', 'Proyecto X', 'Pendiente revisión'.",
+    },
+    en: {
+      title: "Tags",
+      description: "Add custom tags to organize and filter expenses flexibly.",
+      howToUse: "Create tags like 'Urgent', 'Project X', 'Pending review'.",
+    },
+  },
+  bulkAssign: {
+    es: {
+      title: "Asignación Masiva",
+      description: "Asigna cliente, proyecto o etiquetas a múltiples gastos a la vez.",
+      howToUse: "Selecciona los gastos en la tabla y usa esta función para actualizarlos en lote.",
+    },
+    en: {
+      title: "Bulk Assign",
+      description: "Assign client, project or tags to multiple expenses at once.",
+      howToUse: "Select expenses in the table and use this function to update them in batch.",
+    },
+  },
   quickCapture: {
     es: {
       title: "Captura Rápida con IA",
