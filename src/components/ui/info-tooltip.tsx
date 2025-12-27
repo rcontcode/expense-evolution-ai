@@ -688,4 +688,138 @@ export const TOOLTIP_CONTENT = {
       howToUse: "Associate income with projects for detailed tracking.",
     },
   },
+
+  // ========== CLIENTS (Extended) ==========
+  clientName: {
+    es: {
+      title: "Nombre del Cliente",
+      description: "El nombre comercial o legal de tu cliente. Aparecerá en reportes y facturas.",
+      howToUse: "Usa el nombre oficial para documentos fiscales.",
+    },
+    en: {
+      title: "Client Name",
+      description: "The commercial or legal name of your client. Will appear on reports and invoices.",
+      howToUse: "Use official name for tax documents.",
+    },
+  },
+  clientType: {
+    es: {
+      title: "Tipo de Cliente",
+      description: "Clasifica si el cliente es empresa privada, gobierno, ONG o persona física. Útil para análisis y reportes.",
+      howToUse: "Esto ayuda a segmentar tus clientes y ajustar estrategias de facturación.",
+    },
+    en: {
+      title: "Client Type",
+      description: "Classify if the client is private company, government, non-profit or individual. Useful for analysis and reports.",
+      howToUse: "This helps segment clients and adjust billing strategies.",
+    },
+  },
+  clientIndustry: {
+    es: {
+      title: "Industria",
+      description: "El sector o industria donde opera tu cliente. Ayuda a categorizar y analizar tu cartera.",
+      howToUse: "Selecciona la industria principal para estadísticas de diversificación.",
+    },
+    en: {
+      title: "Industry",
+      description: "The sector or industry where your client operates. Helps categorize and analyze your portfolio.",
+      howToUse: "Select main industry for diversification statistics.",
+    },
+  },
+  clientContact: {
+    es: {
+      title: "Información de Contacto",
+      description: "Email y teléfono del contacto principal. Facilita la comunicación y facturación.",
+      howToUse: "Mantén estos datos actualizados para comunicaciones importantes.",
+    },
+    en: {
+      title: "Contact Information",
+      description: "Email and phone of the main contact. Facilitates communication and billing.",
+      howToUse: "Keep this data updated for important communications.",
+    },
+  },
+  clientPaymentTerms: {
+    es: {
+      title: "Términos de Pago",
+      description: "Días que el cliente tiene para pagar después de recibir la factura. Afecta proyecciones de flujo de caja.",
+      howToUse: "Estándar es 30 días. Gobiernos suelen requerir más tiempo.",
+    },
+    en: {
+      title: "Payment Terms",
+      description: "Days the client has to pay after receiving the invoice. Affects cash flow projections.",
+      howToUse: "Standard is 30 days. Government clients often need more time.",
+    },
+  },
+  clientCurrency: {
+    es: {
+      title: "Moneda",
+      description: "La moneda en que facturas a este cliente. Importante para clientes internacionales.",
+      howToUse: "CAD es la moneda por defecto para clientes canadienses.",
+    },
+    en: {
+      title: "Currency",
+      description: "The currency you invoice this client in. Important for international clients.",
+      howToUse: "CAD is default for Canadian clients.",
+    },
+  },
+  clientTaxId: {
+    es: {
+      title: "ID Fiscal / GST-HST",
+      description: "El número de registro fiscal o GST/HST del cliente. Necesario para facturas formales.",
+      howToUse: "Solicita este número para incluirlo en tus facturas oficiales.",
+    },
+    en: {
+      title: "Tax ID / GST-HST",
+      description: "The client's tax registration or GST/HST number. Needed for formal invoices.",
+      howToUse: "Request this number to include in your official invoices.",
+    },
+  },
+  clientWebsite: {
+    es: {
+      title: "Sitio Web",
+      description: "La URL del sitio web del cliente. Útil para referencia rápida y validación.",
+      howToUse: "Incluye https:// para que el enlace sea clickeable.",
+    },
+    en: {
+      title: "Website",
+      description: "The client's website URL. Useful for quick reference and validation.",
+      howToUse: "Include https:// to make the link clickable.",
+    },
+  },
+  clientNotes: {
+    es: {
+      title: "Notas del Cliente",
+      description: "Información adicional relevante: preferencias, historial, acuerdos especiales.",
+      howToUse: "Documenta acuerdos verbales o consideraciones importantes.",
+    },
+    en: {
+      title: "Client Notes",
+      description: "Additional relevant info: preferences, history, special agreements.",
+      howToUse: "Document verbal agreements or important considerations.",
+    },
+  },
+  clientCompleteness: {
+    es: {
+      title: "Completitud del Perfil",
+      description: "Indica qué tan completo está el perfil del cliente. Más información = mejores reportes.",
+      howToUse: "Intenta completar al menos 80% para reportes precisos.",
+    },
+    en: {
+      title: "Profile Completeness",
+      description: "Shows how complete the client profile is. More info = better reports.",
+      howToUse: "Try to complete at least 80% for accurate reports.",
+    },
+  },
+  clientFinancialOverview: {
+    es: {
+      title: "Panorama Financiero",
+      description: "Vista rápida de ingresos, gastos y rentabilidad con este cliente.",
+      howToUse: "Revisa regularmente para identificar clientes más rentables.",
+    },
+    en: {
+      title: "Financial Overview",
+      description: "Quick view of income, expenses and profitability with this client.",
+      howToUse: "Review regularly to identify most profitable clients.",
+    },
+  },
 } as const;

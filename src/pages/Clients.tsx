@@ -331,15 +331,17 @@ export default function Clients() {
                       )}
 
                       {/* Quick Financial Overview Button */}
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full mt-2 gap-2"
-                        onClick={() => setFinancialClient(client)}
-                      >
-                        <PieChart className="h-4 w-4" />
-                        {language === 'es' ? 'Panorama Financiero' : 'Financial Overview'}
-                      </Button>
+                      <InfoTooltip content={TOOLTIP_CONTENT.clientFinancialOverview} variant="wrapper">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full mt-2 gap-2"
+                          onClick={() => setFinancialClient(client)}
+                        >
+                          <PieChart className="h-4 w-4" />
+                          {language === 'es' ? 'Panorama Financiero' : 'Financial Overview'}
+                        </Button>
+                      </InfoTooltip>
                     </CardContent>
                   </Card>
                 );
