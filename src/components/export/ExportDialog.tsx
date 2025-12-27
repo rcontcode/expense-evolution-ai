@@ -10,7 +10,7 @@ import { ExpenseWithRelations } from '@/types/expense.types';
 import { exportExpenses, ExportOptions } from '@/lib/export/expense-export';
 import { exportT2125Report } from '@/lib/export/t2125-export';
 import { useToast } from '@/hooks/use-toast';
-import { FileSpreadsheet, FileText, Download, Loader2, FileCheck } from 'lucide-react';
+import { FileSpreadsheet, FileText, Download, Loader2, FileCheck, FileJson } from 'lucide-react';
 
 interface ExportDialogProps {
   open: boolean;
@@ -22,7 +22,7 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [exportType, setExportType] = useState<'general' | 't2125'>('general');
-  const [format, setFormat] = useState<'csv' | 'xlsx'>('xlsx');
+  const [format, setFormat] = useState<'csv' | 'xlsx' | 'json'>('xlsx');
   const [yearFilter, setYearFilter] = useState<string>('all');
   const [isExporting, setIsExporting] = useState(false);
 
@@ -103,7 +103,7 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
             {/* Format Selection */}
             <div className="space-y-3">
               <Label>{t('export.format')}</Label>
-              <RadioGroup value={format} onValueChange={(v) => setFormat(v as 'csv' | 'xlsx')}>
+              <RadioGroup value={format} onValueChange={(v) => setFormat(v as 'csv' | 'xlsx' | 'json')}>
                 <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
                   <RadioGroupItem value="xlsx" id="xlsx" />
                   <Label htmlFor="xlsx" className="flex items-center gap-2 cursor-pointer flex-1">
@@ -121,6 +121,16 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
                     <div>
                       <p className="font-medium">CSV (.csv)</p>
                       <p className="text-xs text-muted-foreground">{t('export.csvDescription')}</p>
+                    </div>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
+                  <RadioGroupItem value="json" id="json" />
+                  <Label htmlFor="json" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <FileJson className="h-5 w-5 text-orange-600" />
+                    <div>
+                      <p className="font-medium">JSON (.json)</p>
+                      <p className="text-xs text-muted-foreground">Formato estructurado para integraciones</p>
                     </div>
                   </Label>
                 </div>

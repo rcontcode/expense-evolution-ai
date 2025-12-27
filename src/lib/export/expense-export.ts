@@ -4,7 +4,7 @@ import { TAX_DEDUCTION_RULES } from '@/hooks/data/useTaxCalculations';
 import { format } from 'date-fns';
 
 export interface ExportOptions {
-  format: 'csv' | 'xlsx';
+  format: 'csv' | 'xlsx' | 'json';
   includeAll?: boolean;
   year?: number;
 }
@@ -256,6 +256,38 @@ function downloadBlob(blob: Blob, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
+export function exportToJSON(expenses: ExpenseWithRelations[], filename: string = 'expenses'): void {
+  const rows = expenses.map(formatExpenseForExport);
+  
+  if (rows.length === 0) {
+    throw new Error('No hay gastos para exportar');
+  }
+
+  const summary = calculateSummary(expenses);
+  
+  const exportData = {
+    exportDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
+    totalRecords: rows.length,
+    summary: {
+      totalExpenses: summary.totalExpenses,
+      totalDeductible: summary.totalDeductible,
+      totalReimbursable: summary.totalReimbursable,
+      totalNonDeductible: summary.totalNonDeductible,
+      byCategory: Object.entries(summary.categoryTotals).map(([cat, data]) => ({
+        category: CATEGORY_LABELS[cat] || cat,
+        total: data.total,
+        deductible: data.deductible,
+        count: data.count,
+      })),
+    },
+    expenses: rows,
+  };
+
+  const jsonContent = JSON.stringify(exportData, null, 2);
+  const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+  downloadBlob(blob, `${filename}_${format(new Date(), 'yyyy-MM-dd')}.json`);
+}
+
 export function exportExpenses(expenses: ExpenseWithRelations[], options: ExportOptions): void {
   const filename = options.year 
     ? `gastos_fiscales_${options.year}` 
@@ -263,6 +295,8 @@ export function exportExpenses(expenses: ExpenseWithRelations[], options: Export
 
   if (options.format === 'csv') {
     exportToCSV(expenses, filename);
+  } else if (options.format === 'json') {
+    exportToJSON(expenses, filename);
   } else {
     exportToExcel(expenses, filename);
   }

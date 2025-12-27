@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,8 +10,14 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowRight, Sparkles, Receipt, TrendingUp, ChevronDown, Gift, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowRight, Sparkles, Receipt, TrendingUp, ChevronDown, Gift, Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import evofinzLogo from '@/assets/evofinz-logo.png';
+import { 
+  emailSchema, 
+  passwordSchema, 
+  fullNameSchema, 
+  getAuthErrorMessage 
+} from '@/lib/validations/auth.schema';
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
@@ -22,6 +28,15 @@ export default function Auth() {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   
+  // Validation error states
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  
+  // Rate limiting
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
+  
   // Beta code states
   const [showBetaSection, setShowBetaSection] = useState(false);
   const [betaCode, setBetaCode] = useState('');
@@ -30,6 +45,25 @@ export default function Auth() {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { signIn, signUp, user } = useAuth();
+
+  // Cooldown timer
+  useEffect(() => {
+    if (cooldownUntil) {
+      const interval = setInterval(() => {
+        if (Date.now() >= cooldownUntil) {
+          setCooldownUntil(null);
+          setFailedAttempts(0);
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [cooldownUntil]);
+
+  // Calculate remaining cooldown seconds
+  const cooldownSeconds = useMemo(() => {
+    if (!cooldownUntil) return 0;
+    return Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000));
+  }, [cooldownUntil]);
 
   // Pre-fill beta code from URL
   useEffect(() => {
@@ -47,6 +81,56 @@ export default function Auth() {
       navigate('/dashboard');
     }
   }, [user, navigate]);
+
+  // Real-time email validation
+  const validateEmail = (value: string) => {
+    if (!value) {
+      setEmailError(null);
+      return;
+    }
+    const result = emailSchema.safeParse(value);
+    setEmailError(result.success ? null : result.error.errors[0]?.message || 'Email inválido');
+  };
+
+  // Real-time password validation
+  const validatePassword = (value: string) => {
+    if (!value || isLogin) {
+      setPasswordError(null);
+      return;
+    }
+    const result = passwordSchema.safeParse(value);
+    setPasswordError(result.success ? null : result.error.errors[0]?.message || 'Contraseña inválida');
+  };
+
+  // Real-time name validation
+  const validateName = (value: string) => {
+    if (!value || isLogin) {
+      setNameError(null);
+      return;
+    }
+    const result = fullNameSchema.safeParse(value);
+    setNameError(result.success ? null : result.error.errors[0]?.message || 'Nombre inválido');
+  };
+
+  // Handle email change with validation
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    // Debounce validation
+    const timeoutId = setTimeout(() => validateEmail(value), 300);
+    return () => clearTimeout(timeoutId);
+  };
+
+  // Handle password change with validation
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    validatePassword(value);
+  };
+
+  // Handle name change with validation
+  const handleNameChange = (value: string) => {
+    setFullName(value);
+    validateName(value);
+  };
 
   const validateBetaCode = async (code: string) => {
     if (!code.trim()) {
@@ -98,24 +182,62 @@ export default function Auth() {
       });
       
       if (error) {
-        toast.error(error.message);
+        toast.error(getAuthErrorMessage(error.message));
       }
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(getAuthErrorMessage(error.message));
     }
   };
 
+  // Check if form is valid
+  const isFormValid = useMemo(() => {
+    if (cooldownUntil) return false;
+    
+    if (isForgotPassword) {
+      return email.length > 0 && !emailError;
+    }
+    
+    if (isLogin) {
+      return email.length > 0 && password.length > 0 && !emailError;
+    }
+    
+    // Signup
+    return (
+      email.length > 0 && 
+      password.length >= 6 && 
+      fullName.trim().length >= 2 &&
+      !emailError && 
+      !passwordError && 
+      !nameError
+    );
+  }, [email, password, fullName, emailError, passwordError, nameError, isLogin, isForgotPassword, cooldownUntil]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check cooldown
+    if (cooldownUntil && Date.now() < cooldownUntil) {
+      toast.error(`Espera ${cooldownSeconds} segundos antes de intentar de nuevo`);
+      return;
+    }
+    
     setLoading(true);
 
     try {
       if (isForgotPassword) {
+        // Validate email
+        const emailResult = emailSchema.safeParse(email);
+        if (!emailResult.success) {
+          setEmailError(emailResult.error.errors[0]?.message || 'Email inválido');
+          setLoading(false);
+          return;
+        }
+        
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/auth`,
         });
         if (error) {
-          toast.error(error.message);
+          toast.error(getAuthErrorMessage(error.message));
         } else {
           toast.success(t('auth.checkEmail'));
           setIsForgotPassword(false);
@@ -123,20 +245,52 @@ export default function Auth() {
       } else if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) {
-          toast.error(error.message);
+          // Track failed attempts
+          const newAttempts = failedAttempts + 1;
+          setFailedAttempts(newAttempts);
+          
+          // Apply cooldown after 3 failed attempts
+          if (newAttempts >= 3) {
+            const cooldownMs = Math.min(30000, newAttempts * 10000); // Max 30 seconds
+            setCooldownUntil(Date.now() + cooldownMs);
+            toast.error(`Demasiados intentos fallidos. Espera ${Math.ceil(cooldownMs / 1000)} segundos.`);
+          } else {
+            toast.error(getAuthErrorMessage(error.message));
+          }
         } else {
+          setFailedAttempts(0);
           toast.success(t('common.success'));
           navigate('/dashboard');
         }
       } else {
-        if (!fullName.trim()) {
-          toast.error('Full name is required');
+        // Signup - Validate all fields
+        const nameResult = fullNameSchema.safeParse(fullName);
+        if (!nameResult.success) {
+          setNameError(nameResult.error.errors[0]?.message || 'Nombre inválido');
+          toast.error('Por favor ingresa un nombre válido');
           setLoading(false);
           return;
         }
+
+        const emailResult = emailSchema.safeParse(email);
+        if (!emailResult.success) {
+          setEmailError(emailResult.error.errors[0]?.message || 'Email inválido');
+          toast.error('Por favor ingresa un email válido');
+          setLoading(false);
+          return;
+        }
+
+        const passwordResult = passwordSchema.safeParse(password);
+        if (!passwordResult.success) {
+          setPasswordError(passwordResult.error.errors[0]?.message || 'Contraseña inválida');
+          toast.error('La contraseña debe tener al menos 6 caracteres');
+          setLoading(false);
+          return;
+        }
+
         const { error } = await signUp(email, password, fullName);
         if (error) {
-          toast.error(error.message);
+          toast.error(getAuthErrorMessage(error.message));
         } else {
           // Check if beta code was provided and is valid
           if (betaCode.trim() && codeStatus === 'valid') {
@@ -165,12 +319,12 @@ export default function Auth() {
           }
           
           // Normal signup flow
-          toast.success(t('common.success'));
+          toast.success('¡Cuenta creada exitosamente!');
           navigate('/onboarding');
         }
       }
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(getAuthErrorMessage(error.message));
     } finally {
       setLoading(false);
     }
@@ -181,6 +335,16 @@ export default function Auth() {
     { icon: Receipt, text: 'Categorización automática' },
     { icon: TrendingUp, text: 'Reportes fiscales CRA' },
   ];
+
+  // Password strength indicator
+  const passwordStrength = useMemo(() => {
+    if (password.length === 0) return null;
+    if (password.length < 6) return { label: 'Muy corta', color: 'bg-red-500', width: '20%' };
+    if (password.length < 8) return { label: 'Débil', color: 'bg-orange-500', width: '40%' };
+    if (password.length < 10) return { label: 'Aceptable', color: 'bg-yellow-500', width: '60%' };
+    if (password.length < 12) return { label: 'Buena', color: 'bg-green-500', width: '80%' };
+    return { label: 'Excelente', color: 'bg-green-600', width: '100%' };
+  }, [password]);
 
   return (
     <div className="min-h-screen flex">
@@ -257,52 +421,105 @@ export default function Auth() {
 
           <Card className="border-0 shadow-xl">
             <CardContent className="p-6">
+              {/* Rate limit warning */}
+              {cooldownUntil && (
+                <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-2 text-destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <span className="text-sm">Espera {cooldownSeconds}s antes de intentar de nuevo</span>
+                </div>
+              )}
+              
               <form onSubmit={handleSubmit} className="space-y-5">
                 {!isLogin && !isForgotPassword && (
                   <div className="space-y-2">
-                    <Label htmlFor="fullName" className="text-sm font-medium">
+                    <Label htmlFor="fullName" className="text-sm font-medium flex items-center justify-between">
                       {t('auth.fullName')}
+                      {fullName && !nameError && (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      )}
                     </Label>
                     <Input
                       id="fullName"
                       type="text"
                       placeholder="Tu nombre completo"
                       value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
+                      onChange={(e) => handleNameChange(e.target.value)}
                       required={!isLogin}
-                      className="h-12 rounded-xl"
+                      className={`h-12 rounded-xl ${nameError ? 'border-red-500 focus-visible:ring-red-500' : fullName && !nameError ? 'border-green-500' : ''}`}
                     />
+                    {nameError && (
+                      <p className="text-red-500 text-xs flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {nameError}
+                      </p>
+                    )}
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">
+                  <Label htmlFor="email" className="text-sm font-medium flex items-center justify-between">
                     {t('auth.email')}
+                    {email && !emailError && (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    )}
                   </Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="tu@email.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => handleEmailChange(e.target.value)}
                     required
-                    className="h-12 rounded-xl"
+                    className={`h-12 rounded-xl ${emailError ? 'border-red-500 focus-visible:ring-red-500' : email && !emailError ? 'border-green-500' : ''}`}
                   />
+                  {emailError && (
+                    <p className="text-red-500 text-xs flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {emailError}
+                    </p>
+                  )}
                 </div>
                 {!isForgotPassword && (
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-medium">
+                    <Label htmlFor="password" className="text-sm font-medium flex items-center justify-between">
                       {t('auth.password')}
+                      {!isLogin && password.length >= 6 && !passwordError && (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      )}
                     </Label>
                     <Input
                       id="password"
                       type="password"
                       placeholder="••••••••"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => handlePasswordChange(e.target.value)}
                       required
-                      minLength={6}
-                      className="h-12 rounded-xl"
+                      className={`h-12 rounded-xl ${passwordError ? 'border-red-500 focus-visible:ring-red-500' : !isLogin && password.length >= 6 && !passwordError ? 'border-green-500' : ''}`}
                     />
+                    {passwordError && (
+                      <p className="text-red-500 text-xs flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {passwordError}
+                      </p>
+                    )}
+                    {/* Password strength indicator - only on signup */}
+                    {!isLogin && !isForgotPassword && passwordStrength && (
+                      <div className="space-y-1">
+                        <div className="h-1 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full ${passwordStrength.color} transition-all duration-300`}
+                            style={{ width: passwordStrength.width }}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Seguridad: {passwordStrength.label}
+                        </p>
+                      </div>
+                    )}
+                    {!isLogin && !isForgotPassword && !password && (
+                      <p className="text-xs text-muted-foreground">
+                        Mínimo 6 caracteres
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -368,10 +585,15 @@ export default function Auth() {
                   type="submit" 
                   className="w-full h-12" 
                   variant="gradient"
-                  disabled={loading}
+                  disabled={loading || !isFormValid}
                 >
                   {loading ? (
-                    t('common.loading')
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t('common.loading')}
+                    </>
+                  ) : cooldownUntil ? (
+                    `Espera ${cooldownSeconds}s...`
                   ) : (
                     <>
                       {isForgotPassword 
@@ -448,7 +670,13 @@ export default function Auth() {
                 {isLogin ? t('auth.dontHaveAccount') : t('auth.alreadyHaveAccount')}{' '}
                 <button
                   type="button"
-                  onClick={() => setIsLogin(!isLogin)}
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    // Reset errors when switching modes
+                    setEmailError(null);
+                    setPasswordError(null);
+                    setNameError(null);
+                  }}
                   className="text-primary hover:underline font-semibold"
                 >
                   {isLogin ? t('auth.signupNow') : t('auth.loginNow')}
