@@ -1,14 +1,18 @@
+import { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { BankAnalysisDashboard } from '@/components/banking/BankAnalysisDashboard';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { MiniWorkflow } from '@/components/guidance/WorkflowVisualizer';
+import { BankingIntegrationGuide } from '@/components/banking/BankingIntegrationGuide';
+import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 
 export default function Banking() {
   const { language } = useLanguage();
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   return (
     <Layout>
@@ -35,8 +39,14 @@ export default function Banking() {
 
         {/* Workflow Visualizer - Bank Reconciliation Flow */}
         <MiniWorkflow workflowId="bank-reconciliation" />
+
+        {/* Banking Integration Guide with Tooltips */}
+        <BankingIntegrationGuide onImportClick={() => setImportDialogOpen(true)} />
         
         <BankAnalysisDashboard />
+
+        {/* Import Dialog */}
+        <BankImportDialog open={importDialogOpen} onClose={() => setImportDialogOpen(false)} />
       </div>
     </Layout>
   );
