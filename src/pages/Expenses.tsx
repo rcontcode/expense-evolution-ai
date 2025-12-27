@@ -81,10 +81,12 @@ export default function Expenses() {
             description={t('expenses.manageExpenses')}
           >
             <div className="flex gap-2 flex-wrap">
-              <Button variant="outline" onClick={() => setBulkAssignOpen(true)}>
-                <Users className="mr-2 h-4 w-4" />
-                {t('expenses.bulkAssign')}
-              </Button>
+              <InfoTooltip content={TOOLTIP_CONTENT.bulkAssign} variant="wrapper" side="bottom">
+                <Button variant="outline" onClick={() => setBulkAssignOpen(true)}>
+                  <Users className="mr-2 h-4 w-4" />
+                  {t('expenses.bulkAssign')}
+                </Button>
+              </InfoTooltip>
               <InfoTooltip content={TOOLTIP_CONTENT.reimbursementReport} variant="wrapper" side="bottom">
                 <Button variant="outline" onClick={() => setReimbursementReportOpen(true)}>
                   <FileText className="mr-2 h-4 w-4" />

@@ -23,6 +23,8 @@ import { ExpenseWithRelations } from '@/types/expense.types';
 import { TagSelect } from '@/components/forms/TagSelect';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { GlossaryLabel, TermHelp } from '@/components/ui/glossary-term';
+import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 interface ExpenseFormProps {
   expense?: ExpenseWithRelations;
@@ -137,8 +139,9 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+    <TooltipProvider delayDuration={200}>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         {/* Completeness Tips - Non-blocking */}
         {completenessIssues.length > 0 && (
           <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
@@ -377,6 +380,7 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <Building2 className="h-4 w-4" />
             {language === 'es' ? 'Asociación con Cliente' : 'Client Association'}
+            <InfoTooltip content={TOOLTIP_CONTENT.expenseClientAssociation} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -581,7 +585,10 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
           />
 
           <div>
-            <label className="text-sm font-medium mb-2 block">{t('expenses.tagsLabel')}</label>
+            <div className="flex items-center gap-2 mb-2">
+              <label className="text-sm font-medium">{t('expenses.tagsLabel')}</label>
+              <InfoTooltip content={TOOLTIP_CONTENT.expenseTags} />
+            </div>
             <TagSelect value={selectedTags} onChange={setSelectedTags} />
           </div>
         </div>
@@ -604,7 +611,8 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
             {isLoading ? t('common.saving') : expense ? t('common.update') : t('common.create')}
           </Button>
         </div>
-      </form>
-    </Form>
+        </form>
+      </Form>
+    </TooltipProvider>
   );
 }
