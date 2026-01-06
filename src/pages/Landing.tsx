@@ -461,7 +461,15 @@ export default function Landing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
+                className={`relative ${tier.popular ? 'pt-4' : ''}`}
               >
+                {/* Badge FUERA del Card para evitar overflow-hidden */}
+                {tier.popular && (
+                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg">
+                    <Star className="w-3 h-3 mr-1 inline" />
+                    Más Popular
+                  </Badge>
+                )}
                 <Card 
                   className={`relative p-8 bg-slate-900/80 backdrop-blur-sm border-2 overflow-hidden h-full flex flex-col ${
                     tier.popular 
@@ -471,13 +479,7 @@ export default function Landing() {
                 >
                   {/* Popular glow effect */}
                   {tier.popular && (
-                    <>
-                      <div className="absolute -top-20 -right-20 w-40 h-40 bg-orange-500/30 rounded-full blur-3xl" />
-                      <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 px-4 py-1 font-bold z-10">
-                        <Star className="w-3 h-3 mr-1 inline" />
-                        Más Popular
-                      </Badge>
-                    </>
+                    <div className="absolute -top-20 -right-20 w-40 h-40 bg-orange-500/30 rounded-full blur-3xl" />
                   )}
                   
                   <div className="text-center mb-6 relative">
