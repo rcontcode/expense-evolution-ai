@@ -192,7 +192,7 @@ export default function Landing() {
                 <img 
                   src={phoenixLogo} 
                   alt="EvoFinz Phoenix" 
-                  className="w-[92%] h-[92%] object-contain"
+                  className="w-[98%] h-[98%] object-contain"
                 />
               </div>
               {/* Brand name below logo */}
