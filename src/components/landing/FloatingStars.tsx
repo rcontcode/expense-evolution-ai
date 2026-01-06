@@ -1,21 +1,49 @@
 import { useMemo } from 'react';
 
-// Currency symbols - Americas & Hispanic world focus
+// Currency symbols - Global coverage with Americas & Hispanic world focus
 const currencySymbols = [
-  '$',   // USD, CAD, CLP, MXN, ARS, COP, etc.
-  '€',   // Euro (España)
-  'C$',  // Canadian Dollar
-  '₿',   // Bitcoin (universal)
-  'R$',  // Brazilian Real
-  'S/',  // Peruvian Sol
-  'Q',   // Guatemalan Quetzal
-  '₡',   // Costa Rican Colón
-  'L',   // Honduran Lempira
-  'B/.',  // Panamanian Balboa
-  '₲',   // Paraguayan Guarani
-  '$U',  // Uruguayan Peso
-  'Bs',  // Venezuelan/Bolivian Bolivar
-  'RD$', // Dominican Peso
+  // Major World Currencies
+  '$',    // USD - US Dollar
+  '€',    // EUR - Euro
+  '£',    // GBP - British Pound
+  '¥',    // JPY/CNY - Japanese Yen / Chinese Yuan
+  '₹',    // INR - Indian Rupee
+  'CHF',  // Swiss Franc
+  'A$',   // AUD - Australian Dollar
+  '₿',    // BTC - Bitcoin
+  'Ξ',    // ETH - Ethereum
+  
+  // North America
+  'C$',   // CAD - Canadian Dollar
+  'US$',  // USD explicit
+  'MX$',  // MXN - Mexican Peso
+  
+  // South America
+  'CLP',  // Chilean Peso
+  'AR$',  // ARS - Argentine Peso
+  'R$',   // BRL - Brazilian Real
+  'COP',  // Colombian Peso
+  'S/',   // PEN - Peruvian Sol
+  '$U',   // UYU - Uruguayan Peso
+  '₲',    // PYG - Paraguayan Guarani
+  'Bs',   // BOB/VES - Bolivian/Venezuelan Bolivar
+  
+  // Central America & Caribbean
+  'Q',    // GTQ - Guatemalan Quetzal
+  '₡',    // CRC - Costa Rican Colón
+  'L',    // HNL - Honduran Lempira
+  'B/.',  // PAB - Panamanian Balboa
+  'RD$',  // DOP - Dominican Peso
+  'J$',   // JMD - Jamaican Dollar
+  
+  // Other Important
+  '₽',    // RUB - Russian Ruble
+  '₩',    // KRW - South Korean Won
+  '₪',    // ILS - Israeli Shekel
+  '₴',    // UAH - Ukrainian Hryvnia
+  'kr',   // Scandinavian Krona/Krone
+  'zł',   // PLN - Polish Zloty
+  'R',    // ZAR - South African Rand
 ];
 
 const colors = [
