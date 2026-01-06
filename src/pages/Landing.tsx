@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import phoenixLogo from '@/assets/phoenix-clean-logo.png';
 import { TransformationCarousel } from '@/components/landing/TransformationCarousel';
+import { FloatingStars } from '@/components/landing/FloatingStars';
 
 const features = [
   { icon: Camera, title: 'Captura Inteligente', description: 'OCR + Voz con IA', tier: 'Pro', color: 'from-orange-500 to-red-500' },
@@ -160,6 +161,8 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center py-20">
+        {/* Floating Stars Background */}
+        <FloatingStars />
         <div className="container mx-auto px-4 relative z-10">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
