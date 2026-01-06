@@ -1,76 +1,138 @@
 import { useMemo } from 'react';
 
-interface Star {
+// Currency symbols from around the world
+const currencySymbols = [
+  '$',   // USD, CAD, AUD, MXN, etc.
+  '€',   // Euro
+  '£',   // British Pound
+  '¥',   // Japanese Yen / Chinese Yuan
+  '₿',   // Bitcoin
+  '₹',   // Indian Rupee
+  '₩',   // Korean Won
+  '₽',   // Russian Ruble
+  '₣',   // Swiss Franc (old)
+  '₺',   // Turkish Lira
+  '₱',   // Philippine Peso
+  '฿',   // Thai Baht
+  '₴',   // Ukrainian Hryvnia
+  '₪',   // Israeli Shekel
+  'R$',  // Brazilian Real
+  '₡',   // Costa Rican Colón
+  'Bs',  // Venezuelan Bolivar
+  '₲',   // Paraguayan Guarani
+  'S/',  // Peruvian Sol
+];
+
+const colors = [
+  { text: 'text-cyan-400', shadow: 'drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]' },
+  { text: 'text-emerald-400', shadow: 'drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]' },
+  { text: 'text-orange-400', shadow: 'drop-shadow-[0_0_8px_rgba(251,146,60,0.6)]' },
+  { text: 'text-amber-400', shadow: 'drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' },
+  { text: 'text-purple-400', shadow: 'drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]' },
+  { text: 'text-pink-400', shadow: 'drop-shadow-[0_0_8px_rgba(244,114,182,0.6)]' },
+  { text: 'text-blue-400', shadow: 'drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]' },
+  { text: 'text-teal-400', shadow: 'drop-shadow-[0_0_8px_rgba(45,212,191,0.6)]' },
+];
+
+interface FloatingCurrency {
   id: number;
+  symbol: string;
   size: number;
   left: string;
   top: string;
   animationDelay: string;
   animationDuration: string;
   opacity: number;
+  color: typeof colors[0];
+  rotation: number;
 }
 
 export const FloatingStars = () => {
-  const stars = useMemo<Star[]>(() => {
-    return Array.from({ length: 50 }, (_, i) => ({
+  const currencies = useMemo<FloatingCurrency[]>(() => {
+    return Array.from({ length: 40 }, (_, i) => ({
       id: i,
-      size: Math.random() * 3 + 1,
+      symbol: currencySymbols[Math.floor(Math.random() * currencySymbols.length)],
+      size: Math.random() * 14 + 10, // 10-24px
       left: `${Math.random() * 100}%`,
       top: `${Math.random() * 100}%`,
       animationDelay: `${Math.random() * 5}s`,
-      animationDuration: `${Math.random() * 3 + 2}s`,
-      opacity: Math.random() * 0.5 + 0.2,
+      animationDuration: `${Math.random() * 4 + 3}s`, // 3-7s
+      opacity: Math.random() * 0.4 + 0.15,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.random() * 30 - 15, // -15 to 15 degrees
     }));
   }, []);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Floating stars */}
-      {stars.map((star) => (
+      {/* Floating currency symbols */}
+      {currencies.map((currency) => (
         <div
-          key={star.id}
-          className="absolute rounded-full bg-white animate-[twinkle_3s_ease-in-out_infinite]"
+          key={currency.id}
+          className={`absolute font-bold select-none ${currency.color.text} ${currency.color.shadow} animate-[float_6s_ease-in-out_infinite]`}
           style={{
-            width: star.size,
-            height: star.size,
-            left: star.left,
-            top: star.top,
-            opacity: star.opacity,
-            animationDelay: star.animationDelay,
-            animationDuration: star.animationDuration,
-            boxShadow: `0 0 ${star.size * 2}px ${star.size / 2}px rgba(255, 255, 255, 0.3)`,
-          }}
-        />
-      ))}
-      
-      {/* Larger accent stars with color */}
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div
-          key={`accent-${i}`}
-          className="absolute animate-[float_6s_ease-in-out_infinite]"
-          style={{
-            left: `${10 + Math.random() * 80}%`,
-            top: `${10 + Math.random() * 80}%`,
-            animationDelay: `${i * 0.7}s`,
+            fontSize: currency.size,
+            left: currency.left,
+            top: currency.top,
+            opacity: currency.opacity,
+            animationDelay: currency.animationDelay,
+            animationDuration: currency.animationDuration,
+            transform: `rotate(${currency.rotation}deg)`,
           }}
         >
-          <div
-            className={`w-1.5 h-1.5 rounded-full ${
-              i % 3 === 0 
-                ? 'bg-cyan-400 shadow-[0_0_10px_3px_rgba(34,211,238,0.4)]' 
-                : i % 3 === 1 
-                  ? 'bg-orange-400 shadow-[0_0_10px_3px_rgba(251,146,60,0.4)]'
-                  : 'bg-purple-400 shadow-[0_0_10px_3px_rgba(168,85,247,0.4)]'
-            } animate-[twinkle_2s_ease-in-out_infinite]`}
-            style={{ animationDelay: `${i * 0.3}s` }}
-          />
+          {currency.symbol}
         </div>
       ))}
+      
+      {/* Larger accent currency symbols */}
+      {Array.from({ length: 12 }).map((_, i) => {
+        const symbol = currencySymbols[i % currencySymbols.length];
+        const color = colors[i % colors.length];
+        return (
+          <div
+            key={`accent-${i}`}
+            className="absolute animate-[float_8s_ease-in-out_infinite]"
+            style={{
+              left: `${5 + (i * 8) % 90}%`,
+              top: `${10 + Math.random() * 70}%`,
+              animationDelay: `${i * 0.5}s`,
+            }}
+          >
+            <span
+              className={`text-2xl md:text-3xl font-black ${color.text} ${color.shadow} animate-[twinkle_3s_ease-in-out_infinite]`}
+              style={{ 
+                animationDelay: `${i * 0.25}s`,
+                opacity: 0.5,
+              }}
+            >
+              {symbol}
+            </span>
+          </div>
+        );
+      })}
 
-      {/* Shooting stars */}
-      <div className="absolute top-1/4 left-0 w-32 h-[1px] bg-gradient-to-r from-transparent via-white to-transparent opacity-0 animate-[shootingStar_8s_ease-in-out_infinite]" style={{ animationDelay: '2s' }} />
-      <div className="absolute top-1/2 left-0 w-24 h-[1px] bg-gradient-to-r from-transparent via-cyan-300 to-transparent opacity-0 animate-[shootingStar_8s_ease-in-out_infinite]" style={{ animationDelay: '5s' }} />
-      <div className="absolute top-3/4 left-0 w-20 h-[1px] bg-gradient-to-r from-transparent via-orange-300 to-transparent opacity-0 animate-[shootingStar_8s_ease-in-out_infinite]" style={{ animationDelay: '8s' }} />
+      {/* Shooting currency streaks */}
+      <div 
+        className="absolute top-1/4 left-0 flex items-center gap-2 opacity-0 animate-[shootingStar_10s_ease-in-out_infinite]" 
+        style={{ animationDelay: '2s' }}
+      >
+        <span className="text-lg text-cyan-300 font-bold">$</span>
+        <div className="w-20 h-[2px] bg-gradient-to-r from-cyan-400 to-transparent" />
+      </div>
+      <div 
+        className="absolute top-1/2 left-0 flex items-center gap-2 opacity-0 animate-[shootingStar_10s_ease-in-out_infinite]" 
+        style={{ animationDelay: '5s' }}
+      >
+        <span className="text-lg text-amber-300 font-bold">€</span>
+        <div className="w-16 h-[2px] bg-gradient-to-r from-amber-400 to-transparent" />
+      </div>
+      <div 
+        className="absolute top-3/4 left-0 flex items-center gap-2 opacity-0 animate-[shootingStar_10s_ease-in-out_infinite]" 
+        style={{ animationDelay: '8s' }}
+      >
+        <span className="text-lg text-emerald-300 font-bold">₿</span>
+        <div className="w-24 h-[2px] bg-gradient-to-r from-emerald-400 to-transparent" />
+      </div>
     </div>
   );
 };
