@@ -18,7 +18,7 @@ import { FloatingStars } from '@/components/landing/FloatingStars';
 import { FeaturesShowcase } from '@/components/landing/FeaturesShowcase';
 import { AnimatedStats } from '@/components/landing/AnimatedStats';
 import { TestimonialsCarousel } from '@/components/landing/TestimonialsCarousel';
-import { ReceiptDemoAnimation } from '@/components/landing/ReceiptDemoAnimation';
+import { FeatureDemosCarousel } from '@/components/landing/FeatureDemosCarousel';
 
 const features = [
   { icon: Camera, title: 'Captura Inteligente', description: 'OCR + Voz con IA', tier: 'Pro', color: 'from-orange-500 to-red-500' },
@@ -378,7 +378,7 @@ export default function Landing() {
               </motion.div>
             )}
 
-            {/* Demo Animation */}
+            {/* Demo Animation Carousel */}
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
@@ -389,7 +389,7 @@ export default function Landing() {
                 <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
                 Mira cómo funciona
               </p>
-              <ReceiptDemoAnimation />
+              <FeatureDemosCarousel />
             </motion.div>
 
           </motion.div>
