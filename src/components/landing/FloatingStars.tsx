@@ -1,26 +1,21 @@
 import { useMemo } from 'react';
 
-// Currency symbols from around the world
+// Currency symbols - Americas & Hispanic world focus
 const currencySymbols = [
-  '$',   // USD, CAD, AUD, MXN, etc.
-  '€',   // Euro
-  '£',   // British Pound
-  '¥',   // Japanese Yen / Chinese Yuan
-  '₿',   // Bitcoin
-  '₹',   // Indian Rupee
-  '₩',   // Korean Won
-  '₽',   // Russian Ruble
-  '₣',   // Swiss Franc (old)
-  '₺',   // Turkish Lira
-  '₱',   // Philippine Peso
-  '฿',   // Thai Baht
-  '₴',   // Ukrainian Hryvnia
-  '₪',   // Israeli Shekel
+  '$',   // USD, CAD, CLP, MXN, ARS, COP, etc.
+  '€',   // Euro (España)
+  'C$',  // Canadian Dollar
+  '₿',   // Bitcoin (universal)
   'R$',  // Brazilian Real
-  '₡',   // Costa Rican Colón
-  'Bs',  // Venezuelan Bolivar
-  '₲',   // Paraguayan Guarani
   'S/',  // Peruvian Sol
+  'Q',   // Guatemalan Quetzal
+  '₡',   // Costa Rican Colón
+  'L',   // Honduran Lempira
+  'B/.',  // Panamanian Balboa
+  '₲',   // Paraguayan Guarani
+  '$U',  // Uruguayan Peso
+  'Bs',  // Venezuelan/Bolivian Bolivar
+  'RD$', // Dominican Peso
 ];
 
 const colors = [
