@@ -18,6 +18,7 @@ import { FloatingStars } from '@/components/landing/FloatingStars';
 import { FeaturesShowcase } from '@/components/landing/FeaturesShowcase';
 import { AnimatedStats } from '@/components/landing/AnimatedStats';
 import { TestimonialsCarousel } from '@/components/landing/TestimonialsCarousel';
+import { ReceiptDemoAnimation } from '@/components/landing/ReceiptDemoAnimation';
 
 const features = [
   { icon: Camera, title: 'Captura Inteligente', description: 'OCR + Voz con IA', tier: 'Pro', color: 'from-orange-500 to-red-500' },
@@ -376,6 +377,20 @@ export default function Landing() {
                 )}
               </motion.div>
             )}
+
+            {/* Demo Animation */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1 }}
+              className="mt-16"
+            >
+              <p className="text-center text-slate-500 text-sm mb-6 flex items-center justify-center gap-2">
+                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                Mira cómo funciona
+              </p>
+              <ReceiptDemoAnimation />
+            </motion.div>
 
           </motion.div>
         </div>
