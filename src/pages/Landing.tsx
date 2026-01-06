@@ -461,79 +461,49 @@ export default function Landing() {
       <FeaturesShowcase />
 
       {/* Smooth Transition Element between Features and Demo */}
-      <div className="relative h-32 md:h-40 overflow-hidden">
-        {/* Gradient fade from features section */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-100 via-slate-50 to-white" />
-        
-        {/* Animated flowing lines */}
+      <div className="relative h-24 md:h-32 overflow-hidden bg-gradient-to-b from-slate-100 to-white">
+        {/* Center arrow with connecting lines */}
         <div className="absolute inset-0 flex items-center justify-center">
+          {/* Left line */}
           <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            className="absolute left-0 right-1/2 top-1/2 -translate-y-1/2 h-[2px] mr-6 bg-gradient-to-r from-transparent via-cyan-400/50 to-cyan-500"
+            initial={{ scaleX: 0, originX: 0 }}
+            whileInView={{ scaleX: 1 }}
             viewport={{ once: true }}
-            className="relative w-full max-w-2xl mx-auto px-8"
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
+          
+          {/* Right line */}
+          <motion.div
+            className="absolute left-1/2 right-0 top-1/2 -translate-y-1/2 h-[2px] ml-6 bg-gradient-to-l from-transparent via-blue-400/50 to-blue-500"
+            initial={{ scaleX: 0, originX: 1 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
+          
+          {/* Center animated arrow */}
+          <motion.div
+            className="relative z-10"
+            initial={{ scale: 0, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
           >
-            {/* Flowing line left to center */}
-            <motion.div
-              className="absolute left-0 top-1/2 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-cyan-500"
-              initial={{ width: 0, x: 0 }}
-              whileInView={{ width: '45%', x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            />
-            
-            {/* Center animated arrow */}
-            <motion.div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
-              initial={{ scale: 0, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.5 }}
+            <motion.div 
+              className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/30"
+              animate={{ boxShadow: ['0 10px 25px -5px rgba(6, 182, 212, 0.3)', '0 10px 35px -5px rgba(6, 182, 212, 0.5)', '0 10px 25px -5px rgba(6, 182, 212, 0.3)'] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/30">
-                <motion.div
-                  animate={{ y: [0, 4, 0] }}
-                  transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <ChevronRight className="w-6 h-6 text-white rotate-90" />
-                </motion.div>
-              </div>
+              <motion.div
+                animate={{ y: [0, 3, 0] }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <ArrowRight className="w-5 h-5 text-white rotate-90" />
+              </motion.div>
             </motion.div>
-            
-            {/* Flowing line center to right */}
-            <motion.div
-              className="absolute right-0 top-1/2 h-[2px] bg-gradient-to-l from-transparent via-blue-400 to-blue-500"
-              initial={{ width: 0 }}
-              whileInView={{ width: '45%' }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            />
           </motion.div>
         </div>
-        
-        {/* Floating particles */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={`trans-particle-${i}`}
-            className="absolute w-2 h-2 rounded-full bg-cyan-400/40"
-            style={{
-              left: `${15 + i * 15}%`,
-              top: '50%',
-            }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ 
-              opacity: [0, 0.6, 0],
-              y: [-10, -30, -50],
-            }}
-            viewport={{ once: true }}
-            transition={{
-              duration: 2,
-              delay: 0.8 + i * 0.1,
-              repeat: Infinity,
-              repeatDelay: 1,
-            }}
-          />
-        ))}
       </div>
 
       {/* Demo Animation Carousel - NOW AFTER FEATURES */}
