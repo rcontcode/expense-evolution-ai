@@ -188,12 +188,16 @@ export default function Landing() {
                 />
               </div>
               {/* Logo container with intentional circular clipping */}
-              <div className="relative z-10 w-40 h-40 md:w-48 md:h-48 rounded-full bg-white shadow-2xl flex items-center justify-center overflow-hidden ring-4 ring-white/80 ring-offset-4 ring-offset-transparent">
-                <img 
-                  src={phoenixLogo} 
-                  alt="EvoFinz Phoenix" 
-                  className="w-[115%] h-[115%] object-contain"
-                />
+              <div className="relative z-10">
+                {/* Pulsing glow ring */}
+                <div className="absolute inset-0 w-40 h-40 md:w-48 md:h-48 rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-teal-400 animate-[pulse-glow_3s_ease-in-out_infinite] blur-md" />
+                <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-full bg-white shadow-2xl flex items-center justify-center overflow-hidden ring-4 ring-white/80">
+                  <img 
+                    src={phoenixLogo} 
+                    alt="EvoFinz Phoenix" 
+                    className="w-[115%] h-[115%] object-contain"
+                  />
+                </div>
               </div>
               {/* Brand name below logo */}
               <motion.h2
