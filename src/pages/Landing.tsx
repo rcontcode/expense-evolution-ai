@@ -447,16 +447,14 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pain Points - Show the problem first */}
+      {/* Transformation Journey Carousel - Right after hero */}
+      <TransformationCarousel />
+
+      {/* Pain Points - Show the problem */}
       <PainPointsSection />
 
       {/* How It Works - 3 simple steps */}
       <HowItWorksSection />
-
-      {/* Transformation Journey Carousel with parallax wrapper */}
-      <ParallaxSection speed={0.2}>
-        <TransformationCarousel />
-      </ParallaxSection>
 
       {/* Features Showcase - Auto-scrolling (What you can do with EvoFinz) */}
       <FeaturesShowcase />
