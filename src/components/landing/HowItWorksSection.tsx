@@ -54,7 +54,7 @@ const workflows: Workflow[] = [
         number: '01',
         icon: Camera,
         title: 'Captura',
-        description: 'Escanea recibos, dicta gastos o importa desde tu banco. La IA hace el resto.'
+        description: 'Escanea recibos, dicta gastos o importa desde tu banco. EvoFinz hace el resto.'
       },
       {
         number: '02',
@@ -165,7 +165,7 @@ const workflows: Workflow[] = [
         number: '02',
         icon: Calculator,
         title: 'Deduce',
-        description: 'La IA encuentra deducciones que podrías estar perdiendo. RRSP, TFSA optimizados.'
+        description: 'EvoFinz encuentra deducciones que podrías estar perdiendo. RRSP, TFSA optimizados.'
       },
       {
         number: '03',

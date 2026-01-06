@@ -88,7 +88,7 @@ const demos = [
   { 
     id: "banking", 
     title: "Smart Banking", 
-    subtitle: "Análisis de estados de cuenta con IA",
+    subtitle: "Análisis inteligente de estados de cuenta",
     icon: Building2,
     color: "from-rose-500 to-pink-600",
     component: BankingDemoAnimation 

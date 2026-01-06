@@ -74,9 +74,9 @@ function ParallaxLayer({
 }
 
 const features = [
-  { icon: Camera, title: 'Captura Inteligente', description: 'OCR + Voz con IA', tier: 'Pro', color: 'from-orange-500 to-red-500' },
+  { icon: Camera, title: 'Captura Inteligente', description: 'OCR + Voz Smart', tier: 'Pro', color: 'from-orange-500 to-red-500' },
   { icon: Receipt, title: 'Gestión Completa', description: 'Gastos e Ingresos', tier: 'Premium', color: 'from-emerald-500 to-teal-500' },
-  { icon: FileText, title: 'Contratos IA', description: 'Análisis automático', tier: 'Pro', color: 'from-blue-500 to-indigo-500' },
+  { icon: FileText, title: 'Contratos Smart', description: 'Análisis automático', tier: 'Pro', color: 'from-blue-500 to-indigo-500' },
   { icon: Calculator, title: 'Calculadoras', description: 'FIRE/RRSP/TFSA', tier: 'Pro', color: 'from-purple-500 to-pink-500' },
   { icon: Trophy, title: 'Gamificación', description: 'XP y Logros', tier: 'Premium', color: 'from-amber-500 to-orange-500' },
   { icon: GraduationCap, title: 'Mentoría', description: 'Kiyosaki/Tracy', tier: 'Pro', color: 'from-cyan-500 to-blue-500' },
@@ -104,7 +104,7 @@ const pricingTiers = [
     price: '$4.99',
     period: '/mes',
     description: 'Para profesionales',
-    features: ['Gastos ilimitados', '50 OCR scans/mes', 'Contratos con IA', 'Exportación T2125', 'Gamificación completa'],
+    features: ['Gastos ilimitados', '50 OCR scans/mes', 'Análisis de Contratos', 'Exportación T2125', 'Gamificación completa'],
     cta: 'Comenzar Premium',
     popular: true,
     gradient: 'from-amber-500 via-orange-500 to-red-500'
@@ -114,7 +114,7 @@ const pricingTiers = [
     price: '$9.99',
     period: '/mes',
     description: 'Para empresas',
-    features: ['Todo ilimitado', 'AI Tax Optimizer', 'Análisis Bancario IA', 'Mentoría completa', 'Soporte prioritario'],
+    features: ['Todo ilimitado', 'Optimizador Fiscal', 'Análisis Bancario Avanzado', 'Mentoría completa', 'Soporte prioritario'],
     cta: 'Comenzar Pro',
     popular: false,
     gradient: 'from-violet-600 to-indigo-600'
@@ -124,7 +124,7 @@ const pricingTiers = [
 const stats = [
   { value: '12', label: 'Módulos', icon: Sparkles },
   { value: '100%', label: 'CRA Compliant', icon: Shield },
-  { value: 'IA', label: 'Integrada', icon: Zap },
+  { value: 'Smart', label: 'Tech', icon: Zap },
   { value: '24/7', label: 'Acceso', icon: Star },
 ];
 

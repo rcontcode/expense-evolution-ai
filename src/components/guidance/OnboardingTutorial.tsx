@@ -61,12 +61,12 @@ const TUTORIAL_STEPS: TutorialStep[] = [
       es: 'Captura Rápida de Gastos'
     },
     description: {
-      en: 'Capture expenses instantly with your camera, voice, or text. AI extracts all the details automatically!',
-      es: '¡Captura gastos instantáneamente con tu cámara, voz o texto. La IA extrae todos los detalles automáticamente!'
+      en: 'Capture expenses instantly with your camera, voice, or text. EvoFinz extracts all the details automatically!',
+      es: '¡Captura gastos instantáneamente con tu cámara, voz o texto. EvoFinz extrae todos los detalles automáticamente!'
     },
     features: {
-      en: ['📸 Take photos of receipts', '🎤 Record voice notes', '⌨️ Quick text entry', '🤖 AI auto-extraction'],
-      es: ['📸 Toma fotos de recibos', '🎤 Graba notas de voz', '⌨️ Entrada rápida de texto', '🤖 Extracción automática con IA']
+      en: ['📸 Take photos of receipts', '🎤 Record voice notes', '⌨️ Quick text entry', '✨ Smart auto-extraction'],
+      es: ['📸 Toma fotos de recibos', '🎤 Graba notas de voz', '⌨️ Entrada rápida de texto', '✨ Extracción automática inteligente']
     },
     route: '/capture',
     action: { en: 'Try Capture', es: 'Probar Captura' }
@@ -133,12 +133,12 @@ const TUTORIAL_STEPS: TutorialStep[] = [
       es: 'Análisis de Contratos'
     },
     description: {
-      en: 'Upload contracts and let AI extract reimbursement terms. Automatic expense classification!',
-      es: '¡Sube contratos y deja que la IA extraiga términos de reembolso. Clasificación automática de gastos!'
+      en: 'Upload contracts and let EvoFinz extract reimbursement terms. Automatic expense classification!',
+      es: '¡Sube contratos y deja que EvoFinz extraiga términos de reembolso. Clasificación automática de gastos!'
     },
     features: {
-      en: ['AI contract analysis', 'Reimbursement term extraction', 'Auto expense classification', 'Renewal tracking'],
-      es: ['Análisis de contratos con IA', 'Extracción de términos de reembolso', 'Clasificación automática de gastos', 'Seguimiento de renovaciones']
+      en: ['Smart contract analysis', 'Reimbursement term extraction', 'Auto expense classification', 'Renewal tracking'],
+      es: ['Análisis inteligente de contratos', 'Extracción de términos de reembolso', 'Clasificación automática de gastos', 'Seguimiento de renovaciones']
     },
     route: '/contracts',
     action: { en: 'Upload Contract', es: 'Subir Contrato' }
@@ -169,8 +169,8 @@ const TUTORIAL_STEPS: TutorialStep[] = [
       es: 'Análisis Bancario Inteligente'
     },
     description: {
-      en: 'Import bank statements and get AI-powered insights: anomaly detection, recurring charges, and trends.',
-      es: 'Importa estados de cuenta y obtén análisis con IA: detección de anomalías, cargos recurrentes y tendencias.'
+      en: 'Import bank statements and get smart insights: anomaly detection, recurring charges, and trends.',
+      es: 'Importa estados de cuenta y obtén análisis inteligente: detección de anomalías, cargos recurrentes y tendencias.'
     },
     features: {
       en: ['Multi-bank support', 'Anomaly alerts', 'Subscription detection', 'Smart search chat'],

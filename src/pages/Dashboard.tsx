@@ -468,8 +468,8 @@ export default function Dashboard() {
                     <p className="font-semibold">{language === 'es' ? '🔍 Análisis Avanzado' : '🔍 Advanced Analytics'}</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {language === 'es' 
-                        ? 'Predicciones de gastos con IA, flujo de caja, rentabilidad por proyecto/cliente, correlaciones financieras y más de 10 visualizaciones.' 
-                        : 'AI expense predictions, cash flow, project/client profitability, financial correlations, and 10+ visualizations.'}
+                        ? 'Predicciones de gastos, flujo de caja, rentabilidad por proyecto/cliente, correlaciones financieras y más de 10 visualizaciones.' 
+                        : 'Expense predictions, cash flow, project/client profitability, financial correlations, and 10+ visualizations.'}
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -514,7 +514,7 @@ export default function Dashboard() {
                     <p className="font-semibold">{language === 'es' ? '💰 Optimización Fiscal' : '💰 Tax Optimization'}</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {language === 'es' 
-                        ? 'Optimizador de impuestos con IA, calculadora RRSP/TFSA, deducciones CRA y resumen fiscal completo para maximizar tus ahorros.' 
+                        ? 'Optimizador fiscal inteligente, calculadora RRSP/TFSA, deducciones CRA y resumen fiscal completo para maximizar tus ahorros.' 
                         : 'AI tax optimizer, RRSP/TFSA calculator, CRA deductions, and complete tax summary to maximize your savings.'}
                     </p>
                   </TooltipContent>

@@ -18,7 +18,7 @@ const features = [
   {
     icon: Camera,
     title: 'Captura Inteligente',
-    description: 'Fotografía recibos y nuestra IA extrae automáticamente vendor, monto, fecha y categoría.',
+    description: 'Fotografía recibos y EvoFinz extrae automáticamente vendor, monto, fecha y categoría.',
     tier: 'Pro',
     gradient: 'from-blue-600 to-teal-500',
     emoji: '📸',
@@ -35,8 +35,8 @@ const features = [
   },
   {
     icon: FileText,
-    title: 'Contratos con Análisis IA',
-    description: 'Sube contratos y nuestra IA extrae términos de reembolso automáticamente.',
+    title: 'Análisis Inteligente de Contratos',
+    description: 'Sube contratos y EvoFinz extrae términos de reembolso automáticamente.',
     tier: 'Pro',
     gradient: 'from-amber-500 to-orange-500',
     emoji: '📄',
@@ -89,7 +89,7 @@ const features = [
   },
   {
     icon: Building2,
-    title: 'Análisis Bancario con IA',
+    title: 'Análisis Bancario Inteligente',
     description: 'Sube estados de cuenta y detecta anomalías, suscripciones y patrones de gasto.',
     tier: 'Pro',
     gradient: 'from-cyan-500 to-blue-500',
@@ -108,7 +108,7 @@ const features = [
   {
     icon: Mic,
     title: 'Asistente de Voz',
-    description: 'Dicta gastos por voz y nuestra IA los transcribe y categoriza automáticamente.',
+    description: 'Dicta gastos por voz y EvoFinz los transcribe y categoriza automáticamente.',
     tier: 'Pro',
     gradient: 'from-violet-500 to-purple-500',
     emoji: '🎤',

@@ -50,8 +50,8 @@ const TOUR_STEPS: TourStep[] = [
       en: 'AI at your financial service. Predictions, correlations, and 10+ visualizations.'
     },
     features: {
-      es: ['Predicciones con IA', 'Flujo de caja proyectado', 'Rentabilidad por proyecto', 'Correlaciones financieras'],
-      en: ['AI predictions', 'Projected cash flow', 'Project profitability', 'Financial correlations']
+      es: ['Predicciones inteligentes', 'Flujo de caja proyectado', 'Rentabilidad por proyecto', 'Correlaciones financieras'],
+      en: ['Smart predictions', 'Projected cash flow', 'Project profitability', 'Financial correlations']
     },
     color: 'text-purple-600',
     gradient: 'from-purple-500 to-purple-600'
@@ -82,8 +82,8 @@ const TOUR_STEPS: TourStep[] = [
       en: 'Maximize your deductions and save on taxes with smart tools.'
     },
     features: {
-      es: ['Optimizador de impuestos con IA', 'Calculadora RRSP/TFSA', 'Deducciones CRA', 'Resumen fiscal completo'],
-      en: ['AI tax optimizer', 'RRSP/TFSA calculator', 'CRA deductions', 'Complete tax summary']
+      es: ['Optimizador fiscal inteligente', 'Calculadora RRSP/TFSA', 'Deducciones CRA', 'Resumen fiscal completo'],
+      en: ['Smart tax optimizer', 'RRSP/TFSA calculator', 'CRA deductions', 'Complete tax summary']
     },
     color: 'text-green-600',
     gradient: 'from-green-500 to-emerald-500'

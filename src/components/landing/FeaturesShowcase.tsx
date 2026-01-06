@@ -10,7 +10,7 @@ const showcaseItems = [
     title: "Captura en Segundos",
     why: "Nunca más perder un recibo",
     what: "Foto, voz o texto → gasto registrado",
-    how: "IA extrae monto, fecha y categoría automáticamente",
+    how: "EvoFinz extrae monto, fecha y categoría automáticamente",
     gradient: "from-orange-500 to-red-500",
     bgGlow: "bg-orange-500/20"
   },
@@ -45,7 +45,7 @@ const showcaseItems = [
     icon: FileText,
     title: "Contratos Inteligentes",
     why: "No pierdas lo que te corresponde",
-    what: "IA analiza términos de reembolso",
+    what: "Análisis automático de términos de reembolso",
     how: "Sube contrato → sugiere gastos elegibles",
     gradient: "from-cyan-500 to-blue-500",
     bgGlow: "bg-cyan-500/20"
@@ -100,7 +100,7 @@ const showcaseItems = [
     title: "Análisis Bancario",
     why: "Detecta fugas de dinero",
     what: "Suscripciones y anomalías",
-    how: "Sube extracto → IA identifica patrones",
+    how: "Sube extracto → EvoFinz identifica patrones",
     gradient: "from-indigo-500 to-violet-500",
     bgGlow: "bg-indigo-500/20"
   },

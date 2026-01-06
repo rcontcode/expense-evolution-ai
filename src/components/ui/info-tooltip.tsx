@@ -291,12 +291,12 @@ export const TOOLTIP_CONTENT = {
   expenseUploadPhoto: {
     es: {
       title: "Subir Foto de Recibo",
-      description: "Toma o sube una foto de tu recibo. La IA extraerá automáticamente el monto, fecha, proveedor y categoría.",
+      description: "Toma o sube una foto de tu recibo. EvoFinz extraerá automáticamente el monto, fecha, proveedor y categoría.",
       howToUse: "Asegúrate de que la foto esté bien iluminada y el texto sea legible.",
     },
     en: {
       title: "Upload Receipt Photo",
-      description: "Take or upload a photo of your receipt. AI will automatically extract the amount, date, vendor and category.",
+      description: "Take or upload a photo of your receipt. EvoFinz will automatically extract the amount, date, vendor and category.",
       howToUse: "Make sure the photo is well-lit and text is readable.",
     },
   },
@@ -350,13 +350,13 @@ export const TOOLTIP_CONTENT = {
   },
   expenseConfidenceLevel: {
     es: {
-      title: "Nivel de Confianza IA",
-      description: "Indica qué tan segura está la IA sobre los datos extraídos. Alta = muy seguro, Baja = requiere verificación.",
+      title: "Nivel de Confianza",
+      description: "Indica qué tan seguro es el resultado de la extracción. Alta = muy seguro, Baja = requiere verificación.",
       howToUse: "Revisa manualmente los campos cuando la confianza sea baja.",
     },
     en: {
-      title: "AI Confidence Level",
-      description: "Indicates how confident the AI is about the extracted data. High = very sure, Low = needs verification.",
+      title: "Confidence Level",
+      description: "Indicates how confident the extraction result is. High = very sure, Low = needs verification.",
       howToUse: "Manually review fields when confidence is low.",
     },
   },
@@ -398,14 +398,14 @@ export const TOOLTIP_CONTENT = {
   },
   quickCapture: {
     es: {
-      title: "Captura Rápida con IA",
-      description: "Sube una foto de recibo, usa tu voz o escribe para registrar gastos automáticamente con inteligencia artificial.",
-      howToUse: "La IA extraerá automáticamente el monto, fecha, vendedor y categoría.",
+      title: "Captura Rápida Inteligente",
+      description: "Sube una foto de recibo, usa tu voz o escribe para registrar gastos automáticamente con tecnología inteligente.",
+      howToUse: "EvoFinz extraerá automáticamente el monto, fecha, vendedor y categoría.",
     },
     en: {
-      title: "AI Quick Capture",
-      description: "Upload a receipt photo, use your voice or type to automatically record expenses with artificial intelligence.",
-      howToUse: "AI will automatically extract the amount, date, vendor and category.",
+      title: "Smart Quick Capture",
+      description: "Upload a receipt photo, use your voice or type to automatically record expenses with smart technology.",
+      howToUse: "EvoFinz will automatically extract the amount, date, vendor and category.",
     },
   },
   addExpense: {
@@ -449,12 +449,12 @@ export const TOOLTIP_CONTENT = {
   chaosInbox: {
     es: {
       title: "Bandeja Inteligente",
-      description: "Sube documentos sin organizar - la IA los clasificará y extraerá la información automáticamente.",
+      description: "Sube documentos sin organizar - EvoFinz los clasificará y extraerá la información automáticamente.",
       howToUse: "Arrastra múltiples archivos para procesamiento masivo.",
     },
     en: {
       title: "Smart Inbox",
-      description: "Upload unorganized documents - AI will classify them and extract information automatically.",
+      description: "Upload unorganized documents - EvoFinz will classify them and extract information automatically.",
       howToUse: "Drag multiple files for batch processing.",
     },
   },
@@ -462,19 +462,19 @@ export const TOOLTIP_CONTENT = {
     es: {
       title: "Subir Documentos",
       description: "Arrastra archivos o haz clic para subir recibos, facturas, emails y cualquier documento.",
-      howToUse: "La IA clasificará automáticamente cada documento y extraerá la información relevante.",
+      howToUse: "EvoFinz clasificará automáticamente cada documento y extraerá la información relevante.",
     },
     en: {
       title: "Upload Documents",
       description: "Drag files or click to upload receipts, invoices, emails and any document.",
-      howToUse: "AI will automatically classify each document and extract relevant information.",
+      howToUse: "EvoFinz will automatically classify each document and extract relevant information.",
     },
   },
   chaosInboxStatus: {
     es: {
       title: "Estado del Documento",
       description: "Indica si el documento está pendiente de procesar, clasificado o archivado.",
-      howToUse: "Los documentos 'pendientes' serán procesados por la IA próximamente.",
+      howToUse: "Los documentos 'pendientes' serán procesados automáticamente próximamente.",
     },
     en: {
       title: "Document Status",
