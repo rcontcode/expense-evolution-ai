@@ -336,7 +336,7 @@ export default function Landing() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <img src={evofinzLogo} alt="EvoFinz" className="h-8 w-auto" />
             <p className="text-sm text-muted-foreground">
-              © 2025 EvoFinz. Todos los derechos reservados.
+              © 2026 EvoFinz. Todos los derechos reservados.
             </p>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <Link to="/auth" className="hover:text-foreground">Iniciar Sesión</Link>
