@@ -12,7 +12,7 @@ import {
   ArrowRight, Check, Sparkles, Shield, Zap, Gift, Loader2, CheckCircle2, XCircle,
   Star, Flame, Target, Crown
 } from 'lucide-react';
-import phoenixLogo from '@/assets/phoenix-logo.png';
+import phoenixLogo from '@/assets/phoenix-clean-logo.png';
 
 const features = [
   { icon: Camera, title: 'Captura Inteligente', description: 'OCR + Voz con IA', tier: 'Pro', color: 'from-orange-500 to-red-500' },
@@ -190,8 +190,7 @@ export default function Landing() {
               <img 
                 src={phoenixLogo} 
                 alt="EvoFinz Phoenix" 
-                className="relative z-10 h-36 md:h-44 w-auto object-contain drop-shadow-2xl"
-                style={{ mixBlendMode: 'multiply' }}
+                className="relative z-10 h-36 md:h-44 w-auto object-contain rounded-2xl"
               />
               {/* Brand name below logo */}
               <motion.h2
