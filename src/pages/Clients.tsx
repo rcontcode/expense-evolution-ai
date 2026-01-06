@@ -17,6 +17,7 @@ import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/comp
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { Badge } from '@/components/ui/badge';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
+import { SectionEmptyState } from '@/components/guidance/SectionEmptyState';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PageHeader } from '@/components/PageHeader';
@@ -348,17 +349,11 @@ export default function Clients() {
               })}
             </div>
           ) : (
-            <Card className="border-dashed">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Users className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium">{t('clients.noClients')}</p>
-                <p className="text-sm text-muted-foreground">{t('clients.addFirst')}</p>
-                <Button onClick={handleCreate} className="mt-4">
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t('clients.addFirstClient')}
-                </Button>
-              </CardContent>
-            </Card>
+            <SectionEmptyState 
+              section="clients" 
+              onAction={handleCreate}
+              showSampleDataButton={true}
+            />
           )}
 
           <ClientDialog open={dialogOpen} onClose={handleClose} client={selectedClient} />

@@ -20,6 +20,7 @@ import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
 import { SetupProgressBanner } from '@/components/guidance/SetupProgressBanner';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { MiniWorkflow } from '@/components/guidance/WorkflowVisualizer';
+import { SectionEmptyState } from '@/components/guidance/SectionEmptyState';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { PageHeader } from '@/components/PageHeader';
 
@@ -148,19 +149,15 @@ export default function Expenses() {
         ) : expenses && expenses.length > 0 ? (
           <ExpensesTable expenses={expenses} onEdit={handleEdit} />
         ) : (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Receipt className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium">{t('expenses.noExpenses')}</p>
-              <p className="text-sm text-muted-foreground">
-                {t('expenses.startByUploading')}
-              </p>
-              <Button onClick={handleCreate} className="mt-4">
-                <Plus className="mr-2 h-4 w-4" />
-                {t('expenses.addFirstExpense')}
-              </Button>
-            </CardContent>
-          </Card>
+          <SectionEmptyState 
+            section="expenses" 
+            onAction={handleCreate}
+            secondaryAction={{
+              label: { es: 'Captura Rápida', en: 'Quick Capture' },
+              onClick: () => setQuickCaptureOpen(true)
+            }}
+            showSampleDataButton={true}
+          />
         )}
 
         <ExpenseDialog open={dialogOpen} onClose={handleClose} expense={selectedExpense} />
