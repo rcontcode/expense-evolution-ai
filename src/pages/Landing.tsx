@@ -176,22 +176,25 @@ export default function Landing() {
               {/* Animated glow behind logo */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <motion.div 
-                  className="w-52 h-52 rounded-full blur-3xl"
+                  className="w-48 h-48 rounded-full blur-3xl"
                   animate={{
                     background: [
-                      'radial-gradient(circle, rgba(34, 211, 238, 0.5) 0%, rgba(59, 130, 246, 0.3) 50%, transparent 70%)',
-                      'radial-gradient(circle, rgba(251, 146, 60, 0.5) 0%, rgba(239, 68, 68, 0.3) 50%, transparent 70%)',
-                      'radial-gradient(circle, rgba(34, 211, 238, 0.5) 0%, rgba(59, 130, 246, 0.3) 50%, transparent 70%)'
+                      'radial-gradient(circle, rgba(34, 211, 238, 0.6) 0%, rgba(59, 130, 246, 0.4) 50%, transparent 70%)',
+                      'radial-gradient(circle, rgba(251, 146, 60, 0.6) 0%, rgba(239, 68, 68, 0.4) 50%, transparent 70%)',
+                      'radial-gradient(circle, rgba(34, 211, 238, 0.6) 0%, rgba(59, 130, 246, 0.4) 50%, transparent 70%)'
                     ]
                   }}
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                 />
               </div>
-              <img 
-                src={phoenixLogo} 
-                alt="EvoFinz Phoenix" 
-                className="relative z-10 h-36 md:h-44 w-auto object-contain rounded-2xl"
-              />
+              {/* Logo container with intentional circular clipping */}
+              <div className="relative z-10 w-36 h-36 md:w-44 md:h-44 rounded-full bg-white shadow-2xl flex items-center justify-center overflow-hidden ring-4 ring-white/80 ring-offset-4 ring-offset-transparent">
+                <img 
+                  src={phoenixLogo} 
+                  alt="EvoFinz Phoenix" 
+                  className="w-full h-full object-cover scale-125"
+                />
+              </div>
               {/* Brand name below logo */}
               <motion.h2
                 initial={{ opacity: 0, y: 10 }}
