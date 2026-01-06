@@ -57,6 +57,7 @@ const App = () => (
               <MissionListenerInitializer />
               <Routes>
                 <Route path="/" element={<Landing />} />
+                <Route path="/landing" element={<Landing />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                 <Route path="/beta-welcome" element={<ProtectedRoute><BetaWelcome /></ProtectedRoute>} />
