@@ -13,44 +13,68 @@ interface Testimonial {
 
 const testimonials: Testimonial[] = [
   {
-    name: "María González",
-    role: "Freelancer de Diseño",
+    name: "Valeria Fernández",
+    role: "Diseñadora UX Freelance • México",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
-    quote: "Antes perdía horas organizando recibos. Ahora solo tomo una foto y EvoFinz hace todo. Mi contador está feliz y yo también.",
+    quote: "Llevaba 3 años guardando recibos en una caja de zapatos. En mi primera semana con EvoFinz escaneé todo y encontré $8,500 MXN en gastos que nunca había deducido.",
     rating: 5,
-    highlight: "Ahorro 6 horas al mes"
+    highlight: "Recuperé dinero olvidado"
   },
   {
-    name: "Carlos Mendoza",
-    role: "Consultor IT",
+    name: "Andrés Gutiérrez",
+    role: "Desarrollador Full Stack • Colombia",
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    quote: "La IA detectó deducciones que ni sabía que podía reclamar. Literalmente se pagó solo el primer mes.",
+    quote: "Trabajo con 3 clientes en diferentes monedas. Antes usaba Excel y siempre me confundía. EvoFinz me muestra exactamente cuánto gano por proyecto y qué puedo deducir.",
     rating: 5,
-    highlight: "$2,400 en deducciones extra"
+    highlight: "Claridad con múltiples clientes"
   },
   {
-    name: "Ana Rodríguez",
-    role: "Emprendedora",
+    name: "Carolina Reyes",
+    role: "Consultora de Marketing • Chile",
     avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    quote: "El sistema de mentoría financiera cambió mi forma de ver el dinero. Los módulos de Kiyosaki son oro puro.",
+    quote: "Mi contador me cobraba extra por organizar mis gastos. Ahora le envío un PDF perfecto directo desde la app. Me ahorro esa tarifa y él termina más rápido.",
     rating: 5,
-    highlight: "Transformación financiera"
+    highlight: "Contador más feliz"
   },
   {
-    name: "Roberto Silva",
-    role: "Contratista Independiente",
+    name: "Miguel Ángel Torres",
+    role: "Fotógrafo Profesional • Argentina",
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    quote: "El tracking de kilómetros con GPS me sorprendió. Ya no olvido ningún viaje de trabajo para deducir.",
+    quote: "Manejo mucho equipo y viajo constantemente a eventos. El tracking de kilometraje automático es genial - solo activo el GPS y listo. Antes olvidaba registrar la mitad de mis viajes.",
     rating: 5,
-    highlight: "100% viajes registrados"
+    highlight: "Kilometraje sin esfuerzo"
   },
   {
-    name: "Laura Martínez",
-    role: "Coach de Negocios",
+    name: "Sofía Mendoza",
+    role: "Abogada Independiente • Perú",
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
-    quote: "Gestiono 5 clientes distintos sin confusiones. Los reportes por proyecto son exactamente lo que necesitaba.",
+    quote: "Tengo gastos reembolsables por cada cliente. EvoFinz me genera reportes individuales en segundos. Lo que antes me tomaba medio día ahora son 2 clics.",
     rating: 5,
-    highlight: "Organización perfecta"
+    highlight: "Reportes instantáneos"
+  },
+  {
+    name: "Diego Herrera",
+    role: "Coach Ejecutivo • España",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+    quote: "La sección de educación financiera me sorprendió. No esperaba aprender sobre flujo de caja en una app de gastos. Los conceptos de Kiyosaki aplicados a mi negocio real fueron reveladores.",
+    rating: 4,
+    highlight: "Educación incluida"
+  },
+  {
+    name: "Luciana Vargas",
+    role: "Traductora Freelance • Uruguay",
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face",
+    quote: "Soy terrible con los números. EvoFinz me muestra alertas cuando estoy gastando de más en alguna categoría. Es como tener un asistente financiero que no juzga.",
+    rating: 5,
+    highlight: "Alertas que ayudan"
+  },
+  {
+    name: "Fernando López",
+    role: "Consultor SAP • Brasil",
+    avatar: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=150&h=150&fit=crop&crop=face",
+    quote: "Probé 4 apps antes. Todas complicadísimas o muy básicas. EvoFinz tiene el balance perfecto: potente pero no necesito un tutorial de 2 horas para usarla.",
+    rating: 5,
+    highlight: "Fácil y completa"
   }
 ];
 
