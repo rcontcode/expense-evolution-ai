@@ -219,6 +219,21 @@ export default {
           "0%, 100%": { backgroundPosition: "0% 50%" },
           "50%": { backgroundPosition: "100% 50%" },
         },
+        "twinkle": {
+          "0%, 100%": { opacity: "0.2", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.2)" },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0) translateX(0)" },
+          "25%": { transform: "translateY(-10px) translateX(5px)" },
+          "75%": { transform: "translateY(5px) translateX(-5px)" },
+        },
+        "shootingStar": {
+          "0%": { transform: "translateX(0) translateY(0)", opacity: "0" },
+          "5%": { opacity: "1" },
+          "15%": { transform: "translateX(300px) translateY(100px)", opacity: "0" },
+          "100%": { transform: "translateX(300px) translateY(100px)", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
