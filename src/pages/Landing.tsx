@@ -74,15 +74,6 @@ export default function Landing() {
   const [showBetaInput, setShowBetaInput] = useState(false);
   const [betaCode, setBetaCode] = useState('');
   const [codeStatus, setCodeStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   const validateBetaCode = async (code: string) => {
     if (!code.trim()) {
@@ -128,37 +119,22 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white overflow-hidden">
-      {/* Animated Background */}
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 overflow-hidden">
+      {/* Animated Background - Light Theme */}
       <div className="fixed inset-0 pointer-events-none">
-        {/* Gradient orbs */}
-        <div 
-          className="absolute w-[600px] h-[600px] rounded-full opacity-30 blur-[120px] transition-all duration-1000"
-          style={{
-            background: 'linear-gradient(135deg, #f97316 0%, #ea580c 50%, #dc2626 100%)',
-            left: mousePosition.x * 0.02 + '%',
-            top: mousePosition.y * 0.02 + '%',
-          }}
-        />
-        <div 
-          className="absolute w-[500px] h-[500px] rounded-full opacity-20 blur-[100px] transition-all duration-1000"
-          style={{
-            background: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #8b5cf6 100%)',
-            right: mousePosition.x * 0.01 + '%',
-            bottom: mousePosition.y * 0.01 + '%',
-          }}
-        />
+        {/* Subtle gradient orbs */}
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-40 blur-[120px] bg-gradient-to-br from-cyan-200 via-blue-200 to-teal-200" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full opacity-30 blur-[100px] bg-gradient-to-br from-amber-100 via-orange-100 to-yellow-100" />
+        
         {/* Grid pattern */}
         <div 
-          className="absolute inset-0 opacity-[0.02]"
+          className="absolute inset-0 opacity-[0.03]"
           style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), 
-                              linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)`,
-            backgroundSize: '50px 50px'
+            backgroundImage: `linear-gradient(rgba(0,0,0,.1) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(0,0,0,.1) 1px, transparent 1px)`,
+            backgroundSize: '60px 60px'
           }}
         />
-        {/* Radial gradient overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(15,23,42,0.8)_70%)]" />
       </div>
 
       {/* Hero Section */}
@@ -170,21 +146,24 @@ export default function Landing() {
             transition={{ duration: 0.8 }}
             className="max-w-5xl mx-auto text-center"
           >
-            {/* Logo with glow effect */}
+            {/* Logo with cyan/blue glow effect */}
             <motion.div 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="flex justify-center mb-8 relative"
+              className="flex justify-center mb-10 relative"
             >
+              {/* Circular glow behind logo */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-40 h-40 bg-gradient-to-br from-orange-500/50 to-red-500/50 rounded-full blur-3xl animate-pulse" />
+                <div className="w-48 h-48 bg-gradient-to-br from-cyan-400/40 via-blue-400/30 to-teal-400/40 rounded-full blur-3xl" />
               </div>
-              <img 
-                src={evofinzLogo} 
-                alt="EvoFinz" 
-                className="relative z-10 h-32 md:h-40 w-auto object-contain drop-shadow-2xl"
-              />
+              <div className="relative z-10 p-6 rounded-full bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-sm shadow-2xl shadow-cyan-500/20">
+                <img 
+                  src={evofinzLogo} 
+                  alt="EvoFinz" 
+                  className="h-28 md:h-36 w-auto object-contain"
+                />
+              </div>
             </motion.div>
 
             {/* Main headline */}
@@ -194,11 +173,11 @@ export default function Landing() {
               transition={{ duration: 0.6, delay: 0.4 }}
               className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight"
             >
-              <span className="bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 bg-clip-text text-transparent">
                 Evoluciona
               </span>
               <br />
-              <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-400 bg-clip-text text-transparent animate-gradient-x">
+              <span className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 bg-clip-text text-transparent">
                 tus Finanzas
               </span>
             </motion.h1>
@@ -207,12 +186,12 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
-              className="text-xl md:text-2xl text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed"
+              className="text-xl md:text-2xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed"
             >
               La plataforma de gestión financiera más completa para 
-              <span className="text-orange-400 font-semibold"> profesionales </span>
+              <span className="text-cyan-600 font-semibold"> profesionales </span>
               y 
-              <span className="text-amber-400 font-semibold"> freelancers </span>
+              <span className="text-teal-600 font-semibold"> freelancers </span>
               en Canadá.
             </motion.p>
 
@@ -221,7 +200,7 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.7 }}
-              className="flex flex-wrap items-center justify-center gap-6 md:gap-10 mb-12"
+              className="flex flex-wrap items-center justify-center gap-4 md:gap-8 mb-12"
             >
               {stats.map((stat, index) => {
                 const Icon = stat.icon;
@@ -231,11 +210,11 @@ export default function Landing() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.8 + index * 0.1 }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white shadow-lg shadow-slate-200/50 border border-slate-100"
                   >
-                    <Icon className="h-4 w-4 text-orange-400" />
-                    <span className="font-bold text-white">{stat.value}</span>
-                    <span className="text-slate-400 text-sm">{stat.label}</span>
+                    <Icon className="h-4 w-4 text-cyan-500" />
+                    <span className="font-bold text-slate-800">{stat.value}</span>
+                    <span className="text-slate-500 text-sm">{stat.label}</span>
                   </motion.div>
                 );
               })}
@@ -251,22 +230,22 @@ export default function Landing() {
               <Button 
                 size="lg" 
                 onClick={() => navigate('/auth')}
-                className="relative text-lg px-10 py-7 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 hover:from-orange-600 hover:via-amber-600 hover:to-yellow-600 text-slate-900 font-bold shadow-2xl shadow-orange-500/30 border-0 group overflow-hidden"
+                className="relative text-lg px-10 py-7 bg-gradient-to-r from-amber-400 via-orange-500 to-orange-600 hover:from-amber-500 hover:via-orange-600 hover:to-orange-700 text-white font-bold shadow-2xl shadow-orange-500/40 border-0 group overflow-hidden"
               >
                 <span className="relative z-10 flex items-center">
                   Comenzar Gratis
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Button>
               
               <Button 
                 size="lg" 
                 variant="outline"
                 onClick={() => setShowBetaInput(!showBetaInput)}
-                className="text-lg px-8 py-7 border-2 border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white/10 hover:border-orange-400/50 text-white"
+                className="text-lg px-8 py-7 border-2 border-slate-300 bg-white hover:bg-slate-50 hover:border-cyan-400 text-slate-700 shadow-lg"
               >
-                <Gift className="mr-2 h-5 w-5 text-orange-400" />
+                <Gift className="mr-2 h-5 w-5 text-cyan-500" />
                 ¿Tienes código beta?
               </Button>
             </motion.div>
@@ -284,18 +263,18 @@ export default function Landing() {
                     placeholder="EVOFINZ-BETA-2026-XX"
                     value={betaCode}
                     onChange={(e) => handleBetaCodeChange(e.target.value)}
-                    className={`h-16 text-center text-lg font-mono uppercase bg-slate-900/80 border-2 text-white placeholder:text-slate-500 ${
+                    className={`h-16 text-center text-lg font-mono uppercase bg-white border-2 text-slate-800 placeholder:text-slate-400 shadow-lg ${
                       codeStatus === 'valid' 
-                        ? 'border-emerald-500 bg-emerald-950/50' 
+                        ? 'border-emerald-500 bg-emerald-50' 
                         : codeStatus === 'invalid'
-                          ? 'border-red-500 bg-red-950/50'
-                          : 'border-white/20 focus:border-orange-400'
+                          ? 'border-red-500 bg-red-50'
+                          : 'border-slate-200 focus:border-cyan-400'
                     }`}
                   />
                   <div className="absolute right-4 top-1/2 -translate-y-1/2">
                     {codeStatus === 'checking' && <Loader2 className="h-6 w-6 animate-spin text-slate-400" />}
-                    {codeStatus === 'valid' && <CheckCircle2 className="h-6 w-6 text-emerald-400" />}
-                    {codeStatus === 'invalid' && <XCircle className="h-6 w-6 text-red-400" />}
+                    {codeStatus === 'valid' && <CheckCircle2 className="h-6 w-6 text-emerald-500" />}
+                    {codeStatus === 'invalid' && <XCircle className="h-6 w-6 text-red-500" />}
                   </div>
                 </div>
                 {codeStatus === 'valid' && (
@@ -303,13 +282,13 @@ export default function Landing() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
-                    <p className="text-emerald-400 text-sm mt-3 flex items-center justify-center gap-2">
+                    <p className="text-emerald-600 text-sm mt-3 flex items-center justify-center gap-2">
                       <Sparkles className="h-4 w-4" />
                       ¡Código válido! Acceso beta desbloqueado.
                     </p>
                     <Button 
                       onClick={handleGetStarted}
-                      className="mt-4 w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-6"
+                      className="mt-4 w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-6 shadow-lg"
                     >
                       <Crown className="mr-2 h-5 w-5" />
                       Activar Acceso Beta
@@ -317,7 +296,7 @@ export default function Landing() {
                   </motion.div>
                 )}
                 {codeStatus === 'invalid' && (
-                  <p className="text-red-400 text-sm mt-3">Código inválido o expirado.</p>
+                  <p className="text-red-600 text-sm mt-3">Código inválido o expirado.</p>
                 )}
               </motion.div>
             )}
@@ -332,9 +311,9 @@ export default function Landing() {
               <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ repeat: Infinity, duration: 2 }}
-                className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-2"
+                className="w-6 h-10 rounded-full border-2 border-slate-300 flex items-start justify-center p-2"
               >
-                <div className="w-1.5 h-3 bg-white/50 rounded-full" />
+                <div className="w-1.5 h-3 bg-slate-400 rounded-full" />
               </motion.div>
             </motion.div>
           </motion.div>
