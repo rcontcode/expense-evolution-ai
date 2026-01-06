@@ -295,11 +295,12 @@ export default function Landing() {
                 onClick={() => navigate('/auth')}
                 className="relative text-lg px-10 py-7 bg-gradient-to-r from-amber-400 via-orange-500 to-orange-600 hover:from-amber-500 hover:via-orange-600 hover:to-orange-700 text-white font-bold shadow-2xl shadow-orange-500/40 border-0 group overflow-hidden"
               >
+                {/* Shine effect */}
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <span className="relative z-10 flex items-center">
                   Comenzar Gratis
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Button>
               
               <Button 
@@ -467,7 +468,7 @@ export default function Landing() {
               >
                 {/* Badge FUERA del Card para evitar overflow-hidden */}
                 {tier.popular && (
-                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg">
+                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2s_ease-in-out_infinite]">
                     <Star className="w-3 h-3 mr-1 inline" />
                     Más Popular
                   </Badge>
