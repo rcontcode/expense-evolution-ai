@@ -4,9 +4,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
+import { useGenerateSampleDataBySection } from '@/hooks/data/useGenerateSampleData';
 import { 
   ArrowRight, Sparkles, Receipt, TrendingUp, Users, MapPin, 
-  FileText, Landmark, Database, LucideIcon, PlusCircle, BookOpen
+  FileText, Landmark, Database, LucideIcon, PlusCircle, BookOpen, Loader2
 } from 'lucide-react';
 
 type IconName = 'Receipt' | 'TrendingUp' | 'Users' | 'MapPin' | 'FileText' | 'Landmark' | 'Database' | 'BookOpen';
@@ -153,12 +154,18 @@ export function SectionEmptyState({
 }: SectionEmptyStateProps) {
   const { language } = useLanguage();
   const navigate = useNavigate();
+  const generateSampleSection = useGenerateSampleDataBySection();
   const lang = language as 'es' | 'en';
   
   const config = EMPTY_STATE_CONFIGS[section];
   if (!config) return null;
   
   const Icon = ICON_MAP[config.icon];
+  const isGenerating = generateSampleSection.isPending;
+
+  const handleGenerateSamples = () => {
+    generateSampleSection.mutate(section);
+  };
 
   return (
     <Card className={`border-dashed border-2 border-muted-foreground/20 bg-gradient-to-br from-background to-muted/20 ${className}`}>
@@ -206,7 +213,7 @@ export function SectionEmptyState({
           )}
         </div>
 
-        {/* Sample data suggestion */}
+        {/* Sample data - direct load for this section */}
         {showSampleDataButton && (
           <div className="mt-8 pt-6 border-t border-border/50 w-full max-w-md">
             <p className="text-sm text-muted-foreground mb-3">
@@ -214,14 +221,30 @@ export function SectionEmptyState({
                 ? '¿Quieres ver cómo funciona primero?' 
                 : 'Want to see how it works first?'}
             </p>
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/settings')}
-              className="text-sm gap-2"
-            >
-              <Database className="h-4 w-4" />
-              {lang === 'es' ? 'Cargar datos de ejemplo' : 'Load sample data'}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              <Button 
+                variant="secondary" 
+                onClick={handleGenerateSamples}
+                disabled={isGenerating}
+                className="gap-2"
+              >
+                {isGenerating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Database className="h-4 w-4" />
+                )}
+                {lang === 'es' 
+                  ? isGenerating ? 'Cargando...' : 'Cargar ejemplos aquí' 
+                  : isGenerating ? 'Loading...' : 'Load samples here'}
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate('/settings')}
+                className="text-sm gap-2"
+              >
+                {lang === 'es' ? 'Cargar todo en Settings' : 'Load all in Settings'}
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>

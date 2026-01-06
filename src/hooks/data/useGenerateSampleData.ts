@@ -1085,6 +1085,197 @@ export function useDeleteSampleDataBySection() {
   });
 }
 
+// Generate sample data for a SINGLE section
+export function useGenerateSampleDataBySection() {
+  const queryClient = useQueryClient();
+  const { language } = useLanguage();
+
+  return useMutation({
+    mutationFn: async (section: string) => {
+      console.log(`[SAMPLE DATA] Generating section: ${section}`);
+      
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error(language === 'es' 
+          ? 'Error de autenticación. Por favor inicia sesión.' 
+          : 'Authentication error. Please log in.');
+      }
+
+      const userId = user.id;
+      const today = new Date();
+      const SAMPLE_MARKER = '[SAMPLE]';
+
+      switch (section) {
+        case 'expenses':
+          // Get existing clients/projects for assignment
+          const { data: existingClients } = await supabase.from('clients').select('id').eq('user_id', userId).limit(2);
+          const { data: existingProjects } = await supabase.from('projects').select('id').eq('user_id', userId).limit(4);
+          
+          const expenseData = [
+            { vendor: 'Adobe Creative Cloud', category: 'software', amount: 79.99, status: 'deductible' as const, daysAgo: 5 },
+            { vendor: 'Staples', category: 'office_supplies', amount: 156.45, status: 'classified' as const, daysAgo: 12 },
+            { vendor: 'Air Canada', category: 'travel', amount: 487.00, status: 'reimbursable' as const, daysAgo: 20 },
+            { vendor: 'Best Buy', category: 'equipment', amount: 1299.99, status: 'deductible' as const, daysAgo: 30 },
+            { vendor: 'Microsoft 365', category: 'software', amount: 16.99, status: 'deductible' as const, daysAgo: 1 },
+            { vendor: 'Bell Canada', category: 'utilities', amount: 145.00, status: 'deductible' as const, daysAgo: 15 },
+            { vendor: 'Restaurant ABC', category: 'meals_entertainment', amount: 87.50, status: 'classified' as const, daysAgo: 8 },
+            { vendor: 'Amazon', category: 'office_supplies', amount: 67.89, status: 'pending' as const, daysAgo: 2 },
+          ];
+          
+          const expenses = expenseData.map((e, i) => {
+            const date = new Date(today);
+            date.setDate(date.getDate() - e.daysAgo);
+            return {
+              user_id: userId,
+              date: date.toISOString().split('T')[0],
+              amount: e.amount,
+              vendor: e.vendor,
+              category: e.category,
+              description: `${SAMPLE_MARKER} ${e.vendor}`,
+              client_id: existingClients?.[i % 2]?.id || null,
+              project_id: existingProjects?.[i % 4]?.id || null,
+              status: e.status,
+              notes: `${SAMPLE_MARKER} Sample expense`,
+            };
+          });
+          await supabase.from('expenses').insert(expenses);
+          break;
+
+        case 'income':
+          const { data: incomeClients } = await supabase.from('clients').select('id').eq('user_id', userId).limit(2);
+          
+          const incomeData = [
+            { source: 'Client Payment - Project A', type: 'client_payment' as const, amount: 5000, daysAgo: 10 },
+            { source: 'Client Payment - Project B', type: 'client_payment' as const, amount: 12500, daysAgo: 25 },
+            { source: 'Freelance Consulting', type: 'freelance' as const, amount: 1500, daysAgo: 15 },
+            { source: 'Stock Dividends', type: 'investment_stocks' as const, amount: 245.50, daysAgo: 30 },
+            { source: 'Rental Income', type: 'passive_rental' as const, amount: 1800, daysAgo: 1 },
+          ];
+          
+          const incomeEntries = incomeData.map((inc, i) => {
+            const date = new Date(today);
+            date.setDate(date.getDate() - inc.daysAgo);
+            return {
+              user_id: userId,
+              date: date.toISOString().split('T')[0],
+              amount: inc.amount,
+              income_type: inc.type,
+              source: inc.source,
+              description: `${SAMPLE_MARKER} ${inc.source}`,
+              client_id: incomeClients?.[i % 2]?.id || null,
+              is_taxable: true,
+              recurrence: 'one_time' as const,
+            };
+          });
+          await supabase.from('income').insert(incomeEntries);
+          break;
+
+        case 'clients':
+          const clients = [
+            { name: `${SAMPLE_MARKER} TechCorp Solutions`, industry: 'technology', client_type: 'corporate', contact_email: 'contact@techcorp.com', payment_terms: 30, province: 'Ontario', country: 'Canada' },
+            { name: `${SAMPLE_MARKER} Creative Design Studio`, industry: 'creative_services', client_type: 'private', contact_email: 'hello@creative.com', payment_terms: 15, province: 'British Columbia', country: 'Canada' },
+          ];
+          await supabase.from('clients').insert(clients.map(c => ({ ...c, user_id: userId })));
+          break;
+
+        case 'mileage':
+          const { data: mileageClients } = await supabase.from('clients').select('id').eq('user_id', userId).limit(2);
+          
+          const mileageData = [
+            { route: 'Home → Client Office', km: 45.5, purpose: 'Client meeting', daysAgo: 5 },
+            { route: 'Home → Downtown', km: 28.3, purpose: 'Business meeting', daysAgo: 8 },
+            { route: 'Office → Airport', km: 62.0, purpose: 'Business travel', daysAgo: 20 },
+            { route: 'Home → Supplies Store', km: 15.2, purpose: 'Office supplies pickup', daysAgo: 12 },
+          ];
+          
+          const mileageEntries = mileageData.map((m, i) => {
+            const date = new Date(today);
+            date.setDate(date.getDate() - m.daysAgo);
+            return {
+              user_id: userId,
+              date: date.toISOString().split('T')[0],
+              kilometers: m.km,
+              route: `${SAMPLE_MARKER} ${m.route}`,
+              purpose: m.purpose,
+              client_id: mileageClients?.[i % 2]?.id || null,
+            };
+          });
+          await supabase.from('mileage').insert(mileageEntries);
+          break;
+
+        case 'netWorth':
+        case 'assets':
+          const assets = [
+            { name: `${SAMPLE_MARKER} Primary Residence`, category: 'real_estate', current_value: 650000, purchase_value: 450000, is_liquid: false },
+            { name: `${SAMPLE_MARKER} Investment Portfolio`, category: 'investments', current_value: 85000, purchase_value: 60000, is_liquid: true },
+            { name: `${SAMPLE_MARKER} Emergency Fund`, category: 'savings', current_value: 25000, is_liquid: true },
+            { name: `${SAMPLE_MARKER} Vehicle`, category: 'vehicle', current_value: 28000, purchase_value: 35000, is_liquid: false },
+          ];
+          await supabase.from('assets').insert(assets.map(a => ({ ...a, user_id: userId })));
+          
+          const liabilities = [
+            { name: `${SAMPLE_MARKER} Mortgage`, category: 'mortgage', current_balance: 380000, original_amount: 400000, interest_rate: 4.5, debt_type: 'good' },
+            { name: `${SAMPLE_MARKER} Car Loan`, category: 'auto_loan', current_balance: 15000, original_amount: 25000, interest_rate: 5.9, debt_type: 'bad' },
+          ];
+          await supabase.from('liabilities').insert(liabilities.map(l => ({ ...l, user_id: userId })));
+          break;
+
+        case 'contracts':
+          const { data: contractClients } = await supabase.from('clients').select('id').eq('user_id', userId).limit(1);
+          
+          const contracts = [
+            { 
+              title: `${SAMPLE_MARKER} Service Agreement`, 
+              file_name: `${SAMPLE_MARKER}_Service_Agreement.pdf`, 
+              file_path: 'sample/contract1.pdf',
+              status: 'ready' as const,
+              value: 25000,
+              client_id: contractClients?.[0]?.id || null,
+            },
+          ];
+          await supabase.from('contracts').insert(contracts.map(c => ({ ...c, user_id: userId })));
+          break;
+
+        case 'education':
+          const educationResources = [
+            { title: `${SAMPLE_MARKER} Rich Dad Poor Dad`, author: 'Robert Kiyosaki', resource_type: 'book', category: 'mindset', total_pages: 336, pages_read: 248, progress_percentage: 74, status: 'in_progress' },
+            { title: `${SAMPLE_MARKER} The Intelligent Investor`, author: 'Benjamin Graham', resource_type: 'book', category: 'investing', total_pages: 640, pages_read: 640, progress_percentage: 100, status: 'completed', impact_rating: 5 },
+          ];
+          await supabase.from('financial_education').insert(educationResources.map(e => ({ ...e, user_id: userId })));
+          break;
+      }
+
+      return { success: true, section };
+    },
+    onMutate: (section) => {
+      toast.loading(
+        language === 'es' 
+          ? `Generando ejemplos de ${section}...` 
+          : `Generating ${section} samples...`, 
+        { id: `sample-${section}` }
+      );
+    },
+    onSuccess: (data) => {
+      toast.dismiss(`sample-${data.section}`);
+      invalidateAllQueries(queryClient);
+      toast.success(
+        language === 'es' 
+          ? `¡Ejemplos de ${data.section} generados!` 
+          : `${data.section} samples generated!`
+      );
+    },
+    onError: (error: any, section) => {
+      toast.dismiss(`sample-${section}`);
+      console.error('Error generating sample data:', error);
+      toast.error(
+        language === 'es' 
+          ? 'Error generando datos: ' + error.message 
+          : 'Error generating data: ' + error.message
+      );
+    },
+  });
+}
+
 function invalidateAllQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: ['clients'] });
   queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -1102,7 +1293,6 @@ function invalidateAllQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
   queryClient.invalidateQueries({ queryKey: ['notifications'] });
   queryClient.invalidateQueries({ queryKey: ['unread-notifications'] });
-  // New queries
   queryClient.invalidateQueries({ queryKey: ['financial-habits'] });
   queryClient.invalidateQueries({ queryKey: ['financial-journal'] });
   queryClient.invalidateQueries({ queryKey: ['financial-education'] });

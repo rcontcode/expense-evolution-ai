@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useGenerateSampleData, useDeleteSampleData, useDeleteSampleDataBySection } from '@/hooks/data/useGenerateSampleData';
+import { useGenerateSampleData, useDeleteSampleData, useDeleteSampleDataBySection, useGenerateSampleDataBySection } from '@/hooks/data/useGenerateSampleData';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -86,12 +86,14 @@ export function SampleDataManager() {
   const isEs = language === 'es';
   
   const generateSampleData = useGenerateSampleData();
+  const generateBySection = useGenerateSampleDataBySection();
   const deleteSampleData = useDeleteSampleData();
   const deleteSampleDataBySection = useDeleteSampleDataBySection();
   
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
   const [showDeleteSelectedDialog, setShowDeleteSelectedDialog] = useState(false);
+  const [generatingSection, setGeneratingSection] = useState<string | null>(null);
   
   // Progress simulation for better UX
   const [currentStep, setCurrentStep] = useState(0);
@@ -161,7 +163,16 @@ export function SampleDataManager() {
     setShowDeleteAllDialog(false);
   };
 
-  const isLoading = generateSampleData.isPending || deleteSampleData.isPending || deleteSampleDataBySection.isPending;
+  const handleGenerateSection = async (sectionKey: string) => {
+    setGeneratingSection(sectionKey);
+    try {
+      await generateBySection.mutateAsync(sectionKey);
+    } finally {
+      setGeneratingSection(null);
+    }
+  };
+
+  const isLoading = generateSampleData.isPending || deleteSampleData.isPending || deleteSampleDataBySection.isPending || generateBySection.isPending;
   const progressPercent = generateSampleData.isPending 
     ? Math.min(((currentStep + 1) / GENERATION_STEPS.length) * 100, 95) 
     : 0;
@@ -293,7 +304,48 @@ export function SampleDataManager() {
           </Button>
         </div>
 
-        {/* Section Selection */}
+        {/* Generate by Section */}
+        <div className="space-y-3">
+          <h4 className="font-medium">
+            {isEs ? "Generar por Sección" : "Generate by Section"}
+          </h4>
+          <p className="text-sm text-muted-foreground">
+            {isEs 
+              ? "Carga ejemplos solo en las secciones que necesites."
+              : "Load samples only in the sections you need."
+            }
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {SAMPLE_SECTIONS.filter(s => 
+              ['clients', 'expenses', 'income', 'mileage', 'assets', 'contracts', 'education'].includes(s.key)
+            ).map(section => {
+              const Icon = section.icon;
+              const isGenerating = generatingSection === section.key;
+              
+              return (
+                <Button 
+                  key={section.key}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleGenerateSection(section.key)}
+                  disabled={isLoading || !isAuthenticated}
+                  className="justify-start gap-2 h-auto py-3"
+                >
+                  {isGenerating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Icon className={`h-4 w-4 ${section.color}`} />
+                  )}
+                  <span className="text-sm">
+                    {isEs ? section.labelEs : section.labelEn}
+                  </span>
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Delete by Section */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="font-medium">
