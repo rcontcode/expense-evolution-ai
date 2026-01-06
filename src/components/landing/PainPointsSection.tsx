@@ -111,11 +111,12 @@ export function PainPointsSection() {
 
   const currentCategory = categories[activeCategory];
 
+  // Auto-rotation - 10s optimal for 6 before/after comparisons
   useEffect(() => {
     if (!autoPlay) return;
     const interval = setInterval(() => {
       setActiveCategory((prev) => (prev + 1) % categories.length);
-    }, 8000); // More time to read
+    }, 10000);
     return () => clearInterval(interval);
   }, [autoPlay]);
 
