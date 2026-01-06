@@ -12,7 +12,7 @@ import {
   ArrowRight, Check, Sparkles, Shield, Zap, Gift, Loader2, CheckCircle2, XCircle,
   Star, Flame, Target, Crown
 } from 'lucide-react';
-import evofinzLogo from '@/assets/evofinz-logo.png';
+import phoenixLogo from '@/assets/phoenix-logo.png';
 
 const features = [
   { icon: Camera, title: 'Captura Inteligente', description: 'OCR + Voz con IA', tier: 'Pro', color: 'from-orange-500 to-red-500' },
@@ -120,11 +120,31 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 overflow-hidden">
-      {/* Animated Background - Light Theme */}
+      {/* Animated Background with alternating colors */}
       <div className="fixed inset-0 pointer-events-none">
-        {/* Subtle gradient orbs */}
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-40 blur-[120px] bg-gradient-to-br from-cyan-200 via-blue-200 to-teal-200" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full opacity-30 blur-[100px] bg-gradient-to-br from-amber-100 via-orange-100 to-yellow-100" />
+        {/* Animated gradient orbs - alternating between cool and warm */}
+        <motion.div 
+          className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-40 blur-[120px]"
+          animate={{
+            background: [
+              'linear-gradient(to bottom right, rgb(34, 211, 238, 0.4), rgb(59, 130, 246, 0.3), rgb(20, 184, 166, 0.4))',
+              'linear-gradient(to bottom right, rgb(251, 146, 60, 0.4), rgb(239, 68, 68, 0.3), rgb(245, 158, 11, 0.4))',
+              'linear-gradient(to bottom right, rgb(34, 211, 238, 0.4), rgb(59, 130, 246, 0.3), rgb(20, 184, 166, 0.4))'
+            ]
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div 
+          className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full opacity-30 blur-[100px]"
+          animate={{
+            background: [
+              'linear-gradient(to bottom right, rgb(251, 191, 36, 0.3), rgb(249, 115, 22, 0.2), rgb(254, 240, 138, 0.3))',
+              'linear-gradient(to bottom right, rgb(34, 211, 238, 0.3), rgb(99, 102, 241, 0.2), rgb(139, 92, 246, 0.3))',
+              'linear-gradient(to bottom right, rgb(251, 191, 36, 0.3), rgb(249, 115, 22, 0.2), rgb(254, 240, 138, 0.3))'
+            ]
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+        />
         
         {/* Grid pattern */}
         <div 
@@ -146,36 +166,76 @@ export default function Landing() {
             transition={{ duration: 0.8 }}
             className="max-w-5xl mx-auto text-center"
           >
-            {/* Logo with cyan/blue glow effect */}
+            {/* Phoenix Logo with animated glow */}
             <motion.div 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="flex justify-center mb-10 relative"
+              className="flex flex-col items-center mb-8 relative"
             >
-              {/* Circular glow behind logo */}
+              {/* Animated glow behind logo */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-48 h-48 bg-gradient-to-br from-cyan-400/40 via-blue-400/30 to-teal-400/40 rounded-full blur-3xl" />
-              </div>
-              <div className="relative z-10 p-6 rounded-full bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-sm shadow-2xl shadow-cyan-500/20">
-                <img 
-                  src={evofinzLogo} 
-                  alt="EvoFinz" 
-                  className="h-28 md:h-36 w-auto object-contain"
+                <motion.div 
+                  className="w-52 h-52 rounded-full blur-3xl"
+                  animate={{
+                    background: [
+                      'radial-gradient(circle, rgba(34, 211, 238, 0.5) 0%, rgba(59, 130, 246, 0.3) 50%, transparent 70%)',
+                      'radial-gradient(circle, rgba(251, 146, 60, 0.5) 0%, rgba(239, 68, 68, 0.3) 50%, transparent 70%)',
+                      'radial-gradient(circle, rgba(34, 211, 238, 0.5) 0%, rgba(59, 130, 246, 0.3) 50%, transparent 70%)'
+                    ]
+                  }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                 />
               </div>
+              <img 
+                src={phoenixLogo} 
+                alt="EvoFinz Phoenix" 
+                className="relative z-10 h-36 md:h-44 w-auto object-contain drop-shadow-2xl"
+                style={{ mixBlendMode: 'multiply' }}
+              />
+              {/* Brand name below logo */}
+              <motion.h2
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="relative z-10 mt-4 text-3xl md:text-4xl font-black tracking-tight"
+              >
+                <motion.span 
+                  className="bg-clip-text text-transparent"
+                  animate={{
+                    backgroundImage: [
+                      'linear-gradient(to right, rgb(8, 145, 178), rgb(37, 99, 235), rgb(20, 184, 166))',
+                      'linear-gradient(to right, rgb(234, 88, 12), rgb(220, 38, 38), rgb(245, 158, 11))',
+                      'linear-gradient(to right, rgb(8, 145, 178), rgb(37, 99, 235), rgb(20, 184, 166))'
+                    ]
+                  }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  EvoFinz
+                </motion.span>
+              </motion.h2>
             </motion.div>
 
-            {/* Main headline */}
+            {/* Main headline with animated gradient */}
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
               className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight"
             >
-              <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-teal-600 bg-clip-text text-transparent">
+              <motion.span 
+                className="bg-clip-text text-transparent inline-block"
+                animate={{
+                  backgroundImage: [
+                    'linear-gradient(to right, rgb(8, 145, 178), rgb(37, 99, 235), rgb(20, 184, 166))',
+                    'linear-gradient(to right, rgb(234, 88, 12), rgb(220, 38, 38), rgb(245, 158, 11))',
+                    'linear-gradient(to right, rgb(8, 145, 178), rgb(37, 99, 235), rgb(20, 184, 166))'
+                  ]
+                }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              >
                 Evoluciona
-              </span>
+              </motion.span>
               <br />
               <span className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 bg-clip-text text-transparent">
                 tus Finanzas
@@ -493,7 +553,7 @@ export default function Landing() {
               className="inline-block mb-6"
             >
               <img 
-                src={evofinzLogo} 
+                src={phoenixLogo} 
                 alt="EvoFinz" 
                 className="h-20 w-auto mx-auto"
                 style={{ filter: 'brightness(0) invert(1) drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
@@ -524,7 +584,7 @@ export default function Landing() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <img src={evofinzLogo} alt="EvoFinz" className="h-10 w-auto" />
+              <img src={phoenixLogo} alt="EvoFinz" className="h-10 w-auto" />
               <span className="font-bold text-white">EvoFinz</span>
             </div>
             <p className="text-sm text-slate-500">
