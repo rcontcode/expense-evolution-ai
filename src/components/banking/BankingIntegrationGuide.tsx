@@ -64,12 +64,12 @@ const GUIDE_STEPS: GuideStep[] = [
       en: 'Automatic Processing' 
     },
     description: { 
-      es: 'La IA analiza y categoriza cada transacción', 
-      en: 'AI analyzes and categorizes each transaction' 
+      es: 'EvoFinz analiza y categoriza cada transacción', 
+      en: 'EvoFinz analyzes and categorizes each transaction' 
     },
     tooltip: { 
-      es: 'Nuestra IA detecta automáticamente: comercios conocidos, pagos recurrentes (suscripciones), categorías de gasto, y posibles anomalías. Todo en segundos.', 
-      en: 'Our AI automatically detects: known merchants, recurring payments (subscriptions), spending categories, and possible anomalies. All in seconds.' 
+      es: 'EvoFinz detecta automáticamente: comercios conocidos, pagos recurrentes (suscripciones), categorías de gasto, y posibles anomalías. Todo en segundos.', 
+      en: 'EvoFinz automatically detects: known merchants, recurring payments (subscriptions), spending categories, and possible anomalies. All in seconds.'
     },
     badge: { es: 'Automático', en: 'Automatic' }
   },
@@ -284,8 +284,8 @@ export function BankingIntegrationGuide({ onImportClick }: BankingIntegrationGui
                     </p>
                     <p className="text-sm">
                       {language === 'es' 
-                        ? 'Sube el PDF de tu estado de cuenta electrónico. La IA analiza el documento y extrae las transacciones automáticamente.'
-                        : 'Upload the PDF of your electronic statement. The AI analyzes the document and extracts transactions automatically.'}
+                        ? 'Sube el PDF de tu estado de cuenta electrónico. EvoFinz analiza el documento y extrae las transacciones automáticamente.'
+                        : 'Upload the PDF of your electronic statement. EvoFinz analyzes the document and extracts transactions automatically.'}
                     </p>
                   </TooltipContent>
                 </Tooltip>

@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     question: '¿Puedo importar mis datos bancarios?',
-    answer: 'Sí, puedes importar extractos bancarios en formato CSV/OFX. La IA analiza las transacciones, detecta patrones y categoriza automáticamente. También detecta suscripciones recurrentes.'
+    answer: 'Sí, puedes importar extractos bancarios en formato CSV/OFX. EvoFinz analiza las transacciones, detecta patrones y categoriza automáticamente. También detecta suscripciones recurrentes.'
   },
   {
     question: '¿Hay una versión gratuita?',

@@ -466,12 +466,12 @@ export const PAGE_GUIDES = {
     ],
     workflows: [
       { step: 1, title: { es: 'Subir', en: 'Upload' }, description: { es: 'PDF/imagen', en: 'PDF/image' } },
-      { step: 2, title: { es: 'IA Analiza', en: 'AI Analyzes' }, description: { es: 'Extrae términos', en: 'Extracts terms' } },
+      { step: 2, title: { es: 'Análisis Smart', en: 'Smart Analysis' }, description: { es: 'Extrae términos', en: 'Extracts terms' } },
       { step: 3, title: { es: 'Revisar', en: 'Review' }, description: { es: 'Agregar notas', en: 'Add notes' } },
       { step: 4, title: { es: 'Usar', en: 'Use' }, description: { es: 'Clasificar gastos', en: 'Classify expenses' } }
     ],
     tips: [
-      { es: 'tus notas en los contratos tienen prioridad sobre la extracción de IA para clasificar gastos.', en: 'your notes on contracts take priority over AI extraction for classifying expenses.' },
+      { es: 'tus notas en los contratos tienen prioridad sobre la extracción inteligente para clasificar gastos.', en: 'your notes on contracts take priority over smart extraction for classifying expenses.' },
       { es: 'los términos extraídos se usan automáticamente para sugerir reembolsos en gastos.', en: 'extracted terms are automatically used to suggest reimbursements on expenses.' }
     ]
   }

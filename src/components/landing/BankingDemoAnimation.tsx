@@ -138,7 +138,7 @@ export function BankingDemoAnimation() {
                     transition={{ duration: 1.5, repeat: Infinity }}
                     className="mt-4 text-sm font-medium text-slate-600"
                   >
-                    IA analizando...
+                    Analizando...
                   </motion.p>
                   <div className="mt-2 space-y-1 text-center">
                     <motion.p

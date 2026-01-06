@@ -228,7 +228,7 @@ export function DashboardDemoAnimation() {
               transition={{ delay: 0.2 }}
               className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-purple-600 border border-purple-100"
             >
-              🎯 Predicciones IA
+              🎯 Predicciones Smart
             </motion.div>
           </>
         )}
