@@ -560,11 +560,11 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
                   <div className="w-16 h-16 rounded-2xl bg-success/10 flex items-center justify-center mx-auto">
                     <Camera className="h-8 w-8 text-success" />
                   </div>
-                  <h3 className="font-bold">{language === 'es' ? 'Tomar foto con IA' : 'Take photo with AI'}</h3>
+                  <h3 className="font-bold">{language === 'es' ? 'Captura Inteligente' : 'Smart Capture'}</h3>
                   <p className="text-sm text-muted-foreground">
                     {language === 'es' 
-                      ? 'Fotografía tu estado impreso y la IA extraerá los datos'
-                      : 'Photograph your printed statement and AI will extract the data'}
+                      ? 'Fotografía tu estado impreso y EvoFinz extraerá los datos'
+                      : 'Photograph your printed statement and EvoFinz will extract the data'}
                   </p>
                 </CardContent>
               </Card>

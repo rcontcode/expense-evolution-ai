@@ -591,8 +591,8 @@ export default function ChaosInbox() {
                 </h3>
                 <p className="text-muted-foreground text-center max-w-md mb-6">
                   {language === 'es' 
-                    ? 'Sube fotos de tus recibos y la IA extraerá automáticamente el vendedor, monto, fecha y categoría.'
-                    : 'Upload photos of your receipts and AI will automatically extract vendor, amount, date and category.'}
+                    ? 'Sube fotos de tus recibos y EvoFinz extraerá automáticamente el vendedor, monto, fecha y categoría.'
+                    : 'Upload photos of your receipts and EvoFinz will automatically extract vendor, amount, date and category.'}
                 </p>
                 <div className="flex gap-2">
                   <Button

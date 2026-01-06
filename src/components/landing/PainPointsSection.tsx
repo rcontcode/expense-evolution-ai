@@ -65,7 +65,7 @@ const categories = [
     painPoints: [
       { before: '🔀 Confusión entre proyectos', after: '📂 Separación clara por cliente' },
       { before: '🤷 No saber cuánto cobrar', after: '💵 Rentabilidad en tiempo real' },
-      { before: '📁 Contratos perdidos', after: '🤖 Análisis IA de términos' },
+      { before: '📁 Contratos perdidos', after: '🔍 Análisis automático de términos' },
       { before: '⏳ Clientes con pagos atrasados', after: '🔔 Alertas de cobro' },
       { before: '✍️ Reportes manuales', after: '📤 Exportación profesional' },
       { before: '❓ Sin saber quién es rentable', after: '📊 Analytics por cliente' },

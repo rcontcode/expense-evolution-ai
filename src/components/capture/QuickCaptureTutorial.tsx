@@ -26,8 +26,8 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     icon: Camera,
     title: { es: 'Captura tu recibo', en: 'Capture your receipt' },
     description: { 
-      es: 'Toma una foto de tu recibo o factura. La IA funciona mejor con fotos claras y bien iluminadas.',
-      en: 'Take a photo of your receipt or invoice. AI works best with clear, well-lit photos.'
+      es: 'Toma una foto de tu recibo o factura. EvoFinz funciona mejor con fotos claras y bien iluminadas.',
+      en: 'Take a photo of your receipt or invoice. EvoFinz works best with clear, well-lit photos.'
     },
     tip: {
       es: 'Asegúrate de que el texto sea legible y toda la información importante sea visible.',
@@ -36,14 +36,14 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   },
   {
     icon: Sparkles,
-    title: { es: 'Procesamiento con IA', en: 'AI Processing' },
+    title: { es: 'Procesamiento Inteligente', en: 'Smart Processing' },
     description: {
-      es: 'Nuestra IA analiza automáticamente tu recibo y extrae: vendedor, monto, fecha, categoría y más.',
-      en: 'Our AI automatically analyzes your receipt and extracts: vendor, amount, date, category, and more.'
+      es: 'EvoFinz analiza automáticamente tu recibo y extrae: vendedor, monto, fecha, categoría y más.',
+      en: 'EvoFinz automatically analyzes your receipt and extracts: vendor, amount, date, category, and more.'
     },
     tip: {
-      es: 'La IA también detecta si el gasto es deducible para CRA y si es típicamente reembolsable.',
-      en: 'The AI also detects if the expense is CRA deductible and typically reimbursable.'
+      es: 'También detectamos si el gasto es deducible para CRA y si es típicamente reembolsable.',
+      en: 'We also detect if the expense is CRA deductible and typically reimbursable.'
     }
   },
   {
@@ -54,8 +54,8 @@ const TUTORIAL_STEPS: TutorialStep[] = [
       en: 'Review the extracted data and make corrections if needed. You can change category, assign client, etc.'
     },
     tip: {
-      es: 'Si la IA comete un error, tus correcciones ayudan a mejorar futuras extracciones.',
-      en: 'If the AI makes a mistake, your corrections help improve future extractions.'
+      es: 'Si hay algún error, tus correcciones ayudan a mejorar futuras extracciones.',
+      en: 'If there is any error, your corrections help improve future extractions.'
     }
   },
   {
@@ -66,8 +66,8 @@ const TUTORIAL_STEPS: TutorialStep[] = [
       en: 'Once satisfied, save the expense. The photo is linked to the record for future reference.'
     },
     tip: {
-      es: 'Si hay múltiples items, la IA los detecta y puedes guardarlos uno por uno.',
-      en: 'If there are multiple items, the AI detects them and you can save them one by one.'
+      es: 'Si hay múltiples items, EvoFinz los detecta y puedes guardarlos uno por uno.',
+      en: 'If there are multiple items, EvoFinz detects them and you can save them one by one.'
     }
   }
 ];
