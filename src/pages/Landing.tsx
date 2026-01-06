@@ -16,6 +16,7 @@ import phoenixLogo from '@/assets/phoenix-clean-logo.png';
 import { TransformationCarousel } from '@/components/landing/TransformationCarousel';
 import { FloatingStars } from '@/components/landing/FloatingStars';
 import { FeaturesShowcase } from '@/components/landing/FeaturesShowcase';
+import { AnimatedStats } from '@/components/landing/AnimatedStats';
 
 const features = [
   { icon: Camera, title: 'Captura Inteligente', description: 'OCR + Voz con IA', tier: 'Pro', color: 'from-orange-500 to-red-500' },
@@ -384,6 +385,9 @@ export default function Landing() {
 
       {/* Features Showcase - Auto-scrolling */}
       <FeaturesShowcase />
+
+      {/* Animated Stats */}
+      <AnimatedStats />
 
       {/* Features Grid */}
       <section className="relative py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
