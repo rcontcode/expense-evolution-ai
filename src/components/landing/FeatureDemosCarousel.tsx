@@ -1,11 +1,16 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Camera, Wallet, BarChart3, Car, Building2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Camera, Wallet, BarChart3, Car, Building2, Trophy, FileText, Flame, GraduationCap, Calculator } from "lucide-react";
 import { ReceiptDemoAnimation } from "./ReceiptDemoAnimation";
 import { NetWorthDemoAnimation } from "./NetWorthDemoAnimation";
 import { DashboardDemoAnimation } from "./DashboardDemoAnimation";
 import { MileageDemoAnimation } from "./MileageDemoAnimation";
 import { BankingDemoAnimation } from "./BankingDemoAnimation";
+import { GamificationDemoAnimation } from "./GamificationDemoAnimation";
+import { ContractsDemoAnimation } from "./ContractsDemoAnimation";
+import { FIREDemoAnimation } from "./FIREDemoAnimation";
+import { EducationDemoAnimation } from "./EducationDemoAnimation";
+import { TaxOptimizerDemoAnimation } from "./TaxOptimizerDemoAnimation";
 
 const demos = [
   { 
@@ -19,7 +24,7 @@ const demos = [
   { 
     id: "networth", 
     title: "Patrimonio Neto", 
-    subtitle: "Activos vs Pasivos con proyección",
+    subtitle: "Solo activos que generan ingreso",
     icon: Wallet,
     color: "from-emerald-500 to-teal-600",
     component: NetWorthDemoAnimation 
@@ -31,6 +36,46 @@ const demos = [
     icon: BarChart3,
     color: "from-violet-500 to-purple-600",
     component: DashboardDemoAnimation 
+  },
+  { 
+    id: "gamification", 
+    title: "Gamificación", 
+    subtitle: "XP, niveles, logros y rachas",
+    icon: Trophy,
+    color: "from-amber-500 to-orange-600",
+    component: GamificationDemoAnimation 
+  },
+  { 
+    id: "contracts", 
+    title: "Contratos IA", 
+    subtitle: "Extracción automática de términos",
+    icon: FileText,
+    color: "from-indigo-500 to-blue-600",
+    component: ContractsDemoAnimation 
+  },
+  { 
+    id: "fire", 
+    title: "Calculadora FIRE", 
+    subtitle: "Financial Independence Retire Early",
+    icon: Flame,
+    color: "from-orange-500 to-red-600",
+    component: FIREDemoAnimation 
+  },
+  { 
+    id: "education", 
+    title: "Educación Financiera", 
+    subtitle: "Tracking de libros y lecciones",
+    icon: GraduationCap,
+    color: "from-green-500 to-emerald-600",
+    component: EducationDemoAnimation 
+  },
+  { 
+    id: "tax", 
+    title: "Tax Optimizer IA", 
+    subtitle: "Maximiza deducciones CRA",
+    icon: Calculator,
+    color: "from-cyan-500 to-teal-600",
+    component: TaxOptimizerDemoAnimation 
   },
   { 
     id: "mileage", 
