@@ -177,16 +177,7 @@ export default function Landing() {
     }
   };
 
-  // Scroll-based parallax for hero
-  const heroRef = useRef(null);
-  const { scrollYProgress: heroScrollProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"]
-  });
-  
-  const heroY = useTransform(heroScrollProgress, [0, 1], [0, 200]);
-  const heroOpacity = useTransform(heroScrollProgress, [0, 0.5, 1], [1, 0.8, 0.3]);
-  const heroScale = useTransform(heroScrollProgress, [0, 1], [1, 0.9]);
+  // Hero ref (no parallax)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 overflow-hidden">
@@ -245,13 +236,11 @@ export default function Landing() {
         </ParallaxLayer>
       </div>
 
-      {/* Hero Section with parallax */}
-      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center py-20">
+      {/* Hero Section */}
+      <section className="relative min-h-screen flex items-center justify-center py-20">
         {/* Floating Stars Background */}
         <FloatingStars />
-        <motion.div 
-          style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
-          className="container mx-auto px-4 relative z-10"
+        <div className="container mx-auto px-4 relative z-10"
         >
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
@@ -455,7 +444,7 @@ export default function Landing() {
 
 
           </motion.div>
-        </motion.div>
+        </div>
       </section>
 
       {/* Pain Points - Show the problem first */}
