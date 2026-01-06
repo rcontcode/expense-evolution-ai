@@ -482,7 +482,7 @@ export default function Landing() {
               transition={{ duration: 1, ease: "easeOut" }}
             />
             
-            {/* Center icon */}
+            {/* Center animated arrow */}
             <motion.div
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
               initial={{ scale: 0, opacity: 0 }}
@@ -492,10 +492,10 @@ export default function Landing() {
             >
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/30">
                 <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  animate={{ y: [0, 4, 0] }}
+                  transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  <Sparkles className="w-5 h-5 text-white" />
+                  <ChevronRight className="w-6 h-6 text-white rotate-90" />
                 </motion.div>
               </div>
             </motion.div>
