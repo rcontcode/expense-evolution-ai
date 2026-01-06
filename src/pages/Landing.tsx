@@ -188,11 +188,11 @@ export default function Landing() {
                 />
               </div>
               {/* Logo container with intentional circular clipping */}
-              <div className="relative z-10 w-36 h-36 md:w-44 md:h-44 rounded-full bg-white shadow-2xl flex items-center justify-center overflow-hidden ring-4 ring-white/80 ring-offset-4 ring-offset-transparent">
+              <div className="relative z-10 w-44 h-44 md:w-52 md:h-52 rounded-full bg-white shadow-2xl flex items-center justify-center overflow-hidden ring-4 ring-white/80 ring-offset-4 ring-offset-transparent">
                 <img 
                   src={phoenixLogo} 
                   alt="EvoFinz Phoenix" 
-                  className="w-full h-full object-cover scale-125"
+                  className="w-[85%] h-[85%] object-contain"
                 />
               </div>
               {/* Brand name below logo */}
