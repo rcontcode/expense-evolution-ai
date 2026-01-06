@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { 
   Camera, Receipt, FileText, Calculator, Trophy, GraduationCap,
   BarChart3, BookOpen, Building2, CreditCard, Mic, TrendingUp,
@@ -19,6 +19,52 @@ import { FeaturesShowcase } from '@/components/landing/FeaturesShowcase';
 import { AnimatedStats } from '@/components/landing/AnimatedStats';
 import { TestimonialsCarousel } from '@/components/landing/TestimonialsCarousel';
 import { FeatureDemosCarousel } from '@/components/landing/FeatureDemosCarousel';
+
+// Parallax wrapper component for scroll-based animations
+function ParallaxSection({ 
+  children, 
+  speed = 0.5, 
+  className = "" 
+}: { 
+  children: React.ReactNode; 
+  speed?: number; 
+  className?: string;
+}) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"]
+  });
+  
+  const y = useTransform(scrollYProgress, [0, 1], [100 * speed, -100 * speed]);
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.6, 1, 1, 0.6]);
+  
+  return (
+    <motion.div ref={ref} style={{ y, opacity }} className={className}>
+      {children}
+    </motion.div>
+  );
+}
+
+// Parallax background layer for depth effects
+function ParallaxLayer({ 
+  speed, 
+  className, 
+  children 
+}: { 
+  speed: number; 
+  className?: string; 
+  children?: React.ReactNode;
+}) {
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 3000], [0, 3000 * speed]);
+  
+  return (
+    <motion.div style={{ y }} className={className}>
+      {children}
+    </motion.div>
+  );
+}
 
 const features = [
   { icon: Camera, title: 'Captura Inteligente', description: 'OCR + Voz con IA', tier: 'Pro', color: 'from-orange-500 to-red-500' },
@@ -124,50 +170,82 @@ export default function Landing() {
     }
   };
 
+  // Scroll-based parallax for hero
+  const heroRef = useRef(null);
+  const { scrollYProgress: heroScrollProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  });
+  
+  const heroY = useTransform(heroScrollProgress, [0, 1], [0, 200]);
+  const heroOpacity = useTransform(heroScrollProgress, [0, 0.5, 1], [1, 0.8, 0.3]);
+  const heroScale = useTransform(heroScrollProgress, [0, 1], [1, 0.9]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 overflow-hidden">
-      {/* Animated Background with alternating colors */}
-      <div className="fixed inset-0 pointer-events-none">
-        {/* Animated gradient orbs - alternating between cool and warm */}
-        <motion.div 
-          className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-40 blur-[120px]"
-          animate={{
-            background: [
-              'linear-gradient(to bottom right, rgb(34, 211, 238, 0.4), rgb(59, 130, 246, 0.3), rgb(20, 184, 166, 0.4))',
-              'linear-gradient(to bottom right, rgb(251, 146, 60, 0.4), rgb(239, 68, 68, 0.3), rgb(245, 158, 11, 0.4))',
-              'linear-gradient(to bottom right, rgb(34, 211, 238, 0.4), rgb(59, 130, 246, 0.3), rgb(20, 184, 166, 0.4))'
-            ]
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div 
-          className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full opacity-30 blur-[100px]"
-          animate={{
-            background: [
-              'linear-gradient(to bottom right, rgb(251, 191, 36, 0.3), rgb(249, 115, 22, 0.2), rgb(254, 240, 138, 0.3))',
-              'linear-gradient(to bottom right, rgb(34, 211, 238, 0.3), rgb(99, 102, 241, 0.2), rgb(139, 92, 246, 0.3))',
-              'linear-gradient(to bottom right, rgb(251, 191, 36, 0.3), rgb(249, 115, 22, 0.2), rgb(254, 240, 138, 0.3))'
-            ]
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 4 }}
-        />
+      {/* Animated Background with parallax layers */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {/* Parallax gradient orbs - different speeds for depth */}
+        <ParallaxLayer speed={-0.15} className="absolute inset-0">
+          <motion.div 
+            className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-40 blur-[120px]"
+            animate={{
+              background: [
+                'linear-gradient(to bottom right, rgb(34, 211, 238, 0.4), rgb(59, 130, 246, 0.3), rgb(20, 184, 166, 0.4))',
+                'linear-gradient(to bottom right, rgb(251, 146, 60, 0.4), rgb(239, 68, 68, 0.3), rgb(245, 158, 11, 0.4))',
+                'linear-gradient(to bottom right, rgb(34, 211, 238, 0.4), rgb(59, 130, 246, 0.3), rgb(20, 184, 166, 0.4))'
+              ]
+            }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </ParallaxLayer>
         
-        {/* Grid pattern */}
-        <div 
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `linear-gradient(rgba(0,0,0,.1) 1px, transparent 1px), 
-                              linear-gradient(90deg, rgba(0,0,0,.1) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px'
-          }}
-        />
+        <ParallaxLayer speed={-0.25} className="absolute inset-0">
+          <motion.div 
+            className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full opacity-30 blur-[100px]"
+            animate={{
+              background: [
+                'linear-gradient(to bottom right, rgb(251, 191, 36, 0.3), rgb(249, 115, 22, 0.2), rgb(254, 240, 138, 0.3))',
+                'linear-gradient(to bottom right, rgb(34, 211, 238, 0.3), rgb(99, 102, 241, 0.2), rgb(139, 92, 246, 0.3))',
+                'linear-gradient(to bottom right, rgb(251, 191, 36, 0.3), rgb(249, 115, 22, 0.2), rgb(254, 240, 138, 0.3))'
+              ]
+            }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+          />
+        </ParallaxLayer>
+
+        {/* Additional parallax decorative elements */}
+        <ParallaxLayer speed={-0.1} className="absolute inset-0">
+          <div className="absolute top-1/3 right-10 w-32 h-32 bg-cyan-400/10 rounded-full blur-2xl" />
+          <div className="absolute top-2/3 left-20 w-48 h-48 bg-orange-400/10 rounded-full blur-2xl" />
+        </ParallaxLayer>
+        
+        <ParallaxLayer speed={-0.35} className="absolute inset-0">
+          <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-violet-400/15 rounded-full blur-xl" />
+          <div className="absolute bottom-1/4 right-1/3 w-40 h-40 bg-emerald-400/10 rounded-full blur-2xl" />
+        </ParallaxLayer>
+        
+        {/* Grid pattern - slower parallax */}
+        <ParallaxLayer speed={-0.05} className="absolute inset-0">
+          <div 
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: `linear-gradient(rgba(0,0,0,.1) 1px, transparent 1px), 
+                                linear-gradient(90deg, rgba(0,0,0,.1) 1px, transparent 1px)`,
+              backgroundSize: '60px 60px'
+            }}
+          />
+        </ParallaxLayer>
       </div>
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center py-20">
+      {/* Hero Section with parallax */}
+      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center py-20">
         {/* Floating Stars Background */}
         <FloatingStars />
-        <div className="container mx-auto px-4 relative z-10">
+        <motion.div 
+          style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
+          className="container mx-auto px-4 relative z-10"
+        >
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -393,22 +471,40 @@ export default function Landing() {
             </motion.div>
 
           </motion.div>
-        </div>
+        </motion.div>
       </section>
 
-      {/* Transformation Journey Carousel */}
-      <TransformationCarousel />
+      {/* Transformation Journey Carousel with parallax wrapper */}
+      <ParallaxSection speed={0.2}>
+        <TransformationCarousel />
+      </ParallaxSection>
 
       {/* Features Showcase - Auto-scrolling */}
       <FeaturesShowcase />
 
-      {/* Animated Stats */}
-      <AnimatedStats />
+      {/* Animated Stats with parallax */}
+      <ParallaxSection speed={0.15}>
+        <AnimatedStats />
+      </ParallaxSection>
 
-      {/* Testimonials */}
-      <TestimonialsCarousel />
-      <section className="relative py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-        <div className="container mx-auto px-4">
+      {/* Testimonials with subtle parallax */}
+      <ParallaxSection speed={0.1}>
+        <TestimonialsCarousel />
+      </ParallaxSection>
+      {/* 12 Modules Section with parallax background */}
+      <section className="relative py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
+        {/* Parallax decorative elements */}
+        <ParallaxLayer speed={0.2} className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-10 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 right-10 w-80 h-80 bg-violet-500/10 rounded-full blur-3xl" />
+        </ParallaxLayer>
+        
+        <ParallaxLayer speed={0.35} className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl" />
+          <div className="absolute top-1/3 right-1/4 w-40 h-40 bg-amber-500/10 rounded-full blur-2xl" />
+        </ParallaxLayer>
+
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -470,9 +566,15 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="relative py-24 bg-slate-950">
-        <div className="container mx-auto px-4">
+      {/* Pricing Section with parallax */}
+      <section className="relative py-24 bg-slate-950 overflow-hidden">
+        {/* Parallax background elements */}
+        <ParallaxLayer speed={0.15} className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-20 w-72 h-72 bg-violet-600/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-20 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
+        </ParallaxLayer>
+
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -561,11 +663,26 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Final CTA */}
+      {/* Final CTA with parallax */}
       <section className="relative py-24 overflow-hidden">
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-orange-600 via-amber-600 to-yellow-500" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjA1Ii8+PC9nPjwvc3ZnPg==')] opacity-30" />
+        
+        {/* Parallax pattern */}
+        <ParallaxLayer speed={0.2} className="absolute inset-0">
+          <div 
+            className="absolute inset-0 opacity-30"
+            style={{
+              backgroundImage: `url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjA1Ii8+PC9nPjwvc3ZnPg==')`
+            }}
+          />
+        </ParallaxLayer>
+        
+        {/* Floating parallax circles */}
+        <ParallaxLayer speed={0.3} className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-10 left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+          <div className="absolute bottom-10 right-10 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
+        </ParallaxLayer>
         
         <div className="container mx-auto px-4 text-center relative z-10">
           <motion.div
