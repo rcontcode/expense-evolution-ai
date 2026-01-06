@@ -10,7 +10,7 @@ import {
   Camera, Receipt, FileText, Calculator, Trophy, GraduationCap,
   BarChart3, BookOpen, Building2, CreditCard, Mic, TrendingUp,
   ArrowRight, Check, Sparkles, Shield, Zap, Gift, Loader2, CheckCircle2, XCircle,
-  Star, Flame, Target, Crown
+  Star, Flame, Target, Crown, Heart, AlertTriangle, Clock, Lightbulb, ChevronRight, Quote
 } from 'lucide-react';
 import phoenixLogo from '@/assets/phoenix-clean-logo.png';
 
@@ -370,6 +370,272 @@ export default function Landing() {
               </motion.div>
             )}
 
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Hero's Journey Emotional Carousel */}
+      <section className="relative py-16 overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-purple-500/5 via-pink-500/5 to-orange-500/5 rounded-full blur-3xl" />
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-10"
+          >
+            <Badge className="mb-4 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border-purple-500/30">
+              <Heart className="w-4 h-4 mr-2 inline animate-pulse" />
+              Tu Viaje de Transformación
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-black">
+              <span className="text-white">Del Caos al </span>
+              <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-orange-400 bg-clip-text text-transparent">Control Total</span>
+            </h2>
+          </motion.div>
+
+          {/* Emotional Journey Carousel */}
+          <div className="relative">
+            <motion.div 
+              className="flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-hide"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {/* 1. MIEDOS - Fear Phase */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="flex-shrink-0 w-[320px] md:w-[380px] snap-center"
+              >
+                <div className="relative group h-full">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 rounded-2xl blur-lg opacity-40 group-hover:opacity-60 transition duration-500 animate-pulse" />
+                  <div className="relative h-full bg-gradient-to-br from-red-950/90 via-slate-900 to-orange-950/90 backdrop-blur-xl rounded-xl p-6 border border-red-500/30 overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/20 rounded-full blur-2xl" />
+                    <div className="absolute -bottom-4 -left-4 text-red-500/10 text-[120px] font-black">1</div>
+                    
+                    <div className="relative z-10">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center mb-4 shadow-lg shadow-red-500/30">
+                        <AlertTriangle className="w-7 h-7 text-white" />
+                      </div>
+                      <span className="text-xs font-bold text-red-400 tracking-widest">FASE 1</span>
+                      <h3 className="text-2xl font-black text-white mt-1 mb-3">Los Miedos</h3>
+                      <p className="text-slate-300 text-sm leading-relaxed mb-4">
+                        "¿A dónde se fue mi dinero?" El caos financiero genera ansiedad, noches sin dormir y la sensación de perder el control.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-3 py-1 bg-red-500/20 text-red-300 rounded-full text-xs">Caos</span>
+                        <span className="px-3 py-1 bg-red-500/20 text-red-300 rounded-full text-xs">Ansiedad</span>
+                        <span className="px-3 py-1 bg-red-500/20 text-red-300 rounded-full text-xs">Incertidumbre</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* 2. TEMORES - Fear of Future */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="flex-shrink-0 w-[320px] md:w-[380px] snap-center"
+              >
+                <div className="relative group h-full">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-amber-600 via-yellow-500 to-orange-500 rounded-2xl blur-lg opacity-40 group-hover:opacity-60 transition duration-500" />
+                  <div className="relative h-full bg-gradient-to-br from-amber-950/90 via-slate-900 to-yellow-950/90 backdrop-blur-xl rounded-xl p-6 border border-amber-500/30 overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl" />
+                    <div className="absolute -bottom-4 -left-4 text-amber-500/10 text-[120px] font-black">2</div>
+                    
+                    <div className="relative z-10">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center mb-4 shadow-lg shadow-amber-500/30">
+                        <Clock className="w-7 h-7 text-white" />
+                      </div>
+                      <span className="text-xs font-bold text-amber-400 tracking-widest">FASE 2</span>
+                      <h3 className="text-2xl font-black text-white mt-1 mb-3">Los Temores</h3>
+                      <p className="text-slate-300 text-sm leading-relaxed mb-4">
+                        "¿Y si pierdo todo?" El miedo al futuro, a las multas fiscales, a no poder proveer para tu familia te paraliza.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full text-xs">Multas</span>
+                        <span className="px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full text-xs">Futuro incierto</span>
+                        <span className="px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full text-xs">Parálisis</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* 3. DESPERTAR - Awakening */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="flex-shrink-0 w-[320px] md:w-[380px] snap-center"
+              >
+                <div className="relative group h-full">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-cyan-600 via-blue-500 to-teal-500 rounded-2xl blur-lg opacity-40 group-hover:opacity-60 transition duration-500" />
+                  <div className="relative h-full bg-gradient-to-br from-cyan-950/90 via-slate-900 to-blue-950/90 backdrop-blur-xl rounded-xl p-6 border border-cyan-500/30 overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/20 rounded-full blur-2xl" />
+                    <div className="absolute -bottom-4 -left-4 text-cyan-500/10 text-[120px] font-black">3</div>
+                    
+                    <div className="relative z-10">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center mb-4 shadow-lg shadow-cyan-500/30">
+                        <Lightbulb className="w-7 h-7 text-white" />
+                      </div>
+                      <span className="text-xs font-bold text-cyan-400 tracking-widest">FASE 3</span>
+                      <h3 className="text-2xl font-black text-white mt-1 mb-3">El Despertar</h3>
+                      <p className="text-slate-300 text-sm leading-relaxed mb-4">
+                        "¡Hay una mejor manera!" Descubres EvoFinz y sientes esperanza. La claridad comienza a iluminar tu camino.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-full text-xs">Esperanza</span>
+                        <span className="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-full text-xs">Decisión</span>
+                        <span className="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-full text-xs">Claridad</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* 4. TRANSFORMACIÓN - Transformation */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+                className="flex-shrink-0 w-[320px] md:w-[380px] snap-center"
+              >
+                <div className="relative group h-full">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-violet-500 to-fuchsia-500 rounded-2xl blur-lg opacity-40 group-hover:opacity-60 transition duration-500 animate-[pulse_3s_ease-in-out_infinite]" />
+                  <div className="relative h-full bg-gradient-to-br from-purple-950/90 via-slate-900 to-violet-950/90 backdrop-blur-xl rounded-xl p-6 border border-purple-500/30 overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl" />
+                    <div className="absolute -bottom-4 -left-4 text-purple-500/10 text-[120px] font-black">4</div>
+                    
+                    <div className="relative z-10">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center mb-4 shadow-lg shadow-purple-500/30 animate-pulse">
+                        <Flame className="w-7 h-7 text-white" />
+                      </div>
+                      <span className="text-xs font-bold text-purple-400 tracking-widest">FASE 4</span>
+                      <h3 className="text-2xl font-black text-white mt-1 mb-3">La Transformación</h3>
+                      <p className="text-slate-300 text-sm leading-relaxed mb-4">
+                        "¡Ahora entiendo!" Cada recibo escaneado, cada gasto categorizado te acerca a la maestría financiera.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs">Crecimiento</span>
+                        <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs">Aprendizaje</span>
+                        <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs">Progreso</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* 5. SUEÑOS - Dreams */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.5 }}
+                className="flex-shrink-0 w-[320px] md:w-[380px] snap-center"
+              >
+                <div className="relative group h-full">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-pink-600 via-rose-500 to-red-500 rounded-2xl blur-lg opacity-40 group-hover:opacity-60 transition duration-500" />
+                  <div className="relative h-full bg-gradient-to-br from-pink-950/90 via-slate-900 to-rose-950/90 backdrop-blur-xl rounded-xl p-6 border border-pink-500/30 overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/20 rounded-full blur-2xl" />
+                    <div className="absolute -bottom-4 -left-4 text-pink-500/10 text-[120px] font-black">5</div>
+                    
+                    <div className="relative z-10">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mb-4 shadow-lg shadow-pink-500/30">
+                        <Heart className="w-7 h-7 text-white" />
+                      </div>
+                      <span className="text-xs font-bold text-pink-400 tracking-widest">FASE 5</span>
+                      <h3 className="text-2xl font-black text-white mt-1 mb-3">Los Sueños</h3>
+                      <p className="text-slate-300 text-sm leading-relaxed mb-4">
+                        "¡Puedo lograrlo!" Visualizas la casa propia, los viajes, la educación de tus hijos. Tus metas tienen fecha.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-3 py-1 bg-pink-500/20 text-pink-300 rounded-full text-xs">Visión</span>
+                        <span className="px-3 py-1 bg-pink-500/20 text-pink-300 rounded-full text-xs">Metas</span>
+                        <span className="px-3 py-1 bg-pink-500/20 text-pink-300 rounded-full text-xs">Propósito</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* 6. VICTORIA - Victory */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.6 }}
+                className="flex-shrink-0 w-[320px] md:w-[380px] snap-center"
+              >
+                <div className="relative group h-full">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-emerald-600 via-green-500 to-teal-500 rounded-2xl blur-lg opacity-50 group-hover:opacity-70 transition duration-500 animate-[pulse_2s_ease-in-out_infinite]" />
+                  <div className="relative h-full bg-gradient-to-br from-emerald-950/90 via-slate-900 to-green-950/90 backdrop-blur-xl rounded-xl p-6 border border-emerald-500/30 overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl" />
+                    <div className="absolute -bottom-4 -left-4 text-emerald-500/10 text-[120px] font-black">6</div>
+                    
+                    <div className="relative z-10">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center mb-4 shadow-lg shadow-emerald-500/30 animate-bounce">
+                        <Trophy className="w-7 h-7 text-white" />
+                      </div>
+                      <span className="text-xs font-bold text-emerald-400 tracking-widest">FASE 6</span>
+                      <h3 className="text-2xl font-black text-white mt-1 mb-3">La Victoria</h3>
+                      <p className="text-slate-300 text-sm leading-relaxed mb-4">
+                        "¡Lo logré!" Libertad financiera alcanzada. Paz mental. Control total. Tu futuro asegurado.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-xs">Libertad</span>
+                        <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-xs">Paz</span>
+                        <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-xs">Éxito</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+
+            {/* Scroll indicator */}
+            <div className="flex justify-center mt-6 gap-2">
+              <span className="text-slate-500 text-sm flex items-center gap-2">
+                <ChevronRight className="w-4 h-4 animate-pulse" />
+                Desliza para ver tu transformación
+                <ChevronRight className="w-4 h-4 animate-pulse" />
+              </span>
+            </div>
+          </div>
+
+          {/* Motivational Quote */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="mt-12 text-center"
+          >
+            <div className="inline-block relative">
+              <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-orange-500/20 rounded-2xl blur-xl" />
+              <blockquote className="relative bg-slate-900/80 backdrop-blur-xl rounded-xl px-8 py-6 border border-slate-700/50">
+                <Quote className="w-8 h-8 text-orange-500/50 mb-2" />
+                <p className="text-xl md:text-2xl font-medium text-white italic mb-3">
+                  "El viaje de mil millas comienza con un solo paso... <br/>
+                  <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-orange-400 bg-clip-text text-transparent font-bold">
+                    Tu primer paso es hoy.
+                  </span>"
+                </p>
+                <footer className="text-slate-400 text-sm">— Lao Tzu, adaptado para tu transformación financiera</footer>
+              </blockquote>
+            </div>
           </motion.div>
         </div>
       </section>
