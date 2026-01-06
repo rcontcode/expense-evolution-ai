@@ -152,10 +152,10 @@ export const TransformationCarousel = () => {
     setCurrentIndex((prev) => (prev - 1 + journeySlides.length) % journeySlides.length);
   }, []);
 
-  // Auto-rotation
+  // Auto-rotation - 6s optimal for ~15 words per slide
   useEffect(() => {
     if (isPaused) return;
-    const interval = setInterval(nextSlide, 4000);
+    const interval = setInterval(nextSlide, 6000);
     return () => clearInterval(interval);
   }, [isPaused, nextSlide]);
 

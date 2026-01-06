@@ -324,13 +324,14 @@ export function HowItWorksSection() {
 
   const currentWorkflow = workflows[currentIndex];
 
+  // Auto-rotation - 10s optimal for ~40 words + 3 steps per workflow
   useEffect(() => {
     if (!autoPlay) return;
     
     const interval = setInterval(() => {
       setDirection(1);
       setCurrentIndex((prev) => (prev + 1) % workflows.length);
-    }, 6000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [autoPlay]);

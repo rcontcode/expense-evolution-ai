@@ -82,12 +82,13 @@ export function TestimonialsCarousel() {
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
+  // Auto-rotation - 8s optimal for ~45 words per testimonial
   useEffect(() => {
     if (isPaused) return;
     
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
+    }, 8000);
 
     return () => clearInterval(timer);
   }, [isPaused]);
@@ -226,7 +227,7 @@ export function TestimonialsCarousel() {
                 key={current}
                 initial={{ width: "0%" }}
                 animate={{ width: isPaused ? "0%" : "100%" }}
-                transition={{ duration: 5, ease: "linear" }}
+                transition={{ duration: 8, ease: "linear" }}
                 className="h-full bg-gradient-to-r from-cyan-400 to-blue-500"
               />
             </div>

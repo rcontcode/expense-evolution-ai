@@ -143,7 +143,7 @@ export function AnimatedStats() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Auto-rotate through stat sets
+  // Auto-rotate through stat sets - 8s optimal for 6 stats with animated counters
   useEffect(() => {
     if (!isInView) return;
     
@@ -153,7 +153,7 @@ export function AnimatedStats() {
         setCurrentSet(prev => (prev + 1) % allStats.length);
         setIsTransitioning(false);
       }, 400);
-    }, 6000);
+    }, 8000);
 
     return () => clearInterval(interval);
   }, [isInView]);

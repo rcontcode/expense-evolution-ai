@@ -99,12 +99,13 @@ export function FeatureDemosCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
 
+  // Auto-rotation - 15s optimal for interactive demos with animations
   useEffect(() => {
     if (!autoPlay) return;
     
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % demos.length);
-    }, 12000);
+    }, 15000);
     
     return () => clearInterval(timer);
   }, [autoPlay]);
