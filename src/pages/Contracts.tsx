@@ -7,6 +7,7 @@ import { ContractDialog } from '@/components/dialogs/ContractDialog';
 import { ContractsTable } from '@/components/tables/ContractsTable';
 import { useContracts } from '@/hooks/data/useContracts';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
+import { SectionEmptyState } from '@/components/guidance/SectionEmptyState';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { PageHeader } from '@/components/PageHeader';
 
@@ -45,8 +46,14 @@ export default function Contracts() {
           <div className="text-center py-12">
             <p className="text-muted-foreground">{t('common.loading')}</p>
           </div>
+        ) : contracts && contracts.length > 0 ? (
+          <ContractsTable contracts={contracts} />
         ) : (
-          <ContractsTable contracts={contracts || []} />
+          <SectionEmptyState 
+            section="contracts" 
+            onAction={() => setDialogOpen(true)}
+            showSampleDataButton={true}
+          />
         )}
       </div>
 

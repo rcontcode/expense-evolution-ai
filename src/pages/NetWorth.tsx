@@ -19,6 +19,7 @@ import { AssetDialog } from '@/components/net-worth/AssetDialog';
 import { LiabilityDialog } from '@/components/net-worth/LiabilityDialog';
 import { InvestmentOnboardingWizard } from '@/components/investments/InvestmentOnboardingWizard';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
+import { SectionEmptyState } from '@/components/guidance/SectionEmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Lightbulb, Sparkles, Plus, Wallet, TrendingUp, RefreshCw } from 'lucide-react';

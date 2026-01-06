@@ -15,6 +15,7 @@ import { MileageMonthlyChart } from '@/components/mileage/MileageMonthlyChart';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
+import { SectionEmptyState } from '@/components/guidance/SectionEmptyState';
 import { PageHeader } from '@/components/PageHeader';
 import {
   Select,
@@ -127,17 +128,11 @@ export default function Mileage() {
               ) : mileageRecords && mileageRecords.length > 0 ? (
                 <MileageTable data={mileageRecords} onEdit={handleEdit} />
               ) : (
-                <Card className="border-dashed">
-                  <CardContent className="flex flex-col items-center justify-center py-12">
-                    <Car className="h-12 w-12 text-muted-foreground mb-4" />
-                    <p className="text-lg font-medium">{t('mileage.noRecords')}</p>
-                    <p className="text-sm text-muted-foreground mb-4">{t('mileage.startTracking')}</p>
-                    <Button onClick={handleCreate}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      {t('mileage.addFirstTrip')}
-                    </Button>
-                  </CardContent>
-                </Card>
+                <SectionEmptyState 
+                  section="mileage" 
+                  onAction={handleCreate}
+                  showSampleDataButton={true}
+                />
               )}
             </TabsContent>
 

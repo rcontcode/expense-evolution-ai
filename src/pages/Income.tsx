@@ -17,6 +17,7 @@ import { IncomeWithRelations, ProjectWithRelations } from '@/types/income.types'
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { PageHeader } from '@/components/PageHeader';
+import { SectionEmptyState } from '@/components/guidance/SectionEmptyState';
 import {
   Plus,
   TrendingUp,
@@ -348,17 +349,11 @@ export default function Income() {
                 </Table>
               </Card>
             ) : (
-              <Card className="border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <TrendingUp className="h-12 w-12 text-muted-foreground mb-4" />
-                  <p className="text-lg font-medium">{t('income.noIncome')}</p>
-                  <p className="text-sm text-muted-foreground">{t('income.startTracking')}</p>
-                  <Button onClick={() => setIncomeDialogOpen(true)} className="mt-4">
-                    <Plus className="mr-2 h-4 w-4" />
-                    {t('income.addFirstIncome')}
-                  </Button>
-                </CardContent>
-              </Card>
+              <SectionEmptyState 
+                section="income" 
+                onAction={() => setIncomeDialogOpen(true)}
+                showSampleDataButton={true}
+              />
             )}
           </TabsContent>
 
