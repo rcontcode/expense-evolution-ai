@@ -8,6 +8,7 @@ interface StatItem {
   suffix: string;
   label: string;
   color: string;
+  glowColor: string;
 }
 
 const stats: StatItem[] = [
@@ -16,42 +17,48 @@ const stats: StatItem[] = [
     value: 10000,
     suffix: "+",
     label: "Recibos procesados",
-    color: "from-cyan-400 to-blue-500"
+    color: "from-cyan-400 to-blue-500",
+    glowColor: "rgba(34, 211, 238, 0.6)"
   },
   {
     icon: Clock,
     value: 5,
     suffix: "h/mes",
     label: "Tiempo ahorrado",
-    color: "from-orange-400 to-red-500"
+    color: "from-orange-400 to-red-500",
+    glowColor: "rgba(251, 146, 60, 0.6)"
   },
   {
     icon: TrendingUp,
     value: 98,
     suffix: "%",
     label: "Precisión IA",
-    color: "from-emerald-400 to-teal-500"
+    color: "from-emerald-400 to-teal-500",
+    glowColor: "rgba(52, 211, 153, 0.6)"
   },
   {
     icon: Users,
     value: 500,
     suffix: "+",
     label: "Beta testers activos",
-    color: "from-purple-400 to-pink-500"
+    color: "from-purple-400 to-pink-500",
+    glowColor: "rgba(192, 132, 252, 0.6)"
   },
   {
     icon: Zap,
     value: 3,
     suffix: "seg",
     label: "Procesamiento promedio",
-    color: "from-amber-400 to-orange-500"
+    color: "from-amber-400 to-orange-500",
+    glowColor: "rgba(251, 191, 36, 0.6)"
   },
   {
     icon: Shield,
     value: 100,
     suffix: "%",
     label: "Datos protegidos",
-    color: "from-blue-400 to-indigo-500"
+    color: "from-blue-400 to-indigo-500",
+    glowColor: "rgba(96, 165, 250, 0.6)"
   }
 ];
 
@@ -137,14 +144,59 @@ export function AnimatedStats() {
                 transition={{ delay: index * 0.1, duration: 0.5 }}
                 className="group"
               >
-                <div className="relative bg-white rounded-2xl p-6 shadow-lg shadow-slate-200/50 border border-slate-100 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300 hover:-translate-y-1 h-full">
-                  {/* Gradient accent */}
-                  <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-20 h-1 bg-gradient-to-r ${stat.color} rounded-b-full opacity-60 group-hover:opacity-100 transition-opacity`} />
+                <div className="relative bg-white rounded-2xl p-6 shadow-lg shadow-slate-200/50 border border-slate-100 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300 hover:-translate-y-1 h-full overflow-hidden">
+                  {/* Animated gradient accent bar */}
+                  <motion.div 
+                    className={`absolute -top-0.5 left-0 right-0 h-1.5 bg-gradient-to-r ${stat.color}`}
+                    initial={{ scaleX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 + 0.3, duration: 0.6, ease: "easeOut" }}
+                    style={{ transformOrigin: "left" }}
+                  />
                   
-                  {/* Icon */}
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} p-2.5 mb-4 shadow-lg mx-auto`}>
+                  {/* Shimmer effect on accent bar */}
+                  <motion.div 
+                    className="absolute -top-0.5 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-white/60 to-transparent"
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "200%" }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatDelay: 3 + index * 0.5,
+                      ease: "easeInOut"
+                    }}
+                  />
+                  
+                  {/* Glow effect */}
+                  <motion.div 
+                    className="absolute -top-1 left-1/2 -translate-x-1/2 w-16 h-4 blur-md rounded-full"
+                    style={{ background: stat.glowColor }}
+                    animate={{ 
+                      opacity: [0.4, 0.8, 0.4],
+                      scale: [1, 1.2, 1]
+                    }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatDelay: 1,
+                      ease: "easeInOut"
+                    }}
+                  />
+                  
+                  {/* Icon with floating animation */}
+                  <motion.div 
+                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} p-2.5 mb-4 shadow-lg mx-auto relative`}
+                    animate={{ y: [0, -4, 0] }}
+                    transition={{ 
+                      duration: 3,
+                      repeat: Infinity,
+                      delay: index * 0.2,
+                      ease: "easeInOut"
+                    }}
+                  >
                     <Icon className="w-full h-full text-white" />
-                  </div>
+                  </motion.div>
 
                   {/* Value */}
                   <div className={`text-3xl md:text-4xl font-black bg-gradient-to-r ${stat.color} bg-clip-text text-transparent mb-2 text-center`}>
