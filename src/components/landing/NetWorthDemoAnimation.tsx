@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TrendingUp, Home, Car, Coins, CreditCard, PiggyBank, ArrowUpRight, Wallet } from "lucide-react";
+import { TrendingUp, Home, Car, Coins, CreditCard, PiggyBank, ArrowUpRight, Wallet, DollarSign } from "lucide-react";
 
 type Step = "idle" | "assets" | "liabilities" | "complete";
 
 const assets = [
-  { icon: Home, label: "Casa", value: "$350,000", color: "from-emerald-400 to-green-500" },
-  { icon: Car, label: "Vehículo", value: "$28,000", color: "from-blue-400 to-cyan-500" },
-  { icon: Coins, label: "Inversiones", value: "$45,000", color: "from-amber-400 to-orange-500" },
-  { icon: PiggyBank, label: "Ahorros", value: "$12,500", color: "from-violet-400 to-purple-500" },
+  { icon: Home, label: "Casa", value: "$350,000", color: "from-emerald-400 to-green-500", income: "$1,800/mes", incomeType: "Arriendo" },
+  { icon: Car, label: "Vehículo", value: "$28,000", color: "from-blue-400 to-cyan-500", income: "$600/mes", incomeType: "Uber/Trabajo" },
+  { icon: Coins, label: "Inversiones", value: "$45,000", color: "from-amber-400 to-orange-500", income: "$380/mes", incomeType: "Dividendos" },
+  { icon: PiggyBank, label: "Ahorros", value: "$12,500", color: "from-violet-400 to-purple-500", income: "$52/mes", incomeType: "Intereses" },
 ];
 
 const liabilities = [
@@ -145,7 +145,16 @@ export function NetWorthDemoAnimation() {
                             <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center`}>
                               <Icon className="w-3.5 h-3.5 text-white" />
                             </div>
-                            <span className="flex-1 text-xs text-slate-600">{item.label}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs text-slate-600">{item.label}</span>
+                                <span className="text-[8px] px-1 py-0.5 rounded bg-emerald-100 text-emerald-600 font-medium flex items-center gap-0.5">
+                                  <DollarSign className="w-2 h-2" />
+                                  {item.incomeType}
+                                </span>
+                              </div>
+                              <p className="text-[9px] text-emerald-500">{item.income}</p>
+                            </div>
                             <span className="text-xs font-bold text-emerald-600">{item.value}</span>
                           </motion.div>
                         );
