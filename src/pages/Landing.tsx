@@ -180,13 +180,11 @@ export default function Landing() {
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-40 h-40 bg-gradient-to-br from-orange-500/50 to-red-500/50 rounded-full blur-3xl animate-pulse" />
               </div>
-              <div className="relative z-10 p-4 rounded-2xl bg-white/95 backdrop-blur-sm shadow-2xl">
-                <img 
-                  src={evofinzLogo} 
-                  alt="EvoFinz" 
-                  className="h-28 md:h-36 w-auto object-contain"
-                />
-              </div>
+              <img 
+                src={evofinzLogo} 
+                alt="EvoFinz" 
+                className="relative z-10 h-32 md:h-40 w-auto object-contain drop-shadow-2xl"
+              />
             </motion.div>
 
             {/* Main headline */}
