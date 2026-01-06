@@ -14,14 +14,14 @@ const categories = [
     name: 'Organización',
     icon: Receipt,
     color: 'from-rose-500 to-pink-600',
-    glow: 'shadow-rose-500/30',
+    glow: 'shadow-rose-500/25',
     painPoints: [
-      { before: 'Recibos perdidos', after: 'Escanea en segundos', icon: Receipt },
-      { before: 'Facturas sin clasificar', after: 'IA categoriza todo', icon: FileX },
-      { before: 'Documentos duplicados', after: 'Detección automática', icon: FileText },
-      { before: 'Contratos vencidos', after: 'Alertas de renovación', icon: FileText },
-      { before: 'Info dispersa en apps', after: 'Dashboard unificado', icon: Brain },
-      { before: 'Buscar toma horas', after: 'Búsqueda instantánea', icon: Clock },
+      { before: 'Recibos perdidos en cajones', after: 'Escanea y organiza en segundos' },
+      { before: 'Facturas sin clasificar', after: 'Categorización automática con IA' },
+      { before: 'Documentos duplicados', after: 'Detección inteligente' },
+      { before: 'Contratos vencidos sin aviso', after: 'Alertas de renovación' },
+      { before: 'Información dispersa', after: 'Dashboard unificado' },
+      { before: 'Buscar facturas toma horas', after: 'Búsqueda instantánea' },
     ]
   },
   {
@@ -29,14 +29,14 @@ const categories = [
     name: 'Tiempo',
     icon: Clock,
     color: 'from-amber-500 to-orange-600',
-    glow: 'shadow-amber-500/30',
+    glow: 'shadow-amber-500/25',
     painPoints: [
-      { before: 'Horas en Excel', after: 'Reportes automáticos', icon: Calculator },
-      { before: 'Conciliación manual', after: 'Match automático', icon: CreditCard },
-      { before: 'Kilometraje a mano', after: 'GPS + cálculo auto', icon: Car },
-      { before: 'Impuestos = semanas', after: 'T2125 en 1 click', icon: FileText },
-      { before: 'Revisar uno por uno', after: 'Batch con IA', icon: Brain },
-      { before: 'Actualizar manual', after: 'Sync en tiempo real', icon: BarChart3 },
+      { before: 'Horas en hojas de cálculo', after: 'Reportes automáticos' },
+      { before: 'Conciliación bancaria manual', after: 'Match automático' },
+      { before: 'Kilometraje calculado a mano', after: 'GPS con cálculo automático' },
+      { before: 'Preparar impuestos = semanas', after: 'T2125 listo en 1 click' },
+      { before: 'Revisar gastos uno por uno', after: 'Procesamiento batch IA' },
+      { before: 'Actualizar presupuestos manual', after: 'Sync en tiempo real' },
     ]
   },
   {
@@ -44,14 +44,14 @@ const categories = [
     name: 'Dinero',
     icon: Wallet,
     color: 'from-emerald-500 to-teal-600',
-    glow: 'shadow-emerald-500/30',
+    glow: 'shadow-emerald-500/25',
     painPoints: [
-      { before: 'Deducciones olvidadas', after: 'Sugerencias auto', icon: TrendingDown },
-      { before: 'Reembolsos perdidos', after: 'Tracking completo', icon: Briefcase },
-      { before: 'Sin ver cash flow', after: 'Proyecciones IA', icon: BarChart3 },
-      { before: 'Suscripciones ocultas', after: 'Detector activo', icon: CreditCard },
-      { before: 'Deudas sin plan', after: 'Avalanche/Snowball', icon: Scale },
-      { before: 'Ahorros estancados', after: 'Metas SMART', icon: PiggyBank },
+      { before: 'Deducciones fiscales olvidadas', after: 'Sugerencias automáticas' },
+      { before: 'Reembolsos no reclamados', after: 'Tracking por proyecto' },
+      { before: 'Sin visibilidad del cash flow', after: 'Proyecciones predictivas' },
+      { before: 'Suscripciones olvidadas', after: 'Detector de suscripciones' },
+      { before: 'Deudas sin estrategia', after: 'Plan avalanche/snowball' },
+      { before: 'Ahorros que no crecen', after: 'Metas SMART visuales' },
     ]
   },
   {
@@ -59,14 +59,14 @@ const categories = [
     name: 'Clientes',
     icon: Users,
     color: 'from-blue-500 to-indigo-600',
-    glow: 'shadow-blue-500/30',
+    glow: 'shadow-blue-500/25',
     painPoints: [
-      { before: 'Proyectos mezclados', after: 'Separación clara', icon: Users },
-      { before: '¿Cuánto cobrar?', after: 'Rentabilidad real', icon: Calculator },
-      { before: 'Contratos perdidos', after: 'Análisis IA', icon: FileText },
-      { before: 'Pagos atrasados', after: 'Alertas de cobro', icon: Clock },
-      { before: 'Reportes manuales', after: 'Export pro 1-click', icon: BarChart3 },
-      { before: '¿Cliente rentable?', after: 'Analytics por cliente', icon: TrendingDown },
+      { before: 'Confusión entre proyectos', after: 'Separación clara por cliente' },
+      { before: 'No saber cuánto cobrar', after: 'Rentabilidad en tiempo real' },
+      { before: 'Contratos perdidos', after: 'Análisis IA de términos' },
+      { before: 'Clientes con pagos atrasados', after: 'Alertas de cobro' },
+      { before: 'Reportes manuales', after: 'Exportación profesional' },
+      { before: 'Sin saber quién es rentable', after: 'Analytics por cliente' },
     ]
   },
   {
@@ -74,14 +74,14 @@ const categories = [
     name: 'Impuestos',
     icon: Building2,
     color: 'from-violet-500 to-purple-600',
-    glow: 'shadow-violet-500/30',
+    glow: 'shadow-violet-500/25',
     painPoints: [
-      { before: 'Estrés fiscal', after: 'Prep. continua', icon: Zap },
-      { before: '¿Cuánto reservar?', after: 'Estimador real-time', icon: Calculator },
-      { before: 'Fechas olvidadas', after: 'Calendario CRA', icon: Clock },
-      { before: 'GST/HST manual', after: 'Cálculo automático', icon: Receipt },
-      { before: 'Reportes incompatibles', after: '100% CRA Compliant', icon: CheckCircle2 },
-      { before: '¿Optimizo bien?', after: 'Tips RRSP/TFSA', icon: PiggyBank },
+      { before: 'Estrés en época de taxes', after: 'Preparación continua' },
+      { before: 'No saber cuánto reservar', after: 'Estimador en tiempo real' },
+      { before: 'Fechas límite olvidadas', after: 'Calendario fiscal CRA' },
+      { before: 'GST/HST calculado a mano', after: 'Cálculo automático' },
+      { before: 'Reportes incompatibles', after: '100% CRA Compliant' },
+      { before: 'Sin optimizar impuestos', after: 'Tips RRSP/TFSA' },
     ]
   },
   {
@@ -89,14 +89,14 @@ const categories = [
     name: 'Crecimiento',
     icon: Sparkles,
     color: 'from-cyan-500 to-sky-600',
-    glow: 'shadow-cyan-500/30',
+    glow: 'shadow-cyan-500/25',
     painPoints: [
-      { before: 'Sin claridad', after: 'Insights real-time', icon: Brain },
-      { before: 'Decisiones a ciegas', after: 'Predicciones IA', icon: BarChart3 },
-      { before: 'Net worth = ?', after: 'Tracking patrimonio', icon: Wallet },
-      { before: 'Sin educación', after: 'Mentoría integrada', icon: Briefcase },
-      { before: 'Metas abstractas', after: 'FIRE calculator', icon: TrendingDown },
-      { before: 'Hábitos rotos', after: 'Gamificación', icon: Sparkles },
+      { before: 'Sin claridad financiera', after: 'Dashboard con insights' },
+      { before: 'Decisiones por intuición', after: 'Analytics y predicciones IA' },
+      { before: 'Net worth desconocido', after: 'Tracking de patrimonio' },
+      { before: 'Sin educación financiera', after: 'Mentoría integrada' },
+      { before: 'Metas abstractas', after: 'FIRE calculator' },
+      { before: 'Hábitos inconsistentes', after: 'Gamificación motivadora' },
     ]
   },
 ];
@@ -140,38 +140,21 @@ export function PainPointsSection() {
         {[...Array(3)].map((_, i) => (
           <motion.div
             key={i}
-            className={`absolute w-96 h-96 rounded-full bg-gradient-to-br ${currentCategory.color} opacity-20 blur-3xl`}
+            className={`absolute w-72 h-72 rounded-full bg-gradient-to-br ${currentCategory.color} opacity-20 blur-3xl`}
             animate={{
-              x: [0, 50, -30, 0],
-              y: [0, -30, 50, 0],
+              x: [0, 40, -20, 0],
+              y: [0, -20, 40, 0],
             }}
-            transition={{ duration: 10 + i * 2, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 8 + i * 2, repeat: Infinity, ease: "easeInOut" }}
             style={{
-              left: `${20 + i * 30}%`,
-              top: `${10 + i * 25}%`,
+              left: `${10 + i * 35}%`,
+              top: `${5 + i * 20}%`,
             }}
           />
         ))}
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        {/* Compact Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-10"
-        >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-2">
-            <span className="text-red-400">Problema</span>
-            <span className="mx-3 text-slate-500">→</span>
-            <span className="text-emerald-400">Solución</span>
-          </h2>
-          <p className="text-slate-400 text-sm md:text-base">
-            36 frustraciones eliminadas en 6 categorías
-          </p>
-        </motion.div>
-
         {/* Category Pills */}
         <div className="flex justify-center mb-8">
           <div className="inline-flex flex-wrap justify-center gap-2">
@@ -187,7 +170,7 @@ export function PainPointsSection() {
                   whileTap={{ scale: 0.95 }}
                   className={`relative px-4 py-2 rounded-full font-semibold text-sm transition-all duration-300 flex items-center gap-2 ${
                     isActive 
-                      ? `bg-gradient-to-r ${category.color} text-white shadow-lg ${category.glow}` 
+                      ? `bg-gradient-to-r ${category.color} text-white shadow-xl ${category.glow}` 
                       : 'bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700/80 border border-slate-700'
                   }`}
                 >
@@ -200,7 +183,7 @@ export function PainPointsSection() {
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-center gap-3 mb-6">
+        <div className="flex items-center justify-center gap-3 mb-8">
           <motion.button
             onClick={() => {
               setActiveCategory((prev) => (prev - 1 + categories.length) % categories.length);
@@ -216,21 +199,13 @@ export function PainPointsSection() {
           
           <div className="flex items-center gap-1.5">
             {categories.map((cat, index) => (
-              <motion.button
+              <button
                 key={index}
                 onClick={() => handleCategoryClick(index)}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
-                  index === activeCategory ? 'w-6' : 'w-1.5'
+                  index === activeCategory ? `w-6 bg-gradient-to-r ${cat.color}` : 'w-1.5 bg-slate-600'
                 }`}
-                style={{
-                  background: index === activeCategory 
-                    ? `linear-gradient(to right, var(--tw-gradient-stops))` 
-                    : 'rgb(71, 85, 105)',
-                  ['--tw-gradient-from' as string]: index === activeCategory ? categories[index].color.split(' ')[0].replace('from-', '').replace('-500', '') : undefined,
-                }}
-              >
-                <div className={`h-full rounded-full bg-gradient-to-r ${index === activeCategory ? cat.color : ''}`} />
-              </motion.button>
+              />
             ))}
           </div>
           
@@ -248,83 +223,103 @@ export function PainPointsSection() {
           </motion.button>
         </div>
 
-        {/* Pain Points Grid - Horizontal Layout */}
+        {/* Before / After Comparison */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeCategory}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-w-6xl mx-auto"
+            className="max-w-5xl mx-auto"
           >
-            {currentCategory.painPoints.map((point, index) => {
-              const Icon = point.icon;
+            {/* Headers */}
+            <div className="grid grid-cols-2 gap-4 md:gap-8 mb-4">
+              {/* Before Header */}
+              <div className="text-center">
+                <motion.div 
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-red-500/20 to-rose-500/20 border border-red-500/30"
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                >
+                  <XCircle className="w-5 h-5 text-red-400" />
+                  <span className="text-red-400 font-bold text-lg">ANTES</span>
+                </motion.div>
+              </div>
               
-              return (
+              {/* After Header */}
+              <div className="text-center">
+                <motion.div 
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30"
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                >
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  <span className="text-emerald-400 font-bold text-lg">CON EVOFINZ</span>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Items List */}
+            <div className="space-y-2">
+              {currentCategory.painPoints.map((point, index) => (
                 <motion.div
                   key={point.before}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  whileHover={{ scale: 1.02, y: -2 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.06 }}
                   className="group"
                 >
-                  <div className={`relative flex items-center gap-3 p-3 rounded-xl bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 hover:border-slate-600 transition-all duration-300 hover:shadow-lg ${currentCategory.glow.replace('/30', '/10')}`}>
-                    {/* Icon */}
-                    <div className={`flex-shrink-0 w-9 h-9 rounded-lg bg-gradient-to-br ${currentCategory.color} flex items-center justify-center shadow-lg`}>
-                      <Icon className="w-4 h-4 text-white" />
-                    </div>
-                    
+                  <div className={`grid grid-cols-[1fr_auto_1fr] items-center gap-2 md:gap-4 p-3 md:p-4 rounded-xl bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 hover:border-slate-600 transition-all duration-300 hover:shadow-lg ${currentCategory.glow}`}>
                     {/* Before */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <XCircle className="w-3 h-3 text-red-400 flex-shrink-0" />
-                        <span className="text-red-400 text-xs font-medium truncate">{point.before}</span>
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-full bg-red-500/20 flex items-center justify-center">
+                        <XCircle className="w-3.5 h-3.5 md:w-4 md:h-4 text-red-400" />
                       </div>
+                      <span className="text-red-300/90 text-xs md:text-sm font-medium line-clamp-2">{point.before}</span>
                     </div>
                     
-                    {/* Arrow */}
+                    {/* Animated Arrow */}
                     <motion.div
-                      animate={{ x: [0, 3, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                      className="flex-shrink-0"
+                      animate={{ x: [0, 4, 0] }}
+                      transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                      className={`flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-r ${currentCategory.color} flex items-center justify-center shadow-lg ${currentCategory.glow}`}
                     >
-                      <ArrowRight className={`w-4 h-4 text-slate-500`} />
+                      <ArrowRight className="w-4 h-4 md:w-5 md:h-5 text-white" />
                     </motion.div>
                     
                     {/* After */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
-                        <span className="text-emerald-400 text-xs font-semibold truncate">{point.after}</span>
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                        <CheckCircle2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-400" />
                       </div>
+                      <span className="text-emerald-300 text-xs md:text-sm font-semibold line-clamp-2">{point.after}</span>
                     </div>
                   </div>
                 </motion.div>
-              );
-            })}
+              ))}
+            </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Compact Stats Row */}
+        {/* Stats */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-          className="flex justify-center gap-6 mt-10"
+          transition={{ delay: 0.3 }}
+          className="flex justify-center items-center gap-8 mt-10"
         >
           {[
-            { value: '36', label: 'Problemas' },
+            { value: '36', label: 'Problemas resueltos' },
             { value: '6', label: 'Categorías' },
-            { value: '∞', label: 'Tiempo ahorrado' },
-          ].map((stat) => (
+            { value: '100%', label: 'Automatizado' },
+          ].map((stat, i) => (
             <div key={stat.label} className="text-center">
               <span className={`text-2xl md:text-3xl font-black bg-gradient-to-r ${currentCategory.color} bg-clip-text text-transparent`}>
                 {stat.value}
               </span>
-              <p className="text-slate-500 text-xs">{stat.label}</p>
+              <p className="text-slate-500 text-xs mt-0.5">{stat.label}</p>
             </div>
           ))}
         </motion.div>
