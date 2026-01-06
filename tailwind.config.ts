@@ -215,6 +215,10 @@ export default {
             opacity: "0"
           },
         },
+        "gradient-x": {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -239,6 +243,7 @@ export default {
         "glow-pulse": "glow-pulse 2s ease-in-out infinite",
         "float-particle": "float-particle 5s ease-out forwards",
         "sparkle-burst": "sparkle-burst 2s ease-in-out infinite",
+        "gradient-x": "gradient-x 3s ease infinite",
       },
     },
   },
