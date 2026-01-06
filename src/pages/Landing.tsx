@@ -17,6 +17,7 @@ import { TransformationCarousel } from '@/components/landing/TransformationCarou
 import { FloatingStars } from '@/components/landing/FloatingStars';
 import { FeaturesShowcase } from '@/components/landing/FeaturesShowcase';
 import { AnimatedStats } from '@/components/landing/AnimatedStats';
+import { TestimonialsCarousel } from '@/components/landing/TestimonialsCarousel';
 
 const features = [
   { icon: Camera, title: 'Captura Inteligente', description: 'OCR + Voz con IA', tier: 'Pro', color: 'from-orange-500 to-red-500' },
@@ -389,7 +390,8 @@ export default function Landing() {
       {/* Animated Stats */}
       <AnimatedStats />
 
-      {/* Features Grid */}
+      {/* Testimonials */}
+      <TestimonialsCarousel />
       <section className="relative py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
         <div className="container mx-auto px-4">
           <motion.div 
