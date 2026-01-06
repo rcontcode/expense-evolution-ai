@@ -544,8 +544,7 @@ export default function Landing() {
               <img 
                 src={phoenixLogo} 
                 alt="EvoFinz" 
-                className="h-20 w-auto mx-auto"
-                style={{ filter: 'brightness(0) invert(1) drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
+                className="h-20 w-auto mx-auto drop-shadow-lg"
               />
             </motion.div>
             
@@ -579,7 +578,7 @@ export default function Landing() {
             <p className="text-sm text-slate-500">
               © 2026 EvoFinz. Todos los derechos reservados.
             </p>
-            <div className="flex items-center gap-6 text-sm">
+            <div className="flex items-center gap-6 text-sm pr-16">
               <Link to="/auth" className="text-slate-400 hover:text-orange-400 transition-colors font-medium">
                 Iniciar Sesión
               </Link>
