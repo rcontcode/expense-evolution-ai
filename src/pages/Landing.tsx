@@ -486,13 +486,7 @@ export default function Landing() {
                 >
                   {/* Popular glow effect */}
                   {tier.popular && (
-                    <>
-                      <div className="absolute -top-20 -right-20 w-40 h-40 bg-orange-500/30 rounded-full blur-3xl" />
-                      <Badge className="absolute -top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 px-4 py-1 font-bold">
-                        <Star className="w-3 h-3 mr-1 inline" />
-                        Más Popular
-                      </Badge>
-                    </>
+                    <div className="absolute -top-20 -right-20 w-40 h-40 bg-orange-500/30 rounded-full blur-3xl" />
                   )}
                   
                   <div className="text-center mb-6 relative">
