@@ -478,10 +478,10 @@ export default function Landing() {
                   </Badge>
                 )}
                 <Card 
-                  className={`relative p-8 bg-slate-900/80 backdrop-blur-sm border-2 overflow-hidden h-full flex flex-col ${
+                  className={`relative p-8 bg-slate-900/80 backdrop-blur-sm border-2 overflow-hidden h-full flex flex-col transition-all duration-300 ${
                     tier.popular 
-                      ? 'border-orange-500 shadow-2xl shadow-orange-500/20 scale-105 z-10' 
-                      : 'border-slate-800 hover:border-slate-700'
+                      ? 'border-orange-500 shadow-2xl shadow-orange-500/20 scale-105 z-10 hover:shadow-orange-500/40 hover:-translate-y-2' 
+                      : 'border-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-slate-900/50 hover:-translate-y-2'
                   }`}
                 >
                   {/* Popular glow effect */}
