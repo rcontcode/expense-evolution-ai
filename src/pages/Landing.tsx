@@ -20,6 +20,12 @@ import { AnimatedStats } from '@/components/landing/AnimatedStats';
 import { TestimonialsCarousel } from '@/components/landing/TestimonialsCarousel';
 import PhoenixFlameEffect from '@/components/landing/PhoenixFlameEffect';
 import { FeatureDemosCarousel } from '@/components/landing/FeatureDemosCarousel';
+import { TrustSecuritySection } from '@/components/landing/TrustSecuritySection';
+import { PainPointsSection } from '@/components/landing/PainPointsSection';
+import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
+import { TargetAudienceSection } from '@/components/landing/TargetAudienceSection';
+import { FAQSection } from '@/components/landing/FAQSection';
+import { GuaranteesSection } from '@/components/landing/GuaranteesSection';
 
 // Parallax wrapper component for scroll-based animations
 function ParallaxSection({ 
@@ -452,6 +458,12 @@ export default function Landing() {
         </motion.div>
       </section>
 
+      {/* Pain Points - Show the problem first */}
+      <PainPointsSection />
+
+      {/* How It Works - 3 simple steps */}
+      <HowItWorksSection />
+
       {/* Transformation Journey Carousel with parallax wrapper */}
       <ParallaxSection speed={0.2}>
         <TransformationCarousel />
@@ -542,6 +554,13 @@ export default function Landing() {
       <ParallaxSection speed={0.1}>
         <TestimonialsCarousel />
       </ParallaxSection>
+
+      {/* Target Audience - Who is it for? */}
+      <TargetAudienceSection />
+
+      {/* Trust & Security */}
+      <TrustSecuritySection />
+
       {/* 12 Modules Section with parallax background */}
       <section className="relative py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
         {/* Parallax decorative elements */}
@@ -713,6 +732,12 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Guarantees Section */}
+      <GuaranteesSection />
+
+      {/* FAQ Section */}
+      <FAQSection />
 
       {/* Final CTA with parallax */}
       <section className="relative py-24 overflow-hidden">
