@@ -29,10 +29,10 @@ const demos = [
     color: "from-emerald-500 to-teal-600",
     component: NetWorthDemoAnimation 
   },
-  { 
+{ 
     id: "dashboard", 
     title: "Analytics Avanzado", 
-    subtitle: "9+ visualizaciones con predicciones IA",
+    subtitle: "9+ visualizaciones con predicciones inteligentes",
     icon: BarChart3,
     color: "from-violet-500 to-purple-600",
     component: DashboardDemoAnimation 
@@ -47,7 +47,7 @@ const demos = [
   },
   { 
     id: "contracts", 
-    title: "Contratos IA", 
+    title: "Contratos Smart", 
     subtitle: "Extracción automática de términos",
     icon: FileText,
     color: "from-indigo-500 to-blue-600",

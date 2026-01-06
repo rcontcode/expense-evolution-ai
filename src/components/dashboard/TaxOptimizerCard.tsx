@@ -75,7 +75,7 @@ export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
             </div>
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">
-                La IA analizará tus gastos y perfil fiscal para encontrar oportunidades de ahorro.
+                EvoFinz analizará tus gastos y perfil fiscal para encontrar oportunidades de ahorro.
               </p>
               <ul className="text-xs text-muted-foreground space-y-1">
                 <li>✓ Análisis según tu tipo de trabajo</li>

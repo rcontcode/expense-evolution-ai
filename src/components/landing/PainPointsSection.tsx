@@ -16,7 +16,7 @@ const categories = [
     glow: 'shadow-rose-500/40',
     painPoints: [
       { before: '📄 Recibos perdidos en cajones', after: '📱 Escanea y organiza en segundos' },
-      { before: '😵 Facturas sin clasificar', after: '🤖 IA categoriza todo automático' },
+      { before: '😵 Facturas sin clasificar', after: '🤖 Categorización automática' },
       { before: '📋 Documentos duplicados', after: '🔍 Detección inteligente' },
       { before: '⏰ Contratos vencidos sin aviso', after: '🔔 Alertas de renovación' },
       { before: '🗂️ Información dispersa', after: '📊 Dashboard unificado' },
@@ -35,7 +35,7 @@ const categories = [
       { before: '🏦 Conciliación bancaria manual', after: '🔗 Match automático' },
       { before: '🚗 Kilometraje a mano', after: '📍 GPS + cálculo automático' },
       { before: '📅 Preparar impuestos = semanas', after: '👆 T2125 listo en 1 click' },
-      { before: '👀 Revisar gastos uno por uno', after: '🚀 Procesamiento batch IA' },
+      { before: '👀 Revisar gastos uno por uno', after: '🚀 Procesamiento batch inteligente' },
       { before: '✏️ Actualizar presupuestos manual', after: '🔄 Sync en tiempo real' },
     ]
   },
@@ -96,7 +96,7 @@ const categories = [
     glow: 'shadow-cyan-500/40',
     painPoints: [
       { before: '🌫️ Sin claridad financiera', after: '🎯 Dashboard con insights' },
-      { before: '🎲 Decisiones por intuición', after: '🧠 Analytics y predicciones IA' },
+      { before: '🎲 Decisiones por intuición', after: '🧠 Analytics y predicciones Smart' },
       { before: '❓ Net worth desconocido', after: '📊 Tracking de patrimonio' },
       { before: '📚 Sin educación financiera', after: '🎓 Mentoría integrada' },
       { before: '☁️ Metas abstractas', after: '🔥 FIRE calculator' },

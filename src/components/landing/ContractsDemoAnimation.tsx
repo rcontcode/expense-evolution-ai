@@ -71,7 +71,7 @@ export function ContractsDemoAnimation() {
 
           <div className="absolute top-8 inset-x-0 h-12 bg-gradient-to-r from-indigo-500 to-blue-600 flex items-center justify-center z-10">
             <FileText className="w-4 h-4 text-white mr-2" />
-            <span className="text-white font-bold text-sm">Contratos IA</span>
+            <span className="text-white font-bold text-sm">Contratos Smart</span>
           </div>
 
           <div className="pt-20 px-3 h-full flex flex-col">
@@ -140,7 +140,7 @@ export function ContractsDemoAnimation() {
                     transition={{ duration: 1.5, repeat: Infinity }}
                     className="mt-4 text-sm font-medium text-slate-600"
                   >
-                    IA analizando contrato...
+                    Analizando contrato...
                   </motion.p>
                   <div className="mt-3 space-y-1 text-center">
                     <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-[10px] text-slate-400">✓ Leyendo documento</motion.p>

@@ -283,7 +283,7 @@ const workflows: Workflow[] = [
   {
     id: 'contracts',
     title: 'Contratos Inteligentes',
-    subtitle: 'La IA lee la letra pequeña por ti',
+    subtitle: 'EvoFinz lee la letra pequeña por ti',
     emoji: '📝',
     colors: {
       primary: 'from-indigo-500 to-blue-500',
@@ -299,12 +299,12 @@ const workflows: Workflow[] = [
         number: '01',
         icon: FileText,
         title: 'Sube Contrato',
-        description: 'PDF o foto. La IA extrae términos, fechas, montos y cláusulas clave.'
+        description: 'PDF o foto. EvoFinz extrae términos, fechas, montos y cláusulas clave.'
       },
       {
         number: '02',
         icon: Sparkles,
-        title: 'Análisis IA',
+        title: 'Análisis Inteligente',
         description: 'Detecta términos de reembolso, renovaciones automáticas y obligaciones.'
       },
       {
