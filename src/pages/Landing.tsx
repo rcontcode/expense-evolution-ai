@@ -18,6 +18,7 @@ import { FloatingStars } from '@/components/landing/FloatingStars';
 import { FeaturesShowcase } from '@/components/landing/FeaturesShowcase';
 import { AnimatedStats } from '@/components/landing/AnimatedStats';
 import { TestimonialsCarousel } from '@/components/landing/TestimonialsCarousel';
+import PhoenixFlameEffect from '@/components/landing/PhoenixFlameEffect';
 import { FeatureDemosCarousel } from '@/components/landing/FeatureDemosCarousel';
 
 // Parallax wrapper component for scroll-based animations
@@ -273,18 +274,8 @@ export default function Landing() {
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                 />
               </div>
-              {/* Logo container with intentional circular clipping */}
-              <div className="relative z-10">
-                {/* Pulsing glow ring */}
-                <div className="absolute inset-0 w-40 h-40 md:w-48 md:h-48 rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-teal-400 animate-[pulse-glow_3s_ease-in-out_infinite] blur-md" />
-                <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-full bg-white shadow-2xl flex items-center justify-center overflow-hidden ring-4 ring-white/80">
-                  <img 
-                    src={phoenixLogo} 
-                    alt="EvoFinz Phoenix" 
-                    className="w-[115%] h-[115%] object-contain"
-                  />
-                </div>
-              </div>
+              {/* Phoenix Logo with flame effect on hover */}
+              <PhoenixFlameEffect />
               {/* Brand name below logo */}
               <motion.h2
                 initial={{ opacity: 0, y: 10 }}
