@@ -87,7 +87,13 @@ export const FloatingStars = () => {
   }, []);
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div 
+      className="absolute inset-0 overflow-hidden pointer-events-none"
+      style={{
+        maskImage: 'radial-gradient(ellipse 60% 50% at 50% 45%, transparent 0%, transparent 30%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,1) 70%)',
+        WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 50% 45%, transparent 0%, transparent 30%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,1) 70%)',
+      }}
+    >
       {/* Floating currency symbols */}
       {currencies.map((currency) => (
         <div
