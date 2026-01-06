@@ -447,19 +447,6 @@ export default function Landing() {
               </motion.div>
             )}
 
-            {/* Demo Animation Carousel */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1 }}
-              className="mt-16"
-            >
-              <p className="text-center text-slate-500 text-sm mb-6 flex items-center justify-center gap-2">
-                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                Mira cómo funciona
-              </p>
-              <FeatureDemosCarousel />
-            </motion.div>
 
           </motion.div>
         </motion.div>
@@ -470,8 +457,35 @@ export default function Landing() {
         <TransformationCarousel />
       </ParallaxSection>
 
-      {/* Features Showcase - Auto-scrolling */}
+      {/* Features Showcase - Auto-scrolling (What you can do with EvoFinz) */}
       <FeaturesShowcase />
+
+      {/* Demo Animation Carousel - NOW AFTER FEATURES */}
+      <section className="py-16 bg-gradient-to-b from-white via-slate-50 to-white">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="max-w-4xl mx-auto"
+          >
+            <div className="text-center mb-8">
+              <Badge className="mb-4 px-4 py-2 bg-cyan-500/10 text-cyan-600 border-cyan-500/20 text-sm">
+                <Sparkles className="w-4 h-4 mr-2 inline" />
+                Vista Previa
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-black mb-4 text-slate-800">
+                Mira cómo <span className="bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">funciona</span>
+              </h2>
+              <p className="text-slate-500 text-lg max-w-xl mx-auto">
+                Explora las funcionalidades principales de EvoFinz en acción
+              </p>
+            </div>
+            <FeatureDemosCarousel />
+          </motion.div>
+        </div>
+      </section>
 
       {/* Animated Stats with parallax */}
       <ParallaxSection speed={0.15}>
