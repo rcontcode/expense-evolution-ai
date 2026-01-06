@@ -272,7 +272,8 @@ export default function Landing() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.8 + index * 0.1 }}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white shadow-lg shadow-slate-200/50 border border-slate-100"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white shadow-lg shadow-slate-200/50 border border-slate-100 cursor-default"
                   >
                     <Icon className="h-4 w-4 text-cyan-500" />
                     <span className="font-bold text-slate-800">{stat.value}</span>
@@ -320,12 +321,13 @@ export default function Landing() {
                 exit={{ opacity: 0, height: 0 }}
                 className="max-w-md mx-auto"
               >
-                <div className="relative">
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-teal-500 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
                   <Input
-                    placeholder="EVOFINZ-BETA-2026-XX"
+                    placeholder="ABCD-1234-WXYZ"
                     value={betaCode}
                     onChange={(e) => handleBetaCodeChange(e.target.value)}
-                    className={`h-16 text-center text-lg font-mono uppercase bg-white border-2 text-slate-800 placeholder:text-slate-400 shadow-lg ${
+                    className={`relative h-16 text-center text-lg font-mono uppercase bg-white border-2 text-slate-800 placeholder:text-slate-400 shadow-lg ${
                       codeStatus === 'valid' 
                         ? 'border-emerald-500 bg-emerald-50' 
                         : codeStatus === 'invalid'
@@ -402,7 +404,7 @@ export default function Landing() {
                   transition={{ delay: index * 0.05, duration: 0.4 }}
                 >
                   <Card 
-                    className="relative p-5 bg-slate-900/50 backdrop-blur-sm border-slate-800 hover:border-orange-500/50 transition-all duration-300 hover:scale-105 cursor-pointer group overflow-hidden h-full"
+                    className="relative p-5 bg-slate-900/50 backdrop-blur-sm border-slate-800 hover:border-orange-500/50 transition-all duration-300 hover:scale-105 hover:-translate-y-1 cursor-pointer group overflow-hidden h-full hover:shadow-xl hover:shadow-orange-500/10"
                   >
                     {/* Gradient overlay on hover */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
