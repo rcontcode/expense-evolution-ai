@@ -20,15 +20,17 @@ import { AnimatedStats } from '@/components/landing/AnimatedStats';
 import { TestimonialsCarousel } from '@/components/landing/TestimonialsCarousel';
 import { FeatureDemosCarousel } from '@/components/landing/FeatureDemosCarousel';
 
-// Parallax wrapper component for scroll-based animations
+// Parallax wrapper component - MORE DRAMATIC appearance effects
 function ParallaxSection({ 
   children, 
   speed = 0.5, 
-  className = "" 
+  className = "",
+  direction = "up" // "up", "left", "right", "scale"
 }: { 
   children: React.ReactNode; 
   speed?: number; 
   className?: string;
+  direction?: "up" | "left" | "right" | "scale";
 }) {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -36,17 +38,41 @@ function ParallaxSection({
     offset: ["start end", "end start"]
   });
   
-  const y = useTransform(scrollYProgress, [0, 1], [100 * speed, -100 * speed]);
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.6, 1, 1, 0.6]);
+  // More dramatic transformations based on direction
+  const y = useTransform(
+    scrollYProgress, 
+    [0, 0.3, 0.7, 1], 
+    direction === "up" ? [150, 0, 0, -50] : [0, 0, 0, 0]
+  );
+  const x = useTransform(
+    scrollYProgress, 
+    [0, 0.3, 0.7, 1], 
+    direction === "left" ? [-200, 0, 0, 0] : direction === "right" ? [200, 0, 0, 0] : [0, 0, 0, 0]
+  );
+  const scale = useTransform(
+    scrollYProgress, 
+    [0, 0.3, 0.7, 1], 
+    direction === "scale" ? [0.7, 1, 1, 1.05] : [1, 1, 1, 1]
+  );
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0.8]);
+  const rotate = useTransform(
+    scrollYProgress,
+    [0, 0.3],
+    direction === "left" ? [-5, 0] : direction === "right" ? [5, 0] : [0, 0]
+  );
   
   return (
-    <motion.div ref={ref} style={{ y, opacity }} className={className}>
+    <motion.div 
+      ref={ref} 
+      style={{ y, x, scale, opacity, rotate }} 
+      className={className}
+    >
       {children}
     </motion.div>
   );
 }
 
-// Parallax background layer for depth effects
+// Parallax background layer - FASTER movement for more visible effect
 function ParallaxLayer({ 
   speed, 
   className, 
@@ -61,6 +87,47 @@ function ParallaxLayer({
   
   return (
     <motion.div style={{ y }} className={className}>
+      {children}
+    </motion.div>
+  );
+}
+
+// NEW: Reveal on scroll component - elements that slide in dramatically
+function ScrollReveal({ 
+  children, 
+  direction = "up",
+  delay = 0,
+  className = ""
+}: { 
+  children: React.ReactNode; 
+  direction?: "up" | "down" | "left" | "right";
+  delay?: number;
+  className?: string;
+}) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "center center"]
+  });
+  
+  const directions = {
+    up: { y: [100, 0], x: [0, 0] },
+    down: { y: [-100, 0], x: [0, 0] },
+    left: { y: [0, 0], x: [-150, 0] },
+    right: { y: [0, 0], x: [150, 0] }
+  };
+  
+  const y = useTransform(scrollYProgress, [0, 1], directions[direction].y);
+  const x = useTransform(scrollYProgress, [0, 1], directions[direction].x);
+  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 0.5, 1]);
+  const scale = useTransform(scrollYProgress, [0, 1], [0.8, 1]);
+  
+  return (
+    <motion.div 
+      ref={ref} 
+      style={{ y, x, opacity, scale }}
+      className={className}
+    >
       {children}
     </motion.div>
   );
@@ -474,34 +541,42 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* Transformation Journey Carousel with parallax wrapper */}
-      <ParallaxSection speed={0.2}>
+      {/* Transformation Journey Carousel - dramatic slide from left */}
+      <ScrollReveal direction="left">
         <TransformationCarousel />
-      </ParallaxSection>
+      </ScrollReveal>
 
       {/* Features Showcase - Auto-scrolling */}
       <FeaturesShowcase />
 
-      {/* Animated Stats with parallax */}
-      <ParallaxSection speed={0.15}>
+      {/* Animated Stats - dramatic scale up */}
+      <ParallaxSection direction="scale">
         <AnimatedStats />
       </ParallaxSection>
 
-      {/* Testimonials with subtle parallax */}
-      <ParallaxSection speed={0.1}>
+      {/* Testimonials - slide from right */}
+      <ScrollReveal direction="right">
         <TestimonialsCarousel />
-      </ParallaxSection>
-      {/* 12 Modules Section with parallax background */}
+      </ScrollReveal>
+      {/* 12 Modules Section with dramatic parallax */}
       <section className="relative py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
-        {/* Parallax decorative elements */}
-        <ParallaxLayer speed={0.2} className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 left-10 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-10 w-80 h-80 bg-violet-500/10 rounded-full blur-3xl" />
+        {/* More dramatic parallax decorative elements */}
+        <ParallaxLayer speed={-0.4} className="absolute inset-0 pointer-events-none">
+          <motion.div 
+            className="absolute top-20 left-10 w-80 h-80 bg-orange-500/20 rounded-full blur-3xl"
+            animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
+            transition={{ duration: 5, repeat: Infinity }}
+          />
+          <motion.div 
+            className="absolute bottom-20 right-10 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl"
+            animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.15, 0.3] }}
+            transition={{ duration: 6, repeat: Infinity }}
+          />
         </ParallaxLayer>
         
-        <ParallaxLayer speed={0.35} className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl" />
-          <div className="absolute top-1/3 right-1/4 w-40 h-40 bg-amber-500/10 rounded-full blur-2xl" />
+        <ParallaxLayer speed={-0.6} className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/4 w-48 h-48 bg-cyan-500/15 rounded-full blur-2xl" />
+          <div className="absolute top-1/3 right-1/4 w-56 h-56 bg-amber-500/15 rounded-full blur-2xl" />
         </ParallaxLayer>
 
         <div className="container mx-auto px-4 relative z-10">
@@ -566,12 +641,24 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing Section with parallax */}
+      {/* Pricing Section with dramatic parallax */}
       <section className="relative py-24 bg-slate-950 overflow-hidden">
-        {/* Parallax background elements */}
-        <ParallaxLayer speed={0.15} className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-20 w-72 h-72 bg-violet-600/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-20 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
+        {/* More visible parallax background elements */}
+        <ParallaxLayer speed={-0.3} className="absolute inset-0 pointer-events-none">
+          <motion.div 
+            className="absolute top-1/4 left-20 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl"
+            animate={{ x: [0, 50, 0], y: [0, -30, 0] }}
+            transition={{ duration: 8, repeat: Infinity }}
+          />
+          <motion.div 
+            className="absolute bottom-1/4 right-20 w-[500px] h-[500px] bg-orange-500/15 rounded-full blur-3xl"
+            animate={{ x: [0, -40, 0], y: [0, 40, 0] }}
+            transition={{ duration: 10, repeat: Infinity }}
+          />
+        </ParallaxLayer>
+        
+        <ParallaxLayer speed={-0.5} className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-cyan-500/10 rounded-full blur-2xl" />
         </ParallaxLayer>
 
         <div className="container mx-auto px-4 relative z-10">
@@ -663,25 +750,38 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Final CTA with parallax */}
+      {/* Final CTA with dramatic parallax */}
       <section className="relative py-24 overflow-hidden">
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-orange-600 via-amber-600 to-yellow-500" />
         
-        {/* Parallax pattern */}
-        <ParallaxLayer speed={0.2} className="absolute inset-0">
+        {/* Fast moving parallax pattern */}
+        <ParallaxLayer speed={-0.5} className="absolute inset-0">
           <div 
-            className="absolute inset-0 opacity-30"
+            className="absolute inset-0 opacity-40"
             style={{
               backgroundImage: `url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjA1Ii8+PC9nPjwvc3ZnPg==')`
             }}
           />
         </ParallaxLayer>
         
-        {/* Floating parallax circles */}
-        <ParallaxLayer speed={0.3} className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-10 left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-          <div className="absolute bottom-10 right-10 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
+        {/* Large dramatic floating circles */}
+        <ParallaxLayer speed={-0.7} className="absolute inset-0 pointer-events-none">
+          <motion.div 
+            className="absolute -top-20 -left-20 w-80 h-80 bg-white/15 rounded-full blur-2xl"
+            animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.25, 0.15] }}
+            transition={{ duration: 4, repeat: Infinity }}
+          />
+          <motion.div 
+            className="absolute -bottom-20 -right-20 w-96 h-96 bg-white/20 rounded-full blur-3xl"
+            animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.1, 0.2] }}
+            transition={{ duration: 5, repeat: Infinity }}
+          />
+        </ParallaxLayer>
+        
+        <ParallaxLayer speed={-0.9} className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-white/10 rounded-full blur-xl" />
+          <div className="absolute top-1/3 right-1/3 w-24 h-24 bg-white/15 rounded-full blur-lg" />
         </ParallaxLayer>
         
         <div className="container mx-auto px-4 text-center relative z-10">
