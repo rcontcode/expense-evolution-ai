@@ -93,31 +93,63 @@ const pricingTiers = [
     name: 'Free',
     price: '$0',
     period: '/mes',
-    description: 'Para empezar',
-    features: ['20 gastos/mes', '5 OCR scans', 'Dashboard básico', 'Categorización manual'],
+    description: 'Para explorar',
+    features: [
+      '50 gastos manuales/mes',
+      '20 ingresos manuales/mes',
+      '5 escaneos OCR gratis',
+      'Dashboard básico',
+      '2 clientes / 2 proyectos',
+      'Vista previa de analytics'
+    ],
+    notIncluded: ['Mileage', 'Gamificación', 'Mentoría'],
     cta: 'Comenzar Gratis',
     popular: false,
-    gradient: 'from-slate-600 to-slate-700'
+    gradient: 'from-slate-500 to-slate-600'
   },
   {
     name: 'Premium',
-    price: '$4.99',
+    price: '$6.99',
     period: '/mes',
-    description: 'Para profesionales',
-    features: ['Gastos ilimitados', '50 OCR scans/mes', 'Análisis de Contratos', 'Exportación T2125', 'Gamificación completa'],
-    cta: 'Comenzar Premium',
+    description: 'Para freelancers',
+    features: [
+      'Gastos e ingresos ilimitados',
+      '50 escaneos OCR/mes',
+      'Clientes y proyectos ilimitados',
+      'Mileage tracking completo',
+      'Tags personalizados',
+      'Exportación Excel',
+      'Gamificación + XP + Logros',
+      'Net Worth tracking',
+      'Calendario fiscal'
+    ],
+    notIncluded: ['Análisis de contratos', 'FIRE Calculator'],
+    cta: 'Elegir Premium',
     popular: true,
     gradient: 'from-amber-500 via-orange-500 to-red-500'
   },
   {
     name: 'Pro',
-    price: '$9.99',
+    price: '$14.99',
     period: '/mes',
-    description: 'Para empresas',
-    features: ['Todo ilimitado', 'Optimizador Fiscal', 'Análisis Bancario Avanzado', 'Mentoría completa', 'Soporte prioritario'],
-    cta: 'Comenzar Pro',
+    description: 'Poder total',
+    features: [
+      'Todo de Premium',
+      'OCR ilimitado',
+      'Análisis inteligente de contratos',
+      'Análisis bancario avanzado',
+      'Optimizador fiscal inteligente',
+      'RRSP/TFSA optimizer',
+      'FIRE Calculator completo',
+      '8 componentes de mentoría',
+      'Asistente de voz',
+      'Exportación T2125',
+      'Soporte prioritario'
+    ],
+    notIncluded: [],
+    cta: 'Elegir Pro',
     popular: false,
-    gradient: 'from-violet-600 to-indigo-600'
+    gradient: 'from-violet-600 via-purple-600 to-indigo-600'
   }
 ];
 
@@ -691,13 +723,22 @@ export default function Landing() {
                     <p className="text-sm text-slate-400 mt-2">{tier.description}</p>
                   </div>
 
-                  <ul className="space-y-4 mb-8 flex-grow">
+                  <ul className="space-y-3 mb-8 flex-grow">
                     {tier.features.map((feature) => (
                       <li key={feature} className="flex items-center gap-3 text-sm">
-                        <div className={`p-1 rounded-full bg-gradient-to-r ${tier.gradient}`}>
+                        <div className={`p-1 rounded-full bg-gradient-to-r ${tier.gradient} flex-shrink-0`}>
                           <Check className="h-3 w-3 text-white" />
                         </div>
                         <span className="text-slate-300">{feature}</span>
+                      </li>
+                    ))}
+                    {/* Features not included - creates FOMO */}
+                    {tier.notIncluded && tier.notIncluded.map((feature) => (
+                      <li key={feature} className="flex items-center gap-3 text-sm opacity-50">
+                        <div className="p-1 rounded-full bg-slate-700 flex-shrink-0">
+                          <XCircle className="h-3 w-3 text-slate-500" />
+                        </div>
+                        <span className="text-slate-500 line-through">{feature}</span>
                       </li>
                     ))}
                   </ul>
