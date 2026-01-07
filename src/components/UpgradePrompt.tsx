@@ -126,12 +126,12 @@ const friendlyMessages: Record<string, {
     urgency: '💸 Cada ingreso no registrado es una oportunidad de optimización perdida.',
   },
   ocr: {
-    celebration: '¡GENIAL! Capturaste 5 recibos con nuestra IA mágica 📸✨',
+    celebration: '¡GENIAL! Capturaste 5 recibos con nuestra tecnología Smart 📸✨',
     achievement: '🏆 Logro Desbloqueado: "Cazador de Recibos"',
     encouragement: '¡Capturar recibos es LA CLAVE para maximizar deducciones! Cada foto = dinero potencial de vuelta.',
     keepGoing: 'Los recibos son oro fiscal - ¡y tú ya dominas la captura!',
     whatYouDid: 'Con 5 escaneos, ahorraste aproximadamente 25 minutos de entrada manual.',
-    valueUnlocked: 'La IA extrajo automáticamente vendedor, monto, fecha y categoría. ¡Magia!',
+    valueUnlocked: 'EvoFinz extrajo automáticamente vendedor, monto, fecha y categoría. ¡Magia!',
     missedOpportunity: '⚠️ Cada recibo que no capturas es una deducción que podrías perder.',
     testimonial: {
       text: "Antes perdía recibos todo el tiempo. Ahora foto y listo. Deduje $4,200 extra este año.",
@@ -197,16 +197,16 @@ const friendlyMessages: Record<string, {
     encouragement: 'Los contratos tienen cláusulas de reembolso que la mayoría ignora. ¡No seas uno de ellos!',
     keepGoing: 'Analizar tus contratos podría revelarte dinero que te deben.',
     whatYouDid: 'Subiste contratos importantes - el primer paso para entenderlos.',
-    valueUnlocked: 'La IA Pro puede extraer automáticamente términos de pago, reembolsos y fechas clave.',
+    valueUnlocked: 'EvoFinz Pro puede extraer automáticamente términos de pago, reembolsos y fechas clave.',
     missedOpportunity: '⚠️ ¿Sabías que el 67% de freelancers no reclama reembolsos que les corresponden?',
     testimonial: {
-      text: "La IA encontró una cláusula de reembolso de equipo que había ignorado. Recuperé $1,200.",
+      text: "EvoFinz encontró una cláusula de reembolso de equipo que había ignorado. Recuperé $1,200.",
       author: "Diego P., Consultor SAP",
       result: "+$1,200 en reembolsos"
     },
     quickWin: '💡 Tip Pro: Los usuarios Pro recuperan $890/año en reembolsos que no sabían que podían reclamar.',
     benefits: [
-      { icon: Brain, title: 'Análisis IA de contratos', description: 'Extrae automáticamente términos, fechas y obligaciones', value: 'En segundos' },
+      { icon: Brain, title: 'Análisis Smart de contratos', description: 'Extrae automáticamente términos, fechas y obligaciones', value: 'En segundos' },
       { icon: Coins, title: 'Detecta reembolsos', description: 'Identifica gastos que puedes reclamar según tu contrato', value: '+$890/año promedio' },
       { icon: AlertCircle, title: 'Alertas de vencimiento', description: 'Nunca pierdas una renovación o fecha límite', value: 'Tranquilidad' },
     ],

@@ -52,8 +52,8 @@ const GUIDE_STEPS: GuideStep[] = [
       en: 'Upload your bank statement as CSV, photo or PDF' 
     },
     tooltip: { 
-      es: 'Aceptamos archivos CSV de cualquier banco canadiense, fotos de estados impresos (usamos IA para extraer datos), y PDFs de estados electrónicos. Los datos nunca se comparten con terceros.', 
-      en: 'We accept CSV files from any Canadian bank, photos of printed statements (we use AI to extract data), and PDFs of electronic statements. Data is never shared with third parties.' 
+      es: 'Aceptamos archivos CSV de cualquier banco canadiense, fotos de estados impresos (usamos tecnología Smart para extraer datos), y PDFs de estados electrónicos. Los datos nunca se comparten con terceros.', 
+      en: 'We accept CSV files from any Canadian bank, photos of printed statements (we use Smart technology to extract data), and PDFs of electronic statements. Data is never shared with third parties.' 
     },
     badge: { es: 'Paso 1', en: 'Step 1' }
   },
@@ -116,10 +116,10 @@ const GUIDE_STEPS: GuideStep[] = [
       en: 'Ask about your transactions in natural language' 
     },
     tooltip: { 
-      es: 'Puedes preguntar cosas como: "¿Cuánto gasté en restaurantes este mes?", "¿Cuáles son mis suscripciones más caras?", "¿Hay cobros duplicados?". La IA responde con datos reales de tus transacciones.', 
-      en: 'You can ask things like: "How much did I spend on restaurants this month?", "What are my most expensive subscriptions?", "Are there duplicate charges?". The AI responds with real data from your transactions.' 
+      es: 'Puedes preguntar cosas como: "¿Cuánto gasté en restaurantes este mes?", "¿Cuáles son mis suscripciones más caras?", "¿Hay cobros duplicados?". EvoFinz responde con datos reales de tus transacciones.', 
+      en: 'You can ask things like: "How much did I spend on restaurants this month?", "What are my most expensive subscriptions?", "Are there duplicate charges?". EvoFinz responds with real data from your transactions.' 
     },
-    badge: { es: 'IA', en: 'AI' }
+    badge: { es: 'Smart', en: 'Smart' }
   }
 ];
 
@@ -246,7 +246,7 @@ export function BankingIntegrationGuide({ onImportClick }: BankingIntegrationGui
                             {language === 'es' ? 'Foto' : 'Photo'}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {language === 'es' ? 'Con IA' : 'With AI'}
+                            {language === 'es' ? 'Smart' : 'Smart'}
                           </p>
                         </div>
                       </div>
@@ -258,8 +258,8 @@ export function BankingIntegrationGuide({ onImportClick }: BankingIntegrationGui
                     </p>
                     <p className="text-sm">
                       {language === 'es' 
-                        ? 'Toma una foto clara de tu estado de cuenta impreso. Nuestra IA extrae automáticamente las transacciones. Ideal para estados que llegan por correo.'
-                        : 'Take a clear photo of your printed statement. Our AI automatically extracts the transactions. Ideal for statements that arrive by mail.'}
+                        ? 'Toma una foto clara de tu estado de cuenta impreso. EvoFinz extrae automáticamente las transacciones. Ideal para estados que llegan por correo.'
+                        : 'Take a clear photo of your printed statement. EvoFinz automatically extracts the transactions. Ideal for statements that arrive by mail.'}
                     </p>
                   </TooltipContent>
                 </Tooltip>

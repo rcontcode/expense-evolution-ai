@@ -156,7 +156,7 @@ export function ReceiptDemoAnimation() {
                     transition={{ duration: 1.5, repeat: Infinity }}
                     className="mt-4 text-sm font-medium text-slate-600"
                   >
-                    IA procesando...
+                    Procesando...
                   </motion.p>
                   <div className="mt-3 flex gap-1">
                     {[0, 1, 2].map((i) => (
@@ -247,7 +247,7 @@ export function ReceiptDemoAnimation() {
               exit={{ opacity: 0 }}
               className="absolute -right-4 top-1/3 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-cyan-600 border border-cyan-100"
             >
-              ✨ IA detectó el vendedor
+              ✨ Detectó el vendedor
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}

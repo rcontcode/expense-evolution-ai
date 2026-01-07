@@ -106,8 +106,8 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
         setParsedTransactions(data.transactions);
         toast.success(
           language === 'es'
-            ? `${data.transactions.length} transacciones extraídas con IA`
-            : `${data.transactions.length} transactions extracted with AI`
+            ? `${data.transactions.length} transacciones extraídas`
+            : `${data.transactions.length} transactions extracted`
         );
       } else {
         toast.error(
@@ -313,7 +313,7 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
                     <div className="flex flex-col items-center gap-2">
                       <Loader2 className="h-12 w-12 text-primary animate-spin" />
                       <p className="text-sm text-muted-foreground">
-                        {language === 'es' ? 'Procesando PDF con IA...' : 'Processing PDF with AI...'}
+                        {language === 'es' ? 'Procesando PDF...' : 'Processing PDF...'}
                       </p>
                     </div>
                   ) : (
@@ -327,13 +327,13 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
                       {language === 'es'
-                        ? 'La IA extraerá y clasificará las transacciones'
-                        : 'AI will extract and classify transactions'}
+                        ? 'EvoFinz extraerá y clasificará las transacciones'
+                        : 'EvoFinz will extract and classify transactions'}
                     </p>
                   </div>
                   <Badge variant="secondary" className="bg-primary/10 text-primary">
                     <CheckCircle2 className="h-3 w-3 mr-1" />
-                    {language === 'es' ? 'Powered by Gemini AI' : 'Powered by Gemini AI'}
+                    {language === 'es' ? 'Tecnología Smart' : 'Smart Technology'}
                   </Badge>
                 </div>
               </CardContent>
@@ -369,7 +369,7 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
                     <div className="flex flex-col items-center gap-2">
                       <Loader2 className="h-12 w-12 text-primary animate-spin" />
                       <p className="text-sm text-muted-foreground">
-                        {language === 'es' ? 'Extrayendo con IA...' : 'Extracting with AI...'}
+                        {language === 'es' ? 'Extrayendo datos...' : 'Extracting data...'}
                       </p>
                     </div>
                   ) : (
@@ -383,13 +383,13 @@ export function BankImportDialog({ open, onClose }: BankImportDialogProps) {
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
                       {language === 'es'
-                        ? 'La IA extraerá las transacciones automáticamente'
-                        : 'AI will extract transactions automatically'}
+                        ? 'EvoFinz extraerá las transacciones automáticamente'
+                        : 'EvoFinz will extract transactions automatically'}
                     </p>
                   </div>
                   <Badge variant="secondary" className="bg-primary/10 text-primary">
                     <CheckCircle2 className="h-3 w-3 mr-1" />
-                    {language === 'es' ? 'Powered by Gemini AI' : 'Powered by Gemini AI'}
+                    {language === 'es' ? 'Tecnología Smart' : 'Smart Technology'}
                   </Badge>
                 </div>
               </CardContent>

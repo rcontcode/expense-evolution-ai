@@ -76,8 +76,8 @@ export default function Install() {
       icon: Camera,
       title: language === 'es' ? 'Captura Rápida' : 'Quick Capture',
       description: language === 'es' 
-        ? 'Fotografía recibos y la IA extrae los datos automáticamente'
-        : 'Photograph receipts and AI extracts data automatically'
+        ? 'Fotografía recibos y EvoFinz extrae los datos automáticamente'
+        : 'Photograph receipts and EvoFinz extracts data automatically'
     },
     {
       icon: Wifi,

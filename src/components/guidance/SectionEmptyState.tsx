@@ -38,13 +38,13 @@ export const EMPTY_STATE_CONFIGS: Record<string, EmptyStateConfig> = {
     icon: 'Receipt',
     title: { es: '¡Comienza a registrar tus gastos!', en: 'Start tracking your expenses!' },
     description: {
-      es: 'Captura gastos con foto, voz o texto. La IA categoriza automáticamente.',
-      en: 'Capture expenses with photo, voice, or text. AI categorizes automatically.'
+      es: 'Captura gastos con foto, voz o texto. EvoFinz categoriza automáticamente.',
+      en: 'Capture expenses with photo, voice, or text. EvoFinz categorizes automatically.'
     },
     actionLabel: { es: 'Agregar primer gasto', en: 'Add first expense' },
     tips: {
-      es: ['Fotografía recibos', 'Dicta por voz', 'Categorización IA'],
-      en: ['Photograph receipts', 'Dictate by voice', 'AI categorization']
+      es: ['Fotografía recibos', 'Dicta por voz', 'Categorización Smart'],
+      en: ['Photograph receipts', 'Dictate by voice', 'Smart categorization']
     },
     gradient: 'from-blue-500 to-cyan-500'
   },
@@ -94,13 +94,13 @@ export const EMPTY_STATE_CONFIGS: Record<string, EmptyStateConfig> = {
     icon: 'FileText',
     title: { es: 'Sube tus contratos', en: 'Upload your contracts' },
     description: {
-      es: 'La IA extrae términos de reembolso y fechas importantes.',
-      en: 'AI extracts reimbursement terms and important dates.'
+      es: 'EvoFinz extrae términos de reembolso y fechas importantes.',
+      en: 'EvoFinz extracts reimbursement terms and important dates.'
     },
     actionLabel: { es: 'Subir primer contrato', en: 'Upload first contract' },
     tips: {
-      es: ['Análisis IA', 'Alertas de vencimiento', 'Términos de reembolso'],
-      en: ['AI analysis', 'Expiry alerts', 'Reimbursement terms']
+      es: ['Análisis Smart', 'Alertas de vencimiento', 'Términos de reembolso'],
+      en: ['Smart analysis', 'Expiry alerts', 'Reimbursement terms']
     },
     gradient: 'from-amber-500 to-orange-600'
   },

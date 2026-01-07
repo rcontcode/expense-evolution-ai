@@ -187,8 +187,8 @@ export default function MobileCapture() {
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
                     {language === 'es' 
-                      ? 'Captura tu recibo y se procesará automáticamente con IA'
-                      : 'Capture your receipt and it will be processed automatically with AI'
+                      ? 'Captura tu recibo y se procesará automáticamente'
+                      : 'Capture your receipt and it will be processed automatically'
                     }
                   </p>
                 </div>
@@ -205,7 +205,7 @@ export default function MobileCapture() {
                     <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center gap-3">
                       <Loader2 className="h-10 w-10 animate-spin text-primary" />
                       <p className="text-sm font-medium">
-                        {language === 'es' ? 'Analizando con IA...' : 'Analyzing with AI...'}
+                        {language === 'es' ? 'Analizando...' : 'Analyzing...'}
                       </p>
                     </div>
                   )}

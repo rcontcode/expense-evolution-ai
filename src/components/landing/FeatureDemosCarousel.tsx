@@ -16,7 +16,7 @@ const demos = [
   { 
     id: "receipt", 
     title: "Captura Inteligente", 
-    subtitle: "OCR + IA extrae datos automáticamente",
+    subtitle: "OCR Smart extrae datos automáticamente",
     icon: Camera,
     color: "from-cyan-500 to-blue-600",
     component: ReceiptDemoAnimation 
@@ -71,7 +71,7 @@ const demos = [
   },
   { 
     id: "tax", 
-    title: "Tax Optimizer IA", 
+    title: "Tax Optimizer Smart", 
     subtitle: "Maximiza deducciones CRA",
     icon: Calculator,
     color: "from-cyan-500 to-teal-600",
