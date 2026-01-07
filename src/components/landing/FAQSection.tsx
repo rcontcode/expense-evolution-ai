@@ -27,7 +27,7 @@ const faqs = [
   },
   {
     question: '¿Hay una versión gratuita?',
-    answer: 'Sí, el plan gratuito incluye hasta 20 gastos/mes, 5 escaneos OCR y un dashboard básico. Perfecto para empezar a organizar tus finanzas antes de escalar a un plan premium.'
+    answer: 'Sí, el plan gratuito incluye hasta 50 gastos manuales/mes, 20 ingresos/mes, 5 escaneos OCR gratis, 2 clientes y 2 proyectos. Perfecto para explorar las bondades de EvoFinz antes de escalar a Premium ($6.99/mes) o Pro ($14.99/mes).'
   },
   {
     question: '¿Cómo funciona la gamificación?',
