@@ -1702,6 +1702,45 @@ export type Database = {
           },
         ]
       }
+      usage_tracking: {
+        Row: {
+          bank_analyses_count: number
+          contract_analyses_count: number
+          created_at: string
+          expenses_count: number
+          id: string
+          incomes_count: number
+          ocr_scans_count: number
+          period_start: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bank_analyses_count?: number
+          contract_analyses_count?: number
+          created_at?: string
+          expenses_count?: number
+          id?: string
+          incomes_count?: number
+          ocr_scans_count?: number
+          period_start?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bank_analyses_count?: number
+          contract_analyses_count?: number
+          created_at?: string
+          expenses_count?: number
+          id?: string
+          incomes_count?: number
+          ocr_scans_count?: number
+          period_start?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_key: string
@@ -1878,6 +1917,48 @@ export type Database = {
           },
         ]
       }
+      user_subscriptions: {
+        Row: {
+          billing_period: Database["public"]["Enums"]["billing_period"] | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          plan_type: Database["public"]["Enums"]["plan_type"]
+          started_at: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_period?: Database["public"]["Enums"]["billing_period"] | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          plan_type?: Database["public"]["Enums"]["plan_type"]
+          started_at?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_period?: Database["public"]["Enums"]["billing_period"] | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          plan_type?: Database["public"]["Enums"]["plan_type"]
+          started_at?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1891,11 +1972,36 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: number
       }
+      get_or_create_monthly_usage: {
+        Args: { p_user_id: string }
+        Returns: {
+          bank_analyses_count: number
+          contract_analyses_count: number
+          created_at: string
+          expenses_count: number
+          id: string
+          incomes_count: number
+          ocr_scans_count: number
+          period_start: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "usage_tracking"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["user_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      increment_usage: {
+        Args: { p_usage_type: string; p_user_id: string }
         Returns: boolean
       }
       use_beta_invitation_code: {
@@ -1905,6 +2011,7 @@ export type Database = {
       validate_beta_invitation_code: { Args: { p_code: string }; Returns: Json }
     }
     Enums: {
+      billing_period: "monthly" | "annual"
       contract_status: "uploaded" | "pending_ai" | "ready"
       document_status:
         | "pending"
@@ -1934,6 +2041,7 @@ export type Database = {
         | "online_business"
         | "freelance"
         | "other"
+      plan_type: "free" | "premium" | "pro"
       recurrence_type:
         | "one_time"
         | "daily"
@@ -2071,6 +2179,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      billing_period: ["monthly", "annual"],
       contract_status: ["uploaded", "pending_ai", "ready"],
       document_status: [
         "pending",
@@ -2103,6 +2212,7 @@ export const Constants = {
         "freelance",
         "other",
       ],
+      plan_type: ["free", "premium", "pro"],
       recurrence_type: [
         "one_time",
         "daily",
