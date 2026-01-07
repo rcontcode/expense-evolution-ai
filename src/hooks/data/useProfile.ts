@@ -19,6 +19,10 @@ export interface ProfileFormData {
   gst_hst_registered?: boolean;
   business_start_date?: string | null;
   fiscal_year_end?: string | null;
+  // Multi-country support
+  country?: string | null;
+  rut?: string | null;
+  tax_regime?: string | null;
 }
 
 export function useProfile() {
@@ -60,6 +64,10 @@ export function useUpdateProfile() {
         gst_hst_registered: data.gst_hst_registered,
         business_start_date: data.business_start_date,
         fiscal_year_end: data.fiscal_year_end,
+        // Multi-country support
+        country: data.country,
+        rut: data.rut,
+        tax_regime: data.tax_regime,
       };
 
       const { error } = await supabase

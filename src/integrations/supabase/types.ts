@@ -1392,6 +1392,7 @@ export type Database = {
           business_name: string | null
           business_number: string | null
           business_start_date: string | null
+          country: string | null
           created_at: string | null
           email: string | null
           fiscal_year_end: string | null
@@ -1402,6 +1403,8 @@ export type Database = {
           language: string | null
           onboarding_completed: boolean | null
           province: string | null
+          rut: string | null
+          tax_regime: string | null
           updated_at: string | null
           work_types: Database["public"]["Enums"]["work_type"][] | null
         }
@@ -1409,6 +1412,7 @@ export type Database = {
           business_name?: string | null
           business_number?: string | null
           business_start_date?: string | null
+          country?: string | null
           created_at?: string | null
           email?: string | null
           fiscal_year_end?: string | null
@@ -1419,6 +1423,8 @@ export type Database = {
           language?: string | null
           onboarding_completed?: boolean | null
           province?: string | null
+          rut?: string | null
+          tax_regime?: string | null
           updated_at?: string | null
           work_types?: Database["public"]["Enums"]["work_type"][] | null
         }
@@ -1426,6 +1432,7 @@ export type Database = {
           business_name?: string | null
           business_number?: string | null
           business_start_date?: string | null
+          country?: string | null
           created_at?: string | null
           email?: string | null
           fiscal_year_end?: string | null
@@ -1436,6 +1443,8 @@ export type Database = {
           language?: string | null
           onboarding_completed?: boolean | null
           province?: string | null
+          rut?: string | null
+          tax_regime?: string | null
           updated_at?: string | null
           work_types?: Database["public"]["Enums"]["work_type"][] | null
         }
