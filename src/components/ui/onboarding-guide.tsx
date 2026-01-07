@@ -76,19 +76,19 @@ const GUIDE_CONFIG = {
     },
     steps: {
       es: [
-        { icon: <Sparkles className="h-4 w-4 text-primary" />, title: 'Captura Rápida con IA', description: 'Foto, voz o texto - la IA hace el resto' },
+        { icon: <Sparkles className="h-4 w-4 text-primary" />, title: 'Captura Rápida Smart', description: 'Foto, voz o texto - EvoFinz hace el resto' },
         { icon: <FileText className="h-4 w-4 text-primary" />, title: 'Formulario Manual', description: 'Control total sobre cada detalle' },
         { icon: <TrendingUp className="h-4 w-4 text-primary" />, title: 'Reportes de Reembolso', description: 'Genera informes para tus clientes' },
       ],
       en: [
-        { icon: <Sparkles className="h-4 w-4 text-primary" />, title: 'AI Quick Capture', description: 'Photo, voice or text - AI does the rest' },
+        { icon: <Sparkles className="h-4 w-4 text-primary" />, title: 'Smart Quick Capture', description: 'Photo, voice or text - EvoFinz does the rest' },
         { icon: <FileText className="h-4 w-4 text-primary" />, title: 'Manual Form', description: 'Full control over every detail' },
         { icon: <TrendingUp className="h-4 w-4 text-primary" />, title: 'Reimbursement Reports', description: 'Generate reports for your clients' },
       ]
     },
     tip: {
-      es: 'Prueba la Captura Rápida con IA - solo toma una foto de tu recibo',
-      en: 'Try AI Quick Capture - just take a photo of your receipt'
+      es: 'Prueba la Captura Rápida Smart - solo toma una foto de tu recibo',
+      en: 'Try Smart Quick Capture - just take a photo of your receipt'
     }
   },
   clients: {

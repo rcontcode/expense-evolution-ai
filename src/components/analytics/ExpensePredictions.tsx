@@ -144,8 +144,8 @@ export function ExpensePredictions({ expenses, isLoading }: ExpensePredictionsPr
       toast({
         title: language === 'es' ? 'Predicciones generadas' : 'Predictions generated',
         description: language === 'es'
-          ? 'El análisis de IA se completó exitosamente.'
-          : 'AI analysis completed successfully.'
+          ? 'El análisis se completó exitosamente.'
+          : 'Analysis completed successfully.'
       });
     } catch (error) {
       console.error('Prediction error:', error);
@@ -216,7 +216,7 @@ export function ExpensePredictions({ expenses, isLoading }: ExpensePredictionsPr
           <div className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-primary" />
             <CardTitle>
-              {language === 'es' ? 'Predicciones de Gastos con IA' : 'AI Expense Predictions'}
+              {language === 'es' ? 'Predicciones de Gastos Smart' : 'Smart Expense Predictions'}
             </CardTitle>
           </div>
           <Button 

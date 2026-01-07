@@ -77,7 +77,7 @@ export function TaxOptimizerDemoAnimation() {
 
           <div className="absolute top-8 inset-x-0 h-12 bg-gradient-to-r from-cyan-500 to-teal-600 flex items-center justify-center z-10">
             <Calculator className="w-4 h-4 text-white mr-2" />
-            <span className="text-white font-bold text-sm">Tax Optimizer IA</span>
+            <span className="text-white font-bold text-sm">Tax Optimizer Smart</span>
           </div>
 
           <div className="pt-20 px-3 h-full flex flex-col">
@@ -215,7 +215,7 @@ export function TaxOptimizerDemoAnimation() {
               exit={{ opacity: 0 }}
               className="absolute -right-4 top-1/3 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-cyan-600 border border-cyan-100"
             >
-              🧠 Análisis con IA
+              🧠 Análisis Smart
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}

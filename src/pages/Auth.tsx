@@ -331,7 +331,7 @@ export default function Auth() {
   };
 
   const features = [
-    { icon: Sparkles, text: 'Captura inteligente con IA' },
+    { icon: Sparkles, text: 'Captura inteligente' },
     { icon: Receipt, text: 'Categorización automática' },
     { icon: TrendingUp, text: 'Reportes fiscales CRA' },
   ];

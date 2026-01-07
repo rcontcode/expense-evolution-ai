@@ -221,7 +221,7 @@ export function ContractTermsViewer({
               )}
               {hasTerms 
                 ? (language === 'es' ? 'Re-analizar' : 'Re-analyze')
-                : (language === 'es' ? 'Analizar con IA' : 'Analyze with AI')
+                : (language === 'es' ? 'Analizar Smart' : 'Smart Analyze')
               }
             </Button>
           </div>
@@ -240,8 +240,8 @@ export function ContractTermsViewer({
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               {language === 'es' 
-                ? 'No se han extraído términos de este contrato. Haz clic en "Analizar con IA" para extraer automáticamente los términos de reembolso y facturación.'
-                : 'No terms have been extracted from this contract. Click "Analyze with AI" to automatically extract reimbursement and billing terms.'}
+                ? 'No se han extraído términos de este contrato. Haz clic en "Analizar Smart" para extraer automáticamente los términos de reembolso y facturación.'
+                : 'No terms have been extracted from this contract. Click "Smart Analyze" to automatically extract reimbursement and billing terms.'}
             </AlertDescription>
           </Alert>
         ) : (

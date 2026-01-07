@@ -154,7 +154,7 @@ export function ReceiptReviewDialog({
       }
     } catch (err) {
       console.error('AI processing error:', err);
-      toast.error(language === 'es' ? 'Error al procesar con IA' : 'Error processing with AI');
+      toast.error(language === 'es' ? 'Error al procesar' : 'Error processing');
     } finally {
       setIsProcessingAI(false);
     }
@@ -371,8 +371,8 @@ export function ReceiptReviewDialog({
                 <AlertDescription className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <span className="text-amber-700 dark:text-amber-300">
                     {language === 'es' 
-                      ? 'No se detectaron datos. ¿Deseas procesar la imagen con IA?' 
-                      : 'No data detected. Would you like to process the image with AI?'}
+                      ? 'No se detectaron datos. ¿Deseas procesar la imagen?' 
+                      : 'No data detected. Would you like to process the image?'}
                   </span>
                   <Button 
                     size="sm" 
@@ -381,7 +381,7 @@ export function ReceiptReviewDialog({
                     className="shrink-0"
                   >
                     <Sparkles className="h-4 w-4 mr-1" />
-                    {language === 'es' ? 'Procesar con IA' : 'Process with AI'}
+                    {language === 'es' ? 'Procesar' : 'Process'}
                   </Button>
                 </AlertDescription>
               </Alert>
@@ -392,8 +392,8 @@ export function ReceiptReviewDialog({
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 <AlertDescription className="text-primary">
                   {language === 'es' 
-                    ? 'Procesando imagen con IA... Esto puede tomar unos segundos.' 
-                    : 'Processing image with AI... This may take a few seconds.'}
+                    ? 'Procesando imagen... Esto puede tomar unos segundos.' 
+                    : 'Processing image... This may take a few seconds.'}
                 </AlertDescription>
               </Alert>
             )}

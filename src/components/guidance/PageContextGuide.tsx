@@ -310,7 +310,7 @@ export const PAGE_GUIDES = {
     ],
     tips: [
       { es: 'completar el perfil del cliente te permite generar reportes de reembolso profesionales.', en: 'completing the client profile allows you to generate professional reimbursement reports.' },
-      { es: 'sube los contratos para que la IA extraiga automáticamente los términos de reembolso.', en: 'upload contracts so AI automatically extracts reimbursement terms.' }
+      { es: 'sube los contratos para que EvoFinz extraiga automáticamente los términos de reembolso.', en: 'upload contracts so EvoFinz automatically extracts reimbursement terms.' }
     ]
   },
   mileage: {
@@ -375,7 +375,7 @@ export const PAGE_GUIDES = {
     ],
     tips: [
       { es: 'puedes preguntar en lenguaje natural: "¿cuánto pago de internet al mes?"', en: 'you can ask in natural language: "how much do I pay for internet per month?"' },
-      { es: 'la IA detecta automáticamente suscripciones y cobros recurrentes.', en: 'AI automatically detects subscriptions and recurring charges.' }
+      { es: 'EvoFinz detecta automáticamente suscripciones y cobros recurrentes.', en: 'EvoFinz automatically detects subscriptions and recurring charges.' }
     ]
   },
   reconciliation: {
@@ -431,18 +431,18 @@ export const PAGE_GUIDES = {
     pageKey: 'chaos-inbox',
     pageTitle: { es: 'aquí revisas tus recibos capturados', en: 'here you review your captured receipts' },
     pageDescription: { 
-      es: 'Aprueba, corrige o rechaza los recibos procesados por IA', 
-      en: 'Approve, correct or reject AI-processed receipts' 
+      es: 'Aprueba, corrige o rechaza los recibos procesados', 
+      en: 'Approve, correct or reject processed receipts' 
     },
     goals: [
       { es: 'Revisar recibos pendientes', en: 'Review pending receipts' },
       { es: 'Aprobar datos correctos', en: 'Approve correct data' },
-      { es: 'Corregir errores de IA', en: 'Correct AI errors' },
+      { es: 'Corregir errores', en: 'Correct errors' },
       { es: 'Capturar más recibos', en: 'Capture more receipts' }
     ],
     workflows: [
       { step: 1, title: { es: 'Capturar', en: 'Capture' }, description: { es: 'Foto/archivo', en: 'Photo/file' } },
-      { step: 2, title: { es: 'IA Procesa', en: 'AI Processes' }, description: { es: 'Automático', en: 'Automatic' } },
+      { step: 2, title: { es: 'Procesa', en: 'Processes' }, description: { es: 'Automático', en: 'Automatic' } },
       { step: 3, title: { es: 'Revisar', en: 'Review' }, description: { es: 'Verificar datos', en: 'Verify data' } },
       { step: 4, title: { es: 'Aprobar', en: 'Approve' }, description: { es: 'Crear gasto', en: 'Create expense' } }
     ],
