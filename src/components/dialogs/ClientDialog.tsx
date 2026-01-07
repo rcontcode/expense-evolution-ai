@@ -23,6 +23,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { usePlanLimits } from '@/hooks/data/usePlanLimits';
+import { UpgradePrompt } from '@/components/UpgradePrompt';
 
 interface ClientDialogProps {
   open: boolean;
@@ -39,6 +41,16 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
   const deleteTestDataMutation = useDeleteClientTestData();
   const [showDeleteTestData, setShowDeleteTestData] = useState(false);
   const [deleteStep, setDeleteStep] = useState<DeleteStep>('idle');
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const { canAddClient, planType, clientCount, limits, getUpgradePlan } = usePlanLimits();
+  const isEditing = !!client;
+
+  // Check limit on open
+  useEffect(() => {
+    if (open && !isEditing && !canAddClient()) {
+      setShowUpgradePrompt(true);
+    }
+  }, [open, isEditing, canAddClient]);
 
   const triggerSuccessConfetti = () => {
     confetti({
@@ -54,7 +66,6 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
   const { data: mileage } = useMileage();
   const { data: contracts } = useContracts();
 
-  // Check if client has test data
   const hasTestData = client ? (
     expenses?.some(exp => exp.client_id === client.id) ||
     income?.some(inc => inc.client_id === client.id) ||
@@ -63,6 +74,11 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
   ) : false;
 
   const handleSubmit = (data: ClientFormValues) => {
+    if (!isEditing && !canAddClient()) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+
     const clientData = {
       name: data.name,
       country: data.country || 'Canada',
@@ -203,6 +219,17 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
           )}
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradePrompt
+        isOpen={showUpgradePrompt}
+        onClose={() => { setShowUpgradePrompt(false); if (!isEditing) onClose(); }}
+        feature="clients"
+        currentPlan={planType}
+        requiredPlan={getUpgradePlan() || undefined}
+        usageType="clients"
+        currentUsage={clientCount}
+        limit={limits.clients === Infinity ? 0 : limits.clients}
+      />
     </>
   );
 }
