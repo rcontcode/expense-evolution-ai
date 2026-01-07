@@ -91,8 +91,7 @@ const features = [
 const pricingTiers = [
   {
     name: 'Free',
-    price: '$0',
-    period: '/mes',
+    monthlyPrice: 0,
     description: 'Para explorar',
     features: [
       '50 gastos manuales/mes',
@@ -109,8 +108,7 @@ const pricingTiers = [
   },
   {
     name: 'Premium',
-    price: '$6.99',
-    period: '/mes',
+    monthlyPrice: 6.99,
     description: 'Para freelancers',
     features: [
       'Gastos e ingresos ilimitados',
@@ -130,8 +128,7 @@ const pricingTiers = [
   },
   {
     name: 'Pro',
-    price: '$14.99',
-    period: '/mes',
+    monthlyPrice: 14.99,
     description: 'Poder total',
     features: [
       'Todo de Premium',
@@ -165,6 +162,22 @@ export default function Landing() {
   const [showBetaInput, setShowBetaInput] = useState(false);
   const [betaCode, setBetaCode] = useState('');
   const [codeStatus, setCodeStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
+  const [isAnnual, setIsAnnual] = useState(false);
+  
+  // Calculate prices based on billing period
+  const getPrice = (monthlyPrice: number) => {
+    if (monthlyPrice === 0) return { display: '$0', period: '/mes', savings: '' };
+    if (isAnnual) {
+      const annualTotal = monthlyPrice * 12 * 0.8; // 20% discount
+      const monthlyEquivalent = (annualTotal / 12).toFixed(2);
+      return { 
+        display: `$${monthlyEquivalent}`, 
+        period: '/mes',
+        savings: `Ahorras $${(monthlyPrice * 12 * 0.2).toFixed(0)}/año`
+      };
+    }
+    return { display: `$${monthlyPrice.toFixed(2)}`, period: '/mes', savings: '' };
+  };
 
   const validateBetaCode = async (code: string) => {
     if (!code.trim()) {
@@ -678,13 +691,42 @@ export default function Landing() {
             <h2 className="text-4xl md:text-5xl font-black mb-4 text-white">
               Planes Simples y Transparentes
             </h2>
-            <p className="text-slate-400 text-lg">
+            <p className="text-slate-400 text-lg mb-8">
               Empieza gratis, escala cuando lo necesites.
             </p>
+            
+            {/* Annual/Monthly Toggle */}
+            <div className="flex items-center justify-center gap-4">
+              <span className={`text-sm font-medium transition-colors ${!isAnnual ? 'text-white' : 'text-slate-500'}`}>
+                Mensual
+              </span>
+              <button
+                onClick={() => setIsAnnual(!isAnnual)}
+                className={`relative w-16 h-8 rounded-full transition-colors duration-300 ${
+                  isAnnual ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-slate-700'
+                }`}
+              >
+                <motion.div
+                  className="absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md"
+                  animate={{ x: isAnnual ? 32 : 0 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                />
+              </button>
+              <span className={`text-sm font-medium transition-colors ${isAnnual ? 'text-white' : 'text-slate-500'}`}>
+                Anual
+              </span>
+              {isAnnual && (
+                <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 animate-pulse">
+                  -20% OFF
+                </Badge>
+              )}
+            </div>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {pricingTiers.map((tier, index) => (
+            {pricingTiers.map((tier, index) => {
+              const priceInfo = getPrice(tier.monthlyPrice);
+              return (
               <motion.div
                 key={tier.name}
                 initial={{ opacity: 0, y: 30 }}
@@ -716,10 +758,13 @@ export default function Landing() {
                     <h3 className="text-xl font-bold text-white mb-2">{tier.name}</h3>
                     <div className="flex items-baseline justify-center gap-1">
                       <span className={`text-5xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
-                        {tier.price}
+                        {priceInfo.display}
                       </span>
-                      <span className="text-slate-400">{tier.period}</span>
+                      <span className="text-slate-400">{priceInfo.period}</span>
                     </div>
+                    {priceInfo.savings && (
+                      <p className="text-sm text-green-400 mt-1 font-medium">{priceInfo.savings}</p>
+                    )}
                     <p className="text-sm text-slate-400 mt-2">{tier.description}</p>
                   </div>
 
@@ -756,7 +801,8 @@ export default function Landing() {
                   </Button>
                 </Card>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
