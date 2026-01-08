@@ -10,6 +10,7 @@ import { useProfile } from '@/hooks/data/useProfile';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
+import { useUserSettings } from '@/hooks/data/useUserSettings';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -26,7 +27,8 @@ import {
   PieChart,
   ArrowRight,
   Wallet,
-  Camera
+  Camera,
+  Target
 } from 'lucide-react';
 import {
   PieChart as RechartsPieChart,
@@ -35,6 +37,86 @@ import {
   ResponsiveContainer,
   Tooltip as RechartsTooltip,
 } from 'recharts';
+
+// Budget Progress Component
+function BudgetProgressSection({ 
+  totalExpenses, 
+  formatCurrency, 
+  language 
+}: { 
+  totalExpenses: number; 
+  formatCurrency: (n: number) => string;
+  language: string;
+}) {
+  const { data: settings } = useUserSettings();
+  const preferences = settings?.preferences as { globalBudget?: number } | null;
+  const globalBudget = preferences?.globalBudget || 0;
+  
+  if (!globalBudget || globalBudget <= 0) {
+    return null;
+  }
+  
+  const percentage = Math.min((totalExpenses / globalBudget) * 100, 100);
+  const remaining = globalBudget - totalExpenses;
+  const isOver = totalExpenses > globalBudget;
+  const isWarning = percentage >= 80 && !isOver;
+  
+  return (
+    <div className={cn(
+      "p-4 rounded-xl border-2 transition-all",
+      isOver 
+        ? "bg-destructive/10 border-destructive/50 animate-pulse" 
+        : isWarning 
+          ? "bg-amber-500/10 border-amber-500/50"
+          : "bg-muted/30 border-border/50"
+    )}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <Target className={cn(
+            "h-4 w-4",
+            isOver ? "text-destructive" : isWarning ? "text-amber-500" : "text-muted-foreground"
+          )} />
+          <span className="text-sm font-medium">
+            {language === 'es' ? 'Presupuesto del Mes' : 'Monthly Budget'}
+          </span>
+        </div>
+        <Badge variant="outline" className={cn(
+          "text-xs",
+          isOver ? "border-destructive/50 text-destructive" : isWarning ? "border-amber-500/50 text-amber-600" : ""
+        )}>
+          {percentage.toFixed(0)}%
+        </Badge>
+      </div>
+      
+      <Progress 
+        value={percentage} 
+        className={cn(
+          "h-3 mb-2",
+          isOver && "[&>div]:bg-destructive",
+          isWarning && "[&>div]:bg-amber-500"
+        )} 
+      />
+      
+      <div className="flex items-center justify-between text-xs">
+        <span className={cn(
+          "font-medium",
+          isOver ? "text-destructive" : isWarning ? "text-amber-600" : "text-muted-foreground"
+        )}>
+          {formatCurrency(totalExpenses)} / {formatCurrency(globalBudget)}
+        </span>
+        <span className={cn(
+          "font-semibold",
+          isOver ? "text-destructive" : remaining < globalBudget * 0.2 ? "text-amber-600" : "text-success"
+        )}>
+          {isOver 
+            ? `${language === 'es' ? 'Excedido por' : 'Over by'} ${formatCurrency(Math.abs(remaining))}`
+            : `${language === 'es' ? 'Disponible' : 'Available'}: ${formatCurrency(remaining)}`
+          }
+        </span>
+      </div>
+    </div>
+  );
+}
 
 // Lazy load heavier components
 const BudgetAlertsCard = lazy(() => import('@/components/dashboard/BudgetAlertsCard').then(m => ({ default: m.BudgetAlertsCard })));
@@ -201,27 +283,7 @@ export function MonthDetailPanel({
             </div>
           </div>
           
-          {/* Action buttons */}
-          <div className="flex items-center gap-2">
-            <Button onClick={onAddIncome} size="sm" variant="outline" className="gap-1.5 border-success/30 text-success hover:bg-success/10">
-              <Plus className="h-4 w-4" />
-              <DollarSign className="h-4 w-4" />
-              <span className="hidden sm:inline">{language === 'es' ? 'Ingreso' : 'Income'}</span>
-            </Button>
-            <Button onClick={onAddExpense} size="sm" variant="outline" className="gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10">
-              <Plus className="h-4 w-4" />
-              <Receipt className="h-4 w-4" />
-              <span className="hidden sm:inline">{language === 'es' ? 'Gasto' : 'Expense'}</span>
-            </Button>
-            <Button 
-              onClick={() => navigate('/mobile-capture')} 
-              size="sm" 
-              className="gap-1.5 bg-primary"
-            >
-              <Camera className="h-4 w-4" />
-              <span className="hidden sm:inline">{language === 'es' ? 'Capturar' : 'Capture'}</span>
-            </Button>
-          </div>
+          {/* Removed duplicate action buttons - now in Quick Actions grid below */}
         </div>
       </CardHeader>
       
@@ -334,6 +396,48 @@ export function MonthDetailPanel({
             )}
           </div>
         )}
+        
+        {/* Quick Actions - Prominent */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <Button 
+            onClick={() => navigate('/mobile-capture')} 
+            className="h-auto py-3 flex-col gap-1 bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20"
+          >
+            <Camera className="h-5 w-5" />
+            <span className="text-xs font-medium">{language === 'es' ? 'Capturar' : 'Capture'}</span>
+          </Button>
+          <Button 
+            onClick={onAddExpense} 
+            variant="outline"
+            className="h-auto py-3 flex-col gap-1 border-destructive/30 text-destructive hover:bg-destructive/10"
+          >
+            <Receipt className="h-5 w-5" />
+            <span className="text-xs font-medium">{language === 'es' ? '+ Gasto' : '+ Expense'}</span>
+          </Button>
+          <Button 
+            onClick={onAddIncome} 
+            variant="outline"
+            className="h-auto py-3 flex-col gap-1 border-success/30 text-success hover:bg-success/10"
+          >
+            <DollarSign className="h-5 w-5" />
+            <span className="text-xs font-medium">{language === 'es' ? '+ Ingreso' : '+ Income'}</span>
+          </Button>
+          <Button 
+            onClick={() => navigate('/expenses')} 
+            variant="outline"
+            className="h-auto py-3 flex-col gap-1"
+          >
+            <PieChart className="h-5 w-5" />
+            <span className="text-xs font-medium">{language === 'es' ? 'Ver Todo' : 'View All'}</span>
+          </Button>
+        </div>
+
+        {/* Budget Progress Bar */}
+        <BudgetProgressSection 
+          totalExpenses={totals.totalExpenses} 
+          formatCurrency={formatCurrency}
+          language={language}
+        />
         
         {/* Category breakdown */}
         {categoryBreakdown.length > 0 && (
