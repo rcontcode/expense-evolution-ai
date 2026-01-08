@@ -5,6 +5,7 @@ import { useCashflowQuadrant, QuadrantType } from '@/hooks/data/useCashflowQuadr
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Briefcase, User, Building2, TrendingUp, Target, Lightbulb } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 const QUADRANT_ICONS: Record<QuadrantType, React.ReactNode> = {
   E: <Briefcase className="h-5 w-5" />,
@@ -135,6 +136,8 @@ export function CashflowQuadrantCard() {
             </ul>
           </div>
         )}
+
+        <LegalDisclaimer variant="education" size="compact" />
       </CardContent>
     </Card>
   );

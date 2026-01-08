@@ -10,6 +10,7 @@ import { useDebtClassification, useUpdateDebtType, ClassifiedDebt } from '@/hook
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Scale, ThumbsUp, ThumbsDown, DollarSign, Lightbulb, Edit2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 export function DebtClassificationCard() {
   const { language } = useLanguage();
@@ -273,6 +274,8 @@ export function DebtClassificationCard() {
             </ul>
           </div>
         )}
+
+        <LegalDisclaimer variant="education" size="compact" />
       </CardContent>
     </Card>
   );

@@ -19,6 +19,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { TaxInfoVersionBadge } from '@/components/tax-calendar/TaxInfoVersionBadge';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 import type { CountryCode } from '@/lib/constants/country-tax-config';
 
 export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
@@ -216,6 +217,8 @@ export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
             </div>
           </div>
         )}
+
+        <LegalDisclaimer variant="tax" size="compact" />
       </CardContent>
     </Card>
   );

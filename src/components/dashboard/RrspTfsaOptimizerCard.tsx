@@ -19,6 +19,7 @@ import {
 import { useRrspTfsaOptimizer } from '@/hooks/data/useRrspTfsaOptimizer';
 import { useProfile } from '@/hooks/data/useProfile';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 export function RrspTfsaOptimizerCard() {
   const { isAnalyzing, result, error, analyzeOptimalContributions, clearResult } = useRrspTfsaOptimizer();
@@ -313,6 +314,8 @@ export function RrspTfsaOptimizerCard() {
           <Calculator className="mr-2 h-4 w-4" />
           Recalcular con Nuevos Datos
         </Button>
+
+        <LegalDisclaimer variant="investment" size="compact" />
       </CardContent>
     </Card>
   );

@@ -876,18 +876,35 @@ export default function Landing() {
       {/* Footer */}
       <footer className="py-10 bg-slate-950 border-t border-slate-800">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <img src={phoenixLogo} alt="EvoFinz" className="h-10 w-auto" />
-              <span className="font-bold text-white">EvoFinz</span>
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-3">
+                <img src={phoenixLogo} alt="EvoFinz" className="h-10 w-auto" />
+                <span className="font-bold text-white">EvoFinz</span>
+              </div>
+              <div className="flex items-center gap-6 text-sm">
+                <Link to="/legal" className="text-slate-400 hover:text-cyan-400 transition-colors">
+                  Términos de Uso
+                </Link>
+                <Link to="/legal#privacy" className="text-slate-400 hover:text-cyan-400 transition-colors">
+                  Privacidad
+                </Link>
+                <Link to="/legal#disclaimer" className="text-slate-400 hover:text-cyan-400 transition-colors">
+                  Descargo Legal
+                </Link>
+                <Link to="/auth" className="text-slate-400 hover:text-orange-400 transition-colors font-medium">
+                  Iniciar Sesión
+                </Link>
+              </div>
             </div>
-            <p className="text-sm text-slate-500">
-              © 2026 EvoFinz. Todos los derechos reservados.
-            </p>
-            <div className="flex items-center gap-6 text-sm pr-16">
-              <Link to="/auth" className="text-slate-400 hover:text-orange-400 transition-colors font-medium">
-                Iniciar Sesión
-              </Link>
+            <div className="text-center border-t border-slate-800 pt-4">
+              <p className="text-xs text-slate-500 max-w-3xl mx-auto">
+                EvoFinz es una herramienta educativa. La información proporcionada no constituye asesoría financiera, fiscal o de inversión. 
+                Consulte siempre con profesionales certificados antes de tomar decisiones financieras.
+              </p>
+              <p className="text-xs text-slate-600 mt-2">
+                © 2026 EvoFinz. Todos los derechos reservados.
+              </p>
             </div>
           </div>
         </div>
