@@ -132,11 +132,11 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
   const { data: profile } = useProfile();
   const { data: savingsGoals } = useSavingsGoals();
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  const [showTrends, setShowTrends] = useState(true);
+  const [showTrends, setShowTrends] = useState(false);
   const [showPatterns, setShowPatterns] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [expandedInsights, setExpandedInsights] = useState(false);
-  const [showHealthScore, setShowHealthScore] = useState(true);
+  const [showHealthScore, setShowHealthScore] = useState(false);
   const [showAnomalies, setShowAnomalies] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [showFlowForecast, setShowFlowForecast] = useState(false);
@@ -1079,93 +1079,51 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
           )}
         </AnimatePresence>
 
-        {/* ============= FINANCIAL HEALTH SCORE ============= */}
+        {/* ============= FINANCIAL HEALTH SCORE (Compact) ============= */}
         <AnimatePresence>
           {showHealthScore && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-purple-500/5 to-pink-500/10 border-2 border-primary/30"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
             >
-              <div className="flex items-center gap-4">
-                {/* Score Circle */}
-                <div className="relative">
-                  <motion.div
-                    className={cn(
-                      "w-24 h-24 rounded-full flex items-center justify-center",
-                      "bg-gradient-to-br shadow-2xl",
-                      healthScore.color === 'success' && "from-success to-emerald-600 shadow-success/40",
-                      healthScore.color === 'amber' && "from-amber-400 to-orange-500 shadow-amber-500/40",
-                      healthScore.color === 'orange' && "from-orange-400 to-red-500 shadow-orange-500/40",
-                      healthScore.color === 'destructive' && "from-destructive to-red-700 shadow-destructive/40"
-                    )}
-                    animate={{ scale: [1, 1.02, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
+              <div className="p-3 rounded-xl bg-gradient-to-r from-primary/10 to-purple-500/5 border border-primary/20">
+                <div className="flex items-center gap-4">
+                  {/* Score Circle - Smaller */}
+                  <div className={cn(
+                    "w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0",
+                    "bg-gradient-to-br shadow-lg",
+                    healthScore.color === 'success' && "from-success to-emerald-600",
+                    healthScore.color === 'amber' && "from-amber-400 to-orange-500",
+                    healthScore.color === 'orange' && "from-orange-400 to-red-500",
+                    healthScore.color === 'destructive' && "from-destructive to-red-700"
+                  )}>
                     <div className="text-center text-white">
-                      <span className="text-3xl">{healthScore.emoji}</span>
-                      <p className="text-2xl font-black">{healthScore.grade}</p>
+                      <span className="text-lg">{healthScore.emoji}</span>
+                      <p className="text-sm font-bold">{healthScore.grade}</p>
                     </div>
-                  </motion.div>
-                  <motion.div
-                    className="absolute -top-1 -right-1 text-2xl"
-                    animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    {healthScore.score >= 80 ? '✨' : healthScore.score >= 50 ? '💪' : '🔧'}
-                  </motion.div>
-                </div>
-                
-                {/* Score Breakdown */}
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <h3 className="font-bold text-lg flex items-center gap-2">
-                        <Shield className="h-5 w-5 text-primary" />
-                        {language === 'es' ? 'Salud Financiera' : 'Financial Health'}
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        {language === 'es' ? 'Puntuación total:' : 'Total score:'} <span className="font-bold text-primary">{healthScore.score}/100</span>
-                      </p>
-                    </div>
-                    <Badge className={cn(
-                      "text-sm px-3 py-1",
-                      healthScore.color === 'success' && "bg-success text-white",
-                      healthScore.color === 'amber' && "bg-amber-500 text-white",
-                      healthScore.color === 'orange' && "bg-orange-500 text-white",
-                      healthScore.color === 'destructive' && "bg-destructive text-white"
-                    )}>
-                      {healthScore.grade}
-                    </Badge>
                   </div>
                   
-                  <div className="grid grid-cols-5 gap-2">
-                    {[
-                      { key: 'savings', label: language === 'es' ? 'Ahorro' : 'Savings', max: 25, icon: <PiggyBank className="h-3 w-3" /> },
-                      { key: 'spending', label: language === 'es' ? 'Gasto' : 'Spending', max: 25, icon: <Wallet className="h-3 w-3" /> },
-                      { key: 'diversity', label: language === 'es' ? 'Diversidad' : 'Diversity', max: 20, icon: <Activity className="h-3 w-3" /> },
-                      { key: 'consistency', label: language === 'es' ? 'Consistencia' : 'Consistency', max: 15, icon: <Timer className="h-3 w-3" /> },
-                      { key: 'control', label: language === 'es' ? 'Control' : 'Control', max: 15, icon: <Target className="h-3 w-3" /> },
-                    ].map((item) => (
-                      <Tooltip key={item.key}>
-                        <TooltipTrigger asChild>
-                          <div className="text-center p-2 rounded-lg bg-background/50 hover:bg-background/80 transition-colors cursor-help">
-                            <div className="flex justify-center mb-1 text-primary">{item.icon}</div>
-                            <Progress 
-                              value={(healthScore.breakdown[item.key as keyof typeof healthScore.breakdown] / item.max) * 100} 
-                              className="h-1.5 mb-1"
-                            />
-                            <p className="text-[9px] font-medium truncate">{item.label}</p>
-                            <p className="text-[10px] text-muted-foreground">{healthScore.breakdown[item.key as keyof typeof healthScore.breakdown]}/{item.max}</p>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="font-bold">{item.label}</p>
-                          <p className="text-xs">{healthScore.breakdown[item.key as keyof typeof healthScore.breakdown]} de {item.max} puntos</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    ))}
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Shield className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-bold">{language === 'es' ? 'Salud Financiera' : 'Financial Health'}</span>
+                      <Badge variant="outline" className="text-xs">{healthScore.score}/100</Badge>
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      {[
+                        { key: 'savings', label: language === 'es' ? 'Ahorro' : 'Savings', max: 25 },
+                        { key: 'spending', label: language === 'es' ? 'Gasto' : 'Spending', max: 25 },
+                        { key: 'control', label: language === 'es' ? 'Control' : 'Control', max: 15 },
+                      ].map((item) => (
+                        <div key={item.key} className="flex items-center gap-1">
+                          <span className="text-[10px] text-muted-foreground">{item.label}:</span>
+                          <span className="text-[10px] font-medium">{healthScore.breakdown[item.key as keyof typeof healthScore.breakdown]}/{item.max}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1173,243 +1131,145 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
           )}
         </AnimatePresence>
 
-        {/* ============= ANOMALY DETECTION ============= */}
+        {/* ============= ANOMALY DETECTION (Compact) ============= */}
         <AnimatePresence>
           {showAnomalies && anomalies.length > 0 && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="space-y-3 overflow-hidden"
+              className="overflow-hidden"
             >
-              <div className="flex items-center gap-2">
-                <motion.div
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                >
-                  <Siren className="h-5 w-5 text-destructive" />
-                </motion.div>
-                <h3 className="font-bold text-sm">
-                  {language === 'es' ? '🔍 Detección de Anomalías' : '🔍 Anomaly Detection'}
-                </h3>
-                <Badge variant="destructive" className="text-[10px]">
-                  {anomalies.length} {language === 'es' ? 'detectadas' : 'detected'}
-                </Badge>
-              </div>
-              
-              <div className="grid gap-2">
-                {anomalies.map((anomaly, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: i * 0.1 }}
-                    className={cn(
-                      "p-3 rounded-xl border-l-4",
-                      anomaly.severity === 'critical' && "bg-destructive/10 border-l-destructive",
-                      anomaly.severity === 'high' && "bg-orange-500/10 border-l-orange-500",
-                      anomaly.severity === 'medium' && "bg-amber-500/10 border-l-amber-500",
-                      anomaly.severity === 'low' && "bg-blue-500/10 border-l-blue-500"
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={cn(
-                        "p-1.5 rounded-lg",
-                        anomaly.severity === 'critical' && "bg-destructive/20",
-                        anomaly.severity === 'high' && "bg-orange-500/20",
-                        anomaly.severity === 'medium' && "bg-amber-500/20",
-                        anomaly.severity === 'low' && "bg-blue-500/20"
+              <div className="p-3 rounded-xl bg-destructive/5 border border-destructive/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <Siren className="h-4 w-4 text-destructive" />
+                  <span className="text-xs font-bold">{language === 'es' ? 'Alertas Detectadas' : 'Alerts Detected'}</span>
+                  <Badge variant="destructive" className="text-[9px]">{anomalies.length}</Badge>
+                </div>
+                <div className="space-y-1.5">
+                  {anomalies.slice(0, 3).map((anomaly, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "flex items-center gap-2 p-2 rounded-lg text-xs",
+                        anomaly.severity === 'critical' && "bg-destructive/10",
+                        anomaly.severity === 'high' && "bg-orange-500/10",
+                        anomaly.severity === 'medium' && "bg-amber-500/10",
+                        anomaly.severity === 'low' && "bg-blue-500/10"
+                      )}
+                    >
+                      <Badge className={cn(
+                        "text-[8px] uppercase px-1.5",
+                        anomaly.severity === 'critical' && "bg-destructive",
+                        anomaly.severity === 'high' && "bg-orange-500",
+                        anomaly.severity === 'medium' && "bg-amber-500",
+                        anomaly.severity === 'low' && "bg-blue-500"
                       )}>
-                        {anomaly.type === 'spike' && <Zap className="h-4 w-4" />}
-                        {anomaly.type === 'unusual_category' && <AlertTriangle className="h-4 w-4" />}
-                        {anomaly.type === 'velocity' && <Rocket className="h-4 w-4" />}
-                        {anomaly.type === 'pattern_break' && <Activity className="h-4 w-4" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge className={cn(
-                            "text-[9px] uppercase",
-                            anomaly.severity === 'critical' && "bg-destructive",
-                            anomaly.severity === 'high' && "bg-orange-500",
-                            anomaly.severity === 'medium' && "bg-amber-500",
-                            anomaly.severity === 'low' && "bg-blue-500"
-                          )}>
-                            {anomaly.severity}
-                          </Badge>
-                          <span className="text-[10px] text-muted-foreground uppercase">{anomaly.type.replace('_', ' ')}</span>
-                        </div>
-                        <p className="text-sm font-medium">{anomaly.message[language as 'es' | 'en']}</p>
-                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                          <Lightbulb className="h-3 w-3" />
-                          {anomaly.suggestion[language as 'es' | 'en']}
-                        </p>
-                      </div>
+                        {anomaly.severity}
+                      </Badge>
+                      <span className="flex-1 truncate">{anomaly.message[language as 'es' | 'en']}</span>
                     </div>
-                  </motion.div>
-                ))}
+                  ))}
+                </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* ============= ACHIEVEMENTS SECTION ============= */}
+        {/* ============= ACHIEVEMENTS SECTION (Compact) ============= */}
         <AnimatePresence>
-          {showAchievements && (
+          {showAchievements && achievements.unlocked.length > 0 && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="space-y-3 overflow-hidden"
+              className="overflow-hidden"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <motion.div
-                    animate={{ rotate: [0, 10, -10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <Trophy className="h-5 w-5 text-amber-500" />
-                  </motion.div>
-                  <h3 className="font-bold text-sm">
-                    {language === 'es' ? '🎖️ Logros Desbloqueados' : '🎖️ Unlocked Achievements'}
-                  </h3>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+              <div className="p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/5 border border-amber-500/20">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="h-4 w-4 text-amber-500" />
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {language === 'es' ? 'Logros:' : 'Badges:'}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {achievements.unlocked.slice(0, 5).map((achievement) => (
+                      <Badge 
+                        key={achievement.key}
+                        variant="outline"
+                        className="text-[10px] gap-1 bg-amber-500/10 border-amber-500/30"
+                      >
+                        <span>{achievement.icon}</span>
+                        {achievement.name}
+                      </Badge>
+                    ))}
+                    {achievements.unlocked.length > 5 && (
+                      <Badge variant="outline" className="text-[10px]">
+                        +{achievements.unlocked.length - 5}
+                      </Badge>
+                    )}
+                  </div>
+                  <Badge className="bg-amber-500/20 text-amber-700 text-[10px] ml-auto">
                     {achievements.totalPoints} XP
                   </Badge>
-                  <span className="text-xs text-muted-foreground">
-                    {achievements.unlocked.length}/{achievements.total}
-                  </span>
                 </div>
-              </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {achievements.unlocked.map((achievement, i) => (
-                  <motion.div
-                    key={achievement.key}
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ delay: i * 0.1, type: 'spring' }}
-                    className="p-3 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 border border-amber-500/30 text-center hover:scale-105 transition-transform cursor-pointer"
-                    onClick={() => setCelebratingAchievement(achievement.key)}
-                  >
-                    <motion.span 
-                      className="text-3xl block mb-1"
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
-                    >
-                      {achievement.icon}
-                    </motion.span>
-                    <p className="text-xs font-bold truncate">{achievement.name}</p>
-                    <p className="text-[10px] text-amber-600">+{achievement.points} XP</p>
-                  </motion.div>
-                ))}
-                
-                {/* Locked achievements */}
-                {Object.entries(FAMILY_ACHIEVEMENTS)
-                  .filter(([key]) => !achievements.unlocked.find(a => a.key === key))
-                  .slice(0, 4 - achievements.unlocked.length)
-                  .map(([key, achievement], i) => (
-                    <motion.div
-                      key={key}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 0.5 }}
-                      className="p-3 rounded-xl bg-muted/30 border border-muted text-center grayscale"
-                    >
-                      <span className="text-2xl block mb-1 opacity-50">🔒</span>
-                      <p className="text-xs font-medium text-muted-foreground truncate">
-                        {achievement.name[language as 'es' | 'en']}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">+{achievement.points} XP</p>
-                    </motion.div>
-                  ))}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* ============= CASH FLOW FORECAST ============= */}
+        {/* ============= CASH FLOW FORECAST (Compact) ============= */}
         <AnimatePresence>
           {showFlowForecast && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="space-y-3 overflow-hidden"
+              className="overflow-hidden"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Rocket className="h-5 w-5 text-primary" />
-                  <h3 className="font-bold text-sm">
-                    {language === 'es' ? '🚀 Pronóstico de Flujo' : '🚀 Cash Flow Forecast'}
-                  </h3>
-                </div>
-                <div className="flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Rocket className="h-4 w-4 text-blue-500" />
+                    <span className="text-xs font-bold">{language === 'es' ? 'Pronóstico' : 'Forecast'}</span>
+                  </div>
                   <Badge className={cn(
+                    "text-[10px]",
                     flowForecast.endBalance >= 0 ? "bg-success" : "bg-destructive"
                   )}>
-                    {language === 'es' ? 'Balance Final:' : 'End Balance:'} {formatCurrency(flowForecast.endBalance)}
+                    {language === 'es' ? 'Fin mes:' : 'End:'} {formatCurrency(flowForecast.endBalance)}
                   </Badge>
                 </div>
-              </div>
-              
-              <div className="h-[160px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={flowForecast.forecast}>
-                    <defs>
-                      <linearGradient id="forecastGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="criticalGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="day" tick={{ fontSize: 9 }} />
-                    <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
-                    <RechartsTooltip 
-                      content={({ active, payload, label }) => {
-                        if (!active || !payload?.length) return null;
-                        return (
-                          <div className="bg-popover/95 backdrop-blur-sm border rounded-lg p-2 shadow-lg">
-                            <p className="font-bold text-xs">{language === 'es' ? 'Día' : 'Day'} {label}</p>
-                            <p className="text-xs">
-                              {language === 'es' ? 'Proyección:' : 'Projected:'} {formatCurrency(payload[0]?.value as number)}
-                            </p>
-                          </div>
-                        );
-                      }}
-                    />
-                    <ReferenceLine y={0} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
-                    <ReferenceLine x={insights.currentDay} stroke="hsl(var(--primary))" strokeWidth={2} label="Hoy" />
-                    <Area 
-                      type="monotone" 
-                      dataKey="projected" 
-                      stroke="#3b82f6" 
-                      fill="url(#forecastGradient)"
-                      strokeWidth={2}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-              
-              {/* Forecast Metrics */}
-              <div className="grid grid-cols-3 gap-2">
-                <div className="p-3 rounded-xl bg-muted/30 text-center">
-                  <p className="text-[10px] text-muted-foreground uppercase">{language === 'es' ? 'Burn Rate' : 'Burn Rate'}</p>
-                  <p className="text-lg font-bold text-primary">{formatCurrency(insights.burnRate)}</p>
-                  <p className="text-[10px] text-muted-foreground">/{language === 'es' ? 'día' : 'day'}</p>
+                <div className="h-[100px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={flowForecast.forecast}>
+                      <defs>
+                        <linearGradient id="forecastGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="day" tick={{ fontSize: 8 }} tickLine={false} axisLine={false} />
+                      <YAxis tick={{ fontSize: 8 }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
+                      <ReferenceLine y={0} stroke="hsl(var(--destructive))" strokeDasharray="2 2" strokeOpacity={0.5} />
+                      <Area 
+                        type="monotone" 
+                        dataKey="projected" 
+                        stroke="#3b82f6" 
+                        fill="url(#forecastGradient)"
+                        strokeWidth={1.5}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
-                <div className="p-3 rounded-xl bg-muted/30 text-center">
-                  <p className="text-[10px] text-muted-foreground uppercase">{language === 'es' ? 'Buffer' : 'Buffer'}</p>
-                  <p className="text-lg font-bold text-emerald-500">{insights.emergencyBuffer}</p>
-                  <p className="text-[10px] text-muted-foreground">{language === 'es' ? 'días cubiertos' : 'days covered'}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-muted/30 text-center">
-                  <p className="text-[10px] text-muted-foreground uppercase">{language === 'es' ? 'Consistencia' : 'Consistency'}</p>
-                  <p className="text-lg font-bold text-purple-500">{insights.consistencyScore.toFixed(0)}%</p>
-                  <p className="text-[10px] text-muted-foreground">{language === 'es' ? 'estabilidad' : 'stability'}</p>
+                <div className="flex gap-3 mt-2 text-[10px]">
+                  <span className="text-muted-foreground">
+                    Burn: <span className="font-medium text-foreground">{formatCurrency(insights.burnRate)}/día</span>
+                  </span>
+                  <span className="text-muted-foreground">
+                    Buffer: <span className="font-medium text-emerald-500">{insights.emergencyBuffer} días</span>
+                  </span>
                 </div>
               </div>
             </motion.div>
