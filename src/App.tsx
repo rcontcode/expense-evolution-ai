@@ -37,6 +37,8 @@ import BetaFeatures from "./pages/BetaFeatures";
 import BetaCodesAdmin from "./pages/admin/BetaCodes";
 import { ChatAssistant } from "./components/chat/ChatAssistant";
 import { OnboardingTutorial } from "./components/guidance/OnboardingTutorial";
+import { CookieConsent } from "./components/CookieConsent";
+import { FeedbackButton } from "./components/FeedbackButton";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +90,8 @@ const App = () => (
               </Routes>
               <ChatAssistant />
               <OnboardingTutorial />
+              <CookieConsent />
+              <FeedbackButton />
             </AuthProvider>
           </LanguageProvider>
         </BrowserRouter>

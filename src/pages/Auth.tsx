@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -27,6 +28,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   
   // Validation error states
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export default function Auth() {
   const [codeStatus, setCodeStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
   
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { signIn, signUp, user } = useAuth();
 
   // Cooldown timer
@@ -208,9 +210,10 @@ export default function Auth() {
       fullName.trim().length >= 2 &&
       !emailError && 
       !passwordError && 
-      !nameError
+      !nameError &&
+      acceptedTerms
     );
-  }, [email, password, fullName, emailError, passwordError, nameError, isLogin, isForgotPassword, cooldownUntil]);
+  }, [email, password, fullName, emailError, passwordError, nameError, isLogin, isForgotPassword, cooldownUntil, acceptedTerms]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -568,6 +571,43 @@ export default function Auth() {
                     </CollapsibleContent>
                   </Collapsible>
                 )}
+
+                {/* Terms & Conditions Checkbox - Only on signup */}
+                {!isLogin && !isForgotPassword && (
+                  <div className="flex items-start gap-3 py-2">
+                    <Checkbox
+                      id="terms"
+                      checked={acceptedTerms}
+                      onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                      className="mt-0.5"
+                    />
+                    <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight cursor-pointer">
+                      {language === 'es' ? (
+                        <>
+                          Acepto los{' '}
+                          <Link to="/legal" className="text-primary hover:underline" target="_blank">
+                            Términos de Uso
+                          </Link>{' '}
+                          y la{' '}
+                          <Link to="/legal#privacy" className="text-primary hover:underline" target="_blank">
+                            Política de Privacidad
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          I accept the{' '}
+                          <Link to="/legal" className="text-primary hover:underline" target="_blank">
+                            Terms of Use
+                          </Link>{' '}
+                          and{' '}
+                          <Link to="/legal#privacy" className="text-primary hover:underline" target="_blank">
+                            Privacy Policy
+                          </Link>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                )}
                 
                 {isLogin && !isForgotPassword && (
                   <div className="flex justify-end">
@@ -581,7 +621,7 @@ export default function Auth() {
                   </div>
                 )}
 
-                <Button 
+                <Button
                   type="submit" 
                   className="w-full h-12" 
                   variant="gradient"
