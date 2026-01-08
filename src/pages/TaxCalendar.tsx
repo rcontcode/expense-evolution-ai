@@ -46,10 +46,12 @@ export default function TaxCalendar() {
   return (
     <Layout>
       <PageHeader
-        title={language === 'es' ? "Centro Fiscal CRA" : "CRA Tax Center"}
-        description={language === 'es' 
-          ? "Calendario, estimador, recordatorios y guía completa para tus obligaciones fiscales"
-          : "Calendar, estimator, reminders and complete guide for your tax obligations"
+        title={profile?.country === 'CL' ? "Centro Fiscal SII" : (language === 'es' ? "Centro Fiscal CRA" : "CRA Tax Center")}
+        description={profile?.country === 'CL' 
+          ? "Gestiona tus obligaciones tributarias con el Servicio de Impuestos Internos"
+          : (language === 'es'
+            ? "Calendario, estimador, recordatorios y guía completa para tus obligaciones fiscales"
+            : "Calendar, estimator, reminders and complete guide for your tax obligations")
         }
       />
 
@@ -250,6 +252,7 @@ export default function TaxCalendar() {
               year={selectedYear}
               workTypes={workTypes}
               fiscalYearEnd={fiscalYearEnd}
+              country={profile?.country || 'CA'}
             />
           </TabsContent>
 
