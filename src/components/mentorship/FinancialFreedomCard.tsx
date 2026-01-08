@@ -5,6 +5,7 @@ import { useFinancialFreedom } from '@/hooks/data/useFinancialFreedom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Sparkles, TrendingUp, Calendar, DollarSign, Lightbulb, PartyPopper } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 
@@ -166,6 +167,8 @@ export function FinancialFreedomCard() {
             </ul>
           </div>
         )}
+
+        <LegalDisclaimer variant="education" size="compact" />
       </CardContent>
     </Card>
   );

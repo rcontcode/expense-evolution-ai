@@ -26,6 +26,7 @@ import { useFIRECalculator } from '@/hooks/data/useFIRECalculator';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Area, AreaChart } from 'recharts';
 import { InfoTooltip } from '@/components/ui/info-tooltip';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 const FIRE_TOOLTIP = {
   es: {
@@ -463,6 +464,8 @@ export function FIRECalculatorCard() {
                 </li>
               </ul>
             </div>
+
+            <LegalDisclaimer variant="investment" size="compact" />
           </TabsContent>
         </Tabs>
       </CardContent>

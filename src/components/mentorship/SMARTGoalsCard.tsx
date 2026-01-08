@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { format, differenceInDays } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 interface GoalWithSMART {
   id: string;
@@ -257,6 +258,8 @@ export function SMARTGoalsCard() {
                 : 'SMART = Specific, Measurable, Achievable, Relevant, Time-bound. A 5/5 goal is 10x more likely to succeed.'}
             </p>
           </div>
+
+          <LegalDisclaimer variant="education" size="compact" />
         </CardContent>
       </Card>
 
