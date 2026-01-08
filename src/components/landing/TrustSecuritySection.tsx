@@ -1,38 +1,51 @@
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Shield, Lock, Eye, Server, CheckCircle2, Award } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
-const securityFeatures = [
+const getSecurityFeatures = (language: string) => [
   {
     icon: Lock,
-    title: 'Encriptación AES-256',
-    description: 'Tus datos están protegidos con el mismo estándar de los bancos'
+    title: language === 'es' ? 'Encriptación AES-256' : 'AES-256 Encryption',
+    description: language === 'es' 
+      ? 'Tus datos están protegidos con el mismo estándar de los bancos'
+      : 'Your data is protected with the same standard used by banks'
   },
   {
     icon: Shield,
-    title: 'Autenticación Segura',
-    description: 'Sistema de doble factor disponible para proteger tu cuenta'
+    title: language === 'es' ? 'Autenticación Segura' : 'Secure Authentication',
+    description: language === 'es'
+      ? 'Sistema de doble factor disponible para proteger tu cuenta'
+      : 'Two-factor authentication available to protect your account'
   },
   {
     icon: Eye,
-    title: 'Privacidad Total',
-    description: 'Nunca vendemos ni compartimos tus datos con terceros'
+    title: language === 'es' ? 'Privacidad Total' : 'Total Privacy',
+    description: language === 'es'
+      ? 'Nunca vendemos ni compartimos tus datos con terceros'
+      : 'We never sell or share your data with third parties'
   },
   {
     icon: Server,
-    title: 'Servidores en Canadá',
-    description: 'Datos almacenados en servidores canadienses conformes con PIPEDA'
+    title: language === 'es' ? 'Servidores Seguros' : 'Secure Servers',
+    description: language === 'es'
+      ? 'Datos almacenados en centros de datos certificados con respaldo automático'
+      : 'Data stored in certified data centers with automatic backup'
   }
 ];
 
-const trustBadges = [
+const getTrustBadges = (language: string) => [
   { label: 'SSL Secured', icon: Lock },
-  { label: 'PIPEDA Compliant', icon: Award },
+  { label: language === 'es' ? 'Protección de Datos' : 'Data Protection', icon: Award },
   { label: 'SOC 2', icon: Shield },
   { label: '99.9% Uptime', icon: CheckCircle2 }
 ];
 
 export function TrustSecuritySection() {
+  const { language } = useLanguage();
+  const securityFeatures = getSecurityFeatures(language);
+  const trustBadges = getTrustBadges(language);
+
   return (
     <section className="relative py-20 bg-gradient-to-b from-slate-50 to-white overflow-hidden">
       {/* Background decoration */}
@@ -51,14 +64,20 @@ export function TrustSecuritySection() {
         >
           <Badge className="mb-4 px-4 py-2 bg-cyan-500/10 text-cyan-600 border-cyan-500/30 text-sm">
             <Shield className="w-4 h-4 mr-2 inline" />
-            Seguridad de Clase Bancaria
+            {language === 'es' ? 'Seguridad de Clase Bancaria' : 'Bank-Grade Security'}
           </Badge>
           <h2 className="text-4xl md:text-5xl font-black mb-4">
-            <span className="text-slate-800">Tu Seguridad es </span>
-            <span className="bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent">Nuestra Prioridad</span>
+            <span className="text-slate-800">
+              {language === 'es' ? 'Tu Seguridad es ' : 'Your Security is '}
+            </span>
+            <span className="bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent">
+              {language === 'es' ? 'Nuestra Prioridad' : 'Our Priority'}
+            </span>
           </h2>
           <p className="text-slate-600 text-lg max-w-2xl mx-auto">
-            Protegemos tu información financiera con los más altos estándares de seguridad.
+            {language === 'es'
+              ? 'Protegemos tu información financiera con los más altos estándares de seguridad.'
+              : 'We protect your financial information with the highest security standards.'}
           </p>
         </motion.div>
 

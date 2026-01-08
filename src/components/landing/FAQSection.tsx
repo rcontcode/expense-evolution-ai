@@ -7,19 +7,24 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useLanguage } from '@/contexts/LanguageContext';
 
-const faqs = [
+const getFaqs = (language: string) => language === 'es' ? [
   {
     question: '¿EvoFinz es seguro para mis datos financieros?',
-    answer: 'Absolutamente. Utilizamos encriptación AES-256, el mismo estándar que usan los bancos. Tus datos están almacenados en servidores canadienses conformes con PIPEDA y nunca compartimos tu información con terceros.'
+    answer: 'Absolutamente. Utilizamos encriptación AES-256, el mismo estándar que usan los bancos. Tus datos están almacenados en servidores seguros conformes con regulaciones de privacidad locales y nunca compartimos tu información con terceros.'
   },
   {
     question: '¿Puedo usar EvoFinz si no soy contador?',
-    answer: 'Sí, EvoFinz está diseñado para personas sin conocimientos contables. La IA categoriza automáticamente tus gastos, sugiere deducciones fiscales y genera reportes listos para tu contador o el CRA.'
+    answer: 'Sí, EvoFinz está diseñado para personas sin conocimientos contables. La categorización inteligente organiza automáticamente tus gastos, sugiere deducciones fiscales y genera reportes listos para tu contador o autoridad tributaria.'
   },
   {
-    question: '¿Qué es el reporte T2125?',
-    answer: 'El T2125 es el formulario del CRA para reportar ingresos y gastos de negocio como freelancer o contratista. EvoFinz genera este reporte automáticamente con todos tus gastos categorizados correctamente.'
+    question: '¿Qué países soporta EvoFinz?',
+    answer: 'Actualmente soportamos Canadá (CRA, T2125, RRSP/TFSA) y Chile (SII, F29/F22, APV). El sistema se adapta automáticamente según tu perfil, mostrando las reglas fiscales y calendarios correctos para tu país. Más países próximamente.'
+  },
+  {
+    question: '¿En qué idiomas está disponible?',
+    answer: 'EvoFinz está disponible en Español e Inglés. Puedes cambiar el idioma en cualquier momento desde el selector de idioma en la esquina superior derecha.'
   },
   {
     question: '¿Puedo importar mis datos bancarios?',
@@ -41,9 +46,49 @@ const faqs = [
     question: '¿EvoFinz funciona en mi celular?',
     answer: 'Sí, EvoFinz es una Progressive Web App (PWA) que funciona en cualquier dispositivo. Puedes instalarla en tu celular para escanear recibos sobre la marcha.'
   }
+] : [
+  {
+    question: 'Is EvoFinz secure for my financial data?',
+    answer: 'Absolutely. We use AES-256 encryption, the same standard used by banks. Your data is stored on secure servers compliant with local privacy regulations and we never share your information with third parties.'
+  },
+  {
+    question: 'Can I use EvoFinz if I\'m not an accountant?',
+    answer: 'Yes, EvoFinz is designed for people without accounting knowledge. Smart categorization automatically organizes your expenses, suggests tax deductions, and generates reports ready for your accountant or tax authority.'
+  },
+  {
+    question: 'Which countries does EvoFinz support?',
+    answer: 'We currently support Canada (CRA, T2125, RRSP/TFSA) and Chile (SII, F29/F22, APV). The system automatically adapts based on your profile, showing the correct tax rules and calendars for your country. More countries coming soon.'
+  },
+  {
+    question: 'What languages are available?',
+    answer: 'EvoFinz is available in Spanish and English. You can change the language at any time from the language selector in the top right corner.'
+  },
+  {
+    question: 'Can I import my bank data?',
+    answer: 'Yes, you can import bank statements in CSV/OFX format. EvoFinz analyzes transactions, detects patterns, and categorizes automatically. It also detects recurring subscriptions.'
+  },
+  {
+    question: 'Is there a free version?',
+    answer: 'Yes, the free plan includes up to 50 manual expenses/month, 20 incomes/month, 5 free OCR scans, 2 clients and 2 projects. Perfect for exploring EvoFinz before scaling to Premium ($6.99/month) or Pro ($14.99/month).'
+  },
+  {
+    question: 'How does gamification work?',
+    answer: 'You earn XP and achievements for maintaining good financial habits: logging expenses, reaching savings goals, completing financial education. You unlock levels and badges that motivate your progress.'
+  },
+  {
+    question: 'Can I cancel anytime?',
+    answer: 'Yes, you can cancel your subscription at any time without penalties. Your data remains accessible in read-only mode and you can export it before closing your account.'
+  },
+  {
+    question: 'Does EvoFinz work on my phone?',
+    answer: 'Yes, EvoFinz is a Progressive Web App (PWA) that works on any device. You can install it on your phone to scan receipts on the go.'
+  }
 ];
 
 export function FAQSection() {
+  const { language } = useLanguage();
+  const faqs = getFaqs(language);
+
   return (
     <section className="relative py-20 bg-gradient-to-b from-slate-50 to-white overflow-hidden">
       <div className="container mx-auto px-4 relative z-10">
@@ -56,14 +101,18 @@ export function FAQSection() {
         >
           <Badge className="mb-4 px-4 py-2 bg-violet-500/10 text-violet-600 border-violet-500/30 text-sm">
             <HelpCircle className="w-4 h-4 mr-2 inline" />
-            Preguntas Frecuentes
+            {language === 'es' ? 'Preguntas Frecuentes' : 'FAQ'}
           </Badge>
           <h2 className="text-4xl md:text-5xl font-black mb-4">
-            <span className="text-slate-800">¿Tienes </span>
-            <span className="bg-gradient-to-r from-violet-500 to-purple-500 bg-clip-text text-transparent">Preguntas?</span>
+            <span className="text-slate-800">{language === 'es' ? '¿Tienes ' : 'Have '}</span>
+            <span className="bg-gradient-to-r from-violet-500 to-purple-500 bg-clip-text text-transparent">
+              {language === 'es' ? 'Preguntas?' : 'Questions?'}
+            </span>
           </h2>
           <p className="text-slate-600 text-lg max-w-2xl mx-auto">
-            Aquí resolvemos las dudas más comunes sobre EvoFinz.
+            {language === 'es' 
+              ? 'Aquí resolvemos las dudas más comunes sobre EvoFinz.'
+              : 'Here we answer the most common questions about EvoFinz.'}
           </p>
         </motion.div>
 

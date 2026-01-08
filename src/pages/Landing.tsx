@@ -10,7 +10,7 @@ import {
   Camera, Receipt, FileText, Calculator, Trophy, GraduationCap,
   BarChart3, BookOpen, Building2, CreditCard, Mic, TrendingUp,
   ArrowRight, Check, Sparkles, Shield, Zap, Gift, Loader2, CheckCircle2, XCircle,
-  Star, Flame, Target, Crown, Heart, AlertTriangle, Clock, Lightbulb, ChevronRight, Quote
+  Star, Flame, Target, Crown, Heart, AlertTriangle, Clock, Lightbulb, ChevronRight, Quote, Globe
 } from 'lucide-react';
 import phoenixLogo from '@/assets/phoenix-clean-logo.png';
 import { TransformationCarousel } from '@/components/landing/TransformationCarousel';
@@ -26,6 +26,8 @@ import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { TargetAudienceSection } from '@/components/landing/TargetAudienceSection';
 import { FAQSection } from '@/components/landing/FAQSection';
 import { GuaranteesSection } from '@/components/landing/GuaranteesSection';
+import { LanguageSelector } from '@/components/LanguageSelector';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Parallax wrapper component for scroll-based animations
 function ParallaxSection({ 
@@ -73,44 +75,51 @@ function ParallaxLayer({
   );
 }
 
-const features = [
-  { icon: Camera, title: 'Captura Inteligente', description: 'OCR + Voz Smart', tier: 'Pro', color: 'from-orange-500 to-red-500' },
-  { icon: Receipt, title: 'Gestión Completa', description: 'Gastos e Ingresos', tier: 'Premium', color: 'from-emerald-500 to-teal-500' },
-  { icon: FileText, title: 'Contratos Smart', description: 'Análisis automático', tier: 'Pro', color: 'from-blue-500 to-indigo-500' },
-  { icon: Calculator, title: 'Calculadoras', description: 'FIRE/RRSP/TFSA', tier: 'Pro', color: 'from-purple-500 to-pink-500' },
-  { icon: Trophy, title: 'Gamificación', description: 'XP y Logros', tier: 'Premium', color: 'from-amber-500 to-orange-500' },
-  { icon: GraduationCap, title: 'Mentoría', description: 'Kiyosaki/Tracy', tier: 'Pro', color: 'from-cyan-500 to-blue-500' },
-  { icon: BarChart3, title: 'Analytics', description: '9+ visualizaciones', tier: 'Pro', color: 'from-rose-500 to-red-500' },
-  { icon: BookOpen, title: 'Educación', description: 'Tracking de recursos', tier: 'Premium', color: 'from-green-500 to-emerald-500' },
-  { icon: Building2, title: 'Análisis Bancario', description: 'Detección de anomalías', tier: 'Pro', color: 'from-violet-500 to-purple-500' },
-  { icon: CreditCard, title: 'Suscripciones', description: 'Detector automático', tier: 'Premium', color: 'from-pink-500 to-rose-500' },
-  { icon: Mic, title: 'Asistente Voz', description: 'Dictado inteligente', tier: 'Pro', color: 'from-indigo-500 to-blue-500' },
-  { icon: TrendingUp, title: 'Patrimonio', description: 'Activos vs Pasivos', tier: 'Premium', color: 'from-teal-500 to-cyan-500' },
+const getFeatures = (language: string) => [
+  { icon: Camera, title: language === 'es' ? 'Captura Inteligente' : 'Smart Capture', description: 'OCR + Voice', tier: 'Pro', color: 'from-orange-500 to-red-500' },
+  { icon: Receipt, title: language === 'es' ? 'Gestión Completa' : 'Complete Management', description: language === 'es' ? 'Gastos e Ingresos' : 'Expenses & Income', tier: 'Premium', color: 'from-emerald-500 to-teal-500' },
+  { icon: FileText, title: language === 'es' ? 'Contratos Smart' : 'Smart Contracts', description: language === 'es' ? 'Análisis automático' : 'Auto analysis', tier: 'Pro', color: 'from-blue-500 to-indigo-500' },
+  { icon: Calculator, title: language === 'es' ? 'Calculadoras' : 'Calculators', description: 'FIRE/RRSP/APV', tier: 'Pro', color: 'from-purple-500 to-pink-500' },
+  { icon: Trophy, title: language === 'es' ? 'Gamificación' : 'Gamification', description: 'XP & Badges', tier: 'Premium', color: 'from-amber-500 to-orange-500' },
+  { icon: GraduationCap, title: language === 'es' ? 'Mentoría' : 'Mentorship', description: 'Kiyosaki/Tracy', tier: 'Pro', color: 'from-cyan-500 to-blue-500' },
+  { icon: BarChart3, title: 'Analytics', description: language === 'es' ? '9+ visualizaciones' : '9+ charts', tier: 'Pro', color: 'from-rose-500 to-red-500' },
+  { icon: BookOpen, title: language === 'es' ? 'Educación' : 'Education', description: language === 'es' ? 'Tracking de recursos' : 'Resource tracking', tier: 'Premium', color: 'from-green-500 to-emerald-500' },
+  { icon: Building2, title: language === 'es' ? 'Análisis Bancario' : 'Bank Analysis', description: language === 'es' ? 'Detección de anomalías' : 'Anomaly detection', tier: 'Pro', color: 'from-violet-500 to-purple-500' },
+  { icon: CreditCard, title: language === 'es' ? 'Suscripciones' : 'Subscriptions', description: language === 'es' ? 'Detector automático' : 'Auto detector', tier: 'Premium', color: 'from-pink-500 to-rose-500' },
+  { icon: Mic, title: language === 'es' ? 'Asistente Voz' : 'Voice Assistant', description: language === 'es' ? 'Dictado inteligente' : 'Smart dictation', tier: 'Pro', color: 'from-indigo-500 to-blue-500' },
+  { icon: TrendingUp, title: language === 'es' ? 'Patrimonio' : 'Net Worth', description: language === 'es' ? 'Activos vs Pasivos' : 'Assets vs Liabilities', tier: 'Premium', color: 'from-teal-500 to-cyan-500' },
 ];
 
-const pricingTiers = [
+const getPricingTiers = (language: string) => [
   {
     name: 'Free',
     monthlyPrice: 0,
-    description: 'Para explorar',
-    features: [
+    description: language === 'es' ? 'Para explorar' : 'To explore',
+    features: language === 'es' ? [
       '50 gastos manuales/mes',
       '20 ingresos manuales/mes',
       '5 escaneos OCR gratis',
       'Dashboard básico',
       '2 clientes / 2 proyectos',
       'Vista previa de analytics'
+    ] : [
+      '50 manual expenses/month',
+      '20 manual incomes/month',
+      '5 free OCR scans',
+      'Basic dashboard',
+      '2 clients / 2 projects',
+      'Analytics preview'
     ],
-    notIncluded: ['Mileage', 'Gamificación', 'Mentoría'],
-    cta: 'Comenzar Gratis',
+    notIncluded: ['Mileage', language === 'es' ? 'Gamificación' : 'Gamification', language === 'es' ? 'Mentoría' : 'Mentorship'],
+    cta: language === 'es' ? 'Comenzar Gratis' : 'Start Free',
     popular: false,
     gradient: 'from-slate-500 to-slate-600'
   },
   {
     name: 'Premium',
     monthlyPrice: 6.99,
-    description: 'Para freelancers',
-    features: [
+    description: language === 'es' ? 'Para freelancers' : 'For freelancers',
+    features: language === 'es' ? [
       'Gastos e ingresos ilimitados',
       '50 escaneos OCR/mes',
       'Clientes y proyectos ilimitados',
@@ -120,63 +129,90 @@ const pricingTiers = [
       'Gamificación + XP + Logros',
       'Net Worth tracking',
       'Calendario fiscal'
+    ] : [
+      'Unlimited expenses & income',
+      '50 OCR scans/month',
+      'Unlimited clients & projects',
+      'Complete mileage tracking',
+      'Custom tags',
+      'Excel export',
+      'Gamification + XP + Badges',
+      'Net Worth tracking',
+      'Tax calendar'
     ],
-    notIncluded: ['Análisis de contratos', 'FIRE Calculator'],
-    cta: 'Elegir Premium',
+    notIncluded: [language === 'es' ? 'Análisis de contratos' : 'Contract analysis', 'FIRE Calculator'],
+    cta: language === 'es' ? 'Elegir Premium' : 'Choose Premium',
     popular: true,
     gradient: 'from-amber-500 via-orange-500 to-red-500'
   },
   {
     name: 'Pro',
     monthlyPrice: 14.99,
-    description: 'Poder total',
-    features: [
+    description: language === 'es' ? 'Poder total' : 'Full power',
+    features: language === 'es' ? [
       'Todo de Premium',
       'OCR ilimitado',
       'Análisis inteligente de contratos',
       'Análisis bancario avanzado',
       'Optimizador fiscal inteligente',
-      'RRSP/TFSA optimizer',
+      'Optimizador RRSP/APV',
       'FIRE Calculator completo',
       '8 componentes de mentoría',
       'Asistente de voz',
-      'Exportación T2125',
+      'Exportación fiscal (T2125/F29)',
       'Soporte prioritario'
+    ] : [
+      'Everything in Premium',
+      'Unlimited OCR',
+      'Smart contract analysis',
+      'Advanced bank analysis',
+      'Smart tax optimizer',
+      'RRSP/APV optimizer',
+      'Complete FIRE Calculator',
+      '8 mentorship components',
+      'Voice assistant',
+      'Tax export (T2125/F29)',
+      'Priority support'
     ],
     notIncluded: [],
-    cta: 'Elegir Pro',
+    cta: language === 'es' ? 'Elegir Pro' : 'Choose Pro',
     popular: false,
     gradient: 'from-violet-600 via-purple-600 to-indigo-600'
   }
 ];
 
-const stats = [
-  { value: '12', label: 'Módulos', icon: Sparkles },
-  { value: '100%', label: 'CRA Compliant', icon: Shield },
+const getStats = (language: string) => [
+  { value: '12', label: language === 'es' ? 'Módulos' : 'Modules', icon: Sparkles },
+  { value: '100%', label: language === 'es' ? 'Cumplimiento Fiscal' : 'Tax Compliant', icon: Shield },
   { value: 'Smart', label: 'Tech', icon: Zap },
-  { value: '24/7', label: 'Acceso', icon: Star },
+  { value: '24/7', label: language === 'es' ? 'Acceso' : 'Access', icon: Star },
 ];
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { language } = useLanguage();
   const [showBetaInput, setShowBetaInput] = useState(false);
   const [betaCode, setBetaCode] = useState('');
   const [codeStatus, setCodeStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
   const [isAnnual, setIsAnnual] = useState(false);
+
+  const features = getFeatures(language);
+  const pricingTiers = getPricingTiers(language);
+  const stats = getStats(language);
   
   // Calculate prices based on billing period
   const getPrice = (monthlyPrice: number) => {
-    if (monthlyPrice === 0) return { display: '$0', period: '/mes', savings: '' };
+    if (monthlyPrice === 0) return { display: '$0', period: language === 'es' ? '/mes' : '/mo', savings: '' };
     if (isAnnual) {
       const annualTotal = monthlyPrice * 12 * 0.8; // 20% discount
       const monthlyEquivalent = (annualTotal / 12).toFixed(2);
       return { 
         display: `$${monthlyEquivalent}`, 
-        period: '/mes',
-        savings: `Ahorras $${(monthlyPrice * 12 * 0.2).toFixed(0)}/año`
+        period: language === 'es' ? '/mes' : '/mo',
+        savings: language === 'es' ? `Ahorras $${(monthlyPrice * 12 * 0.2).toFixed(0)}/año` : `Save $${(monthlyPrice * 12 * 0.2).toFixed(0)}/year`
       };
     }
-    return { display: `$${monthlyPrice.toFixed(2)}`, period: '/mes', savings: '' };
+    return { display: `$${monthlyPrice.toFixed(2)}`, period: language === 'es' ? '/mes' : '/mo', savings: '' };
   };
 
   const validateBetaCode = async (code: string) => {
@@ -283,6 +319,10 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center py-20">
+        {/* Language Selector */}
+        <div className="absolute top-4 right-4 z-30">
+          <LanguageSelector />
+        </div>
         {/* Floating Stars Background */}
         <FloatingStars />
         <div className="container mx-auto px-4 relative z-10"
@@ -357,11 +397,11 @@ export default function Landing() {
                 }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               >
-                Evoluciona
+                {language === 'es' ? 'Evoluciona' : 'Evolve'}
               </motion.span>
               <br />
               <span className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 bg-clip-text text-transparent">
-                tus Finanzas
+                {language === 'es' ? 'tus Finanzas' : 'your Finances'}
               </span>
             </motion.h1>
             
@@ -371,12 +411,30 @@ export default function Landing() {
               transition={{ duration: 0.6, delay: 0.6 }}
               className="text-xl md:text-2xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed"
             >
-              La plataforma de gestión financiera más completa para 
-              <span className="text-cyan-600 font-semibold"> profesionales </span>
-              y 
-              <span className="text-teal-600 font-semibold"> freelancers </span>
-              en Canadá.
+              {language === 'es' 
+                ? <>La plataforma de gestión financiera más completa para <span className="text-cyan-600 font-semibold">profesionales</span> y <span className="text-teal-600 font-semibold">freelancers</span> en Canadá y Latinoamérica.</>
+                : <>The most complete financial management platform for <span className="text-cyan-600 font-semibold">professionals</span> and <span className="text-teal-600 font-semibold">freelancers</span> in Canada and Latin America.</>
+              }
             </motion.p>
+
+            {/* Multi-country badges */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.65 }}
+              className="flex items-center justify-center gap-3 mb-8"
+            >
+              <Badge className="px-3 py-1.5 bg-red-500/10 text-red-600 border-red-500/30">
+                🇨🇦 Canada
+              </Badge>
+              <Badge className="px-3 py-1.5 bg-blue-500/10 text-blue-600 border-blue-500/30">
+                🇨🇱 Chile
+              </Badge>
+              <span className="text-slate-400 text-sm flex items-center gap-1">
+                <Globe className="w-4 h-4" />
+                {language === 'es' ? '+ países próximamente' : '+ more countries soon'}
+              </span>
+            </motion.div>
 
             {/* Stats bar */}
             <motion.div 
@@ -419,7 +477,7 @@ export default function Landing() {
                 {/* Shine effect */}
                 <div className="absolute inset-0 -translate-x-full animate-[shimmer_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <span className="relative z-10 flex items-center">
-                  Comenzar Gratis
+                  {language === 'es' ? 'Comenzar Gratis' : 'Start Free'}
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Button>
@@ -431,7 +489,7 @@ export default function Landing() {
                 className="text-lg px-8 py-7 border-2 border-slate-300 bg-white hover:bg-slate-50 hover:border-cyan-400 text-slate-700 shadow-lg"
               >
                 <Gift className="mr-2 h-5 w-5 text-cyan-500" />
-                ¿Tienes código beta?
+                {language === 'es' ? '¿Tienes código beta?' : 'Have a beta code?'}
               </Button>
             </motion.div>
 
