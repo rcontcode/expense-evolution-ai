@@ -182,45 +182,45 @@ export default function Dashboard() {
           )}
           
           {/* =============================================
-               FASE 1: Timeline Anual (arriba)
+               FASE 1-2: Timeline Anual + Mes Expandido
+               (siempre visible; esto es el “contenido” principal)
              ============================================= */}
-          
+
+          <YearTimelineChart
+            selectedMonth={selectedMonth}
+            onMonthSelect={setSelectedMonth}
+            selectedYear={selectedYear}
+            onYearChange={setSelectedYear}
+          />
+
+          <MonthDetailPanel
+            year={selectedYear}
+            month={selectedMonth}
+            onAddIncome={handleAddIncome}
+            onAddExpense={handleAddExpense}
+          />
+
+          {/* View Mode Toggle + Export (siempre visible) */}
+          <div className="flex items-center justify-between gap-4 py-2">
+            <ViewModeToggle />
+            <Button onClick={() => setExportDialogOpen(true)} variant="outline" size="sm">
+              <Download className="mr-2 h-4 w-4" />
+              {t('export.exportButton')}
+            </Button>
+          </div>
+
+          {/* =============================================
+               CONTENIDO ADICIONAL (según modo)
+             ============================================= */}
+
           {viewMode === 'organized' ? (
             <OrganizedDashboard />
           ) : (
             <>
-              {/* Year Timeline Chart */}
-              <YearTimelineChart
-                selectedMonth={selectedMonth}
-                onMonthSelect={setSelectedMonth}
-                selectedYear={selectedYear}
-                onYearChange={setSelectedYear}
-              />
-              
-              {/* =============================================
-                   FASE 2: Mes Expandido (abajo)
-                 ============================================= */}
-              
-              <MonthDetailPanel
-                year={selectedYear}
-                month={selectedMonth}
-                onAddIncome={handleAddIncome}
-                onAddExpense={handleAddExpense}
-              />
-              
-              {/* View Mode Toggle + Export */}
-              <div className="flex items-center justify-between gap-4 py-2">
-                <ViewModeToggle />
-                <Button onClick={() => setExportDialogOpen(true)} variant="outline" size="sm">
-                  <Download className="mr-2 h-4 w-4" />
-                  {t('export.exportButton')}
-                </Button>
-              </div>
-              
               {/* =============================================
                    FASE 3: Centro de Control Colapsable
                  ============================================= */}
-              
+
               <Collapsible open={showAllTools} onOpenChange={setShowAllTools}>
                 <CollapsibleTrigger asChild>
                   <Button 
