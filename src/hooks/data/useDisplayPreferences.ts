@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -14,17 +14,27 @@ export const useDisplayPreferences = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Persisting is debounced + coalesced to avoid UI feeling “pesado”
+  // Refs to avoid stale closures and prevent re-renders
+  const preferencesRef = useRef<DisplayPreferences>(DEFAULT_DISPLAY_PREFERENCES);
   const saveTimerRef = useRef<number | null>(null);
   const pendingRef = useRef<DisplayPreferences | null>(null);
   const inflightRef = useRef(false);
   const lastSavedRef = useRef<DisplayPreferences>(DEFAULT_DISPLAY_PREFERENCES);
+  const userIdRef = useRef<string | null>(null);
+
+  // Keep refs in sync
+  useEffect(() => {
+    preferencesRef.current = preferences;
+  }, [preferences]);
+
+  useEffect(() => {
+    userIdRef.current = user?.id ?? null;
+  }, [user?.id]);
 
   // Fetch preferences from database
   useEffect(() => {
     const fetchPreferences = async () => {
       if (!user?.id) {
-        // No user, use defaults and stop loading
         setPreferences(DEFAULT_DISPLAY_PREFERENCES);
         lastSavedRef.current = DEFAULT_DISPLAY_PREFERENCES;
         setIsLoading(false);
@@ -66,7 +76,8 @@ export const useDisplayPreferences = () => {
   }, [user?.id]);
 
   const flushSave = useCallback(async () => {
-    if (!user?.id) {
+    const userId = userIdRef.current;
+    if (!userId) {
       pendingRef.current = null;
       setIsSaving(false);
       return;
@@ -83,11 +94,10 @@ export const useDisplayPreferences = () => {
     pendingRef.current = null;
 
     try {
-      // Timeout guard so UI never “queda esperando” indefinidamente
       const savePromise = supabase
         .from('profiles')
         .update({ display_preferences: toSave as any })
-        .eq('id', user.id);
+        .eq('id', userId);
 
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('save_timeout')), 8000)
@@ -98,22 +108,19 @@ export const useDisplayPreferences = () => {
 
       lastSavedRef.current = toSave;
     } catch (error) {
-      // Revert to last known-good saved state
       setPreferences(lastSavedRef.current);
       console.error('Error saving display preferences:', error);
     } finally {
       inflightRef.current = false;
       if (pendingRef.current) {
-        // If user changed preferences while saving, flush again
         flushSave();
       } else {
         setIsSaving(false);
       }
     }
-  }, [user?.id]);
+  }, []);
 
   const savePreferences = useCallback((newPreferences: DisplayPreferences) => {
-    // Optimistic update so UI responds instantly
     setPreferences(newPreferences);
     pendingRef.current = newPreferences;
     setIsSaving(true);
@@ -124,64 +131,60 @@ export const useDisplayPreferences = () => {
     }, 450);
   }, [flushSave]);
 
-  // Set view mode
+  // Stable callbacks that don't depend on `preferences` state directly
   const setViewMode = useCallback((mode: ViewMode) => {
-    const newPreferences = { ...preferences, view_mode: mode };
+    const newPreferences = { ...preferencesRef.current, view_mode: mode };
     savePreferences(newPreferences);
-  }, [preferences, savePreferences]);
+  }, [savePreferences]);
 
-  // Toggle area active state
   const toggleArea = useCallback((areaId: FocusAreaId) => {
-    const isActive = preferences.active_areas.includes(areaId);
+    const current = preferencesRef.current;
+    const isActive = current.active_areas.includes(areaId);
     const newActiveAreas = isActive
-      ? preferences.active_areas.filter(id => id !== areaId)
-      : [...preferences.active_areas, areaId];
+      ? current.active_areas.filter(id => id !== areaId)
+      : [...current.active_areas, areaId];
     
-    const newPreferences = { ...preferences, active_areas: newActiveAreas };
+    const newPreferences = { ...current, active_areas: newActiveAreas };
     savePreferences(newPreferences);
-  }, [preferences, savePreferences]);
+  }, [savePreferences]);
 
-  // Toggle area collapsed state
   const toggleCollapsed = useCallback((areaId: FocusAreaId) => {
-    const isCollapsed = preferences.collapsed_areas.includes(areaId);
+    const current = preferencesRef.current;
+    const isCollapsed = current.collapsed_areas.includes(areaId);
     const newCollapsedAreas = isCollapsed
-      ? preferences.collapsed_areas.filter(id => id !== areaId)
-      : [...preferences.collapsed_areas, areaId];
+      ? current.collapsed_areas.filter(id => id !== areaId)
+      : [...current.collapsed_areas, areaId];
     
-    const newPreferences = { ...preferences, collapsed_areas: newCollapsedAreas };
+    const newPreferences = { ...current, collapsed_areas: newCollapsedAreas };
     savePreferences(newPreferences);
-  }, [preferences, savePreferences]);
+  }, [savePreferences]);
 
-  // Set all areas active
   const activateAllAreas = useCallback(() => {
     const allAreas: FocusAreaId[] = ['negocio', 'familia', 'diadia', 'crecimiento', 'impuestos'];
-    const newPreferences = { ...preferences, active_areas: allAreas };
+    const newPreferences = { ...preferencesRef.current, active_areas: allAreas };
     savePreferences(newPreferences);
-  }, [preferences, savePreferences]);
+  }, [savePreferences]);
 
-  // Set specific areas active
   const setActiveAreas = useCallback((areas: FocusAreaId[]) => {
-    const newPreferences = { ...preferences, active_areas: areas };
+    const newPreferences = { ...preferencesRef.current, active_areas: areas };
     savePreferences(newPreferences);
-  }, [preferences, savePreferences]);
+  }, [savePreferences]);
 
-  // Check if area is active
+  const setShowFocusDialog = useCallback((show: boolean) => {
+    const newPreferences = { ...preferencesRef.current, show_focus_dialog: show };
+    savePreferences(newPreferences);
+  }, [savePreferences]);
+
+  // Derived checks using useMemo to avoid new functions on each render
   const isAreaActive = useCallback((areaId: FocusAreaId) => {
     return preferences.active_areas.includes(areaId);
   }, [preferences.active_areas]);
 
-  // Check if area is collapsed
   const isAreaCollapsed = useCallback((areaId: FocusAreaId) => {
     return preferences.collapsed_areas.includes(areaId);
   }, [preferences.collapsed_areas]);
 
-  // Toggle focus dialog setting
-  const setShowFocusDialog = useCallback((show: boolean) => {
-    const newPreferences = { ...preferences, show_focus_dialog: show };
-    savePreferences(newPreferences);
-  }, [preferences, savePreferences]);
-
-  return {
+  return useMemo(() => ({
     preferences,
     isLoading,
     isSaving,
@@ -197,5 +200,17 @@ export const useDisplayPreferences = () => {
     isAreaActive,
     isAreaCollapsed,
     setShowFocusDialog
-  };
+  }), [
+    preferences,
+    isLoading,
+    isSaving,
+    setViewMode,
+    toggleArea,
+    toggleCollapsed,
+    activateAllAreas,
+    setActiveAreas,
+    isAreaActive,
+    isAreaCollapsed,
+    setShowFocusDialog
+  ]);
 };
