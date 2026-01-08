@@ -87,10 +87,9 @@ export function MonthDetailPanel({
   const { data: expenses, isLoading: expensesLoading } = useExpenses({ dateRange });
   const { data: prevExpenses } = useExpenses({ dateRange: prevDateRange });
   const { data: income, isLoading: incomeLoading } = useIncome({ year, month: month + 1 });
-  const { data: prevIncome } = useIncome({ 
-    year: month === 0 ? year - 1 : year, 
-    month: month === 0 ? 12 : month 
-  });
+  const prevMonth = month === 0 ? 12 : month;
+  const prevYear = month === 0 ? year - 1 : year;
+  const { data: prevIncome } = useIncome({ year: prevYear, month: prevMonth });
   const { data: stats } = useDashboardStats();
   
   const isLoading = expensesLoading || incomeLoading;
