@@ -943,7 +943,7 @@ export default function Landing() {
                 <img src={phoenixLogo} alt="EvoFinz" className="h-10 w-auto" />
                 <span className="font-bold text-white">EvoFinz</span>
               </div>
-              <div className="flex items-center gap-6 text-sm">
+              <div className="flex items-center gap-6 text-sm pr-16">
                 <Link to="/legal" className="text-slate-400 hover:text-cyan-400 transition-colors">
                   {language === 'es' ? 'Términos de Uso' : 'Terms of Use'}
                 </Link>
@@ -958,6 +958,50 @@ export default function Landing() {
                 </Link>
               </div>
             </div>
+            
+            {/* Security Certifications Links */}
+            <div className="flex flex-wrap items-center justify-center gap-4 py-4 border-t border-slate-800">
+              <span className="text-xs text-slate-500">
+                {language === 'es' ? 'Verificar certificaciones:' : 'Verify certifications:'}
+              </span>
+              <a 
+                href="https://supabase.com/security" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1"
+              >
+                <Shield className="h-3 w-3" />
+                SOC 2 Type II
+              </a>
+              <a 
+                href="https://supabase.com/docs/guides/platform/going-into-prod#security" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1"
+              >
+                <Shield className="h-3 w-3" />
+                {language === 'es' ? 'Seguridad de Infraestructura' : 'Infrastructure Security'}
+              </a>
+              <a 
+                href="https://supabase.com/privacy" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1"
+              >
+                <Shield className="h-3 w-3" />
+                GDPR
+              </a>
+              <a 
+                href="https://aws.amazon.com/compliance/data-center/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1"
+              >
+                <Shield className="h-3 w-3" />
+                AWS {language === 'es' ? 'Centros de Datos' : 'Data Centers'}
+              </a>
+            </div>
+            
             <div className="text-center border-t border-slate-800 pt-4">
               <p className="text-xs text-slate-500 max-w-3xl mx-auto">
                 {language === 'es' 
@@ -965,7 +1009,7 @@ export default function Landing() {
                   : 'EvoFinz is an educational tool. The information provided does not constitute financial, tax, or investment advice. Always consult with certified professionals before making financial decisions.'}
               </p>
               <p className="text-xs text-slate-600 mt-2">
-                © 2026 EvoFinz. {language === 'es' ? 'Todos los derechos reservados.' : 'All rights reserved.'}
+                © 2026 EvoFinz. {language === 'es' ? 'Todos los derechos reservados.' : 'All rights reserved.'} | v1.0.0
               </p>
             </div>
           </div>
