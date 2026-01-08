@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -5,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { FOCUS_AREAS, FocusAreaId } from '@/lib/constants/focus-areas';
+import { FocusSelector } from '@/components/focus/FocusSelector';
 import { LayoutGrid, Layers, Loader2 } from 'lucide-react';
 
 export function DisplayPreferencesCard() {
@@ -20,6 +22,8 @@ export function DisplayPreferencesCard() {
     isLoading,
     isSaving,
   } = useDisplayPreferences();
+
+  const [focusSelectorOpen, setFocusSelectorOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -66,7 +70,7 @@ export function DisplayPreferencesCard() {
           <Label>
             {language === 'es' ? 'Modo de Vista del Dashboard' : 'Dashboard View Mode'}
           </Label>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant={viewMode === 'classic' ? 'default' : 'outline'}
               size="sm"
@@ -84,6 +88,13 @@ export function DisplayPreferencesCard() {
             >
               <LayoutGrid className="h-4 w-4" />
               {language === 'es' ? 'Vista Organizada' : 'Organized View'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFocusSelectorOpen(true)}
+            >
+              {language === 'es' ? 'Abrir selector' : 'Open selector'}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
@@ -104,13 +115,22 @@ export function DisplayPreferencesCard() {
               <Label>
                 {language === 'es' ? 'Áreas de Enfoque Activas' : 'Active Focus Areas'}
               </Label>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={activateAllAreas}
-              >
-                {language === 'es' ? 'Activar Todas' : 'Activate All'}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFocusSelectorOpen(true)}
+                >
+                  {language === 'es' ? 'Abrir selector' : 'Open selector'}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={activateAllAreas}
+                >
+                  {language === 'es' ? 'Activar Todas' : 'Activate All'}
+                </Button>
+              </div>
             </div>
             <div className="grid gap-3">
               {(Object.keys(FOCUS_AREAS) as FocusAreaId[]).map((areaId) => {
@@ -161,6 +181,8 @@ export function DisplayPreferencesCard() {
             onCheckedChange={setShowFocusDialog}
           />
         </div>
+
+        <FocusSelector open={focusSelectorOpen} onOpenChange={setFocusSelectorOpen} />
       </CardContent>
     </Card>
   );
