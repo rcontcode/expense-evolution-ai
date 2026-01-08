@@ -308,6 +308,12 @@ export const translations = {
       logout: 'Cerrar sesión',
       help: 'Ayuda',
       aiFinance: 'Evoluciona tus Finanzas',
+      // New grouped sidebar
+      daily: '💰 Día a Día',
+      business: '🏢 Mi Negocio',
+      wealth: '📈 Patrimonio',
+      growth: '🎓 Crecimiento',
+      system: '⚙️ Sistema',
     },
     // Dashboard labels
     dashboardLabels: {
@@ -1260,6 +1266,12 @@ export const translations = {
       logout: 'Logout',
       help: 'Help',
       aiFinance: 'Evolve Your Finances',
+      // New grouped sidebar
+      daily: '💰 Daily',
+      business: '🏢 My Business',
+      wealth: '📈 Wealth',
+      growth: '🎓 Growth',
+      system: '⚙️ System',
     },
     // Dashboard labels
     dashboardLabels: {

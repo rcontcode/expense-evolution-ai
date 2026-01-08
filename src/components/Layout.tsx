@@ -56,49 +56,49 @@ interface LayoutProps {
 
 const getNavSections = (language: string) => [
   {
-    titleKey: 'layout.principal',
+    titleKey: 'layout.daily',
+    emoji: '💰',
     items: [
       { icon: LayoutDashboard, label: 'nav.dashboard', path: '/dashboard', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
+      { icon: TrendingUp, label: 'nav.income', path: '/income', badge: null, tooltipKey: 'income' as const },
       { icon: Inbox, label: 'nav.chaos', path: '/chaos', badge: 'AI', tooltipKey: 'chaosInbox' as const },
     ]
   },
   {
-    titleKey: 'layout.management',
+    titleKey: 'layout.business',
+    emoji: '🏢',
     items: [
-      { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
-      { icon: AlertTriangle, label: 'nav.incomplete', path: '/expenses?incomplete=true', badge: '!', tooltipKey: 'expenses' as const },
-      { icon: TrendingUp, label: 'nav.income', path: '/income', badge: null, tooltipKey: 'income' as const },
       { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tooltipKey: 'clients' as const },
       { icon: FolderKanban, label: 'nav.projects', path: '/projects', badge: null, tooltipKey: 'clients' as const },
-      { icon: Tag, label: 'nav.tags', path: '/tags', badge: null, tooltipKey: 'tags' as const },
       { icon: FileText, label: 'nav.contracts', path: '/contracts', badge: null, tooltipKey: 'contracts' as const },
+      { icon: Car, label: 'nav.mileage', path: '/mileage', badge: 'CRA', tooltipKey: 'mileage' as const },
+      { icon: Tag, label: 'nav.tags', path: '/tags', badge: null, tooltipKey: 'tags' as const },
     ]
   },
   {
-    titleKey: 'layout.tracking',
+    titleKey: 'layout.wealth',
+    emoji: '📈',
     items: [
       { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
       { icon: Building2, label: 'nav.banking', path: '/banking', badgeKey: 'nav.badgeAI', tooltipKey: 'dashboard' as const },
-      { icon: Car, label: 'nav.mileage', path: '/mileage', badge: 'CRA', tooltipKey: 'mileage' as const },
       { icon: RefreshCw, label: 'nav.reconciliation', path: '/reconciliation', badge: null, tooltipKey: 'reconciliation' as const },
     ]
   },
   {
-    titleKey: 'layout.tax',
+    titleKey: 'layout.growth',
+    emoji: '🎓',
     items: [
+      { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
       { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badge: 'CRA', tooltipKey: 'dashboard' as const },
     ]
   },
   {
-    titleKey: 'layout.mentorship',
-    items: [
-      { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
-    ]
-  },
-  {
-    titleKey: 'layout.notifications',
+    titleKey: 'layout.system',
+    emoji: '⚙️',
     items: [
       { icon: Sparkles, label: 'nav.notifications', path: '/notifications', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: Settings, label: 'nav.config', path: '/settings', badge: null, tooltipKey: 'dashboard' as const },
     ]
   },
 ];
@@ -180,8 +180,9 @@ export const Layout = ({ children }: LayoutProps) => {
                   <nav className="flex-1 overflow-y-auto p-4 space-y-6">
                     {NAV_SECTIONS.map((section) => (
                       <div key={section.titleKey}>
-                        <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                          {t(section.titleKey)}
+                        <h3 className="px-3 mb-2 text-sm font-semibold text-foreground/80 flex items-center gap-2">
+                          <span>{section.emoji}</span>
+                          <span className="uppercase tracking-wider text-xs">{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
                         </h3>
                         <div className="space-y-1">
                           {section.items.map((item) => {
@@ -328,9 +329,14 @@ export const Layout = ({ children }: LayoutProps) => {
           <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
             {NAV_SECTIONS.map((section) => (
               <div key={section.titleKey}>
-                {!collapsed && (
-                  <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    {t(section.titleKey)}
+                {collapsed ? (
+                  <div className="flex justify-center py-2 text-lg" title={t(section.titleKey)}>
+                    {section.emoji}
+                  </div>
+                ) : (
+                  <h3 className="px-3 mb-2 text-sm font-semibold text-foreground/80 flex items-center gap-2">
+                    <span>{section.emoji}</span>
+                    <span className="uppercase tracking-wider text-xs">{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
                   </h3>
                 )}
                 <div className="space-y-1">
