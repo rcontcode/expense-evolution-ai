@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Quote, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Testimonial {
   name: string;
@@ -11,7 +12,7 @@ interface Testimonial {
   highlight: string;
 }
 
-const testimonials: Testimonial[] = [
+const getTestimonials = (language: string): Testimonial[] => language === 'es' ? [
   {
     name: "Valeria Fernández",
     role: "Diseñadora UX Freelance • México",
@@ -19,6 +20,14 @@ const testimonials: Testimonial[] = [
     quote: "Llevaba 3 años guardando recibos en una caja de zapatos. En mi primera semana con EvoFinz escaneé todo y encontré $8,500 MXN en gastos que nunca había deducido.",
     rating: 5,
     highlight: "Recuperé dinero olvidado"
+  },
+  {
+    name: "Sarah Mitchell",
+    role: "Consultora IT Freelance • Toronto, Canada",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face",
+    quote: "Como freelancer en Canadá, necesitaba algo que entendiera las reglas del CRA. EvoFinz me genera el T2125 automáticamente y calcula mis deducciones de home office correctamente.",
+    rating: 5,
+    highlight: "T2125 automático"
   },
   {
     name: "Andrés Gutiérrez",
@@ -37,10 +46,10 @@ const testimonials: Testimonial[] = [
     highlight: "Contador más feliz"
   },
   {
-    name: "Miguel Ángel Torres",
-    role: "Fotógrafo Profesional • Argentina",
+    name: "Michael Chen",
+    role: "Fotógrafo Freelance • Vancouver, Canada",
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    quote: "Manejo mucho equipo y viajo constantemente a eventos. El tracking de kilometraje automático es genial - solo activo el GPS y listo. Antes olvidaba registrar la mitad de mis viajes.",
+    quote: "El tracking de kilometraje automático es increíble. Solo activo el GPS y listo. Antes olvidaba registrar la mitad de mis viajes a sesiones fotográficas.",
     rating: 5,
     highlight: "Kilometraje sin esfuerzo"
   },
@@ -76,9 +85,84 @@ const testimonials: Testimonial[] = [
     rating: 5,
     highlight: "Fácil y completa"
   }
+] : [
+  {
+    name: "Valeria Fernández",
+    role: "UX Designer Freelance • Mexico",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
+    quote: "I spent 3 years keeping receipts in a shoebox. In my first week with EvoFinz I scanned everything and found $8,500 MXN in expenses I never deducted.",
+    rating: 5,
+    highlight: "Recovered forgotten money"
+  },
+  {
+    name: "Sarah Mitchell",
+    role: "IT Consultant Freelance • Toronto, Canada",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face",
+    quote: "As a freelancer in Canada, I needed something that understood CRA rules. EvoFinz generates my T2125 automatically and calculates my home office deductions correctly.",
+    rating: 5,
+    highlight: "Automatic T2125"
+  },
+  {
+    name: "Andrés Gutiérrez",
+    role: "Full Stack Developer • Colombia",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+    quote: "I work with 3 clients in different currencies. Before I used Excel and always got confused. EvoFinz shows me exactly how much I earn per project and what I can deduct.",
+    rating: 5,
+    highlight: "Clarity with multiple clients"
+  },
+  {
+    name: "Carolina Reyes",
+    role: "Marketing Consultant • Chile",
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+    quote: "My accountant charged me extra to organize my expenses. Now I send him a perfect PDF directly from the app. I save that fee and he finishes faster.",
+    rating: 5,
+    highlight: "Happier accountant"
+  },
+  {
+    name: "Michael Chen",
+    role: "Freelance Photographer • Vancouver, Canada",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+    quote: "The automatic mileage tracking is incredible. I just turn on GPS and that's it. Before I forgot to log half my trips to photo sessions.",
+    rating: 5,
+    highlight: "Effortless mileage"
+  },
+  {
+    name: "Sofía Mendoza",
+    role: "Independent Lawyer • Peru",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+    quote: "I have reimbursable expenses for each client. EvoFinz generates individual reports in seconds. What used to take me half a day is now 2 clicks.",
+    rating: 5,
+    highlight: "Instant reports"
+  },
+  {
+    name: "Diego Herrera",
+    role: "Executive Coach • Spain",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+    quote: "The financial education section surprised me. I didn't expect to learn about cash flow in an expense app. Kiyosaki's concepts applied to my real business were eye-opening.",
+    rating: 4,
+    highlight: "Education included"
+  },
+  {
+    name: "Luciana Vargas",
+    role: "Freelance Translator • Uruguay",
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face",
+    quote: "I'm terrible with numbers. EvoFinz shows me alerts when I'm overspending in a category. It's like having a financial assistant that doesn't judge.",
+    rating: 5,
+    highlight: "Helpful alerts"
+  },
+  {
+    name: "Fernando López",
+    role: "SAP Consultant • Brazil",
+    avatar: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=150&h=150&fit=crop&crop=face",
+    quote: "I tried 4 apps before. All too complicated or too basic. EvoFinz has the perfect balance: powerful but I don't need a 2-hour tutorial to use it.",
+    rating: 5,
+    highlight: "Easy and complete"
+  }
 ];
 
 export function TestimonialsCarousel() {
+  const { language } = useLanguage();
+  const testimonials = getTestimonials(language);
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -91,7 +175,7 @@ export function TestimonialsCarousel() {
     }, 8000);
 
     return () => clearInterval(timer);
-  }, [isPaused]);
+  }, [isPaused, testimonials.length]);
 
   const next = () => setCurrent((prev) => (prev + 1) % testimonials.length);
   const prev = () => setCurrent((prev) => (prev - 1 + testimonials.length) % testimonials.length);
@@ -121,13 +205,15 @@ export function TestimonialsCarousel() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
-            Lo que dicen{" "}
+            {language === 'es' ? 'Lo que dicen ' : 'What our '}
             <span className="bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
-              nuestros usuarios
+              {language === 'es' ? 'nuestros usuarios' : 'users say'}
             </span>
           </h2>
           <p className="text-slate-400 text-lg max-w-xl mx-auto">
-            Historias reales de transformación financiera
+            {language === 'es' 
+              ? 'Historias reales de transformación financiera'
+              : 'Real stories of financial transformation'}
           </p>
         </motion.div>
 

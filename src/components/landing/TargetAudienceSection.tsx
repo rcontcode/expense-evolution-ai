@@ -2,38 +2,54 @@ import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { 
-  Users, Briefcase, Home, Building2, 
-  CheckCircle2, Laptop, Heart
+  Users, Briefcase, Home, 
+  CheckCircle2, Laptop
 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
-const audiences = [
+const getAudiences = (language: string) => [
   {
     icon: Laptop,
-    title: 'Freelancers & Contratistas',
-    description: 'Gestiona clientes, contratos y gastos de negocio. Exporta reportes T2125 listos para el CRA.',
-    benefits: ['Facturación a clientes', 'Tracking de kilometraje', 'Deducciones fiscales'],
+    title: language === 'es' ? 'Freelancers & Contratistas' : 'Freelancers & Contractors',
+    description: language === 'es' 
+      ? 'Gestiona clientes, contratos y gastos de negocio. Exporta reportes fiscales listos para tu autoridad tributaria.'
+      : 'Manage clients, contracts and business expenses. Export tax reports ready for your tax authority.',
+    benefits: language === 'es' 
+      ? ['Facturación a clientes', 'Tracking de kilometraje', 'Deducciones fiscales']
+      : ['Client billing', 'Mileage tracking', 'Tax deductions'],
     color: 'from-cyan-500 to-blue-500',
     bgColor: 'bg-cyan-500/10'
   },
   {
     icon: Briefcase,
-    title: 'Empleados',
-    description: 'Controla gastos personales, planifica tu retiro con RRSP/TFSA y alcanza la libertad financiera.',
-    benefits: ['Calculadora FIRE', 'Tracking de patrimonio', 'Metas de ahorro'],
+    title: language === 'es' ? 'Empleados' : 'Employees',
+    description: language === 'es'
+      ? 'Controla gastos personales, planifica tu retiro con instrumentos de ahorro y alcanza la libertad financiera.'
+      : 'Control personal expenses, plan your retirement with savings instruments and achieve financial freedom.',
+    benefits: language === 'es'
+      ? ['Calculadora FIRE', 'Tracking de patrimonio', 'Metas de ahorro']
+      : ['FIRE Calculator', 'Net worth tracking', 'Savings goals'],
     color: 'from-orange-500 to-amber-500',
     bgColor: 'bg-orange-500/10'
   },
   {
     icon: Home,
-    title: 'Familias',
-    description: 'Presupuesto familiar inteligente con categorización automática y alertas de suscripciones.',
-    benefits: ['Presupuestos por categoría', 'Detector de suscripciones', 'Educación financiera'],
+    title: language === 'es' ? 'Familias' : 'Families',
+    description: language === 'es'
+      ? 'Presupuesto familiar inteligente con categorización automática y alertas de suscripciones.'
+      : 'Smart family budget with automatic categorization and subscription alerts.',
+    benefits: language === 'es'
+      ? ['Presupuestos por categoría', 'Detector de suscripciones', 'Educación financiera']
+      : ['Category budgets', 'Subscription detector', 'Financial education'],
     color: 'from-emerald-500 to-teal-500',
     bgColor: 'bg-emerald-500/10'
   }
 ];
 
 export function TargetAudienceSection() {
+  const { language } = useLanguage();
+  const audiences = getAudiences(language);
+
   return (
     <section className="relative py-20 bg-gradient-to-b from-white to-slate-50 overflow-hidden">
       <div className="container mx-auto px-4 relative z-10">
@@ -46,14 +62,20 @@ export function TargetAudienceSection() {
         >
           <Badge className="mb-4 px-4 py-2 bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-sm">
             <Users className="w-4 h-4 mr-2 inline" />
-            Para Ti
+            {language === 'es' ? 'Para Ti' : 'For You'}
           </Badge>
           <h2 className="text-4xl md:text-5xl font-black mb-4">
-            <span className="text-slate-800">¿Para Quién es </span>
-            <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">EvoFinz?</span>
+            <span className="text-slate-800">
+              {language === 'es' ? '¿Para Quién es ' : 'Who is '}
+            </span>
+            <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
+              EvoFinz{language === 'es' ? '?' : ' for?'}
+            </span>
           </h2>
           <p className="text-slate-600 text-lg max-w-2xl mx-auto">
-            Una plataforma adaptada a diferentes perfiles financieros.
+            {language === 'es'
+              ? 'Una plataforma adaptada a diferentes perfiles financieros.'
+              : 'A platform adapted to different financial profiles.'}
           </p>
         </motion.div>
 
