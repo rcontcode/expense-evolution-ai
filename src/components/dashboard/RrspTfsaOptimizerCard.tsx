@@ -17,10 +17,17 @@ import {
   Loader2
 } from 'lucide-react';
 import { useRrspTfsaOptimizer } from '@/hooks/data/useRrspTfsaOptimizer';
+import { useProfile } from '@/hooks/data/useProfile';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function RrspTfsaOptimizerCard() {
   const { isAnalyzing, result, error, analyzeOptimalContributions, clearResult } = useRrspTfsaOptimizer();
+  const { data: profile } = useProfile();
+
+  // RRSP/TFSA are Canada-only programs
+  if (profile?.country === 'CL') {
+    return null;
+  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CA', {
