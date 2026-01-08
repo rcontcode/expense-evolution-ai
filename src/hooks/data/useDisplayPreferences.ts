@@ -17,6 +17,8 @@ export const useDisplayPreferences = () => {
   useEffect(() => {
     const fetchPreferences = async () => {
       if (!user?.id) {
+        // No user, use defaults and stop loading
+        setPreferences(DEFAULT_DISPLAY_PREFERENCES);
         setIsLoading(false);
         return;
       }
@@ -28,16 +30,22 @@ export const useDisplayPreferences = () => {
           .eq('id', user.id)
           .single();
 
-        if (error) throw error;
-
-        if (data?.display_preferences) {
+        if (error) {
+          console.error('Error fetching display preferences:', error);
+          // Use defaults on error
+          setPreferences(DEFAULT_DISPLAY_PREFERENCES);
+        } else if (data?.display_preferences) {
           setPreferences({
             ...DEFAULT_DISPLAY_PREFERENCES,
             ...(data.display_preferences as Partial<DisplayPreferences>)
           });
+        } else {
+          // No preferences saved yet, use defaults
+          setPreferences(DEFAULT_DISPLAY_PREFERENCES);
         }
       } catch (error) {
         console.error('Error fetching display preferences:', error);
+        setPreferences(DEFAULT_DISPLAY_PREFERENCES);
       } finally {
         setIsLoading(false);
       }
