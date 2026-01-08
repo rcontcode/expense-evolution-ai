@@ -10,6 +10,7 @@ import { usePayYourselfFirst, useUpdatePayYourselfFirst, useRecordPayment } from
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PiggyBank, Flame, Trophy, Settings, Plus, Check, Lightbulb } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 export function PayYourselfFirstCard() {
   const { language } = useLanguage();
@@ -236,6 +237,8 @@ export function PayYourselfFirstCard() {
             </ul>
           </div>
         )}
+
+        <LegalDisclaimer variant="education" size="compact" />
       </CardContent>
     </Card>
   );
