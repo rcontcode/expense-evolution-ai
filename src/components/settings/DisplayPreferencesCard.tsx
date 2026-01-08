@@ -17,7 +17,8 @@ export function DisplayPreferencesCard() {
     toggleArea,
     activateAllAreas,
     setShowFocusDialog,
-    isLoading
+    isLoading,
+    isSaving,
   } = useDisplayPreferences();
 
   if (isLoading) {
@@ -63,6 +64,7 @@ export function DisplayPreferencesCard() {
             <Button
               variant={viewMode === 'classic' ? 'default' : 'outline'}
               size="sm"
+              disabled={isSaving}
               onClick={() => setViewMode('classic')}
               className="flex items-center gap-2"
             >
@@ -72,6 +74,7 @@ export function DisplayPreferencesCard() {
             <Button
               variant={viewMode === 'organized' ? 'default' : 'outline'}
               size="sm"
+              disabled={isSaving}
               onClick={() => setViewMode('organized')}
               className="flex items-center gap-2"
             >
@@ -100,6 +103,7 @@ export function DisplayPreferencesCard() {
               <Button
                 variant="ghost"
                 size="sm"
+                disabled={isSaving}
                 onClick={activateAllAreas}
               >
                 {language === 'es' ? 'Activar Todas' : 'Activate All'}
@@ -114,11 +118,8 @@ export function DisplayPreferencesCard() {
                   <div 
                     key={areaId}
                     className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all ${
-                      isActive ? area.borderColor : 'border-border opacity-60'
+                      isActive ? 'border-primary/40 bg-muted/30' : 'border-border opacity-60'
                     }`}
-                    style={{ 
-                      backgroundColor: isActive ? `hsl(var(--${area.color === 'blue' ? 'primary' : area.color === 'green' ? 'accent' : 'muted'}) / 0.05)` : undefined 
-                    }}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{area.emoji}</span>
@@ -131,6 +132,7 @@ export function DisplayPreferencesCard() {
                     </div>
                     <Switch
                       checked={isActive}
+                      disabled={isSaving}
                       onCheckedChange={() => toggleArea(areaId)}
                     />
                   </div>
@@ -154,6 +156,7 @@ export function DisplayPreferencesCard() {
           </div>
           <Switch
             checked={showFocusDialog}
+            disabled={isSaving}
             onCheckedChange={setShowFocusDialog}
           />
         </div>
