@@ -33,11 +33,23 @@ import {
   Calendar,
   ArrowRight,
   Lightbulb,
-  Brain
+  Brain,
+  ChevronRight,
+  Rocket,
+  TrendingUp,
+  Home,
+  Briefcase,
+  GraduationCap,
+  Heart,
+  Wallet,
+  PiggyBank,
+  Building2,
+  Plane
 } from 'lucide-react';
 import { format, addDays, differenceInDays } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { useFinancialProfile } from '@/hooks/data/useFinancialProfile';
 
 interface Goal {
   id: string;
@@ -48,6 +60,7 @@ interface Goal {
   tasks: Task[];
   createdAt: string;
   status: 'active' | 'completed' | 'archived';
+  timeframe?: 'short' | 'medium' | 'long';
 }
 
 interface Task {
@@ -96,45 +109,101 @@ const STEPS = [
     number: 1, 
     title: { es: 'Define tus metas', en: 'Define your goals' },
     description: { es: 'Escribe hasta 10 metas que quieres lograr', en: 'Write up to 10 goals you want to achieve' },
-    icon: Target
+    icon: Target,
+    color: 'from-blue-500 to-cyan-500'
   },
   { 
     number: 2, 
     title: { es: 'Elige la más importante', en: 'Choose the most important' },
     description: { es: 'Selecciona LA meta que más impactaría tu vida', en: 'Select THE goal that would most impact your life' },
-    icon: Star
+    icon: Star,
+    color: 'from-amber-500 to-yellow-500'
   },
   { 
     number: 3, 
     title: { es: 'Establece fecha límite', en: 'Set a deadline' },
     description: { es: 'Una fecha crea urgencia y compromiso', en: 'A date creates urgency and commitment' },
-    icon: Calendar
+    icon: Calendar,
+    color: 'from-green-500 to-emerald-500'
   },
   { 
     number: 4, 
     title: { es: 'Lista todas las tareas', en: 'List all tasks' },
     description: { es: 'Todo lo que necesitas hacer para lograrlo', en: 'Everything you need to do to achieve it' },
-    icon: ListTodo
+    icon: ListTodo,
+    color: 'from-purple-500 to-violet-500'
   },
   { 
     number: 5, 
     title: { es: 'Prioriza con ABCDE', en: 'Prioritize with ABCDE' },
     description: { es: 'Asigna prioridad a cada tarea', en: 'Assign priority to each task' },
-    icon: Zap
+    icon: Zap,
+    color: 'from-orange-500 to-red-500'
   },
   { 
     number: 6, 
     title: { es: 'Actúa ahora', en: 'Take action now' },
     description: { es: 'Haz algo hoy, no mañana', en: 'Do something today, not tomorrow' },
-    icon: ArrowRight
+    icon: Rocket,
+    color: 'from-pink-500 to-rose-500'
   },
   { 
     number: 7, 
     title: { es: 'Algo cada día', en: 'Something every day' },
     description: { es: '365 días de progreso = resultados extraordinarios', en: '365 days of progress = extraordinary results' },
-    icon: Trophy
+    icon: Trophy,
+    color: 'from-indigo-500 to-blue-500'
   },
 ];
+
+// Goal suggestions by timeframe based on financial expert recommendations
+const GOAL_SUGGESTIONS = {
+  short: {
+    label: { es: 'Corto Plazo (0-1 año)', en: 'Short Term (0-1 year)' },
+    icon: Rocket,
+    color: 'from-green-500 to-emerald-500',
+    suggestions: [
+      { es: 'Crear un fondo de emergencia de 3 meses de gastos', en: 'Build a 3-month emergency fund', icon: PiggyBank },
+      { es: 'Eliminar una deuda de tarjeta de crédito', en: 'Pay off one credit card debt', icon: Wallet },
+      { es: 'Ahorrar para unas vacaciones familiares', en: 'Save for a family vacation', icon: Plane },
+      { es: 'Automatizar mis ahorros mensuales', en: 'Automate my monthly savings', icon: TrendingUp },
+      { es: 'Leer 3 libros de finanzas personales', en: 'Read 3 personal finance books', icon: GraduationCap },
+      { es: 'Aumentar mis ingresos un 10%', en: 'Increase my income by 10%', icon: Briefcase },
+      { es: 'Negociar una reducción en mis gastos fijos', en: 'Negotiate lower fixed expenses', icon: Home },
+      { es: 'Iniciar un side hustle o proyecto paralelo', en: 'Start a side hustle or side project', icon: Rocket },
+    ]
+  },
+  medium: {
+    label: { es: 'Mediano Plazo (1-5 años)', en: 'Medium Term (1-5 years)' },
+    icon: TrendingUp,
+    color: 'from-blue-500 to-cyan-500',
+    suggestions: [
+      { es: 'Comprar mi primera propiedad de inversión', en: 'Buy my first investment property', icon: Building2 },
+      { es: 'Alcanzar $50,000 en inversiones', en: 'Reach $50,000 in investments', icon: TrendingUp },
+      { es: 'Crear un negocio que genere ingresos pasivos', en: 'Create a business generating passive income', icon: Briefcase },
+      { es: 'Pagar completamente mi hipoteca del auto', en: 'Pay off my car loan completely', icon: Wallet },
+      { es: 'Duplicar mis ingresos actuales', en: 'Double my current income', icon: Rocket },
+      { es: 'Tener 6 meses de gastos en fondo de emergencia', en: 'Have 6 months expenses in emergency fund', icon: PiggyBank },
+      { es: 'Obtener una certificación profesional', en: 'Get a professional certification', icon: GraduationCap },
+      { es: 'Iniciar inversiones en bienes raíces', en: 'Start real estate investments', icon: Home },
+    ]
+  },
+  long: {
+    label: { es: 'Largo Plazo (5-20+ años)', en: 'Long Term (5-20+ years)' },
+    icon: Trophy,
+    color: 'from-purple-500 to-violet-500',
+    suggestions: [
+      { es: 'Alcanzar la independencia financiera (FIRE)', en: 'Achieve financial independence (FIRE)', icon: Trophy },
+      { es: 'Tener $1,000,000 en patrimonio neto', en: 'Have $1,000,000 in net worth', icon: TrendingUp },
+      { es: 'Retirarme antes de los 55 años', en: 'Retire before age 55', icon: Heart },
+      { es: 'Generar $5,000/mes en ingresos pasivos', en: 'Generate $5,000/month in passive income', icon: Wallet },
+      { es: 'Pagar mi casa completamente', en: 'Pay off my house completely', icon: Home },
+      { es: 'Crear un legado financiero para mi familia', en: 'Create a financial legacy for my family', icon: Heart },
+      { es: 'Tener 10 propiedades de inversión', en: 'Own 10 investment properties', icon: Building2 },
+      { es: 'Fundar una fundación benéfica', en: 'Start a charitable foundation', icon: Star },
+    ]
+  }
+};
 
 export const TracyGoalWizard = () => {
   const { language } = useLanguage();
@@ -359,16 +428,36 @@ export const TracyGoalWizard = () => {
 
   const nextAction = getNextAction();
 
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestionTimeframe, setSuggestionTimeframe] = useState<'short' | 'medium' | 'long'>('short');
+
+  const handleAddSuggestion = (suggestion: string) => {
+    const newGoal: Goal = {
+      id: `temp-${Date.now()}`,
+      title: suggestion,
+      description: '',
+      deadline: null,
+      isMostImportant: false,
+      tasks: [],
+      createdAt: new Date().toISOString(),
+      status: 'active',
+    };
+    saveGoal.mutate(newGoal);
+    toast.success(language === 'es' ? 'Meta agregada' : 'Goal added');
+  };
+
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5">
-        <div className="flex items-center gap-2">
-          <Brain className="h-6 w-6 text-primary" />
+    <Card className="overflow-hidden border-2 border-primary/20 shadow-xl">
+      <CardHeader className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+            <Brain className="h-7 w-7" />
+          </div>
           <div>
-            <CardTitle className="text-xl">
+            <CardTitle className="text-2xl font-bold">
               {language === 'es' ? 'Sistema de Metas Brian Tracy' : 'Brian Tracy Goal System'}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-white/80">
               {language === 'es' 
                 ? 'Los 7 pasos + Método ABCDE para lograr cualquier meta'
                 : 'The 7 steps + ABCDE Method to achieve any goal'}
@@ -378,92 +467,203 @@ export const TracyGoalWizard = () => {
       </CardHeader>
 
       <CardContent className="p-6 space-y-6">
-        {/* Progress Steps */}
-        <div className="flex items-center justify-between overflow-x-auto pb-2">
-          {STEPS.map((step, index) => {
-            const StepIcon = step.icon;
-            const isActive = currentStep === step.number;
-            const isCompleted = currentStep > step.number;
-            
-            return (
-              <button
-                key={step.number}
-                onClick={() => setCurrentStep(step.number)}
-                className={cn(
-                  'flex flex-col items-center gap-1 p-2 rounded-lg transition-all min-w-[80px]',
-                  isActive && 'bg-primary/10',
-                  isCompleted && 'opacity-70'
-                )}
-              >
-                <div className={cn(
-                  'w-10 h-10 rounded-full flex items-center justify-center transition-all',
-                  isActive && 'bg-primary text-primary-foreground',
-                  isCompleted && 'bg-green-500 text-white',
-                  !isActive && !isCompleted && 'bg-muted'
-                )}>
-                  {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : <StepIcon className="h-5 w-5" />}
+        {/* Progress Steps with Arrows */}
+        <div className="relative">
+          <div className="flex items-center justify-between overflow-x-auto pb-4 gap-1">
+            {STEPS.map((step, index) => {
+              const StepIcon = step.icon;
+              const isActive = currentStep === step.number;
+              const isCompleted = currentStep > step.number;
+              const isLast = index === STEPS.length - 1;
+              
+              return (
+                <div key={step.number} className="flex items-center">
+                  <button
+                    onClick={() => setCurrentStep(step.number)}
+                    className={cn(
+                      'flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all min-w-[85px] relative group',
+                      isActive && 'bg-gradient-to-br from-primary/20 to-primary/5 scale-105 shadow-lg',
+                      isCompleted && 'opacity-80 hover:opacity-100'
+                    )}
+                  >
+                    {/* Step Number Badge */}
+                    <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-bold flex items-center justify-center shadow-md">
+                      {step.number}
+                    </div>
+                    
+                    <div className={cn(
+                      'w-12 h-12 rounded-xl flex items-center justify-center transition-all shadow-md',
+                      isActive && `bg-gradient-to-br ${step.color} text-white shadow-lg`,
+                      isCompleted && 'bg-gradient-to-br from-green-500 to-emerald-500 text-white',
+                      !isActive && !isCompleted && 'bg-muted/80 text-muted-foreground'
+                    )}>
+                      {isCompleted ? <CheckCircle2 className="h-6 w-6" /> : <StepIcon className="h-6 w-6" />}
+                    </div>
+                    <span className={cn(
+                      'text-[10px] font-medium text-center leading-tight max-w-[70px]',
+                      isActive && 'text-primary font-semibold',
+                      isCompleted && 'text-green-600',
+                      !isActive && !isCompleted && 'text-muted-foreground'
+                    )}>
+                      {step.title[language === 'es' ? 'es' : 'en']}
+                    </span>
+                  </button>
+                  
+                  {/* Arrow connector */}
+                  {!isLast && (
+                    <div className={cn(
+                      'flex items-center mx-1',
+                      isCompleted ? 'text-green-500' : 'text-muted-foreground/30'
+                    )}>
+                      <ChevronRight className="h-5 w-5" />
+                    </div>
+                  )}
                 </div>
-                <span className={cn(
-                  'text-xs font-medium text-center',
-                  isActive && 'text-primary',
-                  !isActive && 'text-muted-foreground'
-                )}>
-                  {step.title[language === 'es' ? 'es' : 'en']}
-                </span>
-              </button>
-            );
-          })}
+              );
+            })}
+          </div>
+          
+          {/* Current Step Description */}
+          <div className={cn(
+            'mt-2 p-3 rounded-xl border-2 border-dashed',
+            `bg-gradient-to-r ${STEPS[currentStep - 1].color} bg-opacity-10`
+          )}>
+            <p className="text-sm font-medium text-center">
+              <span className="font-bold">{language === 'es' ? 'Paso' : 'Step'} {currentStep}:</span>{' '}
+              {STEPS[currentStep - 1].description[language === 'es' ? 'es' : 'en']}
+            </p>
+          </div>
         </div>
 
         {/* Step Content */}
-        <div className="min-h-[400px]">
+        <div className="min-h-[450px]">
           {/* Step 1: Define Goals */}
           {currentStep === 1 && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <div className="flex items-start gap-2">
-                  <Lightbulb className="h-5 w-5 text-amber-600 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-amber-800 dark:text-amber-400">
-                      {language === 'es' ? 'Ejercicio de las 10 Metas' : '10 Goals Exercise'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
+            <div className="space-y-5">
+              {/* Suggestions Panel */}
+              <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-amber-500/20">
+                    <Lightbulb className="h-5 w-5 text-amber-600" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-amber-800 dark:text-amber-400">
+                        {language === 'es' ? '💡 Ejercicio de las 10 Metas' : '💡 10 Goals Exercise'}
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowSuggestions(!showSuggestions)}
+                        className="border-amber-500/50 text-amber-700 hover:bg-amber-500/10"
+                      >
+                        <Sparkles className="h-4 w-4 mr-1" />
+                        {language === 'es' ? 'Ideas de metas' : 'Goal ideas'}
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
                       {language === 'es' 
-                        ? 'Escribe rápidamente todas las metas que quieres lograr. No te censures, solo escribe. Después las priorizaremos.'
-                        : "Write down all the goals you want to achieve quickly. Don't censor yourself, just write. We'll prioritize later."}
+                        ? 'No sabes qué escribir? Usa las sugerencias o escribe libremente. ¡No te censures!'
+                        : "Not sure what to write? Use suggestions or write freely. Don't censor yourself!"}
                     </p>
                   </div>
                 </div>
               </div>
 
+              {/* Goal Suggestions by Timeframe */}
+              {showSuggestions && (
+                <div className="space-y-4 p-4 rounded-xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    <span className="font-semibold">
+                      {language === 'es' ? 'Elige metas según tu horizonte de tiempo:' : 'Choose goals by time horizon:'}
+                    </span>
+                  </div>
+                  
+                  {/* Timeframe Tabs */}
+                  <div className="flex gap-2 flex-wrap">
+                    {(['short', 'medium', 'long'] as const).map((tf) => {
+                      const config = GOAL_SUGGESTIONS[tf];
+                      const TfIcon = config.icon;
+                      return (
+                        <Button
+                          key={tf}
+                          variant={suggestionTimeframe === tf ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setSuggestionTimeframe(tf)}
+                          className={cn(
+                            suggestionTimeframe === tf && `bg-gradient-to-r ${config.color} border-0`
+                          )}
+                        >
+                          <TfIcon className="h-4 w-4 mr-1" />
+                          {config.label[language === 'es' ? 'es' : 'en']}
+                        </Button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Suggestions Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
+                    {GOAL_SUGGESTIONS[suggestionTimeframe].suggestions.map((suggestion, idx) => {
+                      const SugIcon = suggestion.icon;
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => handleAddSuggestion(suggestion[language === 'es' ? 'es' : 'en'])}
+                          className="flex items-center gap-2 p-3 rounded-lg border border-border/50 bg-background hover:bg-primary/5 hover:border-primary/30 transition-all text-left group"
+                        >
+                          <div className={cn(
+                            'p-1.5 rounded-lg',
+                            `bg-gradient-to-r ${GOAL_SUGGESTIONS[suggestionTimeframe].color} bg-opacity-20`
+                          )}>
+                            <SugIcon className="h-4 w-4 text-primary" />
+                          </div>
+                          <span className="text-sm flex-1">{suggestion[language === 'es' ? 'es' : 'en']}</span>
+                          <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Manual Goal Input */}
               <div className="flex gap-2">
                 <Input
                   value={newGoalTitle}
                   onChange={(e) => setNewGoalTitle(e.target.value)}
-                  placeholder={language === 'es' ? 'Escribe una meta...' : 'Write a goal...'}
+                  placeholder={language === 'es' ? '✍️ Escribe tu propia meta...' : '✍️ Write your own goal...'}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddGoal()}
+                  className="border-2 focus:border-primary"
                 />
-                <Button onClick={handleAddGoal} disabled={!newGoalTitle.trim()}>
+                <Button 
+                  onClick={handleAddGoal} 
+                  disabled={!newGoalTitle.trim()}
+                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                >
                   <Plus className="h-4 w-4 mr-1" />
                   {language === 'es' ? 'Agregar' : 'Add'}
                 </Button>
               </div>
 
+              {/* Goals List */}
               <div className="space-y-2">
                 {savedGoals?.map((goal, index) => (
                   <div
                     key={goal.id}
                     className={cn(
-                      'flex items-center gap-3 p-3 rounded-lg border transition-all',
-                      goal.isMostImportant && 'border-primary bg-primary/5'
+                      'flex items-center gap-3 p-3 rounded-xl border-2 transition-all hover:shadow-md',
+                      goal.isMostImportant 
+                        ? 'border-amber-500 bg-gradient-to-r from-amber-500/10 to-yellow-500/10' 
+                        : 'border-border/50 hover:border-primary/30'
                     )}
                   >
-                    <span className="text-sm font-medium text-muted-foreground w-6">
-                      {index + 1}.
-                    </span>
-                    <span className="flex-1">{goal.title}</span>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white flex items-center justify-center text-sm font-bold">
+                      {index + 1}
+                    </div>
+                    <span className="flex-1 font-medium">{goal.title}</span>
                     {goal.isMostImportant && (
-                      <Badge className="bg-primary">
+                      <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0">
                         <Star className="h-3 w-3 mr-1" />
                         {language === 'es' ? 'Principal' : 'Main'}
                       </Badge>
@@ -472,24 +672,37 @@ export const TracyGoalWizard = () => {
                       variant="ghost"
                       size="icon"
                       onClick={() => deleteGoal.mutate(goal.id)}
+                      className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 ))}
 
                 {(!savedGoals || savedGoals.length === 0) && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Target className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>{language === 'es' ? 'Agrega tu primera meta' : 'Add your first goal'}</p>
+                  <div className="text-center py-12 text-muted-foreground">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-r from-primary/20 to-secondary/20 flex items-center justify-center">
+                      <Target className="h-8 w-8 text-primary/60" />
+                    </div>
+                    <p className="font-medium">{language === 'es' ? 'Agrega tu primera meta' : 'Add your first goal'}</p>
+                    <p className="text-sm mt-1">
+                      {language === 'es' 
+                        ? 'Usa las sugerencias arriba o escribe la tuya' 
+                        : 'Use the suggestions above or write your own'}
+                    </p>
                   </div>
                 )}
               </div>
 
-              <div className="flex justify-end">
+              {/* Navigation */}
+              <div className="flex justify-between items-center pt-4 border-t">
+                <span className="text-sm text-muted-foreground">
+                  {savedGoals?.length || 0}/10 {language === 'es' ? 'metas' : 'goals'}
+                </span>
                 <Button 
                   onClick={() => setCurrentStep(2)} 
                   disabled={!savedGoals || savedGoals.length === 0}
+                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
                 >
                   {language === 'es' ? 'Siguiente' : 'Next'}
                   <ArrowRight className="h-4 w-4 ml-1" />
@@ -498,17 +711,20 @@ export const TracyGoalWizard = () => {
             </div>
           )}
 
+
           {/* Step 2: Choose Most Important */}
           {currentStep === 2 && (
             <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
-                <div className="flex items-start gap-2">
-                  <Star className="h-5 w-5 text-primary mt-0.5" />
+              <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border-2 border-amber-500/30">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-amber-500/20">
+                    <Star className="h-5 w-5 text-amber-600" />
+                  </div>
                   <div>
-                    <p className="font-medium">
-                      {language === 'es' ? '¿Cuál meta cambiaría más tu vida?' : 'Which goal would most change your life?'}
+                    <p className="font-semibold text-amber-800 dark:text-amber-400">
+                      ⭐ {language === 'es' ? '¿Cuál meta cambiaría MÁS tu vida?' : 'Which goal would MOST change your life?'}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground mt-1">
                       {language === 'es' 
                         ? 'Elige LA meta que, si la lograras, tendría el mayor impacto positivo. Solo puede haber una.'
                         : 'Choose THE goal that, if achieved, would have the greatest positive impact. There can only be one.'}
@@ -518,37 +734,48 @@ export const TracyGoalWizard = () => {
               </div>
 
               <div className="space-y-2">
-                {savedGoals?.map((goal) => (
+                {savedGoals?.map((goal, index) => (
                   <button
                     key={goal.id}
                     onClick={() => handleSetMostImportant(goal.id)}
                     className={cn(
-                      'w-full flex items-center gap-3 p-4 rounded-lg border transition-all text-left',
+                      'w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left group',
                       goal.isMostImportant 
-                        ? 'border-primary bg-primary/10 ring-2 ring-primary' 
-                        : 'hover:bg-muted/50'
+                        ? 'border-amber-500 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 ring-2 ring-amber-500/50 shadow-lg' 
+                        : 'border-border/50 hover:border-amber-500/50 hover:bg-amber-500/5'
                     )}
                   >
-                    {goal.isMostImportant ? (
-                      <Star className="h-5 w-5 text-primary fill-primary" />
-                    ) : (
-                      <Circle className="h-5 w-5 text-muted-foreground" />
-                    )}
+                    <div className={cn(
+                      'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                      goal.isMostImportant 
+                        ? 'bg-gradient-to-r from-amber-500 to-yellow-500' 
+                        : 'bg-muted group-hover:bg-amber-500/20'
+                    )}>
+                      {goal.isMostImportant ? (
+                        <Star className="h-4 w-4 text-white fill-white" />
+                      ) : (
+                        <span className="text-sm font-medium text-muted-foreground">{index + 1}</span>
+                      )}
+                    </div>
                     <span className="flex-1 font-medium">{goal.title}</span>
                     {goal.isMostImportant && (
-                      <Badge className="bg-primary">
-                        {language === 'es' ? 'Meta Principal' : 'Main Goal'}
+                      <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0">
+                        🏆 {language === 'es' ? 'Meta Principal' : 'Main Goal'}
                       </Badge>
                     )}
                   </button>
                 ))}
               </div>
 
-              <div className="flex justify-between">
+              <div className="flex justify-between pt-4 border-t">
                 <Button variant="outline" onClick={() => setCurrentStep(1)}>
                   {language === 'es' ? 'Anterior' : 'Previous'}
                 </Button>
-                <Button onClick={() => setCurrentStep(3)} disabled={!mainGoal}>
+                <Button 
+                  onClick={() => setCurrentStep(3)} 
+                  disabled={!mainGoal}
+                  className="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600"
+                >
                   {language === 'es' ? 'Siguiente' : 'Next'}
                   <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
@@ -559,14 +786,16 @@ export const TracyGoalWizard = () => {
           {/* Step 3: Set Deadline */}
           {currentStep === 3 && mainGoal && (
             <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-orange-500/10 border border-orange-500/20">
-                <div className="flex items-start gap-2">
-                  <Clock className="h-5 w-5 text-orange-600 mt-0.5" />
+              <div className="p-4 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-2 border-green-500/30">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-green-500/20">
+                    <Calendar className="h-5 w-5 text-green-600" />
+                  </div>
                   <div>
-                    <p className="font-medium text-orange-800 dark:text-orange-400">
-                      {language === 'es' ? 'Una meta sin fecha es solo un deseo' : 'A goal without a deadline is just a wish'}
+                    <p className="font-semibold text-green-800 dark:text-green-400">
+                      📅 {language === 'es' ? 'Una meta sin fecha es solo un deseo' : 'A goal without a deadline is just a wish'}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground mt-1">
                       {language === 'es' 
                         ? 'La fecha límite crea urgencia y activa tu mente subconsciente para encontrar soluciones.'
                         : 'The deadline creates urgency and activates your subconscious mind to find solutions.'}
@@ -575,37 +804,45 @@ export const TracyGoalWizard = () => {
                 </div>
               </div>
 
-              <Card className="p-4">
+              <Card className="p-5 border-2 border-green-500/30 bg-gradient-to-br from-green-500/5 to-emerald-500/5">
                 <div className="flex items-center gap-3 mb-4">
-                  <Star className="h-5 w-5 text-primary fill-primary" />
-                  <span className="font-semibold">{mainGoal.title}</span>
+                  <div className="p-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500">
+                    <Star className="h-4 w-4 text-white fill-white" />
+                  </div>
+                  <span className="font-semibold text-lg">{mainGoal.title}</span>
                 </div>
 
                 <div className="space-y-3">
-                  <Label>{language === 'es' ? 'Fecha límite' : 'Deadline'}</Label>
+                  <Label className="text-base font-medium">{language === 'es' ? '📆 Fecha límite' : '📆 Deadline'}</Label>
                   <Input
                     type="date"
                     value={mainGoal.deadline || ''}
                     onChange={(e) => handleSetDeadline(mainGoal.id, e.target.value)}
                     min={format(new Date(), 'yyyy-MM-dd')}
+                    className="border-2 focus:border-green-500"
                   />
 
                   {mainGoal.deadline && (
-                    <p className="text-sm text-muted-foreground">
-                      {language === 'es' ? 'Faltan' : 'Remaining'}: {' '}
-                      <span className="font-semibold text-foreground">
-                        {differenceInDays(new Date(mainGoal.deadline), new Date())} {language === 'es' ? 'días' : 'days'}
-                      </span>
-                    </p>
+                    <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+                      <p className="text-sm font-medium text-green-700 dark:text-green-400">
+                        ⏰ {language === 'es' ? 'Faltan' : 'Remaining'}: {' '}
+                        <span className="text-lg font-bold">
+                          {differenceInDays(new Date(mainGoal.deadline), new Date())} {language === 'es' ? 'días' : 'days'}
+                        </span>
+                      </p>
+                    </div>
                   )}
                 </div>
               </Card>
 
-              <div className="flex justify-between">
+              <div className="flex justify-between pt-4 border-t">
                 <Button variant="outline" onClick={() => setCurrentStep(2)}>
                   {language === 'es' ? 'Anterior' : 'Previous'}
                 </Button>
-                <Button onClick={() => setCurrentStep(4)}>
+                <Button 
+                  onClick={() => setCurrentStep(4)}
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                >
                   {language === 'es' ? 'Siguiente' : 'Next'}
                   <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
@@ -616,16 +853,29 @@ export const TracyGoalWizard = () => {
           {/* Step 4 & 5: List Tasks with ABCDE */}
           {(currentStep === 4 || currentStep === 5) && mainGoal && (
             <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                <div className="flex items-start gap-2">
-                  <ListTodo className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div className={cn(
+                'p-4 rounded-xl border-2',
+                currentStep === 4 
+                  ? 'bg-gradient-to-r from-purple-500/10 to-violet-500/10 border-purple-500/30'
+                  : 'bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/30'
+              )}>
+                <div className="flex items-start gap-3">
+                  <div className={cn(
+                    'p-2 rounded-lg',
+                    currentStep === 4 ? 'bg-purple-500/20' : 'bg-orange-500/20'
+                  )}>
+                    {currentStep === 4 ? <ListTodo className="h-5 w-5 text-purple-600" /> : <Zap className="h-5 w-5 text-orange-600" />}
+                  </div>
                   <div>
-                    <p className="font-medium text-blue-800 dark:text-blue-400">
+                    <p className={cn(
+                      'font-semibold',
+                      currentStep === 4 ? 'text-purple-800 dark:text-purple-400' : 'text-orange-800 dark:text-orange-400'
+                    )}>
                       {currentStep === 4 
-                        ? (language === 'es' ? 'Lista todo lo necesario' : 'List everything needed')
-                        : (language === 'es' ? 'Método ABCDE de priorización' : 'ABCDE Prioritization Method')}
+                        ? `📝 ${language === 'es' ? 'Lista todo lo necesario' : 'List everything needed'}`
+                        : `⚡ ${language === 'es' ? 'Método ABCDE de priorización' : 'ABCDE Prioritization Method'}`}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground mt-1">
                       {currentStep === 4 
                         ? (language === 'es' 
                             ? 'Escribe TODAS las tareas y acciones que necesitas para lograr tu meta. No te limites.'
@@ -638,20 +888,36 @@ export const TracyGoalWizard = () => {
                 </div>
               </div>
 
-              <Card className="p-4">
+              <Card className={cn(
+                'p-5 border-2',
+                currentStep === 4 
+                  ? 'border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-violet-500/5'
+                  : 'border-orange-500/30 bg-gradient-to-br from-orange-500/5 to-red-500/5'
+              )}>
                 <div className="flex items-center gap-3 mb-4">
-                  <Star className="h-5 w-5 text-primary fill-primary" />
-                  <span className="font-semibold">{mainGoal.title}</span>
+                  <div className="p-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500">
+                    <Star className="h-4 w-4 text-white fill-white" />
+                  </div>
+                  <span className="font-semibold text-lg">{mainGoal.title}</span>
                 </div>
 
                 <div className="flex gap-2 mb-4">
                   <Input
                     value={newTaskTitle}
                     onChange={(e) => setNewTaskTitle(e.target.value)}
-                    placeholder={language === 'es' ? 'Nueva tarea...' : 'New task...'}
+                    placeholder={language === 'es' ? '✍️ Nueva tarea...' : '✍️ New task...'}
                     onKeyDown={(e) => e.key === 'Enter' && handleAddTask(mainGoal.id)}
+                    className="border-2"
                   />
-                  <Button onClick={() => handleAddTask(mainGoal.id)} disabled={!newTaskTitle.trim()}>
+                  <Button 
+                    onClick={() => handleAddTask(mainGoal.id)} 
+                    disabled={!newTaskTitle.trim()}
+                    className={cn(
+                      currentStep === 4 
+                        ? 'bg-gradient-to-r from-purple-500 to-violet-500'
+                        : 'bg-gradient-to-r from-orange-500 to-red-500'
+                    )}
+                  >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -661,19 +927,23 @@ export const TracyGoalWizard = () => {
                     <div
                       key={task.id}
                       className={cn(
-                        'flex items-center gap-2 p-2 rounded-lg border transition-all',
-                        task.completed && 'opacity-50'
+                        'flex items-center gap-2 p-3 rounded-xl border-2 transition-all',
+                        task.completed && 'opacity-50 bg-green-500/5 border-green-500/30',
+                        !task.completed && 'border-border/50 hover:border-primary/30'
                       )}
                     >
-                      <button onClick={() => handleToggleTask(mainGoal.id, task.id)}>
+                      <button 
+                        onClick={() => handleToggleTask(mainGoal.id, task.id)}
+                        className="transition-transform hover:scale-110"
+                      >
                         {task.completed ? (
                           <CheckCircle2 className="h-5 w-5 text-green-500" />
                         ) : (
-                          <Circle className="h-5 w-5 text-muted-foreground" />
+                          <Circle className="h-5 w-5 text-muted-foreground hover:text-primary" />
                         )}
                       </button>
                       
-                      <span className={cn('flex-1', task.completed && 'line-through')}>
+                      <span className={cn('flex-1 font-medium', task.completed && 'line-through text-muted-foreground')}>
                         {task.title}
                       </span>
 
@@ -681,9 +951,9 @@ export const TracyGoalWizard = () => {
                         value={task.priority}
                         onValueChange={(v) => handleUpdateTaskPriority(mainGoal.id, task.id, v as any)}
                       >
-                        <SelectTrigger className="w-24">
-                          <div className="flex items-center gap-1">
-                            <div className={cn('w-2 h-2 rounded-full', PRIORITY_CONFIG[task.priority].color)} />
+                        <SelectTrigger className="w-28 border-2">
+                          <div className="flex items-center gap-1.5">
+                            <div className={cn('w-3 h-3 rounded-full', PRIORITY_CONFIG[task.priority].color)} />
                             <SelectValue />
                           </div>
                         </SelectTrigger>
@@ -691,8 +961,8 @@ export const TracyGoalWizard = () => {
                           {(['A', 'B', 'C', 'D', 'E'] as const).map(p => (
                             <SelectItem key={p} value={p}>
                               <div className="flex items-center gap-2">
-                                <div className={cn('w-2 h-2 rounded-full', PRIORITY_CONFIG[p].color)} />
-                                {p}
+                                <div className={cn('w-3 h-3 rounded-full', PRIORITY_CONFIG[p].color)} />
+                                <span className="font-medium">{p}</span>
                               </div>
                             </SelectItem>
                           ))}
@@ -703,34 +973,42 @@ export const TracyGoalWizard = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDeleteTask(mainGoal.id, task.id)}
+                        className="hover:bg-destructive/10 hover:text-destructive"
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   ))}
                 </div>
 
                 {/* Priority Legend */}
-                <div className="mt-4 pt-4 border-t space-y-1">
+                <div className="mt-4 pt-4 border-t grid grid-cols-2 md:grid-cols-5 gap-2">
                   {(['A', 'B', 'C', 'D', 'E'] as const).map(p => (
-                    <div key={p} className="flex items-center gap-2 text-xs">
+                    <div key={p} className={cn(
+                      'flex items-center gap-1.5 p-2 rounded-lg text-xs',
+                      `bg-${PRIORITY_CONFIG[p].color.replace('bg-', '')}/10`
+                    )}>
                       <div className={cn('w-3 h-3 rounded-full', PRIORITY_CONFIG[p].color)} />
-                      <span className={PRIORITY_CONFIG[p].textColor}>
-                        {PRIORITY_CONFIG[p].label[language === 'es' ? 'es' : 'en']}
-                      </span>
-                      <span className="text-muted-foreground">
-                        - {PRIORITY_CONFIG[p].description[language === 'es' ? 'es' : 'en']}
+                      <span className={cn('font-semibold', PRIORITY_CONFIG[p].textColor)}>
+                        {p}
                       </span>
                     </div>
                   ))}
                 </div>
               </Card>
 
-              <div className="flex justify-between">
+              <div className="flex justify-between pt-4 border-t">
                 <Button variant="outline" onClick={() => setCurrentStep(currentStep - 1)}>
                   {language === 'es' ? 'Anterior' : 'Previous'}
                 </Button>
-                <Button onClick={() => setCurrentStep(currentStep === 4 ? 5 : 6)}>
+                <Button 
+                  onClick={() => setCurrentStep(currentStep === 4 ? 5 : 6)}
+                  className={cn(
+                    currentStep === 4 
+                      ? 'bg-gradient-to-r from-purple-500 to-violet-500'
+                      : 'bg-gradient-to-r from-orange-500 to-red-500'
+                  )}
+                >
                   {language === 'es' ? 'Siguiente' : 'Next'}
                   <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
