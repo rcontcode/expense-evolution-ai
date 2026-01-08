@@ -1,26 +1,31 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TrendingUp, Home, Car, Coins, CreditCard, PiggyBank, ArrowUpRight, Wallet, DollarSign } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Step = "idle" | "assets" | "liabilities" | "complete";
 
-const assets = [
-  { icon: Home, label: "Casa", value: "$350,000", color: "from-emerald-400 to-green-500", income: "$1,800/mes", incomeType: "Arriendo" },
-  { icon: Car, label: "Vehículo", value: "$28,000", color: "from-blue-400 to-cyan-500", income: "$600/mes", incomeType: "Uber/Trabajo" },
-  { icon: Coins, label: "Inversiones", value: "$45,000", color: "from-amber-400 to-orange-500", income: "$380/mes", incomeType: "Dividendos" },
-  { icon: PiggyBank, label: "Ahorros", value: "$12,500", color: "from-violet-400 to-purple-500", income: "$52/mes", incomeType: "Intereses" },
+const getAssets = (language: string) => [
+  { icon: Home, label: language === 'es' ? "Casa" : "House", value: "$350,000", color: "from-emerald-400 to-green-500", income: language === 'es' ? "$1,800/mes" : "$1,800/mo", incomeType: language === 'es' ? "Arriendo" : "Rent" },
+  { icon: Car, label: language === 'es' ? "Vehículo" : "Vehicle", value: "$28,000", color: "from-blue-400 to-cyan-500", income: language === 'es' ? "$600/mes" : "$600/mo", incomeType: "Uber" },
+  { icon: Coins, label: language === 'es' ? "Inversiones" : "Investments", value: "$45,000", color: "from-amber-400 to-orange-500", income: language === 'es' ? "$380/mes" : "$380/mo", incomeType: language === 'es' ? "Dividendos" : "Dividends" },
+  { icon: PiggyBank, label: language === 'es' ? "Ahorros" : "Savings", value: "$12,500", color: "from-violet-400 to-purple-500", income: language === 'es' ? "$52/mes" : "$52/mo", incomeType: language === 'es' ? "Intereses" : "Interest" },
 ];
 
-const liabilities = [
-  { icon: Home, label: "Hipoteca", value: "-$220,000", color: "from-red-400 to-rose-500" },
-  { icon: CreditCard, label: "Tarjetas", value: "-$3,200", color: "from-orange-400 to-red-500" },
+const getLiabilities = (language: string) => [
+  { icon: Home, label: language === 'es' ? "Hipoteca" : "Mortgage", value: "-$220,000", color: "from-red-400 to-rose-500" },
+  { icon: CreditCard, label: language === 'es' ? "Tarjetas" : "Credit Cards", value: "-$3,200", color: "from-orange-400 to-red-500" },
 ];
 
 export function NetWorthDemoAnimation() {
+  const { language } = useLanguage();
   const [step, setStep] = useState<Step>("idle");
   const [assetIndex, setAssetIndex] = useState(0);
   const [liabilityIndex, setLiabilityIndex] = useState(0);
   const [netWorth, setNetWorth] = useState(0);
+
+  const assets = getAssets(language);
+  const liabilities = getLiabilities(language);
 
   useEffect(() => {
     const sequence = () => {
@@ -46,7 +51,7 @@ export function NetWorthDemoAnimation() {
       }, 400);
       return () => clearInterval(timer);
     }
-  }, [step]);
+  }, [step, assets.length]);
 
   useEffect(() => {
     if (step === "liabilities") {
@@ -94,7 +99,7 @@ export function NetWorthDemoAnimation() {
 
           <div className="absolute top-8 inset-x-0 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 flex items-center justify-center z-10">
             <Wallet className="w-4 h-4 text-white mr-2" />
-            <span className="text-white font-bold text-sm">Patrimonio Neto</span>
+            <span className="text-white font-bold text-sm">{language === 'es' ? 'Patrimonio Neto' : 'Net Worth'}</span>
           </div>
 
           <div className="pt-20 px-3 h-full flex flex-col">
@@ -114,7 +119,7 @@ export function NetWorthDemoAnimation() {
                   >
                     <TrendingUp className="w-10 h-10 text-white" />
                   </motion.div>
-                  <p className="text-sm font-medium text-slate-600">Calculando patrimonio...</p>
+                  <p className="text-sm font-medium text-slate-600">{language === 'es' ? 'Calculando patrimonio...' : 'Calculating net worth...'}</p>
                 </motion.div>
               )}
 
@@ -130,7 +135,7 @@ export function NetWorthDemoAnimation() {
                   <div className="mb-3">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <span className="text-xs font-semibold text-slate-700">Activos</span>
+                      <span className="text-xs font-semibold text-slate-700">{language === 'es' ? 'Activos' : 'Assets'}</span>
                     </div>
                     <div className="space-y-1.5">
                       {assets.slice(0, assetIndex).map((item, i) => {
@@ -171,7 +176,7 @@ export function NetWorthDemoAnimation() {
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-2 h-2 rounded-full bg-red-500" />
-                        <span className="text-xs font-semibold text-slate-700">Pasivos</span>
+                        <span className="text-xs font-semibold text-slate-700">{language === 'es' ? 'Pasivos' : 'Liabilities'}</span>
                       </div>
                       <div className="space-y-1.5">
                         {liabilities.slice(0, liabilityIndex).map((item, i) => {
@@ -203,7 +208,7 @@ export function NetWorthDemoAnimation() {
                       className="mt-auto"
                     >
                       <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-3 text-center shadow-lg">
-                        <p className="text-xs text-emerald-100 mb-1">Patrimonio Neto</p>
+                        <p className="text-xs text-emerald-100 mb-1">{language === 'es' ? 'Patrimonio Neto' : 'Net Worth'}</p>
                         <motion.p
                           className="text-2xl font-black text-white"
                         >
@@ -211,7 +216,7 @@ export function NetWorthDemoAnimation() {
                         </motion.p>
                         <div className="flex items-center justify-center gap-1 mt-1">
                           <ArrowUpRight className="w-3 h-3 text-emerald-200" />
-                          <span className="text-xs text-emerald-200">+5.2% este mes</span>
+                          <span className="text-xs text-emerald-200">{language === 'es' ? '+5.2% este mes' : '+5.2% this month'}</span>
                         </div>
                       </div>
                     </motion.div>
@@ -233,7 +238,7 @@ export function NetWorthDemoAnimation() {
               exit={{ opacity: 0 }}
               className="absolute -right-4 top-1/4 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-emerald-600 border border-emerald-100"
             >
-              📈 Tracking automático
+              📈 {language === 'es' ? 'Tracking automático' : 'Auto tracking'}
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -242,7 +247,7 @@ export function NetWorthDemoAnimation() {
               transition={{ delay: 0.2 }}
               className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-teal-600 border border-teal-100"
             >
-              🎯 Proyección 6 meses
+              🎯 {language === 'es' ? 'Proyección 6 meses' : '6-month projection'}
             </motion.div>
           </>
         )}

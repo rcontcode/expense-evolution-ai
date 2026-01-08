@@ -147,7 +147,6 @@ const AnimatedCurrencyText = ({ language }: { language: string }) => {
 export const TransformationCarousel = () => {
   const { language } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
 
   const journeySlides = getJourneySlides(language);
 
@@ -161,10 +160,9 @@ export const TransformationCarousel = () => {
 
   // Auto-rotation - 6s optimal for ~15 words per slide
   useEffect(() => {
-    if (isPaused) return;
     const interval = setInterval(nextSlide, 6000);
     return () => clearInterval(interval);
-  }, [isPaused, nextSlide]);
+  }, [nextSlide]);
 
   const currentSlide = journeySlides[currentIndex];
 
@@ -178,8 +176,6 @@ export const TransformationCarousel = () => {
   return (
     <section 
       className="relative py-20 overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
     >
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">

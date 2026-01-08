@@ -570,11 +570,12 @@ export function AnimatedStats() {
             </motion.div>
             
             <span className="text-slate-200 relative z-10">
-              Datos actualizados cada <motion.span 
+              {language === 'es' ? 'Datos actualizados cada ' : 'Data updated every '}
+              <motion.span 
                 className="text-emerald-400 font-semibold"
                 animate={{ opacity: [1, 0.5, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
-              >6 segundos</motion.span>
+              >{language === 'es' ? '6 segundos' : '6 seconds'}</motion.span>
             </span>
           </motion.div>
         </motion.div>
