@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
+import { useState, useMemo, useCallback, lazy, Suspense, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,8 +6,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download, Scale, ArrowUpRight, ArrowDownRight, UserCircle, Building2, MapPin, CheckCircle, RefreshCw, Landmark, Briefcase, BarChart3, GraduationCap } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
+import { useSubscription } from '@/hooks/data/useSubscription';
+import { toast } from 'sonner';
 import { useClients } from '@/hooks/data/useClients';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useExpensesRealtime } from '@/hooks/data/useExpensesRealtime';
@@ -119,12 +121,32 @@ const SubscriptionsSkeleton = () => (
 export default function Dashboard() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const [selectedClient, setSelectedClient] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('charts');
+
+  const { refreshSubscription } = useSubscription();
+
+  // Handle subscription success/cancel from Stripe redirect
+  useEffect(() => {
+    const subscriptionStatus = searchParams.get('subscription');
+    if (subscriptionStatus === 'success') {
+      toast.success('¡Suscripción activada! 🎉', {
+        description: 'Tu plan ha sido actualizado correctamente',
+      });
+      refreshSubscription();
+      setSearchParams({});
+    } else if (subscriptionStatus === 'cancelled') {
+      toast.info('Pago cancelado', {
+        description: 'Puedes intentar de nuevo cuando quieras',
+      });
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams, refreshSubscription]);
 
   // Track dashboard visit for missions
   usePageVisitTracker('view_dashboard');

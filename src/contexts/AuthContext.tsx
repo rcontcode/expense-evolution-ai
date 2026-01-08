@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AuthContextType {
   user: User | null;
@@ -19,6 +20,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Track login for missions
   const trackLoginAction = useCallback(() => {
@@ -33,6 +35,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  // Check subscription status after sign in
+  const checkSubscription = useCallback(async (accessToken: string) => {
+    try {
+      await supabase.functions.invoke('check-subscription', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      // Invalidate subscription queries to refresh state
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['stripe-subscription'] });
+    } catch (err) {
+      console.error('Failed to check subscription on login:', err);
+    }
+  }, [queryClient]);
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -44,6 +62,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Track login for missions on SIGNED_IN event
       if (event === 'SIGNED_IN') {
         trackLoginAction();
+        // Check subscription status after sign in
+        if (session?.access_token) {
+          // Use setTimeout to avoid blocking the auth flow
+          setTimeout(() => checkSubscription(session.access_token), 100);
+        }
       }
       
       // Clean up URL hash after OAuth callback
@@ -62,11 +85,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Track login if user already has session
       if (session?.user) {
         trackLoginAction();
+        // Check subscription on initial load
+        if (session?.access_token) {
+          setTimeout(() => checkSubscription(session.access_token), 100);
+        }
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [trackLoginAction]);
+  }, [trackLoginAction, checkSubscription]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -94,6 +121,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    // Clear subscription cache on sign out
+    queryClient.removeQueries({ queryKey: ['subscription'] });
+    queryClient.removeQueries({ queryKey: ['stripe-subscription'] });
     navigate('/auth');
   };
 

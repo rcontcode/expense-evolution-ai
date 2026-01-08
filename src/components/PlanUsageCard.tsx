@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { 
   Crown, Sparkles, Zap, ArrowRight, Receipt, 
-  TrendingUp, Camera, Users, FolderOpen, Calendar 
+  TrendingUp, Camera, Users, FolderOpen, Calendar,
+  CreditCard
 } from 'lucide-react';
 import { usePlanLimits, PlanType } from '@/hooks/data/usePlanLimits';
+import { useSubscription } from '@/hooks/data/useSubscription';
 import { useState } from 'react';
 import { UpgradePrompt } from './UpgradePrompt';
 import { useNavigate } from 'react-router-dom';
@@ -42,6 +44,8 @@ export function PlanUsageCard() {
     getUpgradePlan,
     isLoading,
   } = usePlanLimits();
+
+  const { billingPeriod, isSubscribed, openCustomerPortal, isOpeningPortal } = useSubscription();
 
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<string>('expenses');
@@ -123,7 +127,11 @@ export function PlanUsageCard() {
               <div>
                 <CardTitle className="text-lg">Plan {planNames[planType]}</CardTitle>
                 <p className="text-xs text-white/80">
-                  {planType === 'free' ? 'Gratis para siempre' : 'Facturación mensual'}
+                  {planType === 'free' 
+                    ? 'Gratis para siempre' 
+                    : isSubscribed && billingPeriod 
+                      ? `Facturación ${billingPeriod === 'annual' ? 'anual' : 'mensual'}`
+                      : 'Suscripción activa'}
                 </p>
               </div>
             </div>

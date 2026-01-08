@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useSubscription } from '@/hooks/data/useSubscription';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -406,9 +406,9 @@ export function UpgradePrompt({
   currentUsage = 0,
   limit = 0,
 }: UpgradePromptProps) {
-  const navigate = useNavigate();
   const { language } = useLanguage();
   const { data: profile } = useProfile();
+  const { createCheckout, isCheckingOut } = useSubscription();
   const [showAnnual, setShowAnnual] = useState(true); // Default to annual for better value
   const [hasTriggeredCelebration, setHasTriggeredCelebration] = useState(false);
   
@@ -430,9 +430,11 @@ export function UpgradePrompt({
     }
   }, [isOpen, hasTriggeredCelebration]);
 
-  const handleUpgrade = () => {
+  const handleUpgrade = async () => {
+    const billingPeriod = showAnnual ? 'annual' : 'monthly';
+    const plan = targetPlan === 'premium' ? 'premium' : 'pro';
+    await createCheckout(plan, billingPeriod);
     onClose();
-    navigate('/settings?tab=subscription');
   };
 
   const displayPrice = showAnnual ? targetDetails.priceAnnual : targetDetails.price;
@@ -650,11 +652,12 @@ export function UpgradePrompt({
         <div className="flex flex-col gap-3 pt-2">
           <Button 
             onClick={handleUpgrade}
+            disabled={isCheckingOut}
             size="lg"
             className={`w-full py-6 font-bold text-lg bg-gradient-to-r ${targetDetails.color} hover:opacity-90 text-white shadow-xl hover:shadow-2xl transition-all hover:scale-[1.02]`}
           >
             <Gift className="h-6 w-6 mr-2" />
-            ¡Sí, quiero {targetDetails.name}!
+            {isCheckingOut ? 'Procesando...' : `¡Sí, quiero ${targetDetails.name}!`}
             <ArrowRight className="h-6 w-6 ml-2" />
           </Button>
           
