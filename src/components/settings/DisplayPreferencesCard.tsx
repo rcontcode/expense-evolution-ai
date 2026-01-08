@@ -18,6 +18,7 @@ export function DisplayPreferencesCard() {
     setViewMode,
     toggleArea,
     activateAllAreas,
+    setActiveAreas,
     setShowFocusDialog,
     isLoading,
     isSaving,
@@ -51,7 +52,7 @@ export function DisplayPreferencesCard() {
               {language === 'es' ? 'Preferencias de Visualización' : 'Display Preferences'}
             </CardTitle>
             <CardDescription className="flex items-center gap-2">
-              {language === 'es' 
+              {language === 'es'
                 ? 'Configura cómo se muestra el Dashboard y las áreas activas'
                 : 'Configure how the Dashboard displays and active areas'}
               {isSaving && (
@@ -89,22 +90,18 @@ export function DisplayPreferencesCard() {
               <LayoutGrid className="h-4 w-4" />
               {language === 'es' ? 'Vista Organizada' : 'Organized View'}
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setFocusSelectorOpen(true)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setFocusSelectorOpen(true)}>
               {language === 'es' ? 'Abrir selector' : 'Open selector'}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
             {viewMode === 'classic'
-              ? (language === 'es' 
-                  ? 'Muestra el Dashboard con los 10 tabs horizontales originales'
-                  : 'Shows Dashboard with original 10 horizontal tabs')
-              : (language === 'es'
-                  ? 'Agrupa las herramientas en 5 secciones temáticas colapsables'
-                  : 'Groups tools into 5 collapsible thematic sections')}
+              ? language === 'es'
+                ? 'Muestra el Dashboard con los 10 tabs horizontales originales'
+                : 'Shows Dashboard with original 10 horizontal tabs'
+              : language === 'es'
+                ? 'Agrupa las herramientas en 5 secciones temáticas colapsables'
+                : 'Groups tools into 5 collapsible thematic sections'}
           </p>
         </div>
 
@@ -116,18 +113,10 @@ export function DisplayPreferencesCard() {
                 {language === 'es' ? 'Áreas de Enfoque Activas' : 'Active Focus Areas'}
               </Label>
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setFocusSelectorOpen(true)}
-                >
+                <Button variant="outline" size="sm" onClick={() => setFocusSelectorOpen(true)}>
                   {language === 'es' ? 'Abrir selector' : 'Open selector'}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={activateAllAreas}
-                >
+                <Button variant="ghost" size="sm" onClick={activateAllAreas}>
                   {language === 'es' ? 'Activar Todas' : 'Activate All'}
                 </Button>
               </div>
@@ -136,9 +125,9 @@ export function DisplayPreferencesCard() {
               {(Object.keys(FOCUS_AREAS) as FocusAreaId[]).map((areaId) => {
                 const area = FOCUS_AREAS[areaId];
                 const isActive = activeAreas.includes(areaId);
-                
+
                 return (
-                  <div 
+                  <div
                     key={areaId}
                     className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all ${
                       isActive ? 'border-primary/40 bg-muted/30' : 'border-border opacity-60'
@@ -148,15 +137,10 @@ export function DisplayPreferencesCard() {
                       <span className="text-2xl">{area.emoji}</span>
                       <div>
                         <p className="font-medium">{area.name[language]}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {area.description[language]}
-                        </p>
+                        <p className="text-xs text-muted-foreground">{area.description[language]}</p>
                       </div>
                     </div>
-                    <Switch
-                      checked={isActive}
-                      onCheckedChange={() => toggleArea(areaId)}
-                    />
+                    <Switch checked={isActive} onCheckedChange={() => toggleArea(areaId)} />
                   </div>
                 );
               })}
@@ -168,7 +152,9 @@ export function DisplayPreferencesCard() {
         <div className="flex items-center justify-between border-t pt-4">
           <div className="space-y-0.5">
             <Label>
-              {language === 'es' ? 'Mostrar selector de enfoque al iniciar' : 'Show focus selector on startup'}
+              {language === 'es'
+                ? 'Mostrar selector de enfoque al iniciar'
+                : 'Show focus selector on startup'}
             </Label>
             <p className="text-xs text-muted-foreground">
               {language === 'es'
@@ -176,13 +162,17 @@ export function DisplayPreferencesCard() {
                 : 'Ask which areas you need when opening Dashboard'}
             </p>
           </div>
-          <Switch
-            checked={showFocusDialog}
-            onCheckedChange={setShowFocusDialog}
-          />
+          <Switch checked={showFocusDialog} onCheckedChange={setShowFocusDialog} />
         </div>
 
-        <FocusSelector open={focusSelectorOpen} onOpenChange={setFocusSelectorOpen} />
+        {focusSelectorOpen && (
+          <FocusSelector
+            open={focusSelectorOpen}
+            onOpenChange={setFocusSelectorOpen}
+            activeAreas={activeAreas}
+            onSaveActiveAreas={setActiveAreas}
+          />
+        )}
       </CardContent>
     </Card>
   );
