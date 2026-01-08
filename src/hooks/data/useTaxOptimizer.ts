@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useExpenses } from './useExpenses';
 import { useProfile } from './useProfile';
-import { TAX_DEDUCTION_RULES } from './useTaxCalculations';
+import { getTaxDeductionRules } from './useTaxCalculations';
 import { toast } from 'sonner';
 
 interface QuickInsight {
@@ -34,6 +34,9 @@ export function useTaxOptimizer() {
     setError(null);
 
     try {
+      const country = profile?.country || 'CA';
+      const taxRules = getTaxDeductionRules(country);
+
       // Aggregate expenses by category
       const categoryTotals = new Map<string, { total: number; count: number }>();
       
@@ -48,7 +51,7 @@ export function useTaxOptimizer() {
 
       // Build expense summary with deduction rates
       const expenseSummary = Array.from(categoryTotals.entries()).map(([category, data]) => {
-        const rule = TAX_DEDUCTION_RULES.find(r => r.category === category);
+        const rule = taxRules.find(r => r.category === category);
         return {
           category,
           total: data.total,
@@ -63,7 +66,10 @@ export function useTaxOptimizer() {
           workTypes: profile?.work_types || [],
           province: profile?.province || '',
           gstHstRegistered: profile?.gst_hst_registered || false,
-          businessName: profile?.business_name
+          businessName: profile?.business_name,
+          country: country,
+          taxRegime: profile?.tax_regime || null,
+          rut: profile?.rut || null
         }
       });
 
@@ -76,7 +82,7 @@ export function useTaxOptimizer() {
       }
 
       setResult(data);
-      toast.success('Análisis de optimización completado');
+      toast.success(country === 'CL' ? 'Análisis de optimización SII completado' : 'Análisis de optimización CRA completado');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al analizar impuestos';
       setError(message);
