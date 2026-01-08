@@ -73,6 +73,7 @@ const BOOKS: Resource[] = [
 
 // ==================== DOCUMENTARIES ====================
 const DOCUMENTARIES: Resource[] = [
+  // English Documentaries
   { title: "Inside Job", author: "Charles Ferguson", description: "Documental ganador del Oscar sobre la crisis financiera de 2008.", descriptionEn: "Oscar-winning documentary about the 2008 financial crisis.", link: "https://www.youtube.com/watch?v=T2IaJwkqgPk", platform: "YouTube", language: 'en', category: 'crisis' },
   { title: "Becoming Warren Buffett", author: "HBO", description: "La vida y filosofía de inversión del Oráculo de Omaha.", descriptionEn: "The life and investment philosophy of the Oracle of Omaha.", link: "https://www.youtube.com/watch?v=PB5krSvFAPY", platform: "YouTube", language: 'en', category: 'biography' },
   { title: "The Ascent of Money", author: "Niall Ferguson", description: "Historia del dinero y los sistemas financieros.", descriptionEn: "The history of money and financial systems.", link: "https://www.youtube.com/watch?v=fsrtB5lp60s", platform: "YouTube", language: 'en', category: 'history' },
@@ -85,10 +86,23 @@ const DOCUMENTARIES: Resource[] = [
   { title: "Moneyball", description: "Cómo los datos revolucionaron el béisbol y los negocios.", descriptionEn: "How data revolutionized baseball and business.", link: "https://www.imdb.com/title/tt1210166/", platform: "IMDB", language: 'en', category: 'data' },
   { title: "Generation Wealth", author: "Lauren Greenfield", description: "Exploración de la obsesión americana con la riqueza.", descriptionEn: "Exploration of America's obsession with wealth.", link: "https://www.youtube.com/watch?v=lHH1qJL0UNs", platform: "YouTube", language: 'en', category: 'culture' },
   { title: "Betting on Zero", description: "La batalla contra el esquema Ponzi de Herbalife.", descriptionEn: "The battle against Herbalife's alleged pyramid scheme.", link: "https://www.youtube.com/watch?v=KMW8nQIxGmk", platform: "YouTube", language: 'en', category: 'fraud' },
+  
+  // Spanish Documentaries
+  { title: "El Dinero es Deuda", author: "Paul Grignon", description: "Documental animado que explica cómo se crea el dinero en el sistema bancario.", link: "https://www.youtube.com/watch?v=nHt2MaQxEhw", platform: "YouTube", language: 'es', category: 'basics' },
+  { title: "La Corporación", description: "Análisis crítico del comportamiento de las grandes corporaciones.", link: "https://www.youtube.com/watch?v=Zx0f_8FKMrY", platform: "YouTube", language: 'es', category: 'politics' },
+  { title: "Dinero Como Deuda II", author: "Paul Grignon", description: "Segunda parte que profundiza en la naturaleza del dinero.", link: "https://www.youtube.com/watch?v=mQUhJTxK5mA", platform: "YouTube", language: 'es', category: 'basics' },
+  { title: "Zeitgeist: Addendum", description: "Documental sobre el sistema monetario y alternativas económicas.", link: "https://www.youtube.com/watch?v=EewGMBOB4Gg", platform: "YouTube", language: 'es', category: 'economics' },
+  { title: "La Doctrina del Shock", author: "Naomi Klein", description: "Cómo se aprovechan las crisis para imponer políticas económicas.", link: "https://www.youtube.com/watch?v=7iW1SHPgUAk", platform: "YouTube", language: 'es', category: 'politics' },
+  { title: "Catastroika", description: "Documental sobre las consecuencias de la privatización masiva.", link: "https://www.youtube.com/watch?v=1wm72oqsYqg", platform: "YouTube", language: 'es', category: 'economics' },
+  { title: "97% Owned", description: "Cómo funciona realmente el sistema monetario (subtitulado).", link: "https://www.youtube.com/watch?v=XcGh1Dex4Yo", platform: "YouTube", language: 'es', category: 'basics' },
+  { title: "Los Amos del Dinero", description: "Historia del control del sistema financiero mundial.", link: "https://www.youtube.com/watch?v=gD05pMC0JnQ", platform: "YouTube", language: 'es', category: 'history' },
+  { title: "Prosperidad Sin Crecimiento", description: "Cuestionando el modelo económico basado en crecimiento infinito.", link: "https://www.youtube.com/watch?v=6qjj3m2aMGQ", platform: "YouTube", language: 'es', category: 'economics' },
+  { title: "Las Claves de la Economía", author: "RTVE", description: "Serie documental española sobre conceptos económicos fundamentales.", link: "https://www.rtve.es/play/videos/las-claves-de-la-economia/", platform: "RTVE", language: 'es', category: 'basics' },
 ];
 
 // ==================== MOVIES ====================
 const MOVIES: Resource[] = [
+  // English Movies
   { title: "The Big Short", description: "La historia real de quienes predijeron la crisis de 2008.", descriptionEn: "The true story of those who predicted the 2008 crisis.", link: "https://www.imdb.com/title/tt1596363/", platform: "IMDB", language: 'en', category: 'crisis' },
   { title: "The Wolf of Wall Street", description: "La ascensión y caída de Jordan Belfort.", descriptionEn: "The rise and fall of Jordan Belfort.", link: "https://www.imdb.com/title/tt0993846/", platform: "IMDB", language: 'en', category: 'wallstreet' },
   { title: "Margin Call", description: "24 horas en un banco durante el inicio de la crisis.", descriptionEn: "24 hours in a bank at the start of the financial crisis.", link: "https://www.imdb.com/title/tt1615147/", platform: "IMDB", language: 'en', category: 'crisis' },
@@ -103,10 +117,23 @@ const MOVIES: Resource[] = [
   { title: "The Founder", description: "Cómo Ray Kroc construyó el imperio McDonald's.", descriptionEn: "How Ray Kroc built the McDonald's empire.", link: "https://www.imdb.com/title/tt4276820/", platform: "IMDB", language: 'en', category: 'entrepreneurship' },
   { title: "Joy", description: "La historia de Joy Mangano y su invento revolucionario.", descriptionEn: "Joy Mangano's story and her revolutionary invention.", link: "https://www.imdb.com/title/tt2446980/", platform: "IMDB", language: 'en', category: 'entrepreneurship' },
   { title: "Rogue Trader", description: "La historia real de Nick Leeson y el colapso de Barings Bank.", descriptionEn: "The true story of Nick Leeson and the Barings Bank collapse.", link: "https://www.imdb.com/title/tt0131566/", platform: "IMDB", language: 'en', category: 'fraud' },
+  
+  // Spanish/Latin Movies
+  { title: "El Método", description: "Thriller psicológico español sobre un proceso de selección empresarial despiadado.", link: "https://www.imdb.com/title/tt0427582/", platform: "IMDB", language: 'es', category: 'business' },
+  { title: "La Gran Apuesta (doblada)", description: "Versión en español del docudrama sobre la crisis de 2008.", link: "https://www.imdb.com/title/tt1596363/", platform: "IMDB", language: 'es', category: 'crisis' },
+  { title: "Los Lunes al Sol", description: "Drama español sobre el desempleo y sus consecuencias económicas.", link: "https://www.imdb.com/title/tt0298476/", platform: "IMDB", language: 'es', category: 'unemployment' },
+  { title: "El Capital", author: "Costa-Gavras", description: "Un banquero manipula para llegar a la cima del poder financiero.", link: "https://www.imdb.com/title/tt1895315/", platform: "IMDB", language: 'es', category: 'wallstreet' },
+  { title: "La Ley del Mercado", description: "Drama francés sobre las dificultades de un desempleado buscando trabajo.", link: "https://www.imdb.com/title/tt4231638/", platform: "IMDB", language: 'es', category: 'unemployment' },
+  { title: "Acorralada (Trapped)", description: "Una familia se enfrenta a la crisis económica en Islandia.", link: "https://www.imdb.com/title/tt4218248/", platform: "IMDB", language: 'es', category: 'crisis' },
+  { title: "Vivir sin Permiso", description: "Serie/película sobre un empresario gallego y su imperio.", link: "https://www.imdb.com/title/tt8434626/", platform: "IMDB", language: 'es', category: 'entrepreneurship' },
+  { title: "El Ciudadano Ilustre", description: "Un Nobel regresa a su pueblo natal y reflexiona sobre el éxito.", link: "https://www.imdb.com/title/tt5765844/", platform: "IMDB", language: 'es', category: 'success' },
+  { title: "Toc Toc", description: "Comedia española con lecciones sobre los miedos que limitan nuestro potencial.", link: "https://www.imdb.com/title/tt5821748/", platform: "IMDB", language: 'es', category: 'psychology' },
+  { title: "La Vida Padre", description: "Comedia sobre un padre que finge su muerte para cobrar el seguro.", link: "https://www.imdb.com/title/tt23783436/", platform: "IMDB", language: 'es', category: 'comedy' },
 ];
 
 // ==================== SERIES ====================
 const SERIES: Resource[] = [
+  // English Series
   { title: "Billions", description: "El mundo de los hedge funds y guerras de poder.", descriptionEn: "The world of hedge funds and power wars.", link: "https://www.imdb.com/title/tt4270492/", platform: "Paramount+", language: 'en', category: 'wallstreet' },
   { title: "Ozark", description: "Un asesor financiero obligado a lavar dinero.", descriptionEn: "A financial advisor forced to launder money.", link: "https://www.netflix.com/title/80117552", platform: "Netflix", language: 'en', category: 'crime' },
   { title: "Succession", description: "Drama sobre una familia y su conglomerado global.", descriptionEn: "Drama about a family and their global conglomerate.", link: "https://www.imdb.com/title/tt7660850/", platform: "HBO Max", language: 'en', category: 'business' },
@@ -118,6 +145,18 @@ const SERIES: Resource[] = [
   { title: "WeCrashed", description: "El ascenso y caída de WeWork.", descriptionEn: "The rise and fall of WeWork.", link: "https://www.imdb.com/title/tt12005128/", platform: "Apple TV+", language: 'en', category: 'entrepreneurship' },
   { title: "The Dropout", description: "La historia de Elizabeth Holmes y Theranos.", descriptionEn: "The story of Elizabeth Holmes and Theranos.", link: "https://www.imdb.com/title/tt10166622/", platform: "Hulu", language: 'en', category: 'fraud' },
   { title: "Inventing Anna", description: "La estafadora que engañó a la élite de Nueva York.", descriptionEn: "The con artist who fooled New York's elite.", link: "https://www.netflix.com/title/81008305", platform: "Netflix", language: 'en', category: 'fraud' },
+  
+  // Spanish Series
+  { title: "El Embarcadero", description: "Thriller español con temas de negocios y doble vida.", link: "https://www.imdb.com/title/tt7886276/", platform: "Movistar+", language: 'es', category: 'drama' },
+  { title: "La Casa de Papel", description: "El atraco más grande de la historia con planificación financiera extrema.", link: "https://www.netflix.com/title/80192098", platform: "Netflix", language: 'es', category: 'heist' },
+  { title: "Élite", description: "Drama adolescente español con conflictos de clases sociales.", link: "https://www.netflix.com/title/80200942", platform: "Netflix", language: 'es', category: 'drama' },
+  { title: "Gran Hotel", description: "Intrigas y negocios en un hotel de lujo de principios del siglo XX.", link: "https://www.imdb.com/title/tt1820254/", platform: "Netflix", language: 'es', category: 'business' },
+  { title: "Velvet", description: "Amor y negocios en las galerías de moda más importantes de Madrid.", link: "https://www.imdb.com/title/tt3582458/", platform: "Netflix", language: 'es', category: 'business' },
+  { title: "Vivir sin Permiso", description: "Un empresario gallego construye un imperio desde la nada.", link: "https://www.imdb.com/title/tt8434626/", platform: "Netflix", language: 'es', category: 'entrepreneurship' },
+  { title: "Nerón", description: "Serie sobre un empresario corrupto y su caída.", link: "https://www.imdb.com/title/tt14901002/", platform: "Movistar+", language: 'es', category: 'corruption' },
+  { title: "El Inocente", description: "Thriller que explora las consecuencias de malas decisiones financieras.", link: "https://www.netflix.com/title/80244190", platform: "Netflix", language: 'es', category: 'drama' },
+  { title: "Club de Cuervos", description: "Comedia mexicana sobre la gestión de un club de fútbol.", link: "https://www.netflix.com/title/80039195", platform: "Netflix", language: 'es', category: 'business' },
+  { title: "Narcos: México", description: "El negocio ilícito más grande de la historia reciente.", link: "https://www.netflix.com/title/80106626", platform: "Netflix", language: 'es', category: 'crime' },
 ];
 
 // ==================== PODCASTS ====================
@@ -147,6 +186,7 @@ const PODCASTS: Resource[] = [
 
 // ==================== TED TALKS ====================
 const TED_TALKS: Resource[] = [
+  // English TED Talks
   { title: "How to Buy Happiness", author: "Michael Norton", description: "Cómo gastar dinero nos hace más felices.", descriptionEn: "How spending money can make us happier.", link: "https://www.ted.com/talks/michael_norton_how_to_buy_happiness", platform: "TED", language: 'en', category: 'happiness' },
   { title: "The Psychology of Your Future Self", author: "Dan Gilbert", description: "Por qué subestimamos cuánto cambiaremos.", descriptionEn: "Why we underestimate how much we'll change.", link: "https://www.ted.com/talks/dan_gilbert_the_psychology_of_your_future_self", platform: "TED", language: 'en', category: 'psychology' },
   { title: "What Makes a Good Life?", author: "Robert Waldinger", description: "El estudio más largo sobre la felicidad.", descriptionEn: "The longest study on happiness.", link: "https://www.ted.com/talks/robert_waldinger_what_makes_a_good_life_lessons_from_the_longest_study_on_happiness", platform: "TED", language: 'en', category: 'happiness' },
@@ -157,6 +197,18 @@ const TED_TALKS: Resource[] = [
   { title: "The Happy Secret to Better Work", author: "Shawn Achor", description: "La ciencia de la felicidad y productividad.", descriptionEn: "The science of happiness and productivity.", link: "https://www.ted.com/talks/shawn_achor_the_happy_secret_to_better_work", platform: "TED", language: 'en', category: 'productivity' },
   { title: "Grit: The Power of Passion and Perseverance", author: "Angela Lee Duckworth", description: "La clave del éxito es la perseverancia.", descriptionEn: "The key to success is perseverance.", link: "https://www.ted.com/talks/angela_lee_duckworth_grit_the_power_of_passion_and_perseverance", platform: "TED", language: 'en', category: 'success' },
   { title: "Inside the Mind of a Master Procrastinator", author: "Tim Urban", description: "Por qué procrastinamos con nuestras finanzas.", descriptionEn: "Why we procrastinate with our finances.", link: "https://www.ted.com/talks/tim_urban_inside_the_mind_of_a_master_procrastinator", platform: "TED", language: 'en', category: 'productivity' },
+  
+  // Spanish TED Talks (TEDx en Español)
+  { title: "¿Cómo ser millonario?", author: "Carlos Muñoz", description: "Emprendedor mexicano comparte su filosofía sobre el dinero.", link: "https://www.youtube.com/watch?v=TYQl8iNZQVQ", platform: "TEDx", language: 'es', category: 'entrepreneurship' },
+  { title: "El secreto para crear riqueza", author: "Brian Tracy (en español)", description: "Las claves para crear abundancia financiera.", link: "https://www.youtube.com/watch?v=q4HO0yK3E4Y", platform: "YouTube", language: 'es', category: 'mindset' },
+  { title: "Inteligencia Financiera", author: "Sofía Macías", description: "La autora de Pequeño Cerdo Capitalista habla sobre dinero.", link: "https://www.youtube.com/watch?v=Yo6w4kN9hk8", platform: "TEDx", language: 'es', category: 'basics' },
+  { title: "El Arte de Invertir", author: "Francisco García Paramés", description: "El mejor inversor español explica su filosofía.", link: "https://www.youtube.com/watch?v=7sKZ1MgqzI0", platform: "YouTube", language: 'es', category: 'investing' },
+  { title: "Cómo Vencer el Miedo al Dinero", author: "Varios", description: "Superar las barreras mentales con el dinero.", link: "https://www.youtube.com/watch?v=p9NcJ2t7kFk", platform: "TEDx", language: 'es', category: 'mindset' },
+  { title: "El Poder del Ahorro", author: "Juan Haro", description: "Por qué ahorrar es el primer paso hacia la libertad.", link: "https://www.youtube.com/watch?v=8aJd1Qm7xWc", platform: "TEDx", language: 'es', category: 'saving' },
+  { title: "Emprender sin Miedo", author: "Andy Freire", description: "Lecciones de uno de los emprendedores más exitosos de Latinoamérica.", link: "https://www.youtube.com/watch?v=DHYxKF8SKBE", platform: "TEDx", language: 'es', category: 'entrepreneurship' },
+  { title: "La Mentalidad del Éxito", author: "Yokoi Kenji", description: "Disciplina japonesa aplicada a las finanzas personales.", link: "https://www.youtube.com/watch?v=pN8lL2QOXWU", platform: "TEDx", language: 'es', category: 'mindset' },
+  { title: "Finanzas para Todos", author: "Mario Borghino", description: "Cómo cualquier persona puede mejorar su situación financiera.", link: "https://www.youtube.com/watch?v=kI_6mXqBn3E", platform: "TEDx", language: 'es', category: 'basics' },
+  { title: "El Precio de la Felicidad", author: "Laurie Santos (subtitulado)", description: "La ciencia de lo que realmente nos hace felices.", link: "https://www.youtube.com/watch?v=GXy__kBVq1M", platform: "TEDx", language: 'es', category: 'happiness' },
 ];
 
 // ==================== YOUTUBE CHANNELS ====================
