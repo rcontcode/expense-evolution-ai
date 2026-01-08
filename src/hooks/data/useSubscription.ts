@@ -15,9 +15,9 @@ export const STRIPE_CONFIG = {
   },
   prices: {
     premium_monthly: 'price_1SnBvH7BLBLy48jQTW0FYtxP',
-    premium_annual: 'price_1SnC837BLBLy48jQRi8cKfSU',
+    premium_annual: 'price_1SnBwm7BLBLy48jQX7j8AA4S',
     pro_monthly: 'price_1SnBvY7BLBLy48jQ3SM3pbQY',
-    pro_annual: 'price_1SnC8N7BLBLy48jQ9b4gzmFN',
+    pro_annual: 'price_1SnBx67BLBLy48jQFh5Cj6Xc',
   },
   pricing: {
     premium_monthly: 6.99,
