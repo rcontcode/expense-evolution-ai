@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download, Scale, ArrowUpRight, ArrowDownRight, UserCircle, Building2, MapPin, CheckCircle, RefreshCw, Landmark, Briefcase, BarChart3, GraduationCap } from 'lucide-react';
+import { Upload, Receipt, Users, DollarSign, FileText, TrendingUp, Download, Scale, ArrowUpRight, ArrowDownRight, UserCircle, Building2, MapPin, CheckCircle, RefreshCw, Landmark, Briefcase, BarChart3, GraduationCap, ChevronDown, ChevronUp, Filter, Sliders } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useSubscription } from '@/hooks/data/useSubscription';
@@ -34,6 +34,10 @@ import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { useAuth } from '@/contexts/AuthContext';
 import { ViewModeToggle, OrganizedDashboard } from '@/components/focus';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
+import { DashboardHero } from '@/components/dashboard/DashboardHero';
+import { NextActionBanner } from '@/components/dashboard/NextActionBanner';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 
 // Lazy load chart components for better performance
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
@@ -134,6 +138,14 @@ export default function Dashboard() {
   const { refreshSubscription } = useSubscription();
   const { viewMode } = useDisplayPreferences();
 
+  // State for collapsible sections and guide
+  const [showGuide, setShowGuide] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [showAdvancedInfo, setShowAdvancedInfo] = useState(false);
+  const [hasInteractedWithGuide, setHasInteractedWithGuide] = useState(() => {
+    return localStorage.getItem('dashboard-guide-interacted') === 'true';
+  });
+
   // Handle subscription success/cancel from Stripe redirect
   useEffect(() => {
     const subscriptionStatus = searchParams.get('subscription');
@@ -191,8 +203,10 @@ export default function Dashboard() {
     };
   }, [allExpenses, incomeSummary?.totalIncome]);
 
-  // Get user's first name for personalized greeting
-  const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || '';
+  // Get incomplete expenses count
+  const incompleteExpenses = useMemo(() => {
+    return allExpenses?.filter(e => !e.category || !e.vendor).length || 0;
+  }, [allExpenses]);
 
   const handleResetFilters = useCallback(() => {
     setSelectedClient('all');
@@ -200,235 +214,180 @@ export default function Dashboard() {
     setSelectedCategory('all');
   }, []);
 
+  const handleOpenGuide = useCallback(() => {
+    setShowGuide(true);
+    if (!hasInteractedWithGuide) {
+      setHasInteractedWithGuide(true);
+      localStorage.setItem('dashboard-guide-interacted', 'true');
+    }
+  }, [hasInteractedWithGuide]);
+
   return (
     <Layout>
       <TooltipProvider delayDuration={200}>
-        <div className="p-8 space-y-8">
-          {/* Mentor Quote Banner */}
-          <MentorQuoteBanner showTip context="dashboard" className="mb-2" />
+        <div className="p-8 space-y-6">
+          {/* ============================================
+               FASE 1: Hero Minimalista + Guía Pulsante
+             ============================================ */}
+          
+          {/* Dashboard Hero - Minimalist greeting + balance + guide button */}
+          <DashboardHero
+            totalIncome={balanceData.totalIncomeAmount}
+            totalExpenses={balanceData.totalExpensesAmount}
+            netBalance={balanceData.netBalance}
+            isLoading={isLoading || incomeLoading}
+            onOpenGuide={handleOpenGuide}
+            hasInteracted={hasInteractedWithGuide}
+          />
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div>
-                <h1 className="text-3xl font-bold">
-                  {language === 'es' 
-                    ? `¡Hola${firstName ? `, ${firstName}` : ''}! 👋`
-                    : `Hello${firstName ? `, ${firstName}` : ''}! 👋`
-                  }
-                </h1>
-                <p className="text-muted-foreground mt-2">{t('dashboardLabels.subtitle')}</p>
-              </div>
-              <InfoTooltip content={TOOLTIP_CONTENT.dashboard} />
+          {/* Next Action Banner - Smart pulsing recommendation */}
+          <NextActionBanner
+            pendingDocuments={stats?.pendingDocs || 0}
+            incompleteExpenses={incompleteExpenses}
+            totalClients={clients?.length || 0}
+          />
+
+          {/* Interactive Guide - Shown on demand or first visit */}
+          {showGuide && (
+            <div className="animate-in fade-in slide-in-from-top-4 duration-300">
+              <InteractiveWelcome />
             </div>
-            <InfoTooltip content={TOOLTIP_CONTENT.exportButton} variant="wrapper" side="bottom">
-              <Button onClick={() => setExportDialogOpen(true)} variant="outline">
-                <Download className="mr-2 h-4 w-4" />
-                {t('export.exportButton')}
-              </Button>
-            </InfoTooltip>
-          </div>
-
-          {/* Interactive Welcome - Proactive Guidance */}
-          <InteractiveWelcome />
-
-          {/* Workflow Visualizer - Clear Step-by-Step Flows */}
-          <WorkflowVisualizer 
-            selectedWorkflows={['expense-capture', 'client-billing', 'tax-preparation']}
-            showAll={false}
-          />
-
-          {/* Setup Progress Banner */}
-          <SetupProgressBanner variant="compact" />
-
-          {/* Filtros */}
-          <DashboardFilters
-            selectedClient={selectedClient}
-            selectedStatus={selectedStatus}
-            selectedCategory={selectedCategory}
-            onClientChange={setSelectedClient}
-            onStatusChange={setSelectedStatus}
-            onCategoryChange={setSelectedCategory}
-            onReset={handleResetFilters}
-            clients={clients || []}
-          />
-
-          {/* Completeness Card */}
-          <CompletenessCard expenses={allExpenses || []} isLoading={isLoading} />
-
-          {/* Workflow Summary Widget */}
-          <WorkflowSummaryWidget />
-
-          {/* Profile Summary Card */}
-          {profile && (
-            <InfoTooltip content={TOOLTIP_CONTENT.profileCard} variant="wrapper" side="right">
-              <Card className="border-l-4 border-l-primary cursor-help transition-shadow hover:shadow-md">
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground text-lg font-semibold">
-                        {profile.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">{profile.full_name || t('settings.profileTitle')}</h3>
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                          {profile.work_types && profile.work_types.length > 0 && (
-                            <span className="flex items-center gap-1">
-                              <Building2 className="h-3 w-3" />
-                              {profile.work_types.includes('contractor') ? 'Sole Proprietor' : 
-                               profile.work_types.includes('corporation') ? 'Corporation' : 'Employee'}
-                            </span>
-                          )}
-                          {profile.province && (
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {profile.province}
-                            </span>
-                          )}
-                          {profile.gst_hst_registered && (
-                            <span className="flex items-center gap-1 text-green-600">
-                              <CheckCircle className="h-3 w-3" />
-                              GST/HST
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
-                      {t('common.edit')}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </InfoTooltip>
           )}
 
-          {/* Balance Card */}
-          <InfoTooltip content={TOOLTIP_CONTENT.balanceCard} variant="wrapper" side="right">
-            <Card className={`border-2 cursor-help transition-shadow hover:shadow-md ${balanceData.isPositive ? 'border-green-500/30 bg-green-50/50 dark:bg-green-900/10' : 'border-red-500/30 bg-red-50/50 dark:bg-red-900/10'}`}>
-              <CardHeader className="pb-2">
+          {/* ============================================
+               FASE 2: Información Secundaria Colapsable
+             ============================================ */}
+          
+          {/* Collapsible Advanced Info Section */}
+          <Collapsible open={showAdvancedInfo} onOpenChange={setShowAdvancedInfo}>
+            <CollapsibleTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-between py-2 text-muted-foreground hover:text-foreground"
+              >
+                <span className="flex items-center gap-2">
+                  <Sliders className="h-4 w-4" />
+                  {language === 'es' ? 'Ver más detalles' : 'View more details'}
+                </span>
+                {showAdvancedInfo ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4 pt-4 animate-in fade-in slide-in-from-top-2 duration-200">
+              {/* Mentor Quote Banner - Motivational */}
+              <MentorQuoteBanner showTip context="dashboard" className="mb-2" />
+
+              {/* Setup Progress & Workflows - For new users */}
+              <SetupProgressBanner variant="compact" />
+              
+              {/* Completeness Card */}
+              <CompletenessCard expenses={allExpenses || []} isLoading={isLoading} />
+
+              {/* Workflow Summary Widget */}
+              <WorkflowSummaryWidget /></CollapsibleContent>
+          </Collapsible>
+
+          {/* ============================================
+               FASE 3: Filtros Colapsables
+             ============================================ */}
+          
+          <Collapsible open={showFilters} onOpenChange={setShowFilters}>
+            <div className="flex items-center justify-between">
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Filter className="h-4 w-4" />
+                  {language === 'es' ? 'Filtros' : 'Filters'}
+                  {(selectedClient !== 'all' || selectedStatus !== 'all' || selectedCategory !== 'all') && (
+                    <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-primary text-primary-foreground">
+                      {[selectedClient !== 'all', selectedStatus !== 'all', selectedCategory !== 'all'].filter(Boolean).length}
+                    </span>
+                  )}
+                  {showFilters ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                </Button>
+              </CollapsibleTrigger>
+              <InfoTooltip content={TOOLTIP_CONTENT.exportButton} variant="wrapper" side="bottom">
+                <Button onClick={() => setExportDialogOpen(true)} variant="outline" size="sm">
+                  <Download className="mr-2 h-4 w-4" />
+                  {t('export.exportButton')}
+                </Button>
+              </InfoTooltip>
+            </div>
+            <CollapsibleContent className="pt-4">
+              <DashboardFilters
+                selectedClient={selectedClient}
+                selectedStatus={selectedStatus}
+                selectedCategory={selectedCategory}
+                onClientChange={setSelectedClient}
+                onStatusChange={setSelectedStatus}
+                onCategoryChange={setSelectedCategory}
+                onReset={handleResetFilters}
+                clients={clients || []}
+              />
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* ============================================
+               Stats Cards - Compact, Color-coded
+             ============================================ */}
+          <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
+            <Card className={cn(
+              "cursor-pointer transition-all hover:shadow-md",
+              stats?.pendingDocs && stats.pendingDocs > 0 && "card-actionable has-action border-warning/50"
+            )} onClick={() => navigate('/chaos')}>
+              <CardContent className="pt-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Scale className="h-5 w-5" />
-                    <CardTitle className="text-lg">{t('balance.title')}</CardTitle>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('dashboard.pendingDocuments')}</p>
+                    <p className="text-2xl font-bold">{isLoading ? '...' : stats?.pendingDocs || 0}</p>
                   </div>
-                  <span className="text-xs text-muted-foreground">{t('balance.thisYear')}</span>
+                  <FileText className={cn("h-8 w-8", stats?.pendingDocs ? "text-warning animate-pulse" : "text-muted-foreground/50")} />
                 </div>
-              </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <ArrowUpRight className="h-4 w-4 text-green-600" />
-                    {t('balance.totalIncome')}
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer transition-all hover:shadow-md" onClick={() => navigate('/expenses')}>
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('dashboard.totalExpenses')}</p>
+                    <p className="text-2xl font-bold">{isLoading ? '...' : stats?.totalExpenses || 0}</p>
                   </div>
-                  <div className="text-xl font-bold text-green-600">${balanceData.totalIncomeAmount.toLocaleString()}</div>
+                  <Receipt className="h-8 w-8 text-destructive/50" />
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <ArrowDownRight className="h-4 w-4 text-red-600" />
-                    {t('balance.totalExpenses')}
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer transition-all hover:shadow-md" onClick={() => navigate('/income')}>
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('dashboard.monthlyTotal')}</p>
+                    <p className="text-2xl font-bold">${isLoading ? '...' : stats?.monthlyTotal?.toFixed(0) || 0}</p>
                   </div>
-                  <div className="text-xl font-bold text-red-600">${balanceData.totalExpensesAmount.toLocaleString()}</div>
+                  <DollarSign className="h-8 w-8 text-success/50" />
                 </div>
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">{t('balance.netBalance')}</div>
-                  <div className={`text-2xl font-bold ${balanceData.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                    {balanceData.isPositive ? '+' : ''}${balanceData.netBalance.toLocaleString()}
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer transition-all hover:shadow-md" onClick={() => navigate('/clients')}>
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t('dashboard.billableExpenses')}</p>
+                    <p className="text-2xl font-bold">{isLoading ? '...' : stats?.billableExpenses || 0}</p>
                   </div>
+                  <Users className="h-8 w-8 text-primary/50" />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          </InfoTooltip>
-
-          {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-4">
-            <InfoTooltip content={TOOLTIP_CONTENT.monthlyTotal} variant="wrapper" side="bottom">
-              <Card className="cursor-help transition-shadow hover:shadow-md">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {t('dashboard.monthlyTotal')}
-                  </CardTitle>
-                  <DollarSign className="h-4 w-4 text-chart-1" />
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <Skeleton className="h-8 w-24" />
-                  ) : (
-                    <>
-                      <div className="text-2xl font-bold">${stats?.monthlyTotal.toFixed(2)}</div>
-                      <p className="text-xs text-muted-foreground">{t('dashboardLabels.currency')}</p>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </InfoTooltip>
-
-            <InfoTooltip content={TOOLTIP_CONTENT.totalExpenses} variant="wrapper" side="bottom">
-              <Card className="cursor-help transition-shadow hover:shadow-md">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {t('dashboard.totalExpenses')}
-                  </CardTitle>
-                  <TrendingUp className="h-4 w-4 text-chart-2" />
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <Skeleton className="h-8 w-16" />
-                  ) : (
-                    <>
-                      <div className="text-2xl font-bold">{stats?.totalExpenses}</div>
-                      <p className="text-xs text-muted-foreground">{t('dashboardLabels.totalRecords')}</p>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </InfoTooltip>
-
-            <InfoTooltip content={TOOLTIP_CONTENT.pendingDocs} variant="wrapper" side="bottom">
-              <Card className="cursor-help transition-shadow hover:shadow-md">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {t('dashboard.pendingDocuments')}
-                  </CardTitle>
-                  <FileText className="h-4 w-4 text-chart-3" />
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <Skeleton className="h-8 w-16" />
-                  ) : (
-                    <>
-                      <div className="text-2xl font-bold">{stats?.pendingDocs}</div>
-                      <p className="text-xs text-muted-foreground">{t('dashboardLabels.awaitingClassification')}</p>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </InfoTooltip>
-
-            <InfoTooltip content={TOOLTIP_CONTENT.billableExpenses} variant="wrapper" side="bottom">
-              <Card className="cursor-help transition-shadow hover:shadow-md">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {t('dashboard.billableExpenses')}
-                  </CardTitle>
-                  <Receipt className="h-4 w-4 text-chart-4" />
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <Skeleton className="h-8 w-16" />
-                  ) : (
-                    <>
-                      <div className="text-2xl font-bold">{stats?.billableExpenses}</div>
-                      <p className="text-xs text-muted-foreground">{t('dashboardLabels.readyToInvoice')}</p>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </InfoTooltip>
+              </CardContent>
+            </Card>
           </div>
 
-        {/* Dashboard Module Tabs - Centro de Control Financiero */}
+          {/* ============================================
+               Centro de Control Financiero
+             ============================================ */}
         {viewMode === 'organized' ? (
           <OrganizedDashboard />
         ) : (

@@ -1943,6 +1943,78 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Guide button pulse animation */
+@keyframes guide-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px 8px hsl(var(--primary) / 0.2);
+    transform: scale(1.02);
+  }
+}
+
+.animate-guide-pulse {
+  animation: guide-pulse 2s ease-in-out infinite;
+}
+
+/* Subtle glow for priority items */
+@keyframes subtle-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--warning) / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px 4px hsl(var(--warning) / 0.15);
+  }
+}
+
+.animate-subtle-glow {
+  animation: subtle-glow 2.5s ease-in-out infinite;
+}
+
+/* Pending action badge pulse */
+@keyframes badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+.animate-badge-pulse {
+  animation: badge-pulse 1.5s ease-in-out infinite;
+}
+
+/* Card highlight effect for actionable items */
+.card-actionable {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.card-actionable::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--warning) / 0.2));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.card-actionable:hover::before {
+  opacity: 1;
+}
+
+.card-actionable.has-action::before {
+  animation: subtle-glow 2.5s ease-in-out infinite;
+  opacity: 0.5;
+}
+
 /* ================================================================
    SCROLLBAR
    ================================================================ */
