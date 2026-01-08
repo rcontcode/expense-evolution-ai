@@ -16,11 +16,17 @@ import {
 } from 'lucide-react';
 import { useTaxOptimizer } from '@/hooks/data/useTaxOptimizer';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useProfile } from '@/hooks/data/useProfile';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { TaxInfoVersionBadge } from '@/components/tax-calendar/TaxInfoVersionBadge';
+import type { CountryCode } from '@/lib/constants/country-tax-config';
 
 export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
   const { t } = useLanguage();
+  const { data: profile } = useProfile();
   const { isAnalyzing, result, error, analyzeAndOptimize, clearResult } = useTaxOptimizer();
+  const country = (profile?.country || 'CA') as CountryCode;
+  const isCL = country === 'CL';
 
   const getInsightIcon = (type: 'success' | 'warning' | 'info') => {
     switch (type) {
@@ -53,12 +59,18 @@ export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-lg">Optimizador de Impuestos IA</CardTitle>
+              <CardTitle className="text-lg">
+                {isCL ? 'Optimizador de Impuestos IA' : 'AI Tax Optimizer'}
+              </CardTitle>
               <CardDescription>
-                Análisis inteligente para maximizar deducciones CRA
+                {isCL 
+                  ? 'Análisis inteligente para maximizar deducciones SII'
+                  : 'Smart analysis to maximize CRA deductions'
+                }
               </CardDescription>
             </div>
           </div>
+          <TaxInfoVersionBadge country={country} compact />
           {result && (
             <Button variant="ghost" size="sm" onClick={clearResult}>
               <RefreshCw className="h-4 w-4 mr-1" />
