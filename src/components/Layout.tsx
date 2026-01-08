@@ -54,10 +54,50 @@ interface LayoutProps {
   children: ReactNode;
 }
 
+// Section color themes for visual grouping
+const sectionThemes = {
+  daily: {
+    gradient: 'from-amber-500/20 to-orange-500/20',
+    border: 'border-amber-500/30',
+    text: 'text-amber-600 dark:text-amber-400',
+    icon: 'text-amber-500',
+    glow: 'shadow-amber-500/20',
+  },
+  business: {
+    gradient: 'from-blue-500/20 to-indigo-500/20',
+    border: 'border-blue-500/30',
+    text: 'text-blue-600 dark:text-blue-400',
+    icon: 'text-blue-500',
+    glow: 'shadow-blue-500/20',
+  },
+  wealth: {
+    gradient: 'from-emerald-500/20 to-teal-500/20',
+    border: 'border-emerald-500/30',
+    text: 'text-emerald-600 dark:text-emerald-400',
+    icon: 'text-emerald-500',
+    glow: 'shadow-emerald-500/20',
+  },
+  growth: {
+    gradient: 'from-purple-500/20 to-pink-500/20',
+    border: 'border-purple-500/30',
+    text: 'text-purple-600 dark:text-purple-400',
+    icon: 'text-purple-500',
+    glow: 'shadow-purple-500/20',
+  },
+  system: {
+    gradient: 'from-slate-500/20 to-gray-500/20',
+    border: 'border-slate-500/30',
+    text: 'text-slate-600 dark:text-slate-400',
+    icon: 'text-slate-500',
+    glow: 'shadow-slate-500/20',
+  },
+};
+
 const getNavSections = (language: string) => [
   {
     titleKey: 'layout.daily',
     emoji: '💰',
+    themeKey: 'daily' as keyof typeof sectionThemes,
     items: [
       { icon: LayoutDashboard, label: 'nav.dashboard', path: '/dashboard', badge: null, tooltipKey: 'dashboard' as const },
       { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
@@ -68,6 +108,7 @@ const getNavSections = (language: string) => [
   {
     titleKey: 'layout.business',
     emoji: '🏢',
+    themeKey: 'business' as keyof typeof sectionThemes,
     items: [
       { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tooltipKey: 'clients' as const },
       { icon: FolderKanban, label: 'nav.projects', path: '/projects', badge: null, tooltipKey: 'clients' as const },
@@ -79,6 +120,7 @@ const getNavSections = (language: string) => [
   {
     titleKey: 'layout.wealth',
     emoji: '📈',
+    themeKey: 'wealth' as keyof typeof sectionThemes,
     items: [
       { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
       { icon: Building2, label: 'nav.banking', path: '/banking', badgeKey: 'nav.badgeAI', tooltipKey: 'dashboard' as const },
@@ -88,6 +130,7 @@ const getNavSections = (language: string) => [
   {
     titleKey: 'layout.growth',
     emoji: '🎓',
+    themeKey: 'growth' as keyof typeof sectionThemes,
     items: [
       { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
       { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badge: 'CRA', tooltipKey: 'dashboard' as const },
@@ -96,6 +139,7 @@ const getNavSections = (language: string) => [
   {
     titleKey: 'layout.system',
     emoji: '⚙️',
+    themeKey: 'system' as keyof typeof sectionThemes,
     items: [
       { icon: Sparkles, label: 'nav.notifications', path: '/notifications', badge: null, tooltipKey: 'dashboard' as const },
       { icon: Settings, label: 'nav.config', path: '/settings', badge: null, tooltipKey: 'dashboard' as const },
@@ -177,49 +221,59 @@ export const Layout = ({ children }: LayoutProps) => {
                     </SheetClose>
                   </div>
                   
-                  <nav className="flex-1 overflow-y-auto p-4 space-y-6">
-                    {NAV_SECTIONS.map((section) => (
-                      <div key={section.titleKey}>
-                        <h3 className="px-3 mb-2 text-sm font-semibold text-foreground/80 flex items-center gap-2">
-                          <span>{section.emoji}</span>
-                          <span className="uppercase tracking-wider text-xs">{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
-                        </h3>
-                        <div className="space-y-1">
-                          {section.items.map((item) => {
-                            const Icon = item.icon;
-                            const isActive = location.pathname === item.path;
-                            const badgeText = 'badgeKey' in item && item.badgeKey ? t(item.badgeKey) : ('badge' in item ? item.badge : null);
-                            return (
-                              <button
-                                key={item.path}
-                                onClick={() => {
-                                  navigate(item.path);
-                                  setMobileMenuOpen(false);
-                                }}
-                                className={cn(
-                                  'nav-item w-full',
-                                  isActive && 'active'
-                                )}
-                              >
-                                <Icon className={cn("h-5 w-5", isActive && "text-primary-foreground")} />
-                                <span className="flex-1 text-left">{t(item.label)}</span>
-                                {badgeText && (
-                                  <Badge 
-                                    variant={badgeText === 'AI' ? 'default' : 'secondary'} 
-                                    className={cn(
-                                      "text-[10px] px-1.5 py-0",
-                                      badgeText === 'AI' && "bg-gradient-primary border-0"
-                                    )}
-                                  >
-                                    {badgeText}
-                                  </Badge>
-                                )}
-                              </button>
-                            );
-                          })}
+                  <nav className="flex-1 overflow-y-auto p-4 space-y-4">
+                    {NAV_SECTIONS.map((section) => {
+                      const theme = sectionThemes[section.themeKey];
+                      return (
+                        <div key={section.titleKey} className={cn(
+                          "rounded-xl p-3 transition-all duration-300",
+                          `bg-gradient-to-br ${theme.gradient}`,
+                          `border ${theme.border}`
+                        )}>
+                          <h3 className={cn(
+                            "px-2 mb-2 text-sm font-bold flex items-center gap-2",
+                            theme.text
+                          )}>
+                            <span className="text-base">{section.emoji}</span>
+                            <span className="uppercase tracking-wider text-xs">{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
+                          </h3>
+                          <div className="space-y-1">
+                            {section.items.map((item) => {
+                              const Icon = item.icon;
+                              const isActive = location.pathname === item.path;
+                              const badgeText = 'badgeKey' in item && item.badgeKey ? t(item.badgeKey) : ('badge' in item ? item.badge : null);
+                              return (
+                                <button
+                                  key={item.path}
+                                  onClick={() => {
+                                    navigate(item.path);
+                                    setMobileMenuOpen(false);
+                                  }}
+                                  className={cn(
+                                    'nav-item w-full',
+                                    isActive && 'active'
+                                  )}
+                                >
+                                  <Icon className={cn("h-5 w-5", isActive ? "text-primary-foreground" : theme.icon)} />
+                                  <span className="flex-1 text-left">{t(item.label)}</span>
+                                  {badgeText && (
+                                    <Badge 
+                                      variant={badgeText === 'AI' ? 'default' : 'secondary'} 
+                                      className={cn(
+                                        "text-[10px] px-1.5 py-0",
+                                        badgeText === 'AI' && "bg-gradient-primary border-0"
+                                      )}
+                                    >
+                                      {badgeText}
+                                    </Badge>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </nav>
 
                   <div className="border-t p-4 space-y-3">
@@ -326,16 +380,40 @@ export const Layout = ({ children }: LayoutProps) => {
           </button>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
-            {NAV_SECTIONS.map((section) => (
-              <div key={section.titleKey}>
+          <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-3">
+            {NAV_SECTIONS.map((section) => {
+              const theme = sectionThemes[section.themeKey];
+              return (
+              <div 
+                key={section.titleKey}
+                className={cn(
+                  "rounded-xl transition-all duration-300",
+                  collapsed ? "p-1.5" : "p-3",
+                  `bg-gradient-to-br ${theme.gradient}`,
+                  `border ${theme.border}`,
+                  `hover:shadow-lg ${theme.glow}`
+                )}
+              >
                 {collapsed ? (
-                  <div className="flex justify-center py-2 text-lg" title={t(section.titleKey)}>
-                    {section.emoji}
-                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className={cn(
+                        "flex justify-center py-2 text-lg cursor-default rounded-lg transition-colors",
+                        `hover:bg-gradient-to-br ${theme.gradient}`
+                      )}>
+                        {section.emoji}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className={cn("font-semibold", theme.text)}>
+                      {t(section.titleKey)}
+                    </TooltipContent>
+                  </Tooltip>
                 ) : (
-                  <h3 className="px-3 mb-2 text-sm font-semibold text-foreground/80 flex items-center gap-2">
-                    <span>{section.emoji}</span>
+                  <h3 className={cn(
+                    "px-2 mb-2 text-sm font-bold flex items-center gap-2",
+                    theme.text
+                  )}>
+                    <span className="text-base">{section.emoji}</span>
                     <span className="uppercase tracking-wider text-xs">{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
                   </h3>
                 )}
@@ -420,7 +498,8 @@ export const Layout = ({ children }: LayoutProps) => {
                   })}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </nav>
 
           {/* Quick Capture CTA */}
