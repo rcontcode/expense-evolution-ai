@@ -20,6 +20,7 @@ import { FinancialEducationResources } from '@/components/settings/FinancialEduc
 import { SampleDataManager } from '@/components/settings/SampleDataManager';
 import { NotificationPreferences } from '@/components/settings/NotificationPreferences';
 import { DataPrivacyCard } from '@/components/settings/DataPrivacyCard';
+import { SubscriptionManager } from '@/components/settings/SubscriptionManager';
 import { resetOnboardingTutorial } from '@/components/guidance/OnboardingTutorial';
 import { PageHeader } from '@/components/PageHeader';
 import { useIsAdmin } from '@/hooks/data/useIsAdmin';
@@ -151,6 +152,9 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Subscription Management */}
+        <SubscriptionManager />
 
         {/* Theme Section */}
         <Card>
