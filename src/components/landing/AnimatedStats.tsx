@@ -5,6 +5,7 @@ import {
   BookOpen, Target, Wallet, PiggyBank, Trophy, Flame,
   ArrowRight, BarChart3, Sparkles
 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface StatItem {
   icon: typeof Receipt;
@@ -16,41 +17,55 @@ interface StatItem {
   highlight?: string;
 }
 
-// Extended stats with more interesting data points
-const allStats: StatItem[][] = [
+interface SetTitle {
+  title: string;
+  subtitle: string;
+}
+
+// Extended stats with more interesting data points - localized
+const getAllStats = (language: string): StatItem[][] => [
   // Set 1 - Core metrics
   [
-    { icon: Receipt, value: 10000, suffix: "+", label: "Recibos procesados", color: "from-cyan-400 to-blue-500", glowColor: "rgba(34, 211, 238, 0.6)" },
-    { icon: Clock, value: 5, suffix: "h/mes", label: "Tiempo ahorrado", color: "from-orange-400 to-red-500", glowColor: "rgba(251, 146, 60, 0.6)" },
-    { icon: TrendingUp, value: 98, suffix: "%", label: "Precisión Smart", color: "from-emerald-400 to-teal-500", glowColor: "rgba(52, 211, 153, 0.6)" },
+    { icon: Receipt, value: 10000, suffix: "+", label: language === 'es' ? "Recibos procesados" : "Receipts processed", color: "from-cyan-400 to-blue-500", glowColor: "rgba(34, 211, 238, 0.6)" },
+    { icon: Clock, value: 5, suffix: language === 'es' ? "h/mes" : "h/mo", label: language === 'es' ? "Tiempo ahorrado" : "Time saved", color: "from-orange-400 to-red-500", glowColor: "rgba(251, 146, 60, 0.6)" },
+    { icon: TrendingUp, value: 98, suffix: "%", label: language === 'es' ? "Precisión Smart" : "Smart accuracy", color: "from-emerald-400 to-teal-500", glowColor: "rgba(52, 211, 153, 0.6)" },
     { icon: Users, value: 500, suffix: "+", label: "Beta testers", color: "from-purple-400 to-pink-500", glowColor: "rgba(192, 132, 252, 0.6)" },
-    { icon: Zap, value: 3, suffix: "seg", label: "Procesamiento", color: "from-amber-400 to-orange-500", glowColor: "rgba(251, 191, 36, 0.6)" },
-    { icon: Shield, value: 100, suffix: "%", label: "Datos seguros", color: "from-blue-400 to-indigo-500", glowColor: "rgba(96, 165, 250, 0.6)" },
+    { icon: Zap, value: 3, suffix: language === 'es' ? "seg" : "sec", label: language === 'es' ? "Procesamiento" : "Processing", color: "from-amber-400 to-orange-500", glowColor: "rgba(251, 191, 36, 0.6)" },
+    { icon: Shield, value: 100, suffix: "%", label: language === 'es' ? "Datos seguros" : "Secure data", color: "from-blue-400 to-indigo-500", glowColor: "rgba(96, 165, 250, 0.6)" },
   ],
   // Set 2 - Education & Growth
   [
-    { icon: BookOpen, value: 847, suffix: "+", label: "Libros trackeados", color: "from-violet-400 to-purple-600", glowColor: "rgba(167, 139, 250, 0.6)", highlight: "Mentoría" },
-    { icon: Flame, value: 156, suffix: "%", label: "Mejora en lectura", color: "from-rose-400 to-red-500", glowColor: "rgba(251, 113, 133, 0.6)", highlight: "+156%" },
-    { icon: Target, value: 2340, suffix: "+", label: "Metas SMART creadas", color: "from-teal-400 to-cyan-500", glowColor: "rgba(45, 212, 191, 0.6)" },
-    { icon: Trophy, value: 89, suffix: "%", label: "Metas alcanzadas", color: "from-amber-400 to-yellow-500", glowColor: "rgba(251, 191, 36, 0.6)" },
-    { icon: BarChart3, value: 42, suffix: "días", label: "Streak promedio", color: "from-green-400 to-emerald-500", glowColor: "rgba(74, 222, 128, 0.6)" },
-    { icon: Sparkles, value: 15, suffix: "K", label: "XP ganados total", color: "from-pink-400 to-rose-500", glowColor: "rgba(244, 114, 182, 0.6)" },
+    { icon: BookOpen, value: 847, suffix: "+", label: language === 'es' ? "Libros trackeados" : "Books tracked", color: "from-violet-400 to-purple-600", glowColor: "rgba(167, 139, 250, 0.6)", highlight: language === 'es' ? "Mentoría" : "Mentorship" },
+    { icon: Flame, value: 156, suffix: "%", label: language === 'es' ? "Mejora en lectura" : "Reading improvement", color: "from-rose-400 to-red-500", glowColor: "rgba(251, 113, 133, 0.6)", highlight: "+156%" },
+    { icon: Target, value: 2340, suffix: "+", label: language === 'es' ? "Metas SMART creadas" : "SMART goals created", color: "from-teal-400 to-cyan-500", glowColor: "rgba(45, 212, 191, 0.6)" },
+    { icon: Trophy, value: 89, suffix: "%", label: language === 'es' ? "Metas alcanzadas" : "Goals achieved", color: "from-amber-400 to-yellow-500", glowColor: "rgba(251, 191, 36, 0.6)" },
+    { icon: BarChart3, value: 42, suffix: language === 'es' ? "días" : "days", label: language === 'es' ? "Streak promedio" : "Avg streak", color: "from-green-400 to-emerald-500", glowColor: "rgba(74, 222, 128, 0.6)" },
+    { icon: Sparkles, value: 15, suffix: "K", label: language === 'es' ? "XP ganados total" : "Total XP earned", color: "from-pink-400 to-rose-500", glowColor: "rgba(244, 114, 182, 0.6)" },
   ],
   // Set 3 - Cashflow & Investments
   [
-    { icon: Wallet, value: 234, suffix: "+", label: "E → S transiciones", color: "from-blue-400 to-cyan-500", glowColor: "rgba(96, 165, 250, 0.6)", highlight: "Cuadrante" },
-    { icon: ArrowRight, value: 89, suffix: "+", label: "S → B transiciones", color: "from-cyan-400 to-teal-500", glowColor: "rgba(34, 211, 238, 0.6)" },
-    { icon: TrendingUp, value: 156, suffix: "+", label: "B → I transiciones", color: "from-emerald-400 to-green-500", glowColor: "rgba(52, 211, 153, 0.6)", highlight: "Inversores" },
-    { icon: PiggyBank, value: 67, suffix: "%", label: "Ahorro promedio", color: "from-purple-400 to-violet-500", glowColor: "rgba(192, 132, 252, 0.6)" },
-    { icon: Target, value: 1.2, suffix: "M", label: "Patrimonio total", color: "from-amber-400 to-orange-500", glowColor: "rgba(251, 191, 36, 0.6)" },
-    { icon: Flame, value: 45, suffix: "%", label: "Libertad financiera", color: "from-rose-400 to-pink-500", glowColor: "rgba(251, 113, 133, 0.6)" },
+    { icon: Wallet, value: 234, suffix: "+", label: language === 'es' ? "E → S transiciones" : "E → S transitions", color: "from-blue-400 to-cyan-500", glowColor: "rgba(96, 165, 250, 0.6)", highlight: language === 'es' ? "Cuadrante" : "Quadrant" },
+    { icon: ArrowRight, value: 89, suffix: "+", label: language === 'es' ? "S → B transiciones" : "S → B transitions", color: "from-cyan-400 to-teal-500", glowColor: "rgba(34, 211, 238, 0.6)" },
+    { icon: TrendingUp, value: 156, suffix: "+", label: language === 'es' ? "B → I transiciones" : "B → I transitions", color: "from-emerald-400 to-green-500", glowColor: "rgba(52, 211, 153, 0.6)", highlight: language === 'es' ? "Inversores" : "Investors" },
+    { icon: PiggyBank, value: 67, suffix: "%", label: language === 'es' ? "Ahorro promedio" : "Avg savings", color: "from-purple-400 to-violet-500", glowColor: "rgba(192, 132, 252, 0.6)" },
+    { icon: Target, value: 1.2, suffix: "M", label: language === 'es' ? "Patrimonio total" : "Total net worth", color: "from-amber-400 to-orange-500", glowColor: "rgba(251, 191, 36, 0.6)" },
+    { icon: Flame, value: 45, suffix: "%", label: language === 'es' ? "Libertad financiera" : "Financial freedom", color: "from-rose-400 to-pink-500", glowColor: "rgba(251, 113, 133, 0.6)" },
   ]
 ];
 
-const setTitles = [
-  { title: "Métricas Core", subtitle: "Rendimiento del sistema" },
-  { title: "Educación & Crecimiento", subtitle: "Mentoría financiera" },
-  { title: "Cashflow & Inversiones", subtitle: "Cuadrante del dinero" }
+const getSetTitles = (language: string): SetTitle[] => [
+  { 
+    title: language === 'es' ? "Métricas Core" : "Core Metrics", 
+    subtitle: language === 'es' ? "Rendimiento del sistema" : "System performance" 
+  },
+  { 
+    title: language === 'es' ? "Educación & Crecimiento" : "Education & Growth", 
+    subtitle: language === 'es' ? "Mentoría financiera" : "Financial mentorship" 
+  },
+  { 
+    title: language === 'es' ? "Cashflow & Inversiones" : "Cashflow & Investments", 
+    subtitle: language === 'es' ? "Cuadrante del dinero" : "Money quadrant" 
+  }
 ];
 
 function AnimatedCounter({ 
@@ -137,11 +152,15 @@ function FloatingOrb({ color, size, delay, x, y }: {
 }
 
 export function AnimatedStats() {
+  const { language } = useLanguage();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: false, margin: "-50px" });
   const [currentSet, setCurrentSet] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const allStats = getAllStats(language);
+  const setTitles = getSetTitles(language);
 
   // Auto-rotate through stat sets - 8s optimal for 6 stats with animated counters
   useEffect(() => {
@@ -156,7 +175,7 @@ export function AnimatedStats() {
     }, 8000);
 
     return () => clearInterval(interval);
-  }, [isInView]);
+  }, [isInView, allStats.length]);
 
   const currentStats = allStats[currentSet];
   const currentTitle = setTitles[currentSet];
