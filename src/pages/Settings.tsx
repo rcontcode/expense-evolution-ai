@@ -54,7 +54,7 @@ export default function Settings() {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="preferences" className="gap-2">
               <Settings2 className="h-4 w-4" />
               <span className="hidden sm:inline">{language === 'es' ? 'Preferencias' : 'Preferences'}</span>
@@ -62,10 +62,6 @@ export default function Settings() {
             <TabsTrigger value="goals" className="gap-2">
               <Target className="h-4 w-4" />
               <span className="hidden sm:inline">{language === 'es' ? 'Metas' : 'Goals'}</span>
-            </TabsTrigger>
-            <TabsTrigger value="education" className="gap-2">
-              <GraduationCap className="h-4 w-4" />
-              <span className="hidden sm:inline">{language === 'es' ? 'Educación' : 'Education'}</span>
             </TabsTrigger>
             <TabsTrigger value="data" className="gap-2">
               <Database className="h-4 w-4" />
@@ -436,12 +432,6 @@ export default function Settings() {
             </Suspense>
           </TabsContent>
 
-          {/* ============== EDUCATION TAB ============== */}
-          <TabsContent value="education" className="space-y-6">
-            <Suspense fallback={<SectionSkeleton />}>
-              <FinancialEducationResources />
-            </Suspense>
-          </TabsContent>
 
           {/* ============== DATA TAB ============== */}
           <TabsContent value="data" className="space-y-6">
