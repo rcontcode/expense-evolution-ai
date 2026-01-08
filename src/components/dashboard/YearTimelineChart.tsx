@@ -363,19 +363,19 @@ export function YearTimelineChart({
           <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
             <Badge 
               variant="outline" 
-              className="bg-success/10 border-success/30 text-success cursor-pointer hover:bg-success/20"
+              className="bg-success/10 border-success/30 text-success cursor-pointer hover:bg-success/20 transition-all hover:scale-105"
               onClick={() => onMonthSelect(yearlyTotals.bestMonth)}
             >
               <TrendingUp className="h-3 w-3 mr-1" />
-              {language === 'es' ? 'Mejor' : 'Best'}: {fullMonthNames[yearlyTotals.bestMonth]}
+              🏆 {language === 'es' ? 'Mejor' : 'Best'}: {fullMonthNames[yearlyTotals.bestMonth]}
             </Badge>
             <Badge 
               variant="outline" 
-              className="bg-destructive/10 border-destructive/30 text-destructive cursor-pointer hover:bg-destructive/20"
+              className="bg-destructive/10 border-destructive/30 text-destructive cursor-pointer hover:bg-destructive/20 transition-all hover:scale-105"
               onClick={() => onMonthSelect(yearlyTotals.worstMonth)}
             >
               <TrendingDown className="h-3 w-3 mr-1" />
-              {language === 'es' ? 'Peor' : 'Worst'}: {fullMonthNames[yearlyTotals.worstMonth]}
+              ⚠️ {language === 'es' ? 'Peor' : 'Worst'}: {fullMonthNames[yearlyTotals.worstMonth]}
             </Badge>
           </div>
         )}
