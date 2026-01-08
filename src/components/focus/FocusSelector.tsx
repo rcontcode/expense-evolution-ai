@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +24,10 @@ export const FocusSelector = ({ open, onOpenChange }: FocusSelectorProps) => {
   const { activeAreas, setActiveAreas } = useDisplayPreferences();
   const [selectedAreas, setSelectedAreas] = useState<FocusAreaId[]>(activeAreas);
 
+  // Keep modal selection in sync with saved preferences when opening
+  useEffect(() => {
+    if (open) setSelectedAreas(activeAreas);
+  }, [open, activeAreas]);
   const handleToggleArea = (areaId: FocusAreaId) => {
     setSelectedAreas(prev => 
       prev.includes(areaId)

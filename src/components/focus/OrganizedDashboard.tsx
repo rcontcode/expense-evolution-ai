@@ -1,8 +1,9 @@
-import { lazy, Suspense, memo } from 'react';
+import { lazy, Suspense, memo, useEffect, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { AreaSection } from './AreaSection';
+import { FocusSelector } from './FocusSelector';
 import { FOCUS_AREA_ORDER, FocusAreaId } from '@/lib/constants/focus-areas';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -46,7 +47,15 @@ const SectionSkeleton = () => (
 export const OrganizedDashboard = memo(() => {
   const { language } = useLanguage();
   const navigate = useNavigate();
-  const { activeAreas, isAreaCollapsed, toggleCollapsed } = useDisplayPreferences();
+  const { activeAreas, isAreaCollapsed, toggleCollapsed, showFocusDialog, setShowFocusDialog } = useDisplayPreferences();
+  const [focusSelectorOpen, setFocusSelectorOpen] = useState(false);
+
+  useEffect(() => {
+    if (showFocusDialog && !focusSelectorOpen) {
+      setFocusSelectorOpen(true);
+      setShowFocusDialog(false);
+    }
+  }, [showFocusDialog, focusSelectorOpen, setShowFocusDialog]);
   
   // Data fetching
   const { data: stats, isLoading } = useDashboardStats({});
@@ -55,7 +64,7 @@ export const OrganizedDashboard = memo(() => {
   const { data: mileageSummary, isLoading: mileageLoading } = useMileageSummary();
 
   // Content for each area
-  const areaContent: Record<FocusAreaId, React.ReactNode> = {
+  const areaContent: Record<FocusAreaId, ReactNode> = {
     negocio: (
       <div className="space-y-6">
         <Suspense fallback={<SectionSkeleton />}>
@@ -200,9 +209,9 @@ export const OrganizedDashboard = memo(() => {
               : 'Click each section to collapse/expand'}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
+        <Button variant="outline" size="sm" onClick={() => setFocusSelectorOpen(true)}>
           <Settings2 className="h-4 w-4 mr-2" />
-          {language === 'es' ? 'Configurar Áreas' : 'Configure Areas'}
+          {language === 'es' ? 'Elegir Áreas' : 'Choose Areas'}
         </Button>
       </div>
 
@@ -222,11 +231,13 @@ export const OrganizedDashboard = memo(() => {
       {visibleAreas.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
           <p>{language === 'es' ? 'No hay áreas activas' : 'No active areas'}</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate('/settings')}>
-            {language === 'es' ? 'Activar Áreas' : 'Activate Areas'}
+          <Button variant="outline" className="mt-4" onClick={() => setFocusSelectorOpen(true)}>
+            {language === 'es' ? 'Elegir Áreas' : 'Choose Areas'}
           </Button>
         </div>
       )}
+
+      <FocusSelector open={focusSelectorOpen} onOpenChange={setFocusSelectorOpen} />
     </div>
   );
 });
