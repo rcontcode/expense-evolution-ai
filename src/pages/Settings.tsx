@@ -23,6 +23,7 @@ import { DataPrivacyCard } from '@/components/settings/DataPrivacyCard';
 import { SubscriptionManager } from '@/components/settings/SubscriptionManager';
 import { resetOnboardingTutorial } from '@/components/guidance/OnboardingTutorial';
 import { PageHeader } from '@/components/PageHeader';
+import { DisplayPreferencesCard } from '@/components/settings/DisplayPreferencesCard';
 import { useIsAdmin } from '@/hooks/data/useIsAdmin';
 import {
   AlertDialog,
@@ -155,6 +156,9 @@ export default function Settings() {
 
         {/* Subscription Management */}
         <SubscriptionManager />
+
+        {/* Display Preferences */}
+        <DisplayPreferencesCard />
 
         {/* Theme Section */}
         <Card>
