@@ -1,5 +1,63 @@
 export type CountryCode = 'CA' | 'CL';
 
+// ============================================
+// TAX INFORMATION VERSION CONTROL
+// ============================================
+// This metadata tracks when tax rules were last verified
+// Update these dates whenever tax rules are modified
+
+export interface TaxInfoVersion {
+  lastUpdated: string; // ISO date format
+  taxYear: number;
+  verifiedBy: string;
+  sourceUrls: string[];
+  notes?: string;
+}
+
+export const TAX_INFO_VERSIONS: Record<CountryCode, TaxInfoVersion> = {
+  CA: {
+    lastUpdated: '2025-01-08',
+    taxYear: 2024,
+    verifiedBy: 'Evofinz System',
+    sourceUrls: [
+      'https://www.canada.ca/en/revenue-agency/services/tax/individuals/frequently-asked-questions-individuals/canadian-income-tax-rates-individuals-current-previous-years.html',
+      'https://www.canada.ca/en/revenue-agency/services/forms-publications/publications/t4002.html',
+    ],
+    notes: 'Federal brackets for 2024. Provincial rates may vary by territory.',
+  },
+  CL: {
+    lastUpdated: '2025-01-08',
+    taxYear: 2024,
+    verifiedBy: 'Evofinz System',
+    sourceUrls: [
+      'https://www.sii.cl/valores_y_fechas/valores/tabla_impuesto_2da_categoria.htm',
+      'https://www.sii.cl/portales/mipyme/conoce_sii_facil/tributacion_regimenes.html',
+    ],
+    notes: 'Valores en UTM para Segunda Categoría. Régimen Pro PyME al 25%.',
+  },
+};
+
+// Get version info for a country
+export function getTaxInfoVersion(code: CountryCode): TaxInfoVersion {
+  return TAX_INFO_VERSIONS[code];
+}
+
+// Check if tax info might be outdated (more than 6 months old)
+export function isTaxInfoPotentiallyOutdated(code: CountryCode): boolean {
+  const version = TAX_INFO_VERSIONS[code];
+  const lastUpdated = new Date(version.lastUpdated);
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  return lastUpdated < sixMonthsAgo;
+}
+
+// Check if we're past the tax year
+export function isNewTaxYearAvailable(code: CountryCode): boolean {
+  const version = TAX_INFO_VERSIONS[code];
+  const currentYear = new Date().getFullYear();
+  return currentYear > version.taxYear;
+}
+
 export interface Region {
   code: string;
   name: string;

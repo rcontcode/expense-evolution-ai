@@ -19,6 +19,8 @@ import { TaxDeadlineCards } from "@/components/tax-calendar/TaxDeadlineCards";
 import { TaxSituationWizard } from "@/components/tax-calendar/TaxSituationWizard";
 import { TaxResources } from "@/components/tax-calendar/TaxResources";
 import { TaxEstimator } from "@/components/tax-calendar/TaxEstimator";
+import { TaxInfoVersionBadge } from "@/components/tax-calendar/TaxInfoVersionBadge";
+import type { CountryCode } from "@/lib/constants/country-tax-config";
 
 export default function TaxCalendar() {
   const { data: profile } = useProfile();
@@ -43,6 +45,8 @@ export default function TaxCalendar() {
   const isFirstTaxYear = businessStartDate && 
     new Date(businessStartDate).getFullYear() >= new Date().getFullYear() - 1;
 
+  const countryCode = (profile?.country || 'CA') as CountryCode;
+
   return (
     <Layout>
       <PageHeader
@@ -53,7 +57,9 @@ export default function TaxCalendar() {
             ? "Calendario, estimador, recordatorios y guía completa para tus obligaciones fiscales"
             : "Calendar, estimator, reminders and complete guide for your tax obligations")
         }
-      />
+      >
+        <TaxInfoVersionBadge country={countryCode} />
+      </PageHeader>
 
       <div className="container mx-auto px-4 py-6 space-y-6">
         {/* Profile Status Alert */}
