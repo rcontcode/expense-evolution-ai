@@ -12,6 +12,7 @@ export const useDisplayPreferences = () => {
   const { user } = useAuth();
   const [preferences, setPreferences] = useState<DisplayPreferences>(DEFAULT_DISPLAY_PREFERENCES);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Fetch preferences from database
   useEffect(() => {
@@ -28,7 +29,7 @@ export const useDisplayPreferences = () => {
           .from('profiles')
           .select('display_preferences')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error('Error fetching display preferences:', error);
@@ -56,8 +57,13 @@ export const useDisplayPreferences = () => {
 
   // Save preferences to database
   const savePreferences = useCallback(async (newPreferences: DisplayPreferences) => {
+    // Optimistic update so UI responds instantly
+    const prev = preferences;
+    setPreferences(newPreferences);
+
     if (!user?.id) return;
 
+    setIsSaving(true);
     try {
       // Cast to any to avoid JSONB type issues
       const { error } = await supabase
@@ -66,11 +72,14 @@ export const useDisplayPreferences = () => {
         .eq('id', user.id);
 
       if (error) throw error;
-      setPreferences(newPreferences);
     } catch (error) {
+      // Revert on failure
+      setPreferences(prev);
       console.error('Error saving display preferences:', error);
+    } finally {
+      setIsSaving(false);
     }
-  }, [user?.id]);
+  }, [user?.id, preferences]);
 
   // Set view mode
   const setViewMode = useCallback((mode: ViewMode) => {
@@ -132,6 +141,7 @@ export const useDisplayPreferences = () => {
   return {
     preferences,
     isLoading,
+    isSaving,
     viewMode: preferences.view_mode,
     activeAreas: preferences.active_areas,
     collapsedAreas: preferences.collapsed_areas,
