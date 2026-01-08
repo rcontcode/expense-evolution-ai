@@ -1,23 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Currency rotation data for the special slide
-const currencyVariations = [
-  { currency: "peso", color: "from-cyan-400 to-blue-500", continuation: "y cada peso construye tu futuro" },
-  { currency: "dólar", color: "from-emerald-400 to-teal-500", continuation: "y cada dólar suma a tu libertad" },
-  { currency: "euro", color: "from-blue-400 to-indigo-500", continuation: "y cada euro es un paso adelante" },
-  { currency: "real", color: "from-amber-400 to-orange-500", continuation: "y cada real trabaja para ti" },
-  { currency: "sol", color: "from-yellow-400 to-amber-500", continuation: "y cada sol ilumina tu camino" },
-  { currency: "quetzal", color: "from-teal-400 to-cyan-500", continuation: "y cada quetzal vale oro" },
-  { currency: "colón", color: "from-purple-400 to-pink-500", continuation: "y cada colón cuenta tu historia" },
-  { currency: "lempira", color: "from-orange-400 to-red-500", continuation: "y cada lempira forja tu destino" },
+const getCurrencyVariations = (language: string) => [
+  { currency: "peso", color: "from-cyan-400 to-blue-500", continuation: language === 'es' ? "y cada peso construye tu futuro" : "and every peso builds your future" },
+  { currency: language === 'es' ? "dólar" : "dollar", color: "from-emerald-400 to-teal-500", continuation: language === 'es' ? "y cada dólar suma a tu libertad" : "and every dollar adds to your freedom" },
+  { currency: "euro", color: "from-blue-400 to-indigo-500", continuation: language === 'es' ? "y cada euro es un paso adelante" : "and every euro is a step forward" },
+  { currency: "real", color: "from-amber-400 to-orange-500", continuation: language === 'es' ? "y cada real trabaja para ti" : "and every real works for you" },
+  { currency: "sol", color: "from-yellow-400 to-amber-500", continuation: language === 'es' ? "y cada sol ilumina tu camino" : "and every sol lights your path" },
+  { currency: "quetzal", color: "from-teal-400 to-cyan-500", continuation: language === 'es' ? "y cada quetzal vale oro" : "and every quetzal is worth gold" },
+  { currency: language === 'es' ? "colón" : "colon", color: "from-purple-400 to-pink-500", continuation: language === 'es' ? "y cada colón cuenta tu historia" : "and every colon tells your story" },
+  { currency: "lempira", color: "from-orange-400 to-red-500", continuation: language === 'es' ? "y cada lempira forja tu destino" : "and every lempira forges your destiny" },
 ];
 
-const journeySlides = [
+const getJourneySlides = (language: string) => [
   {
-    quote: "¿A dónde se fue todo este mes?",
-    subtext: "Esa sensación cuando revisas tu cuenta y no cuadra nada...",
+    quote: language === 'es' ? "¿A dónde se fue todo este mes?" : "Where did it all go this month?",
+    subtext: language === 'es' ? "Esa sensación cuando revisas tu cuenta y no cuadra nada..." : "That feeling when you check your account and nothing adds up...",
     gradient: "from-slate-600 via-slate-500 to-gray-600",
     bgGradient: "from-slate-950/95 via-slate-900 to-gray-950/95",
     accent: "slate",
@@ -25,8 +26,8 @@ const journeySlides = [
     isSpecial: false
   },
   {
-    quote: "Otro año sin poder ahorrar",
-    subtext: "El tiempo pasa y las metas siguen igual de lejos...",
+    quote: language === 'es' ? "Otro año sin poder ahorrar" : "Another year without saving",
+    subtext: language === 'es' ? "El tiempo pasa y las metas siguen igual de lejos..." : "Time passes and goals remain just as far...",
     gradient: "from-gray-500 via-slate-500 to-zinc-500",
     bgGradient: "from-gray-950/95 via-slate-900 to-zinc-950/95",
     accent: "gray",
@@ -34,8 +35,8 @@ const journeySlides = [
     isSpecial: false
   },
   {
-    quote: "¿Y si existe una forma más simple?",
-    subtext: "Ese momento cuando descubres que no tiene que ser tan difícil...",
+    quote: language === 'es' ? "¿Y si existe una forma más simple?" : "What if there's a simpler way?",
+    subtext: language === 'es' ? "Ese momento cuando descubres que no tiene que ser tan difícil..." : "That moment when you discover it doesn't have to be so hard...",
     gradient: "from-cyan-500 via-blue-500 to-teal-500",
     bgGradient: "from-cyan-950/95 via-slate-900 to-blue-950/95",
     accent: "cyan",
@@ -43,7 +44,7 @@ const journeySlides = [
     isSpecial: false
   },
   {
-    quote: "Cada {currency} tiene su lugar",
+    quote: language === 'es' ? "Cada {currency} tiene su lugar" : "Every {currency} has its place",
     subtext: "{continuation}",
     gradient: "from-blue-500 via-indigo-500 to-purple-500",
     bgGradient: "from-blue-950/95 via-slate-900 to-indigo-950/95",
@@ -52,8 +53,8 @@ const journeySlides = [
     isSpecial: true
   },
   {
-    quote: "Hoy desperté sin estrés financiero",
-    subtext: "Imagina revisar tus cuentas y sentir paz, no ansiedad...",
+    quote: language === 'es' ? "Hoy desperté sin estrés financiero" : "Today I woke up without financial stress",
+    subtext: language === 'es' ? "Imagina revisar tus cuentas y sentir paz, no ansiedad..." : "Imagine checking your accounts and feeling peace, not anxiety...",
     gradient: "from-purple-500 via-violet-500 to-fuchsia-500",
     bgGradient: "from-purple-950/95 via-slate-900 to-violet-950/95",
     accent: "purple",
@@ -61,8 +62,8 @@ const journeySlides = [
     isSpecial: false
   },
   {
-    quote: "Por fin puedo planear ese viaje",
-    subtext: "Cuando tus sueños dejan de ser 'algún día' y tienen fecha...",
+    quote: language === 'es' ? "Por fin puedo planear ese viaje" : "Finally I can plan that trip",
+    subtext: language === 'es' ? "Cuando tus sueños dejan de ser 'algún día' y tienen fecha..." : "When your dreams stop being 'someday' and have a date...",
     gradient: "from-pink-500 via-rose-500 to-orange-500",
     bgGradient: "from-pink-950/95 via-slate-900 to-rose-950/95",
     accent: "pink",
@@ -70,8 +71,8 @@ const journeySlides = [
     isSpecial: false
   },
   {
-    quote: "Mi yo del futuro me lo agradecerá",
-    subtext: "El orgullo de saber que estás construyendo algo real...",
+    quote: language === 'es' ? "Mi yo del futuro me lo agradecerá" : "My future self will thank me",
+    subtext: language === 'es' ? "El orgullo de saber que estás construyendo algo real..." : "The pride of knowing you're building something real...",
     gradient: "from-orange-500 via-amber-500 to-yellow-500",
     bgGradient: "from-orange-950/95 via-slate-900 to-amber-950/95",
     accent: "orange",
@@ -79,8 +80,8 @@ const journeySlides = [
     isSpecial: false
   },
   {
-    quote: "Libertad se escribe con números claros",
-    subtext: "Cuando el control de tu dinero te da control de tu vida...",
+    quote: language === 'es' ? "Libertad se escribe con números claros" : "Freedom is written with clear numbers",
+    subtext: language === 'es' ? "Cuando el control de tu dinero te da control de tu vida..." : "When control of your money gives you control of your life...",
     gradient: "from-emerald-500 via-green-500 to-teal-500",
     bgGradient: "from-emerald-950/95 via-slate-900 to-green-950/95",
     accent: "emerald",
@@ -90,23 +91,26 @@ const journeySlides = [
 ];
 
 // Component for the animated currency text
-const AnimatedCurrencyText = () => {
+const AnimatedCurrencyText = ({ language }: { language: string }) => {
   const [currencyIndex, setCurrencyIndex] = useState(0);
+  const currencyVariations = getCurrencyVariations(language);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrencyIndex((prev) => (prev + 1) % currencyVariations.length);
     }, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [currencyVariations.length]);
 
   const current = currencyVariations[currencyIndex];
+  const quotePrefix = language === 'es' ? '"Cada ' : '"Every ';
+  const quoteSuffix = language === 'es' ? ' tiene su lugar"' : ' has its place"';
 
   return (
     <div className="text-center">
       <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-6 leading-tight">
         <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 bg-clip-text text-transparent">
-          "Cada{" "}
+          {quotePrefix}
         </span>
         <AnimatePresence mode="wait">
           <motion.span
@@ -121,7 +125,7 @@ const AnimatedCurrencyText = () => {
           </motion.span>
         </AnimatePresence>
         <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 bg-clip-text text-transparent">
-          {" "}tiene su lugar"
+          {quoteSuffix}
         </span>
       </h2>
       <AnimatePresence mode="wait">
@@ -141,16 +145,19 @@ const AnimatedCurrencyText = () => {
 };
 
 export const TransformationCarousel = () => {
+  const { language } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
+  const journeySlides = getJourneySlides(language);
+
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % journeySlides.length);
-  }, []);
+  }, [journeySlides.length]);
 
   const prevSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev - 1 + journeySlides.length) % journeySlides.length);
-  }, []);
+  }, [journeySlides.length]);
 
   // Auto-rotation - 6s optimal for ~15 words per slide
   useEffect(() => {
@@ -160,6 +167,13 @@ export const TransformationCarousel = () => {
   }, [isPaused, nextSlide]);
 
   const currentSlide = journeySlides[currentIndex];
+
+  const headerText = language === 'es' ? 'Tu historia puede cambiar hoy' : 'Your story can change today';
+  const fromText = language === 'es' ? 'Del desorden' : 'From chaos';
+  const toText = language === 'es' ? 'A la libertad' : 'To freedom';
+  const prevLabel = language === 'es' ? 'Anterior' : 'Previous';
+  const nextLabel = language === 'es' ? 'Siguiente' : 'Next';
+  const goToSlideLabel = language === 'es' ? 'Ir a slide' : 'Go to slide';
 
   return (
     <section 
@@ -191,7 +205,7 @@ export const TransformationCarousel = () => {
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full text-sm text-slate-300 border border-white/10 mb-4">
             <Sparkles className="w-4 h-4 text-orange-400" />
-            Tu historia puede cambiar hoy
+            {headerText}
           </span>
         </motion.div>
 
@@ -201,14 +215,14 @@ export const TransformationCarousel = () => {
           <button
             onClick={prevSlide}
             className="absolute left-0 md:-left-16 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-all duration-300 hover:scale-110"
-            aria-label="Anterior"
+            aria-label={prevLabel}
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={nextSlide}
             className="absolute right-0 md:-right-16 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-all duration-300 hover:scale-110"
-            aria-label="Siguiente"
+            aria-label={nextLabel}
           >
             <ChevronRight className="w-6 h-6" />
           </button>
@@ -236,7 +250,7 @@ export const TransformationCarousel = () => {
 
                 {/* Quote - Special or Regular */}
                 {currentSlide.isSpecial ? (
-                  <AnimatedCurrencyText />
+                  <AnimatedCurrencyText language={language} />
                 ) : (
                   <>
                     <motion.h2
@@ -283,7 +297,7 @@ export const TransformationCarousel = () => {
                     ? 'w-8 bg-gradient-to-r ' + slide.gradient
                     : 'w-2 bg-white/20 hover:bg-white/40'
                 }`}
-                aria-label={`Ir a slide ${index + 1}`}
+                aria-label={`${goToSlideLabel} ${index + 1}`}
               >
                 {index === currentIndex && (
                   <motion.div
@@ -301,7 +315,7 @@ export const TransformationCarousel = () => {
           {/* Journey indicator */}
           <div className="flex justify-center mt-6">
             <div className="flex items-center gap-3 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
-              <span className="text-xs text-slate-500">Del desorden</span>
+              <span className="text-xs text-slate-500">{fromText}</span>
               <div className="flex gap-1">
                 {journeySlides.map((_, index) => (
                   <div
@@ -318,7 +332,7 @@ export const TransformationCarousel = () => {
                   />
                 ))}
               </div>
-              <span className="text-xs text-emerald-400">A la libertad</span>
+              <span className="text-xs text-emerald-400">{toText}</span>
             </div>
           </div>
         </div>

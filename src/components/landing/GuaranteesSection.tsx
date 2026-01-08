@@ -4,35 +4,45 @@ import {
   ShieldCheck, RefreshCcw, HeadphonesIcon, Download,
   Clock, Heart
 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
-const guarantees = [
+const getGuarantees = (language: string) => [
   {
     icon: RefreshCcw,
-    title: 'Garantía de 30 Días',
-    description: 'Si no estás satisfecho, te devolvemos tu dinero. Sin preguntas.',
-    highlight: '100% reembolso'
+    title: language === 'es' ? 'Garantía de 30 Días' : '30-Day Guarantee',
+    description: language === 'es' ? 'Si no estás satisfecho, te devolvemos tu dinero. Sin preguntas.' : "If you're not satisfied, we refund your money. No questions asked.",
+    highlight: language === 'es' ? '100% reembolso' : '100% refund'
   },
   {
     icon: HeadphonesIcon,
-    title: 'Soporte Prioritario',
-    description: 'Respuesta en menos de 24 horas por chat o email.',
-    highlight: 'Respuesta <24h'
+    title: language === 'es' ? 'Soporte Prioritario' : 'Priority Support',
+    description: language === 'es' ? 'Respuesta en menos de 24 horas por chat o email.' : 'Response in less than 24 hours via chat or email.',
+    highlight: language === 'es' ? 'Respuesta <24h' : 'Response <24h'
   },
   {
     icon: Download,
-    title: 'Tus Datos, Siempre Tuyos',
-    description: 'Exporta toda tu información en cualquier momento.',
-    highlight: 'Exportación total'
+    title: language === 'es' ? 'Tus Datos, Siempre Tuyos' : 'Your Data, Always Yours',
+    description: language === 'es' ? 'Exporta toda tu información en cualquier momento.' : 'Export all your information at any time.',
+    highlight: language === 'es' ? 'Exportación total' : 'Full export'
   },
   {
     icon: Clock,
-    title: 'Actualizaciones Gratis',
-    description: 'Nuevas funciones y mejoras incluidas en tu plan.',
-    highlight: 'Updates de por vida'
+    title: language === 'es' ? 'Actualizaciones Gratis' : 'Free Updates',
+    description: language === 'es' ? 'Nuevas funciones y mejoras incluidas en tu plan.' : 'New features and improvements included in your plan.',
+    highlight: language === 'es' ? 'Updates de por vida' : 'Lifetime updates'
   }
 ];
 
 export function GuaranteesSection() {
+  const { language } = useLanguage();
+  const guarantees = getGuarantees(language);
+
+  const badgeText = language === 'es' ? 'Nuestro Compromiso' : 'Our Commitment';
+  const titlePart1 = language === 'es' ? 'Garantías ' : 'Risk-Free ';
+  const titlePart2 = language === 'es' ? 'Sin Riesgo' : 'Guarantees';
+  const subtitle = language === 'es' ? 'Queremos que pruebes EvoFinz con total confianza.' : 'We want you to try EvoFinz with complete confidence.';
+  const trustMessage = language === 'es' ? 'Más de 500 usuarios confían en EvoFinz' : 'More than 500 users trust EvoFinz';
+
   return (
     <section className="relative py-20 bg-gradient-to-b from-emerald-50 to-white overflow-hidden">
       {/* Background decoration */}
@@ -51,14 +61,14 @@ export function GuaranteesSection() {
         >
           <Badge className="mb-4 px-4 py-2 bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-sm">
             <ShieldCheck className="w-4 h-4 mr-2 inline" />
-            Nuestro Compromiso
+            {badgeText}
           </Badge>
           <h2 className="text-4xl md:text-5xl font-black mb-4">
-            <span className="text-slate-800">Garantías </span>
-            <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">Sin Riesgo</span>
+            <span className="text-slate-800">{titlePart1}</span>
+            <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">{titlePart2}</span>
           </h2>
           <p className="text-slate-600 text-lg max-w-2xl mx-auto">
-            Queremos que pruebes EvoFinz con total confianza.
+            {subtitle}
           </p>
         </motion.div>
 
@@ -105,7 +115,7 @@ export function GuaranteesSection() {
           <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-100 border border-emerald-200">
             <Heart className="w-5 h-5 text-emerald-600" />
             <span className="text-emerald-700 font-medium">
-              Más de 500 usuarios confían en EvoFinz
+              {trustMessage}
             </span>
           </div>
         </motion.div>
