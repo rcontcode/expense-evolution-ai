@@ -1,25 +1,30 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { GraduationCap, BookOpen, Headphones, Play, Star, Check, TrendingUp, Clock, Award } from "lucide-react";
+import { GraduationCap, BookOpen, Headphones, Star, Check, Clock, Award } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Step = "idle" | "resources" | "reading" | "complete";
 
-const resources = [
-  { icon: BookOpen, title: "Padre Rico, Padre Pobre", author: "R. Kiyosaki", type: "Libro", progress: 100, color: "from-amber-400 to-orange-500" },
-  { icon: BookOpen, title: "El Hombre Más Rico de Babilonia", author: "G. Clason", type: "Libro", progress: 65, color: "from-emerald-400 to-green-500" },
+const getResources = (language: string) => [
+  { icon: BookOpen, title: language === 'es' ? "Padre Rico, Padre Pobre" : "Rich Dad, Poor Dad", author: "R. Kiyosaki", type: language === 'es' ? "Libro" : "Book", progress: 100, color: "from-amber-400 to-orange-500" },
+  { icon: BookOpen, title: language === 'es' ? "El Hombre Más Rico de Babilonia" : "The Richest Man in Babylon", author: "G. Clason", type: language === 'es' ? "Libro" : "Book", progress: 65, color: "from-emerald-400 to-green-500" },
   { icon: Headphones, title: "Financial Freedom", author: "Grant Sabatier", type: "Podcast", progress: 45, color: "from-violet-400 to-purple-500" },
 ];
 
-const lessons = [
-  "Paga primero a ti mismo",
-  "Los ricos compran activos",
-  "El dinero trabaja para ti",
+const getLessons = (language: string) => [
+  language === 'es' ? "Paga primero a ti mismo" : "Pay yourself first",
+  language === 'es' ? "Los ricos compran activos" : "The rich buy assets",
+  language === 'es' ? "El dinero trabaja para ti" : "Money works for you",
 ];
 
 export function EducationDemoAnimation() {
+  const { language } = useLanguage();
   const [step, setStep] = useState<Step>("idle");
   const [resourceIndex, setResourceIndex] = useState(0);
   const [lessonIndex, setLessonIndex] = useState(0);
+
+  const resources = getResources(language);
+  const lessons = getLessons(language);
 
   useEffect(() => {
     const sequence = () => {
@@ -44,7 +49,7 @@ export function EducationDemoAnimation() {
       }, 500);
       return () => clearInterval(timer);
     }
-  }, [step]);
+  }, [step, resources.length]);
 
   useEffect(() => {
     if (step === "complete") {
@@ -53,7 +58,7 @@ export function EducationDemoAnimation() {
       }, 400);
       return () => clearInterval(timer);
     }
-  }, [step]);
+  }, [step, lessons.length]);
 
   return (
     <div className="relative w-full max-w-sm mx-auto">
@@ -70,7 +75,9 @@ export function EducationDemoAnimation() {
 
           <div className="absolute top-8 inset-x-0 h-12 bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center z-10">
             <GraduationCap className="w-4 h-4 text-white mr-2" />
-            <span className="text-white font-bold text-sm">Educación Financiera</span>
+            <span className="text-white font-bold text-sm">
+              {language === 'es' ? 'Educación Financiera' : 'Financial Education'}
+            </span>
           </div>
 
           <div className="pt-20 px-3 h-full flex flex-col">
@@ -90,7 +97,9 @@ export function EducationDemoAnimation() {
                   >
                     <BookOpen className="w-10 h-10 text-white" />
                   </motion.div>
-                  <p className="text-sm font-medium text-slate-600">Tu biblioteca financiera</p>
+                  <p className="text-sm font-medium text-slate-600">
+                    {language === 'es' ? 'Tu biblioteca financiera' : 'Your financial library'}
+                  </p>
                 </motion.div>
               )}
 
@@ -110,15 +119,21 @@ export function EducationDemoAnimation() {
                   >
                     <div className="flex-1 bg-white rounded-lg p-2 text-center shadow-sm">
                       <p className="text-lg font-bold text-emerald-600">12</p>
-                      <p className="text-[9px] text-slate-400">Completados</p>
+                      <p className="text-[9px] text-slate-400">
+                        {language === 'es' ? 'Completados' : 'Completed'}
+                      </p>
                     </div>
                     <div className="flex-1 bg-white rounded-lg p-2 text-center shadow-sm">
                       <p className="text-lg font-bold text-blue-600">3</p>
-                      <p className="text-[9px] text-slate-400">En progreso</p>
+                      <p className="text-[9px] text-slate-400">
+                        {language === 'es' ? 'En progreso' : 'In progress'}
+                      </p>
                     </div>
                     <div className="flex-1 bg-white rounded-lg p-2 text-center shadow-sm">
                       <p className="text-lg font-bold text-amber-600">156h</p>
-                      <p className="text-[9px] text-slate-400">Estudiadas</p>
+                      <p className="text-[9px] text-slate-400">
+                        {language === 'es' ? 'Estudiadas' : 'Studied'}
+                      </p>
                     </div>
                   </motion.div>
 
@@ -170,12 +185,16 @@ export function EducationDemoAnimation() {
                     >
                       <div className="flex items-center gap-2 mb-2">
                         <Clock className="w-4 h-4 text-green-100" />
-                        <span className="text-[10px] text-green-100">Sesión de hoy</span>
+                        <span className="text-[10px] text-green-100">
+                          {language === 'es' ? 'Sesión de hoy' : "Today's session"}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-2xl font-black text-white">45 min</p>
-                          <p className="text-[10px] text-green-100">12 páginas leídas</p>
+                          <p className="text-[10px] text-green-100">
+                            {language === 'es' ? '12 páginas leídas' : '12 pages read'}
+                          </p>
                         </div>
                         <div className="flex gap-1">
                           {[1, 2, 3, 4, 5].map((s) => (
@@ -194,10 +213,10 @@ export function EducationDemoAnimation() {
                       className="bg-white rounded-xl p-2 shadow-sm"
                     >
                       <p className="text-[10px] text-slate-500 mb-1.5 flex items-center gap-1">
-                        <Award className="w-3 h-3" /> Lecciones clave aprendidas
+                        <Award className="w-3 h-3" /> {language === 'es' ? 'Lecciones clave aprendidas' : 'Key lessons learned'}
                       </p>
                       <div className="space-y-1">
-                        {lessons.slice(0, lessonIndex).map((lesson, i) => (
+                        {lessons.slice(0, lessonIndex).map((lesson) => (
                           <motion.div
                             key={lesson}
                             initial={{ opacity: 0, x: -10 }}
@@ -207,7 +226,7 @@ export function EducationDemoAnimation() {
                             <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center">
                               <Check className="w-2.5 h-2.5 text-emerald-600" />
                             </div>
-                            "{lesson}"
+                            &quot;{lesson}&quot;
                           </motion.div>
                         ))}
                       </div>
@@ -230,7 +249,7 @@ export function EducationDemoAnimation() {
               exit={{ opacity: 0 }}
               className="absolute -right-4 top-1/3 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-emerald-600 border border-emerald-100"
             >
-              📚 Libros y podcasts
+              {language === 'es' ? '📚 Libros y podcasts' : '📚 Books & podcasts'}
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -239,7 +258,7 @@ export function EducationDemoAnimation() {
               transition={{ delay: 0.2 }}
               className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-green-600 border border-green-100"
             >
-              💡 Lecciones guardadas
+              {language === 'es' ? '💡 Lecciones guardadas' : '💡 Saved lessons'}
             </motion.div>
           </>
         )}

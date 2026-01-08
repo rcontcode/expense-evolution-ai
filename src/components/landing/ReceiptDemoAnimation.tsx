@@ -1,19 +1,22 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Sparkles, Check, Receipt, DollarSign, Calendar, Building2 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Step = "idle" | "capture" | "processing" | "complete";
 
-const extractedData = [
-  { icon: Building2, label: "Vendedor", value: "Tim Hortons" },
+const getExtractedData = (language: string) => [
+  { icon: Building2, label: language === 'es' ? "Vendedor" : "Vendor", value: "Tim Hortons" },
   { icon: DollarSign, label: "Total", value: "$12.47" },
-  { icon: Calendar, label: "Fecha", value: "06/01/2026" },
-  { icon: Receipt, label: "Categoría", value: "Comidas" },
+  { icon: Calendar, label: language === 'es' ? "Fecha" : "Date", value: "06/01/2026" },
+  { icon: Receipt, label: language === 'es' ? "Categoría" : "Category", value: language === 'es' ? "Comidas" : "Meals" },
 ];
 
 export function ReceiptDemoAnimation() {
+  const { language } = useLanguage();
   const [step, setStep] = useState<Step>("idle");
   const [dataIndex, setDataIndex] = useState(0);
+  const extractedData = getExtractedData(language);
 
   useEffect(() => {
     const sequence = () => {
@@ -42,7 +45,7 @@ export function ReceiptDemoAnimation() {
       }, 300);
       return () => clearInterval(timer);
     }
-  }, [step]);
+  }, [step, extractedData.length]);
 
   return (
     <div className="relative w-full max-w-sm mx-auto">
@@ -128,7 +131,9 @@ export function ReceiptDemoAnimation() {
                   >
                     <Camera className="w-7 h-7 text-white" />
                   </motion.div>
-                  <p className="text-xs text-slate-500 mt-2">Toca para capturar</p>
+                  <p className="text-xs text-slate-500 mt-2">
+                    {language === 'es' ? 'Toca para capturar' : 'Tap to capture'}
+                  </p>
                 </motion.div>
               )}
 
@@ -156,7 +161,7 @@ export function ReceiptDemoAnimation() {
                     transition={{ duration: 1.5, repeat: Infinity }}
                     className="mt-4 text-sm font-medium text-slate-600"
                   >
-                    Procesando...
+                    {language === 'es' ? 'Procesando...' : 'Processing...'}
                   </motion.p>
                   <div className="mt-3 flex gap-1">
                     {[0, 1, 2].map((i) => (
@@ -190,7 +195,9 @@ export function ReceiptDemoAnimation() {
                     <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
                       <Check className="w-5 h-5 text-white" />
                     </div>
-                    <span className="font-bold text-emerald-600">¡Listo!</span>
+                    <span className="font-bold text-emerald-600">
+                      {language === 'es' ? '¡Listo!' : 'Done!'}
+                    </span>
                   </motion.div>
 
                   {/* Extracted data */}
@@ -226,7 +233,7 @@ export function ReceiptDemoAnimation() {
                       className="mt-4"
                     >
                       <div className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl text-center text-white font-bold text-sm shadow-lg">
-                        Guardar Gasto
+                        {language === 'es' ? 'Guardar Gasto' : 'Save Expense'}
                       </div>
                     </motion.div>
                   )}
@@ -247,7 +254,7 @@ export function ReceiptDemoAnimation() {
               exit={{ opacity: 0 }}
               className="absolute -right-4 top-1/3 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-cyan-600 border border-cyan-100"
             >
-              ✨ Detectó el vendedor
+              {language === 'es' ? '✨ Detectó el vendedor' : '✨ Vendor detected'}
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -256,7 +263,7 @@ export function ReceiptDemoAnimation() {
               transition={{ delay: 0.2 }}
               className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-emerald-600 border border-emerald-100"
             >
-              💰 Total extraído
+              {language === 'es' ? '💰 Total extraído' : '💰 Total extracted'}
             </motion.div>
           </>
         )}

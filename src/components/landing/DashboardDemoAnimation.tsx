@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BarChart3, TrendingUp, TrendingDown, PieChart, DollarSign, Receipt, Wallet, Target } from "lucide-react";
+import { BarChart3, TrendingUp, TrendingDown, PieChart } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Step = "idle" | "loading" | "charts" | "complete";
 
 export function DashboardDemoAnimation() {
+  const { language } = useLanguage();
   const [step, setStep] = useState<Step>("idle");
   const [chartProgress, setChartProgress] = useState(0);
 
@@ -34,10 +36,10 @@ export function DashboardDemoAnimation() {
 
   const barHeights = [65, 85, 45, 90, 70, 80, 55];
   const pieSegments = [
-    { percent: 35, color: "from-cyan-400 to-blue-500", label: "Servicios" },
-    { percent: 25, color: "from-emerald-400 to-green-500", label: "Comidas" },
-    { percent: 20, color: "from-amber-400 to-orange-500", label: "Transporte" },
-    { percent: 20, color: "from-violet-400 to-purple-500", label: "Otros" },
+    { percent: 35, color: "from-cyan-400 to-blue-500", label: language === 'es' ? "Servicios" : "Services" },
+    { percent: 25, color: "from-emerald-400 to-green-500", label: language === 'es' ? "Comidas" : "Meals" },
+    { percent: 20, color: "from-amber-400 to-orange-500", label: language === 'es' ? "Transporte" : "Transport" },
+    { percent: 20, color: "from-violet-400 to-purple-500", label: language === 'es' ? "Otros" : "Other" },
   ];
 
   return (
@@ -75,7 +77,9 @@ export function DashboardDemoAnimation() {
                   >
                     <PieChart className="w-8 h-8 text-white" />
                   </motion.div>
-                  <p className="text-sm font-medium text-slate-600">Cargando analytics...</p>
+                  <p className="text-sm font-medium text-slate-600">
+                    {language === 'es' ? 'Cargando analytics...' : 'Loading analytics...'}
+                  </p>
                 </motion.div>
               )}
 
@@ -95,7 +99,9 @@ export function DashboardDemoAnimation() {
                       className="h-full bg-gradient-to-r from-violet-500 to-purple-500"
                     />
                   </div>
-                  <p className="text-xs text-slate-500 mt-2">Analizando datos...</p>
+                  <p className="text-xs text-slate-500 mt-2">
+                    {language === 'es' ? 'Analizando datos...' : 'Analyzing data...'}
+                  </p>
                 </motion.div>
               )}
 
@@ -116,7 +122,9 @@ export function DashboardDemoAnimation() {
                     >
                       <div className="flex items-center gap-1 mb-1">
                         <TrendingUp className="w-3 h-3 text-emerald-500" />
-                        <span className="text-[10px] text-slate-500">Ingresos</span>
+                        <span className="text-[10px] text-slate-500">
+                          {language === 'es' ? 'Ingresos' : 'Income'}
+                        </span>
                       </div>
                       <p className="text-sm font-bold text-slate-800">$8,450</p>
                     </motion.div>
@@ -128,7 +136,9 @@ export function DashboardDemoAnimation() {
                     >
                       <div className="flex items-center gap-1 mb-1">
                         <TrendingDown className="w-3 h-3 text-red-500" />
-                        <span className="text-[10px] text-slate-500">Gastos</span>
+                        <span className="text-[10px] text-slate-500">
+                          {language === 'es' ? 'Gastos' : 'Expenses'}
+                        </span>
                       </div>
                       <p className="text-sm font-bold text-slate-800">$3,280</p>
                     </motion.div>
@@ -141,7 +151,9 @@ export function DashboardDemoAnimation() {
                     transition={{ delay: 0.2 }}
                     className="bg-white rounded-lg p-3 shadow-sm"
                   >
-                    <p className="text-[10px] text-slate-500 mb-2">Tendencia Mensual</p>
+                    <p className="text-[10px] text-slate-500 mb-2">
+                      {language === 'es' ? 'Tendencia Mensual' : 'Monthly Trend'}
+                    </p>
                     <div className="flex items-end justify-between h-16 gap-1">
                       {barHeights.map((height, i) => (
                         <motion.div
@@ -157,7 +169,7 @@ export function DashboardDemoAnimation() {
                       ))}
                     </div>
                     <div className="flex justify-between mt-1">
-                      {["E", "F", "M", "A", "M", "J", "J"].map((m, i) => (
+                      {["J", "F", "M", "A", "M", "J", "J"].map((m, i) => (
                         <span key={m + i} className="text-[8px] text-slate-400 flex-1 text-center">{m}</span>
                       ))}
                     </div>
@@ -170,9 +182,11 @@ export function DashboardDemoAnimation() {
                     transition={{ delay: 0.3 }}
                     className="bg-white rounded-lg p-3 shadow-sm"
                   >
-                    <p className="text-[10px] text-slate-500 mb-2">Por Categoría</p>
+                    <p className="text-[10px] text-slate-500 mb-2">
+                      {language === 'es' ? 'Por Categoría' : 'By Category'}
+                    </p>
                     <div className="space-y-1.5">
-                      {pieSegments.map((seg, i) => (
+                      {pieSegments.map((seg) => (
                         <div key={seg.label} className="flex items-center gap-2">
                           <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${seg.color}`} />
                           <span className="text-[10px] text-slate-600 flex-1">{seg.label}</span>
@@ -198,7 +212,9 @@ export function DashboardDemoAnimation() {
                       animate={{ opacity: 1, scale: 1 }}
                       className="bg-gradient-to-r from-violet-500 to-purple-500 rounded-xl p-3 text-center shadow-lg"
                     >
-                      <p className="text-xs text-violet-100">Balance Mensual</p>
+                      <p className="text-xs text-violet-100">
+                        {language === 'es' ? 'Balance Mensual' : 'Monthly Balance'}
+                      </p>
                       <p className="text-xl font-black text-white">+$5,170</p>
                     </motion.div>
                   )}
@@ -219,7 +235,7 @@ export function DashboardDemoAnimation() {
               exit={{ opacity: 0 }}
               className="absolute -right-4 top-1/3 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-violet-600 border border-violet-100"
             >
-              📊 9+ visualizaciones
+              {language === 'es' ? '📊 9+ visualizaciones' : '📊 9+ visualizations'}
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -228,7 +244,7 @@ export function DashboardDemoAnimation() {
               transition={{ delay: 0.2 }}
               className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-purple-600 border border-purple-100"
             >
-              🎯 Predicciones Smart
+              {language === 'es' ? '🎯 Predicciones Smart' : '🎯 Smart Predictions'}
             </motion.div>
           </>
         )}

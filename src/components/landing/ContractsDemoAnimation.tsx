@@ -1,25 +1,30 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileText, Upload, Sparkles, Check, DollarSign, Calendar, AlertCircle, Building2, Briefcase } from "lucide-react";
+import { FileText, Upload, Sparkles, Check, DollarSign, Calendar, Building2, Briefcase } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Step = "idle" | "uploading" | "analyzing" | "extracting" | "complete";
 
-const extractedTerms = [
-  { icon: DollarSign, label: "Valor del contrato", value: "$45,000/año" },
-  { icon: Calendar, label: "Duración", value: "12 meses" },
-  { icon: Building2, label: "Cliente", value: "Tech Corp Inc." },
+const getExtractedTerms = (language: string) => [
+  { icon: DollarSign, label: language === 'es' ? "Valor del contrato" : "Contract value", value: language === 'es' ? "$45,000/año" : "$45,000/year" },
+  { icon: Calendar, label: language === 'es' ? "Duración" : "Duration", value: language === 'es' ? "12 meses" : "12 months" },
+  { icon: Building2, label: language === 'es' ? "Cliente" : "Client", value: "Tech Corp Inc." },
 ];
 
-const reimbursements = [
-  { category: "Viajes", percent: "100%", color: "bg-emerald-500" },
-  { category: "Comidas cliente", percent: "50%", color: "bg-blue-500" },
-  { category: "Equipamiento", percent: "Hasta $500", color: "bg-violet-500" },
+const getReimbursements = (language: string) => [
+  { category: language === 'es' ? "Viajes" : "Travel", percent: "100%", color: "bg-emerald-500" },
+  { category: language === 'es' ? "Comidas cliente" : "Client meals", percent: "50%", color: "bg-blue-500" },
+  { category: language === 'es' ? "Equipamiento" : "Equipment", percent: language === 'es' ? "Hasta $500" : "Up to $500", color: "bg-violet-500" },
 ];
 
 export function ContractsDemoAnimation() {
+  const { language } = useLanguage();
   const [step, setStep] = useState<Step>("idle");
   const [termIndex, setTermIndex] = useState(0);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  const extractedTerms = getExtractedTerms(language);
+  const reimbursements = getReimbursements(language);
 
   useEffect(() => {
     const sequence = () => {
@@ -54,7 +59,7 @@ export function ContractsDemoAnimation() {
       }, 400);
       return () => clearInterval(timer);
     }
-  }, [step]);
+  }, [step, extractedTerms.length]);
 
   return (
     <div className="relative w-full max-w-sm mx-auto">
@@ -71,7 +76,9 @@ export function ContractsDemoAnimation() {
 
           <div className="absolute top-8 inset-x-0 h-12 bg-gradient-to-r from-indigo-500 to-blue-600 flex items-center justify-center z-10">
             <FileText className="w-4 h-4 text-white mr-2" />
-            <span className="text-white font-bold text-sm">Contratos Smart</span>
+            <span className="text-white font-bold text-sm">
+              {language === 'es' ? 'Contratos Smart' : 'Smart Contracts'}
+            </span>
           </div>
 
           <div className="pt-20 px-3 h-full flex flex-col">
@@ -89,9 +96,13 @@ export function ContractsDemoAnimation() {
                     className="w-full max-w-[180px] h-24 border-2 border-dashed border-indigo-300 rounded-xl flex flex-col items-center justify-center bg-indigo-50"
                   >
                     <Upload className="w-8 h-8 text-indigo-400 mb-2" />
-                    <p className="text-xs text-indigo-500 font-medium">Subir contrato</p>
+                    <p className="text-xs text-indigo-500 font-medium">
+                      {language === 'es' ? 'Subir contrato' : 'Upload contract'}
+                    </p>
                   </motion.div>
-                  <p className="text-[10px] text-slate-400 mt-2">PDF o imagen</p>
+                  <p className="text-[10px] text-slate-400 mt-2">
+                    {language === 'es' ? 'PDF o imagen' : 'PDF or image'}
+                  </p>
                 </motion.div>
               )}
 
@@ -106,7 +117,7 @@ export function ContractsDemoAnimation() {
                   <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-indigo-400 to-blue-500 flex items-center justify-center mb-4 shadow-lg">
                     <FileText className="w-8 h-8 text-white" />
                   </div>
-                  <p className="text-xs font-medium text-slate-600 mb-2">contrato_2026.pdf</p>
+                  <p className="text-xs font-medium text-slate-600 mb-2">contract_2026.pdf</p>
                   <div className="w-full max-w-[180px] h-2 bg-slate-200 rounded-full overflow-hidden">
                     <motion.div
                       style={{ width: `${uploadProgress}%` }}
@@ -140,12 +151,18 @@ export function ContractsDemoAnimation() {
                     transition={{ duration: 1.5, repeat: Infinity }}
                     className="mt-4 text-sm font-medium text-slate-600"
                   >
-                    Analizando contrato...
+                    {language === 'es' ? 'Analizando contrato...' : 'Analyzing contract...'}
                   </motion.p>
                   <div className="mt-3 space-y-1 text-center">
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-[10px] text-slate-400">✓ Leyendo documento</motion.p>
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="text-[10px] text-slate-400">✓ Extrayendo cláusulas</motion.p>
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3 }} className="text-[10px] text-slate-400">✓ Identificando términos</motion.p>
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-[10px] text-slate-400">
+                      ✓ {language === 'es' ? 'Leyendo documento' : 'Reading document'}
+                    </motion.p>
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="text-[10px] text-slate-400">
+                      ✓ {language === 'es' ? 'Extrayendo cláusulas' : 'Extracting clauses'}
+                    </motion.p>
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3 }} className="text-[10px] text-slate-400">
+                      ✓ {language === 'es' ? 'Identificando términos' : 'Identifying terms'}
+                    </motion.p>
                   </div>
                 </motion.div>
               )}
@@ -168,14 +185,18 @@ export function ContractsDemoAnimation() {
                     <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
                       <Check className="w-4 h-4 text-white" />
                     </div>
-                    <span className="font-bold text-emerald-600 text-sm">Contrato Analizado</span>
+                    <span className="font-bold text-emerald-600 text-sm">
+                      {language === 'es' ? 'Contrato Analizado' : 'Contract Analyzed'}
+                    </span>
                   </motion.div>
 
                   {/* Extracted Terms */}
                   <div className="bg-white rounded-xl p-2 shadow-sm mb-2">
-                    <p className="text-[10px] text-slate-500 mb-2">Términos Extraídos</p>
+                    <p className="text-[10px] text-slate-500 mb-2">
+                      {language === 'es' ? 'Términos Extraídos' : 'Extracted Terms'}
+                    </p>
                     <div className="space-y-1.5">
-                      {extractedTerms.slice(0, termIndex).map((term, i) => {
+                      {extractedTerms.slice(0, termIndex).map((term) => {
                         const Icon = term.icon;
                         return (
                           <motion.div
@@ -203,7 +224,7 @@ export function ContractsDemoAnimation() {
                       className="bg-white rounded-xl p-2 shadow-sm"
                     >
                       <p className="text-[10px] text-slate-500 mb-2 flex items-center gap-1">
-                        <Briefcase className="w-3 h-3" /> Reembolsos Detectados
+                        <Briefcase className="w-3 h-3" /> {language === 'es' ? 'Reembolsos Detectados' : 'Detected Reimbursements'}
                       </p>
                       <div className="space-y-1">
                         {reimbursements.map((r, i) => (
@@ -239,7 +260,7 @@ export function ContractsDemoAnimation() {
               exit={{ opacity: 0 }}
               className="absolute -right-4 top-1/3 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-indigo-600 border border-indigo-100"
             >
-              📄 Extracción automática
+              {language === 'es' ? '📄 Extracción automática' : '📄 Auto extraction'}
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -248,7 +269,7 @@ export function ContractsDemoAnimation() {
               transition={{ delay: 0.2 }}
               className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-blue-600 border border-blue-100"
             >
-              💼 Reglas de reembolso
+              {language === 'es' ? '💼 Reglas de reembolso' : '💼 Reimbursement rules'}
             </motion.div>
           </>
         )}
