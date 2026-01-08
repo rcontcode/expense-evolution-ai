@@ -11,7 +11,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useSavingsGoals, useCreateSavingsGoal, useUpdateSavingsGoal, useDeleteSavingsGoal, useAddToSavingsGoal } from '@/hooks/data/useSavingsGoals';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { Target, Plus, Edit, Trash2, PiggyBank, DollarSign, Palette, Sun, Moon, Monitor, RotateCcw, BookOpen, Globe, Database, Loader2, Shield, Ticket } from 'lucide-react';
+import { Target, Plus, Edit, Trash2, PiggyBank, DollarSign, Palette, Sun, Moon, Monitor, RotateCcw, BookOpen, Globe, Loader2, Shield, Ticket } from 'lucide-react';
 import { useGenerateSampleData, useDeleteSampleData } from '@/hooks/data/useGenerateSampleData';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -19,6 +19,7 @@ import { InvestmentSection } from '@/components/investments/InvestmentSection';
 import { FinancialEducationResources } from '@/components/settings/FinancialEducationResources';
 import { SampleDataManager } from '@/components/settings/SampleDataManager';
 import { NotificationPreferences } from '@/components/settings/NotificationPreferences';
+import { DataPrivacyCard } from '@/components/settings/DataPrivacyCard';
 import { resetOnboardingTutorial } from '@/components/guidance/OnboardingTutorial';
 import { PageHeader } from '@/components/PageHeader';
 import { useIsAdmin } from '@/hooks/data/useIsAdmin';
@@ -451,7 +452,9 @@ export default function Settings() {
         {/* Notification Preferences */}
         <NotificationPreferences />
 
-        {/* Sample Data Generator */}
+        {/* Data Privacy - GDPR */}
+        <DataPrivacyCard />
+
         {/* Sample Data Manager - Enhanced with per-section deletion */}
         <SampleDataManager />
         {/* Admin Section - Only visible for admins */}
