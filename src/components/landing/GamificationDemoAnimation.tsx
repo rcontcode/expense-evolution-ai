@@ -1,21 +1,25 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Star, Flame, Target, Zap, Medal, Award, TrendingUp, Check } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Step = "idle" | "xp" | "streak" | "achievements" | "complete";
 
-const achievements = [
-  { icon: Star, label: "Primera Semana", xp: 100, color: "from-amber-400 to-yellow-500", unlocked: true },
-  { icon: Flame, label: "Racha 7 días", xp: 250, color: "from-orange-400 to-red-500", unlocked: true },
-  { icon: Target, label: "Meta Cumplida", xp: 500, color: "from-emerald-400 to-green-500", unlocked: true },
-  { icon: Medal, label: "Inversor Novato", xp: 750, color: "from-blue-400 to-cyan-500", unlocked: false },
+const getAchievements = (language: string) => [
+  { icon: Star, label: language === 'es' ? "Primera Semana" : "First Week", xp: 100, color: "from-amber-400 to-yellow-500", unlocked: true },
+  { icon: Flame, label: language === 'es' ? "Racha 7 días" : "7-Day Streak", xp: 250, color: "from-orange-400 to-red-500", unlocked: true },
+  { icon: Target, label: language === 'es' ? "Meta Cumplida" : "Goal Achieved", xp: 500, color: "from-emerald-400 to-green-500", unlocked: true },
+  { icon: Medal, label: language === 'es' ? "Inversor Novato" : "Beginner Investor", xp: 750, color: "from-blue-400 to-cyan-500", unlocked: false },
 ];
 
 export function GamificationDemoAnimation() {
+  const { language } = useLanguage();
   const [step, setStep] = useState<Step>("idle");
   const [xp, setXp] = useState(0);
   const [level, setLevel] = useState(1);
   const [achievementIndex, setAchievementIndex] = useState(0);
+
+  const achievements = getAchievements(language);
 
   useEffect(() => {
     const sequence = () => {
@@ -83,7 +87,7 @@ export function GamificationDemoAnimation() {
 
           <div className="absolute top-8 inset-x-0 h-12 bg-gradient-to-r from-amber-500 to-orange-600 flex items-center justify-center z-10">
             <Trophy className="w-4 h-4 text-white mr-2" />
-            <span className="text-white font-bold text-sm">Gamificación</span>
+            <span className="text-white font-bold text-sm">{language === 'es' ? 'Gamificación' : 'Gamification'}</span>
           </div>
 
           <div className="pt-20 px-3 h-full flex flex-col">
@@ -103,7 +107,7 @@ export function GamificationDemoAnimation() {
                   >
                     <Trophy className="w-10 h-10 text-white" />
                   </motion.div>
-                  <p className="text-sm font-medium text-slate-600">Cargando logros...</p>
+                  <p className="text-sm font-medium text-slate-600">{language === 'es' ? 'Cargando logros...' : 'Loading achievements...'}</p>
                 </motion.div>
               )}
 
@@ -127,8 +131,8 @@ export function GamificationDemoAnimation() {
                           <span className="text-lg font-black text-white">{level}</span>
                         </div>
                         <div>
-                          <p className="text-[10px] text-amber-100">Nivel</p>
-                          <p className="text-sm font-bold text-white">Explorador</p>
+                          <p className="text-[10px] text-amber-100">{language === 'es' ? 'Nivel' : 'Level'}</p>
+                          <p className="text-sm font-bold text-white">{language === 'es' ? 'Explorador' : 'Explorer'}</p>
                         </div>
                       </div>
                       <div className="text-right">
@@ -143,7 +147,7 @@ export function GamificationDemoAnimation() {
                         className="h-full bg-white rounded-full"
                       />
                     </div>
-                    <p className="text-[9px] text-amber-100 mt-1 text-right">{xp % 500}/500 para nivel {level + 1}</p>
+                    <p className="text-[9px] text-amber-100 mt-1 text-right">{xp % 500}/500 {language === 'es' ? 'para nivel' : 'to level'} {level + 1}</p>
                   </motion.div>
 
                   {/* Streak Card */}
@@ -162,12 +166,12 @@ export function GamificationDemoAnimation() {
                           <Flame className="w-6 h-6 text-white" />
                         </motion.div>
                         <div className="flex-1">
-                          <p className="text-xs text-slate-500">Racha Actual</p>
-                          <p className="text-2xl font-black text-slate-800">14 días</p>
+                          <p className="text-xs text-slate-500">{language === 'es' ? 'Racha Actual' : 'Current Streak'}</p>
+                          <p className="text-2xl font-black text-slate-800">{language === 'es' ? '14 días' : '14 days'}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-[10px] text-slate-400">Mejor racha</p>
-                          <p className="text-sm font-bold text-orange-500">21 días</p>
+                          <p className="text-[10px] text-slate-400">{language === 'es' ? 'Mejor racha' : 'Best streak'}</p>
+                          <p className="text-sm font-bold text-orange-500">{language === 'es' ? '21 días' : '21 days'}</p>
                         </div>
                       </div>
                     </motion.div>
@@ -181,7 +185,7 @@ export function GamificationDemoAnimation() {
                       className="flex-1"
                     >
                       <p className="text-[10px] text-slate-500 mb-2 flex items-center gap-1">
-                        <Award className="w-3 h-3" /> Logros Recientes
+                        <Award className="w-3 h-3" /> {language === 'es' ? 'Logros Recientes' : 'Recent Achievements'}
                       </p>
                       <div className="grid grid-cols-2 gap-2">
                         {achievements.slice(0, achievementIndex).map((ach, i) => {
@@ -219,7 +223,7 @@ export function GamificationDemoAnimation() {
                     >
                       <div className="flex items-center justify-center gap-2">
                         <Zap className="w-4 h-4 text-yellow-300" />
-                        <span className="text-sm font-bold text-white">¡Subiste de Nivel!</span>
+                        <span className="text-sm font-bold text-white">{language === 'es' ? '¡Subiste de Nivel!' : 'Level Up!'}</span>
                         <Zap className="w-4 h-4 text-yellow-300" />
                       </div>
                     </motion.div>
@@ -241,7 +245,7 @@ export function GamificationDemoAnimation() {
               exit={{ opacity: 0 }}
               className="absolute -right-4 top-1/3 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-amber-600 border border-amber-100"
             >
-              🏆 Logros desbloqueables
+              🏆 {language === 'es' ? 'Logros desbloqueables' : 'Unlockable achievements'}
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -250,7 +254,7 @@ export function GamificationDemoAnimation() {
               transition={{ delay: 0.2 }}
               className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-orange-600 border border-orange-100"
             >
-              🔥 Rachas motivadoras
+              🔥 {language === 'es' ? 'Rachas motivadoras' : 'Motivating streaks'}
             </motion.div>
           </>
         )}
