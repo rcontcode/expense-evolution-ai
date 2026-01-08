@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  AlertCircle, 
   FileWarning, 
   Camera, 
   Users, 
   ArrowRight,
   Sparkles,
   CheckCircle2,
-  Zap
+  Zap,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -30,9 +30,6 @@ interface NextAction {
   message: { es: string; en: string };
   actionLabel: { es: string; en: string };
   path: string;
-  color: string;
-  bgColor: string;
-  borderColor: string;
 }
 
 export function NextActionBanner({ 
@@ -53,14 +50,11 @@ export function NextActionBanner({
         priority: 'high',
         icon: Camera,
         message: {
-          es: `Tienes ${pendingDocuments} documento${pendingDocuments > 1 ? 's' : ''} sin clasificar`,
-          en: `You have ${pendingDocuments} unclassified document${pendingDocuments > 1 ? 's' : ''}`
+          es: `${pendingDocuments} documento${pendingDocuments > 1 ? 's' : ''} sin clasificar`,
+          en: `${pendingDocuments} unclassified document${pendingDocuments > 1 ? 's' : ''}`
         },
-        actionLabel: { es: 'Clasificar Ahora', en: 'Classify Now' },
-        path: '/chaos',
-        color: 'text-amber-600 dark:text-amber-400',
-        bgColor: 'bg-amber-50 dark:bg-amber-950/30',
-        borderColor: 'border-amber-300 dark:border-amber-700'
+        actionLabel: { es: 'Clasificar', en: 'Classify' },
+        path: '/chaos'
       };
     }
 
@@ -71,14 +65,11 @@ export function NextActionBanner({
         priority: 'medium',
         icon: FileWarning,
         message: {
-          es: `${incompleteExpenses} gasto${incompleteExpenses > 1 ? 's' : ''} necesita${incompleteExpenses > 1 ? 'n' : ''} información`,
-          en: `${incompleteExpenses} expense${incompleteExpenses > 1 ? 's' : ''} need${incompleteExpenses === 1 ? 's' : ''} information`
+          es: `${incompleteExpenses} gasto${incompleteExpenses > 1 ? 's' : ''} incompleto${incompleteExpenses > 1 ? 's' : ''}`,
+          en: `${incompleteExpenses} incomplete expense${incompleteExpenses > 1 ? 's' : ''}`
         },
         actionLabel: { es: 'Completar', en: 'Complete' },
-        path: '/expenses?incomplete=true',
-        color: 'text-blue-600 dark:text-blue-400',
-        bgColor: 'bg-blue-50 dark:bg-blue-950/30',
-        borderColor: 'border-blue-300 dark:border-blue-700'
+        path: '/expenses?incomplete=true'
       };
     }
 
@@ -89,30 +80,28 @@ export function NextActionBanner({
         priority: 'low',
         icon: Users,
         message: {
-          es: 'Agrega tu primer cliente para organizar mejor',
-          en: 'Add your first client to organize better'
+          es: 'Agrega tu primer cliente',
+          en: 'Add your first client'
         },
-        actionLabel: { es: 'Agregar Cliente', en: 'Add Client' },
-        path: '/clients',
-        color: 'text-purple-600 dark:text-purple-400',
-        bgColor: 'bg-purple-50 dark:bg-purple-950/30',
-        borderColor: 'border-purple-300 dark:border-purple-700'
+        actionLabel: { es: 'Agregar', en: 'Add' },
+        path: '/clients'
       };
     }
 
     return null;
   }, [pendingDocuments, incompleteExpenses, totalClients]);
 
-  // All good - show success state briefly or nothing
+  // All good - show compact success state
   if (!nextAction) {
     return (
       <div className={cn(
         "flex items-center justify-center gap-2 py-2 px-4 rounded-lg",
-        "bg-success/10 text-success border border-success/20",
+        "bg-success/5 text-success/80 border border-success/10",
+        "text-sm",
         className
       )}>
         <CheckCircle2 className="h-4 w-4" />
-        <span className="text-sm font-medium">
+        <span className="font-medium">
           {language === 'es' ? '¡Todo al día!' : 'All caught up!'}
         </span>
       </div>
@@ -121,58 +110,80 @@ export function NextActionBanner({
 
   const Icon = nextAction.icon;
   const isHighPriority = nextAction.priority === 'high';
+  const isMediumPriority = nextAction.priority === 'medium';
+
+  // Color schemes based on priority
+  const colorScheme = isHighPriority 
+    ? {
+        bg: 'bg-amber-500/10 dark:bg-amber-500/15',
+        border: 'border-amber-500/30',
+        text: 'text-amber-700 dark:text-amber-400',
+        iconBg: 'bg-amber-500/20',
+        button: 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-500/20'
+      }
+    : isMediumPriority
+    ? {
+        bg: 'bg-blue-500/10 dark:bg-blue-500/15',
+        border: 'border-blue-500/30',
+        text: 'text-blue-700 dark:text-blue-400',
+        iconBg: 'bg-blue-500/20',
+        button: 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20'
+      }
+    : {
+        bg: 'bg-purple-500/10 dark:bg-purple-500/15',
+        border: 'border-purple-500/30',
+        text: 'text-purple-700 dark:text-purple-400',
+        iconBg: 'bg-purple-500/20',
+        button: 'bg-purple-600 hover:bg-purple-700 text-white shadow-purple-500/20'
+      };
 
   return (
     <div className={cn(
-      "relative flex items-center justify-between gap-4 p-4 rounded-xl border-2 transition-all",
-      nextAction.bgColor,
-      nextAction.borderColor,
-      isHighPriority && "animate-subtle-glow",
+      "relative flex items-center justify-between gap-4 py-3 px-4 rounded-xl border transition-all",
+      colorScheme.bg,
+      colorScheme.border,
+      isHighPriority && "animate-subtle-glow shadow-md",
       className
     )}>
       {/* Icon & Message */}
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div className={cn(
-          "flex items-center justify-center w-10 h-10 rounded-full",
-          nextAction.bgColor,
-          "border-2",
-          nextAction.borderColor,
+          "flex items-center justify-center w-9 h-9 rounded-lg shrink-0",
+          colorScheme.iconBg,
           isHighPriority && "animate-pulse"
         )}>
-          <Icon className={cn("h-5 w-5", nextAction.color)} />
+          {isHighPriority ? (
+            <AlertTriangle className={cn("h-5 w-5", colorScheme.text)} />
+          ) : (
+            <Icon className={cn("h-5 w-5", colorScheme.text)} />
+          )}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            {isHighPriority && (
-              <Zap className="h-4 w-4 text-amber-500 animate-pulse" />
-            )}
-            <p className={cn("font-semibold truncate", nextAction.color)}>
-              {nextAction.message[language]}
-            </p>
-          </div>
+          <p className={cn("font-semibold text-sm truncate", colorScheme.text)}>
+            {nextAction.message[language]}
+          </p>
           <p className="text-xs text-muted-foreground">
-            {language === 'es' ? 'Acción recomendada' : 'Recommended action'}
+            {isHighPriority 
+              ? (language === 'es' ? 'Acción prioritaria' : 'Priority action')
+              : (language === 'es' ? 'Sugerencia' : 'Suggestion')
+            }
           </p>
         </div>
       </div>
 
       {/* Action Button */}
       <Button
+        size="sm"
         onClick={() => navigate(nextAction.path)}
         className={cn(
-          "shrink-0 shadow-md",
+          "shrink-0 shadow-md font-semibold",
+          colorScheme.button,
           isHighPriority && "animate-guide-pulse"
         )}
       >
-        <Sparkles className="h-4 w-4 mr-2" />
         {nextAction.actionLabel[language]}
-        <ArrowRight className="h-4 w-4 ml-2" />
+        <ArrowRight className="h-4 w-4 ml-1.5" />
       </Button>
-
-      {/* Subtle glow effect for high priority */}
-      {isHighPriority && (
-        <div className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-amber-500/10 via-transparent to-amber-500/10 blur-xl" />
-      )}
     </div>
   );
 }
