@@ -25,7 +25,7 @@ export interface TaxSummary {
   }[];
 }
 
-// HST/GST rates by province (default to Ontario 13%)
+// HST/GST rates by province (Canada)
 export const HST_GST_RATES: Record<string, number> = {
   ON: 0.13,  // Ontario HST
   BC: 0.12,  // BC PST+GST
@@ -42,10 +42,13 @@ export const HST_GST_RATES: Record<string, number> = {
   YT: 0.05,  // Yukon GST
 };
 
+// Chile: IVA rate (19% uniform across all regions)
+export const CHILE_IVA_RATE = 0.19;
+
 export const DEFAULT_HST_RATE = 0.13; // Ontario default
 
-// Tasas de deducción basadas en CRA (Canada Revenue Agency)
-export const TAX_DEDUCTION_RULES: TaxDeductionRule[] = [
+// Canadian CRA deduction rules
+export const TAX_DEDUCTION_RULES_CA: TaxDeductionRule[] = [
   {
     category: 'meals',
     deductionRate: 0.5,
@@ -111,7 +114,101 @@ export const TAX_DEDUCTION_RULES: TaxDeductionRule[] = [
   },
 ];
 
-export const useTaxCalculations = (expenses: any[], hstRate: number = DEFAULT_HST_RATE) => {
+// Chilean SII deduction rules
+export const TAX_DEDUCTION_RULES_CL: TaxDeductionRule[] = [
+  {
+    category: 'meals',
+    deductionRate: 0.0, // Not deductible in Chile unless for employees
+    description: 'Alimentación: No deducible (excepto colaciones empleados)',
+    source: 'SII - Gastos Rechazados',
+    sourceUrl: 'https://www.sii.cl/preguntas_frecuentes/renta/001_002_0574.htm',
+  },
+  {
+    category: 'travel',
+    deductionRate: 1.0,
+    description: 'Viajes de negocio: 100% deducible con respaldo',
+    source: 'SII - Gastos Necesarios',
+    sourceUrl: 'https://www.sii.cl/preguntas_frecuentes/renta/001_002_0560.htm',
+  },
+  {
+    category: 'equipment',
+    deductionRate: 1.0,
+    description: 'Equipos: 100% deducible (depreciación según tabla SII)',
+    source: 'SII - Depreciación',
+    sourceUrl: 'https://www.sii.cl/valores_y_fechas/tabla_702.htm',
+  },
+  {
+    category: 'software',
+    deductionRate: 1.0,
+    description: 'Software y suscripciones: 100% deducible',
+    source: 'SII - Gastos Necesarios',
+    sourceUrl: 'https://www.sii.cl/preguntas_frecuentes/renta/001_002_0560.htm',
+  },
+  {
+    category: 'office_supplies',
+    deductionRate: 1.0,
+    description: 'Suministros de oficina: 100% deducible',
+    source: 'SII - Gastos Necesarios',
+    sourceUrl: 'https://www.sii.cl/preguntas_frecuentes/renta/001_002_0560.htm',
+  },
+  {
+    category: 'utilities',
+    deductionRate: 1.0,
+    description: 'Servicios básicos (uso comercial): 100% deducible',
+    source: 'SII - Gastos Necesarios',
+    sourceUrl: 'https://www.sii.cl/preguntas_frecuentes/renta/001_002_0560.htm',
+  },
+  {
+    category: 'professional_services',
+    deductionRate: 1.0,
+    description: 'Honorarios profesionales: 100% deducible',
+    source: 'SII - Honorarios',
+    sourceUrl: 'https://www.sii.cl/preguntas_frecuentes/renta/001_002_0666.htm',
+  },
+  {
+    category: 'home_office',
+    deductionRate: 0.5, // Only proportional to business use
+    description: 'Oficina en casa: 50% deducible (proporcional uso comercial)',
+    source: 'SII - Gastos Proporcionales',
+    sourceUrl: 'https://www.sii.cl/preguntas_frecuentes/renta/001_002_0560.htm',
+  },
+  {
+    category: 'mileage',
+    deductionRate: 1.0,
+    description: 'Vehículo: Gastos reales con respaldo (combustible, mantención)',
+    source: 'SII - Gastos de Vehículo',
+    sourceUrl: 'https://www.sii.cl/preguntas_frecuentes/renta/001_002_0560.htm',
+  },
+  {
+    category: 'representation',
+    deductionRate: 0.01, // 1% of gross income limit
+    description: 'Gastos de representación: Límite 1% de ingresos brutos',
+    source: 'SII - Gastos de Representación',
+    sourceUrl: 'https://www.sii.cl/preguntas_frecuentes/renta/001_002_0574.htm',
+  },
+];
+
+// Legacy export for backwards compatibility
+export const TAX_DEDUCTION_RULES = TAX_DEDUCTION_RULES_CA;
+
+export const getTaxDeductionRules = (country: string = 'CA'): TaxDeductionRule[] => {
+  return country === 'CL' ? TAX_DEDUCTION_RULES_CL : TAX_DEDUCTION_RULES_CA;
+};
+
+export const getTaxRate = (country: string, province: string): number => {
+  if (country === 'CL') {
+    return CHILE_IVA_RATE;
+  }
+  return HST_GST_RATES[province] || DEFAULT_HST_RATE;
+};
+
+export const useTaxCalculations = (
+  expenses: any[], 
+  hstRate: number = DEFAULT_HST_RATE,
+  country: string = 'CA'
+) => {
+  const taxRules = getTaxDeductionRules(country);
+
   const taxSummary = useMemo((): TaxSummary => {
     let totalExpenses = 0;
     let deductibleAmount = 0;
@@ -126,41 +223,35 @@ export const useTaxCalculations = (expenses: any[], hstRate: number = DEFAULT_HS
       const amount = parseFloat(expense.amount.toString());
       totalExpenses += amount;
 
-      // Calculate HST/GST from the total (assuming prices include tax)
-      // Formula: HST = Total - (Total / (1 + rate))
-      const hstGstInAmount = amount - (amount / (1 + hstRate));
+      // Calculate HST/GST/IVA from the total (assuming prices include tax)
+      const taxInAmount = amount - (amount / (1 + hstRate));
 
-      // Calcular deducción según categoría y estado
       if (expense.status === 'reimbursable') {
         reimbursableAmount += amount;
-        // Reimbursable expenses - no ITC claim (client pays)
       } else if (expense.status === 'deductible') {
-        const rule = TAX_DEDUCTION_RULES.find((r) => r.category === expense.category);
+        const rule = taxRules.find((r) => r.category === expense.category);
         const rate = rule?.deductionRate || 1.0;
         const deductible = amount * rate;
         
         deductibleAmount += deductible;
         nonDeductibleAmount += amount - deductible;
         
-        // ITC is claimable at the same rate as expense deduction
-        const itcForExpense = hstGstInAmount * rate;
-        hstGstPaid += hstGstInAmount;
+        const itcForExpense = taxInAmount * rate;
+        hstGstPaid += taxInAmount;
         itcClaimable += itcForExpense;
 
-        // Agregar a breakdown por categoría
         const category = expense.category || 'other';
         const existing = categoryMap.get(category) || { total: 0, deductible: 0, rate, hstGst: 0, itc: 0 };
         categoryMap.set(category, {
           total: existing.total + amount,
           deductible: existing.deductible + deductible,
           rate,
-          hstGst: existing.hstGst + hstGstInAmount,
+          hstGst: existing.hstGst + taxInAmount,
           itc: existing.itc + itcForExpense,
         });
       } else {
         nonDeductibleAmount += amount;
-        // Pending/other status - track HST but no ITC until classified
-        hstGstPaid += hstGstInAmount;
+        hstGstPaid += taxInAmount;
       }
     });
 
@@ -178,7 +269,12 @@ export const useTaxCalculations = (expenses: any[], hstRate: number = DEFAULT_HS
       itcClaimable,
       categoryBreakdown,
     };
-  }, [expenses, hstRate]);
+  }, [expenses, hstRate, taxRules]);
 
-  return { taxSummary, taxRules: TAX_DEDUCTION_RULES, hstRates: HST_GST_RATES };
+  return { 
+    taxSummary, 
+    taxRules, 
+    hstRates: HST_GST_RATES,
+    ivaRate: CHILE_IVA_RATE 
+  };
 };
