@@ -11,51 +11,52 @@ import { ContractsDemoAnimation } from "./ContractsDemoAnimation";
 import { FIREDemoAnimation } from "./FIREDemoAnimation";
 import { EducationDemoAnimation } from "./EducationDemoAnimation";
 import { TaxOptimizerDemoAnimation } from "./TaxOptimizerDemoAnimation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const demos = [
+const getDemos = (language: string) => [
   { 
     id: "receipt", 
-    title: "Captura Inteligente", 
-    subtitle: "OCR Smart extrae datos automáticamente",
+    title: language === 'es' ? "Captura Inteligente" : "Smart Capture", 
+    subtitle: language === 'es' ? "OCR Smart extrae datos automáticamente" : "Smart OCR extracts data automatically",
     icon: Camera,
     color: "from-cyan-500 to-blue-600",
     component: ReceiptDemoAnimation 
   },
   { 
     id: "networth", 
-    title: "Patrimonio Neto", 
-    subtitle: "Solo activos que generan ingreso",
+    title: language === 'es' ? "Patrimonio Neto" : "Net Worth", 
+    subtitle: language === 'es' ? "Solo activos que generan ingreso" : "Only income-generating assets",
     icon: Wallet,
     color: "from-emerald-500 to-teal-600",
     component: NetWorthDemoAnimation 
   },
-{ 
+  { 
     id: "dashboard", 
-    title: "Analytics Avanzado", 
-    subtitle: "9+ visualizaciones con predicciones inteligentes",
+    title: language === 'es' ? "Analytics Avanzado" : "Advanced Analytics", 
+    subtitle: language === 'es' ? "9+ visualizaciones con predicciones inteligentes" : "9+ visualizations with smart predictions",
     icon: BarChart3,
     color: "from-violet-500 to-purple-600",
     component: DashboardDemoAnimation 
   },
   { 
     id: "gamification", 
-    title: "Gamificación", 
-    subtitle: "XP, niveles, logros y rachas",
+    title: language === 'es' ? "Gamificación" : "Gamification", 
+    subtitle: language === 'es' ? "XP, niveles, logros y rachas" : "XP, levels, achievements and streaks",
     icon: Trophy,
     color: "from-amber-500 to-orange-600",
     component: GamificationDemoAnimation 
   },
   { 
     id: "contracts", 
-    title: "Contratos Smart", 
-    subtitle: "Extracción automática de términos",
+    title: language === 'es' ? "Contratos Smart" : "Smart Contracts", 
+    subtitle: language === 'es' ? "Extracción automática de términos" : "Automatic term extraction",
     icon: FileText,
     color: "from-indigo-500 to-blue-600",
     component: ContractsDemoAnimation 
   },
   { 
     id: "fire", 
-    title: "Calculadora FIRE", 
+    title: language === 'es' ? "Calculadora FIRE" : "FIRE Calculator", 
     subtitle: "Financial Independence Retire Early",
     icon: Flame,
     color: "from-orange-500 to-red-600",
@@ -63,8 +64,8 @@ const demos = [
   },
   { 
     id: "education", 
-    title: "Educación Financiera", 
-    subtitle: "Tracking de libros y lecciones",
+    title: language === 'es' ? "Educación Financiera" : "Financial Education", 
+    subtitle: language === 'es' ? "Tracking de libros y lecciones" : "Book and lesson tracking",
     icon: GraduationCap,
     color: "from-green-500 to-emerald-600",
     component: EducationDemoAnimation 
@@ -72,15 +73,15 @@ const demos = [
   { 
     id: "tax", 
     title: "Tax Optimizer Smart", 
-    subtitle: "Maximiza deducciones CRA",
+    subtitle: language === 'es' ? "Maximiza deducciones CRA" : "Maximize CRA deductions",
     icon: Calculator,
     color: "from-cyan-500 to-teal-600",
     component: TaxOptimizerDemoAnimation 
   },
   { 
     id: "mileage", 
-    title: "Kilometraje CRA", 
-    subtitle: "Cálculo automático de deducciones",
+    title: language === 'es' ? "Kilometraje CRA" : "CRA Mileage", 
+    subtitle: language === 'es' ? "Cálculo automático de deducciones" : "Automatic deduction calculation",
     icon: Car,
     color: "from-blue-500 to-indigo-600",
     component: MileageDemoAnimation 
@@ -88,7 +89,7 @@ const demos = [
   { 
     id: "banking", 
     title: "Smart Banking", 
-    subtitle: "Análisis inteligente de estados de cuenta",
+    subtitle: language === 'es' ? "Análisis inteligente de estados de cuenta" : "Smart bank statement analysis",
     icon: Building2,
     color: "from-rose-500 to-pink-600",
     component: BankingDemoAnimation 
@@ -96,8 +97,11 @@ const demos = [
 ];
 
 export function FeatureDemosCarousel() {
+  const { language } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
+
+  const demos = getDemos(language);
 
   // Auto-rotation - 15s optimal for interactive demos with animations
   useEffect(() => {
@@ -108,7 +112,7 @@ export function FeatureDemosCarousel() {
     }, 15000);
     
     return () => clearInterval(timer);
-  }, [autoPlay]);
+  }, [autoPlay, demos.length]);
 
   const goTo = (index: number) => {
     setCurrentIndex(index);
@@ -127,6 +131,8 @@ export function FeatureDemosCarousel() {
 
   const CurrentDemo = demos[currentIndex].component;
   const CurrentIcon = demos[currentIndex].icon;
+
+  const swipeHint = language === 'es' ? 'Desliza para ver más demos' : 'Swipe to see more demos';
 
   return (
     <div className="relative">
@@ -209,7 +215,7 @@ export function FeatureDemosCarousel() {
 
       {/* Mobile swipe hint */}
       <p className="text-center text-[10px] text-slate-400 mt-4 md:hidden">
-        Desliza para ver más demos
+        {swipeHint}
       </p>
     </div>
   );

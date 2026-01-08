@@ -5,110 +5,155 @@ import {
   Receipt, Calculator, Clock, Brain, Wallet,
   Users, Building2, Sparkles, ChevronLeft, ChevronRight
 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
-const categories = [
+const getCategories = (language: string) => [
   {
     id: 'organization',
-    name: 'Organización',
+    name: language === 'es' ? 'Organización' : 'Organization',
     icon: Receipt,
     emoji: '📁',
     color: 'from-rose-500 to-pink-600',
     glow: 'shadow-rose-500/40',
-    painPoints: [
+    painPoints: language === 'es' ? [
       { before: '📄 Recibos perdidos en cajones', after: '📱 Escanea y organiza en segundos' },
       { before: '😵 Facturas sin clasificar', after: '🤖 Categorización automática' },
       { before: '📋 Documentos duplicados', after: '🔍 Detección inteligente' },
       { before: '⏰ Contratos vencidos sin aviso', after: '🔔 Alertas de renovación' },
       { before: '🗂️ Información dispersa', after: '📊 Dashboard unificado' },
       { before: '🔎 Buscar facturas = horas', after: '⚡ Búsqueda instantánea' },
+    ] : [
+      { before: '📄 Receipts lost in drawers', after: '📱 Scan and organize in seconds' },
+      { before: '😵 Unclassified invoices', after: '🤖 Automatic categorization' },
+      { before: '📋 Duplicate documents', after: '🔍 Smart detection' },
+      { before: '⏰ Expired contracts without notice', after: '🔔 Renewal alerts' },
+      { before: '🗂️ Scattered information', after: '📊 Unified dashboard' },
+      { before: '🔎 Searching invoices = hours', after: '⚡ Instant search' },
     ]
   },
   {
     id: 'time',
-    name: 'Tiempo',
+    name: language === 'es' ? 'Tiempo' : 'Time',
     icon: Clock,
     emoji: '⏱️',
     color: 'from-amber-500 to-orange-600',
     glow: 'shadow-amber-500/40',
-    painPoints: [
+    painPoints: language === 'es' ? [
       { before: '📊 Horas en hojas de cálculo', after: '✨ Reportes automáticos' },
       { before: '🏦 Conciliación bancaria manual', after: '🔗 Match automático' },
       { before: '🚗 Kilometraje a mano', after: '📍 GPS + cálculo automático' },
       { before: '📅 Preparar impuestos = semanas', after: '👆 T2125 listo en 1 click' },
       { before: '👀 Revisar gastos uno por uno', after: '🚀 Procesamiento batch inteligente' },
       { before: '✏️ Actualizar presupuestos manual', after: '🔄 Sync en tiempo real' },
+    ] : [
+      { before: '📊 Hours in spreadsheets', after: '✨ Automatic reports' },
+      { before: '🏦 Manual bank reconciliation', after: '🔗 Automatic matching' },
+      { before: '🚗 Manual mileage tracking', after: '📍 GPS + auto calculation' },
+      { before: '📅 Tax prep = weeks', after: '👆 T2125 ready in 1 click' },
+      { before: '👀 Review expenses one by one', after: '🚀 Smart batch processing' },
+      { before: '✏️ Update budgets manually', after: '🔄 Real-time sync' },
     ]
   },
   {
     id: 'money',
-    name: 'Dinero',
+    name: language === 'es' ? 'Dinero' : 'Money',
     icon: Wallet,
     emoji: '💰',
     color: 'from-emerald-500 to-teal-600',
     glow: 'shadow-emerald-500/40',
-    painPoints: [
+    painPoints: language === 'es' ? [
       { before: '💸 Deducciones fiscales olvidadas', after: '💡 Sugerencias automáticas' },
       { before: '🧾 Reembolsos no reclamados', after: '📋 Tracking por proyecto' },
       { before: '❓ Sin visibilidad del cash flow', after: '📈 Proyecciones predictivas' },
       { before: '💳 Suscripciones olvidadas', after: '🔔 Detector de suscripciones' },
       { before: '😰 Deudas sin estrategia', after: '🎯 Plan avalanche/snowball' },
       { before: '🐌 Ahorros que no crecen', after: '🎯 Metas SMART visuales' },
+    ] : [
+      { before: '💸 Forgotten tax deductions', after: '💡 Automatic suggestions' },
+      { before: '🧾 Unclaimed reimbursements', after: '📋 Project tracking' },
+      { before: '❓ No cash flow visibility', after: '📈 Predictive projections' },
+      { before: '💳 Forgotten subscriptions', after: '🔔 Subscription detector' },
+      { before: '😰 Debt without strategy', after: '🎯 Avalanche/snowball plan' },
+      { before: '🐌 Savings not growing', after: '🎯 Visual SMART goals' },
     ]
   },
   {
     id: 'clients',
-    name: 'Clientes',
+    name: language === 'es' ? 'Clientes' : 'Clients',
     icon: Users,
     emoji: '👥',
     color: 'from-blue-500 to-indigo-600',
     glow: 'shadow-blue-500/40',
-    painPoints: [
+    painPoints: language === 'es' ? [
       { before: '🔀 Confusión entre proyectos', after: '📂 Separación clara por cliente' },
       { before: '🤷 No saber cuánto cobrar', after: '💵 Rentabilidad en tiempo real' },
       { before: '📁 Contratos perdidos', after: '🔍 Análisis automático de términos' },
       { before: '⏳ Clientes con pagos atrasados', after: '🔔 Alertas de cobro' },
       { before: '✍️ Reportes manuales', after: '📤 Exportación profesional' },
       { before: '❓ Sin saber quién es rentable', after: '📊 Analytics por cliente' },
+    ] : [
+      { before: '🔀 Confusion between projects', after: '📂 Clear client separation' },
+      { before: '🤷 Not knowing what to charge', after: '💵 Real-time profitability' },
+      { before: '📁 Lost contracts', after: '🔍 Automatic term analysis' },
+      { before: '⏳ Clients with late payments', after: '🔔 Collection alerts' },
+      { before: '✍️ Manual reports', after: '📤 Professional export' },
+      { before: '❓ Not knowing who is profitable', after: '📊 Client analytics' },
     ]
   },
   {
     id: 'taxes',
-    name: 'Impuestos',
+    name: language === 'es' ? 'Impuestos' : 'Taxes',
     icon: Building2,
     emoji: '🏛️',
     color: 'from-violet-500 to-purple-600',
     glow: 'shadow-violet-500/40',
-    painPoints: [
+    painPoints: language === 'es' ? [
       { before: '😱 Estrés en época de taxes', after: '😌 Preparación continua' },
       { before: '🤔 No saber cuánto reservar', after: '🧮 Estimador en tiempo real' },
       { before: '📆 Fechas límite olvidadas', after: '🗓️ Calendario fiscal CRA' },
       { before: '🧮 GST/HST calculado a mano', after: '⚡ Cálculo automático' },
       { before: '❌ Reportes incompatibles', after: '✅ 100% CRA Compliant' },
       { before: '💭 Sin optimizar impuestos', after: '💎 Tips RRSP/TFSA' },
+    ] : [
+      { before: '😱 Tax season stress', after: '😌 Continuous preparation' },
+      { before: '🤔 Not knowing how much to save', after: '🧮 Real-time estimator' },
+      { before: '📆 Forgotten deadlines', after: '🗓️ CRA tax calendar' },
+      { before: '🧮 GST/HST calculated manually', after: '⚡ Automatic calculation' },
+      { before: '❌ Incompatible reports', after: '✅ 100% CRA Compliant' },
+      { before: '💭 Not optimizing taxes', after: '💎 RRSP/TFSA tips' },
     ]
   },
   {
     id: 'growth',
-    name: 'Crecimiento',
+    name: language === 'es' ? 'Crecimiento' : 'Growth',
     icon: Sparkles,
     emoji: '🚀',
     color: 'from-cyan-500 to-sky-600',
     glow: 'shadow-cyan-500/40',
-    painPoints: [
+    painPoints: language === 'es' ? [
       { before: '🌫️ Sin claridad financiera', after: '🎯 Dashboard con insights' },
       { before: '🎲 Decisiones por intuición', after: '🧠 Analytics y predicciones Smart' },
       { before: '❓ Net worth desconocido', after: '📊 Tracking de patrimonio' },
       { before: '📚 Sin educación financiera', after: '🎓 Mentoría integrada' },
       { before: '☁️ Metas abstractas', after: '🔥 FIRE calculator' },
       { before: '😔 Hábitos inconsistentes', after: '🎮 Gamificación motivadora' },
+    ] : [
+      { before: '🌫️ No financial clarity', after: '🎯 Dashboard with insights' },
+      { before: '🎲 Decisions by intuition', after: '🧠 Smart analytics & predictions' },
+      { before: '❓ Unknown net worth', after: '📊 Wealth tracking' },
+      { before: '📚 No financial education', after: '🎓 Integrated mentorship' },
+      { before: '☁️ Abstract goals', after: '🔥 FIRE calculator' },
+      { before: '😔 Inconsistent habits', after: '🎮 Motivating gamification' },
     ]
   },
 ];
 
 export function PainPointsSection() {
+  const { language } = useLanguage();
   const [activeCategory, setActiveCategory] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
 
+  const categories = getCategories(language);
   const currentCategory = categories[activeCategory];
 
   // Auto-rotation - 10s optimal for 6 before/after comparisons
@@ -118,13 +163,20 @@ export function PainPointsSection() {
       setActiveCategory((prev) => (prev + 1) % categories.length);
     }, 10000);
     return () => clearInterval(interval);
-  }, [autoPlay]);
+  }, [autoPlay, categories.length]);
 
   const handleCategoryClick = (index: number) => {
     setActiveCategory(index);
     setAutoPlay(false);
     setTimeout(() => setAutoPlay(true), 20000);
   };
+
+  const transformationsText = language === 'es' ? '6 transformaciones que cambiarán tu vida' : '6 transformations that will change your life';
+  const beforeText = language === 'es' ? 'ANTES' : 'BEFORE';
+  const nowText = language === 'es' ? 'AHORA' : 'NOW';
+  const problemsText = language === 'es' ? 'Problemas' : 'Problems';
+  const categoriesText = language === 'es' ? 'Categorías' : 'Categories';
+  const timeSavedText = language === 'es' ? 'Tiempo ahorrado' : 'Time saved';
 
   return (
     <section className="relative py-20 overflow-hidden bg-slate-900">
@@ -206,7 +258,7 @@ export function PainPointsSection() {
             {currentCategory.name}
           </h2>
           <p className="text-slate-400">
-            6 transformaciones que cambiarán tu vida
+            {transformationsText}
           </p>
         </motion.div>
 
@@ -290,7 +342,7 @@ export function PainPointsSection() {
             >
               <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-gradient-to-r from-red-500/20 to-rose-500/20 border-2 border-red-500/40 shadow-lg shadow-red-500/20">
                 <XCircle className="w-6 h-6 text-red-400" />
-                <span className="text-red-400 font-black text-xl tracking-wide">ANTES</span>
+                <span className="text-red-400 font-black text-xl tracking-wide">{beforeText}</span>
                 <span className="text-2xl">😰</span>
               </div>
             </motion.div>
@@ -312,7 +364,7 @@ export function PainPointsSection() {
             >
               <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border-2 border-emerald-500/40 shadow-lg shadow-emerald-500/20">
                 <span className="text-2xl">🎉</span>
-                <span className="text-emerald-400 font-black text-xl tracking-wide">AHORA</span>
+                <span className="text-emerald-400 font-black text-xl tracking-wide">{nowText}</span>
                 <CheckCircle2 className="w-6 h-6 text-emerald-400" />
               </div>
             </motion.div>
@@ -378,9 +430,9 @@ export function PainPointsSection() {
           className="flex flex-wrap justify-center items-center gap-6 md:gap-10 mt-12"
         >
           {[
-            { value: '36', label: 'Problemas', emoji: '🎯' },
-            { value: '6', label: 'Categorías', emoji: '📊' },
-            { value: '∞', label: 'Tiempo ahorrado', emoji: '⏰' },
+            { value: '36', label: problemsText, emoji: '🎯' },
+            { value: '6', label: categoriesText, emoji: '📊' },
+            { value: '∞', label: timeSavedText, emoji: '⏰' },
           ].map((stat) => (
             <motion.div 
               key={stat.label}

@@ -1,6 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { 
   Lightbulb, Camera, Zap, TrendingUp, Building2, FileText, 
   Receipt, GraduationCap, BookOpen, Brain, Flame, PiggyBank,
@@ -9,6 +8,7 @@ import {
   Shield, Clock, Heart, Award
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface WorkflowStep {
   number: string;
@@ -34,11 +34,11 @@ interface Workflow {
   };
 }
 
-const workflows: Workflow[] = [
+const getWorkflows = (language: string): Workflow[] => [
   {
     id: 'expenses',
-    title: 'Gestión de Gastos',
-    subtitle: 'Domina cada peso que sale de tu bolsillo',
+    title: language === 'es' ? 'Gestión de Gastos' : 'Expense Management',
+    subtitle: language === 'es' ? 'Domina cada peso que sale de tu bolsillo' : 'Master every dollar leaving your pocket',
     emoji: '💸',
     colors: {
       primary: 'from-cyan-500 to-blue-500',
@@ -49,31 +49,20 @@ const workflows: Workflow[] = [
       badge: 'bg-cyan-500/20',
       badgeText: 'text-cyan-400'
     },
-    steps: [
-      {
-        number: '01',
-        icon: Camera,
-        title: 'Captura',
-        description: 'Escanea recibos, dicta gastos o importa desde tu banco. EvoFinz hace el resto.'
-      },
-      {
-        number: '02',
-        icon: Zap,
-        title: 'Automatiza',
-        description: 'Categorización automática, detección de suscripciones y alertas inteligentes.'
-      },
-      {
-        number: '03',
-        icon: TrendingUp,
-        title: 'Optimiza',
-        description: 'Visualiza patrones, reduce gastos innecesarios y alcanza tus metas.'
-      }
+    steps: language === 'es' ? [
+      { number: '01', icon: Camera, title: 'Captura', description: 'Escanea recibos, dicta gastos o importa desde tu banco. EvoFinz hace el resto.' },
+      { number: '02', icon: Zap, title: 'Automatiza', description: 'Categorización automática, detección de suscripciones y alertas inteligentes.' },
+      { number: '03', icon: TrendingUp, title: 'Optimiza', description: 'Visualiza patrones, reduce gastos innecesarios y alcanza tus metas.' }
+    ] : [
+      { number: '01', icon: Camera, title: 'Capture', description: 'Scan receipts, dictate expenses or import from your bank. EvoFinz does the rest.' },
+      { number: '02', icon: Zap, title: 'Automate', description: 'Automatic categorization, subscription detection and smart alerts.' },
+      { number: '03', icon: TrendingUp, title: 'Optimize', description: 'Visualize patterns, reduce unnecessary expenses and reach your goals.' }
     ]
   },
   {
     id: 'networth',
-    title: 'Patrimonio Neto',
-    subtitle: 'Construye riqueza como los millonarios',
+    title: language === 'es' ? 'Patrimonio Neto' : 'Net Worth',
+    subtitle: language === 'es' ? 'Construye riqueza como los millonarios' : 'Build wealth like millionaires',
     emoji: '🏆',
     colors: {
       primary: 'from-emerald-500 to-teal-500',
@@ -84,31 +73,20 @@ const workflows: Workflow[] = [
       badge: 'bg-emerald-500/20',
       badgeText: 'text-emerald-400'
     },
-    steps: [
-      {
-        number: '01',
-        icon: Building2,
-        title: 'Registra Activos',
-        description: 'Propiedades, inversiones, ahorros. Distingue activos productivos de pasivos.'
-      },
-      {
-        number: '02',
-        icon: Shield,
-        title: 'Clasifica Deudas',
-        description: 'Deuda buena vs mala. Aprende qué deudas te hacen rico y cuáles te empobrecen.'
-      },
-      {
-        number: '03',
-        icon: Coins,
-        title: 'Crece Tu Riqueza',
-        description: 'Visualiza tu progreso, recibe tips personalizados y multiplica tu patrimonio.'
-      }
+    steps: language === 'es' ? [
+      { number: '01', icon: Building2, title: 'Registra Activos', description: 'Propiedades, inversiones, ahorros. Distingue activos productivos de pasivos.' },
+      { number: '02', icon: Shield, title: 'Clasifica Deudas', description: 'Deuda buena vs mala. Aprende qué deudas te hacen rico y cuáles te empobrecen.' },
+      { number: '03', icon: Coins, title: 'Crece Tu Riqueza', description: 'Visualiza tu progreso, recibe tips personalizados y multiplica tu patrimonio.' }
+    ] : [
+      { number: '01', icon: Building2, title: 'Register Assets', description: 'Properties, investments, savings. Distinguish productive assets from liabilities.' },
+      { number: '02', icon: Shield, title: 'Classify Debts', description: 'Good vs bad debt. Learn which debts make you rich and which make you poor.' },
+      { number: '03', icon: Coins, title: 'Grow Your Wealth', description: 'Visualize your progress, receive personalized tips and multiply your wealth.' }
     ]
   },
   {
     id: 'clients',
-    title: 'Clientes & Proyectos',
-    subtitle: 'Profesionaliza tu negocio freelance',
+    title: language === 'es' ? 'Clientes & Proyectos' : 'Clients & Projects',
+    subtitle: language === 'es' ? 'Profesionaliza tu negocio freelance' : 'Professionalize your freelance business',
     emoji: '👔',
     colors: {
       primary: 'from-violet-500 to-purple-500',
@@ -119,31 +97,20 @@ const workflows: Workflow[] = [
       badge: 'bg-violet-500/20',
       badgeText: 'text-violet-400'
     },
-    steps: [
-      {
-        number: '01',
-        icon: Users,
-        title: 'Gestiona Clientes',
-        description: 'Perfiles completos, historial de pagos, términos de facturación personalizados.'
-      },
-      {
-        number: '02',
-        icon: FolderOpen,
-        title: 'Asigna Gastos',
-        description: 'Vincula cada gasto a su proyecto. Nunca más pierdas un reembolso.'
-      },
-      {
-        number: '03',
-        icon: FileSpreadsheet,
-        title: 'Genera Reportes',
-        description: 'Reportes profesionales de reembolso listos para enviar a tus clientes.'
-      }
+    steps: language === 'es' ? [
+      { number: '01', icon: Users, title: 'Gestiona Clientes', description: 'Perfiles completos, historial de pagos, términos de facturación personalizados.' },
+      { number: '02', icon: FolderOpen, title: 'Asigna Gastos', description: 'Vincula cada gasto a su proyecto. Nunca más pierdas un reembolso.' },
+      { number: '03', icon: FileSpreadsheet, title: 'Genera Reportes', description: 'Reportes profesionales de reembolso listos para enviar a tus clientes.' }
+    ] : [
+      { number: '01', icon: Users, title: 'Manage Clients', description: 'Complete profiles, payment history, customized billing terms.' },
+      { number: '02', icon: FolderOpen, title: 'Assign Expenses', description: 'Link each expense to its project. Never lose a reimbursement again.' },
+      { number: '03', icon: FileSpreadsheet, title: 'Generate Reports', description: 'Professional reimbursement reports ready to send to your clients.' }
     ]
   },
   {
     id: 'taxes',
-    title: 'Impuestos CRA',
-    subtitle: 'Maximiza deducciones, minimiza estrés',
+    title: language === 'es' ? 'Impuestos CRA' : 'CRA Taxes',
+    subtitle: language === 'es' ? 'Maximiza deducciones, minimiza estrés' : 'Maximize deductions, minimize stress',
     emoji: '📋',
     colors: {
       primary: 'from-orange-500 to-amber-500',
@@ -154,31 +121,20 @@ const workflows: Workflow[] = [
       badge: 'bg-orange-500/20',
       badgeText: 'text-orange-400'
     },
-    steps: [
-      {
-        number: '01',
-        icon: Receipt,
-        title: 'Categoriza',
-        description: 'Cada gasto clasificado según reglas del CRA. Soporta auditorías con confianza.'
-      },
-      {
-        number: '02',
-        icon: Calculator,
-        title: 'Deduce',
-        description: 'EvoFinz encuentra deducciones que podrías estar perdiendo. RRSP, TFSA optimizados.'
-      },
-      {
-        number: '03',
-        icon: FileText,
-        title: 'Exporta T2125',
-        description: 'Genera tu formulario T2125 listo para tu contador o declaración personal.'
-      }
+    steps: language === 'es' ? [
+      { number: '01', icon: Receipt, title: 'Categoriza', description: 'Cada gasto clasificado según reglas del CRA. Soporta auditorías con confianza.' },
+      { number: '02', icon: Calculator, title: 'Deduce', description: 'EvoFinz encuentra deducciones que podrías estar perdiendo. RRSP, TFSA optimizados.' },
+      { number: '03', icon: FileText, title: 'Exporta T2125', description: 'Genera tu formulario T2125 listo para tu contador o declaración personal.' }
+    ] : [
+      { number: '01', icon: Receipt, title: 'Categorize', description: 'Each expense classified according to CRA rules. Support audits with confidence.' },
+      { number: '02', icon: Calculator, title: 'Deduct', description: 'EvoFinz finds deductions you might be missing. RRSP, TFSA optimized.' },
+      { number: '03', icon: FileText, title: 'Export T2125', description: 'Generate your T2125 form ready for your accountant or personal filing.' }
     ]
   },
   {
     id: 'education',
-    title: 'Educación Financiera',
-    subtitle: 'Aprende de los mejores mentores',
+    title: language === 'es' ? 'Educación Financiera' : 'Financial Education',
+    subtitle: language === 'es' ? 'Aprende de los mejores mentores' : 'Learn from the best mentors',
     emoji: '📚',
     colors: {
       primary: 'from-rose-500 to-pink-500',
@@ -189,31 +145,20 @@ const workflows: Workflow[] = [
       badge: 'bg-rose-500/20',
       badgeText: 'text-rose-400'
     },
-    steps: [
-      {
-        number: '01',
-        icon: BookOpen,
-        title: 'Lee & Consume',
-        description: 'Trackea libros, cursos y podcasts. Kiyosaki, Rohn, Tracy te guían.'
-      },
-      {
-        number: '02',
-        icon: Brain,
-        title: 'Practica',
-        description: 'Aplica conceptos en tu vida real. El diario financiero captura tus aprendizajes.'
-      },
-      {
-        number: '03',
-        icon: Award,
-        title: 'Domina',
-        description: 'Desbloquea logros, sube de nivel y transforma tu mentalidad de dinero.'
-      }
+    steps: language === 'es' ? [
+      { number: '01', icon: BookOpen, title: 'Lee & Consume', description: 'Trackea libros, cursos y podcasts. Kiyosaki, Rohn, Tracy te guían.' },
+      { number: '02', icon: Brain, title: 'Practica', description: 'Aplica conceptos en tu vida real. El diario financiero captura tus aprendizajes.' },
+      { number: '03', icon: Award, title: 'Domina', description: 'Desbloquea logros, sube de nivel y transforma tu mentalidad de dinero.' }
+    ] : [
+      { number: '01', icon: BookOpen, title: 'Read & Consume', description: 'Track books, courses and podcasts. Kiyosaki, Rohn, Tracy guide you.' },
+      { number: '02', icon: Brain, title: 'Practice', description: 'Apply concepts in your real life. The financial journal captures your learnings.' },
+      { number: '03', icon: Award, title: 'Master', description: 'Unlock achievements, level up and transform your money mindset.' }
     ]
   },
   {
     id: 'fire',
-    title: 'FIRE / Retiro',
-    subtitle: 'Libertad financiera antes de los 65',
+    title: 'FIRE / ' + (language === 'es' ? 'Retiro' : 'Retirement'),
+    subtitle: language === 'es' ? 'Libertad financiera antes de los 65' : 'Financial freedom before 65',
     emoji: '🔥',
     colors: {
       primary: 'from-red-500 to-orange-500',
@@ -224,31 +169,20 @@ const workflows: Workflow[] = [
       badge: 'bg-red-500/20',
       badgeText: 'text-red-400'
     },
-    steps: [
-      {
-        number: '01',
-        icon: PiggyBank,
-        title: 'Ahorra Primero',
-        description: 'Págate a ti primero. Automatiza el ahorro antes de gastar. Streaks y metas.'
-      },
-      {
-        number: '02',
-        icon: LineChart,
-        title: 'Invierte',
-        description: 'Calculadora FIRE personalizada. Lean, Standard o Fat FIRE - tú decides.'
-      },
-      {
-        number: '03',
-        icon: Flame,
-        title: 'Libertad',
-        description: 'Visualiza tu fecha de independencia financiera. Cada día más cerca.'
-      }
+    steps: language === 'es' ? [
+      { number: '01', icon: PiggyBank, title: 'Ahorra Primero', description: 'Págate a ti primero. Automatiza el ahorro antes de gastar. Streaks y metas.' },
+      { number: '02', icon: LineChart, title: 'Invierte', description: 'Calculadora FIRE personalizada. Lean, Standard o Fat FIRE - tú decides.' },
+      { number: '03', icon: Flame, title: 'Libertad', description: 'Visualiza tu fecha de independencia financiera. Cada día más cerca.' }
+    ] : [
+      { number: '01', icon: PiggyBank, title: 'Save First', description: 'Pay yourself first. Automate savings before spending. Streaks and goals.' },
+      { number: '02', icon: LineChart, title: 'Invest', description: 'Personalized FIRE calculator. Lean, Standard or Fat FIRE - you decide.' },
+      { number: '03', icon: Flame, title: 'Freedom', description: 'Visualize your financial independence date. Getting closer every day.' }
     ]
   },
   {
     id: 'mileage',
-    title: 'Kilometraje',
-    subtitle: 'Cada kilómetro es dinero en tu bolsillo',
+    title: language === 'es' ? 'Kilometraje' : 'Mileage',
+    subtitle: language === 'es' ? 'Cada kilómetro es dinero en tu bolsillo' : 'Every kilometer is money in your pocket',
     emoji: '🚗',
     colors: {
       primary: 'from-lime-500 to-green-500',
@@ -259,31 +193,20 @@ const workflows: Workflow[] = [
       badge: 'bg-lime-500/20',
       badgeText: 'text-lime-400'
     },
-    steps: [
-      {
-        number: '01',
-        icon: MapPin,
-        title: 'Registra Rutas',
-        description: 'Autocomplete de direcciones, mapas visuales, historial de viajes frecuentes.'
-      },
-      {
-        number: '02',
-        icon: Calculator,
-        title: 'Calcula Deducción',
-        description: 'Tasa CRA actualizada automáticamente. Ve cuánto ahorras en impuestos.'
-      },
-      {
-        number: '03',
-        icon: Wallet,
-        title: 'Reclama',
-        description: 'Exporta reportes detallados listos para tu declaración de impuestos.'
-      }
+    steps: language === 'es' ? [
+      { number: '01', icon: MapPin, title: 'Registra Rutas', description: 'Autocomplete de direcciones, mapas visuales, historial de viajes frecuentes.' },
+      { number: '02', icon: Calculator, title: 'Calcula Deducción', description: 'Tasa CRA actualizada automáticamente. Ve cuánto ahorras en impuestos.' },
+      { number: '03', icon: Wallet, title: 'Reclama', description: 'Exporta reportes detallados listos para tu declaración de impuestos.' }
+    ] : [
+      { number: '01', icon: MapPin, title: 'Record Routes', description: 'Address autocomplete, visual maps, frequent trip history.' },
+      { number: '02', icon: Calculator, title: 'Calculate Deduction', description: 'CRA rate updated automatically. See how much you save on taxes.' },
+      { number: '03', icon: Wallet, title: 'Claim', description: 'Export detailed reports ready for your tax return.' }
     ]
   },
   {
     id: 'contracts',
-    title: 'Contratos Inteligentes',
-    subtitle: 'EvoFinz lee la letra pequeña por ti',
+    title: language === 'es' ? 'Contratos Inteligentes' : 'Smart Contracts',
+    subtitle: language === 'es' ? 'EvoFinz lee la letra pequeña por ti' : 'EvoFinz reads the fine print for you',
     emoji: '📝',
     colors: {
       primary: 'from-indigo-500 to-blue-500',
@@ -294,34 +217,25 @@ const workflows: Workflow[] = [
       badge: 'bg-indigo-500/20',
       badgeText: 'text-indigo-400'
     },
-    steps: [
-      {
-        number: '01',
-        icon: FileText,
-        title: 'Sube Contrato',
-        description: 'PDF o foto. EvoFinz extrae términos, fechas, montos y cláusulas clave.'
-      },
-      {
-        number: '02',
-        icon: Sparkles,
-        title: 'Análisis Inteligente',
-        description: 'Detecta términos de reembolso, renovaciones automáticas y obligaciones.'
-      },
-      {
-        number: '03',
-        icon: Clock,
-        title: 'Alertas',
-        description: 'Nunca pierdas una fecha límite. Recordatorios antes de renovaciones.'
-      }
+    steps: language === 'es' ? [
+      { number: '01', icon: FileText, title: 'Sube Contrato', description: 'PDF o foto. EvoFinz extrae términos, fechas, montos y cláusulas clave.' },
+      { number: '02', icon: Sparkles, title: 'Análisis Inteligente', description: 'Detecta términos de reembolso, renovaciones automáticas y obligaciones.' },
+      { number: '03', icon: Clock, title: 'Alertas', description: 'Nunca pierdas una fecha límite. Recordatorios antes de renovaciones.' }
+    ] : [
+      { number: '01', icon: FileText, title: 'Upload Contract', description: 'PDF or photo. EvoFinz extracts terms, dates, amounts and key clauses.' },
+      { number: '02', icon: Sparkles, title: 'Smart Analysis', description: 'Detects reimbursement terms, auto-renewals and obligations.' },
+      { number: '03', icon: Clock, title: 'Alerts', description: 'Never miss a deadline. Reminders before renewals.' }
     ]
   }
 ];
 
 export function HowItWorksSection() {
+  const { language } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
   const [direction, setDirection] = useState(1);
 
+  const workflows = getWorkflows(language);
   const currentWorkflow = workflows[currentIndex];
 
   // Auto-rotation - 10s optimal for ~40 words + 3 steps per workflow
@@ -334,7 +248,7 @@ export function HowItWorksSection() {
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [autoPlay]);
+  }, [autoPlay, workflows.length]);
 
   const goTo = (index: number) => {
     setDirection(index > currentIndex ? 1 : -1);
@@ -375,6 +289,11 @@ export function HowItWorksSection() {
     })
   };
 
+  const badgeText = language === 'es' ? '8 Flujos Inteligentes' : '8 Smart Workflows';
+  const titlePart1 = language === 'es' ? 'Cómo Funciona ' : 'How ';
+  const titlePart2 = language === 'es' ? '' : ' Works';
+  const subtitle = language === 'es' ? 'Cada área de tu vida financiera, simplificada en 3 pasos.' : 'Every area of your financial life, simplified in 3 steps.';
+
   return (
     <section className="relative py-20 bg-gradient-to-b from-slate-900 to-slate-950 overflow-hidden">
       {/* Dynamic background decoration based on current workflow */}
@@ -406,14 +325,15 @@ export function HowItWorksSection() {
         >
           <Badge className="mb-4 px-4 py-2 bg-violet-500/20 text-violet-400 border-violet-500/30 text-sm">
             <Lightbulb className="w-4 h-4 mr-2 inline" />
-            8 Flujos Inteligentes
+            {badgeText}
           </Badge>
           <h2 className="text-4xl md:text-5xl font-black mb-4">
-            <span className="text-white">Cómo Funciona </span>
+            <span className="text-white">{titlePart1}</span>
             <span className="bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">EvoFinz</span>
+            <span className="text-white">{titlePart2}</span>
           </h2>
           <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-            Cada área de tu vida financiera, simplificada en 3 pasos.
+            {subtitle}
           </p>
         </motion.div>
 

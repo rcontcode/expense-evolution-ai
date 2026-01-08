@@ -528,19 +528,19 @@ export default function Landing() {
                   >
                     <p className="text-emerald-600 text-sm mt-3 flex items-center justify-center gap-2">
                       <Sparkles className="h-4 w-4" />
-                      ¡Código válido! Acceso beta desbloqueado.
+                      {language === 'es' ? '¡Código válido! Acceso beta desbloqueado.' : 'Valid code! Beta access unlocked.'}
                     </p>
                     <Button 
                       onClick={handleGetStarted}
                       className="mt-4 w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-6 shadow-lg"
                     >
                       <Crown className="mr-2 h-5 w-5" />
-                      Activar Acceso Beta
+                      {language === 'es' ? 'Activar Acceso Beta' : 'Activate Beta Access'}
                     </Button>
                   </motion.div>
                 )}
                 {codeStatus === 'invalid' && (
-                  <p className="text-red-600 text-sm mt-3">Código inválido o expirado.</p>
+                  <p className="text-red-600 text-sm mt-3">{language === 'es' ? 'Código inválido o expirado.' : 'Invalid or expired code.'}</p>
                 )}
               </motion.div>
             )}
@@ -621,13 +621,16 @@ export default function Landing() {
             <div className="text-center mb-8">
               <Badge className="mb-4 px-4 py-2 bg-cyan-500/10 text-cyan-600 border-cyan-500/20 text-sm">
                 <Sparkles className="w-4 h-4 mr-2 inline" />
-                Vista Previa
+                {language === 'es' ? 'Vista Previa' : 'Preview'}
               </Badge>
               <h2 className="text-3xl md:text-4xl font-black mb-4 text-slate-800">
-                Mira cómo <span className="bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">funciona</span>
+                {language === 'es' ? 'Mira cómo ' : 'See how it '}
+                <span className="bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
+                  {language === 'es' ? 'funciona' : 'works'}
+                </span>
               </h2>
               <p className="text-slate-500 text-lg max-w-xl mx-auto">
-                Explora las funcionalidades principales de EvoFinz en acción
+                {language === 'es' ? 'Explora las funcionalidades principales de EvoFinz en acción' : 'Explore the main features of EvoFinz in action'}
               </p>
             </div>
             <FeatureDemosCarousel />
@@ -674,14 +677,14 @@ export default function Landing() {
           >
             <Badge className="mb-4 px-4 py-2 bg-orange-500/20 text-orange-400 border-orange-500/30 text-sm">
               <Flame className="w-4 h-4 mr-2 inline" />
-              Potencia Total
+              {language === 'es' ? 'Potencia Total' : 'Full Power'}
             </Badge>
             <h2 className="text-4xl md:text-5xl font-black mb-4">
-              <span className="text-white">12 Módulos </span>
-              <span className="bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">Potentes</span>
+              <span className="text-white">{language === 'es' ? '12 Módulos ' : '12 Powerful '}</span>
+              <span className="bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">{language === 'es' ? 'Potentes' : 'Modules'}</span>
             </h2>
             <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              Todo lo que necesitas para gestionar tus finanzas personales y de negocio en un solo lugar.
+              {language === 'es' ? 'Todo lo que necesitas para gestionar tus finanzas personales y de negocio en un solo lugar.' : 'Everything you need to manage your personal and business finances in one place.'}
             </p>
           </motion.div>
 
@@ -744,19 +747,19 @@ export default function Landing() {
           >
             <Badge className="mb-4 px-4 py-2 bg-violet-500/20 text-violet-400 border-violet-500/30 text-sm">
               <Target className="w-4 h-4 mr-2 inline" />
-              Planes Flexibles
+              {language === 'es' ? 'Planes Flexibles' : 'Flexible Plans'}
             </Badge>
             <h2 className="text-4xl md:text-5xl font-black mb-4 text-white">
-              Planes Simples y Transparentes
+              {language === 'es' ? 'Planes Simples y Transparentes' : 'Simple and Transparent Plans'}
             </h2>
             <p className="text-slate-400 text-lg mb-8">
-              Empieza gratis, escala cuando lo necesites.
+              {language === 'es' ? 'Empieza gratis, escala cuando lo necesites.' : 'Start free, scale when you need it.'}
             </p>
             
             {/* Annual/Monthly Toggle */}
             <div className="flex items-center justify-center gap-4">
               <span className={`text-sm font-medium transition-colors ${!isAnnual ? 'text-white' : 'text-slate-500'}`}>
-                Mensual
+                {language === 'es' ? 'Mensual' : 'Monthly'}
               </span>
               <button
                 onClick={() => setIsAnnual(!isAnnual)}
@@ -771,7 +774,7 @@ export default function Landing() {
                 />
               </button>
               <span className={`text-sm font-medium transition-colors ${isAnnual ? 'text-white' : 'text-slate-500'}`}>
-                Anual
+                {language === 'es' ? 'Anual' : 'Annual'}
               </span>
               {isAnnual && (
                 <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 animate-pulse">
@@ -797,7 +800,7 @@ export default function Landing() {
                 {tier.popular && (
                   <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2s_ease-in-out_infinite]">
                     <Star className="w-3 h-3 mr-1 inline" />
-                    Más Popular
+                    {language === 'es' ? 'Más Popular' : 'Most Popular'}
                   </Badge>
                 )}
                 <Card 
@@ -913,10 +916,10 @@ export default function Landing() {
             </motion.div>
             
             <h2 className="text-4xl md:text-5xl font-black mb-4 text-white drop-shadow-lg">
-              ¿Listo para Evolucionar tus Finanzas?
+              {language === 'es' ? '¿Listo para Evolucionar tus Finanzas?' : 'Ready to Evolve Your Finances?'}
             </h2>
             <p className="text-white/90 text-xl mb-10 max-w-2xl mx-auto drop-shadow">
-              Únete a cientos de profesionales que ya están optimizando sus finanzas con EvoFinz.
+              {language === 'es' ? 'Únete a cientos de profesionales que ya están optimizando sus finanzas con EvoFinz.' : 'Join hundreds of professionals already optimizing their finances with EvoFinz.'}
             </p>
             
             <Button 
@@ -924,7 +927,7 @@ export default function Landing() {
               onClick={() => navigate('/auth')}
               className="bg-slate-900 text-white hover:bg-slate-800 text-lg px-10 py-7 shadow-2xl font-bold group"
             >
-              Crear Cuenta Gratis
+              {language === 'es' ? 'Crear Cuenta Gratis' : 'Create Free Account'}
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </motion.div>
@@ -942,26 +945,27 @@ export default function Landing() {
               </div>
               <div className="flex items-center gap-6 text-sm">
                 <Link to="/legal" className="text-slate-400 hover:text-cyan-400 transition-colors">
-                  Términos de Uso
+                  {language === 'es' ? 'Términos de Uso' : 'Terms of Use'}
                 </Link>
                 <Link to="/legal#privacy" className="text-slate-400 hover:text-cyan-400 transition-colors">
-                  Privacidad
+                  {language === 'es' ? 'Privacidad' : 'Privacy'}
                 </Link>
                 <Link to="/legal#disclaimer" className="text-slate-400 hover:text-cyan-400 transition-colors">
-                  Descargo Legal
+                  {language === 'es' ? 'Descargo Legal' : 'Disclaimer'}
                 </Link>
                 <Link to="/auth" className="text-slate-400 hover:text-orange-400 transition-colors font-medium">
-                  Iniciar Sesión
+                  {language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
                 </Link>
               </div>
             </div>
             <div className="text-center border-t border-slate-800 pt-4">
               <p className="text-xs text-slate-500 max-w-3xl mx-auto">
-                EvoFinz es una herramienta educativa. La información proporcionada no constituye asesoría financiera, fiscal o de inversión. 
-                Consulte siempre con profesionales certificados antes de tomar decisiones financieras.
+                {language === 'es' 
+                  ? 'EvoFinz es una herramienta educativa. La información proporcionada no constituye asesoría financiera, fiscal o de inversión. Consulte siempre con profesionales certificados antes de tomar decisiones financieras.'
+                  : 'EvoFinz is an educational tool. The information provided does not constitute financial, tax, or investment advice. Always consult with certified professionals before making financial decisions.'}
               </p>
               <p className="text-xs text-slate-600 mt-2">
-                © 2026 EvoFinz. Todos los derechos reservados.
+                © 2026 EvoFinz. {language === 'es' ? 'Todos los derechos reservados.' : 'All rights reserved.'}
               </p>
             </div>
           </div>
