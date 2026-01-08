@@ -47,7 +47,14 @@ const SectionSkeleton = () => (
 export const OrganizedDashboard = memo(() => {
   const { language } = useLanguage();
   const navigate = useNavigate();
-  const { activeAreas, isAreaCollapsed, toggleCollapsed, showFocusDialog, setShowFocusDialog } = useDisplayPreferences();
+  const {
+    activeAreas,
+    isAreaCollapsed,
+    toggleCollapsed,
+    showFocusDialog,
+    setShowFocusDialog,
+    setActiveAreas,
+  } = useDisplayPreferences();
   const [focusSelectorOpen, setFocusSelectorOpen] = useState(false);
 
   useEffect(() => {
@@ -56,7 +63,7 @@ export const OrganizedDashboard = memo(() => {
       setShowFocusDialog(false);
     }
   }, [showFocusDialog, focusSelectorOpen, setShowFocusDialog]);
-  
+
   // Data fetching
   const { data: stats, isLoading } = useDashboardStats({});
   const { data: allExpenses } = useExpenses({});
@@ -76,10 +83,7 @@ export const OrganizedDashboard = memo(() => {
           />
         </Suspense>
         <Suspense fallback={<Skeleton className="h-[200px]" />}>
-          <MileageTabContent
-            mileageSummary={mileageSummary}
-            isLoading={mileageLoading}
-          />
+          <MileageTabContent mileageSummary={mileageSummary} isLoading={mileageLoading} />
         </Suspense>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => navigate('/clients')}>
@@ -193,7 +197,7 @@ export const OrganizedDashboard = memo(() => {
     ),
   };
 
-  const visibleAreas = FOCUS_AREA_ORDER.filter(areaId => activeAreas.includes(areaId));
+  const visibleAreas = FOCUS_AREA_ORDER.filter((areaId) => activeAreas.includes(areaId));
 
   return (
     <div className="space-y-6">
@@ -204,7 +208,7 @@ export const OrganizedDashboard = memo(() => {
             {language === 'es' ? '🎛️ Centro de Control por Áreas' : '🎛️ Control Center by Areas'}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {language === 'es' 
+            {language === 'es'
               ? 'Haz clic en cada sección para colapsar/expandir'
               : 'Click each section to collapse/expand'}
           </p>
@@ -216,7 +220,7 @@ export const OrganizedDashboard = memo(() => {
       </div>
 
       {/* Area Sections */}
-      {visibleAreas.map(areaId => (
+      {visibleAreas.map((areaId) => (
         <AreaSection
           key={areaId}
           areaId={areaId}
@@ -237,7 +241,14 @@ export const OrganizedDashboard = memo(() => {
         </div>
       )}
 
-      <FocusSelector open={focusSelectorOpen} onOpenChange={setFocusSelectorOpen} />
+      {focusSelectorOpen && (
+        <FocusSelector
+          open={focusSelectorOpen}
+          onOpenChange={setFocusSelectorOpen}
+          activeAreas={activeAreas}
+          onSaveActiveAreas={setActiveAreas}
+        />
+      )}
     </div>
   );
 });
