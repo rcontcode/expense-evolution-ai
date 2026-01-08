@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { 
   Scale, 
   TrendingUp, 
   TrendingDown, 
   Sparkles,
   ArrowRight,
-  HelpCircle
+  Wallet,
+  PiggyBank,
+  CreditCard
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,6 @@ export function DashboardHero({
   const { language } = useLanguage();
   const { data: profile } = useProfile();
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || '';
   const isPositive = netBalance >= 0;
@@ -49,100 +48,133 @@ export function DashboardHero({
     }).format(amount);
   };
 
+  // Get time-based greeting
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (language === 'es') {
+      if (hour < 12) return 'Buenos días';
+      if (hour < 19) return 'Buenas tardes';
+      return 'Buenas noches';
+    }
+    if (hour < 12) return 'Good morning';
+    if (hour < 19) return 'Good afternoon';
+    return 'Good evening';
+  };
+
   return (
-    <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-card via-card to-muted/30">
-      <CardContent className="p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          {/* Greeting & Balance */}
-          <div className="flex-1 space-y-4">
-            {/* Personalized Greeting */}
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-                {language === 'es' 
-                  ? `¡Hola${firstName ? `, ${firstName}` : ''}! 👋`
-                  : `Hello${firstName ? `, ${firstName}` : ''}! 👋`
-                }
+    <div className="space-y-4">
+      {/* Main Hero Card */}
+      <Card className="relative overflow-hidden border-0 shadow-xl bg-gradient-to-br from-primary/10 via-card to-accent/10">
+        {/* Decorative background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-accent/10 rounded-full blur-2xl" />
+        </div>
+        
+        <CardContent className="relative p-6 md:p-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            {/* Left: Greeting */}
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">
+                {getGreeting()}
+              </p>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                {firstName ? `${firstName} 👋` : '👋'}
               </h1>
-              <p className="text-muted-foreground mt-1">
+              <p className="text-sm text-muted-foreground max-w-md">
                 {language === 'es'
-                  ? 'Tu resumen financiero de un vistazo'
-                  : 'Your financial summary at a glance'
+                  ? 'Aquí tienes el resumen de tus finanzas'
+                  : 'Here\'s your financial summary'
                 }
               </p>
             </div>
 
-            {/* Balance Summary - Compact */}
-            <div className="flex flex-wrap items-center gap-4">
-              {/* Net Balance - Main Focus */}
-              <div className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all",
-                isPositive 
-                  ? "bg-success/10 border-success/30 text-success" 
-                  : "bg-destructive/10 border-destructive/30 text-destructive"
-              )}>
-                <Scale className="h-5 w-5" />
-                <div>
-                  <p className="text-xs font-medium opacity-80">
-                    {language === 'es' ? 'Balance Neto' : 'Net Balance'}
-                  </p>
-                  <p className="text-xl font-bold">
-                    {isLoading ? '...' : formatCurrency(netBalance)}
-                  </p>
+            {/* Center: Balance Cards */}
+            <div className="flex flex-wrap items-stretch gap-3 flex-1 justify-center lg:justify-end max-w-2xl">
+              {/* Income Card */}
+              <div className="flex-1 min-w-[140px] max-w-[180px] p-4 rounded-xl bg-success/10 border border-success/20 transition-all hover:shadow-md hover:border-success/40">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 rounded-lg bg-success/20">
+                    <TrendingUp className="h-4 w-4 text-success" />
+                  </div>
+                  <span className="text-xs font-medium text-success/80">
+                    {language === 'es' ? 'Ingresos' : 'Income'}
+                  </span>
                 </div>
-                {isPositive ? (
-                  <TrendingUp className="h-5 w-5 opacity-60" />
-                ) : (
-                  <TrendingDown className="h-5 w-5 opacity-60" />
-                )}
+                <p className="text-lg font-bold text-success">
+                  {isLoading ? '...' : formatCurrency(totalIncome)}
+                </p>
               </div>
 
-              {/* Income/Expense Pills */}
-              <div className="flex items-center gap-2 text-sm">
-                <span className="px-3 py-1.5 rounded-full bg-success/10 text-success font-medium">
-                  <TrendingUp className="h-3 w-3 inline mr-1" />
-                  {isLoading ? '...' : formatCurrency(totalIncome)}
-                </span>
-                <span className="text-muted-foreground">−</span>
-                <span className="px-3 py-1.5 rounded-full bg-destructive/10 text-destructive font-medium">
-                  <TrendingDown className="h-3 w-3 inline mr-1" />
+              {/* Expenses Card */}
+              <div className="flex-1 min-w-[140px] max-w-[180px] p-4 rounded-xl bg-destructive/10 border border-destructive/20 transition-all hover:shadow-md hover:border-destructive/40">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 rounded-lg bg-destructive/20">
+                    <TrendingDown className="h-4 w-4 text-destructive" />
+                  </div>
+                  <span className="text-xs font-medium text-destructive/80">
+                    {language === 'es' ? 'Gastos' : 'Expenses'}
+                  </span>
+                </div>
+                <p className="text-lg font-bold text-destructive">
                   {isLoading ? '...' : formatCurrency(totalExpenses)}
-                </span>
+                </p>
+              </div>
+
+              {/* Net Balance Card - Prominent */}
+              <div className={cn(
+                "flex-1 min-w-[160px] max-w-[200px] p-4 rounded-xl border-2 transition-all",
+                isPositive 
+                  ? "bg-gradient-to-br from-success/15 to-success/5 border-success/40 shadow-[0_0_20px_hsl(var(--success)/0.15)]" 
+                  : "bg-gradient-to-br from-destructive/15 to-destructive/5 border-destructive/40 shadow-[0_0_20px_hsl(var(--destructive)/0.15)]"
+              )}>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={cn(
+                    "p-1.5 rounded-lg",
+                    isPositive ? "bg-success/25" : "bg-destructive/25"
+                  )}>
+                    <Scale className={cn("h-4 w-4", isPositive ? "text-success" : "text-destructive")} />
+                  </div>
+                  <span className={cn(
+                    "text-xs font-semibold",
+                    isPositive ? "text-success" : "text-destructive"
+                  )}>
+                    {language === 'es' ? 'Balance' : 'Balance'}
+                  </span>
+                </div>
+                <p className={cn(
+                  "text-xl font-bold",
+                  isPositive ? "text-success" : "text-destructive"
+                )}>
+                  {isLoading ? '...' : formatCurrency(netBalance)}
+                </p>
               </div>
             </div>
-          </div>
 
-          {/* Guide Button - Pulsing when not interacted */}
-          <div className="flex flex-col items-center gap-2">
-            <Button
-              size="lg"
-              onClick={onOpenGuide}
-              className={cn(
-                "relative px-6 py-6 h-auto text-base font-semibold",
-                "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
-                "shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30",
-                "transition-all duration-300",
-                !hasInteracted && "animate-guide-pulse"
-              )}
-            >
-              <Sparkles className="h-5 w-5 mr-2" />
-              {language === 'es' ? '¿Qué quieres hacer?' : 'What do you want to do?'}
-              <ArrowRight className="h-4 w-4 ml-2" />
-              
-              {/* Pulse ring effect when not interacted */}
-              {!hasInteracted && (
-                <>
-                  <span className="absolute inset-0 rounded-md bg-primary/20 animate-ping" />
-                  <span className="absolute -inset-1 rounded-lg bg-primary/10 animate-pulse" />
-                </>
-              )}
-            </Button>
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <HelpCircle className="h-3 w-3" />
-              {language === 'es' ? 'Tu asistente financiero' : 'Your financial assistant'}
-            </span>
+            {/* Right: Guide Button */}
+            <div className="flex flex-col items-center gap-2 lg:ml-4">
+              <Button
+                size="lg"
+                onClick={onOpenGuide}
+                className={cn(
+                  "relative px-6 py-5 h-auto text-base font-semibold rounded-xl",
+                  "bg-gradient-to-r from-primary via-primary to-primary/90",
+                  "shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30",
+                  "transition-all duration-300 hover:-translate-y-0.5",
+                  !hasInteracted && "animate-guide-pulse ring-2 ring-primary/50 ring-offset-2 ring-offset-background"
+                )}
+              >
+                <Sparkles className="h-5 w-5 mr-2" />
+                {language === 'es' ? '¿Qué hacer?' : 'What to do?'}
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+              <span className="text-[10px] text-muted-foreground text-center">
+                {language === 'es' ? 'Tu guía financiera' : 'Your financial guide'}
+              </span>
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
