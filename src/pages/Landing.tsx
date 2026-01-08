@@ -28,6 +28,7 @@ import { FAQSection } from '@/components/landing/FAQSection';
 import { GuaranteesSection } from '@/components/landing/GuaranteesSection';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Parallax wrapper component for scroll-based animations
 function ParallaxSection({ 
@@ -191,10 +192,16 @@ const getStats = (language: string) => [
 export default function Landing() {
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const { user, loading } = useAuth();
   const [showBetaInput, setShowBetaInput] = useState(false);
   const [betaCode, setBetaCode] = useState('');
   const [codeStatus, setCodeStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
   const [isAnnual, setIsAnnual] = useState(false);
+
+  useEffect(() => {
+    // If user is already logged in, send them straight into the app
+    if (!loading && user) navigate('/dashboard');
+  }, [loading, user, navigate]);
 
   const features = getFeatures(language);
   const pricingTiers = getPricingTiers(language);
