@@ -1,22 +1,48 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Building2, Upload, Sparkles, AlertTriangle, RefreshCw, Search, TrendingUp, CreditCard, Wifi, Home, ShoppingCart } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Step = "idle" | "uploading" | "analyzing" | "results";
 
-const transactions = [
-  { icon: Wifi, name: "Netflix", amount: "-$15.99", category: "Suscripción", color: "text-red-500", recurring: true },
-  { icon: ShoppingCart, name: "Walmart", amount: "-$127.43", category: "Compras", color: "text-orange-500", recurring: false },
-  { icon: Home, name: "Rent Payment", amount: "-$1,500.00", category: "Vivienda", color: "text-blue-500", recurring: true },
-  { icon: CreditCard, name: "Amazon Prime", amount: "-$12.99", category: "Suscripción", color: "text-purple-500", recurring: true },
-];
-
-const anomalies = [
-  { type: "duplicate", message: "Posible cargo duplicado", amount: "$45.00" },
-  { type: "spike", message: "Gasto inusual detectado", amount: "$320.00" },
+const getTransactions = (language: string) => [
+  { 
+    icon: Wifi, 
+    name: "Netflix", 
+    amount: "-$15.99", 
+    category: language === 'es' ? "Suscripción" : "Subscription", 
+    color: "text-red-500", 
+    recurring: true 
+  },
+  { 
+    icon: ShoppingCart, 
+    name: "Walmart", 
+    amount: "-$127.43", 
+    category: language === 'es' ? "Compras" : "Shopping", 
+    color: "text-orange-500", 
+    recurring: false 
+  },
+  { 
+    icon: Home, 
+    name: "Rent Payment", 
+    amount: "-$1,500.00", 
+    category: language === 'es' ? "Vivienda" : "Housing", 
+    color: "text-blue-500", 
+    recurring: true 
+  },
+  { 
+    icon: CreditCard, 
+    name: "Amazon Prime", 
+    amount: "-$12.99", 
+    category: language === 'es' ? "Suscripción" : "Subscription", 
+    color: "text-purple-500", 
+    recurring: true 
+  },
 ];
 
 export function BankingDemoAnimation() {
+  const { language } = useLanguage();
+  const transactions = getTransactions(language);
   const [step, setStep] = useState<Step>("idle");
   const [transactionIndex, setTransactionIndex] = useState(0);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -53,7 +79,7 @@ export function BankingDemoAnimation() {
       }, 300);
       return () => clearInterval(timer);
     }
-  }, [step]);
+  }, [step, transactions.length]);
 
   return (
     <div className="relative w-full max-w-sm mx-auto">
@@ -88,9 +114,13 @@ export function BankingDemoAnimation() {
                     className="w-full max-w-[180px] h-24 border-2 border-dashed border-rose-300 rounded-xl flex flex-col items-center justify-center bg-rose-50 cursor-pointer"
                   >
                     <Upload className="w-8 h-8 text-rose-400 mb-2" />
-                    <p className="text-xs text-rose-500 font-medium">Subir estado de cuenta</p>
+                    <p className="text-xs text-rose-500 font-medium">
+                      {language === 'es' ? 'Subir estado de cuenta' : 'Upload bank statement'}
+                    </p>
                   </motion.div>
-                  <p className="text-[10px] text-slate-400 mt-2">CSV, PDF o foto</p>
+                  <p className="text-[10px] text-slate-400 mt-2">
+                    CSV, PDF {language === 'es' ? 'o foto' : 'or photo'}
+                  </p>
                 </motion.div>
               )}
 
@@ -111,7 +141,9 @@ export function BankingDemoAnimation() {
                       className="h-full bg-gradient-to-r from-rose-500 to-pink-500"
                     />
                   </div>
-                  <p className="text-xs text-slate-500">Subiendo... {uploadProgress}%</p>
+                  <p className="text-xs text-slate-500">
+                    {language === 'es' ? 'Subiendo' : 'Uploading'}... {uploadProgress}%
+                  </p>
                 </motion.div>
               )}
 
@@ -138,7 +170,7 @@ export function BankingDemoAnimation() {
                     transition={{ duration: 1.5, repeat: Infinity }}
                     className="mt-4 text-sm font-medium text-slate-600"
                   >
-                    Analizando...
+                    {language === 'es' ? 'Analizando...' : 'Analyzing...'}
                   </motion.p>
                   <div className="mt-2 space-y-1 text-center">
                     <motion.p
@@ -147,7 +179,7 @@ export function BankingDemoAnimation() {
                       transition={{ delay: 0.5 }}
                       className="text-[10px] text-slate-400"
                     >
-                      ✓ Detectando patrones
+                      ✓ {language === 'es' ? 'Detectando patrones' : 'Detecting patterns'}
                     </motion.p>
                     <motion.p
                       initial={{ opacity: 0 }}
@@ -155,7 +187,7 @@ export function BankingDemoAnimation() {
                       transition={{ delay: 1 }}
                       className="text-[10px] text-slate-400"
                     >
-                      ✓ Identificando suscripciones
+                      ✓ {language === 'es' ? 'Identificando suscripciones' : 'Identifying subscriptions'}
                     </motion.p>
                     <motion.p
                       initial={{ opacity: 0 }}
@@ -163,7 +195,7 @@ export function BankingDemoAnimation() {
                       transition={{ delay: 1.5 }}
                       className="text-[10px] text-slate-400"
                     >
-                      ✓ Buscando anomalías
+                      ✓ {language === 'es' ? 'Buscando anomalías' : 'Searching anomalies'}
                     </motion.p>
                   </div>
                 </motion.div>
@@ -185,7 +217,9 @@ export function BankingDemoAnimation() {
                   >
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 text-amber-500" />
-                      <span className="text-[10px] font-medium text-amber-700">2 alertas detectadas</span>
+                      <span className="text-[10px] font-medium text-amber-700">
+                        {language === 'es' ? '2 alertas detectadas' : '2 alerts detected'}
+                      </span>
                     </div>
                   </motion.div>
 
@@ -211,7 +245,7 @@ export function BankingDemoAnimation() {
                             <p className="text-[10px] font-bold text-slate-700">{tx.amount}</p>
                             {tx.recurring && (
                               <span className="text-[8px] text-rose-500 flex items-center gap-0.5">
-                                <RefreshCw className="w-2 h-2" /> Recurrente
+                                <RefreshCw className="w-2 h-2" /> {language === 'es' ? 'Recurrente' : 'Recurring'}
                               </span>
                             )}
                           </div>
@@ -229,10 +263,14 @@ export function BankingDemoAnimation() {
                     >
                       <div className="bg-white rounded-lg p-2 shadow-sm flex items-center gap-2 mb-2">
                         <Search className="w-4 h-4 text-slate-400" />
-                        <span className="text-[10px] text-slate-400">¿Cuánto gasto en suscripciones?</span>
+                        <span className="text-[10px] text-slate-400">
+                          {language === 'es' ? '¿Cuánto gasto en suscripciones?' : 'How much do I spend on subscriptions?'}
+                        </span>
                       </div>
                       <div className="bg-gradient-to-r from-rose-500 to-pink-500 rounded-xl p-2 text-center shadow-lg">
-                        <p className="text-[10px] text-rose-100">Total Suscripciones/mes</p>
+                        <p className="text-[10px] text-rose-100">
+                          {language === 'es' ? 'Total Suscripciones/mes' : 'Total Subscriptions/month'}
+                        </p>
                         <p className="text-lg font-black text-white">$28.98</p>
                       </div>
                     </motion.div>
@@ -254,7 +292,7 @@ export function BankingDemoAnimation() {
               exit={{ opacity: 0 }}
               className="absolute -right-4 top-1/3 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-rose-600 border border-rose-100"
             >
-              🔍 Detección de anomalías
+              🔍 {language === 'es' ? 'Detección de anomalías' : 'Anomaly detection'}
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -263,7 +301,7 @@ export function BankingDemoAnimation() {
               transition={{ delay: 0.2 }}
               className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-pink-600 border border-pink-100"
             >
-              💬 Chat inteligente
+              💬 {language === 'es' ? 'Chat inteligente' : 'Smart chat'}
             </motion.div>
           </>
         )}

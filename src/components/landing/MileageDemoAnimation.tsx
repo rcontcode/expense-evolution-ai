@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Car, Route, Clock, DollarSign, Check, Navigation } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Step = "idle" | "origin" | "destination" | "calculating" | "complete";
 
 export function MileageDemoAnimation() {
+  const { language } = useLanguage();
   const [step, setStep] = useState<Step>("idle");
   const [distance, setDistance] = useState(0);
 
@@ -61,7 +63,9 @@ export function MileageDemoAnimation() {
 
           <div className="absolute top-8 inset-x-0 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center z-10">
             <Car className="w-4 h-4 text-white mr-2" />
-            <span className="text-white font-bold text-sm">Kilometraje</span>
+            <span className="text-white font-bold text-sm">
+              {language === 'es' ? 'Kilometraje' : 'Mileage'}
+            </span>
           </div>
 
           <div className="pt-20 px-3 h-full flex flex-col">
@@ -81,7 +85,9 @@ export function MileageDemoAnimation() {
                   >
                     <Navigation className="w-8 h-8 text-white" />
                   </motion.div>
-                  <p className="text-sm font-medium text-slate-600">Nuevo viaje</p>
+                  <p className="text-sm font-medium text-slate-600">
+                    {language === 'es' ? 'Nuevo viaje' : 'New trip'}
+                  </p>
                 </motion.div>
               )}
 
@@ -176,7 +182,9 @@ export function MileageDemoAnimation() {
                         <MapPin className="w-3 h-3 text-white" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-[10px] text-slate-400">Origen</p>
+                        <p className="text-[10px] text-slate-400">
+                          {language === 'es' ? 'Origen' : 'Origin'}
+                        </p>
                         <p className="text-xs font-medium text-slate-700 truncate">123 King Street, Toronto</p>
                       </div>
                       <Check className="w-4 h-4 text-emerald-500" />
@@ -192,9 +200,13 @@ export function MileageDemoAnimation() {
                         <MapPin className="w-3 h-3 text-white" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-[10px] text-slate-400">Destino</p>
+                        <p className="text-[10px] text-slate-400">
+                          {language === 'es' ? 'Destino' : 'Destination'}
+                        </p>
                         <p className="text-xs font-medium text-slate-700 truncate">
-                          {step === "origin" ? "Selecciona destino..." : "456 Bay Street, Toronto"}
+                          {step === "origin" 
+                            ? (language === 'es' ? "Selecciona destino..." : "Select destination...") 
+                            : "456 Bay Street, Toronto"}
                         </p>
                       </div>
                       {step !== "origin" && <Check className="w-4 h-4 text-emerald-500" />}
@@ -213,7 +225,9 @@ export function MileageDemoAnimation() {
                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                         className="w-5 h-5 border-2 border-blue-200 border-t-blue-500 rounded-full"
                       />
-                      <span className="text-xs text-slate-500">Calculando ruta...</span>
+                      <span className="text-xs text-slate-500">
+                        {language === 'es' ? 'Calculando ruta...' : 'Calculating route...'}
+                      </span>
                     </motion.div>
                   )}
 
@@ -228,19 +242,25 @@ export function MileageDemoAnimation() {
                         <div className="bg-white rounded-lg p-2 text-center shadow-sm">
                           <Route className="w-4 h-4 text-blue-500 mx-auto mb-1" />
                           <p className="text-lg font-bold text-slate-800">{distance} km</p>
-                          <p className="text-[10px] text-slate-500">Distancia</p>
+                          <p className="text-[10px] text-slate-500">
+                            {language === 'es' ? 'Distancia' : 'Distance'}
+                          </p>
                         </div>
                         <div className="bg-white rounded-lg p-2 text-center shadow-sm">
                           <Clock className="w-4 h-4 text-indigo-500 mx-auto mb-1" />
                           <p className="text-lg font-bold text-slate-800">35 min</p>
-                          <p className="text-[10px] text-slate-500">Tiempo</p>
+                          <p className="text-[10px] text-slate-500">
+                            {language === 'es' ? 'Tiempo' : 'Time'}
+                          </p>
                         </div>
                       </div>
                       
                       <div className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl p-3 text-center shadow-lg">
                         <div className="flex items-center justify-center gap-2">
                           <DollarSign className="w-4 h-4 text-blue-100" />
-                          <span className="text-xs text-blue-100">Deducción CRA</span>
+                          <span className="text-xs text-blue-100">
+                            {language === 'es' ? 'Deducción CRA' : 'CRA Deduction'}
+                          </span>
                         </div>
                         <p className="text-xl font-black text-white">$29.75</p>
                       </div>
@@ -263,7 +283,7 @@ export function MileageDemoAnimation() {
               exit={{ opacity: 0 }}
               className="absolute -right-4 top-1/3 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-blue-600 border border-blue-100"
             >
-              🗺️ Cálculo automático
+              🗺️ {language === 'es' ? 'Cálculo automático' : 'Auto calculation'}
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}

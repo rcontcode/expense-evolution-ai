@@ -1,16 +1,37 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Brain, Lightbulb, TrendingUp, Receipt, DollarSign, Check, ArrowRight, Sparkles, Calculator } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Step = "idle" | "analyzing" | "suggestions" | "complete";
 
-const suggestions = [
-  { category: "Home Office", current: "$800", potential: "$2,400", saving: "$1,600", icon: "🏠" },
-  { category: "Vehículo", current: "$1,200", potential: "$3,500", saving: "$2,300", icon: "🚗" },
-  { category: "Educación", current: "$0", potential: "$500", saving: "$500", icon: "📚" },
+const getSuggestions = (language: string) => [
+  { 
+    category: "Home Office", 
+    current: "$800", 
+    potential: "$2,400", 
+    saving: "$1,600", 
+    icon: "🏠" 
+  },
+  { 
+    category: language === 'es' ? "Vehículo" : "Vehicle", 
+    current: "$1,200", 
+    potential: "$3,500", 
+    saving: "$2,300", 
+    icon: "🚗" 
+  },
+  { 
+    category: language === 'es' ? "Educación" : "Education", 
+    current: "$0", 
+    potential: "$500", 
+    saving: "$500", 
+    icon: "📚" 
+  },
 ];
 
 export function TaxOptimizerDemoAnimation() {
+  const { language } = useLanguage();
+  const suggestions = getSuggestions(language);
   const [step, setStep] = useState<Step>("idle");
   const [suggestionIndex, setSuggestionIndex] = useState(0);
   const [totalSavings, setTotalSavings] = useState(0);
@@ -38,7 +59,7 @@ export function TaxOptimizerDemoAnimation() {
       }, 600);
       return () => clearInterval(timer);
     }
-  }, [step]);
+  }, [step, suggestions.length]);
 
   useEffect(() => {
     if (step === "complete") {
@@ -97,8 +118,12 @@ export function TaxOptimizerDemoAnimation() {
                   >
                     <Brain className="w-10 h-10 text-white" />
                   </motion.div>
-                  <p className="text-sm font-medium text-slate-600">Optimiza tus impuestos</p>
-                  <p className="text-xs text-slate-400">con inteligencia artificial</p>
+                  <p className="text-sm font-medium text-slate-600">
+                    {language === 'es' ? 'Optimiza tus impuestos' : 'Optimize your taxes'}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {language === 'es' ? 'con inteligencia artificial' : 'with smart analysis'}
+                  </p>
                 </motion.div>
               )}
 
@@ -125,12 +150,18 @@ export function TaxOptimizerDemoAnimation() {
                     transition={{ duration: 1.5, repeat: Infinity }}
                     className="mt-4 text-sm font-medium text-slate-600"
                   >
-                    Analizando tus gastos...
+                    {language === 'es' ? 'Analizando tus gastos...' : 'Analyzing your expenses...'}
                   </motion.p>
                   <div className="mt-3 space-y-1 text-center">
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-[10px] text-slate-400">✓ Revisando categorías CRA</motion.p>
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="text-[10px] text-slate-400">✓ Calculando deducciones</motion.p>
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }} className="text-[10px] text-slate-400">✓ Identificando oportunidades</motion.p>
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-[10px] text-slate-400">
+                      ✓ {language === 'es' ? 'Revisando categorías CRA' : 'Reviewing CRA categories'}
+                    </motion.p>
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="text-[10px] text-slate-400">
+                      ✓ {language === 'es' ? 'Calculando deducciones' : 'Calculating deductions'}
+                    </motion.p>
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }} className="text-[10px] text-slate-400">
+                      ✓ {language === 'es' ? 'Identificando oportunidades' : 'Identifying opportunities'}
+                    </motion.p>
                   </div>
                 </motion.div>
               )}
@@ -150,7 +181,9 @@ export function TaxOptimizerDemoAnimation() {
                     className="flex items-center justify-center gap-2 mb-3"
                   >
                     <Lightbulb className="w-5 h-5 text-amber-500" />
-                    <span className="font-bold text-slate-700 text-sm">Oportunidades Encontradas</span>
+                    <span className="font-bold text-slate-700 text-sm">
+                      {language === 'es' ? 'Oportunidades Encontradas' : 'Opportunities Found'}
+                    </span>
                   </motion.div>
 
                   {/* Suggestions */}
@@ -169,12 +202,12 @@ export function TaxOptimizerDemoAnimation() {
                         </div>
                         <div className="flex items-center gap-2 text-[10px]">
                           <div className="flex-1">
-                            <span className="text-slate-400">Actual: </span>
+                            <span className="text-slate-400">{language === 'es' ? 'Actual' : 'Current'}: </span>
                             <span className="text-slate-600">{sug.current}</span>
                           </div>
                           <ArrowRight className="w-3 h-3 text-cyan-500" />
                           <div className="flex-1 text-right">
-                            <span className="text-slate-400">Potencial: </span>
+                            <span className="text-slate-400">{language === 'es' ? 'Potencial' : 'Potential'}: </span>
                             <span className="text-emerald-600 font-medium">{sug.potential}</span>
                           </div>
                         </div>
@@ -190,11 +223,15 @@ export function TaxOptimizerDemoAnimation() {
                       className="mt-auto"
                     >
                       <div className="bg-gradient-to-r from-cyan-500 to-teal-500 rounded-xl p-4 text-center shadow-lg">
-                        <p className="text-cyan-100 text-xs mb-1">Ahorro potencial en impuestos</p>
+                        <p className="text-cyan-100 text-xs mb-1">
+                          {language === 'es' ? 'Ahorro potencial en impuestos' : 'Potential tax savings'}
+                        </p>
                         <motion.p className="text-3xl font-black text-white">
                           ${totalSavings.toLocaleString()}
                         </motion.p>
-                        <p className="text-cyan-100 text-[10px] mt-1">basado en reglas CRA 2026</p>
+                        <p className="text-cyan-100 text-[10px] mt-1">
+                          {language === 'es' ? 'basado en reglas CRA 2026' : 'based on CRA 2026 rules'}
+                        </p>
                       </div>
                     </motion.div>
                   )}
@@ -215,7 +252,7 @@ export function TaxOptimizerDemoAnimation() {
               exit={{ opacity: 0 }}
               className="absolute -right-4 top-1/3 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-cyan-600 border border-cyan-100"
             >
-              🧠 Análisis Smart
+              🧠 {language === 'es' ? 'Análisis Smart' : 'Smart Analysis'}
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -224,7 +261,7 @@ export function TaxOptimizerDemoAnimation() {
               transition={{ delay: 0.2 }}
               className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-teal-600 border border-teal-100"
             >
-              📋 Reglas CRA actualizadas
+              📋 {language === 'es' ? 'Reglas CRA actualizadas' : 'Updated CRA rules'}
             </motion.div>
           </>
         )}
