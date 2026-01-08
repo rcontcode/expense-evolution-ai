@@ -54,7 +54,7 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-const getNavSections = (t: (key: string) => string) => [
+const getNavSections = (language: string) => [
   {
     titleKey: 'layout.principal',
     items: [
@@ -77,8 +77,8 @@ const getNavSections = (t: (key: string) => string) => [
   {
     titleKey: 'layout.tracking',
     items: [
-      { icon: Scale, label: 'Patrimonio', path: '/net-worth', badge: 'Nuevo', tooltipKey: 'dashboard' as const },
-      { icon: Building2, label: 'Bancos', path: '/banking', badge: 'IA', tooltipKey: 'dashboard' as const },
+      { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
+      { icon: Building2, label: 'nav.banking', path: '/banking', badgeKey: 'nav.badgeAI', tooltipKey: 'dashboard' as const },
       { icon: Car, label: 'nav.mileage', path: '/mileage', badge: 'CRA', tooltipKey: 'mileage' as const },
       { icon: RefreshCw, label: 'nav.reconciliation', path: '/reconciliation', badge: null, tooltipKey: 'reconciliation' as const },
     ]
@@ -86,30 +86,30 @@ const getNavSections = (t: (key: string) => string) => [
   {
     titleKey: 'layout.tax',
     items: [
-      { icon: FileText, label: 'Calendario Fiscal', path: '/tax-calendar', badge: 'CRA', tooltipKey: 'dashboard' as const },
+      { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badge: 'CRA', tooltipKey: 'dashboard' as const },
     ]
   },
   {
     titleKey: 'layout.mentorship',
     items: [
-      { icon: GraduationCap, label: 'Mentoría Financiera', path: '/mentorship', badge: 'Nuevo', tooltipKey: 'dashboard' as const },
+      { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
     ]
   },
   {
     titleKey: 'layout.notifications',
     items: [
-      { icon: Sparkles, label: 'Notificaciones', path: '/notifications', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: Sparkles, label: 'nav.notifications', path: '/notifications', badge: null, tooltipKey: 'dashboard' as const },
     ]
   },
 ];
 
-// Bottom navigation items for mobile
-const MOBILE_NAV_ITEMS = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: Receipt, label: 'Gastos', path: '/expenses' },
-  { icon: Camera, label: 'Captura', path: '/capture', primary: true },
-  { icon: TrendingUp, label: 'Ingresos', path: '/income' },
-  { icon: Settings, label: 'Config', path: '/settings' },
+// Bottom navigation items for mobile - uses translation keys
+const getMobileNavItems = (language: string) => [
+  { icon: LayoutDashboard, labelKey: 'nav.dashboard', path: '/dashboard' },
+  { icon: Receipt, labelKey: 'nav.expenses', path: '/expenses' },
+  { icon: Camera, labelKey: 'nav.capture', path: '/capture', primary: true },
+  { icon: TrendingUp, labelKey: 'nav.income', path: '/income' },
+  { icon: Settings, labelKey: 'nav.config', path: '/settings' },
 ];
 
 export const Layout = ({ children }: LayoutProps) => {
@@ -121,7 +121,8 @@ export const Layout = ({ children }: LayoutProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
-  const NAV_SECTIONS = getNavSections(t);
+  const NAV_SECTIONS = getNavSections(language);
+  const MOBILE_NAV_ITEMS = getMobileNavItems(language);
   const { data: unreadCount = 0 } = useUnreadNotifications();
   
   const userInitial = profile?.full_name?.charAt(0)?.toUpperCase() || profile?.email?.charAt(0)?.toUpperCase() || 'U';
@@ -186,6 +187,7 @@ export const Layout = ({ children }: LayoutProps) => {
                           {section.items.map((item) => {
                             const Icon = item.icon;
                             const isActive = location.pathname === item.path;
+                            const badgeText = 'badgeKey' in item && item.badgeKey ? t(item.badgeKey) : ('badge' in item ? item.badge : null);
                             return (
                               <button
                                 key={item.path}
@@ -200,15 +202,15 @@ export const Layout = ({ children }: LayoutProps) => {
                               >
                                 <Icon className={cn("h-5 w-5", isActive && "text-primary-foreground")} />
                                 <span className="flex-1 text-left">{t(item.label)}</span>
-                                {item.badge && (
+                                {badgeText && (
                                   <Badge 
-                                    variant={item.badge === 'AI' ? 'default' : 'secondary'} 
+                                    variant={badgeText === 'AI' ? 'default' : 'secondary'} 
                                     className={cn(
                                       "text-[10px] px-1.5 py-0",
-                                      item.badge === 'AI' && "bg-gradient-primary border-0"
+                                      badgeText === 'AI' && "bg-gradient-primary border-0"
                                     )}
                                   >
-                                    {item.badge}
+                                    {badgeText}
                                   </Badge>
                                 )}
                               </button>
@@ -262,7 +264,7 @@ export const Layout = ({ children }: LayoutProps) => {
                     <div className="w-14 h-14 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg shadow-primary/30">
                       <Icon className="h-6 w-6 text-primary-foreground" />
                     </div>
-                    <span className="text-xs mt-1 font-medium text-primary">{item.label}</span>
+                    <span className="text-xs mt-1 font-medium text-primary">{t(item.labelKey)}</span>
                   </button>
                 );
               }
@@ -277,7 +279,7 @@ export const Layout = ({ children }: LayoutProps) => {
                   )}
                 >
                   <Icon className={cn("h-5 w-5", isActive && "text-primary")} />
-                  <span className={cn("text-xs mt-1", isActive && "font-medium")}>{item.label}</span>
+                  <span className={cn("text-xs mt-1", isActive && "font-medium")}>{t(item.labelKey)}</span>
                 </button>
               );
             })}
@@ -336,6 +338,7 @@ export const Layout = ({ children }: LayoutProps) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;
                     const tooltipData = TOOLTIP_CONTENT[item.tooltipKey];
+                    const badgeText = 'badgeKey' in item && item.badgeKey ? t(item.badgeKey) : ('badge' in item ? item.badge : null);
                     
                     const button = (
                       <button
@@ -350,15 +353,15 @@ export const Layout = ({ children }: LayoutProps) => {
                         {!collapsed && (
                           <>
                             <span className="flex-1 text-left">{t(item.label)}</span>
-                            {item.badge && (
+                            {badgeText && (
                               <Badge 
-                                variant={item.badge === 'AI' ? 'default' : 'secondary'} 
+                                variant={badgeText === 'AI' ? 'default' : 'secondary'} 
                                 className={cn(
                                   "text-[10px] px-1.5 py-0",
-                                  item.badge === 'AI' && "bg-gradient-primary border-0"
+                                  badgeText === 'AI' && "bg-gradient-primary border-0"
                                 )}
                               >
-                                {item.badge}
+                                {badgeText}
                               </Badge>
                             )}
                           </>

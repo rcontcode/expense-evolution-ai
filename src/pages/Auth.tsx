@@ -334,20 +334,20 @@ export default function Auth() {
   };
 
   const features = [
-    { icon: Sparkles, text: 'Captura inteligente' },
-    { icon: Receipt, text: 'Categorización automática' },
-    { icon: TrendingUp, text: 'Reportes fiscales CRA' },
+    { icon: Sparkles, text: t('auth.smartCapture') },
+    { icon: Receipt, text: t('auth.autoCategories') },
+    { icon: TrendingUp, text: t('auth.craReports') },
   ];
 
   // Password strength indicator
   const passwordStrength = useMemo(() => {
     if (password.length === 0) return null;
-    if (password.length < 6) return { label: 'Muy corta', color: 'bg-red-500', width: '20%' };
-    if (password.length < 8) return { label: 'Débil', color: 'bg-orange-500', width: '40%' };
-    if (password.length < 10) return { label: 'Aceptable', color: 'bg-yellow-500', width: '60%' };
-    if (password.length < 12) return { label: 'Buena', color: 'bg-green-500', width: '80%' };
-    return { label: 'Excelente', color: 'bg-green-600', width: '100%' };
-  }, [password]);
+    if (password.length < 6) return { label: t('auth.veryShort'), color: 'bg-red-500', width: '20%' };
+    if (password.length < 8) return { label: t('auth.weak'), color: 'bg-orange-500', width: '40%' };
+    if (password.length < 10) return { label: t('auth.acceptable'), color: 'bg-yellow-500', width: '60%' };
+    if (password.length < 12) return { label: t('auth.good'), color: 'bg-green-500', width: '80%' };
+    return { label: t('auth.excellent'), color: 'bg-green-600', width: '100%' };
+  }, [password, t]);
 
   return (
     <div className="min-h-screen flex">
@@ -367,12 +367,12 @@ export default function Auth() {
 
           {/* Main headline */}
           <h2 className="text-5xl font-display font-bold leading-tight mb-6">
-            Tus finanzas,<br />
-            <span className="text-white/90">simplificadas.</span>
+            {t('auth.yourFinances')}<br />
+            <span className="text-white/90">{t('auth.simplified')}</span>
           </h2>
           
           <p className="text-xl text-white/80 mb-10 max-w-md">
-            La forma más inteligente de gestionar gastos, facturas y deducciones fiscales para profesionales en Canadá.
+            {t('auth.smartestWay')}
           </p>
 
           {/* Features */}
@@ -410,15 +410,15 @@ export default function Auth() {
               {isForgotPassword 
                 ? t('auth.resetPassword') 
                 : isLogin 
-                  ? '¡Bienvenido de nuevo!' 
-                  : 'Crea tu cuenta'}
+                  ? t('auth.welcomeBack') 
+                  : t('auth.createAccount')}
             </h2>
             <p className="mt-2 text-muted-foreground">
               {isForgotPassword 
                 ? t('auth.resetPasswordDescription')
                 : isLogin 
-                  ? 'Ingresa tus credenciales para continuar'
-                  : 'Comienza a gestionar tus finanzas hoy'}
+                  ? t('auth.enterCredentials')
+                  : t('auth.startManaging')}
             </p>
           </div>
 
@@ -444,7 +444,7 @@ export default function Auth() {
                     <Input
                       id="fullName"
                       type="text"
-                      placeholder="Tu nombre completo"
+                      placeholder={t('auth.fullNamePlaceholder')}
                       value={fullName}
                       onChange={(e) => handleNameChange(e.target.value)}
                       required={!isLogin}
@@ -514,13 +514,13 @@ export default function Auth() {
                           />
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Seguridad: {passwordStrength.label}
+                          {t('auth.securityStrength')}: {passwordStrength.label}
                         </p>
                       </div>
                     )}
                     {!isLogin && !isForgotPassword && !password && (
                       <p className="text-xs text-muted-foreground">
-                        Mínimo 6 caracteres
+                        {t('auth.minChars')}
                       </p>
                     )}
                   </div>
@@ -537,7 +537,7 @@ export default function Auth() {
                       >
                         <span className="flex items-center gap-2">
                           <Gift className="h-4 w-4" />
-                          ¿Tienes un código de invitación?
+                          {t('auth.haveInviteCode')}
                         </span>
                         <ChevronDown className={`h-4 w-4 transition-transform ${showBetaSection ? 'rotate-180' : ''}`} />
                       </Button>
@@ -563,10 +563,10 @@ export default function Auth() {
                         </div>
                       </div>
                       {codeStatus === 'valid' && (
-                        <p className="text-green-600 text-xs mt-2 text-center">¡Código válido! Tendrás acceso beta completo.</p>
+                        <p className="text-green-600 text-xs mt-2 text-center">{t('auth.codeValid')}</p>
                       )}
                       {codeStatus === 'invalid' && (
-                        <p className="text-red-600 text-xs mt-2 text-center">Código inválido o expirado.</p>
+                        <p className="text-red-600 text-xs mt-2 text-center">{t('auth.codeInvalid')}</p>
                       )}
                     </CollapsibleContent>
                   </Collapsible>
@@ -639,10 +639,10 @@ export default function Auth() {
                       {isForgotPassword 
                         ? t('auth.resetPassword') 
                         : isLogin 
-                          ? 'Iniciar Sesión' 
+                          ? t('auth.login') 
                           : codeStatus === 'valid'
-                            ? 'Crear Cuenta + Activar Beta'
-                            : 'Crear Cuenta'}
+                            ? t('auth.createAccountBeta')
+                            : t('auth.createAccountBtn')}
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </>
                   )}
