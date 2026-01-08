@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, TrendingUp, Calendar, DollarSign, Target, PiggyBank, Sparkles } from "lucide-react";
+import { Flame, TrendingUp, DollarSign, Target, PiggyBank, Sparkles } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Step = "idle" | "input" | "calculating" | "result";
 
 export function FIREDemoAnimation() {
+  const { language } = useLanguage();
   const [step, setStep] = useState<Step>("idle");
   const [progress, setProgress] = useState(0);
   const [years, setYears] = useState(0);
@@ -64,7 +66,9 @@ export function FIREDemoAnimation() {
 
           <div className="absolute top-8 inset-x-0 h-12 bg-gradient-to-r from-orange-500 to-red-600 flex items-center justify-center z-10">
             <Flame className="w-4 h-4 text-white mr-2" />
-            <span className="text-white font-bold text-sm">Calculadora FIRE</span>
+            <span className="text-white font-bold text-sm">
+              {language === 'es' ? 'Calculadora FIRE' : 'FIRE Calculator'}
+            </span>
           </div>
 
           <div className="pt-20 px-3 h-full flex flex-col">
@@ -97,7 +101,9 @@ export function FIREDemoAnimation() {
                   exit={{ opacity: 0 }}
                   className="flex-1 flex flex-col py-3"
                 >
-                  <p className="text-xs text-slate-500 text-center mb-3">Ingresa tus datos</p>
+                  <p className="text-xs text-slate-500 text-center mb-3">
+                    {language === 'es' ? 'Ingresa tus datos' : 'Enter your data'}
+                  </p>
                   
                   <div className="space-y-2">
                     <motion.div
@@ -111,7 +117,9 @@ export function FIREDemoAnimation() {
                           <DollarSign className="w-4 h-4 text-emerald-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-[10px] text-slate-400">Ingresos anuales</p>
+                          <p className="text-[10px] text-slate-400">
+                            {language === 'es' ? 'Ingresos anuales' : 'Annual income'}
+                          </p>
                           <motion.p 
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -134,7 +142,9 @@ export function FIREDemoAnimation() {
                           <TrendingUp className="w-4 h-4 text-red-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-[10px] text-slate-400">Gastos anuales</p>
+                          <p className="text-[10px] text-slate-400">
+                            {language === 'es' ? 'Gastos anuales' : 'Annual expenses'}
+                          </p>
                           <motion.p 
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -157,7 +167,9 @@ export function FIREDemoAnimation() {
                           <PiggyBank className="w-4 h-4 text-blue-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-[10px] text-slate-400">Ahorros actuales</p>
+                          <p className="text-[10px] text-slate-400">
+                            {language === 'es' ? 'Ahorros actuales' : 'Current savings'}
+                          </p>
                           <motion.p 
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -180,13 +192,15 @@ export function FIREDemoAnimation() {
                           <Target className="w-4 h-4 text-violet-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-[10px] text-slate-400">Retorno esperado</p>
+                          <p className="text-[10px] text-slate-400">
+                            {language === 'es' ? 'Retorno esperado' : 'Expected return'}
+                          </p>
                           <motion.p 
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             className="text-sm font-bold text-slate-700"
                           >
-                            7% anual
+                            {language === 'es' ? '7% anual' : '7% annual'}
                           </motion.p>
                         </div>
                       </div>
@@ -199,7 +213,7 @@ export function FIREDemoAnimation() {
                     transition={{ delay: 1 }}
                     className="mt-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl py-2.5 text-center text-white font-bold text-sm shadow-lg"
                   >
-                    Calcular FIRE
+                    {language === 'es' ? 'Calcular FIRE' : 'Calculate FIRE'}
                   </motion.div>
                 </motion.div>
               )}
@@ -227,7 +241,7 @@ export function FIREDemoAnimation() {
                     transition={{ duration: 1.5, repeat: Infinity }}
                     className="mt-4 text-sm font-medium text-slate-600"
                   >
-                    Calculando libertad...
+                    {language === 'es' ? 'Calculando libertad...' : 'Calculating freedom...'}
                   </motion.p>
                 </motion.div>
               )}
@@ -248,8 +262,12 @@ export function FIREDemoAnimation() {
                     className="bg-gradient-to-br from-orange-500 to-red-600 rounded-xl p-4 text-center shadow-lg mb-3"
                   >
                     <Flame className="w-8 h-8 text-white mx-auto mb-2" />
-                    <p className="text-orange-100 text-xs mb-1">Fecha FIRE estimada</p>
-                    <p className="text-3xl font-black text-white mb-1">{years} años</p>
+                    <p className="text-orange-100 text-xs mb-1">
+                      {language === 'es' ? 'Fecha FIRE estimada' : 'Estimated FIRE date'}
+                    </p>
+                    <p className="text-3xl font-black text-white mb-1">
+                      {years} {language === 'es' ? 'años' : 'years'}
+                    </p>
                     <p className="text-orange-100 text-sm font-medium">2038</p>
                   </motion.div>
 
@@ -261,7 +279,9 @@ export function FIREDemoAnimation() {
                       transition={{ delay: 0.3 }}
                       className="bg-white rounded-lg p-2 text-center shadow-sm"
                     >
-                      <p className="text-[10px] text-slate-400">Tasa de ahorro</p>
+                      <p className="text-[10px] text-slate-400">
+                        {language === 'es' ? 'Tasa de ahorro' : 'Savings rate'}
+                      </p>
                       <p className="text-lg font-bold text-emerald-600">47%</p>
                     </motion.div>
                     <motion.div
@@ -270,7 +290,9 @@ export function FIREDemoAnimation() {
                       transition={{ delay: 0.4 }}
                       className="bg-white rounded-lg p-2 text-center shadow-sm"
                     >
-                      <p className="text-[10px] text-slate-400">Meta FIRE</p>
+                      <p className="text-[10px] text-slate-400">
+                        {language === 'es' ? 'Meta FIRE' : 'FIRE Goal'}
+                      </p>
                       <p className="text-lg font-bold text-orange-600">$1.125M</p>
                     </motion.div>
                   </div>
@@ -283,7 +305,9 @@ export function FIREDemoAnimation() {
                     className="bg-white rounded-lg p-3 shadow-sm"
                   >
                     <div className="flex justify-between text-[10px] mb-1">
-                      <span className="text-slate-500">Progreso actual</span>
+                      <span className="text-slate-500">
+                        {language === 'es' ? 'Progreso actual' : 'Current progress'}
+                      </span>
                       <span className="font-bold text-orange-600">10.7%</span>
                     </div>
                     <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
@@ -294,7 +318,9 @@ export function FIREDemoAnimation() {
                         className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
                       />
                     </div>
-                    <p className="text-[9px] text-slate-400 mt-1">$120,000 de $1,125,000</p>
+                    <p className="text-[9px] text-slate-400 mt-1">
+                      $120,000 {language === 'es' ? 'de' : 'of'} $1,125,000
+                    </p>
                   </motion.div>
                 </motion.div>
               )}
@@ -313,7 +339,7 @@ export function FIREDemoAnimation() {
               exit={{ opacity: 0 }}
               className="absolute -right-4 top-1/3 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-orange-600 border border-orange-100"
             >
-              🔥 Regla del 4%
+              {language === 'es' ? '🔥 Regla del 4%' : '🔥 4% Rule'}
             </motion.div>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -322,7 +348,7 @@ export function FIREDemoAnimation() {
               transition={{ delay: 0.2 }}
               className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-red-600 border border-red-100"
             >
-              📈 Proyección realista
+              {language === 'es' ? '📈 Proyección realista' : '📈 Realistic projection'}
             </motion.div>
           </>
         )}
