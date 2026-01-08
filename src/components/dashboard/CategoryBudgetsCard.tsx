@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Plus, Trash2, Target, Edit2, Check, X, Sparkles, RefreshCw } from "lucide-react";
+import { Plus, Trash2, Target, Edit2, Check, X, Sparkles, RefreshCw, TrendingUp, Rocket } from "lucide-react";
 import { useCategoryBudgets, useUpsertCategoryBudget, useDeleteCategoryBudget } from "@/hooks/data/useCategoryBudgets";
 import { useExpenses } from "@/hooks/data/useExpenses";
 import { useBudgetSuggestions, getCategorySuggestion } from "@/hooks/data/useBudgetSuggestions";
@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { startOfMonth, endOfMonth, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 export function CategoryBudgetsCard() {
   const [isAdding, setIsAdding] = useState(false);
@@ -110,105 +112,186 @@ export function CategoryBudgetsCard() {
     setEditBudget(budget.toString());
   };
 
+  const getStatusStyles = (percentage: number) => {
+    if (percentage >= 100) return { 
+      gradient: "from-red-500 to-rose-600", 
+      bg: "bg-red-50 dark:bg-red-950/30",
+      text: "text-red-600 dark:text-red-400"
+    };
+    if (percentage >= 80) return { 
+      gradient: "from-amber-500 to-orange-500", 
+      bg: "bg-amber-50 dark:bg-amber-950/30",
+      text: "text-amber-600 dark:text-amber-400"
+    };
+    return { 
+      gradient: "from-teal-500 to-cyan-500", 
+      bg: "bg-teal-50 dark:bg-teal-950/30",
+      text: "text-teal-600 dark:text-teal-400"
+    };
+  };
+
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Target className="h-5 w-5 text-primary" />
-          Metas por Categoría - {format(now, "MMMM yyyy", { locale: es })}
+    <Card className="relative overflow-hidden">
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-cyan-500/5 to-transparent" />
+      
+      <CardHeader className="flex flex-row items-center justify-between pb-2 relative">
+        <CardTitle className="flex items-center gap-3 text-base">
+          <motion.div 
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-teal-500/25"
+          >
+            <Target className="h-5 w-5 text-white" />
+          </motion.div>
+          <div>
+            <span className="text-teal-700 dark:text-teal-400 font-bold">Metas por Categoría</span>
+            <p className="text-xs text-muted-foreground font-normal">
+              {format(now, "MMMM yyyy", { locale: es })}
+            </p>
+          </div>
         </CardTitle>
         <div className="flex items-center gap-2">
           {budgets && budgets.length > 0 && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="sm" variant="ghost" onClick={handleAdjustAll}>
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
+                <motion.div whileHover={{ scale: 1.1, rotate: 180 }} transition={{ duration: 0.3 }}>
+                  <Button size="sm" variant="ghost" onClick={handleAdjustAll} className="h-8 w-8 p-0 rounded-full hover:bg-teal-100 dark:hover:bg-teal-900/30">
+                    <RefreshCw className="h-4 w-4 text-teal-600" />
+                  </Button>
+                </motion.div>
               </TooltipTrigger>
               <TooltipContent>Ajustar todos automáticamente</TooltipContent>
             </Tooltip>
           )}
           {!isAdding && availableCategories.length > 0 && (
-            <Button size="sm" variant="outline" onClick={() => setIsAdding(true)}>
-              <Plus className="h-4 w-4 mr-1" />
-              Agregar
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button 
+                size="sm" 
+                onClick={() => setIsAdding(true)}
+                className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Agregar
+              </Button>
+            </motion.div>
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {isAdding && (
-          <div className="flex gap-2 items-end p-3 bg-muted/50 rounded-lg flex-wrap">
-            <div className="flex-1 min-w-[120px] space-y-1">
-              <label className="text-xs text-muted-foreground">Categoría</label>
-              <Select value={newCategory} onValueChange={(val) => {
-                setNewCategory(val);
-                // Auto-suggest when category is selected
-                const suggestion = getCategorySuggestion(budgetSuggestions, val);
-                if (suggestion && suggestion.suggestedBudget > 0) {
-                  setNewBudget(suggestion.suggestedBudget.toString());
-                }
-              }}>
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableCategories.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-32 space-y-1">
-              <div className="flex items-center justify-between">
-                <label className="text-xs text-muted-foreground">Presupuesto</label>
-                {newCategory && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button size="icon" variant="ghost" className="h-5 w-5" onClick={() => handleSuggestForCategory(newCategory)}>
-                        <Sparkles className="h-3 w-3 text-primary" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Sugerir basado en historial</TooltipContent>
-                  </Tooltip>
-                )}
+      <CardContent className="space-y-4 relative">
+        <AnimatePresence>
+          {isAdding && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex gap-2 items-end p-4 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-950/50 dark:to-cyan-950/50 rounded-xl border border-teal-200 dark:border-teal-800 flex-wrap"
+            >
+              <div className="flex-1 min-w-[120px] space-y-1">
+                <label className="text-xs text-muted-foreground font-medium">Categoría</label>
+                <Select value={newCategory} onValueChange={(val) => {
+                  setNewCategory(val);
+                  const suggestion = getCategorySuggestion(budgetSuggestions, val);
+                  if (suggestion && suggestion.suggestedBudget > 0) {
+                    setNewBudget(suggestion.suggestedBudget.toString());
+                  }
+                }}>
+                  <SelectTrigger className="h-9 border-teal-200 dark:border-teal-800">
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableCategories.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <Input
-                type="number"
-                placeholder="$0.00"
-                value={newBudget}
-                onChange={(e) => setNewBudget(e.target.value)}
-                className="h-9"
-              />
-            </div>
-            <Button size="sm" onClick={handleAdd} disabled={upsertBudget.isPending}>
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setIsAdding(false)}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
+              <div className="w-32 space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-muted-foreground font-medium">Presupuesto</label>
+                  {newCategory && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className="h-5 w-5 rounded-full bg-gradient-to-br from-teal-500 to-cyan-400 text-white hover:opacity-90" 
+                          onClick={() => handleSuggestForCategory(newCategory)}
+                        >
+                          <Sparkles className="h-3 w-3" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Sugerir basado en historial</TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
+                <Input
+                  type="number"
+                  placeholder="$0.00"
+                  value={newBudget}
+                  onChange={(e) => setNewBudget(e.target.value)}
+                  className="h-9 border-teal-200 dark:border-teal-800"
+                />
+              </div>
+              <Button 
+                size="sm" 
+                onClick={handleAdd} 
+                disabled={upsertBudget.isPending}
+                className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600"
+              >
+                <Check className="h-4 w-4" />
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setIsAdding(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">Cargando...</p>
+          <div className="flex items-center gap-3 py-4">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-400 animate-pulse" />
+            <p className="text-sm text-muted-foreground">Cargando...</p>
+          </div>
         ) : !budgets || budgets.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">
-            No tienes metas configuradas. Agrega una para comenzar a controlar tus gastos por categoría.
-          </p>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-6"
+          >
+            <motion.div 
+              animate={{ y: [0, -5, 0] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20 flex items-center justify-center"
+            >
+              <Rocket className="h-8 w-8 text-teal-600" />
+            </motion.div>
+            <p className="text-sm text-muted-foreground">
+              No tienes metas configuradas. Agrega una para comenzar a controlar tus gastos por categoría.
+            </p>
+          </motion.div>
         ) : (
           <div className="space-y-3">
-            {budgets.map((budget) => {
+            {budgets.map((budget, index) => {
               const spent = spendingByCategory[budget.category] || 0;
               const percentage = budget.monthly_budget > 0 ? (spent / budget.monthly_budget) * 100 : 0;
               const remaining = budget.monthly_budget - spent;
+              const styles = getStatusStyles(percentage);
 
               return (
-                <div key={budget.id} className="space-y-2 p-3 bg-muted/30 rounded-lg">
+                <motion.div 
+                  key={budget.id} 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className={cn(
+                    "space-y-2 p-3 rounded-xl transition-all",
+                    styles.bg
+                  )}
+                >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm">{getCategoryLabel(budget.category as ExpenseCategory)}</span>
+                    <span className="font-semibold text-sm">{getCategoryLabel(budget.category as ExpenseCategory)}</span>
                     <div className="flex items-center gap-2">
                       {editingId === budget.id ? (
                         <>
@@ -238,20 +321,17 @@ export function CategoryBudgetsCard() {
                       ) : (
                         <>
                           <Badge
-                            variant={
-                              percentage >= 100
-                                ? "destructive"
-                                : percentage >= 80
-                                ? "secondary"
-                                : "outline"
-                            }
+                            className={cn(
+                              "px-2 py-0.5",
+                              `bg-gradient-to-r ${styles.gradient} text-white border-0`
+                            )}
                           >
                             ${spent.toFixed(0)} / ${budget.monthly_budget.toFixed(0)}
                           </Badge>
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-7 w-7"
+                            className="h-7 w-7 hover:bg-teal-100 dark:hover:bg-teal-900/30"
                             onClick={() => {
                               setEditingId(budget.id);
                               startEdit(budget.monthly_budget);
@@ -262,7 +342,7 @@ export function CategoryBudgetsCard() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-7 w-7 text-destructive"
+                            className="h-7 w-7 text-destructive hover:bg-red-100 dark:hover:bg-red-900/30"
                             onClick={() => deleteBudget.mutate(budget.id)}
                           >
                             <Trash2 className="h-3 w-3" />
@@ -271,16 +351,26 @@ export function CategoryBudgetsCard() {
                       )}
                     </div>
                   </div>
-                  <Progress value={Math.min(percentage, 100)} className="h-2" />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>{percentage.toFixed(0)}% utilizado</span>
-                    <span>
+                  <div className="relative h-2.5 rounded-full overflow-hidden bg-muted">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(percentage, 100)}%` }}
+                      transition={{ duration: 0.8, ease: "easeOut", delay: index * 0.05 }}
+                      className={cn(
+                        "absolute inset-y-0 left-0 rounded-full",
+                        `bg-gradient-to-r ${styles.gradient}`
+                      )}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="font-medium">{percentage.toFixed(0)}% utilizado</span>
+                    <span className={cn("font-medium", styles.text)}>
                       {remaining >= 0
                         ? `$${remaining.toFixed(0)} disponible`
                         : `$${Math.abs(remaining).toFixed(0)} excedido`}
                     </span>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
