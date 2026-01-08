@@ -1,4 +1,4 @@
-import { lazy, Suspense, memo, useEffect, useState, type ReactNode } from 'react';
+import { lazy, Suspense, memo, useEffect, useState, useRef, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -56,13 +56,16 @@ export const OrganizedDashboard = memo(() => {
     setActiveAreas,
   } = useDisplayPreferences();
   const [focusSelectorOpen, setFocusSelectorOpen] = useState(false);
+  const dialogShownRef = useRef(false);
 
   useEffect(() => {
-    if (showFocusDialog && !focusSelectorOpen) {
+    // Only run once per mount when showFocusDialog is true
+    if (showFocusDialog && !dialogShownRef.current) {
+      dialogShownRef.current = true;
       setFocusSelectorOpen(true);
       setShowFocusDialog(false);
     }
-  }, [showFocusDialog, focusSelectorOpen, setShowFocusDialog]);
+  }, [showFocusDialog, setShowFocusDialog]);
 
   // Data fetching
   const { data: stats, isLoading } = useDashboardStats({});
