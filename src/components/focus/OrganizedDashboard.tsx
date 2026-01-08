@@ -28,6 +28,7 @@ const GlobalBudgetCard = lazy(() => import('@/components/dashboard/GlobalBudgetC
 const CategoryBudgetsCard = lazy(() => import('@/components/dashboard/CategoryBudgetsCard').then(m => ({ default: m.CategoryBudgetsCard })));
 const BudgetAlertsCard = lazy(() => import('@/components/dashboard/BudgetAlertsCard').then(m => ({ default: m.BudgetAlertsCard })));
 const FamilyMonthlyAnalysis = lazy(() => import('@/components/dashboard/FamilyMonthlyAnalysis').then(m => ({ default: m.FamilyMonthlyAnalysis })));
+const IncomeAnalyticsDashboard = lazy(() => import('@/components/analytics/IncomeAnalyticsDashboard').then(m => ({ default: m.IncomeAnalyticsDashboard })));
 const CashflowQuadrantCard = lazy(() => import('@/components/mentorship/CashflowQuadrantCard').then(m => ({ default: m.CashflowQuadrantCard })));
 const FinancialFreedomCard = lazy(() => import('@/components/mentorship/FinancialFreedomCard').then(m => ({ default: m.FinancialFreedomCard })));
 const PayYourselfFirstCard = lazy(() => import('@/components/mentorship/PayYourselfFirstCard').then(m => ({ default: m.PayYourselfFirstCard })));
@@ -105,8 +106,11 @@ export const OrganizedDashboard = memo(() => {
     familia: (
       <div className="space-y-6">
         <Suspense fallback={<SectionSkeleton />}>
-          {/* Daily Analysis Panel - NEW */}
+          {/* Daily Analysis Panel */}
           <FamilyMonthlyAnalysis year={new Date().getFullYear()} month={new Date().getMonth()} />
+          
+          {/* Income Analytics Dashboard - NEW */}
+          <IncomeAnalyticsDashboard year={new Date().getFullYear()} month={new Date().getMonth()} />
           
           <div className="grid gap-6 lg:grid-cols-2">
             <GlobalBudgetCard />
