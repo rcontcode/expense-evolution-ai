@@ -433,7 +433,7 @@ export const Layout = ({ children }: LayoutProps) => {
                           collapsed && 'justify-center px-0'
                         )}
                       >
-                        <Icon className={cn("h-5 w-5 flex-shrink-0", isActive && "text-primary-foreground")} />
+                        <Icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-primary-foreground" : theme.icon)} />
                         {!collapsed && (
                           <>
                             <span className="flex-1 text-left">{t(item.label)}</span>
