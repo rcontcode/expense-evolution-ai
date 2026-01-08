@@ -518,7 +518,13 @@ export default function Settings() {
                 <Skeleton className="h-24 w-full" />
                 <Skeleton className="h-24 w-full" />
               </div>
-            ) : savingsGoals && savingsGoals.length > 0 ? (
+            ) : !savingsGoals || savingsGoals.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <PiggyBank className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>{language === 'es' ? 'No tienes metas de ahorro aún' : 'No savings goals yet'}</p>
+                <p className="text-sm">{language === 'es' ? 'Crea tu primera meta para empezar' : 'Create your first goal to get started'}</p>
+              </div>
+            ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 {savingsGoals.map((goal) => {
                   const progress = goal.target_amount > 0 
@@ -584,14 +590,8 @@ export default function Settings() {
                   );
                 })}
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <PiggyBank className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-lg font-medium">{t('savingsGoals.noGoals')}</p>
-                <p className="text-sm text-muted-foreground">{t('savingsGoals.createFirst')}</p>
-              </div>
             )}
-        </CardContent>
+          </CardContent>
         </Card>
 
         {/* Investment Goals Section */}
