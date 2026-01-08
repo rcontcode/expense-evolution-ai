@@ -5,6 +5,7 @@ export { DebtClassificationCard } from './DebtClassificationCard';
 export { FinancialJournalCard } from './FinancialJournalCard';
 export { FinancialHabitsCard } from './FinancialHabitsCard';
 export { FinancialEducationCard } from './FinancialEducationCard';
+export { FinancialLibrary } from './FinancialLibrary';
 export { GlobalLearningChart } from './GlobalLearningChart';
 export { ReadingProgressTracker } from './ReadingProgressTracker';
 export { ReadingReminderSettings } from './ReadingReminderSettings';
