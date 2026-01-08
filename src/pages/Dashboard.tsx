@@ -32,6 +32,8 @@ import { WorkflowSummaryWidget } from '@/components/dashboard/WorkflowSummaryWid
 import { ControlCenterTour } from '@/components/guidance/ControlCenterTour';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { useAuth } from '@/contexts/AuthContext';
+import { ViewModeToggle, OrganizedDashboard } from '@/components/focus';
+import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 
 // Lazy load chart components for better performance
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
@@ -130,6 +132,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('charts');
 
   const { refreshSubscription } = useSubscription();
+  const { viewMode } = useDisplayPreferences();
 
   // Handle subscription success/cancel from Stripe redirect
   useEffect(() => {
@@ -426,6 +429,9 @@ export default function Dashboard() {
           </div>
 
         {/* Dashboard Module Tabs - Centro de Control Financiero */}
+        {viewMode === 'organized' ? (
+          <OrganizedDashboard />
+        ) : (
         <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 via-background to-accent/5 overflow-hidden">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
@@ -444,7 +450,10 @@ export default function Dashboard() {
                   </CardDescription>
                 </div>
               </div>
-              <ControlCenterTour onTabChange={setActiveTab} />
+              <div className="flex items-center gap-2">
+                <ViewModeToggle />
+                <ControlCenterTour onTabChange={setActiveTab} />
+              </div>
             </div>
           </CardHeader>
           <CardContent className="pt-0">
@@ -856,6 +865,7 @@ export default function Dashboard() {
             </Tabs>
           </CardContent>
         </Card>
+        )}
 
         {/* Quick Actions */}
         <Card>
