@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { FOCUS_AREAS, FocusAreaId } from '@/lib/constants/focus-areas';
-import { LayoutGrid, Layers } from 'lucide-react';
+import { LayoutGrid, Layers, Loader2 } from 'lucide-react';
 
 export function DisplayPreferencesCard() {
   const { language } = useLanguage();
@@ -46,10 +46,16 @@ export function DisplayPreferencesCard() {
             <CardTitle>
               {language === 'es' ? 'Preferencias de Visualización' : 'Display Preferences'}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="flex items-center gap-2">
               {language === 'es' 
                 ? 'Configura cómo se muestra el Dashboard y las áreas activas'
                 : 'Configure how the Dashboard displays and active areas'}
+              {isSaving && (
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  {language === 'es' ? 'Guardando…' : 'Saving…'}
+                </span>
+              )}
             </CardDescription>
           </div>
         </div>
@@ -64,7 +70,6 @@ export function DisplayPreferencesCard() {
             <Button
               variant={viewMode === 'classic' ? 'default' : 'outline'}
               size="sm"
-              disabled={isSaving}
               onClick={() => setViewMode('classic')}
               className="flex items-center gap-2"
             >
@@ -74,7 +79,6 @@ export function DisplayPreferencesCard() {
             <Button
               variant={viewMode === 'organized' ? 'default' : 'outline'}
               size="sm"
-              disabled={isSaving}
               onClick={() => setViewMode('organized')}
               className="flex items-center gap-2"
             >
@@ -103,7 +107,6 @@ export function DisplayPreferencesCard() {
               <Button
                 variant="ghost"
                 size="sm"
-                disabled={isSaving}
                 onClick={activateAllAreas}
               >
                 {language === 'es' ? 'Activar Todas' : 'Activate All'}
@@ -132,7 +135,6 @@ export function DisplayPreferencesCard() {
                     </div>
                     <Switch
                       checked={isActive}
-                      disabled={isSaving}
                       onCheckedChange={() => toggleArea(areaId)}
                     />
                   </div>
@@ -156,7 +158,6 @@ export function DisplayPreferencesCard() {
           </div>
           <Switch
             checked={showFocusDialog}
-            disabled={isSaving}
             onCheckedChange={setShowFocusDialog}
           />
         </div>
