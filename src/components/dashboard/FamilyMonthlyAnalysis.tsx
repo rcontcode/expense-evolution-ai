@@ -1,12 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
+import { useSavingsGoals } from '@/hooks/data/useSavingsGoals';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -35,7 +37,35 @@ import {
   Coffee,
   Utensils,
   ShoppingBag,
-  Waves
+  Waves,
+  Shield,
+  Heart,
+  Star,
+  Award,
+  Medal,
+  Crown,
+  Rocket,
+  Gift,
+  Bell,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  ArrowRight,
+  PiggyBank,
+  Wallet,
+  CreditCard,
+  TrendingDown as TrendDown,
+  BellRing,
+  Gauge,
+  Fingerprint,
+  Siren,
+  PartyPopper,
+  Banknote,
+  CircleDollarSign,
+  Scale,
+  Calculator,
+  Timer,
+  Gem
 } from 'lucide-react';
 import {
   BarChart,
@@ -56,7 +86,10 @@ import {
   Radar,
   PolarGrid,
   PolarAngleAxis,
-  PolarRadiusAxis
+  PolarRadiusAxis,
+  Sankey,
+  Rectangle,
+  Layer
 } from 'recharts';
 import { getCategoryLabelByLanguage, ExpenseCategory } from '@/lib/constants/expense-categories';
 
@@ -82,14 +115,32 @@ interface FamilyMonthlyAnalysisProps {
   month: number;
 }
 
+// Achievement definitions for unlocking
+const FAMILY_ACHIEVEMENTS = {
+  first_zero_day: { icon: '🌟', name: { es: 'Primer Día Sin Gastos', en: 'First Zero Spend Day' }, points: 50 },
+  savings_champion: { icon: '🏆', name: { es: 'Campeón del Ahorro', en: 'Savings Champion' }, points: 100 },
+  budget_master: { icon: '🎯', name: { es: 'Maestro del Presupuesto', en: 'Budget Master' }, points: 75 },
+  streak_warrior: { icon: '⚡', name: { es: 'Guerrero de Racha', en: 'Streak Warrior' }, points: 80 },
+  diversity_king: { icon: '👑', name: { es: 'Rey de la Diversidad', en: 'Diversity King' }, points: 60 },
+  early_bird: { icon: '🌅', name: { es: 'Madrugador Financiero', en: 'Early Bird Saver' }, points: 40 },
+  weekend_warrior: { icon: '🛡️', name: { es: 'Guerrero de Fin de Semana', en: 'Weekend Warrior' }, points: 70 },
+  trend_breaker: { icon: '📉', name: { es: 'Rompe Tendencias', en: 'Trend Breaker' }, points: 90 },
+};
+
 export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProps) {
   const { language } = useLanguage();
   const { data: profile } = useProfile();
+  const { data: savingsGoals } = useSavingsGoals();
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showTrends, setShowTrends] = useState(true);
   const [showPatterns, setShowPatterns] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [expandedInsights, setExpandedInsights] = useState(false);
+  const [showHealthScore, setShowHealthScore] = useState(true);
+  const [showAnomalies, setShowAnomalies] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
+  const [showFlowForecast, setShowFlowForecast] = useState(false);
+  const [celebratingAchievement, setCelebratingAchievement] = useState<string | null>(null);
   
   // Previous month date range for comparison
   const prevMonthRange = useMemo(() => {
@@ -393,6 +444,23 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
     const maxCatPct = topCategory ? (topCategory[1] / totalExpenses) * 100 : 0;
     const diversityScore = totalCats > 0 ? Math.round((1 - (maxCatPct / 100)) * totalCats * 10) : 0;
     
+    // Burn rate analysis
+    const burnRate = currentDay > 0 ? spentSoFar / currentDay : 0;
+    const incomeRate = totalIncome / daysInMonth;
+    const daysUntilBroke = burnRate > incomeRate && burnRate > 0 
+      ? Math.floor((totalIncome - spentSoFar) / burnRate) 
+      : daysInMonth;
+    
+    // Emergency buffer (how many days of expenses could income cover)
+    const emergencyBuffer = avgDailyExpense > 0 ? Math.floor(totalIncome / avgDailyExpense) : 0;
+    
+    // Spending consistency (standard deviation)
+    const dailyAmounts = Object.values(dailyData).map(d => d.total);
+    const mean = dailyAmounts.reduce((a, b) => a + b, 0) / dailyAmounts.length;
+    const variance = dailyAmounts.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / dailyAmounts.length;
+    const stdDev = Math.sqrt(variance);
+    const consistencyScore = avgDailyExpense > 0 ? Math.max(0, 100 - (stdDev / avgDailyExpense) * 50) : 100;
+    
     return {
       totalExpenses,
       totalIncome,
@@ -410,8 +478,349 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
       projectedTotal,
       diversityScore,
       categoryCount: totalCats,
+      burnRate,
+      incomeRate,
+      daysUntilBroke,
+      emergencyBuffer,
+      consistencyScore,
+      currentDay,
+      isCurrentMonth,
+      spentSoFar,
     };
   }, [expenses, income, dailyData, daysInMonth, year, month]);
+
+  // ============= FINANCIAL HEALTH SCORE =============
+  const healthScore = useMemo(() => {
+    let score = 0;
+    const breakdown = {
+      savings: 0,
+      spending: 0,
+      diversity: 0,
+      consistency: 0,
+      control: 0,
+    };
+    
+    // Savings rate component (0-25 points)
+    if (insights.savingsRate >= 30) breakdown.savings = 25;
+    else if (insights.savingsRate >= 20) breakdown.savings = 20;
+    else if (insights.savingsRate >= 10) breakdown.savings = 15;
+    else if (insights.savingsRate >= 0) breakdown.savings = 10;
+    else breakdown.savings = 0;
+    
+    // Spending vs budget component (0-25 points)
+    const budgetRatio = insights.totalIncome > 0 ? insights.totalExpenses / insights.totalIncome : 1;
+    if (budgetRatio <= 0.6) breakdown.spending = 25;
+    else if (budgetRatio <= 0.7) breakdown.spending = 20;
+    else if (budgetRatio <= 0.8) breakdown.spending = 15;
+    else if (budgetRatio <= 1) breakdown.spending = 10;
+    else breakdown.spending = 5;
+    
+    // Diversity score component (0-20 points)
+    breakdown.diversity = Math.min(20, insights.diversityScore * 2);
+    
+    // Consistency component (0-15 points)
+    breakdown.consistency = Math.round(insights.consistencyScore * 0.15);
+    
+    // Control component - zero spending days & streaks (0-15 points)
+    const zeroDayBonus = Math.min(7, insights.zeroSpendingDays.length) * 1;
+    const streakBonus = Math.min(8, insights.bestStreak);
+    breakdown.control = zeroDayBonus + streakBonus;
+    
+    score = breakdown.savings + breakdown.spending + breakdown.diversity + breakdown.consistency + breakdown.control;
+    
+    // Grade mapping
+    let grade = 'F';
+    let color = 'destructive';
+    let emoji = '😰';
+    if (score >= 90) { grade = 'A+'; color = 'success'; emoji = '🏆'; }
+    else if (score >= 80) { grade = 'A'; color = 'success'; emoji = '🌟'; }
+    else if (score >= 70) { grade = 'B+'; color = 'success'; emoji = '👏'; }
+    else if (score >= 60) { grade = 'B'; color = 'amber'; emoji = '👍'; }
+    else if (score >= 50) { grade = 'C'; color = 'amber'; emoji = '🤔'; }
+    else if (score >= 40) { grade = 'D'; color = 'orange'; emoji = '⚠️'; }
+    else { grade = 'F'; color = 'destructive'; emoji = '🚨'; }
+    
+    return { score, breakdown, grade, color, emoji };
+  }, [insights]);
+
+  // ============= ANOMALY DETECTION =============
+  const anomalies = useMemo(() => {
+    const detected: { 
+      type: 'spike' | 'unusual_category' | 'pattern_break' | 'recurring' | 'velocity';
+      severity: 'low' | 'medium' | 'high' | 'critical';
+      day?: number;
+      category?: string;
+      amount?: number;
+      message: { es: string; en: string };
+      suggestion: { es: string; en: string };
+    }[] = [];
+    
+    // Spike detection (3x average)
+    insights.highSpendingDays.forEach(day => {
+      const dayTotal = dailyData[day]?.total || 0;
+      if (dayTotal > insights.avgDailyExpense * 3) {
+        detected.push({
+          type: 'spike',
+          severity: dayTotal > insights.avgDailyExpense * 5 ? 'critical' : 'high',
+          day,
+          amount: dayTotal,
+          message: { 
+            es: `Día ${day}: Gasto extraordinario de ${formatCurrency(dayTotal)}`, 
+            en: `Day ${day}: Extraordinary spending of ${formatCurrency(dayTotal)}` 
+          },
+          suggestion: {
+            es: 'Revisa si fue un gasto único planificado o una compra impulsiva',
+            en: 'Check if this was a planned one-time expense or an impulse purchase'
+          }
+        });
+      }
+    });
+    
+    // Unusual category growth vs previous month
+    monthComparison.categoryChanges.forEach(cat => {
+      if (cat.change > 100 && cat.current > insights.avgDailyExpense * 2) {
+        detected.push({
+          type: 'unusual_category',
+          severity: cat.change > 200 ? 'high' : 'medium',
+          category: cat.category,
+          amount: cat.current,
+          message: {
+            es: `${getCategoryLabelByLanguage(cat.category as ExpenseCategory, 'es')} aumentó ${cat.change.toFixed(0)}%`,
+            en: `${getCategoryLabelByLanguage(cat.category as ExpenseCategory, 'en')} increased ${cat.change.toFixed(0)}%`
+          },
+          suggestion: {
+            es: 'Analiza qué causó este incremento y si es sostenible',
+            en: 'Analyze what caused this increase and if it\'s sustainable'
+          }
+        });
+      }
+    });
+    
+    // Velocity warning
+    if (insights.isCurrentMonth && insights.projectedTotal > insights.totalIncome * 1.2) {
+      detected.push({
+        type: 'velocity',
+        severity: insights.projectedTotal > insights.totalIncome * 1.5 ? 'critical' : 'high',
+        amount: insights.projectedTotal,
+        message: {
+          es: `Proyección: ${formatCurrency(insights.projectedTotal)} excede ingresos en ${((insights.projectedTotal / insights.totalIncome - 1) * 100).toFixed(0)}%`,
+          en: `Projection: ${formatCurrency(insights.projectedTotal)} exceeds income by ${((insights.projectedTotal / insights.totalIncome - 1) * 100).toFixed(0)}%`
+        },
+        suggestion: {
+          es: `Reduce ${formatCurrency((insights.projectedTotal - insights.totalIncome) / (daysInMonth - insights.currentDay))}/día para equilibrar`,
+          en: `Reduce ${formatCurrency((insights.projectedTotal - insights.totalIncome) / (daysInMonth - insights.currentDay))}/day to balance`
+        }
+      });
+    }
+    
+    // Pattern break - spending on usually zero days
+    const weekendPattern = insights.avgWeekendSpending > insights.avgWeekdaySpending * 2;
+    if (weekendPattern) {
+      detected.push({
+        type: 'pattern_break',
+        severity: 'medium',
+        message: {
+          es: 'Gastas significativamente más los fines de semana',
+          en: 'You spend significantly more on weekends'
+        },
+        suggestion: {
+          es: 'Planifica actividades de bajo costo para fines de semana',
+          en: 'Plan low-cost activities for weekends'
+        }
+      });
+    }
+    
+    return detected.sort((a, b) => {
+      const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+      return severityOrder[a.severity] - severityOrder[b.severity];
+    });
+  }, [insights, dailyData, monthComparison, formatCurrency, daysInMonth]);
+
+  // ============= ACHIEVEMENTS UNLOCKED =============
+  const achievements = useMemo(() => {
+    const unlocked: { key: string; icon: string; name: string; points: number; justUnlocked?: boolean }[] = [];
+    
+    if (insights.zeroSpendingDays.length >= 1) {
+      unlocked.push({ 
+        key: 'first_zero_day',
+        icon: FAMILY_ACHIEVEMENTS.first_zero_day.icon, 
+        name: FAMILY_ACHIEVEMENTS.first_zero_day.name[language as 'es' | 'en'], 
+        points: FAMILY_ACHIEVEMENTS.first_zero_day.points 
+      });
+    }
+    
+    if (insights.savingsRate >= 30) {
+      unlocked.push({ 
+        key: 'savings_champion',
+        icon: FAMILY_ACHIEVEMENTS.savings_champion.icon, 
+        name: FAMILY_ACHIEVEMENTS.savings_champion.name[language as 'es' | 'en'], 
+        points: FAMILY_ACHIEVEMENTS.savings_champion.points 
+      });
+    }
+    
+    if (insights.projectedTotal <= insights.totalIncome * 0.9) {
+      unlocked.push({ 
+        key: 'budget_master',
+        icon: FAMILY_ACHIEVEMENTS.budget_master.icon, 
+        name: FAMILY_ACHIEVEMENTS.budget_master.name[language as 'es' | 'en'], 
+        points: FAMILY_ACHIEVEMENTS.budget_master.points 
+      });
+    }
+    
+    if (insights.bestStreak >= 7) {
+      unlocked.push({ 
+        key: 'streak_warrior',
+        icon: FAMILY_ACHIEVEMENTS.streak_warrior.icon, 
+        name: FAMILY_ACHIEVEMENTS.streak_warrior.name[language as 'es' | 'en'], 
+        points: FAMILY_ACHIEVEMENTS.streak_warrior.points 
+      });
+    }
+    
+    if (insights.diversityScore >= 7) {
+      unlocked.push({ 
+        key: 'diversity_king',
+        icon: FAMILY_ACHIEVEMENTS.diversity_king.icon, 
+        name: FAMILY_ACHIEVEMENTS.diversity_king.name[language as 'es' | 'en'], 
+        points: FAMILY_ACHIEVEMENTS.diversity_king.points 
+      });
+    }
+    
+    if (monthComparison.expenseChange < -10) {
+      unlocked.push({ 
+        key: 'trend_breaker',
+        icon: FAMILY_ACHIEVEMENTS.trend_breaker.icon, 
+        name: FAMILY_ACHIEVEMENTS.trend_breaker.name[language as 'es' | 'en'], 
+        points: FAMILY_ACHIEVEMENTS.trend_breaker.points 
+      });
+    }
+    
+    if (insights.avgWeekendSpending <= insights.avgWeekdaySpending) {
+      unlocked.push({ 
+        key: 'weekend_warrior',
+        icon: FAMILY_ACHIEVEMENTS.weekend_warrior.icon, 
+        name: FAMILY_ACHIEVEMENTS.weekend_warrior.name[language as 'es' | 'en'], 
+        points: FAMILY_ACHIEVEMENTS.weekend_warrior.points 
+      });
+    }
+    
+    const totalPoints = unlocked.reduce((sum, a) => sum + a.points, 0);
+    
+    return { unlocked, totalPoints, total: Object.keys(FAMILY_ACHIEVEMENTS).length };
+  }, [insights, monthComparison, language]);
+
+  // ============= CASH FLOW FORECAST =============
+  const flowForecast = useMemo(() => {
+    const forecast: { day: number; balance: number; projected: number; critical: boolean }[] = [];
+    let runningBalance = insights.totalIncome;
+    
+    for (let d = 1; d <= daysInMonth; d++) {
+      if (d <= insights.currentDay) {
+        runningBalance -= dailyData[d]?.total || 0;
+        forecast.push({
+          day: d,
+          balance: runningBalance,
+          projected: runningBalance,
+          critical: runningBalance < 0
+        });
+      } else {
+        const projectedSpend = insights.burnRate;
+        runningBalance -= projectedSpend;
+        forecast.push({
+          day: d,
+          balance: forecast[d - 2]?.balance || insights.totalIncome,
+          projected: runningBalance,
+          critical: runningBalance < 0
+        });
+      }
+    }
+    
+    const endBalance = forecast[forecast.length - 1]?.projected || 0;
+    const criticalDays = forecast.filter(f => f.critical).length;
+    
+    return { forecast, endBalance, criticalDays };
+  }, [insights, dailyData, daysInMonth]);
+
+  // ============= SMART ALERTS =============
+  const smartAlerts = useMemo(() => {
+    const alerts: { 
+      type: 'warning' | 'danger' | 'success' | 'info';
+      icon: React.ReactNode;
+      title: string;
+      message: string;
+      action?: string;
+    }[] = [];
+    
+    // Critical: Going over budget
+    if (insights.projectedTotal > insights.totalIncome) {
+      alerts.push({
+        type: 'danger',
+        icon: <Siren className="h-4 w-4" />,
+        title: language === 'es' ? '¡Alerta de Déficit!' : 'Deficit Alert!',
+        message: language === 'es' 
+          ? `Proyección excede ingresos por ${formatCurrency(insights.projectedTotal - insights.totalIncome)}`
+          : `Projection exceeds income by ${formatCurrency(insights.projectedTotal - insights.totalIncome)}`,
+        action: language === 'es' ? 'Ver plan de reducción' : 'View reduction plan'
+      });
+    }
+    
+    // Warning: High spending day today
+    const today = new Date();
+    const isToday = today.getFullYear() === year && today.getMonth() === month;
+    if (isToday && dailyData[today.getDate()]?.total > insights.avgDailyExpense * 1.5) {
+      alerts.push({
+        type: 'warning',
+        icon: <AlertTriangle className="h-4 w-4" />,
+        title: language === 'es' ? 'Gasto Alto Hoy' : 'High Spending Today',
+        message: language === 'es'
+          ? `Ya gastaste ${formatCurrency(dailyData[today.getDate()].total)} hoy`
+          : `You've spent ${formatCurrency(dailyData[today.getDate()].total)} today`
+      });
+    }
+    
+    // Success: Great savings rate
+    if (insights.savingsRate >= 25) {
+      alerts.push({
+        type: 'success',
+        icon: <Trophy className="h-4 w-4" />,
+        title: language === 'es' ? '¡Excelente Ahorro!' : 'Excellent Savings!',
+        message: language === 'es'
+          ? `Tasa de ahorro del ${insights.savingsRate.toFixed(1)}% - Superior al promedio`
+          : `Savings rate of ${insights.savingsRate.toFixed(1)}% - Above average`
+      });
+    }
+    
+    // Info: Best streak continuing
+    if (insights.bestStreak >= 5) {
+      alerts.push({
+        type: 'info',
+        icon: <Flame className="h-4 w-4" />,
+        title: language === 'es' ? 'Racha Activa' : 'Active Streak',
+        message: language === 'es'
+          ? `${insights.bestStreak} días con gastos controlados`
+          : `${insights.bestStreak} days with controlled spending`
+      });
+    }
+    
+    // Savings goal progress
+    if (savingsGoals && savingsGoals.length > 0) {
+      const activeGoal = savingsGoals.find(g => g.status === 'active');
+      if (activeGoal) {
+        const progress = ((activeGoal.current_amount || 0) / activeGoal.target_amount) * 100;
+        if (progress >= 75) {
+          alerts.push({
+            type: 'success',
+            icon: <Target className="h-4 w-4" />,
+            title: language === 'es' ? '¡Cerca de tu Meta!' : 'Close to Your Goal!',
+            message: language === 'es'
+              ? `${activeGoal.name}: ${progress.toFixed(0)}% completado`
+              : `${activeGoal.name}: ${progress.toFixed(0)}% complete`
+          });
+        }
+      }
+    }
+    
+    return alerts;
+  }, [insights, dailyData, year, month, formatCurrency, language, savingsGoals]);
   
   // Radar chart data for spending patterns
   const radarData = useMemo(() => {
@@ -546,6 +955,29 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
           <div className="flex gap-1.5 flex-wrap">
             <Button
               size="sm"
+              variant={showHealthScore ? "default" : "outline"}
+              onClick={() => setShowHealthScore(!showHealthScore)}
+              className="gap-1 text-xs h-8"
+            >
+              <Gauge className="h-3.5 w-3.5" />
+              {language === 'es' ? 'Score' : 'Score'}
+            </Button>
+            <Button
+              size="sm"
+              variant={showAnomalies ? "default" : "outline"}
+              onClick={() => setShowAnomalies(!showAnomalies)}
+              className="gap-1 text-xs h-8"
+            >
+              <Siren className="h-3.5 w-3.5" />
+              {language === 'es' ? 'Alertas' : 'Alerts'}
+              {anomalies.length > 0 && (
+                <Badge className="ml-1 h-4 w-4 p-0 flex items-center justify-center bg-destructive text-[9px]">
+                  {anomalies.length}
+                </Badge>
+              )}
+            </Button>
+            <Button
+              size="sm"
               variant={showTrends ? "default" : "outline"}
               onClick={() => setShowTrends(!showTrends)}
               className="gap-1 text-xs h-8"
@@ -571,12 +1003,418 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
               <Brain className="h-3.5 w-3.5" />
               {language === 'es' ? 'Patrones' : 'Patterns'}
             </Button>
+            <Button
+              size="sm"
+              variant={showAchievements ? "default" : "outline"}
+              onClick={() => setShowAchievements(!showAchievements)}
+              className="gap-1 text-xs h-8"
+            >
+              <Trophy className="h-3.5 w-3.5" />
+              {language === 'es' ? 'Logros' : 'Badges'}
+              {achievements.unlocked.length > 0 && (
+                <Badge className="ml-1 h-4 w-4 p-0 flex items-center justify-center bg-amber-500 text-[9px]">
+                  {achievements.unlocked.length}
+                </Badge>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant={showFlowForecast ? "default" : "outline"}
+              onClick={() => setShowFlowForecast(!showFlowForecast)}
+              className="gap-1 text-xs h-8"
+            >
+              <Rocket className="h-3.5 w-3.5" />
+              {language === 'es' ? 'Forecast' : 'Forecast'}
+            </Button>
           </div>
         </div>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {/* Month Comparison Banner */}
+        {/* ============= SMART ALERTS BANNER ============= */}
+        <AnimatePresence>
+          {smartAlerts.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="space-y-2"
+            >
+              {smartAlerts.slice(0, 3).map((alert, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: i * 0.1 }}
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-xl border",
+                    alert.type === 'danger' && "bg-gradient-to-r from-destructive/20 to-red-500/10 border-destructive/40",
+                    alert.type === 'warning' && "bg-gradient-to-r from-amber-500/20 to-orange-500/10 border-amber-500/40",
+                    alert.type === 'success' && "bg-gradient-to-r from-success/20 to-emerald-500/10 border-success/40",
+                    alert.type === 'info' && "bg-gradient-to-r from-blue-500/20 to-cyan-500/10 border-blue-500/40"
+                  )}
+                >
+                  <div className={cn(
+                    "p-2 rounded-lg",
+                    alert.type === 'danger' && "bg-destructive/20 text-destructive",
+                    alert.type === 'warning' && "bg-amber-500/20 text-amber-500",
+                    alert.type === 'success' && "bg-success/20 text-success",
+                    alert.type === 'info' && "bg-blue-500/20 text-blue-500"
+                  )}>
+                    {alert.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm">{alert.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{alert.message}</p>
+                  </div>
+                  {alert.action && (
+                    <Button size="sm" variant="ghost" className="text-xs gap-1">
+                      {alert.action}
+                      <ArrowRight className="h-3 w-3" />
+                    </Button>
+                  )}
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ============= FINANCIAL HEALTH SCORE ============= */}
+        <AnimatePresence>
+          {showHealthScore && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-purple-500/5 to-pink-500/10 border-2 border-primary/30"
+            >
+              <div className="flex items-center gap-4">
+                {/* Score Circle */}
+                <div className="relative">
+                  <motion.div
+                    className={cn(
+                      "w-24 h-24 rounded-full flex items-center justify-center",
+                      "bg-gradient-to-br shadow-2xl",
+                      healthScore.color === 'success' && "from-success to-emerald-600 shadow-success/40",
+                      healthScore.color === 'amber' && "from-amber-400 to-orange-500 shadow-amber-500/40",
+                      healthScore.color === 'orange' && "from-orange-400 to-red-500 shadow-orange-500/40",
+                      healthScore.color === 'destructive' && "from-destructive to-red-700 shadow-destructive/40"
+                    )}
+                    animate={{ scale: [1, 1.02, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <div className="text-center text-white">
+                      <span className="text-3xl">{healthScore.emoji}</span>
+                      <p className="text-2xl font-black">{healthScore.grade}</p>
+                    </div>
+                  </motion.div>
+                  <motion.div
+                    className="absolute -top-1 -right-1 text-2xl"
+                    animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    {healthScore.score >= 80 ? '✨' : healthScore.score >= 50 ? '💪' : '🔧'}
+                  </motion.div>
+                </div>
+                
+                {/* Score Breakdown */}
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h3 className="font-bold text-lg flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-primary" />
+                        {language === 'es' ? 'Salud Financiera' : 'Financial Health'}
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        {language === 'es' ? 'Puntuación total:' : 'Total score:'} <span className="font-bold text-primary">{healthScore.score}/100</span>
+                      </p>
+                    </div>
+                    <Badge className={cn(
+                      "text-sm px-3 py-1",
+                      healthScore.color === 'success' && "bg-success text-white",
+                      healthScore.color === 'amber' && "bg-amber-500 text-white",
+                      healthScore.color === 'orange' && "bg-orange-500 text-white",
+                      healthScore.color === 'destructive' && "bg-destructive text-white"
+                    )}>
+                      {healthScore.grade}
+                    </Badge>
+                  </div>
+                  
+                  <div className="grid grid-cols-5 gap-2">
+                    {[
+                      { key: 'savings', label: language === 'es' ? 'Ahorro' : 'Savings', max: 25, icon: <PiggyBank className="h-3 w-3" /> },
+                      { key: 'spending', label: language === 'es' ? 'Gasto' : 'Spending', max: 25, icon: <Wallet className="h-3 w-3" /> },
+                      { key: 'diversity', label: language === 'es' ? 'Diversidad' : 'Diversity', max: 20, icon: <Activity className="h-3 w-3" /> },
+                      { key: 'consistency', label: language === 'es' ? 'Consistencia' : 'Consistency', max: 15, icon: <Timer className="h-3 w-3" /> },
+                      { key: 'control', label: language === 'es' ? 'Control' : 'Control', max: 15, icon: <Target className="h-3 w-3" /> },
+                    ].map((item) => (
+                      <Tooltip key={item.key}>
+                        <TooltipTrigger asChild>
+                          <div className="text-center p-2 rounded-lg bg-background/50 hover:bg-background/80 transition-colors cursor-help">
+                            <div className="flex justify-center mb-1 text-primary">{item.icon}</div>
+                            <Progress 
+                              value={(healthScore.breakdown[item.key as keyof typeof healthScore.breakdown] / item.max) * 100} 
+                              className="h-1.5 mb-1"
+                            />
+                            <p className="text-[9px] font-medium truncate">{item.label}</p>
+                            <p className="text-[10px] text-muted-foreground">{healthScore.breakdown[item.key as keyof typeof healthScore.breakdown]}/{item.max}</p>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="font-bold">{item.label}</p>
+                          <p className="text-xs">{healthScore.breakdown[item.key as keyof typeof healthScore.breakdown]} de {item.max} puntos</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ============= ANOMALY DETECTION ============= */}
+        <AnimatePresence>
+          {showAnomalies && anomalies.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="space-y-3 overflow-hidden"
+            >
+              <div className="flex items-center gap-2">
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                >
+                  <Siren className="h-5 w-5 text-destructive" />
+                </motion.div>
+                <h3 className="font-bold text-sm">
+                  {language === 'es' ? '🔍 Detección de Anomalías' : '🔍 Anomaly Detection'}
+                </h3>
+                <Badge variant="destructive" className="text-[10px]">
+                  {anomalies.length} {language === 'es' ? 'detectadas' : 'detected'}
+                </Badge>
+              </div>
+              
+              <div className="grid gap-2">
+                {anomalies.map((anomaly, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: i * 0.1 }}
+                    className={cn(
+                      "p-3 rounded-xl border-l-4",
+                      anomaly.severity === 'critical' && "bg-destructive/10 border-l-destructive",
+                      anomaly.severity === 'high' && "bg-orange-500/10 border-l-orange-500",
+                      anomaly.severity === 'medium' && "bg-amber-500/10 border-l-amber-500",
+                      anomaly.severity === 'low' && "bg-blue-500/10 border-l-blue-500"
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={cn(
+                        "p-1.5 rounded-lg",
+                        anomaly.severity === 'critical' && "bg-destructive/20",
+                        anomaly.severity === 'high' && "bg-orange-500/20",
+                        anomaly.severity === 'medium' && "bg-amber-500/20",
+                        anomaly.severity === 'low' && "bg-blue-500/20"
+                      )}>
+                        {anomaly.type === 'spike' && <Zap className="h-4 w-4" />}
+                        {anomaly.type === 'unusual_category' && <AlertTriangle className="h-4 w-4" />}
+                        {anomaly.type === 'velocity' && <Rocket className="h-4 w-4" />}
+                        {anomaly.type === 'pattern_break' && <Activity className="h-4 w-4" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge className={cn(
+                            "text-[9px] uppercase",
+                            anomaly.severity === 'critical' && "bg-destructive",
+                            anomaly.severity === 'high' && "bg-orange-500",
+                            anomaly.severity === 'medium' && "bg-amber-500",
+                            anomaly.severity === 'low' && "bg-blue-500"
+                          )}>
+                            {anomaly.severity}
+                          </Badge>
+                          <span className="text-[10px] text-muted-foreground uppercase">{anomaly.type.replace('_', ' ')}</span>
+                        </div>
+                        <p className="text-sm font-medium">{anomaly.message[language as 'es' | 'en']}</p>
+                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                          <Lightbulb className="h-3 w-3" />
+                          {anomaly.suggestion[language as 'es' | 'en']}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ============= ACHIEVEMENTS SECTION ============= */}
+        <AnimatePresence>
+          {showAchievements && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="space-y-3 overflow-hidden"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <motion.div
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <Trophy className="h-5 w-5 text-amber-500" />
+                  </motion.div>
+                  <h3 className="font-bold text-sm">
+                    {language === 'es' ? '🎖️ Logros Desbloqueados' : '🎖️ Unlocked Achievements'}
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+                    {achievements.totalPoints} XP
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {achievements.unlocked.length}/{achievements.total}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {achievements.unlocked.map((achievement, i) => (
+                  <motion.div
+                    key={achievement.key}
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: i * 0.1, type: 'spring' }}
+                    className="p-3 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 border border-amber-500/30 text-center hover:scale-105 transition-transform cursor-pointer"
+                    onClick={() => setCelebratingAchievement(achievement.key)}
+                  >
+                    <motion.span 
+                      className="text-3xl block mb-1"
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
+                    >
+                      {achievement.icon}
+                    </motion.span>
+                    <p className="text-xs font-bold truncate">{achievement.name}</p>
+                    <p className="text-[10px] text-amber-600">+{achievement.points} XP</p>
+                  </motion.div>
+                ))}
+                
+                {/* Locked achievements */}
+                {Object.entries(FAMILY_ACHIEVEMENTS)
+                  .filter(([key]) => !achievements.unlocked.find(a => a.key === key))
+                  .slice(0, 4 - achievements.unlocked.length)
+                  .map(([key, achievement], i) => (
+                    <motion.div
+                      key={key}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 0.5 }}
+                      className="p-3 rounded-xl bg-muted/30 border border-muted text-center grayscale"
+                    >
+                      <span className="text-2xl block mb-1 opacity-50">🔒</span>
+                      <p className="text-xs font-medium text-muted-foreground truncate">
+                        {achievement.name[language as 'es' | 'en']}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">+{achievement.points} XP</p>
+                    </motion.div>
+                  ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ============= CASH FLOW FORECAST ============= */}
+        <AnimatePresence>
+          {showFlowForecast && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="space-y-3 overflow-hidden"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Rocket className="h-5 w-5 text-primary" />
+                  <h3 className="font-bold text-sm">
+                    {language === 'es' ? '🚀 Pronóstico de Flujo' : '🚀 Cash Flow Forecast'}
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge className={cn(
+                    flowForecast.endBalance >= 0 ? "bg-success" : "bg-destructive"
+                  )}>
+                    {language === 'es' ? 'Balance Final:' : 'End Balance:'} {formatCurrency(flowForecast.endBalance)}
+                  </Badge>
+                </div>
+              </div>
+              
+              <div className="h-[160px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={flowForecast.forecast}>
+                    <defs>
+                      <linearGradient id="forecastGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="criticalGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="day" tick={{ fontSize: 9 }} />
+                    <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `$${(v/1000).toFixed(0)}k`} />
+                    <RechartsTooltip 
+                      content={({ active, payload, label }) => {
+                        if (!active || !payload?.length) return null;
+                        return (
+                          <div className="bg-popover/95 backdrop-blur-sm border rounded-lg p-2 shadow-lg">
+                            <p className="font-bold text-xs">{language === 'es' ? 'Día' : 'Day'} {label}</p>
+                            <p className="text-xs">
+                              {language === 'es' ? 'Proyección:' : 'Projected:'} {formatCurrency(payload[0]?.value as number)}
+                            </p>
+                          </div>
+                        );
+                      }}
+                    />
+                    <ReferenceLine y={0} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
+                    <ReferenceLine x={insights.currentDay} stroke="hsl(var(--primary))" strokeWidth={2} label="Hoy" />
+                    <Area 
+                      type="monotone" 
+                      dataKey="projected" 
+                      stroke="#3b82f6" 
+                      fill="url(#forecastGradient)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              
+              {/* Forecast Metrics */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="p-3 rounded-xl bg-muted/30 text-center">
+                  <p className="text-[10px] text-muted-foreground uppercase">{language === 'es' ? 'Burn Rate' : 'Burn Rate'}</p>
+                  <p className="text-lg font-bold text-primary">{formatCurrency(insights.burnRate)}</p>
+                  <p className="text-[10px] text-muted-foreground">/{language === 'es' ? 'día' : 'day'}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-muted/30 text-center">
+                  <p className="text-[10px] text-muted-foreground uppercase">{language === 'es' ? 'Buffer' : 'Buffer'}</p>
+                  <p className="text-lg font-bold text-emerald-500">{insights.emergencyBuffer}</p>
+                  <p className="text-[10px] text-muted-foreground">{language === 'es' ? 'días cubiertos' : 'days covered'}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-muted/30 text-center">
+                  <p className="text-[10px] text-muted-foreground uppercase">{language === 'es' ? 'Consistencia' : 'Consistency'}</p>
+                  <p className="text-lg font-bold text-purple-500">{insights.consistencyScore.toFixed(0)}%</p>
+                  <p className="text-[10px] text-muted-foreground">{language === 'es' ? 'estabilidad' : 'stability'}</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
