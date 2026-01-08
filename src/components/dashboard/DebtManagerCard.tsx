@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { format, differenceInMonths } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   mortgage: Home,
@@ -521,6 +522,8 @@ export function DebtManagerCard() {
           </div>
         </CardContent>
       </Card>
+
+      <LegalDisclaimer variant="education" size="compact" />
     </div>
   );
 }

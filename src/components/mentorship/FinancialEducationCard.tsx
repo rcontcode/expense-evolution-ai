@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ReadingProgressTracker } from './ReadingProgressTracker';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 const RESOURCE_TYPES = [
   { value: 'book', icon: Book, labelEs: 'Libro', labelEn: 'Book' },
@@ -771,6 +772,8 @@ export function FinancialEducationCard() {
             </div>
           </DialogContent>
         </Dialog>
+
+        <LegalDisclaimer variant="education" size="compact" />
       </CardContent>
     </Card>
   );

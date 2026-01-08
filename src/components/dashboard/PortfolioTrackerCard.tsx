@@ -22,6 +22,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-CA', {
@@ -382,6 +383,8 @@ export function PortfolioTrackerCard() {
           </CardContent>
         </Card>
       )}
+
+      <LegalDisclaimer variant="investment" />
     </div>
   );
 }

@@ -15,9 +15,10 @@ import { useIncome } from "@/hooks/data/useIncome";
 import { useTaxCalculations } from "@/hooks/data/useTaxCalculations";
 import { getCountryConfig } from "@/lib/constants/country-tax-config";
 import { 
-  Calculator, DollarSign, TrendingUp, TrendingDown, AlertTriangle, 
+  Calculator, DollarSign, TrendingUp, TrendingDown, 
   Info, PieChart, BarChart3, Sparkles, FileText, Building2, Briefcase
 } from "lucide-react";
+import { LegalDisclaimer } from "@/components/ui/legal-disclaimer";
 
 // Canadian provinces with tax brackets
 const PROVINCES_CA = [
@@ -210,21 +211,7 @@ export function TaxEstimator() {
   return (
     <div className="space-y-6">
       {/* Disclaimer */}
-      <Alert className="bg-amber-500/10 border-amber-500/30">
-        <AlertTriangle className="h-4 w-4 text-amber-500" />
-        <AlertTitle>{isEs ? "Aviso Legal Importante" : "Important Legal Notice"}</AlertTitle>
-        <AlertDescription className="text-sm">
-          {isChile ? (
-            isEs 
-              ? "Esta herramienta proporciona ESTIMACIONES aproximadas solo con fines educativos. NO constituye asesoramiento tributario. Los cálculos son simplificados según normativa SII. SIEMPRE consulta con un contador o asesor tributario para tu situación específica. EvoFinz no se hace responsable de decisiones basadas en estas estimaciones."
-              : "This tool provides APPROXIMATE ESTIMATES for educational purposes only. It does NOT constitute tax advice. Calculations are simplified based on SII regulations. ALWAYS consult with an accountant or tax advisor for your specific situation."
-          ) : (
-            isEs 
-              ? "Esta herramienta proporciona ESTIMACIONES aproximadas solo con fines educativos. NO constituye asesoramiento fiscal, financiero o legal. Los cálculos son simplificados y no incluyen todos los créditos, deducciones o circunstancias personales. SIEMPRE consulta con un contador profesional certificado (CPA) o preparador de impuestos autorizado para tu situación específica. EvoFinz no se hace responsable de decisiones basadas en estas estimaciones."
-              : "This tool provides APPROXIMATE ESTIMATES for educational purposes only. It does NOT constitute tax, financial, or legal advice. Calculations are simplified and do not include all credits, deductions, or personal circumstances. ALWAYS consult with a certified professional accountant (CPA) or authorized tax preparer for your specific situation."
-          )}
-        </AlertDescription>
-      </Alert>
+      <LegalDisclaimer variant="tax" />
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Input Card */}

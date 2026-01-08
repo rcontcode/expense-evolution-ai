@@ -48,6 +48,7 @@ import { AuthStatusIndicator } from '@/components/AuthStatusIndicator';
 import { useUnreadNotifications } from '@/hooks/data/useUnreadNotifications';
 import { ThemeBackground } from '@/components/ThemeBackground';
 import evofinzLogo from '@/assets/evofinz-logo.png';
+import { Link } from 'react-router-dom';
 
 interface LayoutProps {
   children: ReactNode;
@@ -575,10 +576,32 @@ export const Layout = ({ children }: LayoutProps) => {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 overflow-auto">
-          <div className="animate-fade-in">
+        <main className="flex-1 overflow-auto flex flex-col">
+          <div className="animate-fade-in flex-1">
             {children}
           </div>
+          
+          {/* Global Footer */}
+          <footer className="border-t bg-muted/30 py-4 px-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
+              <p>
+                {language === 'es' 
+                  ? 'Esta aplicación es solo para fines educativos e informativos. No constituye asesoría profesional.'
+                  : 'This application is for educational and informational purposes only. It does not constitute professional advice.'}
+              </p>
+              <div className="flex items-center gap-4">
+                <Link to="/legal" className="hover:text-foreground transition-colors">
+                  {language === 'es' ? 'Términos de Uso' : 'Terms of Use'}
+                </Link>
+                <Link to="/legal#privacy" className="hover:text-foreground transition-colors">
+                  {language === 'es' ? 'Privacidad' : 'Privacy'}
+                </Link>
+                <Link to="/legal#disclaimer" className="hover:text-foreground transition-colors">
+                  {language === 'es' ? 'Aviso Legal' : 'Legal Notice'}
+                </Link>
+              </div>
+            </div>
+          </footer>
         </main>
       </div>
     </TooltipProvider>
