@@ -54,41 +54,46 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-// Section color themes for visual grouping
+// Section color themes for visual grouping with 3D icon styles
 const sectionThemes = {
   daily: {
     gradient: 'from-amber-500/20 to-orange-500/20',
     border: 'border-amber-500/30',
     text: 'text-amber-600 dark:text-amber-400',
-    icon: 'text-amber-500',
+    iconWrapper: 'bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 shadow-lg shadow-amber-500/50',
+    iconColor: 'text-white drop-shadow-md',
     glow: 'shadow-amber-500/20',
   },
   business: {
     gradient: 'from-blue-500/20 to-indigo-500/20',
     border: 'border-blue-500/30',
     text: 'text-blue-600 dark:text-blue-400',
-    icon: 'text-blue-500',
+    iconWrapper: 'bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 shadow-lg shadow-blue-500/50',
+    iconColor: 'text-white drop-shadow-md',
     glow: 'shadow-blue-500/20',
   },
   wealth: {
     gradient: 'from-emerald-500/20 to-teal-500/20',
     border: 'border-emerald-500/30',
     text: 'text-emerald-600 dark:text-emerald-400',
-    icon: 'text-emerald-500',
+    iconWrapper: 'bg-gradient-to-br from-emerald-400 via-green-500 to-teal-600 shadow-lg shadow-emerald-500/50',
+    iconColor: 'text-white drop-shadow-md',
     glow: 'shadow-emerald-500/20',
   },
   growth: {
     gradient: 'from-purple-500/20 to-pink-500/20',
     border: 'border-purple-500/30',
     text: 'text-purple-600 dark:text-purple-400',
-    icon: 'text-purple-500',
+    iconWrapper: 'bg-gradient-to-br from-violet-400 via-purple-500 to-fuchsia-600 shadow-lg shadow-purple-500/50',
+    iconColor: 'text-white drop-shadow-md',
     glow: 'shadow-purple-500/20',
   },
   system: {
     gradient: 'from-slate-500/20 to-gray-500/20',
     border: 'border-slate-500/30',
     text: 'text-slate-600 dark:text-slate-400',
-    icon: 'text-slate-500',
+    iconWrapper: 'bg-gradient-to-br from-slate-400 via-gray-500 to-zinc-600 shadow-lg shadow-slate-500/50',
+    iconColor: 'text-white drop-shadow-md',
     glow: 'shadow-slate-500/20',
   },
 };
@@ -254,7 +259,12 @@ export const Layout = ({ children }: LayoutProps) => {
                                     isActive && 'active'
                                   )}
                                 >
-                                  <Icon className={cn("h-5 w-5", isActive ? "text-primary-foreground" : theme.icon)} />
+                                  <span className={cn(
+                                    "flex items-center justify-center w-7 h-7 rounded-lg transition-transform duration-200 hover:scale-110",
+                                    isActive ? "bg-primary-foreground/20" : theme.iconWrapper
+                                  )}>
+                                    <Icon className={cn("h-4 w-4", isActive ? "text-primary-foreground" : theme.iconColor)} />
+                                  </span>
                                   <span className="flex-1 text-left">{t(item.label)}</span>
                                   {badgeText && (
                                     <Badge 
@@ -433,7 +443,12 @@ export const Layout = ({ children }: LayoutProps) => {
                           collapsed && 'justify-center px-0'
                         )}
                       >
-                        <Icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-primary-foreground" : theme.icon)} />
+                        <span className={cn(
+                          "flex items-center justify-center w-7 h-7 rounded-lg transition-transform duration-200 hover:scale-110",
+                          isActive ? "bg-primary-foreground/20" : theme.iconWrapper
+                        )}>
+                          <Icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "text-primary-foreground" : theme.iconColor)} />
+                        </span>
                         {!collapsed && (
                           <>
                             <span className="flex-1 text-left">{t(item.label)}</span>
