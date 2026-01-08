@@ -584,11 +584,15 @@ export const Layout = ({ children }: LayoutProps) => {
           {/* Global Footer */}
           <footer className="border-t bg-muted/30 py-4 px-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-              <p>
-                {language === 'es' 
-                  ? 'Esta aplicación es solo para fines educativos e informativos. No constituye asesoría profesional.'
-                  : 'This application is for educational and informational purposes only. It does not constitute professional advice.'}
-              </p>
+              <div className="flex items-center gap-2">
+                <p>
+                  {language === 'es' 
+                    ? 'Esta aplicación es solo para fines educativos e informativos. No constituye asesoría profesional.'
+                    : 'This application is for educational and informational purposes only. It does not constitute professional advice.'}
+                </p>
+                <span className="hidden md:inline text-muted-foreground/50">•</span>
+                <span className="hidden md:inline text-muted-foreground/70">v1.0.0</span>
+              </div>
               <div className="flex items-center gap-4">
                 <Link to="/legal" className="hover:text-foreground transition-colors">
                   {language === 'es' ? 'Términos de Uso' : 'Terms of Use'}
@@ -599,6 +603,9 @@ export const Layout = ({ children }: LayoutProps) => {
                 <Link to="/legal#disclaimer" className="hover:text-foreground transition-colors">
                   {language === 'es' ? 'Aviso Legal' : 'Legal Notice'}
                 </Link>
+                <a href="mailto:support@evofinz.com" className="hover:text-foreground transition-colors">
+                  {language === 'es' ? 'Soporte' : 'Support'}
+                </a>
               </div>
             </div>
           </footer>
