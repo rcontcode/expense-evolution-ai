@@ -1394,6 +1394,7 @@ export type Database = {
           business_start_date: string | null
           country: string | null
           created_at: string | null
+          display_preferences: Json | null
           email: string | null
           fiscal_year_end: string | null
           full_name: string | null
@@ -1414,6 +1415,7 @@ export type Database = {
           business_start_date?: string | null
           country?: string | null
           created_at?: string | null
+          display_preferences?: Json | null
           email?: string | null
           fiscal_year_end?: string | null
           full_name?: string | null
@@ -1434,6 +1436,7 @@ export type Database = {
           business_start_date?: string | null
           country?: string | null
           created_at?: string | null
+          display_preferences?: Json | null
           email?: string | null
           fiscal_year_end?: string | null
           full_name?: string | null
