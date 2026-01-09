@@ -42,6 +42,8 @@ import { MileageRoutePreview } from '@/components/mileage/MileageRoutePreview';
 import { AddressAutocomplete } from '@/components/mileage/AddressAutocomplete';
 import { LeafletRouteMap } from '@/components/mileage/LeafletRouteMap';
 import { TripCalendarPreview } from '@/components/mileage/TripCalendarPreview';
+import { EntitySelect } from '@/components/forms/EntitySelect';
+import { useEntity } from '@/contexts/EntityContext';
 
 interface MileageFormProps {
   initialData?: MileageWithClient | null;
@@ -53,6 +55,7 @@ interface MileageFormProps {
 export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading }: MileageFormProps) => {
   const { t } = useLanguage();
   const { data: clients } = useClients();
+  const { currentEntity } = useEntity();
   const [showClientAddressSuggestion, setShowClientAddressSuggestion] = useState(false);
   const [selectedClientAddress, setSelectedClientAddress] = useState<string | null>(null);
   const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
@@ -79,6 +82,7 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
       recurrence_days: (initialData as any)?.recurrence_days || null,
       exception_dates: (initialData as any)?.exception_dates?.map((d: string) => new Date(d)) || null,
       specific_dates: (initialData as any)?.specific_dates?.map((d: string) => new Date(d)) || null,
+      entity_id: (initialData as any)?.entity_id || currentEntity?.id || undefined,
     },
   });
 
@@ -271,6 +275,9 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {/* Entity/Jurisdiction Selector */}
+        <EntitySelect control={form.control} name="entity_id" />
+        
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}

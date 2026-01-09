@@ -16,6 +16,8 @@ import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { CalendarIcon, DollarSign } from 'lucide-react';
+import { EntitySelect } from '@/components/forms/EntitySelect';
+import { useEntity } from '@/contexts/EntityContext';
 
 const projectSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -26,6 +28,7 @@ const projectSchema = z.object({
   start_date: z.date().optional().nullable(),
   end_date: z.date().optional().nullable(),
   color: z.string().default('#3B82F6'),
+  entity_id: z.string().uuid().optional().nullable(),
 });
 
 const COLORS = [
@@ -44,6 +47,7 @@ export function ProjectForm({ project, onSubmit, onCancel, isLoading }: ProjectF
   const { t, language } = useLanguage();
   const dateLocale = language === 'es' ? es : enUS;
   const { data: clients } = useClients();
+  const { currentEntity } = useEntity();
 
   const form = useForm({
     resolver: zodResolver(projectSchema),
@@ -56,6 +60,7 @@ export function ProjectForm({ project, onSubmit, onCancel, isLoading }: ProjectF
       start_date: project?.start_date ? new Date(project.start_date) : null,
       end_date: project?.end_date ? new Date(project.end_date) : null,
       color: project?.color || '#3B82F6',
+      entity_id: (project as any)?.entity_id || currentEntity?.id || undefined,
     },
   });
 
@@ -72,6 +77,9 @@ export function ProjectForm({ project, onSubmit, onCancel, isLoading }: ProjectF
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+        {/* Entity/Jurisdiction Selector */}
+        <EntitySelect control={form.control} name="entity_id" />
+        
         <FormField
           control={form.control}
           name="name"

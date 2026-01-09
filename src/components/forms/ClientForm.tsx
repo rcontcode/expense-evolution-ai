@@ -11,6 +11,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Building2, Globe, Mail, Phone, CreditCard, FileText, Link } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
+import { EntitySelect } from '@/components/forms/EntitySelect';
+import { useEntity } from '@/contexts/EntityContext';
 
 interface ClientFormProps {
   client?: Client;
@@ -21,6 +23,7 @@ interface ClientFormProps {
 
 export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientFormProps) {
   const { t, language } = useLanguage();
+  const { currentEntity } = useEntity();
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
@@ -33,9 +36,10 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
       contact_email: (client as any)?.contact_email || '',
       contact_phone: (client as any)?.contact_phone || '',
       payment_terms: (client as any)?.payment_terms || 30,
-      currency: (client as any)?.currency || 'CAD',
+      currency: (client as any)?.currency || currentEntity?.default_currency || 'CAD',
       tax_id: (client as any)?.tax_id || '',
       website: (client as any)?.website || '',
+      entity_id: (client as any)?.entity_id || currentEntity?.id || undefined,
     },
   });
 
@@ -43,6 +47,9 @@ export function ClientForm({ client, onSubmit, onCancel, isLoading }: ClientForm
     <TooltipProvider>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Entity/Jurisdiction Selector */}
+          <EntitySelect control={form.control} name="entity_id" />
+          
           {/* Basic Info Section */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">

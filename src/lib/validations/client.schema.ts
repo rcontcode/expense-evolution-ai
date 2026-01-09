@@ -89,6 +89,7 @@ export const clientSchema = z.object({
     .optional()
     .nullable()
     .or(z.literal('')),
+  entity_id: z.string().uuid().optional().nullable(),
 });
 
 export type ClientFormValues = z.infer<typeof clientSchema>;

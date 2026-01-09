@@ -81,6 +81,7 @@ export function useCreateIncome() {
           recurrence_end_date: data.recurrence_end_date?.toISOString().split('T')[0] || null,
           is_taxable: data.is_taxable,
           notes: data.notes || null,
+          entity_id: data.entity_id || null,
         })
         .select()
         .single();

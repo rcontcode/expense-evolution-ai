@@ -92,6 +92,7 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
       currency: data.currency || 'CAD',
       tax_id: data.tax_id || null,
       website: data.website || null,
+      entity_id: data.entity_id || null,
     };
 
     if (client) {
