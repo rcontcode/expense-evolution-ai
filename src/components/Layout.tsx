@@ -23,7 +23,9 @@ import {
   Building2,
   Scale,
   Bell,
-  GraduationCap
+  GraduationCap,
+  Upload,
+  ScanLine
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -105,7 +107,7 @@ const getNavSections = (language: string) => [
       { icon: LayoutDashboard, label: 'nav.dashboard', path: '/dashboard', badge: null, tooltipKey: 'dashboard' as const },
       { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
       { icon: TrendingUp, label: 'nav.income', path: '/income', badge: null, tooltipKey: 'income' as const },
-      { icon: Inbox, label: 'nav.chaos', path: '/chaos', badge: 'AI', tooltipKey: 'chaosInbox' as const },
+      { icon: Inbox, label: 'nav.chaos', path: '/chaos', badgeKey: 'nav.badgeSmart', tooltipKey: 'chaosInbox' as const },
     ]
   },
   {
@@ -116,7 +118,7 @@ const getNavSections = (language: string) => [
       { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tooltipKey: 'clients' as const },
       { icon: FolderKanban, label: 'nav.projects', path: '/projects', badge: null, tooltipKey: 'clients' as const },
       { icon: FileText, label: 'nav.contracts', path: '/contracts', badge: null, tooltipKey: 'contracts' as const },
-      { icon: Car, label: 'nav.mileage', path: '/mileage', badge: 'CRA', tooltipKey: 'mileage' as const },
+      { icon: Car, label: 'nav.mileage', path: '/mileage', badgeType: 'tax' as const, tooltipKey: 'mileage' as const },
       { icon: Tag, label: 'nav.tags', path: '/tags', badge: null, tooltipKey: 'tags' as const },
     ]
   },
@@ -126,7 +128,7 @@ const getNavSections = (language: string) => [
     themeKey: 'wealth' as keyof typeof sectionThemes,
     items: [
       { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
-      { icon: Building2, label: 'nav.banking', path: '/banking', badgeKey: 'nav.badgeAI', tooltipKey: 'dashboard' as const },
+      { icon: Building2, label: 'nav.banking', path: '/banking', badgeKey: 'nav.badgeSmart', tooltipKey: 'dashboard' as const },
       { icon: RefreshCw, label: 'nav.reconciliation', path: '/reconciliation', badge: null, tooltipKey: 'reconciliation' as const },
     ]
   },
@@ -136,7 +138,7 @@ const getNavSections = (language: string) => [
     themeKey: 'growth' as keyof typeof sectionThemes,
     items: [
       { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
-      { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badge: 'CRA', tooltipKey: 'dashboard' as const },
+      { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badgeType: 'tax' as const, tooltipKey: 'dashboard' as const },
     ]
   },
   {
@@ -172,6 +174,8 @@ export const Layout = ({ children }: LayoutProps) => {
   const MOBILE_NAV_ITEMS = getMobileNavItems(language);
   const { data: unreadCount = 0 } = useUnreadNotifications();
   
+  // Get tax authority badge based on country
+  const taxBadge = profile?.country === 'CL' ? 'SII' : profile?.country === 'CA' ? 'CRA' : null;
   const userInitial = profile?.full_name?.charAt(0)?.toUpperCase() || profile?.email?.charAt(0)?.toUpperCase() || 'U';
 
   // Mobile Layout
@@ -244,7 +248,15 @@ export const Layout = ({ children }: LayoutProps) => {
                             {section.items.map((item) => {
                               const Icon = item.icon;
                               const isActive = location.pathname === item.path;
-                              const badgeText = 'badgeKey' in item && item.badgeKey ? t(item.badgeKey) : ('badge' in item ? item.badge : null);
+                              // Determine badge for mobile menu
+                              let badgeText: string | null = null;
+                              if ('badgeType' in item && item.badgeType === 'tax') {
+                                badgeText = taxBadge;
+                              } else if ('badgeKey' in item && item.badgeKey) {
+                                badgeText = t(item.badgeKey);
+                              } else if ('badge' in item) {
+                                badgeText = item.badge;
+                              }
                               return (
                                 <button
                                   key={item.path}
@@ -266,11 +278,8 @@ export const Layout = ({ children }: LayoutProps) => {
                                   <span className="flex-1 text-left">{t(item.label)}</span>
                                   {badgeText && (
                                     <Badge 
-                                      variant={badgeText === 'AI' ? 'default' : 'secondary'} 
-                                      className={cn(
-                                        "text-[10px] px-1.5 py-0",
-                                        badgeText === 'AI' && "bg-gradient-primary border-0"
-                                      )}
+                                      variant="secondary" 
+                                      className="text-[10px] px-1.5 py-0"
                                     >
                                       {badgeText}
                                     </Badge>
@@ -430,7 +439,15 @@ export const Layout = ({ children }: LayoutProps) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;
                     const tooltipData = TOOLTIP_CONTENT[item.tooltipKey];
-                    const badgeText = 'badgeKey' in item && item.badgeKey ? t(item.badgeKey) : ('badge' in item ? item.badge : null);
+                    // Determine badge: use tax badge if badgeType is 'tax', otherwise use badgeKey/badge
+                    let badgeText: string | null = null;
+                    if ('badgeType' in item && item.badgeType === 'tax') {
+                      badgeText = taxBadge;
+                    } else if ('badgeKey' in item && item.badgeKey) {
+                      badgeText = t(item.badgeKey);
+                    } else if ('badge' in item) {
+                      badgeText = item.badge;
+                    }
                     
                     const button = (
                       <button
@@ -453,11 +470,8 @@ export const Layout = ({ children }: LayoutProps) => {
                             <span className="flex-1 text-left text-xs">{t(item.label)}</span>
                             {badgeText && (
                               <Badge 
-                                variant={badgeText === 'AI' ? 'default' : 'secondary'} 
-                                className={cn(
-                                  "text-[9px] px-1 py-0 h-4",
-                                  badgeText === 'AI' && "bg-gradient-primary border-0"
-                                )}
+                                variant="secondary" 
+                                className="text-[9px] px-1 py-0 h-4"
                               >
                                 {badgeText}
                               </Badge>
@@ -516,21 +530,29 @@ export const Layout = ({ children }: LayoutProps) => {
             })}
           </nav>
 
-          {/* Quick Capture CTA - Compact */}
+          {/* Quick Capture CTA - Vibrant with capture method icons */}
           {!collapsed && (
             <div className="px-2 pb-1">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => navigate('/expenses')}
-                    className="w-full p-2.5 rounded-lg bg-gradient-hero text-primary-foreground flex items-center gap-2 hover:opacity-90 transition-opacity shadow-md"
+                    className="w-full p-2.5 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50"
                   >
-                    <div className="w-7 h-7 rounded bg-primary-foreground/20 flex items-center justify-center">
-                      <Sparkles className="h-4 w-4" />
+                    <div className="flex items-center gap-1">
+                      <div className="w-6 h-6 rounded bg-white/20 flex items-center justify-center">
+                        <Camera className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="w-6 h-6 rounded bg-white/20 flex items-center justify-center">
+                        <Upload className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="w-6 h-6 rounded bg-white/20 flex items-center justify-center">
+                        <ScanLine className="h-3.5 w-3.5" />
+                      </div>
                     </div>
-                    <div className="text-left">
+                    <div className="text-left flex-1">
                       <p className="font-semibold text-xs">{t('layout.quickCapture')}</p>
-                      <p className="text-[10px] opacity-80">{t('layout.quickCaptureSubtitle')}</p>
+                      <p className="text-[10px] opacity-90">{language === 'es' ? 'Foto · Archivo · Escanear' : 'Photo · File · Scan'}</p>
                     </div>
                   </button>
                 </TooltipTrigger>

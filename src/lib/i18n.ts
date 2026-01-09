@@ -416,7 +416,7 @@ export const translations = {
       config: 'Config',
       menu: 'Menú',
       badgeNew: 'Nuevo',
-      badgeAI: 'IA',
+      badgeSmart: 'Smart',
     },
     income: {
       title: 'Ingresos',
@@ -1374,7 +1374,7 @@ export const translations = {
       config: 'Config',
       menu: 'Menu',
       badgeNew: 'New',
-      badgeAI: 'AI',
+      badgeSmart: 'Smart',
     },
     // Income
     income: {
