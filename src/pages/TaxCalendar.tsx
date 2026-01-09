@@ -160,6 +160,7 @@ export default function TaxCalendar() {
                 workTypes={workTypes} 
                 fiscalYearEnd={fiscalYearEnd}
                 language={language}
+                country={profile?.country || 'CA'}
               />
             </CardContent>
           </Card>
@@ -168,14 +169,19 @@ export default function TaxCalendar() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Calculator className="h-4 w-4 text-purple-500" />
-                {language === 'es' ? "GST/HST" : "GST/HST Status"}
+                {profile?.country === 'CL' ? "IVA" : (language === 'es' ? "GST/HST" : "GST/HST Status")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-lg font-semibold">
-                {profile?.gst_hst_registered 
-                  ? (language === 'es' ? "Registrado" : "Registered")
-                  : (language === 'es' ? "No registrado" : "Not Registered")
+                {profile?.country === 'CL'
+                  ? (profile?.tax_regime 
+                      ? (profile.tax_regime === 'general' ? 'Régimen General' : 
+                         profile.tax_regime === 'pyme' ? 'PyME' : 'Pro PyME')
+                      : (language === 'es' ? "Sin configurar" : "Not configured"))
+                  : (profile?.gst_hst_registered 
+                      ? (language === 'es' ? "Registrado" : "Registered")
+                      : (language === 'es' ? "No registrado" : "Not Registered"))
                 }
               </p>
             </CardContent>
@@ -267,11 +273,11 @@ export default function TaxCalendar() {
           </TabsContent>
 
           <TabsContent value="guide" className="space-y-4">
-            <TaxGuideContent language={language} />
+            <TaxGuideContent language={language} country={profile?.country || 'CA'} />
           </TabsContent>
 
           <TabsContent value="resources" className="space-y-4">
-            <TaxResources language={language} />
+            <TaxResources language={language} country={profile?.country || 'CA'} />
           </TabsContent>
         </Tabs>
       </div>
@@ -283,50 +289,82 @@ export default function TaxCalendar() {
 function NextDeadlineDisplay({ 
   workTypes, 
   fiscalYearEnd,
-  language 
+  language,
+  country = 'CA'
 }: { 
   workTypes: string[];
   fiscalYearEnd?: string | null;
   language: string;
+  country?: string;
 }) {
   const nextDeadline = useMemo(() => {
     const now = new Date();
     const currentYear = now.getFullYear();
     const deadlines: { date: Date; name: string }[] = [];
+    const isChile = country === 'CL';
 
-    // Personal tax deadline - April 30
-    deadlines.push({
-      date: new Date(currentYear, 3, 30),
-      name: language === 'es' ? "Impuestos Personales" : "Personal Taxes"
-    });
-
-    // Self-employed deadline - June 15
-    if (workTypes.includes('contractor')) {
+    if (isChile) {
+      // Chile: F22 - Abril 30
       deadlines.push({
-        date: new Date(currentYear, 5, 15),
-        name: language === 'es' ? "Autónomo (T1)" : "Self-Employed (T1)"
+        date: new Date(currentYear, 3, 30),
+        name: "Formulario 22 (Renta Anual)"
+      });
+
+      // Chile: F29 - día 12 de cada mes
+      const currentMonth = now.getMonth();
+      const currentDay = now.getDate();
+      if (currentDay <= 12) {
+        deadlines.push({
+          date: new Date(currentYear, currentMonth, 12),
+          name: "Formulario 29 (IVA/PPM)"
+        });
+      } else {
+        deadlines.push({
+          date: new Date(currentYear, currentMonth + 1, 12),
+          name: "Formulario 29 (IVA/PPM)"
+        });
+      }
+
+      // Chile: APV - Diciembre 30
+      deadlines.push({
+        date: new Date(currentYear, 11, 30),
+        name: "APV (Ahorro Previsional)"
+      });
+    } else {
+      // Canada: Personal tax deadline - April 30
+      deadlines.push({
+        date: new Date(currentYear, 3, 30),
+        name: language === 'es' ? "Impuestos Personales" : "Personal Taxes"
+      });
+
+      // Canada: Self-employed deadline - June 15
+      if (workTypes.includes('contractor')) {
+        deadlines.push({
+          date: new Date(currentYear, 5, 15),
+          name: language === 'es' ? "Autónomo (T1)" : "Self-Employed (T1)"
+        });
+      }
+
+      // Canada: Corporation - 6 months after fiscal year end
+      if (workTypes.includes('corporation') && fiscalYearEnd) {
+        const fyeDate = new Date(fiscalYearEnd);
+        const corpDeadline = addMonths(fyeDate, 6);
+        deadlines.push({
+          date: corpDeadline,
+          name: language === 'es' ? "Corporación (T2)" : "Corporation (T2)"
+        });
+      }
+
+      // Canada: GST/HST quarterly deadlines
+      [0, 3, 6, 9].forEach(month => {
+        const quarterEnd = new Date(currentYear, month + 2, 0);
+        const gstDeadline = addMonths(quarterEnd, 1);
+        deadlines.push({
+          date: gstDeadline,
+          name: "GST/HST"
+        });
       });
     }
-
-    // Corporation - 6 months after fiscal year end
-    if (workTypes.includes('corporation') && fiscalYearEnd) {
-      const fyeDate = new Date(fiscalYearEnd);
-      const corpDeadline = addMonths(fyeDate, 6);
-      deadlines.push({
-        date: corpDeadline,
-        name: language === 'es' ? "Corporación (T2)" : "Corporation (T2)"
-      });
-    }
-
-    // GST/HST quarterly deadlines
-    [0, 3, 6, 9].forEach(month => {
-      const quarterEnd = new Date(currentYear, month + 2, 0);
-      const gstDeadline = addMonths(quarterEnd, 1);
-      deadlines.push({
-        date: gstDeadline,
-        name: "GST/HST"
-      });
-    });
 
     // Find next upcoming deadline
     const upcoming = deadlines
@@ -334,7 +372,7 @@ function NextDeadlineDisplay({
       .sort((a, b) => a.date.getTime() - b.date.getTime());
 
     return upcoming[0] || null;
-  }, [workTypes, fiscalYearEnd, language]);
+  }, [workTypes, fiscalYearEnd, language, country]);
 
   if (!nextDeadline) {
     return <p className="text-muted-foreground">{language === 'es' ? "No hay fechas próximas" : "No upcoming dates"}</p>;
@@ -357,9 +395,226 @@ function NextDeadlineDisplay({
 }
 
 // Tax Guide Content Component
-function TaxGuideContent({ language }: { language: string }) {
+function TaxGuideContent({ language, country = 'CA' }: { language: string; country?: string }) {
   const isEs = language === 'es';
+  const isChile = country === 'CL';
 
+  if (isChile) {
+    return (
+      <div className="space-y-6">
+        {/* Disclaimer Chile */}
+        <Alert className="border-amber-500/30 bg-amber-500/5">
+          <AlertTriangle className="h-4 w-4 text-amber-500" />
+          <AlertTitle className="text-amber-500">Aviso Legal Importante</AlertTitle>
+          <AlertDescription className="text-sm">
+            Esta información es solo referencial y no constituye asesoría tributaria profesional. 
+            Las normas del SII cambian frecuentemente. Consulta siempre con un contador autorizado 
+            o directamente con el Servicio de Impuestos Internos para tu situación específica.
+          </AlertDescription>
+        </Alert>
+
+        {/* Chile: How to Determine Your Filing Requirements */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <HelpCircle className="h-5 w-5 text-primary" />
+              ¿Cómo Saber Qué Debo Declarar?
+            </CardTitle>
+            <CardDescription>
+              Tus obligaciones dependen de tu tipo de renta y régimen tributario
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert>
+              <Lightbulb className="h-4 w-4" />
+              <AlertTitle>¿No estás seguro de tu situación?</AlertTitle>
+              <AlertDescription className="mt-2 space-y-2">
+                <p>Aquí está lo que necesitas verificar:</p>
+                <ul className="list-disc pl-4 space-y-1 text-sm">
+                  <li><strong>Revisa tu inicio de actividades</strong> - En sii.cl/servicios_online puedes ver tu situación tributaria</li>
+                  <li><strong>Consulta tu régimen tributario</strong> - General (27%), Pro PyME (25%), 14D N°8</li>
+                  <li><strong>Verifica tus obligaciones mensuales</strong> - F29 si emites boletas o facturas</li>
+                  <li><strong>Consulta a un contador</strong> - Especialmente si tienes múltiples fuentes de ingreso</li>
+                </ul>
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+
+        {/* Accordion for Chile Business Types */}
+        <Accordion type="multiple" className="space-y-4">
+          {/* F22 - Declaración Anual */}
+          <AccordionItem value="f22" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-blue-500/10">
+                  <User className="h-5 w-5 text-blue-500" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold">Formulario 22 - Declaración Anual</p>
+                  <p className="text-sm text-muted-foreground">Todos los contribuyentes</p>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-green-500">Fecha Límite</h4>
+                  <p className="text-2xl font-bold">30 de Abril</p>
+                  <p className="text-sm text-muted-foreground">
+                    Para presentar y pagar (o recibir devolución)
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-semibold">Qué Incluye</h4>
+                  <ul className="text-sm space-y-1">
+                    <li>• Rentas de Primera Categoría (empresas)</li>
+                    <li>• Rentas de Segunda Categoría (sueldos, honorarios)</li>
+                    <li>• Créditos por APV, gastos de educación</li>
+                    <li>• Reliquidación de impuestos</li>
+                  </ul>
+                </div>
+              </div>
+              <Alert className="bg-blue-500/10 border-blue-500/30">
+                <Info className="h-4 w-4 text-blue-500" />
+                <AlertDescription>
+                  El SII prepara una propuesta de declaración basada en la información que posee. 
+                  Revísala cuidadosamente antes de aceptar.
+                </AlertDescription>
+              </Alert>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* F29 - IVA Mensual */}
+          <AccordionItem value="f29" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-green-500/10">
+                  <Calculator className="h-5 w-5 text-green-500" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold">Formulario 29 - IVA y PPM Mensual</p>
+                  <p className="text-sm text-muted-foreground">Contribuyentes afectos a IVA</p>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-green-500">Fecha Límite</h4>
+                  <p className="text-2xl font-bold">12 de cada mes</p>
+                  <p className="text-sm text-muted-foreground">
+                    Por el período del mes anterior
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-semibold">Qué Incluye</h4>
+                  <ul className="text-sm space-y-1">
+                    <li>• IVA Débito Fiscal (ventas)</li>
+                    <li>• IVA Crédito Fiscal (compras)</li>
+                    <li>• PPM (Pagos Provisionales Mensuales)</li>
+                    <li>• Retenciones de honorarios</li>
+                  </ul>
+                </div>
+              </div>
+              <Alert variant="destructive" className="bg-red-500/10 border-red-500/30">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>¡Importante!</AlertTitle>
+                <AlertDescription>
+                  La declaración y pago fuera de plazo genera multas e intereses. 
+                  Si no tuviste movimientos, igual debes declarar "sin movimiento".
+                </AlertDescription>
+              </Alert>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Boletas de Honorarios */}
+          <AccordionItem value="honorarios" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-amber-500/10">
+                  <Briefcase className="h-5 w-5 text-amber-500" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold">Boletas de Honorarios - Segunda Categoría</p>
+                  <p className="text-sm text-muted-foreground">Profesionales independientes</p>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-amber-500">Retención Actual</h4>
+                  <p className="text-2xl font-bold">13.75% (2024)</p>
+                  <p className="text-sm text-muted-foreground">
+                    Aumentando progresivamente hasta 17%
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-semibold">Obligaciones</h4>
+                  <ul className="text-sm space-y-1">
+                    <li>• Emitir boletas electrónicas en sii.cl</li>
+                    <li>• Declarar en F22 anual</li>
+                    <li>• Cotizaciones previsionales obligatorias</li>
+                  </ul>
+                </div>
+              </div>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <h4 className="font-semibold mb-2">Cotizaciones Obligatorias (desde 2019)</h4>
+                <p className="text-sm text-muted-foreground">
+                  Los trabajadores a honorarios deben pagar cotizaciones de salud (7%) y AFP 
+                  con cargo a la retención del 13.75%. El SII calcula automáticamente en el F22.
+                </p>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Régimen Pro PyME */}
+          <AccordionItem value="propyme" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-purple-500/10">
+                  <Building2 className="h-5 w-5 text-purple-500" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold">Régimen Pro PyME (14D N°3)</p>
+                  <p className="text-sm text-muted-foreground">Micro, pequeñas y medianas empresas</p>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-purple-500">Tasa de Impuesto</h4>
+                  <p className="text-2xl font-bold">25%</p>
+                  <p className="text-sm text-muted-foreground">
+                    vs 27% del régimen general
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-semibold">Requisitos</h4>
+                  <ul className="text-sm space-y-1">
+                    <li>• Ingresos anuales hasta 75.000 UF</li>
+                    <li>• Capital efectivo hasta 85.000 UF</li>
+                    <li>• Contabilidad simplificada</li>
+                  </ul>
+                </div>
+              </div>
+              <Alert className="bg-purple-500/10 border-purple-500/30">
+                <Info className="h-4 w-4 text-purple-500" />
+                <AlertDescription>
+                  El régimen Pro PyME permite tributar sobre base de flujos de caja (ingresos percibidos 
+                  menos gastos pagados), simplificando significativamente la contabilidad.
+                </AlertDescription>
+              </Alert>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
+    );
+  }
+
+  // Canada content (original)
   return (
     <div className="space-y-6">
       {/* How to Determine Your Filing Requirements */}

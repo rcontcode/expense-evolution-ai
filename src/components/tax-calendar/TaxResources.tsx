@@ -1,15 +1,252 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, FileText, Calculator, BookOpen, Phone, Globe, Building2, User, Briefcase } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ExternalLink, FileText, Calculator, BookOpen, Phone, Globe, Building2, User, Briefcase, AlertTriangle } from "lucide-react";
 
 interface TaxResourcesProps {
   language: string;
+  country?: string;
 }
 
-export function TaxResources({ language }: TaxResourcesProps) {
+export function TaxResources({ language, country = 'CA' }: TaxResourcesProps) {
   const isEs = language === 'es';
+  const isChile = country === 'CL';
 
+  // Chile Resources
+  if (isChile) {
+    const chileResources = [
+      {
+        category: "Formularios SII",
+        icon: <FileText className="h-5 w-5" />,
+        items: [
+          {
+            name: "Formulario 22",
+            description: "Declaración Anual de Impuesto a la Renta",
+            url: "https://www.sii.cl/servicios_online/1047-declaracion_de_renta-1182.html",
+            badge: "Anual"
+          },
+          {
+            name: "Formulario 29",
+            description: "Declaración Mensual IVA y PPM",
+            url: "https://www.sii.cl/servicios_online/1047-formulario_29-1156.html",
+            badge: "Mensual"
+          },
+          {
+            name: "Boleta Electrónica",
+            description: "Emitir boletas de honorarios electrónicas",
+            url: "https://www.sii.cl/servicios_online/1040-boleta_honorarios-1042.html",
+            badge: "Honorarios"
+          },
+          {
+            name: "Factura Electrónica",
+            description: "Emitir facturas afectas y exentas",
+            url: "https://www.sii.cl/servicios_online/1039-factura_electronica-1040.html",
+            badge: "Empresas"
+          }
+        ]
+      },
+      {
+        category: "Herramientas SII",
+        icon: <Calculator className="h-5 w-5" />,
+        items: [
+          {
+            name: "Mi SII",
+            description: "Portal personal del contribuyente",
+            url: "https://www.sii.cl/servicios_online/mi_sii.html",
+            badge: "Portal"
+          },
+          {
+            name: "Consulta Situación Tributaria",
+            description: "Verifica tu estado ante el SII",
+            url: "https://www.sii.cl/servicios_online/1047-consulta_situacion_tributaria-1260.html",
+            badge: "Consulta"
+          },
+          {
+            name: "Calculadora de UF/UTM",
+            description: "Valores actualizados e históricos",
+            url: "https://www.sii.cl/valores_y_fechas/uf/uf2024.htm",
+            badge: "Gratis"
+          },
+          {
+            name: "Propuesta de Declaración",
+            description: "Ver tu propuesta F22 preparada por el SII",
+            url: "https://www.sii.cl/servicios_online/1047-propuesta_declaracion-1314.html",
+            badge: "F22"
+          }
+        ]
+      },
+      {
+        category: "Guías y Normativas",
+        icon: <BookOpen className="h-5 w-5" />,
+        items: [
+          {
+            name: "Inicio de Actividades",
+            description: "Cómo iniciar actividades comerciales",
+            url: "https://www.sii.cl/servicios_online/1047-inicio_actividades-1043.html",
+            badge: "Guía"
+          },
+          {
+            name: "Regímenes Tributarios",
+            description: "Pro PyME, General, 14D",
+            url: "https://www.sii.cl/destacados/mipyme/index.html",
+            badge: "PyME"
+          },
+          {
+            name: "Gastos Deducibles",
+            description: "Qué gastos puedes rebajar",
+            url: "https://www.sii.cl/preguntas_frecuentes/renta/001_002_3203.htm",
+            badge: "Guía"
+          },
+          {
+            name: "APV - Ahorro Previsional",
+            description: "Beneficios tributarios del APV",
+            url: "https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-10377.html",
+            badge: "Ahorro"
+          }
+        ]
+      },
+      {
+        category: "Contacto SII",
+        icon: <Phone className="h-5 w-5" />,
+        items: [
+          {
+            name: "Call Center SII",
+            description: "600 748 2960 (desde Chile)",
+            url: "tel:+566007482960",
+            badge: "Teléfono"
+          },
+          {
+            name: "Oficinas SII",
+            description: "Ubicación de oficinas a nivel nacional",
+            url: "https://www.sii.cl/sobre_el_sii/oficinas_sii.html",
+            badge: "Presencial"
+          },
+          {
+            name: "Consultas en línea",
+            description: "Sistema de consultas virtuales",
+            url: "https://www.sii.cl/servicios_online/consultas.html",
+            badge: "Online"
+          }
+        ]
+      }
+    ];
+
+    return (
+      <div className="space-y-6">
+        {/* Quick Links Chile */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-transparent cursor-pointer hover:border-blue-500/50 transition-all">
+            <a href="https://www.sii.cl/servicios_online/mi_sii.html" target="_blank" rel="noopener">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-blue-500" />
+                  <CardTitle className="text-base">Mi SII</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Accede a tu portal del contribuyente
+                </p>
+              </CardContent>
+            </a>
+          </Card>
+
+          <Card className="border-green-500/30 bg-gradient-to-br from-green-500/5 to-transparent cursor-pointer hover:border-green-500/50 transition-all">
+            <a href="https://www.sii.cl/servicios_online/1047-formulario_29-1156.html" target="_blank" rel="noopener">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <Calculator className="h-5 w-5 text-green-500" />
+                  <CardTitle className="text-base">F29</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Declaración mensual IVA/PPM
+                </p>
+              </CardContent>
+            </a>
+          </Card>
+
+          <Card className="border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-transparent cursor-pointer hover:border-amber-500/50 transition-all">
+            <a href="https://www.sii.cl/servicios_online/1040-boleta_honorarios-1042.html" target="_blank" rel="noopener">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <Briefcase className="h-5 w-5 text-amber-500" />
+                  <CardTitle className="text-base">Boletas</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Emitir boletas de honorarios
+                </p>
+              </CardContent>
+            </a>
+          </Card>
+        </div>
+
+        {/* Resource Categories */}
+        {chileResources.map((category, idx) => (
+          <Card key={idx}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {category.icon}
+                {category.category}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2">
+                {category.items.map((item, itemIdx) => (
+                  <a 
+                    key={itemIdx}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener"
+                    className="p-4 border rounded-lg hover:border-primary/50 hover:bg-muted/50 transition-all group"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium group-hover:text-primary transition-colors">
+                            {item.name}
+                          </p>
+                          <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                      </div>
+                      <Badge variant="secondary" className="shrink-0">{item.badge}</Badge>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+
+        {/* Disclaimer Chile */}
+        <Alert className="border-amber-500/30 bg-amber-500/5">
+          <AlertTriangle className="h-4 w-4 text-amber-500" />
+          <AlertTitle className="text-amber-500">Aviso Legal Importante</AlertTitle>
+          <AlertDescription className="text-sm space-y-2">
+            <p>
+              <strong>⚠️ Esta información es solo para referencia general.</strong>
+            </p>
+            <p>
+              Las normas tributarias chilenas cambian frecuentemente. Esta aplicación no constituye 
+              asesoría tributaria profesional. Consulta siempre con un contador autorizado o 
+              directamente con el Servicio de Impuestos Internos (SII) para tu situación específica.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              EvoFinz no se hace responsable por decisiones tributarias tomadas basándose únicamente 
+              en la información proporcionada en esta aplicación.
+            </p>
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  // Canada Resources (original)
   const resources = [
     {
       category: isEs ? "Formularios CRA" : "CRA Forms",
@@ -237,17 +474,29 @@ export function TaxResources({ language }: TaxResourcesProps) {
       ))}
 
       {/* Disclaimer */}
-      <Card className="border-amber-500/30 bg-amber-500/5">
-        <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground">
-            <strong>⚠️ {isEs ? "Aviso:" : "Disclaimer:"}</strong>{" "}
+      <Alert className="border-amber-500/30 bg-amber-500/5">
+        <AlertTriangle className="h-4 w-4 text-amber-500" />
+        <AlertTitle className="text-amber-500">
+          {isEs ? "Aviso Legal Importante" : "Important Legal Notice"}
+        </AlertTitle>
+        <AlertDescription className="text-sm space-y-2">
+          <p>
+            <strong>⚠️ {isEs ? "Esta información es solo para referencia general." : "This information is for general reference only."}</strong>
+          </p>
+          <p>
             {isEs 
-              ? "Esta información es solo para referencia general. Las leyes fiscales cambian frecuentemente. Consulta siempre con un contador certificado o la CRA directamente para tu situación específica."
-              : "This information is for general reference only. Tax laws change frequently. Always consult with a certified accountant or CRA directly for your specific situation."
+              ? "Las leyes fiscales cambian frecuentemente. Esta aplicación no constituye asesoría fiscal profesional. Consulta siempre con un contador certificado o la CRA directamente para tu situación específica."
+              : "Tax laws change frequently. This application does not constitute professional tax advice. Always consult with a certified accountant or CRA directly for your specific situation."
             }
           </p>
-        </CardContent>
-      </Card>
+          <p className="text-xs text-muted-foreground">
+            {isEs
+              ? "EvoFinz no se hace responsable por decisiones fiscales tomadas basándose únicamente en la información proporcionada en esta aplicación."
+              : "EvoFinz is not responsible for tax decisions made based solely on the information provided in this application."
+            }
+          </p>
+        </AlertDescription>
+      </Alert>
     </div>
   );
 }
