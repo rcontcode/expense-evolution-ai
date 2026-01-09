@@ -21,6 +21,7 @@ export function TaxProfileSetup({ onClose }: TaxProfileSetupProps) {
   const { data: profile } = useProfile();
   const queryClient = useQueryClient();
   const isEs = language === 'es';
+  const isChile = profile?.country === 'CL';
 
   const [workTypes, setWorkTypes] = useState<string[]>(profile?.work_types || []);
   const [fiscalMonth, setFiscalMonth] = useState<string>(
@@ -114,12 +115,12 @@ export function TaxProfileSetup({ onClose }: TaxProfileSetupProps) {
                 <div>
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-blue-500" />
-                    <span className="font-medium">{isEs ? "Empleado" : "Employee"}</span>
+                    <span className="font-medium">{isEs ? (isChile ? "Dependiente" : "Empleado") : "Employee"}</span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {isEs 
-                      ? "Recibes T4 de un empleador"
-                      : "You receive a T4 from an employer"
+                    {isChile 
+                      ? (isEs ? "Trabajas con contrato de trabajo" : "You work with an employment contract")
+                      : (isEs ? "Recibes T4 de un empleador" : "You receive a T4 from an employer")
                     }
                   </p>
                 </div>
@@ -141,12 +142,12 @@ export function TaxProfileSetup({ onClose }: TaxProfileSetupProps) {
                 <div>
                   <div className="flex items-center gap-2">
                     <Briefcase className="h-4 w-4 text-amber-500" />
-                    <span className="font-medium">{isEs ? "Autónomo" : "Self-Employed"}</span>
+                    <span className="font-medium">{isEs ? (isChile ? "Independiente" : "Autónomo") : "Self-Employed"}</span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {isEs 
-                      ? "Sole proprietorship, freelancer, contratista"
-                      : "Sole proprietorship, freelancer, contractor"
+                    {isChile
+                      ? (isEs ? "Emites boletas de honorarios" : "You issue fee receipts")
+                      : (isEs ? "Sole proprietorship, freelancer, contratista" : "Sole proprietorship, freelancer, contractor")
                     }
                   </p>
                 </div>
@@ -168,12 +169,12 @@ export function TaxProfileSetup({ onClose }: TaxProfileSetupProps) {
                 <div>
                   <div className="flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-purple-500" />
-                    <span className="font-medium">{isEs ? "Corporación" : "Corporation"}</span>
+                    <span className="font-medium">{isEs ? (isChile ? "Empresa" : "Corporación") : "Corporation"}</span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {isEs 
-                      ? "Empresa incorporada (Inc., Ltd., Corp.)"
-                      : "Incorporated business (Inc., Ltd., Corp.)"
+                    {isChile
+                      ? (isEs ? "SpA, Ltda., SA, EIRL" : "SpA, Ltda., SA, EIRL")
+                      : (isEs ? "Empresa incorporada (Inc., Ltd., Corp.)" : "Incorporated business (Inc., Ltd., Corp.)")
                     }
                   </p>
                 </div>
@@ -182,8 +183,8 @@ export function TaxProfileSetup({ onClose }: TaxProfileSetupProps) {
           </div>
         </div>
 
-        {/* Fiscal Year End (for Corporation) */}
-        {workTypes.includes('corporation') && (
+        {/* Fiscal Year End (for Corporation) - Only Canada */}
+        {workTypes.includes('corporation') && !isChile && (
           <div className="space-y-4">
             <Label className="text-base font-semibold">
               {isEs ? "Fin de Año Fiscal de tu Corporación" : "Corporation Fiscal Year End"}
@@ -253,6 +254,20 @@ export function TaxProfileSetup({ onClose }: TaxProfileSetupProps) {
           </div>
         )}
 
+        {/* Chile fiscal year info */}
+        {isChile && workTypes.includes('corporation') && (
+          <Alert>
+            <Lightbulb className="h-4 w-4" />
+            <AlertTitle>{isEs ? "Año Comercial en Chile" : "Commercial Year in Chile"}</AlertTitle>
+            <AlertDescription className="text-sm">
+              {isEs 
+                ? "En Chile, el año comercial siempre coincide con el año calendario (1 enero - 31 diciembre). Las empresas declaran F22 en abril y F29 mensual."
+                : "In Chile, the commercial year always matches the calendar year (Jan 1 - Dec 31). Companies file F22 in April and monthly F29."
+              }
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Not Sure Section */}
         <Alert className="bg-muted/50">
           <HelpCircle className="h-4 w-4" />
@@ -260,24 +275,43 @@ export function TaxProfileSetup({ onClose }: TaxProfileSetupProps) {
           <AlertDescription className="mt-2 space-y-2 text-sm">
             <p>{isEs ? "Aquí está cómo investigar:" : "Here's how to find out:"}</p>
             <ul className="list-disc pl-4 space-y-1">
-              <li>
-                <strong>{isEs ? "Revisa tu T4:" : "Check your T4:"}</strong>
-                {isEs ? " Si recibes T4, eres empleado" : " If you receive a T4, you're an employee"}
-              </li>
-              <li>
-                <strong>{isEs ? "Facturación propia:" : "Self-billing:"}</strong>
-                {isEs ? " Si facturas directamente a clientes, eres autónomo" : " If you invoice clients directly, you're self-employed"}
-              </li>
-              <li>
-                <strong>{isEs ? "Certificado de incorporación:" : "Incorporation certificate:"}</strong>
-                {isEs ? " Si tienes uno, tienes una corporación" : " If you have one, you have a corporation"}
-              </li>
+              {isChile ? (
+                <>
+                  <li>
+                    <strong>{isEs ? "Contrato de trabajo:" : "Employment contract:"}</strong>
+                    {isEs ? " Si tienes contrato, eres trabajador dependiente" : " If you have a contract, you're a dependent worker"}
+                  </li>
+                  <li>
+                    <strong>{isEs ? "Boletas de honorarios:" : "Fee receipts:"}</strong>
+                    {isEs ? " Si emites boletas, eres trabajador independiente" : " If you issue fee receipts, you're independent"}
+                  </li>
+                  <li>
+                    <strong>{isEs ? "Escritura de constitución:" : "Incorporation deed:"}</strong>
+                    {isEs ? " Si tienes una, tienes empresa" : " If you have one, you have a company"}
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <strong>{isEs ? "Revisa tu T4:" : "Check your T4:"}</strong>
+                    {isEs ? " Si recibes T4, eres empleado" : " If you receive a T4, you're an employee"}
+                  </li>
+                  <li>
+                    <strong>{isEs ? "Facturación propia:" : "Self-billing:"}</strong>
+                    {isEs ? " Si facturas directamente a clientes, eres autónomo" : " If you invoice clients directly, you're self-employed"}
+                  </li>
+                  <li>
+                    <strong>{isEs ? "Certificado de incorporación:" : "Incorporation certificate:"}</strong>
+                    {isEs ? " Si tienes uno, tienes una corporación" : " If you have one, you have a corporation"}
+                  </li>
+                </>
+              )}
             </ul>
             <div className="flex gap-2 mt-2">
               <Button variant="link" size="sm" className="h-auto p-0" asChild>
-                <a href="https://www.canada.ca/en/revenue-agency/services/e-services/e-services-individuals/account-individuals.html" target="_blank" rel="noopener">
+                <a href={isChile ? "https://www.sii.cl" : "https://www.canada.ca/en/revenue-agency/services/e-services/e-services-individuals/account-individuals.html"} target="_blank" rel="noopener">
                   <ExternalLink className="h-3 w-3 mr-1" />
-                  CRA My Account
+                  {isChile ? "Mi SII" : "CRA My Account"}
                 </a>
               </Button>
             </div>

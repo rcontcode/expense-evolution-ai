@@ -32,6 +32,7 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
   const { data: profile } = useProfile();
   const queryClient = useQueryClient();
   const isEs = language === 'es';
+  const isChile = profile?.country === 'CL';
 
   const [step, setStep] = useState<WizardStep>('situation');
   const [saving, setSaving] = useState(false);
@@ -179,8 +180,8 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
           <AlertTriangle className="h-4 w-4 text-amber-500" />
           <AlertDescription className="text-xs">
             {isEs 
-              ? "⚠️ AVISO: Esta información es solo orientativa. Para asesoría fiscal profesional, consulta con un contador certificado (CPA). Las leyes fiscales cambian y cada situación es única."
-              : "⚠️ DISCLAIMER: This information is for guidance only. For professional tax advice, consult a certified accountant (CPA). Tax laws change and every situation is unique."
+              ? `⚠️ AVISO: Esta información es solo orientativa. Para asesoría fiscal profesional, consulta con un contador certificado${isChile ? '' : ' (CPA)'}. Las leyes fiscales cambian y cada situación es única.`
+              : `⚠️ DISCLAIMER: This information is for guidance only. For professional tax advice, consult a certified accountant${isChile ? '' : ' (CPA)'}. Tax laws change and every situation is unique.`
             }
           </AlertDescription>
         </Alert>
@@ -221,8 +222,11 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
                   <WorkTypeOption
                     type="employee"
                     icon={<User className="h-4 w-4 text-blue-500" />}
-                    label={isEs ? "Empleado" : "Employee"}
-                    description={isEs ? "Recibes T4, tu empleador deduce impuestos" : "You receive T4, employer withholds taxes"}
+                    label={isEs ? "Empleado / Dependiente" : "Employee"}
+                    description={isChile 
+                      ? (isEs ? "Trabajas con contrato, tu empleador retiene impuestos" : "You work with a contract, employer withholds taxes")
+                      : (isEs ? "Recibes T4, tu empleador deduce impuestos" : "You receive T4, employer withholds taxes")
+                    }
                     checked={workTypes.includes('employee')}
                     onChange={(checked) => handleWorkTypeChange('employee', checked)}
                     color="blue"
@@ -230,8 +234,14 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
                   <WorkTypeOption
                     type="contractor"
                     icon={<Briefcase className="h-4 w-4 text-amber-500" />}
-                    label={isEs ? "Autónomo / Sole Proprietorship" : "Self-Employed / Sole Proprietorship"}
-                    description={isEs ? "Facturas a clientes, declaras T1 con Schedule T2125" : "Invoice clients, file T1 with Schedule T2125"}
+                    label={isChile 
+                      ? (isEs ? "Independiente / Boletas de Honorarios" : "Independent / Fee Receipts")
+                      : (isEs ? "Autónomo / Sole Proprietorship" : "Self-Employed / Sole Proprietorship")
+                    }
+                    description={isChile
+                      ? (isEs ? "Emites boletas de honorarios, retienes 13.75% provisional" : "You issue fee receipts, 13.75% provisional withholding")
+                      : (isEs ? "Facturas a clientes, declaras T1 con Schedule T2125" : "Invoice clients, file T1 with Schedule T2125")
+                    }
                     checked={workTypes.includes('contractor')}
                     onChange={(checked) => handleWorkTypeChange('contractor', checked)}
                     color="amber"
@@ -239,8 +249,14 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
                   <WorkTypeOption
                     type="corporation"
                     icon={<Building2 className="h-4 w-4 text-purple-500" />}
-                    label={isEs ? "Corporación (Inc./Ltd./Corp.)" : "Corporation (Inc./Ltd./Corp.)"}
-                    description={isEs ? "Empresa incorporada, declaras T2 corporativo" : "Incorporated business, file T2 corporate return"}
+                    label={isChile
+                      ? (isEs ? "Empresa / Sociedad" : "Company / Corporation")
+                      : (isEs ? "Corporación (Inc./Ltd./Corp.)" : "Corporation (Inc./Ltd./Corp.)")
+                    }
+                    description={isChile
+                      ? (isEs ? "SpA, Ltda., SA - Declaras F22 y F29 mensual" : "SpA, Ltda., SA - File F22 and monthly F29")
+                      : (isEs ? "Empresa incorporada, declaras T2 corporativo" : "Incorporated business, file T2 corporate return")
+                    }
                     checked={workTypes.includes('corporation')}
                     onChange={(checked) => handleWorkTypeChange('corporation', checked)}
                     color="purple"
@@ -251,7 +267,8 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
 
             {knowsSituation === false && (
               <HelpDetermineSection 
-                language={language} 
+                language={language}
+                isChile={isChile}
                 onDetermine={(types) => {
                   setWorkTypes(types);
                   setKnowsSituation(true);
@@ -271,7 +288,7 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
               {(workTypes.includes('contractor') || workTypes.includes('corporation')) && (
                 <>
                   <div className="space-y-2">
-                    <Label>{isEs ? "¿Cuándo comenzaste tu negocio?" : "When did you start your business?"}</Label>
+                    <Label>{isEs ? "¿Cuándo comenzaste tu actividad?" : "When did you start your activity?"}</Label>
                     <Input 
                       type="date" 
                       value={businessStartDate}
@@ -290,47 +307,68 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
                       <Info className="h-4 w-4 text-blue-500" />
                       <AlertTitle>{isEs ? "Primer Año Fiscal Parcial" : "Partial First Tax Year"}</AlertTitle>
                       <AlertDescription className="text-sm">
-                        {isEs 
-                          ? `Tu negocio comenzó en ${new Date(businessStartDate).toLocaleDateString('es-CA', { month: 'long', year: 'numeric' })}. Tu primera declaración cubrirá solo desde esa fecha hasta el fin del año fiscal. Esto es normal y CRA lo entiende.`
-                          : `Your business started in ${new Date(businessStartDate).toLocaleDateString('en-CA', { month: 'long', year: 'numeric' })}. Your first return will cover only from that date to fiscal year end. This is normal and CRA understands this.`
+                        {isChile 
+                          ? (isEs 
+                              ? `Tu actividad comenzó en ${new Date(businessStartDate).toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })}. Tu primera declaración F22 cubrirá solo desde esa fecha hasta diciembre.`
+                              : `Your activity started in ${new Date(businessStartDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}. Your first F22 return will cover only from that date to December.`)
+                          : (isEs 
+                              ? `Tu negocio comenzó en ${new Date(businessStartDate).toLocaleDateString('es-CA', { month: 'long', year: 'numeric' })}. Tu primera declaración cubrirá solo desde esa fecha hasta el fin del año fiscal. Esto es normal y CRA lo entiende.`
+                              : `Your business started in ${new Date(businessStartDate).toLocaleDateString('en-CA', { month: 'long', year: 'numeric' })}. Your first return will cover only from that date to fiscal year end. This is normal and CRA understands this.`)
                         }
                       </AlertDescription>
                     </Alert>
                   )}
 
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="gst-registered" 
-                        checked={gstHstRegistered}
-                        onCheckedChange={(checked) => setGstHstRegistered(!!checked)}
-                      />
-                      <Label htmlFor="gst-registered">
-                        {isEs ? "Estoy registrado para GST/HST" : "I'm registered for GST/HST"}
-                      </Label>
-                    </div>
-                    <p className="text-xs text-muted-foreground pl-6">
-                      {isEs 
-                        ? "Obligatorio si facturaste más de $30,000 en los últimos 4 trimestres"
-                        : "Required if you billed more than $30,000 in the last 4 quarters"
-                      }
-                    </p>
-                  </div>
+                  {!isChile && (
+                    <>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="gst-registered" 
+                            checked={gstHstRegistered}
+                            onCheckedChange={(checked) => setGstHstRegistered(!!checked)}
+                          />
+                          <Label htmlFor="gst-registered">
+                            {isEs ? "Estoy registrado para GST/HST" : "I'm registered for GST/HST"}
+                          </Label>
+                        </div>
+                        <p className="text-xs text-muted-foreground pl-6">
+                          {isEs 
+                            ? "Obligatorio si facturaste más de $30,000 en los últimos 4 trimestres"
+                            : "Required if you billed more than $30,000 in the last 4 quarters"
+                          }
+                        </p>
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label>{isEs ? "Número de Negocio (BN) - Opcional" : "Business Number (BN) - Optional"}</Label>
-                    <Input 
-                      placeholder="123456789 RT0001"
-                      value={businessNumber}
-                      onChange={(e) => setBusinessNumber(e.target.value)}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {isEs 
-                        ? "9 dígitos + programa (RT para GST/HST). Encuéntralo en tu carta de confirmación de CRA"
-                        : "9 digits + program (RT for GST/HST). Find it on your CRA confirmation letter"
-                      }
-                    </p>
-                  </div>
+                      <div className="space-y-2">
+                        <Label>{isEs ? "Número de Negocio (BN) - Opcional" : "Business Number (BN) - Optional"}</Label>
+                        <Input 
+                          placeholder="123456789 RT0001"
+                          value={businessNumber}
+                          onChange={(e) => setBusinessNumber(e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {isEs 
+                            ? "9 dígitos + programa (RT para GST/HST). Encuéntralo en tu carta de confirmación de CRA"
+                            : "9 digits + program (RT for GST/HST). Find it on your CRA confirmation letter"
+                          }
+                        </p>
+                      </div>
+                    </>
+                  )}
+
+                  {isChile && workTypes.includes('contractor') && (
+                    <Alert className="bg-amber-500/10 border-amber-500/30">
+                      <Info className="h-4 w-4 text-amber-500" />
+                      <AlertTitle>{isEs ? "Retención de Honorarios" : "Fee Withholding"}</AlertTitle>
+                      <AlertDescription className="text-sm">
+                        {isEs 
+                          ? "Desde 2024, la retención de boletas de honorarios es 13.75% (sube a 17% en 2028). Este monto se descuenta automáticamente y se puede usar como crédito en tu F22."
+                          : "Since 2024, fee receipt withholding is 13.75% (rising to 17% by 2028). This amount is automatically deducted and can be used as credit in your F22."
+                        }
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </>
               )}
 
@@ -338,9 +376,13 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
                 <Alert>
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
                   <AlertDescription>
-                    {isEs 
-                      ? "Como empleado, tu situación es más simple. Tu empleador deduce impuestos automáticamente. Solo necesitas declarar antes del 30 de abril."
-                      : "As an employee, your situation is simpler. Your employer withholds taxes automatically. You just need to file by April 30."
+                    {isChile
+                      ? (isEs 
+                          ? "Como trabajador dependiente, tu empleador retiene impuestos automáticamente. Puedes revisar tu situación en el SII y declarar si tienes otros ingresos."
+                          : "As a dependent worker, your employer withholds taxes automatically. You can check your status at SII and file if you have other income.")
+                      : (isEs 
+                          ? "Como empleado, tu situación es más simple. Tu empleador deduce impuestos automáticamente. Solo necesitas declarar antes del 30 de abril."
+                          : "As an employee, your situation is simpler. Your employer withholds taxes automatically. You just need to file by April 30.")
                     }
                   </AlertDescription>
                 </Alert>
@@ -351,7 +393,7 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
 
         {step === 'dates' && (
           <div className="space-y-6">
-            {workTypes.includes('corporation') && (
+            {workTypes.includes('corporation') && !isChile && (
               <div className="space-y-4">
                 <Label className="text-base font-semibold">
                   {isEs ? "Fin de Año Fiscal de tu Corporación" : "Corporation Fiscal Year End"}
@@ -424,7 +466,20 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
               </div>
             )}
 
-            {!workTypes.includes('corporation') && (
+            {isChile && (
+              <Alert>
+                <Calendar className="h-4 w-4 text-green-500" />
+                <AlertTitle>{isEs ? "Año Comercial en Chile" : "Commercial Year in Chile"}</AlertTitle>
+                <AlertDescription>
+                  {isEs 
+                    ? "En Chile, el año comercial siempre coincide con el año calendario (1 enero - 31 diciembre). El F22 se presenta en abril del año siguiente."
+                    : "In Chile, the commercial year always matches the calendar year (Jan 1 - Dec 31). The F22 is filed in April of the following year."
+                  }
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {!workTypes.includes('corporation') && !isChile && (
               <Alert>
                 <Calendar className="h-4 w-4 text-green-500" />
                 <AlertTitle>{isEs ? "Año Fiscal = Año Calendario" : "Fiscal Year = Calendar Year"}</AlertTitle>
@@ -441,45 +496,98 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
             <div className="space-y-3">
               <Label className="text-base font-semibold">{isEs ? "Tus Fechas Clave" : "Your Key Dates"}</Label>
               <div className="grid gap-2">
-                {workTypes.includes('employee') && (
-                  <DateCard 
-                    date="30 Abril / April 30"
-                    title={isEs ? "Impuestos Personales (T1)" : "Personal Taxes (T1)"}
-                    description={isEs ? "Fecha límite para declarar Y pagar" : "Deadline to file AND pay"}
-                    color="blue"
-                  />
-                )}
-                {workTypes.includes('contractor') && (
+                {isChile ? (
                   <>
+                    {workTypes.includes('employee') && (
+                      <DateCard 
+                        date="30 Abril / April 30"
+                        title={isEs ? "Declaración F22 (si aplica)" : "F22 Filing (if applicable)"}
+                        description={isEs ? "Solo si tienes otros ingresos o quieres reliquidar" : "Only if you have other income or want to re-settle"}
+                        color="blue"
+                      />
+                    )}
+                    {workTypes.includes('contractor') && (
+                      <>
+                        <DateCard 
+                          date="30 Abril / April 30"
+                          title={isEs ? "Declaración F22" : "F22 Filing"}
+                          description={isEs ? "Operación Renta - Declaración anual" : "Operation Renta - Annual filing"}
+                          color="amber"
+                        />
+                        <DateCard 
+                          date={isEs ? "12 de cada mes" : "12th of each month"}
+                          title={isEs ? "F29 (si tiene IVA)" : "F29 (if has VAT)"}
+                          description={isEs ? "Solo si emites facturas con IVA" : "Only if you issue invoices with VAT"}
+                          color="green"
+                        />
+                      </>
+                    )}
+                    {workTypes.includes('corporation') && (
+                      <>
+                        <DateCard 
+                          date="30 Abril / April 30"
+                          title={isEs ? "Declaración F22" : "F22 Filing"}
+                          description={isEs ? "Impuesto de Primera Categoría" : "First Category Tax"}
+                          color="purple"
+                        />
+                        <DateCard 
+                          date={isEs ? "12 de cada mes" : "12th of each month"}
+                          title="F29"
+                          description={isEs ? "IVA y PPM mensual obligatorio" : "Monthly VAT and PPM required"}
+                          color="amber"
+                        />
+                      </>
+                    )}
                     <DateCard 
-                      date="15 Junio / June 15"
-                      title={isEs ? "Declaración T1 (Autónomo)" : "T1 Filing (Self-Employed)"}
-                      description={isEs ? "Fecha límite para DECLARAR" : "Deadline to FILE"}
-                      color="amber"
-                    />
-                    <DateCard 
-                      date="30 Abril / April 30"
-                      title={isEs ? "Pago de Impuestos" : "Tax Payment"}
-                      description={isEs ? "Fecha límite para PAGAR (aunque declares en junio)" : "Deadline to PAY (even if you file in June)"}
-                      color="red"
+                      date="30 Dic / Dec 30"
+                      title={isEs ? "APV (último día)" : "APV (last day)"}
+                      description={isEs ? "Para beneficio tributario del año en curso" : "For current year tax benefit"}
+                      color="green"
                     />
                   </>
-                )}
-                {workTypes.includes('corporation') && (
-                  <DateCard 
-                    date={isEs ? "6 meses después de fin fiscal" : "6 months after fiscal year end"}
-                    title={isEs ? "Declaración T2 (Corporación)" : "T2 Filing (Corporation)"}
-                    description={isEs ? "Ejemplo: Si terminas dic 31, declaras antes de junio 30" : "Example: If you end Dec 31, file by June 30"}
-                    color="purple"
-                  />
-                )}
-                {gstHstRegistered && (
-                  <DateCard 
-                    date={isEs ? "Trimestral o Anual" : "Quarterly or Annual"}
-                    title="GST/HST"
-                    description={isEs ? "Depende de tu período de reporte elegido" : "Depends on your chosen reporting period"}
-                    color="green"
-                  />
+                ) : (
+                  <>
+                    {workTypes.includes('employee') && (
+                      <DateCard 
+                        date="30 Abril / April 30"
+                        title={isEs ? "Impuestos Personales (T1)" : "Personal Taxes (T1)"}
+                        description={isEs ? "Fecha límite para declarar Y pagar" : "Deadline to file AND pay"}
+                        color="blue"
+                      />
+                    )}
+                    {workTypes.includes('contractor') && (
+                      <>
+                        <DateCard 
+                          date="15 Junio / June 15"
+                          title={isEs ? "Declaración T1 (Autónomo)" : "T1 Filing (Self-Employed)"}
+                          description={isEs ? "Fecha límite para DECLARAR" : "Deadline to FILE"}
+                          color="amber"
+                        />
+                        <DateCard 
+                          date="30 Abril / April 30"
+                          title={isEs ? "Pago de Impuestos" : "Tax Payment"}
+                          description={isEs ? "Fecha límite para PAGAR (aunque declares en junio)" : "Deadline to PAY (even if you file in June)"}
+                          color="red"
+                        />
+                      </>
+                    )}
+                    {workTypes.includes('corporation') && (
+                      <DateCard 
+                        date={isEs ? "6 meses después de fin fiscal" : "6 months after fiscal year end"}
+                        title={isEs ? "Declaración T2 (Corporación)" : "T2 Filing (Corporation)"}
+                        description={isEs ? "Ejemplo: Si terminas dic 31, declaras antes de junio 30" : "Example: If you end Dec 31, file by June 30"}
+                        color="purple"
+                      />
+                    )}
+                    {gstHstRegistered && (
+                      <DateCard 
+                        date={isEs ? "Trimestral o Anual" : "Quarterly or Annual"}
+                        title="GST/HST"
+                        description={isEs ? "Depende de tu período de reporte elegido" : "Depends on your chosen reporting period"}
+                        color="green"
+                      />
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -600,9 +708,13 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
                 <AlertTriangle className="h-4 w-4 text-amber-500" />
                 <AlertTitle>{isEs ? "Recordatorio Importante" : "Important Reminder"}</AlertTitle>
                 <AlertDescription className="text-sm">
-                  {isEs 
-                    ? "Esta configuración es para referencia. Siempre verifica las fechas oficiales en CRA y consulta con un contador profesional para tu situación específica."
-                    : "This configuration is for reference. Always verify official dates with CRA and consult a professional accountant for your specific situation."
+                  {isChile
+                    ? (isEs 
+                        ? "Esta configuración es para referencia. Siempre verifica las fechas oficiales en el SII y consulta con un contador profesional para tu situación específica."
+                        : "This configuration is for reference. Always verify official dates with SII and consult a professional accountant for your specific situation.")
+                    : (isEs 
+                        ? "Esta configuración es para referencia. Siempre verifica las fechas oficiales en CRA y consulta con un contador profesional para tu situación específica."
+                        : "This configuration is for reference. Always verify official dates with CRA and consult a professional accountant for your specific situation.")
                   }
                 </AlertDescription>
               </Alert>
@@ -697,11 +809,15 @@ function DateCard({ date, title, description, color }: {
   );
 }
 
-function HelpDetermineSection({ language, onDetermine }: { language: string; onDetermine: (types: string[]) => void }) {
+function HelpDetermineSection({ language, isChile, onDetermine }: { language: string; isChile: boolean; onDetermine: (types: string[]) => void }) {
   const isEs = language === 'es';
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
 
-  const questions = [
+  const questions = isChile ? [
+    { key: 'hasContract', question: isEs ? '¿Trabajas con contrato de trabajo (dependiente)?' : 'Do you work with an employment contract (dependent)?' },
+    { key: 'issuesBoletas', question: isEs ? '¿Emites boletas de honorarios?' : 'Do you issue fee receipts (boletas)?' },
+    { key: 'hasCompany', question: isEs ? '¿Tienes empresa (SpA, Ltda., SA, EIRL)?' : 'Do you have a company (SpA, Ltda., SA, EIRL)?' },
+  ] : [
     { key: 'hasT4', question: isEs ? '¿Recibes T4 de un empleador?' : 'Do you receive a T4 from an employer?' },
     { key: 'invoicesClients', question: isEs ? '¿Facturas directamente a clientes?' : 'Do you invoice clients directly?' },
     { key: 'hasIncorporation', question: isEs ? '¿Tienes certificado de incorporación (Inc., Ltd., Corp.)?' : 'Do you have incorporation certificate (Inc., Ltd., Corp.)?' },
@@ -709,9 +825,15 @@ function HelpDetermineSection({ language, onDetermine }: { language: string; onD
 
   const determineTypes = () => {
     const types: string[] = [];
-    if (answers.hasT4) types.push('employee');
-    if (answers.invoicesClients && !answers.hasIncorporation) types.push('contractor');
-    if (answers.hasIncorporation) types.push('corporation');
+    if (isChile) {
+      if (answers.hasContract) types.push('employee');
+      if (answers.issuesBoletas && !answers.hasCompany) types.push('contractor');
+      if (answers.hasCompany) types.push('corporation');
+    } else {
+      if (answers.hasT4) types.push('employee');
+      if (answers.invoicesClients && !answers.hasIncorporation) types.push('contractor');
+      if (answers.hasIncorporation) types.push('corporation');
+    }
     return types;
   };
 
@@ -761,9 +883,9 @@ function HelpDetermineSection({ language, onDetermine }: { language: string; onD
               <div className="flex gap-2 mt-2">
                 {determineTypes().map(type => (
                   <Badge key={type} variant="secondary">
-                    {type === 'employee' ? (isEs ? 'Empleado' : 'Employee') :
-                     type === 'contractor' ? (isEs ? 'Autónomo' : 'Self-Employed') :
-                     type === 'corporation' ? (isEs ? 'Corporación' : 'Corporation') : type}
+                    {type === 'employee' ? (isEs ? (isChile ? 'Dependiente' : 'Empleado') : 'Employee') :
+                     type === 'contractor' ? (isEs ? (isChile ? 'Independiente' : 'Autónomo') : 'Self-Employed') :
+                     type === 'corporation' ? (isEs ? (isChile ? 'Empresa' : 'Corporación') : 'Corporation') : type}
                   </Badge>
                 ))}
                 {determineTypes().length === 0 && (
@@ -789,16 +911,19 @@ function HelpDetermineSection({ language, onDetermine }: { language: string; onD
           <p>{isEs ? "Puedes verificar en:" : "You can verify at:"}</p>
           <ul className="list-disc pl-4 space-y-1">
             <li>
-              <a href="https://www.canada.ca/en/revenue-agency/services/e-services/e-services-individuals/account-individuals.html" 
+              <a href={isChile ? "https://www.sii.cl" : "https://www.canada.ca/en/revenue-agency/services/e-services/e-services-individuals/account-individuals.html"} 
                  target="_blank" 
                  rel="noopener"
                  className="text-primary hover:underline flex items-center gap-1">
-                CRA My Account <ExternalLink className="h-3 w-3" />
+                {isChile ? "Mi SII" : "CRA My Account"} <ExternalLink className="h-3 w-3" />
               </a>
               {isEs ? " - Ve tu historial de declaraciones" : " - See your filing history"}
             </li>
             <li>{isEs ? "Tu contador o preparador de impuestos" : "Your accountant or tax preparer"}</li>
-            <li>{isEs ? "Notice of Assessment de años anteriores" : "Previous years' Notice of Assessment"}</li>
+            <li>{isEs 
+              ? (isChile ? "Declaraciones F22 de años anteriores" : "Notice of Assessment de años anteriores") 
+              : "Previous years' Notice of Assessment"
+            }</li>
           </ul>
         </AlertDescription>
       </Alert>
