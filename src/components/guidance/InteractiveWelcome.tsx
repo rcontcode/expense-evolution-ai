@@ -201,7 +201,7 @@ const INTERACTIVE_QUESTIONS: InteractiveQuestion[] = [
     },
     actions: [
       { label: { es: 'Organizar mis gastos', en: 'Organize my expenses' }, path: '/expenses', highlight: true, icon: Receipt, color: 'text-blue-600' },
-      { label: { es: 'Preparar impuestos', en: 'Prepare taxes' }, path: '/dashboard', icon: Calculator, color: 'text-emerald-600' },
+      { label: { es: 'Preparar impuestos', en: 'Prepare taxes' }, path: '/dashboard?tab=tax', icon: Calculator, color: 'text-emerald-600' },
       { label: { es: 'Facturar a clientes', en: 'Bill clients' }, path: '/clients', icon: Users, color: 'text-purple-600' },
       { label: { es: 'Ver mi patrimonio', en: 'View my net worth' }, path: '/net-worth', icon: Wallet, color: 'text-amber-600' }
     ]
@@ -217,8 +217,8 @@ const INTERACTIVE_QUESTIONS: InteractiveQuestion[] = [
       en: '🤔 What concerns you about your finances?' 
     },
     actions: [
-      { label: { es: 'No sé qué puedo deducir', en: "I don't know what I can deduct" }, path: '/dashboard', icon: Shield, color: 'text-blue-600' },
-      { label: { es: 'Tengo recibos sin procesar', en: 'I have unprocessed receipts' }, path: '/chaos-inbox', highlight: true, icon: Camera, color: 'text-red-600' },
+      { label: { es: 'No sé qué puedo deducir', en: "I don't know what I can deduct" }, path: '/dashboard?tab=tax', icon: Shield, color: 'text-blue-600' },
+      { label: { es: 'Tengo recibos sin procesar', en: 'I have unprocessed receipts' }, path: '/chaos', highlight: true, icon: Camera, color: 'text-red-600' },
       { label: { es: 'Entender mis contratos', en: 'Understand my contracts' }, path: '/contracts', icon: FileText, color: 'text-purple-600' },
       { label: { es: 'Quiero ahorrar más', en: 'I want to save more' }, path: '/net-worth', icon: PiggyBank, color: 'text-emerald-600' }
     ]
@@ -234,10 +234,10 @@ const INTERACTIVE_QUESTIONS: InteractiveQuestion[] = [
       en: '💡 Do you have any financial plan in mind?' 
     },
     actions: [
-      { label: { es: 'Planificar retiro (FIRE)', en: 'Plan retirement (FIRE)' }, path: '/dashboard', icon: TrendingUp, color: 'text-orange-600' },
+      { label: { es: 'Planificar retiro (FIRE)', en: 'Plan retirement (FIRE)' }, path: '/dashboard?tab=fire', icon: TrendingUp, color: 'text-orange-600' },
       { label: { es: 'Reducir deudas', en: 'Reduce debt' }, path: '/net-worth', icon: TrendingUp, color: 'text-red-600' },
-      { label: { es: 'Maximizar inversiones', en: 'Maximize investments' }, path: '/dashboard', icon: Zap, color: 'text-amber-600' },
-      { label: { es: 'Optimizar RRSP/TFSA', en: 'Optimize RRSP/TFSA' }, path: '/dashboard', icon: PiggyBank, color: 'text-emerald-600' }
+      { label: { es: 'Maximizar inversiones', en: 'Maximize investments' }, path: '/dashboard?tab=portfolio', icon: Zap, color: 'text-amber-600' },
+      { label: { es: 'Optimizar RRSP/TFSA', en: 'Optimize RRSP/TFSA' }, path: '/dashboard?tab=tax', icon: PiggyBank, color: 'text-emerald-600' }
     ]
   }
 ];

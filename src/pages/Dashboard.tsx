@@ -139,6 +139,35 @@ export default function Dashboard() {
     }
   }, [searchParams, setSearchParams, refreshSubscription]);
 
+  // Deep-linking: open the Control Center on a specific tab (used by InteractiveWelcome)
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    const allowedTabs = [
+      'charts',
+      'analytics',
+      'mentorship',
+      'tax',
+      'mileage',
+      'subscriptions',
+      'fire',
+      'debt',
+      'portfolio',
+      'education',
+    ];
+
+    if (!tab || !allowedTabs.includes(tab)) return;
+
+    setShowAllTools(true);
+    setActiveTab(tab);
+
+    requestAnimationFrame(() => {
+      document.getElementById('control-center')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  }, [searchParams]);
+
   // Track dashboard visit for missions
   usePageVisitTracker('view_dashboard');
 
