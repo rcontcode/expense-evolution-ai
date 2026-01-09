@@ -4,15 +4,16 @@ import {
   TrendingDown, 
   Sparkles,
   ArrowRight,
-  Wallet,
-  PiggyBank,
-  CreditCard
+  Globe
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEntity } from '@/contexts/EntityContext';
+import { useCurrencyConversion } from '@/hooks/data/useCurrencyConversion';
+import { EntityViewToggle } from './EntityViewToggle';
 import { cn } from '@/lib/utils';
 
 interface DashboardHeroProps {
@@ -35,18 +36,11 @@ export function DashboardHero({
   const { language } = useLanguage();
   const { data: profile } = useProfile();
   const { user } = useAuth();
+  const { isMultiEntity, showAllEntities, setShowAllEntities, currentCurrency } = useEntity();
+  const { formatCurrency } = useCurrencyConversion();
 
   const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || '';
   const isPositive = netBalance >= 0;
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(language === 'es' ? 'es-CL' : 'en-CA', {
-      style: 'currency',
-      currency: profile?.country === 'CL' ? 'CLP' : 'CAD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   // Get time-based greeting
   const getGreeting = () => {
@@ -72,7 +66,25 @@ export function DashboardHero({
         </div>
         
         <CardContent className="relative p-6 md:p-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          {/* Entity View Toggle for multi-entity users */}
+          {isMultiEntity && (
+            <div className="absolute top-4 right-4 z-10">
+              <EntityViewToggle 
+                showAllEntities={showAllEntities}
+                onToggle={setShowAllEntities}
+              />
+            </div>
+          )}
+
+          {/* Consolidated indicator */}
+          {isMultiEntity && showAllEntities && (
+            <div className="absolute top-4 left-4 flex items-center gap-1.5 px-2 py-1 rounded-full bg-accent/20 text-xs font-medium text-accent-foreground">
+              <Globe className="h-3 w-3" />
+              {language === 'es' ? `Consolidado (${currentCurrency})` : `Consolidated (${currentCurrency})`}
+            </div>
+          )}
+
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mt-6 lg:mt-0">
             {/* Left: Greeting */}
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">
@@ -102,7 +114,7 @@ export function DashboardHero({
                   </span>
                 </div>
                 <p className="text-lg font-bold text-success">
-                  {isLoading ? '...' : formatCurrency(totalIncome)}
+                  {isLoading ? '...' : formatCurrency(totalIncome, currentCurrency, { decimals: 0 })}
                 </p>
               </div>
 
@@ -117,7 +129,7 @@ export function DashboardHero({
                   </span>
                 </div>
                 <p className="text-lg font-bold text-destructive">
-                  {isLoading ? '...' : formatCurrency(totalExpenses)}
+                  {isLoading ? '...' : formatCurrency(totalExpenses, currentCurrency, { decimals: 0 })}
                 </p>
               </div>
 
@@ -146,7 +158,7 @@ export function DashboardHero({
                   "text-xl font-bold",
                   isPositive ? "text-success" : "text-destructive"
                 )}>
-                  {isLoading ? '...' : formatCurrency(netBalance)}
+                  {isLoading ? '...' : formatCurrency(netBalance, currentCurrency, { decimals: 0 })}
                 </p>
               </div>
             </div>

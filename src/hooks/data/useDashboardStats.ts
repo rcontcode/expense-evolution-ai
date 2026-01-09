@@ -8,6 +8,8 @@ interface DashboardFilters {
   clientId?: string;
   status?: ExpenseStatus | 'all';
   category?: ExpenseCategory | 'all';
+  entityId?: string;
+  showAllEntities?: boolean;
 }
 
 interface CategoryStats {
@@ -55,6 +57,7 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
       const clientFilter = filters?.clientId && filters.clientId !== 'all' ? filters.clientId : null;
       const statusFilter = filters?.status && filters.status !== 'all' ? filters.status : null;
       const categoryFilter = filters?.category && filters.category !== 'all' ? filters.category : null;
+      const entityFilter = !filters?.showAllEntities && filters?.entityId ? filters.entityId : null;
 
       // Execute all queries in parallel for better performance
       const [
@@ -66,17 +69,18 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
         expensesByClientResult,
         trendsExpensesResult,
       ] = await Promise.all([
-        // Monthly expenses query
+        // Monthly expenses query - include currency for multi-entity
         (() => {
           let query = supabase
             .from('expenses')
-            .select('amount')
+            .select('amount, currency')
             .eq('user_id', user.id)
             .gte('date', firstDayThisMonth.toISOString())
             .lte('date', lastDayThisMonth.toISOString());
           if (clientFilter) query = query.eq('client_id', clientFilter);
           if (statusFilter) query = query.eq('status', statusFilter);
           if (categoryFilter) query = query.eq('category', categoryFilter);
+          if (entityFilter) query = query.eq('entity_id', entityFilter);
           return query;
         })(),
         
@@ -104,13 +108,14 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
         (() => {
           let query = supabase
             .from('expenses')
-            .select('category, amount')
+            .select('category, amount, currency')
             .eq('user_id', user.id)
             .gte('date', firstDayThisMonth.toISOString())
             .lte('date', lastDayThisMonth.toISOString());
           if (clientFilter) query = query.eq('client_id', clientFilter);
           if (statusFilter) query = query.eq('status', statusFilter);
           if (categoryFilter) query = query.eq('category', categoryFilter);
+          if (entityFilter) query = query.eq('entity_id', entityFilter);
           return query;
         })(),
         
@@ -118,7 +123,7 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
         (() => {
           let query = supabase
             .from('expenses')
-            .select('client_id, amount, clients(name)')
+            .select('client_id, amount, currency, clients(name)')
             .eq('user_id', user.id)
             .gte('date', firstDayThisMonth.toISOString())
             .lte('date', lastDayThisMonth.toISOString())
@@ -126,6 +131,7 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
           if (clientFilter) query = query.eq('client_id', clientFilter);
           if (statusFilter) query = query.eq('status', statusFilter);
           if (categoryFilter) query = query.eq('category', categoryFilter);
+          if (entityFilter) query = query.eq('entity_id', entityFilter);
           return query;
         })(),
         
@@ -133,13 +139,14 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
         (() => {
           let query = supabase
             .from('expenses')
-            .select('amount, date')
+            .select('amount, date, currency')
             .eq('user_id', user.id)
             .gte('date', firstDayForTrends.toISOString())
             .lte('date', lastDayThisMonth.toISOString());
           if (clientFilter) query = query.eq('client_id', clientFilter);
           if (statusFilter) query = query.eq('status', statusFilter);
           if (categoryFilter) query = query.eq('category', categoryFilter);
+          if (entityFilter) query = query.eq('entity_id', entityFilter);
           return query;
         })(),
       ]);
