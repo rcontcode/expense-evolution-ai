@@ -50,6 +50,7 @@ import { useUnreadNotifications } from '@/hooks/data/useUnreadNotifications';
 import { ThemeBackground } from '@/components/ThemeBackground';
 import evofinzLogo from '@/assets/evofinz-logo.png';
 import { Link } from 'react-router-dom';
+import { EntitySelector } from '@/components/EntitySelector';
 
 interface LayoutProps {
   children: ReactNode;
@@ -231,6 +232,11 @@ export const Layout = ({ children }: LayoutProps) => {
                   </div>
                   
                   <nav className="flex-1 overflow-y-auto p-4 space-y-4">
+                    {/* Entity Selector for Mobile */}
+                    <div className="pb-2">
+                      <EntitySelector collapsed={false} />
+                    </div>
+                    
                     {NAV_SECTIONS.map((section) => {
                       const theme = sectionThemes[section.themeKey];
                       return (
@@ -443,6 +449,9 @@ export const Layout = ({ children }: LayoutProps) => {
               </TooltipContent>
             </Tooltip>
           </div>
+
+          {/* Entity/Jurisdiction Selector */}
+          <EntitySelector collapsed={collapsed} />
 
           {/* Navigation */}
           <nav className="flex-1 py-2 px-2 space-y-1.5 overflow-y-auto">
