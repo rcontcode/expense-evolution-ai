@@ -71,13 +71,15 @@ export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
               </CardDescription>
             </div>
           </div>
-          <TaxInfoVersionBadge country={country} compact />
-          {result && (
-            <Button variant="ghost" size="sm" onClick={clearResult}>
-              <RefreshCw className="h-4 w-4 mr-1" />
-              Nuevo análisis
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            <TaxInfoVersionBadge country={country} compact />
+            {result && (
+              <Button variant="ghost" size="sm" onClick={clearResult}>
+                <RefreshCw className="h-4 w-4 mr-1" />
+                Nuevo análisis
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -88,12 +90,15 @@ export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
             </div>
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">
-                EvoFinz analizará tus gastos y perfil fiscal para encontrar oportunidades de ahorro.
+                {isCL 
+                  ? 'EvoFinz analizará tus gastos y perfil tributario para encontrar oportunidades de ahorro según normativa SII.'
+                  : 'EvoFinz analizará tus gastos y perfil fiscal para encontrar oportunidades de ahorro.'
+                }
               </p>
               <ul className="text-xs text-muted-foreground space-y-1">
-                <li>✓ Análisis según tu tipo de trabajo</li>
-                <li>✓ Deducciones que podrías estar perdiendo</li>
-                <li>✓ Estrategias personalizadas para CRA</li>
+                <li>✓ {isCL ? 'Análisis según tu régimen tributario' : 'Análisis según tu tipo de trabajo'}</li>
+                <li>✓ {isCL ? 'Optimización de crédito fiscal IVA' : 'Deducciones que podrías estar perdiendo'}</li>
+                <li>✓ {isCL ? 'Estrategias personalizadas para SII' : 'Estrategias personalizadas para CRA'}</li>
               </ul>
             </div>
             <Button 
@@ -102,7 +107,7 @@ export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
               disabled={isAnalyzing}
             >
               <Sparkles className="h-4 w-4" />
-              Analizar mis impuestos
+              {isCL ? 'Analizar mi situación tributaria' : 'Analizar mis impuestos'}
             </Button>
           </div>
         )}
@@ -111,9 +116,14 @@ export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
           <div className="text-center py-8 space-y-4">
             <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
             <div className="space-y-1">
-              <p className="font-medium">Analizando tu situación fiscal...</p>
+              <p className="font-medium">
+                {isCL ? 'Analizando tu situación tributaria...' : 'Analizando tu situación fiscal...'}
+              </p>
               <p className="text-sm text-muted-foreground">
-                Revisando gastos, categorías y oportunidades de deducción
+                {isCL 
+                  ? 'Revisando gastos, crédito fiscal IVA y oportunidades según SII'
+                  : 'Revisando gastos, categorías y oportunidades de deducción'
+                }
               </p>
             </div>
           </div>
@@ -136,19 +146,25 @@ export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
               <div className="p-3 rounded-lg bg-muted/50 space-y-1">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <DollarSign className="h-4 w-4" />
-                  <span>Total Deducible</span>
+                  <span>{isCL ? 'Total Deducible' : 'Total Deducible'}</span>
                 </div>
                 <p className="text-xl font-bold text-primary">
-                  ${result.summary.totalDeductible.toLocaleString('es-CA', { minimumFractionDigits: 2 })}
+                  {isCL 
+                    ? `$${result.summary.totalDeductible.toLocaleString('es-CL', { maximumFractionDigits: 0 })}`
+                    : `$${result.summary.totalDeductible.toLocaleString('es-CA', { minimumFractionDigits: 2 })}`
+                  }
                 </p>
               </div>
               <div className="p-3 rounded-lg bg-muted/50 space-y-1">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <TrendingUp className="h-4 w-4" />
-                  <span>Ahorro Estimado</span>
+                  <span>{isCL ? 'Ahorro Tributario' : 'Ahorro Estimado'}</span>
                 </div>
                 <p className="text-xl font-bold text-green-600">
-                  ${result.summary.potentialSavings.toLocaleString('es-CA', { minimumFractionDigits: 2 })}
+                  {isCL 
+                    ? `$${result.summary.potentialSavings.toLocaleString('es-CL', { maximumFractionDigits: 0 })}`
+                    : `$${result.summary.potentialSavings.toLocaleString('es-CA', { minimumFractionDigits: 2 })}`
+                  }
                 </p>
               </div>
             </div>
@@ -156,7 +172,7 @@ export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
             {/* Deduction Rate */}
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Tasa de Deducción</span>
+                <span className="text-muted-foreground">{isCL ? 'Tasa de Deducibilidad' : 'Tasa de Deducción'}</span>
                 <span className="font-medium">{result.summary.deductionRate.toFixed(1)}%</span>
               </div>
               <Progress value={result.summary.deductionRate} className="h-2" />

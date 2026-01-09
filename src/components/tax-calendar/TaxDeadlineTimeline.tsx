@@ -38,15 +38,18 @@ export function TaxDeadlineTimeline({ year, workTypes, fiscalYearEnd }: Timeline
     const hasSole = workTypes.includes('contractor');
 
     if (isChile) {
-      // Chile: F29 Monthly deadlines (12th of each month)
+      // Chile: F29 Monthly deadlines (12th of each month for previous month)
       for (let month = 0; month < 12; month++) {
+        // F29 en mes X declara el mes X-1 (enero declara diciembre anterior, etc.)
+        const declaredMonth = month === 0 ? 11 : month - 1;
+        const declaredYear = month === 0 ? year - 1 : year;
         items.push({
           date: new Date(year, month, 12),
-          name: `F29 ${format(new Date(year, month - 1, 1), 'MMM', { locale: enCA })}`,
-          nameEs: `F29 ${format(new Date(year, month - 1, 1), 'MMM', { locale: es })}`,
+          name: `F29 ${format(new Date(declaredYear, declaredMonth, 1), 'MMM', { locale: enCA })}`,
+          nameEs: `F29 ${format(new Date(declaredYear, declaredMonth, 1), 'MMM', { locale: es })}`,
           type: 'f29',
-          description: `IVA/PPM declaration for ${format(new Date(year, month - 1, 1), 'MMMM', { locale: enCA })}`,
-          descriptionEs: `Declaración IVA/PPM de ${format(new Date(year, month - 1, 1), 'MMMM', { locale: es })}`,
+          description: `IVA/PPM declaration for ${format(new Date(declaredYear, declaredMonth, 1), 'MMMM yyyy', { locale: enCA })}`,
+          descriptionEs: `Declaración IVA/PPM de ${format(new Date(declaredYear, declaredMonth, 1), 'MMMM yyyy', { locale: es })}`,
           icon: <Calculator className="h-4 w-4" />,
           color: "bg-green-500"
         });
