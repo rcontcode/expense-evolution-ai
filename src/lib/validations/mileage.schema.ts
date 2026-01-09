@@ -40,6 +40,7 @@ export const mileageSchema = z.object({
   recurrence_days: z.array(z.number().min(0).max(6)).optional().nullable(),
   exception_dates: z.array(z.date()).optional().nullable(), // Días que NO se viajó
   specific_dates: z.array(z.date()).optional().nullable(), // Fechas específicas para viajes irregulares
+  entity_id: z.string().uuid().optional().nullable(),
 });
 
 export type MileageFormValues = z.infer<typeof mileageSchema>;

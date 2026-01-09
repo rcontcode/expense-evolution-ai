@@ -41,6 +41,7 @@ export const MileageDialog = ({ open, onClose, mileage, yearToDateKm = 0 }: Mile
       start_lng: data.start_lng || null,
       end_lat: data.end_lat || null,
       end_lng: data.end_lng || null,
+      entity_id: data.entity_id || currentEntity?.id || null,
     };
 
     if (isEditing && mileage) {

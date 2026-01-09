@@ -54,6 +54,7 @@ export interface Project {
   description: string | null;
   status: string;
   client_id: string | null;
+  entity_id: string | null;
   budget: number | null;
   start_date: string | null;
   end_date: string | null;
@@ -101,6 +102,7 @@ export interface ProjectFormData {
   description?: string;
   status: string;
   client_id?: string;
+  entity_id?: string;
   budget?: number;
   start_date?: Date;
   end_date?: Date;
