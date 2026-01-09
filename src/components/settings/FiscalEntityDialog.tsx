@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -16,11 +16,70 @@ import { getCountryConfig, getAvailableCountries, CHILE_TAX_REGIMES, type Countr
 import { Building2, Globe, FileText, DollarSign, Calendar, Palette, HelpCircle, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-const COUNTRY_FLAGS: Record<string, string> = {
-  CA: '🇨🇦',
-  CL: '🇨🇱',
-  US: '🇺🇸',
-  MX: '🇲🇽',
+// Visual flag components with colors
+const CountryFlag = ({ code, size = 'md' }: { code: string; size?: 'sm' | 'md' | 'lg' }) => {
+  const sizeClasses = {
+    sm: 'w-6 h-4 text-xs',
+    md: 'w-8 h-6 text-sm',
+    lg: 'w-10 h-7 text-base',
+  };
+  
+  const flags: Record<string, { bg: string; content: React.ReactNode }> = {
+    CA: {
+      bg: 'bg-gradient-to-r from-red-600 via-white to-red-600',
+      content: <span className="text-red-600 font-bold">🍁</span>,
+    },
+    CL: {
+      bg: 'bg-gradient-to-b from-white to-red-600',
+      content: (
+        <div className="absolute left-0 top-0 w-1/3 h-1/2 bg-blue-700 flex items-center justify-center">
+          <span className="text-white text-[8px]">★</span>
+        </div>
+      ),
+    },
+    US: {
+      bg: 'bg-gradient-to-b from-blue-800 via-white to-red-600',
+      content: <span className="text-white text-[6px]">★</span>,
+    },
+    MX: {
+      bg: 'bg-gradient-to-r from-green-600 via-white to-red-600',
+      content: <span className="text-green-800 text-[8px]">🦅</span>,
+    },
+  };
+
+  const flag = flags[code] || { bg: 'bg-gray-300', content: '?' };
+
+  return (
+    <div 
+      className={`${sizeClasses[size]} ${flag.bg} rounded-sm shadow-md border border-black/10 flex items-center justify-center relative overflow-hidden`}
+    >
+      {flag.content}
+    </div>
+  );
+};
+
+// Country card with visual flag and colors
+const COUNTRY_STYLES: Record<string, { gradient: string; border: string; icon: string }> = {
+  CA: { 
+    gradient: 'from-red-500/20 to-white/20', 
+    border: 'border-red-500/30',
+    icon: '🍁'
+  },
+  CL: { 
+    gradient: 'from-blue-600/20 to-red-500/20', 
+    border: 'border-blue-500/30',
+    icon: '⭐'
+  },
+  US: { 
+    gradient: 'from-blue-700/20 to-red-600/20', 
+    border: 'border-blue-600/30',
+    icon: '🗽'
+  },
+  MX: { 
+    gradient: 'from-green-600/20 to-red-500/20', 
+    border: 'border-green-500/30',
+    icon: '🦅'
+  },
 };
 
 const fiscalEntitySchema = z.object({
@@ -208,33 +267,46 @@ export function FiscalEntityDialog({ open, onOpenChange, entity, isFirstEntity =
                     </FormLabel>
                     <Select value={field.value} onValueChange={handleCountryChange}>
                       <FormControl>
-                        <SelectTrigger className="h-12">
+                        <SelectTrigger className={`h-14 bg-gradient-to-r ${COUNTRY_STYLES[field.value]?.gradient || ''} ${COUNTRY_STYLES[field.value]?.border || ''} border-2`}>
                           <SelectValue>
                             <span className="flex items-center gap-3">
-                              <span className="text-3xl drop-shadow-sm">{COUNTRY_FLAGS[field.value] || '🌍'}</span>
+                              <CountryFlag code={field.value} size="lg" />
                               <div className="flex flex-col items-start">
-                                <span className="font-medium">{countries.find(c => c.code === field.value)?.name[language as 'es' | 'en']}</span>
-                                <span className="text-xs text-muted-foreground">{field.value}</span>
+                                <span className="font-semibold flex items-center gap-2">
+                                  {countries.find(c => c.code === field.value)?.name[language as 'es' | 'en']}
+                                  <span className="text-lg">{COUNTRY_STYLES[field.value]?.icon}</span>
+                                </span>
+                                <span className="text-xs text-muted-foreground font-mono">{field.value}</span>
                               </div>
                             </span>
                           </SelectValue>
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-popover">
-                        {countries.map(c => (
-                          <SelectItem key={c.code} value={c.code} className="py-3">
-                            <span className="flex items-center gap-3">
-                              <span className="text-2xl">{COUNTRY_FLAGS[c.code]}</span>
-                              <div className="flex flex-col">
-                                <span className="font-medium">{c.name[language as 'es' | 'en']}</span>
-                                <span className="text-xs text-muted-foreground">
-                                  {c.code === 'CA' && (language === 'es' ? 'CRA • Dólar Canadiense' : 'CRA • Canadian Dollar')}
-                                  {c.code === 'CL' && (language === 'es' ? 'SII • Peso Chileno' : 'SII • Chilean Peso')}
-                                </span>
-                              </div>
-                            </span>
-                          </SelectItem>
-                        ))}
+                      <SelectContent className="bg-popover border-2">
+                        {countries.map(c => {
+                          const style = COUNTRY_STYLES[c.code];
+                          return (
+                            <SelectItem 
+                              key={c.code} 
+                              value={c.code} 
+                              className={`py-3 my-1 rounded-md bg-gradient-to-r ${style?.gradient || ''} hover:scale-[1.02] transition-transform`}
+                            >
+                              <span className="flex items-center gap-3">
+                                <CountryFlag code={c.code} size="md" />
+                                <div className="flex flex-col">
+                                  <span className="font-semibold flex items-center gap-2">
+                                    {c.name[language as 'es' | 'en']}
+                                    <span className="text-base">{style?.icon}</span>
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {c.code === 'CA' && (language === 'es' ? '🏛️ CRA • 💵 Dólar Canadiense' : '🏛️ CRA • 💵 Canadian Dollar')}
+                                    {c.code === 'CL' && (language === 'es' ? '🏛️ SII • 💵 Peso Chileno' : '🏛️ SII • 💵 Chilean Peso')}
+                                  </span>
+                                </div>
+                              </span>
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -251,11 +323,14 @@ export function FiscalEntityDialog({ open, onOpenChange, entity, isFirstEntity =
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
-                      <span className="text-lg">{COUNTRY_FLAGS[selectedCountry]}</span>
-                      {selectedCountry === 'CA' 
-                        ? (language === 'es' ? 'Provincia' : 'Province')
-                        : (language === 'es' ? 'Región' : 'Region')
-                      }
+                      <CountryFlag code={selectedCountry} size="sm" />
+                      <span className="font-medium">
+                        {selectedCountry === 'CA' 
+                          ? (language === 'es' ? 'Provincia' : 'Province')
+                          : (language === 'es' ? 'Región' : 'Region')
+                        }
+                      </span>
+                      <span>{COUNTRY_STYLES[selectedCountry]?.icon}</span>
                     </FormLabel>
                     <Select value={field.value || ''} onValueChange={field.onChange}>
                       <FormControl>
@@ -351,22 +426,27 @@ export function FiscalEntityDialog({ open, onOpenChange, entity, isFirstEntity =
                       />
                     </FormControl>
                     
-                    {/* Visible explanation box - not just tooltip */}
-                    <div className="mt-2 p-3 rounded-lg bg-muted/50 border border-border/50">
+                    {/* Colorful explanation box */}
+                    <div className="mt-2 p-3 rounded-lg bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20">
                       <div className="flex items-start gap-2">
-                        <Info className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                        <div className="text-xs space-y-1">
-                          <p className="text-muted-foreground">
+                        <div className="p-1.5 rounded-full bg-blue-500/20">
+                          <Info className="h-4 w-4 text-blue-500" />
+                        </div>
+                        <div className="text-xs space-y-1.5">
+                          <p className="text-foreground/80 flex items-center gap-2">
+                            <span className="text-base">📋</span>
                             {language === 'es' 
-                              ? `📋 Este campo es solo para tu referencia personal dentro de la aplicación.`
-                              : `📋 This field is for your personal reference within the app only.`}
+                              ? `Este campo es solo para tu referencia personal dentro de la aplicación.`
+                              : `This field is for your personal reference within the app only.`}
                           </p>
-                          <p className="text-muted-foreground">
+                          <p className="text-green-600 dark:text-green-400 flex items-center gap-2">
+                            <span className="text-base">✅</span>
                             {language === 'es' 
-                              ? `✅ Puedes dejarlo en blanco sin afectar ninguna funcionalidad.`
-                              : `✅ You can leave it blank without affecting any functionality.`}
+                              ? `Puedes dejarlo en blanco sin afectar ninguna funcionalidad.`
+                              : `You can leave it blank without affecting any functionality.`}
                           </p>
-                          <p className="text-muted-foreground/70 italic">
+                          <p className="text-muted-foreground italic flex items-center gap-2">
+                            <span className="text-base">📝</span>
                             {language === 'es' 
                               ? `Formato: ${countryConfig.businessIdConfig.format}`
                               : `Format: ${countryConfig.businessIdConfig.format}`}
@@ -463,7 +543,8 @@ export function FiscalEntityDialog({ open, onOpenChange, entity, isFirstEntity =
                           {selectedCountry === 'CA' ? (
                             <>
                               <p className="font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-2">
-                                <span className="text-xl">🇨🇦</span>
+                                <CountryFlag code="CA" size="md" />
+                                <span>🍁</span>
                                 {language === 'es' ? '¿Cómo saber mi fin de año fiscal en Canadá?' : 'How to find your fiscal year end in Canada?'}
                               </p>
                               <ul className="space-y-2 text-muted-foreground">
@@ -495,7 +576,8 @@ export function FiscalEntityDialog({ open, onOpenChange, entity, isFirstEntity =
                           ) : (
                             <>
                               <p className="font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-2">
-                                <span className="text-xl">🇨🇱</span>
+                                <CountryFlag code="CL" size="md" />
+                                <span>⭐</span>
                                 {language === 'es' ? '¿Cómo saber mi fin de año fiscal en Chile?' : 'How to find your fiscal year end in Chile?'}
                               </p>
                               <ul className="space-y-2 text-muted-foreground">
