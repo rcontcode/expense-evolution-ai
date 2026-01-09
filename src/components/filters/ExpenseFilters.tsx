@@ -130,15 +130,14 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
           <span>{language === 'es' ? 'Incompletos para Reportes' : 'Incomplete for Reports'}</span>
         </button>
 
-        {/* Reimbursement Type Filter */}
+        {/* Reimbursement Type Filter - Including "All" */}
         {REIMBURSEMENT_FILTERS.map((type) => {
           const Icon = type.icon;
           const isActive = (filters.reimbursementType || 'all') === type.value;
-          if (type.value === 'all') return null;
           return (
             <button
               key={type.value}
-              onClick={() => handleReimbursementTypeChange(isActive ? 'all' : type.value)}
+              onClick={() => handleReimbursementTypeChange(type.value)}
               className={cn(
                 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all',
                 isActive 
