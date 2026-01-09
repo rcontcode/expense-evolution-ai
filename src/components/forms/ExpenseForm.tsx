@@ -25,6 +25,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { GlossaryLabel, TermHelp } from '@/components/ui/glossary-term';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { EntitySelect } from '@/components/forms/EntitySelect';
+import { useEntity } from '@/contexts/EntityContext';
 
 interface ExpenseFormProps {
   expense?: ExpenseWithRelations;
@@ -46,6 +48,7 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
   const { data: clients } = useClients();
   const { data: projects } = useProjects();
   const { data: contracts } = useContracts();
+  const { currentEntity } = useEntity();
   const [selectedTags, setSelectedTags] = useState<string[]>(
     expense?.tags?.map(tag => tag.id) || []
   );
@@ -62,6 +65,7 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
       client_id: expense?.client_id || undefined,
       project_id: expense?.project_id || undefined,
       contract_id: expense?.contract_id || undefined,
+      entity_id: expense?.entity_id || currentEntity?.id || undefined,
       status: expense?.status || 'pending',
       reimbursement_type: (expense?.reimbursement_type as any) || 'pending_classification',
     },
@@ -374,6 +378,9 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
             )}
           />
         </div>
+
+        {/* Entity Selector - Only shows if multi-entity */}
+        <EntitySelect control={form.control} showDescription={true} />
 
         {/* Client, Project, Contract Section */}
         <div className="border rounded-lg p-4 space-y-4 bg-muted/30">

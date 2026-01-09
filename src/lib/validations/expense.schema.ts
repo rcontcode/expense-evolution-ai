@@ -31,6 +31,7 @@ export const expenseSchema = z.object({
   client_id: z.string().uuid().optional().nullable(),
   project_id: z.string().uuid().optional().nullable(),
   contract_id: z.string().uuid().optional().nullable(),
+  entity_id: z.string().uuid().optional().nullable(),
   status: z.enum(['pending', 'classified', 'deductible', 'non_deductible', 'reimbursable', 'rejected', 'under_review', 'finalized']).optional(),
   reimbursement_type: z.enum(['pending_classification', 'client_reimbursable', 'cra_deductible', 'personal']).optional(),
 });

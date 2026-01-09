@@ -33,6 +33,7 @@ export interface Income {
   source: string | null;
   client_id: string | null;
   project_id: string | null;
+  entity_id: string | null;
   recurrence: RecurrenceType;
   recurrence_end_date: string | null;
   is_taxable: boolean;
@@ -88,6 +89,7 @@ export interface IncomeFormData {
   source?: string;
   client_id?: string;
   project_id?: string;
+  entity_id?: string;
   recurrence: RecurrenceType;
   recurrence_end_date?: Date;
   is_taxable: boolean;

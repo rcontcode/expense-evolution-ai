@@ -19,6 +19,8 @@ import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { CalendarIcon, DollarSign } from 'lucide-react';
 import { GlossaryLabel, TermHelp } from '@/components/ui/glossary-term';
+import { EntitySelect } from '@/components/forms/EntitySelect';
+import { useEntity } from '@/contexts/EntityContext';
 
 const incomeSchema = z.object({
   amount: z.number().min(0.01, 'Amount must be greater than 0'),
@@ -33,6 +35,7 @@ const incomeSchema = z.object({
   recurrence_end_date: z.date().optional().nullable(),
   is_taxable: z.boolean().default(true),
   notes: z.string().optional(),
+  entity_id: z.string().optional(),
 });
 
 interface IncomeFormProps {
@@ -47,12 +50,13 @@ export function IncomeForm({ income, onSubmit, onCancel, isLoading }: IncomeForm
   const dateLocale = language === 'es' ? es : enUS;
   const { data: clients } = useClients();
   const { data: projects } = useProjects('active');
+  const { currentEntity, isMultiEntity } = useEntity();
 
   const form = useForm({
     resolver: zodResolver(incomeSchema),
     defaultValues: {
       amount: income?.amount || 0,
-      currency: income?.currency || 'CAD',
+      currency: income?.currency || currentEntity?.default_currency || 'CAD',
       date: income?.date ? new Date(income.date) : new Date(),
       income_type: income?.income_type || 'salary',
       description: income?.description || '',
@@ -63,6 +67,7 @@ export function IncomeForm({ income, onSubmit, onCancel, isLoading }: IncomeForm
       recurrence_end_date: income?.recurrence_end_date ? new Date(income.recurrence_end_date) : null,
       is_taxable: income?.is_taxable ?? true,
       notes: income?.notes || '',
+      entity_id: income?.entity_id || currentEntity?.id || '',
     },
   });
 
@@ -73,6 +78,7 @@ export function IncomeForm({ income, onSubmit, onCancel, isLoading }: IncomeForm
       recurrence: data.recurrence as RecurrenceType,
       client_id: data.client_id || undefined,
       project_id: data.project_id || undefined,
+      entity_id: data.entity_id || undefined,
     });
   };
 
@@ -180,6 +186,9 @@ export function IncomeForm({ income, onSubmit, onCancel, isLoading }: IncomeForm
             </FormItem>
           )}
         />
+
+        {/* Entity Selector - Only shows if multi-entity */}
+        <EntitySelect control={form.control} showDescription={true} />
 
         {/* Source and Description */}
         <div className="grid grid-cols-2 gap-4">
