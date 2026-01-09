@@ -31,12 +31,12 @@ export function useProjects(status?: string) {
   });
 }
 
-export function useCreateProject() {
+export function useCreateProject(defaultEntityId?: string) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (data: ProjectFormData) => {
+    mutationFn: async (data: ProjectFormData & { entity_id?: string }) => {
       const { error, data: newProject } = await supabase
         .from('projects')
         .insert({
@@ -49,6 +49,7 @@ export function useCreateProject() {
           start_date: data.start_date?.toISOString().split('T')[0] || null,
           end_date: data.end_date?.toISOString().split('T')[0] || null,
           color: data.color,
+          entity_id: data.entity_id || defaultEntityId || null,
         })
         .select()
         .single();

@@ -6,6 +6,7 @@ import { useCreateExpense, useUpdateExpense, useAddExpenseTags } from '@/hooks/d
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
+import { useEntity } from '@/contexts/EntityContext';
 
 interface ExpenseDialogProps {
   open: boolean;
@@ -14,6 +15,7 @@ interface ExpenseDialogProps {
 }
 
 export function ExpenseDialog({ open, onClose, expense }: ExpenseDialogProps) {
+  const { currentEntity } = useEntity();
   const createMutation = useCreateExpense();
   const updateMutation = useUpdateExpense();
   const addTagsMutation = useAddExpenseTags();
@@ -50,7 +52,8 @@ export function ExpenseDialog({ open, onClose, expense }: ExpenseDialogProps) {
       contract_id: formData.contract_id === '__none__' ? null : formData.contract_id || null,
       status: formData.status || 'pending',
       reimbursement_type: formData.reimbursement_type || 'pending_classification',
-      currency: 'CAD',
+      currency: currentEntity?.default_currency || 'CAD',
+      entity_id: formData.entity_id || currentEntity?.id || null,
     };
 
     try {

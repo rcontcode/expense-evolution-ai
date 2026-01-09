@@ -9,6 +9,7 @@ import { MileageForm } from '@/components/forms/MileageForm';
 import { MileageFormValues } from '@/lib/validations/mileage.schema';
 import { useCreateMileage, useUpdateMileage, MileageWithClient } from '@/hooks/data/useMileage';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useEntity } from '@/contexts/EntityContext';
 import { format } from 'date-fns';
 
 interface MileageDialogProps {
@@ -20,7 +21,8 @@ interface MileageDialogProps {
 
 export const MileageDialog = ({ open, onClose, mileage, yearToDateKm = 0 }: MileageDialogProps) => {
   const { t } = useLanguage();
-  const createMileage = useCreateMileage();
+  const { currentEntity } = useEntity();
+  const createMileage = useCreateMileage(currentEntity?.id);
   const updateMileage = useUpdateMileage();
 
   const isEditing = !!mileage;
