@@ -202,27 +202,36 @@ export function FiscalEntityDialog({ open, onOpenChange, entity, isFirstEntity =
                 name="country"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex items-center gap-1">
-                      <Globe className="h-3 w-3" />
+                    <FormLabel className="flex items-center gap-2">
+                      <Globe className="h-4 w-4 text-primary" />
                       {language === 'es' ? 'País' : 'Country'} *
                     </FormLabel>
                     <Select value={field.value} onValueChange={handleCountryChange}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-12">
                           <SelectValue>
-                            <span className="flex items-center gap-2">
-                              <span className="text-lg">{COUNTRY_FLAGS[field.value] || '🌍'}</span>
-                              <span>{countries.find(c => c.code === field.value)?.name[language as 'es' | 'en']}</span>
+                            <span className="flex items-center gap-3">
+                              <span className="text-3xl drop-shadow-sm">{COUNTRY_FLAGS[field.value] || '🌍'}</span>
+                              <div className="flex flex-col items-start">
+                                <span className="font-medium">{countries.find(c => c.code === field.value)?.name[language as 'es' | 'en']}</span>
+                                <span className="text-xs text-muted-foreground">{field.value}</span>
+                              </div>
                             </span>
                           </SelectValue>
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-popover">
                         {countries.map(c => (
-                          <SelectItem key={c.code} value={c.code}>
-                            <span className="flex items-center gap-2">
-                              <span className="text-lg">{COUNTRY_FLAGS[c.code]}</span>
-                              <span>{c.name[language as 'es' | 'en']}</span>
+                          <SelectItem key={c.code} value={c.code} className="py-3">
+                            <span className="flex items-center gap-3">
+                              <span className="text-2xl">{COUNTRY_FLAGS[c.code]}</span>
+                              <div className="flex flex-col">
+                                <span className="font-medium">{c.name[language as 'es' | 'en']}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {c.code === 'CA' && (language === 'es' ? 'CRA • Dólar Canadiense' : 'CRA • Canadian Dollar')}
+                                  {c.code === 'CL' && (language === 'es' ? 'SII • Peso Chileno' : 'SII • Chilean Peso')}
+                                </span>
+                              </div>
                             </span>
                           </SelectItem>
                         ))}
@@ -241,8 +250,8 @@ export function FiscalEntityDialog({ open, onOpenChange, entity, isFirstEntity =
                 name="province"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex items-center gap-1">
-                      {COUNTRY_FLAGS[selectedCountry]}
+                    <FormLabel className="flex items-center gap-2">
+                      <span className="text-lg">{COUNTRY_FLAGS[selectedCountry]}</span>
                       {selectedCountry === 'CA' 
                         ? (language === 'es' ? 'Provincia' : 'Province')
                         : (language === 'es' ? 'Región' : 'Region')
@@ -254,21 +263,34 @@ export function FiscalEntityDialog({ open, onOpenChange, entity, isFirstEntity =
                           <SelectValue placeholder={language === 'es' ? 'Seleccionar...' : 'Select...'} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="max-h-60">
+                      <SelectContent className="max-h-72 bg-popover">
                         {countryConfig.regions.map(r => (
                           <SelectItem key={r.code} value={r.code}>
-                            <span className="flex items-center gap-2">
-                              {selectedCountry === 'CL' && (
-                                <span className="text-xs text-muted-foreground font-mono min-w-[32px]">
+                            {selectedCountry === 'CL' ? (
+                              <span className="flex items-center gap-3">
+                                <span className="inline-flex items-center justify-center px-2 py-0.5 rounded bg-primary/10 text-primary font-bold text-xs min-w-[40px]">
                                   {r.name.split(' - ')[0]}
                                 </span>
-                              )}
-                              <span>{selectedCountry === 'CL' ? r.name.split(' - ')[1] : r.name}</span>
-                            </span>
+                                <span>{r.name.split(' - ')[1]}</span>
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground font-mono">{r.code}</span>
+                                <span>{r.name}</span>
+                              </span>
+                            )}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    {selectedCountry === 'CL' && (
+                      <FormDescription className="text-xs flex items-center gap-1">
+                        <span>📍</span>
+                        <span>{language === 'es' 
+                          ? 'Chile tiene 16 regiones numeradas con números romanos' 
+                          : 'Chile has 16 regions numbered with Roman numerals'}</span>
+                      </FormDescription>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -304,29 +326,18 @@ export function FiscalEntityDialog({ open, onOpenChange, entity, isFirstEntity =
             </div>
 
             {/* Tax ID & Regime */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
               <FormField
                 control={form.control}
                 name="tax_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex items-center gap-1">
-                      <FileText className="h-3 w-3" />
+                    <FormLabel className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-primary" />
                       {countryConfig.businessIdConfig.name[language as 'es' | 'en']}
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-3 w-3 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-xs">
-                            <p className="text-xs">
-                              {language === 'es' 
-                                ? '💡 Este campo es opcional y solo para tu referencia personal. Te ayuda a mantener tus entidades organizadas, pero no afecta ninguna funcionalidad si lo dejas en blanco.'
-                                : '💡 This field is optional and for your personal reference only. It helps you keep your entities organized, but leaving it blank won\'t affect any functionality.'}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                        {language === 'es' ? 'Opcional' : 'Optional'}
+                      </span>
                     </FormLabel>
                     <FormControl>
                       <Input 
@@ -339,13 +350,30 @@ export function FiscalEntityDialog({ open, onOpenChange, entity, isFirstEntity =
                         }}
                       />
                     </FormControl>
-                    <FormDescription className="text-xs text-muted-foreground/80">
-                      <span className="flex items-center gap-1">
-                        <span>{language === 'es' ? 'Formato:' : 'Format:'} {countryConfig.businessIdConfig.format}</span>
-                        <span className="text-primary/60">•</span>
-                        <span className="italic">{language === 'es' ? 'Opcional' : 'Optional'}</span>
-                      </span>
-                    </FormDescription>
+                    
+                    {/* Visible explanation box - not just tooltip */}
+                    <div className="mt-2 p-3 rounded-lg bg-muted/50 border border-border/50">
+                      <div className="flex items-start gap-2">
+                        <Info className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                        <div className="text-xs space-y-1">
+                          <p className="text-muted-foreground">
+                            {language === 'es' 
+                              ? `📋 Este campo es solo para tu referencia personal dentro de la aplicación.`
+                              : `📋 This field is for your personal reference within the app only.`}
+                          </p>
+                          <p className="text-muted-foreground">
+                            {language === 'es' 
+                              ? `✅ Puedes dejarlo en blanco sin afectar ninguna funcionalidad.`
+                              : `✅ You can leave it blank without affecting any functionality.`}
+                          </p>
+                          <p className="text-muted-foreground/70 italic">
+                            {language === 'es' 
+                              ? `Formato: ${countryConfig.businessIdConfig.format}`
+                              : `Format: ${countryConfig.businessIdConfig.format}`}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -357,111 +385,153 @@ export function FiscalEntityDialog({ open, onOpenChange, entity, isFirstEntity =
                   name="tax_regime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{language === 'es' ? 'Régimen Tributario' : 'Tax Regime'}</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <span className="text-lg">🇨🇱</span>
+                        {language === 'es' ? 'Régimen Tributario' : 'Tax Regime'}
+                      </FormLabel>
                       <Select value={field.value || ''} onValueChange={field.onChange}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder={language === 'es' ? 'Seleccionar...' : 'Select...'} />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="bg-popover">
                           {CHILE_TAX_REGIMES.map(r => (
                             <SelectItem key={r.value} value={r.value}>
-                              {r.label[language as 'es' | 'en']} ({(r.rate * 100).toFixed(0)}%)
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{r.label[language as 'es' | 'en']}</span>
+                                <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-bold">
+                                  {(r.rate * 100).toFixed(0)}%
+                                </span>
+                              </div>
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormDescription className="text-xs">
+                        {language === 'es' 
+                          ? '💡 Consulta tu carpeta tributaria en sii.cl si no estás seguro' 
+                          : '💡 Check your tax folder at sii.cl if unsure'}
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               )}
+            </div>
 
-              {/* Fiscal Year End - shown for both countries */}
+              {/* Fiscal Year End - shown for both countries with EXPANDED help */}
               <FormField
                 control={form.control}
                 name="fiscal_year_end"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {language === 'es' ? 'Fin Año Fiscal' : 'Fiscal Year End'}
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-sm" side="top">
-                            {selectedCountry === 'CA' ? (
-                              <div className="text-xs space-y-2">
-                                <p className="font-medium">🇨🇦 {language === 'es' ? '¿Cómo saber mi fin de año fiscal en Canadá?' : 'How to find your fiscal year end in Canada?'}</p>
-                                <ul className="list-disc pl-3 space-y-1">
-                                  <li>{language === 'es' 
-                                    ? 'Propietarios únicos y partnerships: generalmente es el 31 de diciembre' 
-                                    : 'Sole proprietors & partnerships: usually December 31'}</li>
-                                  <li>{language === 'es' 
-                                    ? 'Corporaciones: revisa tu "Notice of Assessment" o el formulario RC59' 
-                                    : 'Corporations: check your Notice of Assessment or form RC59'}</li>
-                                  <li>{language === 'es' 
-                                    ? 'También puedes llamar al CRA: 1-800-959-5525' 
-                                    : 'You can also call CRA: 1-800-959-5525'}</li>
-                                </ul>
-                                <p className="text-muted-foreground italic">
-                                  {language === 'es' 
-                                    ? '💡 Si no estás seguro, usa el 31 de diciembre (más común)' 
-                                    : '💡 If unsure, use December 31 (most common)'}
-                                </p>
-                              </div>
-                            ) : (
-                              <div className="text-xs space-y-2">
-                                <p className="font-medium">🇨🇱 {language === 'es' ? '¿Cómo saber mi fin de año fiscal en Chile?' : 'How to find your fiscal year end in Chile?'}</p>
-                                <ul className="list-disc pl-3 space-y-1">
-                                  <li>{language === 'es' 
-                                    ? 'En Chile, el año tributario siempre es del 1 de enero al 31 de diciembre' 
-                                    : 'In Chile, the tax year is always January 1 to December 31'}</li>
-                                  <li>{language === 'es' 
-                                    ? 'Puedes verificarlo en tu carpeta tributaria del SII (sii.cl)' 
-                                    : 'You can verify in your tax folder at SII (sii.cl)'}</li>
-                                  <li>{language === 'es' 
-                                    ? 'La declaración anual (F22) se presenta en abril del año siguiente' 
-                                    : 'The annual return (F22) is filed in April of the following year'}</li>
-                                </ul>
-                                <p className="text-muted-foreground italic">
-                                  {language === 'es' 
-                                    ? '💡 Para la mayoría de contribuyentes chilenos, selecciona diciembre' 
-                                    : '💡 For most Chilean taxpayers, select December'}
-                                </p>
-                              </div>
-                            )}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                    <FormLabel className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      {language === 'es' ? 'Fin de Año Fiscal' : 'Fiscal Year End'}
+                      <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                        {language === 'es' ? 'Opcional' : 'Optional'}
+                      </span>
                     </FormLabel>
                     <Select value={field.value || ''} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={language === 'es' ? 'Seleccionar...' : 'Select...'} />
+                          <SelectValue placeholder={language === 'es' ? 'Seleccionar mes...' : 'Select month...'} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-popover">
                         {['01-31', '02-28', '03-31', '04-30', '05-31', '06-30', '07-31', '08-31', '09-30', '10-31', '11-30', '12-31'].map((date, i) => (
                           <SelectItem key={date} value={date}>
-                            {new Date(2024, i, 1).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'long' })}
+                            <div className="flex items-center gap-2">
+                              <span>{new Date(2024, i, 1).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { month: 'long' })}</span>
+                              {date === '12-31' && (
+                                <span className="text-xs px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 font-medium">
+                                  {language === 'es' ? 'Más común' : 'Most common'}
+                                </span>
+                              )}
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormDescription className="text-xs">
-                      {language === 'es' 
-                        ? '📅 Último día de tu año fiscal (opcional)' 
-                        : '📅 Last day of your fiscal year (optional)'}
-                    </FormDescription>
+                    
+                    {/* Expanded help section - visible, not tooltip */}
+                    <div className="mt-3 p-4 rounded-lg bg-gradient-to-br from-amber-50/80 to-orange-50/50 dark:from-amber-950/30 dark:to-orange-950/20 border border-amber-200/50 dark:border-amber-800/30">
+                      <div className="flex items-start gap-3">
+                        <HelpCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                        <div className="space-y-3 text-sm">
+                          {selectedCountry === 'CA' ? (
+                            <>
+                              <p className="font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-2">
+                                <span className="text-xl">🇨🇦</span>
+                                {language === 'es' ? '¿Cómo saber mi fin de año fiscal en Canadá?' : 'How to find your fiscal year end in Canada?'}
+                              </p>
+                              <ul className="space-y-2 text-muted-foreground">
+                                <li className="flex items-start gap-2">
+                                  <span className="text-green-500">✓</span>
+                                  <span>{language === 'es' 
+                                    ? <><strong>Propietarios únicos / Partnerships:</strong> Generalmente es el 31 de diciembre</>
+                                    : <><strong>Sole proprietors / Partnerships:</strong> Usually December 31</>}</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-blue-500">📄</span>
+                                  <span>{language === 'es' 
+                                    ? <><strong>Corporaciones:</strong> Revisa tu "Notice of Assessment" del CRA o el formulario <strong>RC59</strong></>
+                                    : <><strong>Corporations:</strong> Check your CRA "Notice of Assessment" or form <strong>RC59</strong></>}</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-purple-500">📞</span>
+                                  <span>{language === 'es' 
+                                    ? <>También puedes llamar al <strong>CRA: 1-800-959-5525</strong></>
+                                    : <>You can also call <strong>CRA: 1-800-959-5525</strong></>}</span>
+                                </li>
+                              </ul>
+                              <p className="text-xs text-amber-700/80 dark:text-amber-400/80 italic bg-amber-100/50 dark:bg-amber-900/30 px-2 py-1 rounded">
+                                💡 {language === 'es' 
+                                  ? 'Si no estás seguro, usa el 31 de diciembre (es el más común para la mayoría de negocios)'
+                                  : 'If unsure, use December 31 (most common for majority of businesses)'}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-2">
+                                <span className="text-xl">🇨🇱</span>
+                                {language === 'es' ? '¿Cómo saber mi fin de año fiscal en Chile?' : 'How to find your fiscal year end in Chile?'}
+                              </p>
+                              <ul className="space-y-2 text-muted-foreground">
+                                <li className="flex items-start gap-2">
+                                  <span className="text-green-500">✓</span>
+                                  <span>{language === 'es' 
+                                    ? <><strong>En Chile SIEMPRE es el 31 de diciembre.</strong> El año tributario va del 1 de enero al 31 de diciembre.</>
+                                    : <><strong>In Chile it's ALWAYS December 31.</strong> The tax year runs January 1 to December 31.</>}</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-blue-500">🌐</span>
+                                  <span>{language === 'es' 
+                                    ? <>Puedes verificar tu situación en tu <strong>Carpeta Tributaria</strong> en <strong>sii.cl</strong></>
+                                    : <>You can verify your status in your <strong>Tax Folder</strong> at <strong>sii.cl</strong></>}</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <span className="text-orange-500">📅</span>
+                                  <span>{language === 'es' 
+                                    ? <>La declaración anual (<strong>Formulario 22</strong>) se presenta en abril del año siguiente</>
+                                    : <>The annual return (<strong>Form 22</strong>) is filed in April of the following year</>}</span>
+                                </li>
+                              </ul>
+                              <p className="text-xs text-amber-700/80 dark:text-amber-400/80 italic bg-amber-100/50 dark:bg-amber-900/30 px-2 py-1 rounded">
+                                💡 {language === 'es' 
+                                  ? 'Para todos los contribuyentes chilenos, simplemente selecciona diciembre'
+                                  : 'For all Chilean taxpayers, simply select December'}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
 
             {/* Currency */}
             <FormField
