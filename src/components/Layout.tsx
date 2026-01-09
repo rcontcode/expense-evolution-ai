@@ -1,5 +1,6 @@
 import { ReactNode, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
 import { 
   LayoutDashboard, 
   Inbox, 
@@ -169,6 +170,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const { data: profile } = useProfile();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
   const isMobile = useIsMobile();
   const NAV_SECTIONS = getNavSections(language);
   const MOBILE_NAV_ITEMS = getMobileNavItems(language);
@@ -536,7 +538,7 @@ export const Layout = ({ children }: LayoutProps) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    onClick={() => navigate('/expenses')}
+                    onClick={() => setQuickCaptureOpen(true)}
                     className="w-full p-2.5 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50"
                   >
                     <div className="flex items-center gap-1">
@@ -565,6 +567,12 @@ export const Layout = ({ children }: LayoutProps) => {
               </Tooltip>
             </div>
           )}
+
+          {/* Quick Capture Dialog */}
+          <QuickCaptureDialog 
+            open={quickCaptureOpen} 
+            onClose={() => setQuickCaptureOpen(false)} 
+          />
 
           {/* Bottom actions - Compact */}
           <div className={cn(
