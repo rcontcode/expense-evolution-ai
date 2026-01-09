@@ -8,84 +8,84 @@ interface CountryFlagProps {
 }
 
 const sizeConfig = {
-  xs: { classes: 'h-3 w-4', pixels: { w: 20, h: 15 } },
-  sm: { classes: 'h-4 w-6', pixels: { w: 24, h: 18 } },
-  md: { classes: 'h-5 w-8', pixels: { w: 32, h: 24 } },
-  lg: { classes: 'h-7 w-10', pixels: { w: 40, h: 30 } },
-  xl: { classes: 'h-8 w-12', pixels: { w: 48, h: 36 } },
+  xs: { classes: 'h-3 w-4', pixels: 16 },
+  sm: { classes: 'h-4 w-6', pixels: 24 },
+  md: { classes: 'h-5 w-8', pixels: 32 },
+  lg: { classes: 'h-7 w-10', pixels: 40 },
+  xl: { classes: 'h-8 w-12', pixels: 48 },
 };
 
-// Fallback colors for each country
-const countryColors: Record<string, { primary: string; secondary: string; tertiary?: string }> = {
-  CA: { primary: '#FF0000', secondary: '#FFFFFF' },
-  CL: { primary: '#0039A6', secondary: '#FFFFFF', tertiary: '#D52B1E' },
-  US: { primary: '#3C3B6E', secondary: '#FFFFFF', tertiary: '#B22234' },
-  MX: { primary: '#006847', secondary: '#FFFFFF', tertiary: '#CE1126' },
+// Fallback with actual flag colors for CSS rendering
+const countryFallbacks: Record<string, { bg: string; content: React.ReactNode }> = {
+  CA: { 
+    bg: 'linear-gradient(to right, #ff0000 0%, #ff0000 25%, #ffffff 25%, #ffffff 75%, #ff0000 75%, #ff0000 100%)',
+    content: <span className="text-red-600 text-xs font-bold">🍁</span>
+  },
+  CL: { 
+    bg: 'linear-gradient(to bottom, #ffffff 0%, #ffffff 50%, #d52b1e 50%, #d52b1e 100%)',
+    content: <div className="absolute left-0 top-0 w-[35%] h-1/2 bg-[#0039a6] flex items-center justify-center"><span className="text-white text-[8px]">★</span></div>
+  },
+  US: { 
+    bg: 'repeating-linear-gradient(to bottom, #b22234 0px, #b22234 3px, #ffffff 3px, #ffffff 6px)',
+    content: <div className="absolute left-0 top-0 w-2/5 h-[54%] bg-[#3c3b6e]" />
+  },
+  MX: { 
+    bg: 'linear-gradient(to right, #006847 0%, #006847 33%, #ffffff 33%, #ffffff 66%, #ce1126 66%, #ce1126 100%)',
+    content: null
+  },
 };
 
 export function CountryFlag({ code, size = 'md', className }: CountryFlagProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   
   const config = sizeConfig[size];
-  const colors = countryColors[code.toUpperCase()] || { primary: '#6B7280', secondary: '#E5E7EB' };
   const countryCode = code.toLowerCase();
+  const fallback = countryFallbacks[code.toUpperCase()];
 
   // If image failed to load, show CSS fallback
+  if (imageError && fallback) {
+    return (
+      <div 
+        className={cn(
+          config.classes,
+          'rounded-sm border border-border/50 overflow-hidden relative',
+          className
+        )}
+        style={{ background: fallback.bg }}
+        title={code.toUpperCase()}
+      >
+        {fallback.content}
+      </div>
+    );
+  }
+
+  // Simple fallback for unknown countries
   if (imageError) {
     return (
       <div 
         className={cn(
           config.classes,
-          'rounded-sm border border-border/50 flex items-center justify-center overflow-hidden',
+          'rounded-sm border border-border/50 bg-muted flex items-center justify-center text-xs font-mono text-muted-foreground',
           className
         )}
-        style={{
-          background: colors.tertiary
-            ? `linear-gradient(to bottom, ${colors.secondary} 0%, ${colors.secondary} 50%, ${colors.tertiary} 50%, ${colors.tertiary} 100%)`
-            : `linear-gradient(to right, ${colors.primary} 0%, ${colors.primary} 33%, ${colors.secondary} 33%, ${colors.secondary} 66%, ${colors.primary} 66%, ${colors.primary} 100%)`
-        }}
         title={code.toUpperCase()}
       >
-        {code === 'CL' && (
-          <div 
-            className="absolute left-0 top-0 w-1/3 h-1/2 flex items-center justify-center"
-            style={{ backgroundColor: colors.primary }}
-          >
-            <span className="text-white text-[6px]">★</span>
-          </div>
-        )}
+        {code.toUpperCase()}
       </div>
     );
   }
 
   return (
-    <div className={cn('relative', config.classes, className)}>
-      {/* Placeholder while loading */}
-      {!imageLoaded && (
-        <div 
-          className={cn(
-            'absolute inset-0 rounded-sm border border-border/30 animate-pulse',
-            'bg-gradient-to-r from-muted via-muted-foreground/10 to-muted'
-          )}
-        />
+    <img 
+      src={`https://flagcdn.com/${countryCode}.svg`}
+      alt={`${code.toUpperCase()} flag`}
+      className={cn(
+        config.classes,
+        'rounded-sm border border-border/30 object-cover shadow-sm',
+        className
       )}
-      
-      {/* Actual flag image */}
-      <img 
-        src={`https://flagcdn.com/w${config.pixels.w}/${countryCode}.png`}
-        srcSet={`https://flagcdn.com/w${config.pixels.w * 2}/${countryCode}.png 2x`}
-        alt={`${code.toUpperCase()} flag`}
-        className={cn(
-          config.classes,
-          'rounded-sm border border-border/30 object-cover shadow-sm',
-          !imageLoaded && 'opacity-0',
-          imageLoaded && 'opacity-100 transition-opacity duration-200'
-        )}
-        onLoad={() => setImageLoaded(true)}
-        onError={() => setImageError(true)}
-        loading="eager"
-      />
-    </div>
+      onError={() => setImageError(true)}
+      loading="eager"
+    />
   );
 }
