@@ -147,9 +147,17 @@ For Canadian receipts, assume CAD unless otherwise specified.`;
     }
 
     if (voiceText) {
+      const todayDate = new Date().toISOString().split("T")[0];
       userContent.push({
         type: "text",
-        text: `User voice input describing expense: "${voiceText}". Extract expense information and return a JSON object with expenses array. If multiple expenses are mentioned, split them into separate entries.`,
+        text: `User voice input describing expense: "${voiceText}". 
+
+IMPORTANT DATE RULE: Today's date is ${todayDate}. 
+- If the user mentions a specific date (e.g., "yesterday", "last Monday", "on January 5th", "el 15 de diciembre"), calculate and use that date.
+- If NO date is mentioned at all, ASSUME the expense happened TODAY (${todayDate}).
+- Do NOT use placeholder dates like "YYYY-MM-DD" - always use a real date.
+
+Extract expense information and return a JSON object with expenses array. If multiple expenses are mentioned, split them into separate entries.`,
       });
     }
 
