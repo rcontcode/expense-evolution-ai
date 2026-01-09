@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { MessageCircle, X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
@@ -15,6 +16,7 @@ import { useExpenses, useCreateExpense } from '@/hooks/data/useExpenses';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useVoiceAssistant } from '@/hooks/utils/useVoiceAssistant';
+import { useAudioPlayback } from '@/hooks/utils/useAudioPlayback';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate } from 'react-router-dom';
@@ -275,8 +277,11 @@ export const ChatAssistant: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(true);
+  const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
+  const [recordingDuration, setRecordingDuration] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
 
   const { user } = useAuth();
@@ -625,6 +630,36 @@ export const ChatAssistant: React.FC = () => {
     },
   });
 
+  // Audio playback hook for Spotify-like controls
+  const audioPlayback = useAudioPlayback({
+    onEnd: () => {
+      // Optionally handle when audio ends
+    },
+  });
+
+  // Track recording duration
+  useEffect(() => {
+    if (isListening && !recordingStartTime) {
+      setRecordingStartTime(Date.now());
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingDuration(prev => prev + 1);
+      }, 1000);
+    } else if (!isListening && recordingStartTime) {
+      setRecordingStartTime(null);
+      setRecordingDuration(0);
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
+    }
+    
+    return () => {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+    };
+  }, [isListening, recordingStartTime]);
+
   // Update input with live transcript
   useEffect(() => {
     if (transcript && isListening) {
@@ -684,9 +719,10 @@ export const ChatAssistant: React.FC = () => {
       };
       setMessages(prev => [...prev, assistantMessage]);
 
-      // Auto-speak response if enabled
+      // Auto-speak response if enabled - use audioPlayback for controls
       if (autoSpeak && isVoiceSupported) {
-        speak(responseText);
+        const msgIndex = messages.length + 1; // +1 for user message, this will be the assistant index
+        audioPlayback.play(responseText, msgIndex);
       }
     } catch (error) {
       console.error('Chat error:', error);
@@ -919,19 +955,35 @@ export const ChatAssistant: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            if (isSpeaking) {
-                              stopSpeaking();
+                            const isThisPlaying = audioPlayback.isPlaying && audioPlayback.currentMessageIndex === i;
+                            const isThisPaused = audioPlayback.isPaused && audioPlayback.currentMessageIndex === i;
+                            
+                            if (isThisPlaying && !isThisPaused) {
+                              audioPlayback.pause();
+                            } else if (isThisPaused) {
+                              audioPlayback.resume();
                             } else {
-                              speak(msg.content);
+                              audioPlayback.play(msg.content, i);
                             }
                           }}
                           className="h-6 px-2 mt-1 text-xs opacity-70 hover:opacity-100"
                         >
-                          {isSpeaking ? <VolumeX className="h-3 w-3 mr-1" /> : <Volume2 className="h-3 w-3 mr-1" />}
-                          {isSpeaking 
-                            ? (language === 'es' ? 'Detener' : 'Stop')
-                            : (language === 'es' ? 'Escuchar' : 'Listen')
-                          }
+                          {audioPlayback.isPlaying && audioPlayback.currentMessageIndex === i && !audioPlayback.isPaused ? (
+                            <>
+                              <Pause className="h-3 w-3 mr-1" />
+                              {language === 'es' ? 'Pausar' : 'Pause'}
+                            </>
+                          ) : audioPlayback.isPaused && audioPlayback.currentMessageIndex === i ? (
+                            <>
+                              <Play className="h-3 w-3 mr-1" />
+                              {language === 'es' ? 'Reanudar' : 'Resume'}
+                            </>
+                          ) : (
+                            <>
+                              <Play className="h-3 w-3 mr-1" />
+                              {language === 'es' ? 'Escuchar' : 'Listen'}
+                            </>
+                          )}
                         </Button>
                       )}
                     </div>
@@ -947,6 +999,103 @@ export const ChatAssistant: React.FC = () => {
               </div>
             )}
           </ScrollArea>
+
+          {/* Audio Playback Controls - Spotify style */}
+          {(audioPlayback.isPlaying || audioPlayback.isPaused) && (
+            <div className="px-4 py-3 border-t bg-muted/30">
+              <div className="flex flex-col gap-2">
+                {/* Progress bar */}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="w-8 text-right font-mono">
+                    {Math.floor(audioPlayback.currentTime / 60)}:{Math.floor(audioPlayback.currentTime % 60).toString().padStart(2, '0')}
+                  </span>
+                  <Progress value={audioPlayback.progress} className="flex-1 h-1.5" />
+                  <span className="w-8 font-mono">
+                    {Math.floor(audioPlayback.duration / 60)}:{Math.floor(audioPlayback.duration % 60).toString().padStart(2, '0')}
+                  </span>
+                </div>
+                
+                {/* Playback controls */}
+                <div className="flex items-center justify-center gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={audioPlayback.seekBackward}
+                        className="h-8 w-8"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{language === 'es' ? 'Retroceder 10s' : 'Rewind 10s'}</TooltipContent>
+                  </Tooltip>
+                  
+                  <Button
+                    variant="default"
+                    size="icon"
+                    onClick={audioPlayback.isPaused ? audioPlayback.resume : audioPlayback.pause}
+                    className="h-10 w-10 rounded-full"
+                  >
+                    {audioPlayback.isPaused ? (
+                      <Play className="h-5 w-5 ml-0.5" />
+                    ) : (
+                      <Pause className="h-5 w-5" />
+                    )}
+                  </Button>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={audioPlayback.seekForward}
+                        className="h-8 w-8"
+                      >
+                        <RotateCw className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{language === 'es' ? 'Adelantar 10s' : 'Forward 10s'}</TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={audioPlayback.stop}
+                        className="h-8 w-8 ml-2"
+                      >
+                        <Square className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{language === 'es' ? 'Detener' : 'Stop'}</TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Recording Controls */}
+          {isListening && (
+            <div className="px-4 py-3 border-t bg-red-500/10">
+              <div className="flex items-center gap-3">
+                <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
+                <span className="text-sm font-medium text-red-600 dark:text-red-400 flex-1">
+                  {language === 'es' ? 'Grabando' : 'Recording'}: {Math.floor(recordingDuration / 60)}:{(recordingDuration % 60).toString().padStart(2, '0')}
+                </span>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleMicClick}
+                  className="h-8"
+                >
+                  <Square className="h-3 w-3 mr-1.5" />
+                  {language === 'es' ? 'Detener' : 'Stop'}
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Input */}
           <form onSubmit={handleSubmit} className="p-4 border-t bg-background/50">
