@@ -230,6 +230,35 @@ export default function BusinessProfile() {
           </div>
         </PageHeader>
 
+        {/* Explanation Card */}
+        <Card className="border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-yellow-500/5">
+          <CardContent className="pt-6">
+            <div className="flex gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
+                <User className="h-6 w-6 text-white" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold text-lg">
+                  {language === 'es' ? '¿Qué es el Perfil del Negocio?' : 'What is the Business Profile?'}
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {language === 'es' 
+                    ? 'Esta es TU información personal y la configuración principal de tu negocio. Aquí defines tu país, provincia, tipo de trabajo (empleado, contratista, corporación) y datos fiscales básicos. Es tu identidad en la aplicación.'
+                    : 'This is YOUR personal information and main business configuration. Here you define your country, province, work type (employee, contractor, corporation) and basic tax data. It is your identity in the app.'}
+                </p>
+                <div className="flex items-center gap-2 pt-2">
+                  <Badge variant="outline" className="bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300">
+                    👤 {language === 'es' ? 'Tu perfil personal' : 'Your personal profile'}
+                  </Badge>
+                  <Badge variant="outline" className="bg-orange-500/10 border-orange-500/30 text-orange-700 dark:text-orange-300">
+                    🏠 {language === 'es' ? 'Configuración única' : 'Single configuration'}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Country Selection Section */}
         <Card className="border-primary/30 bg-primary/5">
           <CardHeader>
