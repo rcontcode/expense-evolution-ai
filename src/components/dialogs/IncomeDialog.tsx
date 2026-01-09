@@ -12,6 +12,7 @@ import { useCreateIncome, useUpdateIncome } from '@/hooks/data/useIncome';
 import { IncomeWithRelations, IncomeFormData } from '@/types/income.types';
 import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
+import { useEntity } from '@/contexts/EntityContext';
 
 interface IncomeDialogProps {
   open: boolean;
@@ -21,6 +22,7 @@ interface IncomeDialogProps {
 
 export function IncomeDialog({ open, onClose, income }: IncomeDialogProps) {
   const { t } = useLanguage();
+  const { currentEntity } = useEntity();
   const createMutation = useCreateIncome();
   const updateMutation = useUpdateIncome();
   const { canAddIncome, planType, usage, limits, incrementUsage, getUpgradePlan } = usePlanLimits();
@@ -42,10 +44,15 @@ export function IncomeDialog({ open, onClose, income }: IncomeDialogProps) {
       return;
     }
 
+    const incomeData = {
+      ...data,
+      entity_id: data.entity_id || currentEntity?.id || null,
+    };
+
     if (income) {
-      await updateMutation.mutateAsync({ id: income.id, data });
+      await updateMutation.mutateAsync({ id: income.id, data: incomeData });
     } else {
-      await createMutation.mutateAsync(data);
+      await createMutation.mutateAsync(incomeData);
       // Increment usage counter after successful creation
       incrementUsage('income');
     }

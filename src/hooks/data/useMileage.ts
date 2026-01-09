@@ -130,7 +130,7 @@ export const useMileageSummary = (year?: number) => {
   });
 };
 
-export const useCreateMileage = () => {
+export const useCreateMileage = (defaultEntityId?: string) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { trackAction } = useMissionTracker();
@@ -140,9 +140,15 @@ export const useCreateMileage = () => {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('Not authenticated');
 
+      const insertData = {
+        ...data,
+        user_id: userData.user.id,
+        entity_id: data.entity_id || defaultEntityId || null,
+      };
+
       const { data: result, error } = await supabase
         .from('mileage')
-        .insert({ ...data, user_id: userData.user.id })
+        .insert(insertData)
         .select()
         .single();
 

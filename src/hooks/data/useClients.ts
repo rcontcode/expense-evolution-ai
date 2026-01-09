@@ -8,6 +8,7 @@ type ClientInsert = {
   country?: string;
   province?: string | null;
   notes?: string | null;
+  entity_id?: string | null;
 };
 
 export function useClients() {
@@ -25,7 +26,7 @@ export function useClients() {
   });
 }
 
-export function useCreateClient() {
+export function useCreateClient(defaultEntityId?: string) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -36,7 +37,11 @@ export function useCreateClient() {
 
       const { data, error } = await supabase
         .from('clients')
-        .insert({ ...client, user_id: user.id })
+        .insert({ 
+          ...client, 
+          user_id: user.id,
+          entity_id: client.entity_id || defaultEntityId || null,
+        })
         .select()
         .single();
       
