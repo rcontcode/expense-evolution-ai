@@ -304,12 +304,12 @@ export const TOOLTIP_CONTENT = {
     es: {
       title: "Entrada por Voz",
       description: "Describe tu gasto hablando. Di algo como 'Almuerzo en restaurante, 25 dólares, hoy'.",
-      howToUse: "Mantén presionado el botón del micrófono mientras hablas.",
+      howToUse: "Presiona el micrófono para grabar, presiona de nuevo para detener.",
     },
     en: {
       title: "Voice Input",
       description: "Describe your expense by speaking. Say something like 'Lunch at restaurant, 25 dollars, today'.",
-      howToUse: "Hold the microphone button while speaking.",
+      howToUse: "Press the microphone to record, press again to stop.",
     },
   },
   expenseCategory: {
