@@ -486,7 +486,10 @@ export const Layout = ({ children }: LayoutProps) => {
                   {section.items.map((item) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;
-                    const tooltipData = TOOLTIP_CONTENT[item.tooltipKey];
+
+                    const tooltipEntry = TOOLTIP_CONTENT[item.tooltipKey];
+                    const tooltipText = tooltipEntry?.[language] ?? tooltipEntry?.es;
+
                     // Determine badge: use tax badge if badgeType is 'tax', otherwise use badgeKey/badge
                     let badgeText: string | null = null;
                     if ('badgeType' in item && item.badgeType === 'tax') {
@@ -529,6 +532,15 @@ export const Layout = ({ children }: LayoutProps) => {
                       </button>
                     );
 
+                    // If we don't have tooltip content configured, render without help bubble.
+                    if (!tooltipText) {
+                      return (
+                        <div key={item.path} className="flex items-center gap-1">
+                          {button}
+                        </div>
+                      );
+                    }
+
                     return (
                       <div key={item.path} className="flex items-center gap-1">
                         {collapsed ? (
@@ -536,11 +548,11 @@ export const Layout = ({ children }: LayoutProps) => {
                             <TooltipTrigger asChild>{button}</TooltipTrigger>
                             <TooltipContent side="right" sideOffset={8} className="z-[100] max-w-xs p-3 bg-popover border shadow-lg">
                               <div className="space-y-2">
-                                <span className="font-semibold">{tooltipData.title}</span>
-                                <p className="text-xs text-muted-foreground">{tooltipData.description}</p>
-                                {tooltipData.howToUse && (
+                                <span className="font-semibold">{tooltipText.title}</span>
+                                <p className="text-xs text-muted-foreground">{tooltipText.description}</p>
+                                {tooltipText.howToUse && (
                                   <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
-                                    💡 {tooltipData.howToUse}
+                                    💡 {tooltipText.howToUse}
                                   </p>
                                 )}
                               </div>
@@ -551,17 +563,20 @@ export const Layout = ({ children }: LayoutProps) => {
                             {button}
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <button className="p-1 rounded-full text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+                                <button
+                                  type="button"
+                                  className="p-1 rounded-full text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                                >
                                   <HelpCircle className="h-3.5 w-3.5" />
                                 </button>
                               </TooltipTrigger>
                               <TooltipContent side="right" sideOffset={8} className="z-[100] max-w-xs p-3 bg-popover border shadow-lg">
                                 <div className="space-y-2">
-                                  <span className="font-semibold">{tooltipData.title}</span>
-                                  <p className="text-xs text-muted-foreground">{tooltipData.description}</p>
-                                  {tooltipData.howToUse && (
+                                  <span className="font-semibold">{tooltipText.title}</span>
+                                  <p className="text-xs text-muted-foreground">{tooltipText.description}</p>
+                                  {tooltipText.howToUse && (
                                     <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
-                                      💡 {tooltipData.howToUse}
+                                      💡 {tooltipText.howToUse}
                                     </p>
                                   )}
                                 </div>
