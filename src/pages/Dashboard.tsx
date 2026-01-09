@@ -120,7 +120,7 @@ export default function Dashboard() {
   const [showGuide, setShowGuide] = useState(false);
 
   const { refreshSubscription } = useSubscription();
-  const { viewMode } = useDisplayPreferences();
+  const { viewMode, setViewMode, isLoading: prefsLoading } = useDisplayPreferences();
 
   // Handle subscription success/cancel from Stripe redirect
   useEffect(() => {
@@ -231,7 +231,7 @@ export default function Dashboard() {
 
           {/* View Mode Toggle + Export (siempre visible) */}
           <div className="flex items-center justify-between gap-4 py-2">
-            <ViewModeToggle />
+            <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
             <Button onClick={() => setExportDialogOpen(true)} variant="outline" size="sm">
               <Download className="mr-2 h-4 w-4" />
               {t('export.exportButton')}

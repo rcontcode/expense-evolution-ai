@@ -1,13 +1,17 @@
 import { LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
+import { ViewMode } from '@/lib/constants/focus-areas';
 
-export const ViewModeToggle = () => {
-  const { viewMode, setViewMode } = useDisplayPreferences();
-  const { t, language } = useLanguage();
+interface ViewModeToggleProps {
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
+}
+
+export const ViewModeToggle = ({ viewMode, setViewMode }: ViewModeToggleProps) => {
+  const { language } = useLanguage();
 
   const isClassic = viewMode === 'classic';
 
