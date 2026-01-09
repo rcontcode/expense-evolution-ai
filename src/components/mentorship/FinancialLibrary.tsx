@@ -413,38 +413,30 @@ export function FinancialLibrary() {
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full flex-wrap h-auto gap-1 p-1 mb-4">
-            <TabsTrigger value="favorites" className="flex items-center gap-1 text-xs">
-              <Star className="h-3 w-3" />
-              {appLanguage === 'es' ? 'Favoritos' : 'Favorites'}
+            <TabsTrigger value="favorites" className="flex items-center gap-1.5 text-xs">
+              ⭐ {appLanguage === 'es' ? 'Favoritos' : 'Favorites'}
               {favorites.length > 0 && <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">{favorites.length}</Badge>}
             </TabsTrigger>
-            <TabsTrigger value="books" className="flex items-center gap-1 text-xs">
-              <Book className="h-3 w-3" />
-              {appLanguage === 'es' ? 'Libros' : 'Books'}
+            <TabsTrigger value="books" className="flex items-center gap-1.5 text-xs">
+              📚 {appLanguage === 'es' ? 'Libros' : 'Books'}
             </TabsTrigger>
-            <TabsTrigger value="documentaries" className="flex items-center gap-1 text-xs">
-              <Film className="h-3 w-3" />
-              {appLanguage === 'es' ? 'Docs' : 'Docs'}
+            <TabsTrigger value="documentaries" className="flex items-center gap-1.5 text-xs">
+              🎬 {appLanguage === 'es' ? 'Docs' : 'Docs'}
             </TabsTrigger>
-            <TabsTrigger value="movies" className="flex items-center gap-1 text-xs">
-              <Video className="h-3 w-3" />
-              {appLanguage === 'es' ? 'Películas' : 'Movies'}
+            <TabsTrigger value="movies" className="flex items-center gap-1.5 text-xs">
+              🎥 {appLanguage === 'es' ? 'Películas' : 'Movies'}
             </TabsTrigger>
-            <TabsTrigger value="series" className="flex items-center gap-1 text-xs">
-              <Tv className="h-3 w-3" />
-              Series
+            <TabsTrigger value="series" className="flex items-center gap-1.5 text-xs">
+              📺 Series
             </TabsTrigger>
-            <TabsTrigger value="podcasts" className="flex items-center gap-1 text-xs">
-              <Headphones className="h-3 w-3" />
-              Podcasts
+            <TabsTrigger value="podcasts" className="flex items-center gap-1.5 text-xs">
+              🎧 Podcasts
             </TabsTrigger>
-            <TabsTrigger value="ted" className="flex items-center gap-1 text-xs">
-              <Mic className="h-3 w-3" />
-              TED
+            <TabsTrigger value="ted" className="flex items-center gap-1.5 text-xs">
+              🎤 TED
             </TabsTrigger>
-            <TabsTrigger value="youtube" className="flex items-center gap-1 text-xs">
-              <Video className="h-3 w-3" />
-              YouTube
+            <TabsTrigger value="youtube" className="flex items-center gap-1.5 text-xs">
+              ▶️ YouTube
             </TabsTrigger>
           </TabsList>
 
