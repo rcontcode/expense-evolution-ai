@@ -99,6 +99,38 @@ export function FiscalEntitiesCard() {
 
   return (
     <>
+      {/* Explanation Card */}
+      <Card className="border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 via-teal-500/5 to-cyan-500/5 mb-4">
+        <CardContent className="pt-6">
+          <div className="flex gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
+              <Globe className="h-6 w-6 text-white" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-lg">
+                {language === 'es' ? '¿Qué son las Jurisdicciones Fiscales?' : 'What are Fiscal Jurisdictions?'}
+              </h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                {language === 'es' 
+                  ? 'Las jurisdicciones fiscales te permiten gestionar MÚLTIPLES entidades en diferentes países. Por ejemplo, si eres freelancer en Canadá pero también tienes una empresa en Chile, puedes crear una entidad para cada una y organizar gastos, ingresos y reportes fiscales por separado.'
+                  : 'Fiscal jurisdictions allow you to manage MULTIPLE entities in different countries. For example, if you freelance in Canada but also have a company in Chile, you can create an entity for each and organize expenses, income and tax reports separately.'}
+              </p>
+              <div className="flex items-center gap-2 pt-2 flex-wrap">
+                <Badge variant="outline" className="bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300">
+                  🌎 {language === 'es' ? 'Múltiples países' : 'Multiple countries'}
+                </Badge>
+                <Badge variant="outline" className="bg-teal-500/10 border-teal-500/30 text-teal-700 dark:text-teal-300">
+                  🏢 {language === 'es' ? 'Varias entidades' : 'Multiple entities'}
+                </Badge>
+                <Badge variant="outline" className="bg-cyan-500/10 border-cyan-500/30 text-cyan-700 dark:text-cyan-300">
+                  📊 {language === 'es' ? 'Reportes separados' : 'Separate reports'}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
