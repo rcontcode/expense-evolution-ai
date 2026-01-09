@@ -34,6 +34,7 @@ import {
 } from '@/hooks/data/useFiscalEntities';
 import { FiscalEntityDialog } from './FiscalEntityDialog';
 import { getCountryConfig, type CountryCode } from '@/lib/constants/country-tax-config';
+import { CountryFlag } from '@/components/ui/country-flag';
 
 export function FiscalEntitiesCard() {
   const { language } = useLanguage();
@@ -70,9 +71,6 @@ export function FiscalEntitiesCard() {
     });
   };
 
-  const getCountryFlag = (country: string) => {
-    return country === 'CA' ? '🇨🇦' : country === 'CL' ? '🇨🇱' : '🌍';
-  };
 
   const getEntityTypeLabel = (entity: FiscalEntity) => {
     const config = getCountryConfig(entity.country as CountryCode);
@@ -180,7 +178,7 @@ export function FiscalEntitiesCard() {
                           )}
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1 flex-wrap">
-                          <span>{getCountryFlag(entity.country)} {entity.country}</span>
+                          <span className="flex items-center gap-1"><CountryFlag code={entity.country} size="xs" /> {entity.country}</span>
                           <span>•</span>
                           <span>{getEntityTypeLabel(entity)}</span>
                           {entity.tax_id && (

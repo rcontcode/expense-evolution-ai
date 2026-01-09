@@ -34,6 +34,7 @@ import { validateRut, formatRut } from '@/lib/validations/rut';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getCountryConfig, getAvailableCountries, CHILE_TAX_REGIMES, type CountryCode } from '@/lib/constants/country-tax-config';
+import { CountryFlag } from '@/components/ui/country-flag';
 
 type WorkType = Database['public']['Enums']['work_type'];
 
@@ -250,9 +251,9 @@ export default function BusinessProfile() {
               <SelectContent>
                 {availableCountries.map(c => (
                   <SelectItem key={c.code} value={c.code}>
-                    <div className="flex items-center gap-2">
-                      <span>{c.code === 'CA' ? '🇨🇦' : '🇨🇱'}</span>
-                      <span>{language === 'es' ? c.name.es : c.name.en}</span>
+                    <div className="flex items-center gap-3">
+                      <CountryFlag code={c.code} size="md" />
+                      <span className="font-medium">{language === 'es' ? c.name.es : c.name.en}</span>
                     </div>
                   </SelectItem>
                 ))}

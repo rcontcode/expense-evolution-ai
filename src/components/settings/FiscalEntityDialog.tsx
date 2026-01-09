@@ -15,33 +15,7 @@ import { useCreateFiscalEntity, useUpdateFiscalEntity, type FiscalEntity } from 
 import { getCountryConfig, getAvailableCountries, CHILE_TAX_REGIMES, type CountryCode } from '@/lib/constants/country-tax-config';
 import { Building2, Globe, FileText, DollarSign, Calendar, Palette, HelpCircle, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
-// Official country flags using flagcdn.com SVGs
-const CountryFlag = ({ code, size = 'md' }: { code: string; size?: 'sm' | 'md' | 'lg' }) => {
-  const sizeClasses = {
-    sm: 'h-4 w-6',
-    md: 'h-5 w-8',
-    lg: 'h-7 w-10',
-  };
-  
-  const pixelSizes = {
-    sm: { w: 24, h: 16 },
-    md: { w: 32, h: 24 },
-    lg: { w: 40, h: 28 },
-  };
-
-  const dimensions = pixelSizes[size];
-  
-  return (
-    <img 
-      src={`https://flagcdn.com/w${dimensions.w}/${code.toLowerCase()}.png`}
-      srcSet={`https://flagcdn.com/w${dimensions.w * 2}/${code.toLowerCase()}.png 2x`}
-      alt={`${code} flag`}
-      className={`${sizeClasses[size]} rounded-sm shadow-sm border border-black/20 object-cover`}
-      loading="eager"
-    />
-  );
-};
+import { CountryFlag } from '@/components/ui/country-flag';
 
 // Country card with visual flag and colors
 const COUNTRY_STYLES: Record<string, { gradient: string; border: string; icon: string }> = {
