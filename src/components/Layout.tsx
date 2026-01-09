@@ -19,9 +19,7 @@ import {
   Camera,
   Menu,
   X,
-  AlertTriangle,
   FolderKanban,
-  UserCircle,
   Building2,
   Scale,
   Bell,
@@ -390,25 +388,25 @@ export const Layout = ({ children }: LayoutProps) => {
           </button>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-3">
+          <nav className="flex-1 py-2 px-2 space-y-1.5">
             {NAV_SECTIONS.map((section) => {
               const theme = sectionThemes[section.themeKey];
               return (
               <div 
                 key={section.titleKey}
                 className={cn(
-                  "rounded-xl transition-all duration-300",
-                  collapsed ? "p-1.5" : "p-3",
+                  "rounded-lg transition-all duration-300",
+                  collapsed ? "p-1" : "p-2",
                   `bg-gradient-to-br ${theme.gradient}`,
                   `border ${theme.border}`,
-                  `hover:shadow-lg ${theme.glow}`
+                  `hover:shadow-md ${theme.glow}`
                 )}
               >
                 {collapsed ? (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className={cn(
-                        "flex justify-center py-2 text-lg cursor-default rounded-lg transition-colors",
+                        "flex justify-center py-1 text-sm cursor-default rounded transition-colors",
                         `hover:bg-gradient-to-br ${theme.gradient}`
                       )}>
                         {section.emoji}
@@ -420,14 +418,14 @@ export const Layout = ({ children }: LayoutProps) => {
                   </Tooltip>
                 ) : (
                   <h3 className={cn(
-                    "px-2 mb-2 text-sm font-bold flex items-center gap-2",
+                    "px-1.5 mb-1 text-xs font-bold flex items-center gap-1.5",
                     theme.text
                   )}>
-                    <span className="text-base">{section.emoji}</span>
-                    <span className="uppercase tracking-wider text-xs">{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
+                    <span className="text-sm">{section.emoji}</span>
+                    <span className="uppercase tracking-wider text-[10px]">{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
                   </h3>
                 )}
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {section.items.map((item) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;
@@ -438,25 +436,26 @@ export const Layout = ({ children }: LayoutProps) => {
                       <button
                         onClick={() => navigate(item.path)}
                         className={cn(
-                          'nav-item w-full',
-                          isActive && 'active',
+                          'flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm transition-all',
+                          'hover:bg-background/60',
+                          isActive && 'bg-primary text-primary-foreground shadow-sm',
                           collapsed && 'justify-center px-0'
                         )}
                       >
                         <span className={cn(
-                          "flex items-center justify-center w-7 h-7 rounded-lg transition-transform duration-200 hover:scale-110",
+                          "flex items-center justify-center w-6 h-6 rounded transition-transform duration-200 hover:scale-105",
                           isActive ? "bg-primary-foreground/20" : theme.iconWrapper
                         )}>
-                          <Icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "text-primary-foreground" : theme.iconColor)} />
+                          <Icon className={cn("h-3.5 w-3.5 flex-shrink-0", isActive ? "text-primary-foreground" : theme.iconColor)} />
                         </span>
                         {!collapsed && (
                           <>
-                            <span className="flex-1 text-left">{t(item.label)}</span>
+                            <span className="flex-1 text-left text-xs">{t(item.label)}</span>
                             {badgeText && (
                               <Badge 
                                 variant={badgeText === 'AI' ? 'default' : 'secondary'} 
                                 className={cn(
-                                  "text-[10px] px-1.5 py-0",
+                                  "text-[9px] px-1 py-0 h-4",
                                   badgeText === 'AI' && "bg-gradient-primary border-0"
                                 )}
                               >
@@ -517,21 +516,21 @@ export const Layout = ({ children }: LayoutProps) => {
             })}
           </nav>
 
-          {/* Quick Capture CTA */}
+          {/* Quick Capture CTA - Compact */}
           {!collapsed && (
-            <div className="p-3">
+            <div className="px-2 pb-1">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => navigate('/expenses')}
-                    className="w-full p-4 rounded-xl bg-gradient-hero text-primary-foreground flex items-center gap-3 hover:opacity-90 transition-opacity shadow-glow"
+                    className="w-full p-2.5 rounded-lg bg-gradient-hero text-primary-foreground flex items-center gap-2 hover:opacity-90 transition-opacity shadow-md"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
-                      <Sparkles className="h-5 w-5" />
+                    <div className="w-7 h-7 rounded bg-primary-foreground/20 flex items-center justify-center">
+                      <Sparkles className="h-4 w-4" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-sm">{t('layout.quickCapture')}</p>
-                      <p className="text-xs opacity-80">{t('layout.quickCaptureSubtitle')}</p>
+                      <p className="font-semibold text-xs">{t('layout.quickCapture')}</p>
+                      <p className="text-[10px] opacity-80">{t('layout.quickCaptureSubtitle')}</p>
                     </div>
                   </button>
                 </TooltipTrigger>
@@ -539,18 +538,15 @@ export const Layout = ({ children }: LayoutProps) => {
                   <div className="space-y-2">
                     <span className="font-semibold">{TOOLTIP_CONTENT.quickCapture[language].title}</span>
                     <p className="text-xs text-muted-foreground">{TOOLTIP_CONTENT.quickCapture[language].description}</p>
-                    <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
-                      💡 {TOOLTIP_CONTENT.quickCapture[language].howToUse}
-                    </p>
                   </div>
                 </TooltipContent>
               </Tooltip>
             </div>
           )}
 
-          {/* Bottom actions */}
+          {/* Bottom actions - Compact */}
           <div className={cn(
-            "border-t border-border p-3 space-y-2",
+            "border-t border-border p-2 space-y-1",
             collapsed && "flex flex-col items-center"
           )}>
             {/* Profile Button */}
@@ -559,121 +555,62 @@ export const Layout = ({ children }: LayoutProps) => {
                 <button
                   onClick={() => navigate('/business-profile')}
                   className={cn(
-                    'nav-item w-full',
-                    location.pathname === '/business-profile' && 'active',
+                    'flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm transition-all hover:bg-muted/50',
+                    location.pathname === '/business-profile' && 'bg-primary text-primary-foreground',
                     collapsed && 'justify-center px-0 w-auto'
                   )}
                 >
-                  <div className="w-7 h-7 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
+                  <div className="w-6 h-6 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground text-xs font-medium">
                     {userInitial}
                   </div>
                   {!collapsed && (
-                    <div className="flex-1 text-left">
-                      <span className="block text-sm font-medium truncate">{profile?.full_name || t('settings.profileTitle')}</span>
-                      <span className="block text-xs text-muted-foreground truncate">
-                        {profile?.work_types?.includes('contractor') ? 'Sole Proprietor' : 
-                         profile?.work_types?.includes('corporation') ? 'Corporation' : 
-                         profile?.work_types?.includes('employee') ? 'Employee' : t('nav.settings')}
-                      </span>
+                    <div className="flex-1 text-left min-w-0">
+                      <span className="block text-xs font-medium truncate">{profile?.full_name || t('settings.profileTitle')}</span>
                     </div>
                   )}
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right" className="max-w-xs p-3">
-                <div className="space-y-2">
-                  <span className="font-semibold">{t('businessProfile.title')}</span>
-                  <p className="text-xs text-muted-foreground">{t('businessProfile.description')}</p>
-                </div>
+              <TooltipContent side="right">
+                <span className="font-semibold text-xs">{t('businessProfile.title')}</span>
               </TooltipContent>
             </Tooltip>
 
-            {/* Notifications Button */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => navigate('/notifications')}
-                  className={cn(
-                    'nav-item w-full relative',
-                    location.pathname === '/notifications' && 'active',
-                    collapsed && 'justify-center px-0 w-auto'
-                  )}
-                >
-                  <div className="relative">
-                    <Bell className="h-5 w-5" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-2 -right-2 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center font-medium">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </span>
-                    )}
-                  </div>
-                  {!collapsed && <span className="flex-1 text-left">{t('nav.notifications') || 'Notificaciones'}</span>}
-                  {!collapsed && unreadCount > 0 && (
-                    <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
-                      {unreadCount}
-                    </Badge>
-                  )}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="max-w-xs p-3">
-                <div className="space-y-2">
-                  <span className="font-semibold">{t('notifications.title') || 'Notificaciones'}</span>
-                  <p className="text-xs text-muted-foreground">{t('notifications.description') || 'Ver alertas y logros'}</p>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-
-            {/* Settings Button */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => navigate('/settings')}
-                  className={cn(
-                    'nav-item w-full',
-                    location.pathname === '/settings' && 'active',
-                    collapsed && 'justify-center px-0 w-auto'
-                  )}
-                >
-                  <Settings className="h-5 w-5" />
-                  {!collapsed && <span className="flex-1 text-left">{t('nav.settings')}</span>}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="max-w-xs p-3">
-                <div className="space-y-2">
-                  <span className="font-semibold">{TOOLTIP_CONTENT.settings[language].title}</span>
-                  <p className="text-xs text-muted-foreground">{TOOLTIP_CONTENT.settings[language].description}</p>
-                  <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
-                    💡 {TOOLTIP_CONTENT.settings[language].howToUse}
-                  </p>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-
-            {/* Auth Status */}
-            <AuthStatusIndicator collapsed={collapsed} />
-
+            {/* Compact action row */}
             <div className={cn(
-              "flex items-center gap-2 pt-2",
+              "flex items-center gap-1",
               collapsed ? "flex-col" : "justify-between"
             )}>
               {!collapsed && <LanguageSelector />}
+              
+              {/* Notifications */}
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={signOut}>
-                    <LogOut className="h-5 w-5" />
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className={cn("h-7 w-7 relative", location.pathname === '/notifications' && 'bg-primary text-primary-foreground')}
+                    onClick={() => navigate('/notifications')}
+                  >
+                    <Bell className="h-4 w-4" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-destructive text-destructive-foreground text-[8px] flex items-center justify-center font-medium">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side={collapsed ? "right" : "top"}>{t('nav.notifications')}</TooltipContent>
+              </Tooltip>
+
+              {/* Logout */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={signOut}>
+                    <LogOut className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side={collapsed ? "right" : "top"}>{t('layout.logout')}</TooltipContent>
               </Tooltip>
-              {collapsed && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-muted-foreground">
-                      <HelpCircle className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">{t('layout.help')}</TooltipContent>
-                </Tooltip>
-              )}
             </div>
           </div>
         </aside>
