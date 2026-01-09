@@ -679,8 +679,8 @@ export const Layout = ({ children }: LayoutProps) => {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 overflow-auto flex flex-col">
-          <div className="animate-fade-in flex-1">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col relative z-10">
+          <div className="flex-1">
             {children}
           </div>
           
