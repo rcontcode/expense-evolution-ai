@@ -17,6 +17,7 @@ import {
 import { toast } from 'sonner';
 import { NotificationPreferences } from '@/components/settings/NotificationPreferences';
 import { SubscriptionManager } from '@/components/settings/SubscriptionManager';
+import { FiscalEntitiesCard } from '@/components/settings/FiscalEntitiesCard';
 import { resetOnboardingTutorial } from '@/components/guidance/OnboardingTutorial';
 import { PageHeader } from '@/components/PageHeader';
 import { DisplayPreferencesCard } from '@/components/settings/DisplayPreferencesCard';
@@ -71,6 +72,9 @@ export default function Settings() {
 
           {/* ============== PREFERENCES TAB ============== */}
           <TabsContent value="preferences" className="space-y-6">
+            {/* Fiscal Jurisdictions - Multi-country support */}
+            <FiscalEntitiesCard />
+
             {/* Subscription Management */}
             <SubscriptionManager />
 
