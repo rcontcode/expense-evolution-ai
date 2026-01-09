@@ -4,7 +4,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Income, IncomeWithRelations, IncomeFormData } from '@/types/income.types';
 import { useMissionTracker } from './useMissions';
-export function useIncome(filters?: { year?: number; month?: number; type?: string }) {
+export interface IncomeFilters {
+  year?: number;
+  month?: number;
+  type?: string;
+  entityId?: string | null;
+  showAllEntities?: boolean;
+}
+
+export function useIncome(filters?: IncomeFilters) {
   const { user } = useAuth();
 
   return useQuery({
@@ -34,6 +42,11 @@ export function useIncome(filters?: { year?: number; month?: number; type?: stri
 
       if (filters?.type) {
         query = query.eq('income_type', filters.type as any);
+      }
+
+      // Entity/Jurisdiction filtering
+      if (filters?.entityId) {
+        query = query.eq('entity_id', filters.entityId);
       }
 
       const { data, error } = await query;
