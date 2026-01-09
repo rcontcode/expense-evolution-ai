@@ -499,41 +499,75 @@ export function TaxEstimator() {
               <p className="font-medium text-muted-foreground">
                 {isEs ? "Esta estimación NO incluye:" : "This estimate does NOT include:"}
               </p>
-              <ul className="list-disc pl-4 space-y-1">
-                <li>{isEs ? "Créditos por hijos (CCB, Child Care)" : "Child credits (CCB, Child Care)"}</li>
-                <li>{isEs ? "Créditos médicos" : "Medical credits"}</li>
-                <li>{isEs ? "Créditos de matrícula/educación" : "Tuition/education credits"}</li>
-                <li>{isEs ? "Créditos por donaciones" : "Donation credits"}</li>
-                <li>{isEs ? "Deducciones específicas por industria" : "Industry-specific deductions"}</li>
-                <li>{isEs ? "Input Tax Credits (ITC) de GST/HST" : "GST/HST Input Tax Credits (ITC)"}</li>
-                <li>{isEs ? "Pérdidas de años anteriores" : "Prior year losses"}</li>
-              </ul>
+              {isChile ? (
+                <ul className="list-disc pl-4 space-y-1">
+                  <li>{isEs ? "Crédito por gastos de educación" : "Education expense credits"}</li>
+                  <li>{isEs ? "Crédito por intereses hipotecarios (DFL 2)" : "Mortgage interest credits (DFL 2)"}</li>
+                  <li>{isEs ? "Crédito por donaciones (Art. 46 D)" : "Donation credits (Art. 46 D)"}</li>
+                  <li>{isEs ? "Deducciones por pensión alimenticia" : "Alimony deductions"}</li>
+                  <li>{isEs ? "Crédito por IVA en activos fijos" : "VAT credit on fixed assets"}</li>
+                  <li>{isEs ? "Pérdidas tributarias de años anteriores" : "Prior year tax losses"}</li>
+                  <li>{isEs ? "Beneficios tributarios regionales (Zona Franca, etc.)" : "Regional tax benefits (Free Zone, etc.)"}</li>
+                </ul>
+              ) : (
+                <ul className="list-disc pl-4 space-y-1">
+                  <li>{isEs ? "Créditos por hijos (CCB, Child Care)" : "Child credits (CCB, Child Care)"}</li>
+                  <li>{isEs ? "Créditos médicos" : "Medical credits"}</li>
+                  <li>{isEs ? "Créditos de matrícula/educación" : "Tuition/education credits"}</li>
+                  <li>{isEs ? "Créditos por donaciones" : "Donation credits"}</li>
+                  <li>{isEs ? "Deducciones específicas por industria" : "Industry-specific deductions"}</li>
+                  <li>{isEs ? "Input Tax Credits (ITC) de GST/HST" : "GST/HST Input Tax Credits (ITC)"}</li>
+                  <li>{isEs ? "Pérdidas de años anteriores" : "Prior year losses"}</li>
+                </ul>
+              )}
             </TabsContent>
             
             <TabsContent value="wheretofind" className="space-y-2 text-sm">
               <p className="font-medium text-muted-foreground">
                 {isEs ? "Dónde encontrar la información necesaria:" : "Where to find necessary information:"}
               </p>
-              <ul className="list-disc pl-4 space-y-1">
-                <li><strong>T4:</strong> {isEs ? "Tu empleador te lo envía en febrero" : "Your employer sends it in February"}</li>
-                <li><strong>T5:</strong> {isEs ? "Bancos e inversiones te los envían" : "Banks and investments send these"}</li>
-                <li><strong>RRSP:</strong> {isEs ? "Tu institución financiera te envía recibos" : "Your financial institution sends receipts"}</li>
-                <li><strong>CRA My Account:</strong> {isEs ? "Historial de declaraciones y NOAs" : "Filing history and NOAs"}</li>
-                <li><strong>Notice of Assessment:</strong> {isEs ? "CRA te lo envía después de declarar" : "CRA sends after filing"}</li>
-              </ul>
+              {isChile ? (
+                <ul className="list-disc pl-4 space-y-1">
+                  <li><strong>{isEs ? "Liquidaciones de Sueldo:" : "Payroll Statements:"}</strong> {isEs ? "Tu empleador te las entrega mensualmente" : "Your employer provides monthly"}</li>
+                  <li><strong>{isEs ? "Boletas de Honorarios:" : "Fee Invoices:"}</strong> {isEs ? "Revisa tu historial en sii.cl" : "Check your history at sii.cl"}</li>
+                  <li><strong>{isEs ? "Certificado APV:" : "APV Certificate:"}</strong> {isEs ? "Tu AFP o institución financiera lo emite" : "Your AFP or financial institution issues it"}</li>
+                  <li><strong>{isEs ? "Mi SII:" : "My SII:"}</strong> {isEs ? "Portal del SII con historial de declaraciones y F22" : "SII portal with filing history and F22"}</li>
+                  <li><strong>{isEs ? "Certificado de Cotizaciones:" : "Contributions Certificate:"}</strong> {isEs ? "Tu AFP emite certificado anual" : "Your AFP issues annual certificate"}</li>
+                  <li><strong>{isEs ? "Propuesta F22:" : "F22 Proposal:"}</strong> {isEs ? "El SII te la propone en abril" : "SII proposes it in April"}</li>
+                </ul>
+              ) : (
+                <ul className="list-disc pl-4 space-y-1">
+                  <li><strong>T4:</strong> {isEs ? "Tu empleador te lo envía en febrero" : "Your employer sends it in February"}</li>
+                  <li><strong>T5:</strong> {isEs ? "Bancos e inversiones te los envían" : "Banks and investments send these"}</li>
+                  <li><strong>RRSP:</strong> {isEs ? "Tu institución financiera te envía recibos" : "Your financial institution sends receipts"}</li>
+                  <li><strong>CRA My Account:</strong> {isEs ? "Historial de declaraciones y NOAs" : "Filing history and NOAs"}</li>
+                  <li><strong>Notice of Assessment:</strong> {isEs ? "CRA te lo envía después de declarar" : "CRA sends after filing"}</li>
+                </ul>
+              )}
             </TabsContent>
             
             <TabsContent value="nextsteps" className="space-y-2 text-sm">
               <p className="font-medium text-muted-foreground">
                 {isEs ? "Pasos recomendados:" : "Recommended steps:"}
               </p>
-              <ol className="list-decimal pl-4 space-y-1">
-                <li>{isEs ? "Reúne todos tus documentos fiscales (T4, T5, recibos)" : "Gather all tax documents (T4, T5, receipts)"}</li>
-                <li>{isEs ? "Usa esta estimación como referencia inicial" : "Use this estimate as initial reference"}</li>
-                <li>{isEs ? "Consulta con un contador para situaciones complejas" : "Consult an accountant for complex situations"}</li>
-                <li>{isEs ? "Considera software certificado por CRA para declarar" : "Consider CRA-certified software for filing"}</li>
-                <li>{isEs ? "Declara antes de la fecha límite para evitar penalidades" : "File before deadline to avoid penalties"}</li>
-              </ol>
+              {isChile ? (
+                <ol className="list-decimal pl-4 space-y-1">
+                  <li>{isEs ? "Reúne tus liquidaciones, boletas y certificados APV" : "Gather your payroll, invoices and APV certificates"}</li>
+                  <li>{isEs ? "Revisa tu propuesta de F22 en Mi SII en abril" : "Check your F22 proposal at My SII in April"}</li>
+                  <li>{isEs ? "Usa esta estimación como referencia inicial" : "Use this estimate as initial reference"}</li>
+                  <li>{isEs ? "Consulta con un contador para situaciones complejas" : "Consult an accountant for complex situations"}</li>
+                  <li>{isEs ? "Declara antes del 30 de abril para evitar multas" : "File before April 30 to avoid penalties"}</li>
+                  <li>{isEs ? "Si tienes F29, recuerda declararlo el día 12 de cada mes" : "If you have F29, remember to file on the 12th of each month"}</li>
+                </ol>
+              ) : (
+                <ol className="list-decimal pl-4 space-y-1">
+                  <li>{isEs ? "Reúne todos tus documentos fiscales (T4, T5, recibos)" : "Gather all tax documents (T4, T5, receipts)"}</li>
+                  <li>{isEs ? "Usa esta estimación como referencia inicial" : "Use this estimate as initial reference"}</li>
+                  <li>{isEs ? "Consulta con un contador para situaciones complejas" : "Consult an accountant for complex situations"}</li>
+                  <li>{isEs ? "Considera software certificado por CRA para declarar" : "Consider CRA-certified software for filing"}</li>
+                  <li>{isEs ? "Declara antes de la fecha límite para evitar penalidades" : "File before deadline to avoid penalties"}</li>
+                </ol>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>
