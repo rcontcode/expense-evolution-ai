@@ -16,45 +16,30 @@ import { getCountryConfig, getAvailableCountries, CHILE_TAX_REGIMES, type Countr
 import { Building2, Globe, FileText, DollarSign, Calendar, Palette, HelpCircle, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-// Visual flag components with colors
+// Official country flags using flagcdn.com SVGs
 const CountryFlag = ({ code, size = 'md' }: { code: string; size?: 'sm' | 'md' | 'lg' }) => {
   const sizeClasses = {
-    sm: 'w-6 h-4 text-xs',
-    md: 'w-8 h-6 text-sm',
-    lg: 'w-10 h-7 text-base',
+    sm: 'h-4 w-6',
+    md: 'h-5 w-8',
+    lg: 'h-7 w-10',
   };
   
-  const flags: Record<string, { bg: string; content: React.ReactNode }> = {
-    CA: {
-      bg: 'bg-gradient-to-r from-red-600 via-white to-red-600',
-      content: <span className="text-red-600 font-bold">🍁</span>,
-    },
-    CL: {
-      bg: 'bg-gradient-to-b from-white to-red-600',
-      content: (
-        <div className="absolute left-0 top-0 w-1/3 h-1/2 bg-blue-700 flex items-center justify-center">
-          <span className="text-white text-[8px]">★</span>
-        </div>
-      ),
-    },
-    US: {
-      bg: 'bg-gradient-to-b from-blue-800 via-white to-red-600',
-      content: <span className="text-white text-[6px]">★</span>,
-    },
-    MX: {
-      bg: 'bg-gradient-to-r from-green-600 via-white to-red-600',
-      content: <span className="text-green-800 text-[8px]">🦅</span>,
-    },
+  const pixelSizes = {
+    sm: { w: 24, h: 16 },
+    md: { w: 32, h: 24 },
+    lg: { w: 40, h: 28 },
   };
 
-  const flag = flags[code] || { bg: 'bg-gray-300', content: '?' };
-
+  const dimensions = pixelSizes[size];
+  
   return (
-    <div 
-      className={`${sizeClasses[size]} ${flag.bg} rounded-sm shadow-md border border-black/10 flex items-center justify-center relative overflow-hidden`}
-    >
-      {flag.content}
-    </div>
+    <img 
+      src={`https://flagcdn.com/w${dimensions.w}/${code.toLowerCase()}.png`}
+      srcSet={`https://flagcdn.com/w${dimensions.w * 2}/${code.toLowerCase()}.png 2x`}
+      alt={`${code} flag`}
+      className={`${sizeClasses[size]} rounded-sm shadow-sm border border-black/20 object-cover`}
+      loading="eager"
+    />
   );
 };
 
