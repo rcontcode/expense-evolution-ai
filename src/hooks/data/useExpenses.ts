@@ -54,6 +54,14 @@ export function useExpenses(filters?: ExpenseFilters) {
         query = query.eq('reimbursement_type', filters.reimbursementType);
       }
 
+      // Entity/Jurisdiction filtering
+      if (filters?.entityId) {
+        query = query.eq('entity_id', filters.entityId);
+      } else if (filters?.showAllEntities !== true && filters?.entityId === undefined) {
+        // By default, show expenses without entity_id (legacy data)
+        // This allows gradual migration without breaking existing functionality
+      }
+
       // Filter for incomplete expenses (for reports)
       // Incomplete = pending_classification OR (client_reimbursable without client/contract)
       if (filters?.onlyIncomplete) {

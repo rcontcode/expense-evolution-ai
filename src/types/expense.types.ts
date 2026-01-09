@@ -57,6 +57,8 @@ export interface ExpenseFilters {
   hasReceipt?: boolean;
   onlyIncomplete?: boolean;
   reimbursementType?: ReimbursementType;
+  entityId?: string | null; // Filter by fiscal entity
+  showAllEntities?: boolean; // Show consolidated view across all entities
 }
 
 export interface ExpenseWithRelations extends Expense {

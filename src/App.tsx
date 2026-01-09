@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { EntityProvider } from "@/contexts/EntityContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useLoginMissionListener } from "@/hooks/data/useMissions";
 import Landing from "./pages/Landing";
@@ -57,41 +58,43 @@ const App = () => (
         <BrowserRouter>
           <LanguageProvider>
             <AuthProvider>
-              <MissionListenerInitializer />
-              <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/landing" element={<Landing />} />
-                <Route path="/legal" element={<Legal />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                <Route path="/beta-welcome" element={<ProtectedRoute><BetaWelcome /></ProtectedRoute>} />
-                <Route path="/beta-features" element={<ProtectedRoute><BetaFeatures /></ProtectedRoute>} />
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/chaos" element={<ProtectedRoute><ChaosInbox /></ProtectedRoute>} />
-                <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
-                <Route path="/income" element={<ProtectedRoute><Income /></ProtectedRoute>} />
-                <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
-                <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-                <Route path="/tags" element={<ProtectedRoute><Tags /></ProtectedRoute>} />
-                <Route path="/contracts" element={<ProtectedRoute><Contracts /></ProtectedRoute>} />
-                <Route path="/mileage" element={<ProtectedRoute><Mileage /></ProtectedRoute>} />
-                <Route path="/reconciliation" element={<ProtectedRoute><Reconciliation /></ProtectedRoute>} />
-                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                <Route path="/business-profile" element={<ProtectedRoute><BusinessProfile /></ProtectedRoute>} />
-                <Route path="/net-worth" element={<ProtectedRoute><NetWorth /></ProtectedRoute>} />
-                <Route path="/banking" element={<ProtectedRoute><Banking /></ProtectedRoute>} />
-                <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-                <Route path="/mentorship" element={<ProtectedRoute><Mentorship /></ProtectedRoute>} />
-                <Route path="/tax-calendar" element={<ProtectedRoute><TaxCalendar /></ProtectedRoute>} />
-                <Route path="/install" element={<Install />} />
-                <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
-                <Route path="/admin/beta-codes" element={<ProtectedRoute><BetaCodesAdmin /></ProtectedRoute>} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <ChatAssistant />
-              <OnboardingTutorial />
-              <CookieConsent />
-              <FeedbackButton />
+              <EntityProvider>
+                <MissionListenerInitializer />
+                <Routes>
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/landing" element={<Landing />} />
+                  <Route path="/legal" element={<Legal />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                  <Route path="/beta-welcome" element={<ProtectedRoute><BetaWelcome /></ProtectedRoute>} />
+                  <Route path="/beta-features" element={<ProtectedRoute><BetaFeatures /></ProtectedRoute>} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/chaos" element={<ProtectedRoute><ChaosInbox /></ProtectedRoute>} />
+                  <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
+                  <Route path="/income" element={<ProtectedRoute><Income /></ProtectedRoute>} />
+                  <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+                  <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+                  <Route path="/tags" element={<ProtectedRoute><Tags /></ProtectedRoute>} />
+                  <Route path="/contracts" element={<ProtectedRoute><Contracts /></ProtectedRoute>} />
+                  <Route path="/mileage" element={<ProtectedRoute><Mileage /></ProtectedRoute>} />
+                  <Route path="/reconciliation" element={<ProtectedRoute><Reconciliation /></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                  <Route path="/business-profile" element={<ProtectedRoute><BusinessProfile /></ProtectedRoute>} />
+                  <Route path="/net-worth" element={<ProtectedRoute><NetWorth /></ProtectedRoute>} />
+                  <Route path="/banking" element={<ProtectedRoute><Banking /></ProtectedRoute>} />
+                  <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+                  <Route path="/mentorship" element={<ProtectedRoute><Mentorship /></ProtectedRoute>} />
+                  <Route path="/tax-calendar" element={<ProtectedRoute><TaxCalendar /></ProtectedRoute>} />
+                  <Route path="/install" element={<Install />} />
+                  <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
+                  <Route path="/admin/beta-codes" element={<ProtectedRoute><BetaCodesAdmin /></ProtectedRoute>} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <ChatAssistant />
+                <OnboardingTutorial />
+                <CookieConsent />
+                <FeedbackButton />
+              </EntityProvider>
             </AuthProvider>
           </LanguageProvider>
         </BrowserRouter>
