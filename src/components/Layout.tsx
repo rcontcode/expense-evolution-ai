@@ -405,28 +405,31 @@ export const Layout = ({ children }: LayoutProps) => {
                 <button
                   onClick={() => setQuickCaptureOpen(true)}
                   className={cn(
-                    "rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50",
-                    collapsed ? "w-10 h-10 justify-center p-0" : "w-full p-2.5"
+                    "rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center gap-3 hover:opacity-90 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02]",
+                    collapsed ? "w-10 h-10 justify-center p-0" : "w-full p-3"
                   )}
                 >
                   {collapsed ? (
-                    <Camera className="h-5 w-5" />
+                    <span className="text-lg">📸</span>
                   ) : (
                     <>
-                      <div className="flex items-center gap-1">
-                        <div className="w-6 h-6 rounded bg-white/20 flex items-center justify-center">
-                          <Camera className="h-3.5 w-3.5" />
+                      <div className="flex items-center gap-2">
+                        {/* Camera - Pink/Purple gradient */}
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-400 via-rose-500 to-purple-600 flex items-center justify-center shadow-md shadow-pink-500/40 transform hover:scale-110 transition-transform">
+                          <span className="text-base drop-shadow-sm">📷</span>
                         </div>
-                        <div className="w-6 h-6 rounded bg-white/20 flex items-center justify-center">
-                          <Upload className="h-3.5 w-3.5" />
+                        {/* Upload - Blue/Cyan gradient */}
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 via-sky-500 to-cyan-500 flex items-center justify-center shadow-md shadow-blue-500/40 transform hover:scale-110 transition-transform">
+                          <span className="text-base drop-shadow-sm">📁</span>
                         </div>
-                        <div className="w-6 h-6 rounded bg-white/20 flex items-center justify-center">
-                          <ScanLine className="h-3.5 w-3.5" />
+                        {/* Microphone - Orange/Yellow gradient */}
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 via-amber-500 to-yellow-500 flex items-center justify-center shadow-md shadow-orange-500/40 transform hover:scale-110 transition-transform">
+                          <span className="text-base drop-shadow-sm">🎤</span>
                         </div>
                       </div>
                       <div className="text-left flex-1">
-                        <p className="font-semibold text-xs">{t('layout.quickCapture')}</p>
-                        <p className="text-[10px] opacity-90">{language === 'es' ? 'Foto · Archivo · Escanear' : 'Photo · File · Scan'}</p>
+                        <p className="font-bold text-sm">{t('layout.quickCapture')}</p>
+                        <p className="text-[10px] opacity-90 font-medium">{language === 'es' ? '📷 Foto · 📁 Archivo · 🎤 Voz' : '📷 Photo · 📁 File · 🎤 Voice'}</p>
                       </div>
                     </>
                   )}
