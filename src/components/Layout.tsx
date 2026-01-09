@@ -398,8 +398,51 @@ export const Layout = ({ children }: LayoutProps) => {
             )}
           </button>
 
+          {/* Quick Capture CTA - Top position for visibility */}
+          <div className={cn("px-2 pt-2", collapsed && "flex justify-center")}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setQuickCaptureOpen(true)}
+                  className={cn(
+                    "rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50",
+                    collapsed ? "w-10 h-10 justify-center p-0" : "w-full p-2.5"
+                  )}
+                >
+                  {collapsed ? (
+                    <Camera className="h-5 w-5" />
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-1">
+                        <div className="w-6 h-6 rounded bg-white/20 flex items-center justify-center">
+                          <Camera className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="w-6 h-6 rounded bg-white/20 flex items-center justify-center">
+                          <Upload className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="w-6 h-6 rounded bg-white/20 flex items-center justify-center">
+                          <ScanLine className="h-3.5 w-3.5" />
+                        </div>
+                      </div>
+                      <div className="text-left flex-1">
+                        <p className="font-semibold text-xs">{t('layout.quickCapture')}</p>
+                        <p className="text-[10px] opacity-90">{language === 'es' ? 'Foto · Archivo · Escanear' : 'Photo · File · Scan'}</p>
+                      </div>
+                    </>
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8} className="z-[100] max-w-xs p-3 bg-popover border shadow-lg">
+                <div className="space-y-2">
+                  <span className="font-semibold">{TOOLTIP_CONTENT.quickCapture[language].title}</span>
+                  <p className="text-xs text-muted-foreground">{TOOLTIP_CONTENT.quickCapture[language].description}</p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+
           {/* Navigation */}
-          <nav className="flex-1 py-2 px-2 space-y-1.5">
+          <nav className="flex-1 py-2 px-2 space-y-1.5 overflow-y-auto">
             {NAV_SECTIONS.map((section) => {
               const theme = sectionThemes[section.themeKey];
               return (
@@ -531,42 +574,6 @@ export const Layout = ({ children }: LayoutProps) => {
               );
             })}
           </nav>
-
-          {/* Quick Capture CTA - Vibrant with capture method icons */}
-          {!collapsed && (
-            <div className="px-2 pb-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => setQuickCaptureOpen(true)}
-                    className="w-full p-2.5 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50"
-                  >
-                    <div className="flex items-center gap-1">
-                      <div className="w-6 h-6 rounded bg-white/20 flex items-center justify-center">
-                        <Camera className="h-3.5 w-3.5" />
-                      </div>
-                      <div className="w-6 h-6 rounded bg-white/20 flex items-center justify-center">
-                        <Upload className="h-3.5 w-3.5" />
-                      </div>
-                      <div className="w-6 h-6 rounded bg-white/20 flex items-center justify-center">
-                        <ScanLine className="h-3.5 w-3.5" />
-                      </div>
-                    </div>
-                    <div className="text-left flex-1">
-                      <p className="font-semibold text-xs">{t('layout.quickCapture')}</p>
-                      <p className="text-[10px] opacity-90">{language === 'es' ? 'Foto · Archivo · Escanear' : 'Photo · File · Scan'}</p>
-                    </div>
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="max-w-xs p-3">
-                  <div className="space-y-2">
-                    <span className="font-semibold">{TOOLTIP_CONTENT.quickCapture[language].title}</span>
-                    <p className="text-xs text-muted-foreground">{TOOLTIP_CONTENT.quickCapture[language].description}</p>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          )}
 
           {/* Quick Capture Dialog */}
           <QuickCaptureDialog 
