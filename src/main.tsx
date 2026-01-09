@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import "./index.css";
+// Force rebuild trigger
 
 // Dev/preview safety: disable PWA caching that can prevent the preview from updating.
 // This also removes any previously-registered service workers from older builds.
