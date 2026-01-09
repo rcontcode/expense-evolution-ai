@@ -105,8 +105,8 @@ const getNavSections = (language: string) => [
     themeKey: 'daily' as keyof typeof sectionThemes,
     items: [
       { icon: LayoutDashboard, label: 'nav.dashboard', path: '/dashboard', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
       { icon: TrendingUp, label: 'nav.income', path: '/income', badge: null, tooltipKey: 'income' as const },
+      { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
       { icon: Inbox, label: 'nav.chaos', path: '/chaos', badgeKey: 'nav.badgeSmart', tooltipKey: 'chaosInbox' as const },
     ]
   },
@@ -421,7 +421,7 @@ export const Layout = ({ children }: LayoutProps) => {
                         {section.emoji}
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent side="right" className={cn("font-semibold", theme.text)}>
+                    <TooltipContent side="right" sideOffset={8} className={cn("z-[100] font-semibold bg-popover border shadow-lg", theme.text)}>
                       {t(section.titleKey)}
                     </TooltipContent>
                   </Tooltip>
@@ -486,7 +486,7 @@ export const Layout = ({ children }: LayoutProps) => {
                         {collapsed ? (
                           <Tooltip>
                             <TooltipTrigger asChild>{button}</TooltipTrigger>
-                            <TooltipContent side="right" className="max-w-xs p-3">
+                            <TooltipContent side="right" sideOffset={8} className="z-[100] max-w-xs p-3 bg-popover border shadow-lg">
                               <div className="space-y-2">
                                 <span className="font-semibold">{tooltipData.title}</span>
                                 <p className="text-xs text-muted-foreground">{tooltipData.description}</p>
@@ -507,7 +507,7 @@ export const Layout = ({ children }: LayoutProps) => {
                                   <HelpCircle className="h-3.5 w-3.5" />
                                 </button>
                               </TooltipTrigger>
-                              <TooltipContent side="right" className="max-w-xs p-3">
+                              <TooltipContent side="right" sideOffset={8} className="z-[100] max-w-xs p-3 bg-popover border shadow-lg">
                                 <div className="space-y-2">
                                   <span className="font-semibold">{tooltipData.title}</span>
                                   <p className="text-xs text-muted-foreground">{tooltipData.description}</p>

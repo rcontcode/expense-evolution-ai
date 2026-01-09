@@ -395,8 +395,8 @@ export const translations = {
     },
     // Navigation
     nav: {
-      dashboard: 'Panel',
-      chaos: 'Bandeja de Caos',
+      dashboard: 'Resumen Financiero',
+      chaos: 'Centro de Revisión',
       expenses: 'Gastos',
       incomplete: 'Incompletos',
       income: 'Ingresos',
@@ -1353,8 +1353,8 @@ export const translations = {
     },
     // Navigation
     nav: {
-      dashboard: 'Dashboard',
-      chaos: 'Chaos Inbox',
+      dashboard: 'Financial Summary',
+      chaos: 'Review Center',
       expenses: 'Expenses',
       incomplete: 'Incomplete',
       income: 'Income',
