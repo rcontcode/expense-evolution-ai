@@ -639,13 +639,18 @@ export const ChatAssistant: React.FC = () => {
   });
 
   // Track recording duration
+  // Track recording duration - in continuous mode, keep timer running even during speak pauses
   useEffect(() => {
-    if (isListening && !recordingStartTime) {
+    // Start timer when listening starts (or continuous mode is active and listening)
+    const shouldTrackTime = isListening || isContinuousMode;
+    
+    if (shouldTrackTime && !recordingStartTime) {
       setRecordingStartTime(Date.now());
       recordingIntervalRef.current = setInterval(() => {
         setRecordingDuration(prev => prev + 1);
       }, 1000);
-    } else if (!isListening && recordingStartTime) {
+    } else if (!shouldTrackTime && recordingStartTime) {
+      // Only reset when BOTH listening stops AND continuous mode is off
       setRecordingStartTime(null);
       setRecordingDuration(0);
       if (recordingIntervalRef.current) {
@@ -659,7 +664,7 @@ export const ChatAssistant: React.FC = () => {
         clearInterval(recordingIntervalRef.current);
       }
     };
-  }, [isListening, recordingStartTime]);
+  }, [isListening, isContinuousMode, recordingStartTime]);
 
   // Update input with live transcript
   useEffect(() => {
@@ -720,10 +725,18 @@ export const ChatAssistant: React.FC = () => {
       };
       setMessages(prev => [...prev, assistantMessage]);
 
-      // Auto-speak response if enabled - use audioPlayback for controls
+      // Auto-speak response if enabled
+      // CRITICAL: In continuous mode, use speak() which properly pauses listening
+      // Otherwise use audioPlayback for the Spotify-like controls
       if (autoSpeak && isVoiceSupported) {
-        const msgIndex = messages.length + 1; // +1 for user message, this will be the assistant index
-        audioPlayback.play(responseText, msgIndex);
+        if (isContinuousMode) {
+          // Use speak() which coordinates with listening pause/resume
+          speak(responseText);
+        } else {
+          // Use audioPlayback for controls (non-continuous mode)
+          const msgIndex = messages.length + 1;
+          audioPlayback.play(responseText, msgIndex);
+        }
       }
     } catch (error) {
       console.error('Chat error:', error);
@@ -738,7 +751,7 @@ export const ChatAssistant: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, userName, stats, totalIncome, clients, projects, messages, language, autoSpeak, isVoiceSupported, speak]);
+  }, [isLoading, userName, stats, totalIncome, clients, projects, messages, language, autoSpeak, isVoiceSupported, speak, isContinuousMode, audioPlayback]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1074,18 +1087,34 @@ export const ChatAssistant: React.FC = () => {
             </div>
           )}
 
-          {/* Recording Controls */}
-          {isListening && (
-            <div className="px-4 py-3 border-t bg-red-500/10">
+          {/* Recording Controls - Show for both listening and continuous mode */}
+          {(isListening || isContinuousMode) && (
+            <div className={cn(
+              "px-4 py-3 border-t",
+              isSpeaking ? "bg-primary/10" : "bg-red-500/10"
+            )}>
               <div className="flex items-center gap-3">
-                <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-sm font-medium text-red-600 dark:text-red-400 flex-1">
-                  {language === 'es' ? 'Grabando' : 'Recording'}: {Math.floor(recordingDuration / 60)}:{(recordingDuration % 60).toString().padStart(2, '0')}
+                <div className={cn(
+                  "h-3 w-3 rounded-full animate-pulse",
+                  isSpeaking ? "bg-primary" : "bg-red-500"
+                )} />
+                <span className={cn(
+                  "text-sm font-medium flex-1",
+                  isSpeaking 
+                    ? "text-primary" 
+                    : "text-red-600 dark:text-red-400"
+                )}>
+                  {isSpeaking 
+                    ? (language === 'es' ? '🔊 Hablando...' : '🔊 Speaking...')
+                    : isContinuousMode
+                      ? (language === 'es' ? '🎙️ Modo Continuo' : '🎙️ Continuous Mode')
+                      : (language === 'es' ? 'Grabando' : 'Recording')
+                  }: {Math.floor(recordingDuration / 60)}:{(recordingDuration % 60).toString().padStart(2, '0')}
                 </span>
                 <Button
-                  variant="destructive"
+                  variant={isSpeaking ? "secondary" : "destructive"}
                   size="sm"
-                  onClick={handleMicClick}
+                  onClick={isContinuousMode ? stopContinuousListening : handleMicClick}
                   className="h-8"
                 >
                   <Square className="h-3 w-3 mr-1.5" />
@@ -1132,14 +1161,19 @@ export const ChatAssistant: React.FC = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={
-                  isListening 
-                    ? (language === 'es' ? 'Escuchando...' : 'Listening...')
-                    : (language === 'es' ? 'Escribe o habla tu pregunta...' : 'Type or speak your question...')
+                  isSpeaking
+                    ? (language === 'es' ? 'El asistente está hablando...' : 'Assistant is speaking...')
+                    : isListening 
+                      ? (language === 'es' ? 'Escuchando...' : 'Listening...')
+                      : isContinuousMode
+                        ? (language === 'es' ? 'Pausado, esperando...' : 'Paused, waiting...')
+                        : (language === 'es' ? 'Escribe o habla tu pregunta...' : 'Type or speak your question...')
                 }
                 disabled={isLoading}
                 className={cn(
                   "flex-1",
-                  isListening && "border-red-500 bg-red-50 dark:bg-red-950/20"
+                  isListening && "border-red-500 bg-red-50 dark:bg-red-950/20",
+                  isSpeaking && "border-primary bg-primary/5"
                 )}
               />
               <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
