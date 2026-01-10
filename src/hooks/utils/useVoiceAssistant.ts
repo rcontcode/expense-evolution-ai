@@ -3,16 +3,16 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 interface UseVoiceAssistantOptions {
   onTranscript?: (text: string) => void;
+  onInterimTranscript?: (text: string) => void;
   onSpeakStart?: () => void;
   onSpeakEnd?: () => void;
   onContinuousStopped?: () => void;
 }
 
-// Voice commands to stop continuous mode - must be EXACT phrases, not partial matches
-// Using longer, more specific phrases to avoid false positives from AI responses
+// Voice commands to stop continuous mode
 const STOP_COMMANDS = {
-  es: ['detener asistente', 'parar asistente', 'stop asistente', 'basta ya', 'silencio por favor', 'terminar conversación', 'deja de escuchar'],
-  en: ['stop assistant', 'pause assistant', 'quit listening', 'end conversation', 'silence please', 'halt assistant', 'stop listening'],
+  es: ['detener', 'parar', 'stop'],
+  en: ['stop', 'pause', 'quit'],
 };
 
 export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
@@ -25,12 +25,13 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
-  const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
   const continuousModeRef = useRef(false);
-  // CRITICAL: Track if we're paused for speaking - prevents auto-restart in onend
-  const isPausedForSpeakingRef = useRef(false);
-  // Track if we should resume listening after speaking ends
-  const resumeAfterSpeakingRef = useRef(false);
+  // CRITICAL: Single flag to prevent any recognition activity
+  const blockedRef = useRef(false);
+  // Accumulated text in continuous mode
+  const accumulatedRef = useRef('');
+  // Speech synthesis utterance
+  const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   // Check browser support
   useEffect(() => {
@@ -40,19 +41,50 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     setIsSupported(hasSpeechRecognition && 'speechSynthesis' in window);
   }, []);
 
-  // Check if text contains a stop command
+  // Check if text is just a stop command
   const isStopCommand = useCallback((text: string) => {
     const normalizedText = text.toLowerCase().trim();
     const commands = STOP_COMMANDS[language as keyof typeof STOP_COMMANDS] || STOP_COMMANDS.en;
-    return commands.some(cmd => normalizedText.includes(cmd));
+    // Match if the text is exactly a stop command or starts with it
+    return commands.some(cmd => 
+      normalizedText === cmd || 
+      normalizedText.startsWith(cmd + ' ') ||
+      normalizedText.endsWith(' ' + cmd)
+    );
   }, [language]);
 
-  // Initialize speech recognition
-  const initRecognition = useCallback((continuous: boolean = false) => {
+  // Stop recognition completely
+  const stopRecognition = useCallback(() => {
+    blockedRef.current = true;
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (e) {
+        // Ignore
+      }
+      recognitionRef.current = null;
+    }
+    setIsListening(false);
+  }, []);
+
+  // Create and start recognition
+  const createAndStartRecognition = useCallback((continuous: boolean) => {
+    // Don't start if blocked
+    if (blockedRef.current) return;
+    
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const win = window as any;
     const SpeechRecognitionClass = win.SpeechRecognition || win.webkitSpeechRecognition;
-    if (!SpeechRecognitionClass) return null;
+    if (!SpeechRecognitionClass) return;
+
+    // Cleanup previous instance
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (e) {
+        // Ignore
+      }
+    }
 
     const recognition = new SpeechRecognitionClass();
     recognition.continuous = continuous;
@@ -60,12 +92,16 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     recognition.lang = language === 'es' ? 'es-ES' : 'en-US';
 
     recognition.onstart = () => {
-      setIsListening(true);
-      setTranscript('');
+      if (!blockedRef.current) {
+        setIsListening(true);
+        setTranscript('');
+      }
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onresult = (event: any) => {
+      if (blockedRef.current) return;
+
       let finalTranscript = '';
       let interimTranscript = '';
 
@@ -78,63 +114,76 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         }
       }
 
-      setTranscript(interimTranscript || finalTranscript);
+      // Update transcript display
+      const currentText = interimTranscript || finalTranscript;
+      setTranscript(currentText);
+      
+      // Call interim callback for live display
+      if (interimTranscript && options.onInterimTranscript) {
+        options.onInterimTranscript(interimTranscript);
+      }
 
       if (finalTranscript) {
+        const trimmedFinal = finalTranscript.trim();
+        
         // Check for stop command in continuous mode
-        if (continuousModeRef.current && isStopCommand(finalTranscript)) {
-          stopContinuousListening();
+        if (continuousModeRef.current && isStopCommand(trimmedFinal)) {
+          console.log('[Voice] Stop command detected, stopping continuous mode');
+          continuousModeRef.current = false;
+          setIsContinuousMode(false);
+          stopRecognition();
           options.onContinuousStopped?.();
           return;
         }
-        options.onTranscript?.(finalTranscript);
+        
+        // Accumulate in continuous mode
+        if (continuousModeRef.current) {
+          accumulatedRef.current += (accumulatedRef.current ? ' ' : '') + trimmedFinal;
+        }
+        
+        // Send to callback
+        if (options.onTranscript) {
+          options.onTranscript(trimmedFinal);
+        }
       }
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
-      console.error('Speech recognition error:', event.error);
+      console.log('[Voice] Recognition error:', event.error);
       
-      // Don't restart if we're paused for speaking
-      if (isPausedForSpeakingRef.current) {
+      // Don't restart if blocked or aborted
+      if (blockedRef.current || event.error === 'aborted') {
         setIsListening(false);
         return;
       }
       
-      // In continuous mode, restart on some errors
-      if (continuousModeRef.current && event.error !== 'aborted') {
+      // In continuous mode, try to restart on transient errors
+      if (continuousModeRef.current && !blockedRef.current) {
         setTimeout(() => {
-          if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-            try {
-              recognitionRef.current = initRecognition(true);
-              recognitionRef.current?.start();
-            } catch (e) {
-              console.error('Error restarting recognition:', e);
-            }
+          if (continuousModeRef.current && !blockedRef.current) {
+            createAndStartRecognition(true);
           }
-        }, 500);
+        }, 300);
       } else {
         setIsListening(false);
       }
     };
 
     recognition.onend = () => {
-      // CRITICAL: Don't auto-restart if we're paused for speaking
-      if (isPausedForSpeakingRef.current) {
+      console.log('[Voice] Recognition ended, blocked:', blockedRef.current, 'continuous:', continuousModeRef.current);
+      
+      // Don't restart if blocked
+      if (blockedRef.current) {
         setIsListening(false);
         return;
       }
       
-      // In continuous mode, restart listening after each phrase
+      // In continuous mode, restart automatically
       if (continuousModeRef.current) {
         setTimeout(() => {
-          if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-            try {
-              recognitionRef.current = initRecognition(true);
-              recognitionRef.current?.start();
-            } catch (e) {
-              console.error('Error restarting recognition:', e);
-            }
+          if (continuousModeRef.current && !blockedRef.current) {
+            createAndStartRecognition(true);
           }
         }, 100);
       } else {
@@ -142,164 +191,139 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       }
     };
 
-    return recognition;
-  }, [language, options, isStopCommand]);
+    recognitionRef.current = recognition;
+    
+    try {
+      recognition.start();
+    } catch (err) {
+      console.error('[Voice] Failed to start recognition:', err);
+      setIsListening(false);
+    }
+  }, [language, options, isStopCommand, stopRecognition]);
 
-  // Start listening (single phrase)
+  // Start single-phrase listening
   const startListening = useCallback(() => {
     if (!isSupported) return;
     
-    // Stop any ongoing speech
+    // Cancel any speech
     window.speechSynthesis.cancel();
     setIsSpeaking(false);
+    
+    // Reset state
+    blockedRef.current = false;
     continuousModeRef.current = false;
     setIsContinuousMode(false);
+    accumulatedRef.current = '';
+    
+    createAndStartRecognition(false);
+  }, [isSupported, createAndStartRecognition]);
 
-    recognitionRef.current = initRecognition(false);
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.start();
-      } catch (error) {
-        console.error('Error starting recognition:', error);
-      }
-    }
-  }, [isSupported, initRecognition]);
-
-  // Start continuous listening mode
+  // Start continuous mode
   const startContinuousListening = useCallback(() => {
     if (!isSupported) return;
     
-    // Stop any ongoing speech
+    console.log('[Voice] Starting continuous mode');
+    
+    // Cancel any speech
     window.speechSynthesis.cancel();
     setIsSpeaking(false);
+    
+    // Reset state
+    blockedRef.current = false;
     continuousModeRef.current = true;
     setIsContinuousMode(true);
+    accumulatedRef.current = '';
+    
+    createAndStartRecognition(true);
+  }, [isSupported, createAndStartRecognition]);
 
-    recognitionRef.current = initRecognition(true);
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.start();
-      } catch (error) {
-        console.error('Error starting continuous recognition:', error);
-      }
-    }
-  }, [isSupported, initRecognition]);
-
-  // Stop continuous listening mode
+  // Stop continuous mode
   const stopContinuousListening = useCallback(() => {
+    console.log('[Voice] Stopping continuous mode');
     continuousModeRef.current = false;
     setIsContinuousMode(false);
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    }
-  }, []);
+    stopRecognition();
+  }, [stopRecognition]);
 
-  // Pause listening temporarily (for when speaking)
+  // Stop all listening
+  const stopListening = useCallback(() => {
+    continuousModeRef.current = false;
+    setIsContinuousMode(false);
+    stopRecognition();
+  }, [stopRecognition]);
+
+  // Pause listening (for speaking)
   const pauseListening = useCallback(() => {
-    // CRITICAL: Set the flag BEFORE stopping to prevent auto-restart
-    isPausedForSpeakingRef.current = true;
-    
+    console.log('[Voice] Pausing for speech');
+    blockedRef.current = true;
     if (recognitionRef.current) {
       try {
-        recognitionRef.current.stop();
+        recognitionRef.current.abort();
       } catch (e) {
-        console.error('Error pausing recognition:', e);
+        // Ignore
       }
     }
     setIsListening(false);
   }, []);
 
-  // Resume listening after pause (for continuous mode after speaking)
+  // Resume listening (after speaking)
   const resumeListening = useCallback(() => {
-    // CRITICAL: Clear the pause flag before resuming
-    isPausedForSpeakingRef.current = false;
+    console.log('[Voice] Resuming after speech');
+    blockedRef.current = false;
     
     if (continuousModeRef.current) {
-      recognitionRef.current = initRecognition(true);
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.start();
-          setIsListening(true);
-        } catch (error) {
-          console.error('Error resuming recognition:', error);
+      setTimeout(() => {
+        if (continuousModeRef.current && !blockedRef.current) {
+          createAndStartRecognition(true);
         }
-      }
+      }, 200);
     }
-  }, [initRecognition]);
+  }, [createAndStartRecognition]);
 
-  // Stop listening
-  const stopListening = useCallback(() => {
-    continuousModeRef.current = false;
-    setIsContinuousMode(false);
-    resumeAfterSpeakingRef.current = false;
-    isPausedForSpeakingRef.current = false;
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    }
-  }, []);
-
-  // Clean text for speech - remove emojis, markdown symbols, and special characters
+  // Clean text for speech
   const cleanTextForSpeech = useCallback((text: string): string => {
     return text
-      // Remove emojis and special unicode symbols
-      .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA00}-\u{1FA6F}]|[\u{1FA70}-\u{1FAFF}]|[\u{231A}-\u{231B}]|[\u{23E9}-\u{23F3}]|[\u{23F8}-\u{23FA}]|[\u{25AA}-\u{25AB}]|[\u{25B6}]|[\u{25C0}]|[\u{25FB}-\u{25FE}]|[\u{2614}-\u{2615}]|[\u{2648}-\u{2653}]|[\u{267F}]|[\u{2693}]|[\u{26A1}]|[\u{26AA}-\u{26AB}]|[\u{26BD}-\u{26BE}]|[\u{26C4}-\u{26C5}]|[\u{26CE}]|[\u{26D4}]|[\u{26EA}]|[\u{26F2}-\u{26F3}]|[\u{26F5}]|[\u{26FA}]|[\u{26FD}]|[\u{2702}]|[\u{2705}]|[\u{2708}-\u{270D}]|[\u{270F}]|[\u{2712}]|[\u{2714}]|[\u{2716}]|[\u{271D}]|[\u{2721}]|[\u{2728}]|[\u{2733}-\u{2734}]|[\u{2744}]|[\u{2747}]|[\u{274C}]|[\u{274E}]|[\u{2753}-\u{2755}]|[\u{2757}]|[\u{2763}-\u{2764}]|[\u{2795}-\u{2797}]|[\u{27A1}]|[\u{27B0}]|[\u{27BF}]|[\u{2934}-\u{2935}]|[\u{2B05}-\u{2B07}]|[\u{2B1B}-\u{2B1C}]|[\u{2B50}]|[\u{2B55}]|[\u{3030}]|[\u{303D}]|[\u{3297}]|[\u{3299}]|👋|✨|🎯|💡|📊|💰|📈|🏆|⭐|🔥|✅|❌|⚠️|ℹ️|🎉|🎊|👍|👎|💪|🙌|🤝|💵|💸|📉|📌|🔔|🔒|🔓|💼|📁|📂|🗂️|📝|📋|✏️|📎|📍|🔍|🔎|⚙️|🛠️|🔧|🔨|⚡|🌟|🌈|☀️|🌙|❄️|🔵|🟢|🟡|🟠|🔴|⚫|⚪|🟣|🟤|▶️|⏸️|⏹️|⏺️|⏭️|⏮️|⏩|⏪|🎵|🎶|🎧|🎤|🎬|📱|💻|🖥️|⌨️|🖨️|💾|💿|📀|🎮|🕹️|🎰|🃏|🎴|🀄|🎲|♟️/gu, '')
-      // Remove markdown bold/italic markers
+      // Remove emojis
+      .replace(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]/gu, '')
+      // Remove markdown
       .replace(/\*\*/g, '')
       .replace(/\*/g, '')
-      .replace(/__/g, '')
-      .replace(/_/g, ' ')
-      // Remove markdown headers
       .replace(/#{1,6}\s/g, '')
-      // Remove markdown links [text](url) -> text
       .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-      // Remove inline code backticks
       .replace(/`([^`]+)`/g, '$1')
-      // Remove code blocks
       .replace(/```[\s\S]*?```/g, '')
-      // Remove bullet points and list markers
+      // Remove list markers
       .replace(/^[\s]*[-•◦▪▸►]\s*/gm, '')
       .replace(/^\s*\d+\.\s*/gm, '')
-      // Remove excessive whitespace
+      // Clean whitespace
       .replace(/\s+/g, ' ')
-      // Clean up any remaining special characters that might sound weird
-      .replace(/[~^<>|\\]/g, '')
-      // Trim
       .trim();
   }, []);
 
-  // Speak text - IMPORTANT: Pause listening while speaking to prevent feedback loop
+  // Speak text with proper pause/resume coordination
   const speak = useCallback((text: string) => {
     if (!isSupported || !text) return;
 
-    // CRITICAL: Cancel ANY ongoing speech first - this prevents overlapping voices
+    console.log('[Voice] Starting speech');
+    
+    // CRITICAL: Cancel any ongoing speech
     window.speechSynthesis.cancel();
 
-    // CRITICAL: If in continuous mode, ALWAYS pause listening to prevent hearing ourselves
-    // We check continuousModeRef directly, not isListening state (which may lag)
+    // CRITICAL: Pause listening BEFORE speaking
     if (continuousModeRef.current) {
-      resumeAfterSpeakingRef.current = true;
       pauseListening();
     }
 
-    // Clean the text before speaking
     const cleanedText = cleanTextForSpeech(text);
     if (!cleanedText) {
-      // If no text to speak, resume listening immediately
+      // No text to speak, resume immediately
       if (continuousModeRef.current) {
-        resumeAfterSpeakingRef.current = false;
-        // Small delay before resuming
-        setTimeout(() => {
-          if (continuousModeRef.current) {
-            resumeListening();
-          }
-        }, 300);
+        resumeListening();
       }
       return;
     }
 
-    // Small delay to ensure cancel takes full effect before starting new speech
+    // Small delay to ensure cancel takes effect
     setTimeout(() => {
       const utterance = new SpeechSynthesisUtterance(cleanedText);
       utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
@@ -307,7 +331,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
 
-      // Try to get a native voice for the language
+      // Get a native voice
       const voices = window.speechSynthesis.getVoices();
       const langCode = language === 'es' ? 'es' : 'en';
       const preferredVoice = voices.find(v => 
@@ -319,44 +343,39 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       }
 
       utterance.onstart = () => {
+        console.log('[Voice] Speech started');
         setIsSpeaking(true);
         options.onSpeakStart?.();
       };
 
       utterance.onend = () => {
+        console.log('[Voice] Speech ended');
         setIsSpeaking(false);
         options.onSpeakEnd?.();
         
-        // CRITICAL: Resume listening after speaking ends in continuous mode
-        // Add a small delay to ensure the speaker has fully stopped
-        if (resumeAfterSpeakingRef.current && continuousModeRef.current) {
-          resumeAfterSpeakingRef.current = false;
+        // Resume listening after a delay
+        if (continuousModeRef.current) {
           setTimeout(() => {
-            if (continuousModeRef.current) {
-              resumeListening();
-            }
-          }, 500); // 500ms delay to ensure audio has fully stopped
+            resumeListening();
+          }, 500);
         }
       };
 
       utterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event);
+        console.error('[Voice] Speech synthesis error:', event);
         setIsSpeaking(false);
         
         // Resume listening even on error
-        if (resumeAfterSpeakingRef.current && continuousModeRef.current) {
-          resumeAfterSpeakingRef.current = false;
+        if (continuousModeRef.current) {
           setTimeout(() => {
-            if (continuousModeRef.current) {
-              resumeListening();
-            }
+            resumeListening();
           }, 500);
         }
       };
 
       synthRef.current = utterance;
       window.speechSynthesis.speak(utterance);
-    }, 50); // 50ms delay to ensure cancel completes
+    }, 100);
   }, [isSupported, language, options, cleanTextForSpeech, pauseListening, resumeListening]);
 
   // Stop speaking
@@ -365,7 +384,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     setIsSpeaking(false);
   }, []);
 
-  // Toggle voice mode
+  // Toggle single listening
   const toggleListening = useCallback(() => {
     if (isListening) {
       stopListening();
@@ -374,13 +393,20 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     }
   }, [isListening, startListening, stopListening]);
 
-  // Cleanup
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      stopListening();
-      stopSpeaking();
+      blockedRef.current = true;
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch (e) {
+          // Ignore
+        }
+      }
+      window.speechSynthesis.cancel();
     };
-  }, [stopListening, stopSpeaking]);
+  }, []);
 
   return {
     isListening,

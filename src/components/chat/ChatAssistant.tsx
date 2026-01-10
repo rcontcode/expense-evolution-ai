@@ -529,7 +529,13 @@ export const ChatAssistant: React.FC = () => {
     speak,
     stopSpeaking,
   } = useVoiceAssistant({
+    onInterimTranscript: (text) => {
+      // Update input field with live transcript
+      setInput(text);
+    },
     onTranscript: (text) => {
+      console.log('[ChatAssistant] Received transcript:', text);
+      
       // First check if it's an expense creation command
       const parsedExpense = parseVoiceExpense(text);
       if (parsedExpense) {
@@ -647,9 +653,9 @@ export const ChatAssistant: React.FC = () => {
     onContinuousStopped: () => {
       // Notify user that continuous mode was stopped by voice
       const msg = language === 'es' 
-        ? 'Modo continuo desactivado por comando de voz.'
-        : 'Continuous mode stopped by voice command.';
-      speak(msg);
+        ? 'Modo continuo desactivado.'
+        : 'Continuous mode stopped.';
+      toast.info(msg);
     },
   });
 
@@ -688,7 +694,8 @@ export const ChatAssistant: React.FC = () => {
     };
   }, [isListening, isContinuousMode, recordingStartTime]);
 
-  // Update input with live transcript
+  // Update input with live transcript - now handled by onInterimTranscript callback
+  // Also update from transcript state for final results
   useEffect(() => {
     if (transcript && isListening) {
       setInput(transcript);
