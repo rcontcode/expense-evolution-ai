@@ -21,8 +21,8 @@ import { VoiceOnboarding } from './voice/VoiceOnboarding';
 import { useMicrophonePermission, MicrophonePermissionAlert } from './voice/MicrophonePermission';
 import { ContinuousModeIndicator, FloatingVoiceIndicator } from './voice/ContinuousModeIndicator';
 import { useVoiceKeyboardShortcuts } from '@/hooks/utils/useKeyboardShortcuts';
-// Import centralized voice modules (parsers still used for expense/income creation)
-import { parseVoiceExpense, parseVoiceIncome } from './voice/VoiceParsers';
+// Import centralized voice modules
+import { processVoiceCommand } from './voice/VoiceCommandProcessor';
 import { parseOpenClientCommand } from './voice/VoiceActionParsers';
 import { VoiceCommandsCheatsheet } from './voice/VoiceCommandsCheatsheet';
 import { AudioLevelIndicator } from './voice/AudioLevelIndicator';
@@ -341,192 +341,246 @@ export const ChatAssistant: React.FC = () => {
     onTranscript: (text) => {
       console.log('[ChatAssistant] Received transcript:', text);
       
-      // ONBOARDING MIC TEST MODE: Only acknowledge hearing the user, don't process commands
-      if (isOnboardingMicTest) {
-        setInput('');
-        const greeting = language === 'es'
-          ? `¡Te escucho perfectamente! Dijiste: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}". Tu micrófono funciona bien.`
-          : `I hear you perfectly! You said: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}". Your microphone is working great.`;
-        speak(greeting);
-        setIsOnboardingMicTest(false);
-        return;
-      }
-      
       // Track action for learning
       voicePrefs.trackAction('voice_input');
-      
-      // Check for language switch commands first
-      const langCmd = langDetection.checkLanguageCommand(text);
-      if (langCmd.isCommand && langCmd.targetLanguage) {
-        setInput('');
-        const response = langDetection.executeLanguageSwitch(langCmd.targetLanguage);
-        const userMessage: Message = { role: 'user', content: text };
-        const assistantMessage: Message = { role: 'assistant', content: response };
-        setMessages(prev => [...prev, userMessage, assistantMessage]);
-        speak(response);
-        voicePrefs.playSound('success');
-        return;
-      }
 
-      // Auto-detect language and switch if needed
+      // Auto-detect language and switch if needed (non-blocking)
       const langSwitch = langDetection.autoSwitchLanguage(text);
       if (langSwitch.switched && langSwitch.message) {
         const notifyMsg = langSwitch.message[langSwitch.newLanguage];
         toast.info(notifyMsg);
       }
 
-      // Check if waiting for confirmation
-      if (voiceConfirmation.isWaitingForConfirmation) {
-        const confirmResult = voiceConfirmation.processConfirmationVoice(text);
-        if (confirmResult.handled) {
-          setInput('');
-          if (confirmResult.message) {
-            const confirmMessage: Message = { role: 'assistant', content: confirmResult.message };
-            setMessages(prev => [...prev, confirmMessage]);
-            speak(confirmResult.message);
-            voicePrefs.playSound(confirmResult.confirmed ? 'success' : 'notification');
-          }
-          return;
-        }
+      // Build context for the centralized processor
+      const processorContext = {
+        language: language as 'es' | 'en',
+        isOnboardingMicTest,
+        isWaitingForConfirmation: voiceConfirmation.isWaitingForConfirmation,
+        currentPath: location.pathname,
+        clients: clients?.map(c => ({ id: c.id, name: c.name })),
+        checkCustomShortcut: voicePrefs.checkCustomShortcut,
+        checkLanguageCommand: langDetection.checkLanguageCommand,
+        processConfirmation: voiceConfirmation.processConfirmationVoice,
+        findTutorial,
+        getPageContext: getCurrentPageContext,
+        financialData: {
+          monthlyExpenses,
+          yearlyExpenses,
+          monthlyIncome,
+          yearlyIncome,
+          balance,
+          clientCount: clients?.length || 0,
+          projectCount: projects?.length || 0,
+          pendingReceipts,
+          biggestExpense: biggestExpense ? { amount: Number(biggestExpense.amount), vendor: biggestExpense.vendor } : null,
+          topCategory: topCategory ? { category: topCategory[0], amount: topCategory[1] } : null,
+          deductibleTotal,
+          billableTotal,
+          estimatedTaxOwed,
+        },
+      };
+
+      // Use centralized processor (clear priority chain, no conflicts)
+      const result = processVoiceCommand(text, processorContext);
+      
+      if (!result.handled) {
+        // Empty input, ignore
+        return;
       }
 
-      // Check for custom shortcuts
-      const customShortcut = voicePrefs.checkCustomShortcut(text);
-      if (customShortcut) {
+      // Helper to add messages and speak
+      const respondWithMessage = (userText: string, response: string, sound?: 'success' | 'notification' | 'error') => {
         setInput('');
-        voicePrefs.trackAction(`shortcut_${customShortcut.id}`);
-        
-        if (customShortcut.route) {
-          const confirmMsg = customShortcut.name[language as 'es' | 'en'];
-          const userMessage: Message = { role: 'user', content: text };
-          const assistantMessage: Message = { role: 'assistant', content: confirmMsg };
-          setMessages(prev => [...prev, userMessage, assistantMessage]);
-          speak(confirmMsg);
-          navigate(customShortcut.route);
-          voicePrefs.playSound('success');
-        }
-        return;
-      }
-      // PRIORITY 0: Check for tutorial requests
-      const tutorial = findTutorial(text);
-      if (tutorial) {
-        setInput('');
-        triggerHapticFeedback('light');
-        setActiveTutorial(tutorial.id);
-        setCurrentTutorialStep(0);
-        
-        const tutorialResponse = formatTutorialForSpeech(tutorial);
-        const userMessage: Message = { role: 'user', content: text };
-        const assistantMessage: Message = { role: 'assistant', content: tutorialResponse };
+        const userMessage: Message = { role: 'user', content: userText };
+        const assistantMessage: Message = { role: 'assistant', content: response };
         setMessages(prev => [...prev, userMessage, assistantMessage]);
-        
-        speak(tutorialResponse);
-        return;
-      }
-      
-      // PRIORITY 1: Check if it's an expense creation command (structured data needs local parsing)
-      const parsedExpense = parseVoiceExpense(text);
-      if (parsedExpense) {
-        setInput('');
-        
-        createExpense.mutate({
-          amount: parsedExpense.amount,
-          vendor: parsedExpense.vendor,
-          category: parsedExpense.category,
-          date: new Date().toISOString().split('T')[0],
-          status: 'pending',
-          reimbursement_type: 'pending_classification',
-          user_id: '',
-        }, {
-          onSuccess: () => {
-            const confirmMsg = language === 'es'
-              ? `Gasto creado: $${parsedExpense.amount} en ${parsedExpense.vendor}, categoría ${parsedExpense.category}.`
-              : `Expense created: $${parsedExpense.amount} at ${parsedExpense.vendor}, category ${parsedExpense.category}.`;
-            
-            const userMessage: Message = { role: 'user', content: text };
-            const assistantMessage: Message = { role: 'assistant', content: confirmMsg };
-            setMessages(prev => [...prev, userMessage, assistantMessage]);
-            
-            speak(confirmMsg);
-            toast.success(language === 'es' ? 'Gasto creado por voz' : 'Expense created by voice');
-            
-            // Post-action suggestion
-            setTimeout(() => {
-              const suggestion = getPostActionSuggestion('expense_created');
-              if (suggestion) {
-                const suggestionMsg: Message = { role: 'assistant', content: `💡 ${suggestion}` };
-                setMessages(prev => [...prev, suggestionMsg]);
-              }
-            }, 1500);
-          },
-          onError: () => {
-            const errorMsg = language === 'es'
-              ? 'No pude crear el gasto. Intenta de nuevo.'
-              : 'Could not create the expense. Please try again.';
-            speak(errorMsg);
+        speak(response);
+        if (sound) voicePrefs.playSound(sound);
+      };
+
+      // Handle each result type
+      switch (result.type) {
+        case 'onboarding-mic-test':
+          setInput('');
+          speak(result.response);
+          setIsOnboardingMicTest(false);
+          return;
+
+        case 'language-switch':
+          langDetection.executeLanguageSwitch(result.targetLanguage);
+          respondWithMessage(text, result.response, 'success');
+          return;
+
+        case 'confirmation':
+          setInput('');
+          if (result.response) {
+            const confirmMessage: Message = { role: 'assistant', content: result.response };
+            setMessages(prev => [...prev, confirmMessage]);
+            speak(result.response);
+            voicePrefs.playSound(result.confirmed ? 'success' : 'notification');
           }
-        });
-        return;
-      }
-      
-      // PRIORITY 2: Check if it's an income creation command (structured data needs local parsing)
-      const parsedIncome = parseVoiceIncome(text);
-      if (parsedIncome) {
-        setInput('');
-        
-        createIncome.mutate({
-          amount: parsedIncome.amount,
-          currency: 'CAD',
-          date: new Date(),
-          income_type: parsedIncome.incomeType,
-          source: parsedIncome.source || undefined,
-          description: parsedIncome.source || undefined,
-          recurrence: 'one_time',
-          is_taxable: true,
-        }, {
-          onSuccess: () => {
-            const incomeTypeLabel = parsedIncome.incomeType === 'client_payment' ? (language === 'es' ? 'pago de cliente' : 'client payment') :
-              parsedIncome.incomeType === 'salary' ? (language === 'es' ? 'salario' : 'salary') :
-              parsedIncome.incomeType === 'freelance' ? 'freelance' :
-              parsedIncome.incomeType;
-            
-            const confirmMsg = language === 'es'
-              ? `Ingreso registrado: $${parsedIncome.amount}${parsedIncome.source ? ` de ${parsedIncome.source}` : ''}, tipo: ${incomeTypeLabel}.`
-              : `Income recorded: $${parsedIncome.amount}${parsedIncome.source ? ` from ${parsedIncome.source}` : ''}, type: ${incomeTypeLabel}.`;
-            
-            const userMessage: Message = { role: 'user', content: text };
-            const assistantMessage: Message = { role: 'assistant', content: confirmMsg };
-            setMessages(prev => [...prev, userMessage, assistantMessage]);
-            
-            speak(confirmMsg);
-            toast.success(language === 'es' ? 'Ingreso creado por voz' : 'Income created by voice');
-            
-            // Post-action suggestion
+          return;
+
+        case 'custom-shortcut':
+          setInput('');
+          voicePrefs.trackAction(`shortcut_${result.name}`);
+          respondWithMessage(text, result.name, 'success');
+          navigate(result.route);
+          if (result.action) {
             setTimeout(() => {
-              const suggestion = getPostActionSuggestion('income_created');
-              if (suggestion) {
-                const suggestionMsg: Message = { role: 'assistant', content: `💡 ${suggestion}` };
-                setMessages(prev => [...prev, suggestionMsg]);
-              }
-            }, 1500);
-          },
-          onError: () => {
-            const errorMsg = language === 'es'
-              ? 'No pude registrar el ingreso. Intenta de nuevo.'
-              : 'Could not create the income. Please try again.';
-            speak(errorMsg);
+              window.dispatchEvent(new CustomEvent('voice-command-action', { detail: { action: result.action } }));
+            }, 500);
           }
-        });
-        return;
+          return;
+
+        case 'tutorial':
+          setInput('');
+          triggerHapticFeedback('light');
+          const tutorial = findTutorial(text);
+          if (tutorial) {
+            setActiveTutorial(tutorial.id);
+            setCurrentTutorialStep(0);
+            const tutorialResponse = formatTutorialForSpeech(tutorial);
+            respondWithMessage(text, tutorialResponse);
+          }
+          return;
+
+        case 'expense-creation':
+          setInput('');
+          if (result.data) {
+            createExpense.mutate({
+              amount: result.data.amount,
+              vendor: result.data.vendor,
+              category: result.data.category,
+              date: new Date().toISOString().split('T')[0],
+              status: 'pending',
+              reimbursement_type: 'pending_classification',
+              user_id: '',
+            }, {
+              onSuccess: () => {
+                const confirmMsg = language === 'es'
+                  ? `Gasto creado: $${result.data!.amount} en ${result.data!.vendor}, categoría ${result.data!.category}.`
+                  : `Expense created: $${result.data!.amount} at ${result.data!.vendor}, category ${result.data!.category}.`;
+                respondWithMessage(text, confirmMsg, 'success');
+                toast.success(language === 'es' ? 'Gasto creado por voz' : 'Expense created by voice');
+                setTimeout(() => {
+                  const suggestion = getPostActionSuggestion('expense_created');
+                  if (suggestion) {
+                    const suggestionMsg: Message = { role: 'assistant', content: `💡 ${suggestion}` };
+                    setMessages(prev => [...prev, suggestionMsg]);
+                  }
+                }, 1500);
+              },
+              onError: () => {
+                const errorMsg = language === 'es'
+                  ? 'No pude crear el gasto. Intenta de nuevo.'
+                  : 'Could not create the expense. Please try again.';
+                speak(errorMsg);
+                voicePrefs.playSound('error');
+              }
+            });
+          }
+          return;
+
+        case 'income-creation':
+          setInput('');
+          if (result.data) {
+            createIncome.mutate({
+              amount: result.data.amount,
+              currency: 'CAD',
+              date: new Date(),
+              income_type: result.data.incomeType,
+              source: result.data.source || undefined,
+              description: result.data.source || undefined,
+              recurrence: 'one_time',
+              is_taxable: true,
+            }, {
+              onSuccess: () => {
+                const incomeTypeLabel = result.data!.incomeType === 'client_payment' 
+                  ? (language === 'es' ? 'pago de cliente' : 'client payment')
+                  : result.data!.incomeType === 'salary' 
+                    ? (language === 'es' ? 'salario' : 'salary')
+                    : result.data!.incomeType === 'freelance' 
+                      ? 'freelance' 
+                      : result.data!.incomeType;
+                const confirmMsg = language === 'es'
+                  ? `Ingreso registrado: $${result.data!.amount}${result.data!.source ? ` de ${result.data!.source}` : ''}, tipo: ${incomeTypeLabel}.`
+                  : `Income recorded: $${result.data!.amount}${result.data!.source ? ` from ${result.data!.source}` : ''}, type: ${incomeTypeLabel}.`;
+                respondWithMessage(text, confirmMsg, 'success');
+                toast.success(language === 'es' ? 'Ingreso creado por voz' : 'Income created by voice');
+                setTimeout(() => {
+                  const suggestion = getPostActionSuggestion('income_created');
+                  if (suggestion) {
+                    const suggestionMsg: Message = { role: 'assistant', content: `💡 ${suggestion}` };
+                    setMessages(prev => [...prev, suggestionMsg]);
+                  }
+                }, 1500);
+              },
+              onError: () => {
+                const errorMsg = language === 'es'
+                  ? 'No pude registrar el ingreso. Intenta de nuevo.'
+                  : 'Could not create the income. Please try again.';
+                speak(errorMsg);
+                voicePrefs.playSound('error');
+              }
+            });
+          }
+          return;
+
+        case 'page-context':
+          respondWithMessage(text, result.response);
+          if (isHighlightEnabled) {
+            const highlights = getNavigationHighlights(result.currentPath, language as 'es' | 'en');
+            if (highlights.length > 0) {
+              setTimeout(() => highlight(highlights), 500);
+            }
+          }
+          return;
+
+        case 'open-client':
+          respondWithMessage(text, result.response, 'success');
+          navigate('/clients');
+          setTimeout(() => {
+            window.dispatchEvent(
+              new CustomEvent('voice-command-action', {
+                detail: { action: 'open-client', clientId: result.clientId },
+              })
+            );
+          }, 650);
+          return;
+
+        case 'navigation':
+          triggerHapticFeedback('medium');
+          voicePrefs.trackAction('navigation');
+          respondWithMessage(text, result.response, 'success');
+          navigate(result.route);
+          if (result.action) {
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('voice-command-action', { detail: { action: result.action } }));
+            }, 500);
+          }
+          if (isHighlightEnabled) {
+            setTimeout(() => {
+              const navHighlights = getNavigationHighlights(result.route, language as 'es' | 'en');
+              if (navHighlights.length > 0) highlight(navHighlights);
+            }, 800);
+          }
+          return;
+
+        case 'data-query':
+          triggerHapticFeedback('light');
+          voicePrefs.trackAction('query');
+          respondWithMessage(text, result.response);
+          return;
+
+        case 'ai-fallback':
+          // Send to AI for intelligent response
+          setInput('');
+          const userMessage: Message = { role: 'user', content: text };
+          setMessages(prev => [...prev, userMessage]);
+          sendMessage(text, true); // true = skip adding user message again
+          return;
       }
-      
-      // PRIORITY 3: Send EVERYTHING ELSE to AI for intelligent intent detection
-      // The AI will determine if it's navigation, query, or conversational response
-      // and return structured actions that we execute automatically
-      setInput('');
-      const userMessage: Message = { role: 'user', content: text };
-      setMessages(prev => [...prev, userMessage]);
-      sendMessage(text, true); // true = skip adding user message again
     },
     onContinuousStopped: () => {
       // Notify user that continuous mode was stopped by voice
