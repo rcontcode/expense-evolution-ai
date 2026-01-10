@@ -9,12 +9,13 @@ import { Slider } from '@/components/ui/slider';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useVoicePreferences } from '@/hooks/utils/useVoicePreferences';
+import { useVoicePreferences, type VoiceGender } from '@/hooks/utils/useVoicePreferences';
 import { useHighlight, type HighlightColor } from '@/contexts/HighlightContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   Mic, Volume2, Bell, Zap, Trash2, Plus, Clock, Calendar, 
-  MessageSquare, History, Play, Settings2, VolumeX, Volume1, Highlighter
+  MessageSquare, History, Play, Settings2, VolumeX, Volume1, Highlighter,
+  User, UserCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -200,6 +201,38 @@ export function VoicePreferencesCard() {
                 <span>{language === 'es' ? 'Agudo' : 'High'}</span>
               </div>
             </div>
+          </div>
+
+          {/* Voice Gender Selection */}
+          <div className="space-y-2 pt-2">
+            <div className="flex items-center gap-2">
+              <UserCircle className="h-4 w-4 text-muted-foreground" />
+              <Label className="text-xs">{language === 'es' ? 'Tipo de Voz' : 'Voice Type'}</Label>
+            </div>
+            <div className="flex gap-2">
+              {(['female', 'male', 'auto'] as VoiceGender[]).map((gender) => (
+                <button
+                  key={gender}
+                  onClick={() => voicePrefs.setVoiceGender(gender)}
+                  className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                    voicePrefs.voiceGender === gender
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-muted/50 hover:bg-muted border-border'
+                  }`}
+                >
+                  {gender === 'female' 
+                    ? (language === 'es' ? '👩 Femenina' : '👩 Female')
+                    : gender === 'male'
+                    ? (language === 'es' ? '👨 Masculina' : '👨 Male')
+                    : (language === 'es' ? '🤖 Auto' : '🤖 Auto')}
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground">
+              {language === 'es' 
+                ? 'La disponibilidad depende de las voces instaladas en tu dispositivo'
+                : 'Availability depends on voices installed on your device'}
+            </p>
           </div>
 
           {/* Toggles */}
@@ -616,8 +649,16 @@ export function VoicePreferencesCard() {
             size="sm" 
             onClick={() => {
               const testMessage = language === 'es'
-                ? '¡Hola! Esta es una prueba de voz del asistente.'
-                : 'Hello! This is a voice test from the assistant.';
+                ? voicePrefs.voiceGender === 'female' 
+                  ? '¡Hola! Soy tu asistente con voz femenina. ¿Cómo puedo ayudarte?'
+                  : voicePrefs.voiceGender === 'male'
+                  ? '¡Hola! Soy tu asistente con voz masculina. ¿Cómo puedo ayudarte?'
+                  : '¡Hola! Soy tu asistente de voz. ¿Cómo puedo ayudarte?'
+                : voicePrefs.voiceGender === 'female'
+                  ? 'Hello! I am your assistant with a female voice. How can I help you?'
+                  : voicePrefs.voiceGender === 'male'
+                  ? 'Hello! I am your assistant with a male voice. How can I help you?'
+                  : 'Hello! I am your voice assistant. How can I help you?';
               
               if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -626,6 +667,29 @@ export function VoicePreferencesCard() {
                 utterance.rate = voicePrefs.speechSpeed;
                 utterance.volume = voicePrefs.volume;
                 utterance.pitch = voicePrefs.pitch;
+                
+                // Apply voice gender selection
+                const voices = window.speechSynthesis.getVoices();
+                const langCode = language === 'es' ? 'es' : 'en';
+                const langVoices = voices.filter(v => v.lang.startsWith(langCode));
+                
+                if (voicePrefs.voiceGender !== 'auto' && langVoices.length > 0) {
+                  const femalePatterns = /female|mujer|femenin|samantha|victoria|karen|monica|paulina|helena|zira|hazel|susan|alice|fiona|moira|tessa|ava|allison|kate|siri.*female/i;
+                  const malePatterns = /male|hombre|masculin|alex|jorge|daniel|david|diego|enrique|carlos|mark|thomas|oliver|james|fred|lee|rishi|aaron|siri.*male/i;
+                  
+                  const targetPattern = voicePrefs.voiceGender === 'female' ? femalePatterns : malePatterns;
+                  
+                  const preferredVoice = langVoices.find(v => v.localService && targetPattern.test(v.name))
+                    || langVoices.find(v => targetPattern.test(v.name))
+                    || langVoices.find(v => v.localService)
+                    || langVoices[0];
+                  
+                  if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                    console.log('[VoiceTest] Using voice:', preferredVoice.name);
+                  }
+                }
+                
                 window.speechSynthesis.speak(utterance);
                 toast.success(language === 'es' ? 'Reproduciendo voz...' : 'Playing voice...');
               } else {

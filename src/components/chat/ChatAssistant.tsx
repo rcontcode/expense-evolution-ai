@@ -326,6 +326,7 @@ export const ChatAssistant: React.FC = () => {
     speechSpeed: voicePrefs.speechSpeed,
     volume: voicePrefs.volume,
     pitch: voicePrefs.pitch,
+    voiceGender: voicePrefs.voiceGender,
     onInterimTranscript: (text) => {
       // Update input field with live transcript
       setInput(text);
