@@ -30,6 +30,7 @@ import { AudioLevelIndicator } from './voice/AudioLevelIndicator';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useHighlight, HIGHLIGHTABLE_ELEMENTS } from '@/contexts/HighlightContext';
+import { detectHighlightTargets, getNavigationHighlights } from '@/lib/highlight-detection';
 import { useVoiceAssistant } from '@/hooks/utils/useVoiceAssistant';
 import { useAudioPlayback } from '@/hooks/utils/useAudioPlayback';
 import { useSmartGuidance } from '@/hooks/utils/useSmartGuidance';
@@ -90,7 +91,7 @@ export const ChatAssistant: React.FC = () => {
   const micPermission = useMicrophonePermission();
   
   // Highlight system for interactive tutorials
-  const highlightContext = useHighlight();
+  const { highlight, clearHighlights, isHighlightEnabled } = useHighlight();
 
   const { user } = useAuth();
   const { data: profile } = useProfile();
@@ -608,6 +609,16 @@ export const ChatAssistant: React.FC = () => {
         speak(confirmMsg);
         executeVoiceCommand(command.route, command.name, command.action);
         
+        // Trigger navigation highlights after a short delay
+        if (isHighlightEnabled && command.route) {
+          setTimeout(() => {
+            const navHighlights = getNavigationHighlights(command.route!, language as 'es' | 'en');
+            if (navHighlights.length > 0) {
+              highlight(navHighlights);
+            }
+          }, 1000);
+        }
+        
         // Post-navigation suggestion
         setTimeout(() => {
           const suggestion = getPostActionSuggestion('navigation');
@@ -984,6 +995,17 @@ export const ChatAssistant: React.FC = () => {
       // Save assistant response to history
       voicePrefs.addToHistory({ role: 'assistant', content: responseText, page: location.pathname });
 
+      // Detect and trigger highlights based on response content
+      if (isHighlightEnabled) {
+        const detectedHighlights = detectHighlightTargets(responseText, language as 'es' | 'en');
+        if (detectedHighlights.length > 0) {
+          // Delay highlight to let user see/hear the response first
+          setTimeout(() => {
+            highlight(detectedHighlights);
+          }, 1500);
+        }
+      }
+
       // Auto-speak response if enabled
       // IMPORTANT: ALWAYS use speak() so the mic is paused even if callbacks are stale.
       if (autoSpeak && isVoiceSupported) {
@@ -1004,7 +1026,7 @@ export const ChatAssistant: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, userName, stats, totalIncome, clients, projects, messages, language, autoSpeak, isVoiceSupported, speak, audioPlayback, voicePrefs, location.pathname]);
+  }, [isLoading, userName, stats, totalIncome, clients, projects, messages, language, autoSpeak, isVoiceSupported, speak, audioPlayback, voicePrefs, location.pathname, isHighlightEnabled, highlight]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

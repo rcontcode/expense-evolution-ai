@@ -207,7 +207,7 @@ export default function Projects() {
             ? 'Organiza tu trabajo por proyectos y asigna múltiples clientes'
             : 'Organize your work by projects and assign multiple clients'}
         >
-          <Button onClick={handleCreate}>
+          <Button onClick={handleCreate} data-highlight="add-project-button">
             <Plus className="mr-2 h-4 w-4" />
             {language === 'es' ? 'Nuevo Proyecto' : 'New Project'}
           </Button>
@@ -352,7 +352,7 @@ export default function Projects() {
             ))}
           </div>
         ) : filteredProjects.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-highlight="projects-grid">
             {filteredProjects.map((project) => {
               const financials = projectFinancials[project.id] || { expenses: 0, income: 0 };
               const netBalance = financials.income - financials.expenses;

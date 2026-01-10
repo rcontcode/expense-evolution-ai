@@ -191,25 +191,31 @@ export default function NetWorth() {
             )}
 
             {/* Evolution Chart */}
-            <NetWorthChart 
-              snapshots={snapshots}
-              currentNetWorth={netWorth}
-              currentAssets={totalAssets}
-              currentLiabilities={totalLiabilities}
-            />
+            <div data-highlight="net-worth-chart">
+              <NetWorthChart 
+                snapshots={snapshots}
+                currentNetWorth={netWorth}
+                currentAssets={totalAssets}
+                currentLiabilities={totalLiabilities}
+              />
+            </div>
 
             {/* Assets and Liabilities Lists */}
             <div className="grid gap-6 lg:grid-cols-2">
-              <AssetsList 
-                assets={assets}
-                onAdd={handleAddAsset}
-                onEdit={handleEditAsset}
-              />
-              <LiabilitiesList 
-                liabilities={liabilities}
-                onAdd={handleAddLiability}
-                onEdit={handleEditLiability}
-              />
+              <div data-highlight="assets-section">
+                <AssetsList 
+                  assets={assets}
+                  onAdd={handleAddAsset}
+                  onEdit={handleEditAsset}
+                />
+              </div>
+              <div data-highlight="liabilities-section">
+                <LiabilitiesList 
+                  liabilities={liabilities}
+                  onAdd={handleAddLiability}
+                  onEdit={handleEditLiability}
+                />
+              </div>
             </div>
           </>
         )}

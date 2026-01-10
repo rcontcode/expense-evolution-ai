@@ -215,19 +215,23 @@ export default function Dashboard() {
                (siempre visible; esto es el “contenido” principal)
              ============================================= */}
 
-          <YearTimelineChart
-            selectedMonth={selectedMonth}
-            onMonthSelect={setSelectedMonth}
-            selectedYear={selectedYear}
-            onYearChange={setSelectedYear}
-          />
+          <div data-highlight="timeline-chart">
+            <YearTimelineChart
+              selectedMonth={selectedMonth}
+              onMonthSelect={setSelectedMonth}
+              selectedYear={selectedYear}
+              onYearChange={setSelectedYear}
+            />
+          </div>
 
-          <MonthDetailPanel
-            year={selectedYear}
-            month={selectedMonth}
-            onAddIncome={handleAddIncome}
-            onAddExpense={handleAddExpense}
-          />
+          <div data-highlight="balance-card">
+            <MonthDetailPanel
+              year={selectedYear}
+              month={selectedMonth}
+              onAddIncome={handleAddIncome}
+              onAddExpense={handleAddExpense}
+            />
+          </div>
 
           {/* View Mode Toggle + Export (siempre visible) */}
           <div className="flex items-center justify-between gap-4 py-2">
@@ -264,7 +268,7 @@ export default function Dashboard() {
                 </CollapsibleTrigger>
                 
                 <CollapsibleContent className="pt-4">
-                  <Card className="border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
+                  <Card className="border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden" data-highlight="control-center">
                     <CardHeader className="pb-3 pt-4">
                       <div className="flex items-center gap-2">
                         <BarChart3 className="h-5 w-5 text-primary" />

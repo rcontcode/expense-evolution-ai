@@ -122,7 +122,7 @@ export default function Clients() {
             description={t('clients.description')}
           >
             <InfoTooltip content={TOOLTIP_CONTENT.addClient} variant="wrapper">
-              <Button onClick={handleCreate}>
+              <Button onClick={handleCreate} data-highlight="add-client-button">
                 <Plus className="mr-2 h-4 w-4" />
                 {t('clients.addClient')}
               </Button>
@@ -171,7 +171,7 @@ export default function Clients() {
               </CardContent>
             </Card>
           ) : clients && clients.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-highlight="clients-grid">
               {clients.map((client) => {
                 const hasTestData = getClientHasTestData(client.id);
                 const completeness = calculateClientCompleteness(client, hasTestData);

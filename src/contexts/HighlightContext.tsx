@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 
 export type HighlightColor = 'orange' | 'green' | 'red' | 'blue' | 'purple';
 
-interface HighlightTarget {
+export interface HighlightTarget {
   selector: string; // CSS selector or data-highlight attribute
   label?: string; // Optional label to show
 }
