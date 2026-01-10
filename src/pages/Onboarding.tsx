@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { ChevronRight, ChevronLeft, Check, Sparkles } from 'lucide-react';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { SampleDataOfferStep } from '@/components/guidance/SampleDataOfferStep';
+import { PhoenixLogo, PhoenixState } from '@/components/ui/phoenix-logo';
 
 const PROVINCES = [
   'British Columbia', 'Alberta', 'Saskatchewan', 'Manitoba',
@@ -35,6 +36,13 @@ export default function Onboarding() {
 
   // Get user's first name for personalized greeting
   const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || '';
+
+  // Phoenix state evolves with onboarding progress
+  const phoenixState: PhoenixState = useMemo(() => {
+    if (step <= 2) return 'flames'; // Crisis/organizing phase
+    if (step === 3) return 'smoke'; // Transition/review phase
+    return 'rebirth'; // Ready to begin!
+  }, [step]);
   
   const handleWorkTypeToggle = (type: 'employee' | 'contractor' | 'corporation') => {
     setWorkTypes(prev =>
@@ -242,6 +250,18 @@ export default function Onboarding() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-hero p-4 gap-6">
+      {/* Phoenix Logo - Evolves with onboarding progress */}
+      <div className="flex flex-col items-center gap-4">
+        <PhoenixLogo variant="sidebar" state={phoenixState} />
+        
+        {/* Stage indicator text */}
+        <div className="text-center text-white/80 text-sm">
+          {step <= 2 && (language === 'es' ? '🔥 Organizando tu mundo financiero...' : '🔥 Organizing your financial world...')}
+          {step === 3 && (language === 'es' ? '💨 Casi listo, revisemos...' : '💨 Almost ready, let\'s review...')}
+          {step >= 4 && (language === 'es' ? '✨ ¡Listo para renacer!' : '✨ Ready to be reborn!')}
+        </div>
+      </div>
+
       {/* Personalized Welcome */}
       <div className="text-center space-y-2 max-w-2xl">
         <div className="flex items-center justify-center gap-2 text-primary">
@@ -251,13 +271,13 @@ export default function Onboarding() {
           </span>
           <Sparkles className="h-6 w-6" />
         </div>
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-3xl font-bold text-white">
           {language === 'es' 
             ? `¡Hola${firstName ? `, ${firstName}` : ''}! 👋`
             : `Hello${firstName ? `, ${firstName}` : ''}! 👋`
           }
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-white/80">
           {language === 'es'
             ? 'Vamos a configurar tu perfil para optimizar tu gestión financiera'
             : "Let's set up your profile to optimize your financial management"

@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { 
-  MessageCircle, 
   Target, 
   HelpCircle, 
   Lightbulb,
@@ -10,7 +9,6 @@ import {
   FileText,
   TrendingUp,
   Camera,
-  Upload,
   DollarSign,
   Car,
   Building2,
@@ -23,17 +21,17 @@ import {
   X,
   Play,
   Zap,
-  BookOpen,
   Calculator,
   Shield
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProfile } from "@/hooks/data/useProfile";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { PhoenixLogo } from "@/components/ui/phoenix-logo";
 
 interface QuickAction {
   id: string;
@@ -289,14 +287,13 @@ export function InteractiveWelcome({ className }: { className?: string }) {
       "bg-gradient-to-br from-primary/5 via-background to-primary/5",
       className
     )}>
-      {/* Colorful header */}
+      {/* Colorful header with Phoenix Logo */}
       <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-emerald-500/10 p-6 border-b border-primary/10">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
+            {/* Phoenix Logo as the guide/mentor */}
             <div className="relative">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/25">
-                <MessageCircle className="h-7 w-7 text-primary-foreground" />
-              </div>
+              <PhoenixLogo variant="mini" state="default" />
               <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-success flex items-center justify-center">
                 <Zap className="h-3 w-3 text-success-foreground" />
               </div>
@@ -310,8 +307,8 @@ export function InteractiveWelcome({ className }: { className?: string }) {
               </h2>
               <p className="text-muted-foreground mt-1">
                 {language === 'es'
-                  ? '¿En qué puedo ayudarte hoy? Soy tu asistente financiero.'
-                  : "How can I help you today? I'm your financial assistant."
+                  ? '¿En qué puedo ayudarte hoy? Soy tu guía financiero.'
+                  : "How can I help you today? I'm your financial guide."
                 }
               </p>
             </div>

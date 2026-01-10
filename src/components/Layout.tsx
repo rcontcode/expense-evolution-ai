@@ -190,7 +190,7 @@ export const Layout = ({ children }: LayoutProps) => {
         <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <PhoenixLogo size="sm" />
+              <PhoenixLogo variant="mini" />
               <span className="text-lg font-bold bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">EvoFinz</span>
             </div>
 
@@ -386,7 +386,7 @@ export const Layout = ({ children }: LayoutProps) => {
             "flex h-20 items-center border-b border-border px-4 transition-all gap-3",
             collapsed ? "justify-center" : "px-4"
           )}>
-            <PhoenixLogo size={collapsed ? "sm" : "md"} />
+            <PhoenixLogo variant={collapsed ? "mini" : "sidebar"} />
             {!collapsed && (
               <span className="text-xl font-bold bg-gradient-to-r from-primary via-cyan-500 to-teal-500 bg-clip-text text-transparent">
                 EvoFinz
