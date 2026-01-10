@@ -52,8 +52,8 @@ const GUIDE_STEPS: GuideStep[] = [
       en: 'Upload your bank statement as CSV, photo or PDF' 
     },
     tooltip: { 
-      es: 'Aceptamos archivos CSV de cualquier banco (Canadá, Chile, México y más), fotos de estados impresos (usamos tecnología Smart para extraer datos), y PDFs de estados electrónicos. Los datos nunca se comparten con terceros.', 
-      en: 'We accept CSV files from any bank (Canada, Chile, Mexico and more), photos of printed statements (we use Smart technology to extract data), and PDFs of electronic statements. Data is never shared with third parties.' 
+      es: 'Aceptamos archivos CSV de cualquier banco (Canadá, Chile), fotos de estados impresos (usamos tecnología Smart para extraer datos), y PDFs de estados electrónicos. Los datos nunca se comparten con terceros.', 
+      en: 'We accept CSV files from any bank (Canada, Chile), photos of printed statements (we use Smart technology to extract data), and PDFs of electronic statements. Data is never shared with third parties.'
     },
     badge: { es: 'Paso 1', en: 'Step 1' }
   },
@@ -230,8 +230,8 @@ export function BankingIntegrationGuide({ onImportClick }: BankingIntegrationGui
                     </p>
                     <p className="text-sm">
                       {language === 'es' 
-                        ? 'Descarga el CSV desde tu banca en línea. Debe incluir fecha, descripción y monto. Compatible con bancos de Canadá, Chile, México y más.'
-                        : 'Download the CSV from your online banking. It should include date, description, and amount. Compatible with banks from Canada, Chile, Mexico and more.'}
+                        ? 'Descarga el CSV desde tu banca en línea. Debe incluir fecha, descripción y monto. Compatible con bancos de Canadá y Chile.'
+                        : 'Download the CSV from your online banking. It should include date, description, and amount. Compatible with banks from Canada and Chile.'}
                     </p>
                   </TooltipContent>
                 </Tooltip>
