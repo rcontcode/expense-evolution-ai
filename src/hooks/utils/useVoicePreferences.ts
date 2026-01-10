@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface VoicePreferences {
   // Voice experience
@@ -89,24 +89,43 @@ export function useVoicePreferences() {
   });
 
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const audioInitializedRef = useRef(false);
 
-  // Initialize audio context on first user interaction
+  // Initialize audio context on first user interaction - more robust approach
   useEffect(() => {
     const initAudio = () => {
-      if (!audioContext) {
+      if (audioInitializedRef.current) return;
+      
+      try {
         const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+        
+        // Resume context if suspended (required by some browsers)
+        if (ctx.state === 'suspended') {
+          ctx.resume().then(() => {
+            console.log('[Audio] Context resumed successfully');
+          }).catch(console.error);
+        }
+        
         setAudioContext(ctx);
+        audioInitializedRef.current = true;
+        console.log('[Audio] Context initialized');
+      } catch (e) {
+        console.error('[Audio] Failed to create AudioContext:', e);
       }
     };
 
-    document.addEventListener('click', initAudio, { once: true });
-    document.addEventListener('keydown', initAudio, { once: true });
+    // Try to initialize on multiple events for better coverage
+    const events = ['click', 'keydown', 'touchstart', 'pointerdown'];
+    events.forEach(event => {
+      document.addEventListener(event, initAudio, { once: true, passive: true });
+    });
 
     return () => {
-      document.removeEventListener('click', initAudio);
-      document.removeEventListener('keydown', initAudio);
+      events.forEach(event => {
+        document.removeEventListener(event, initAudio);
+      });
     };
-  }, [audioContext]);
+  }, []);
 
   // Persist preferences
   useEffect(() => {

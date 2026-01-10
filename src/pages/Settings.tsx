@@ -29,6 +29,7 @@ const SampleDataManager = lazy(() => import('@/components/settings/SampleDataMan
 const FinancialEducationResources = lazy(() => import('@/components/settings/FinancialEducationResources').then(m => ({ default: m.FinancialEducationResources })));
 const InvestmentSection = lazy(() => import('@/components/investments/InvestmentSection').then(m => ({ default: m.InvestmentSection })));
 const SavingsGoalsSection = lazy(() => import('@/components/settings/SavingsGoalsSection').then(m => ({ default: m.SavingsGoalsSection })));
+const VoicePreferencesCard = lazy(() => import('@/components/settings/VoicePreferencesCard').then(m => ({ default: m.VoicePreferencesCard })));
 
 const SectionSkeleton = () => (
   <div className="space-y-4">
@@ -107,6 +108,11 @@ export default function Settings() {
 
             {/* Display Preferences */}
             <DisplayPreferencesCard />
+
+            {/* Voice Preferences */}
+            <Suspense fallback={<SectionSkeleton />}>
+              <VoicePreferencesCard />
+            </Suspense>
 
             {/* Theme Section */}
             <Card>
