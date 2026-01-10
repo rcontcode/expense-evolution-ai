@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square } from 'lucide-react';
+import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square, MapPin, Info } from 'lucide-react';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { useIncome, useCreateIncome } from '@/hooks/data/useIncome';
 import { useClients } from '@/hooks/data/useClients';
 import { useProjects } from '@/hooks/data/useProjects';
 import { useExpenses, useCreateExpense } from '@/hooks/data/useExpenses';
+import { KaraokeText } from './KaraokeText';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -20,7 +21,7 @@ import { useVoiceAssistant } from '@/hooks/utils/useVoiceAssistant';
 import { useAudioPlayback } from '@/hooks/utils/useAudioPlayback';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ExpenseCategory } from '@/types/expense.types';
 import { IncomeType } from '@/types/income.types';
@@ -284,6 +285,7 @@ export const ChatAssistant: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { user } = useAuth();
   const { data: profile } = useProfile();
@@ -512,6 +514,91 @@ export const ChatAssistant: React.FC = () => {
     return { matched: false };
   }, [language]);
 
+  // Get current page context for the AI assistant to explain
+  const getCurrentPageContext = useCallback((): { pageName: string; description: string } => {
+    const pageContexts: Record<string, { es: { name: string; desc: string }; en: { name: string; desc: string } }> = {
+      '/dashboard': {
+        es: { name: 'Dashboard', desc: 'Esta es tu página principal donde puedes ver un resumen de tus finanzas: balance general, gastos e ingresos del mes, gráficos de tendencias, y accesos rápidos a las funciones principales. Desde aquí puedes capturar gastos, ver alertas de presupuesto, y acceder a herramientas como el calculador FIRE y el optimizador de impuestos.' },
+        en: { name: 'Dashboard', desc: 'This is your main page where you can see a summary of your finances: overall balance, monthly expenses and income, trend charts, and quick access to main features. From here you can capture expenses, view budget alerts, and access tools like the FIRE calculator and tax optimizer.' },
+      },
+      '/expenses': {
+        es: { name: 'Gastos', desc: 'Aquí puedes ver, agregar y gestionar todos tus gastos. Puedes filtrarlos por fecha, categoría, cliente o tipo de reembolso. Cada gasto puede tener recibos adjuntos, etiquetas, y ser asignado a proyectos o contratos. Usa el botón "Agregar Gasto" para registrar uno nuevo, o el botón de captura rápida para escanear un recibo.' },
+        en: { name: 'Expenses', desc: 'Here you can view, add and manage all your expenses. You can filter them by date, category, client or reimbursement type. Each expense can have attached receipts, tags, and be assigned to projects or contracts. Use the "Add Expense" button to record a new one, or quick capture to scan a receipt.' },
+      },
+      '/income': {
+        es: { name: 'Ingresos', desc: 'Esta página muestra todos tus ingresos registrados. Puedes agregar ingresos de diferentes tipos: pagos de clientes, salario, freelance, inversiones, ingresos pasivos, etc. También puedes ver análisis de tus fuentes de ingreso y tendencias.' },
+        en: { name: 'Income', desc: 'This page shows all your recorded income. You can add income from different types: client payments, salary, freelance, investments, passive income, etc. You can also see analysis of your income sources and trends.' },
+      },
+      '/clients': {
+        es: { name: 'Clientes', desc: 'Gestiona tus clientes aquí. Puedes agregar nuevos clientes con su información de contacto, dirección, y configuración de facturación. Los clientes se pueden asociar a proyectos, contratos y gastos para un mejor seguimiento financiero.' },
+        en: { name: 'Clients', desc: 'Manage your clients here. You can add new clients with their contact info, address, and billing settings. Clients can be associated with projects, contracts and expenses for better financial tracking.' },
+      },
+      '/projects': {
+        es: { name: 'Proyectos', desc: 'Administra tus proyectos de trabajo. Cada proyecto puede tener un presupuesto, fechas de inicio y fin, y estar asociado a clientes. Puedes ver el balance financiero de cada proyecto (ingresos vs gastos) y su estado.' },
+        en: { name: 'Projects', desc: 'Manage your work projects. Each project can have a budget, start and end dates, and be associated with clients. You can see the financial balance of each project (income vs expenses) and its status.' },
+      },
+      '/contracts': {
+        es: { name: 'Contratos', desc: 'Sube y gestiona tus contratos aquí. La app puede analizar contratos con IA para extraer términos de reembolso, fechas importantes, y condiciones. Los contratos se vinculan a clientes y ayudan a clasificar automáticamente los gastos.' },
+        en: { name: 'Contracts', desc: 'Upload and manage your contracts here. The app can analyze contracts with AI to extract reimbursement terms, important dates, and conditions. Contracts link to clients and help automatically classify expenses.' },
+      },
+      '/mileage': {
+        es: { name: 'Kilometraje', desc: 'Registra tus viajes de trabajo para deducción fiscal. Puedes agregar rutas con direcciones de inicio y destino, ver mapas, y la app calcula automáticamente los kilómetros. Útil para deducir gastos de transporte en tus impuestos.' },
+        en: { name: 'Mileage', desc: 'Record your work trips for tax deduction. You can add routes with start and end addresses, view maps, and the app automatically calculates kilometers. Useful for deducting transportation expenses on your taxes.' },
+      },
+      '/net-worth': {
+        es: { name: 'Patrimonio Neto', desc: 'Rastrea tu patrimonio neto aquí. Agrega tus activos (cuentas, inversiones, propiedades, crypto) y pasivos (deudas, préstamos). La app calcula tu patrimonio neto y muestra su evolución en el tiempo.' },
+        en: { name: 'Net Worth', desc: 'Track your net worth here. Add your assets (accounts, investments, properties, crypto) and liabilities (debts, loans). The app calculates your net worth and shows its evolution over time.' },
+      },
+      '/banking': {
+        es: { name: 'Análisis Bancario', desc: 'Sube estados de cuenta bancarios para análisis inteligente. La app detecta patrones de gasto, pagos recurrentes, anomalías, y te permite hacer preguntas sobre tus transacciones. Útil para tener visibilidad de todas tus cuentas.' },
+        en: { name: 'Banking Analysis', desc: 'Upload bank statements for smart analysis. The app detects spending patterns, recurring payments, anomalies, and lets you ask questions about your transactions. Useful for visibility across all your accounts.' },
+      },
+      '/mentorship': {
+        es: { name: 'Mentoría Financiera', desc: 'Tu centro de educación financiera basado en principios de Kiyosaki, Rohn y Tracy. Incluye el Cuadrante de Flujo de Efectivo, seguimiento de libertad financiera, diario financiero, hábitos, metas SMART, y biblioteca de recursos.' },
+        en: { name: 'Financial Mentorship', desc: 'Your financial education center based on Kiyosaki, Rohn and Tracy principles. Includes Cashflow Quadrant, financial freedom tracking, financial journal, habits, SMART goals, and resource library.' },
+      },
+      '/settings': {
+        es: { name: 'Configuración', desc: 'Ajusta las preferencias de la app: idioma, tema visual, notificaciones, y gestiona tus metas de ahorro. También puedes ver y gestionar datos de muestra para probar la app.' },
+        en: { name: 'Settings', desc: 'Adjust app preferences: language, visual theme, notifications, and manage your savings goals. You can also view and manage sample data to test the app.' },
+      },
+      '/tax-calendar': {
+        es: { name: 'Calendario Fiscal', desc: 'Ve tus fechas límite de impuestos, estimaciones fiscales, y recursos tributarios. La app te recuerda fechas importantes según tu país (Canadá o Chile) y te ayuda a planificar tus obligaciones fiscales.' },
+        en: { name: 'Tax Calendar', desc: 'View your tax deadlines, tax estimates, and tax resources. The app reminds you of important dates based on your country (Canada or Chile) and helps you plan your tax obligations.' },
+      },
+      '/chaos-inbox': {
+        es: { name: 'Bandeja de Caos', desc: 'Revisa y procesa recibos capturados que necesitan clasificación. Aquí puedes aprobar, rechazar, o editar gastos extraídos de fotos antes de que se agreguen a tu registro oficial.' },
+        en: { name: 'Chaos Inbox', desc: 'Review and process captured receipts that need classification. Here you can approve, reject, or edit expenses extracted from photos before they are added to your official records.' },
+      },
+    };
+
+    const currentPath = location.pathname;
+    const context = pageContexts[currentPath];
+    
+    if (context) {
+      const lang = language === 'es' ? 'es' : 'en';
+      return { pageName: context[lang].name, description: context[lang].desc };
+    }
+    
+    return { 
+      pageName: language === 'es' ? 'Página actual' : 'Current page',
+      description: language === 'es' ? 'Estás en una página de la aplicación.' : 'You are on an application page.'
+    };
+  }, [location.pathname, language]);
+
+  // Check if user is asking about the current page
+  const isAskingAboutCurrentPage = useCallback((text: string): boolean => {
+    const normalizedText = text.toLowerCase().trim();
+    const pageQueries = [
+      'qué es esto', 'que es esto', 'dónde estoy', 'donde estoy', 'qué página es esta', 
+      'que pagina es esta', 'explica esta página', 'explícame', 'explicame', 'qué puedo hacer aquí',
+      'que puedo hacer aqui', 'cómo funciona', 'como funciona', 'ayúdame con esta página',
+      'what is this', 'where am i', 'what page is this', 'explain this page', 
+      'what can i do here', 'how does this work', 'help me with this page',
+      'guíame', 'guiame', 'guide me', 'tutorial', 'ayuda aquí', 'help here'
+    ];
+    return pageQueries.some(q => normalizedText.includes(q));
+  }, []);
+
   // Handle voice command execution
   const executeVoiceCommand = useCallback((route: string, name: string, action?: string) => {
     const confirmMsg = language === 'es' 
@@ -536,12 +623,17 @@ export const ChatAssistant: React.FC = () => {
     isListening,
     isContinuousMode,
     isSpeaking,
+    isSpeechPaused,
     isSupported: isVoiceSupported,
     transcript,
+    currentSpeakingText,
+    currentSentenceIndex,
     toggleListening,
     startContinuousListening,
     stopContinuousListening,
     speak,
+    pauseSpeech,
+    resumeSpeech,
     stopSpeaking,
   } = useVoiceAssistant({
     onInterimTranscript: (text) => {
@@ -633,6 +725,21 @@ export const ChatAssistant: React.FC = () => {
         return;
       }
       
+      // Check if user is asking about the current page (guide functionality)
+      if (isAskingAboutCurrentPage(text)) {
+        setInput('');
+        const pageContext = getCurrentPageContext();
+        const response = language === 'es'
+          ? `Estás en la página de ${pageContext.pageName}. ${pageContext.description}`
+          : `You're on the ${pageContext.pageName} page. ${pageContext.description}`;
+        
+        const userMessage: Message = { role: 'user', content: text };
+        const assistantMessage: Message = { role: 'assistant', content: response };
+        setMessages(prev => [...prev, userMessage, assistantMessage]);
+        speak(response);
+        return;
+      }
+      
       // Then check if it's a data query command
       const query = checkVoiceQuery(text);
       if (query.matched && query.queryType) {
@@ -656,6 +763,12 @@ export const ChatAssistant: React.FC = () => {
         const confirmMsg = language === 'es' 
           ? `Entendido. Navegando a ${command.name}.`
           : `Got it. Navigating to ${command.name}.`;
+        
+        // Add to chat messages
+        const userMessage: Message = { role: 'user', content: text };
+        const assistantMessage: Message = { role: 'assistant', content: confirmMsg };
+        setMessages(prev => [...prev, userMessage, assistantMessage]);
+        
         speak(confirmMsg);
         executeVoiceCommand(command.route, command.name, command.action);
         return;
@@ -1066,8 +1179,21 @@ export const ChatAssistant: React.FC = () => {
             )}
           </ScrollArea>
 
+          {/* Karaoke Text Display - shows when speaking with sentence highlighting */}
+          {isSpeaking && currentSpeakingText && (
+            <KaraokeText
+              text={currentSpeakingText}
+              isPlaying={isSpeaking}
+              isPaused={isSpeechPaused}
+              onPause={pauseSpeech}
+              onResume={resumeSpeech}
+              onStop={stopSpeaking}
+              className="mx-4 mb-2"
+            />
+          )}
+
           {/* Audio Playback Controls - Spotify style */}
-          {(audioPlayback.isPlaying || audioPlayback.isPaused) && (
+          {(audioPlayback.isPlaying || audioPlayback.isPaused) && !
             <div className="px-4 py-3 border-t bg-muted/30">
               <div className="flex flex-col gap-2">
                 {/* Progress bar */}
