@@ -8,10 +8,11 @@ interface UseVoiceAssistantOptions {
   onContinuousStopped?: () => void;
 }
 
-// Voice commands to stop continuous mode
+// Voice commands to stop continuous mode - must be EXACT phrases, not partial matches
+// Using longer, more specific phrases to avoid false positives from AI responses
 const STOP_COMMANDS = {
-  es: ['detener', 'parar', 'stop', 'para', 'basta', 'silencio', 'terminar'],
-  en: ['stop', 'pause', 'quit', 'end', 'silence', 'halt'],
+  es: ['detener asistente', 'parar asistente', 'stop asistente', 'basta ya', 'silencio por favor', 'terminar conversación', 'deja de escuchar'],
+  en: ['stop assistant', 'pause assistant', 'quit listening', 'end conversation', 'silence please', 'halt assistant', 'stop listening'],
 };
 
 export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
