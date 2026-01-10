@@ -51,6 +51,8 @@ import { ThemeBackground } from '@/components/ThemeBackground';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Link } from 'react-router-dom';
 import { EntitySelector } from '@/components/EntitySelector';
+import { useGlobalReminders } from '@/hooks/utils/useGlobalReminders';
+import { FloatingVoiceIndicator } from '@/components/chat/voice/ContinuousModeIndicator';
 
 interface LayoutProps {
   children: ReactNode;
@@ -176,6 +178,9 @@ export const Layout = ({ children }: LayoutProps) => {
   const NAV_SECTIONS = getNavSections(language);
   const MOBILE_NAV_ITEMS = getMobileNavItems(language);
   const { data: unreadCount = 0 } = useUnreadNotifications();
+  
+  // Global reminders - works even when chat is closed
+  useGlobalReminders();
   
   // Get tax authority badge based on country
   const taxBadge = profile?.country === 'CL' ? 'SII' : profile?.country === 'CA' ? 'CRA' : null;

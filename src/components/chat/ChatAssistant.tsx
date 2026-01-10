@@ -16,6 +16,10 @@ import { useClients } from '@/hooks/data/useClients';
 import { useProjects } from '@/hooks/data/useProjects';
 import { useExpenses, useCreateExpense } from '@/hooks/data/useExpenses';
 import { KaraokeText } from './KaraokeText';
+import { VoiceOnboarding } from './voice/VoiceOnboarding';
+import { useMicrophonePermission, MicrophonePermissionAlert } from './voice/MicrophonePermission';
+import { ContinuousModeIndicator, FloatingVoiceIndicator } from './voice/ContinuousModeIndicator';
+import { useVoiceKeyboardShortcuts } from '@/hooks/utils/useKeyboardShortcuts';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -295,12 +299,16 @@ export const ChatAssistant: React.FC = () => {
   const [showAlerts, setShowAlerts] = useState(false);
   const [currentTutorialStep, setCurrentTutorialStep] = useState<number | null>(null);
   const [activeTutorial, setActiveTutorial] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const previousPathRef = useRef<string>('');
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Microphone permission management
+  const micPermission = useMicrophonePermission();
 
   const { user } = useAuth();
   const { data: profile } = useProfile();
@@ -1044,6 +1052,43 @@ export const ChatAssistant: React.FC = () => {
     return () => clearInterval(checkInterval);
   }, [isOpen, isVoiceSupported, language, autoSpeak, speak, voicePrefs]);
 
+  // Check if voice onboarding is needed
+  useEffect(() => {
+    if (isOpen && isVoiceSupported) {
+      const hasCompletedOnboarding = localStorage.getItem('voice-onboarding-complete');
+      if (!hasCompletedOnboarding) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [isOpen, isVoiceSupported]);
+
+  // Keyboard shortcuts for voice control
+  useVoiceKeyboardShortcuts({
+    onToggleMic: () => {
+      if (isVoiceSupported) {
+        toggleListening();
+      }
+    },
+    onToggleContinuous: () => {
+      if (isVoiceSupported) {
+        if (isContinuousMode) {
+          stopContinuousListening();
+        } else {
+          startContinuousListening();
+        }
+      }
+    },
+    onStopSpeaking: () => {
+      window.speechSynthesis.cancel();
+      stopSpeaking();
+    },
+    onOpenChat: () => {
+      setIsOpen(true);
+      setTimeout(() => inputRef.current?.focus(), 100);
+    },
+    enabled: true,
+  });
+
   // Track page navigation for contextual updates
   useEffect(() => {
     if (location.pathname !== previousPathRef.current && isOpen && hasShownWelcome) {
@@ -1170,6 +1215,35 @@ export const ChatAssistant: React.FC = () => {
 
   return (
     <>
+      {/* Voice Onboarding Tutorial */}
+      <VoiceOnboarding
+        open={showOnboarding}
+        onComplete={() => {
+          setShowOnboarding(false);
+          localStorage.setItem('voice-onboarding-complete', 'true');
+        }}
+        onSkip={() => {
+          setShowOnboarding(false);
+          localStorage.setItem('voice-onboarding-complete', 'true');
+        }}
+        isVoiceSupported={isVoiceSupported}
+        onTestVoice={(text) => speak(text)}
+        onTestMic={() => toggleListening()}
+        isListening={isListening}
+        isSpeaking={isSpeaking}
+      />
+
+      {/* Floating Voice Indicator when chat is closed but continuous mode is active */}
+      {!isOpen && (isContinuousMode || isListening || isSpeaking) && (
+        <FloatingVoiceIndicator 
+          isContinuousMode={isContinuousMode}
+          isListening={isListening}
+          isSpeaking={isSpeaking}
+          onOpen={() => setIsOpen(true)}
+          onStop={stopContinuousListening}
+        />
+      )}
+
       {/* Floating Button */}
       <Button
         onClick={() => setIsOpen(true)}
@@ -1177,7 +1251,7 @@ export const ChatAssistant: React.FC = () => {
           "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
           "bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500",
           "transition-all duration-300 hover:scale-110",
-          isOpen && "hidden"
+          (isOpen || isContinuousMode || isListening || isSpeaking) && "hidden"
         )}
         size="icon"
       >
@@ -1425,12 +1499,28 @@ export const ChatAssistant: React.FC = () => {
             </div>
           )}
 
+          {/* Microphone Permission Alert */}
+          {isVoiceSupported && micPermission.permission === 'denied' && (
+            <MicrophonePermissionAlert />
+          )}
+
+          {/* Continuous Mode Indicator (inside chat) */}
+          {isVoiceSupported && isContinuousMode && (
+            <ContinuousModeIndicator
+              isActive={isContinuousMode}
+              isListening={isListening}
+              isSpeaking={isSpeaking}
+              duration={recordingDuration}
+              onStop={stopContinuousListening}
+            />
+          )}
+
           {/* Voice Mode Banner - Normal */}
-          {isVoiceSupported && !isContinuousMode && (
+          {isVoiceSupported && !isContinuousMode && micPermission.permission !== 'denied' && (
             <div className="px-4 py-2 bg-muted/50 border-b text-xs text-center text-muted-foreground">
               {language === 'es' 
-                ? '🎙️ Toca el micrófono para hablar o activa el modo continuo (📻)'
-                : '🎙️ Tap the microphone to speak or enable continuous mode (📻)'
+                ? '🎙️ Toca el micrófono para hablar o activa el modo continuo (📻) • Ctrl+M'
+                : '🎙️ Tap the microphone to speak or enable continuous mode (📻) • Ctrl+M'
               }
             </div>
           )}
