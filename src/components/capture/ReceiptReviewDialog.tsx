@@ -608,7 +608,7 @@ export function ReceiptReviewDialog({
                     <div className="flex items-center justify-between">
                       <label className="text-sm flex items-center gap-2">
                         <Landmark className="h-4 w-4 text-blue-600" />
-                        {language === 'es' ? 'Deducible CRA' : 'CRA deductible'}
+                        {language === 'es' ? 'Deducible Fiscal' : 'Tax Deductible'}
                       </label>
                       <input
                         type="checkbox"

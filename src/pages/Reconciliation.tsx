@@ -637,7 +637,7 @@ export default function Reconciliation() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-sm">
-                    {language === 'es' ? 'Prepárate para el CRA' : 'Prepare for CRA'}
+                    {language === 'es' ? 'Prepárate para Impuestos' : 'Prepare for Tax Season'}
                   </h4>
                   <p className="text-xs text-muted-foreground mt-1">
                     {language === 'es'

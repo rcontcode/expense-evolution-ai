@@ -17,8 +17,8 @@ export const FINANCIAL_GLOSSARY: Record<string, GlossaryTerm> = {
   taxable: {
     term: "Gravable",
     termEn: "Taxable",
-    definition: "Es el dinero sobre el cual debes pagar impuestos al gobierno. Si un ingreso es gravable, el CRA (gobierno de Canadá) tomará un porcentaje cuando declares tus impuestos.",
-    definitionEn: "Money on which you must pay taxes to the government. If income is taxable, the CRA (Canadian government) will take a percentage when you file your taxes.",
+    definition: "Es el dinero sobre el cual debes pagar impuestos al gobierno. Si un ingreso es gravable, la autoridad fiscal de tu país (CRA en Canadá, SII en Chile) tomará un porcentaje cuando declares tus impuestos.",
+    definitionEn: "Money on which you must pay taxes to the government. If income is taxable, your country's tax authority (CRA in Canada, SII in Chile) will take a percentage when you file your taxes.",
     example: "Tu salario, pagos de clientes, y ganancias de inversiones generalmente son gravables.",
     exampleEn: "Your salary, client payments, and investment gains are generally taxable.",
     tip: "Los regalos y algunos reembolsos usualmente NO son gravables.",
@@ -48,14 +48,14 @@ export const FINANCIAL_GLOSSARY: Record<string, GlossaryTerm> = {
   },
 
   itc: {
-    term: "ITC (Crédito de Impuesto a Insumos)",
+    term: "ITC / Crédito Fiscal",
     termEn: "ITC (Input Tax Credit)",
-    definition: "Si cobras HST/GST a tus clientes, puedes recuperar el HST/GST que pagaste en tus compras de negocio. Es dinero que el gobierno te devuelve.",
-    definitionEn: "If you charge HST/GST to your clients, you can recover the HST/GST you paid on your business purchases. It's money the government returns to you.",
-    example: "Pagaste $13 de HST en suministros de oficina. Puedes reclamar esos $13 como ITC.",
-    exampleEn: "You paid $13 HST on office supplies. You can claim those $13 as ITC.",
-    tip: "Solo aplica si estás registrado para HST/GST con el CRA.",
-    tipEn: "Only applies if you're registered for HST/GST with the CRA."
+    definition: "Si cobras impuestos de venta a tus clientes (HST/GST en Canadá, IVA en Chile), puedes recuperar los impuestos que pagaste en tus compras de negocio. Es dinero que el gobierno te devuelve.",
+    definitionEn: "If you charge sales taxes to your clients (HST/GST in Canada, VAT in Chile), you can recover the taxes you paid on your business purchases. It's money the government returns to you.",
+    example: "Pagaste impuestos en suministros de oficina. Puedes reclamar ese monto como crédito fiscal.",
+    exampleEn: "You paid taxes on office supplies. You can claim that amount as a tax credit.",
+    tip: "Solo aplica si estás registrado para cobrar impuestos de venta con tu autoridad fiscal.",
+    tipEn: "Only applies if you're registered to collect sales taxes with your tax authority."
   },
 
   // ========== ASSETS & LIABILITIES ==========
@@ -142,8 +142,8 @@ export const FINANCIAL_GLOSSARY: Record<string, GlossaryTerm> = {
     termEn: "Dividend",
     definition: "Parte de las ganancias de una empresa que te pagan por ser dueño de acciones. Es como recibir un cheque por ser 'socio'.",
     definitionEn: "Part of a company's profits paid to you for owning shares. It's like receiving a check for being a 'partner'.",
-    example: "Si tienes acciones de un banco canadiense, cada 3 meses te pagan dividendos.",
-    exampleEn: "If you own shares of a Canadian bank, every 3 months they pay you dividends.",
+    example: "Si tienes acciones de empresas que pagan dividendos, recibes pagos regulares.",
+    exampleEn: "If you own shares of dividend-paying companies, you receive regular payments.",
     tip: "Las acciones que pagan dividendos son populares para crear ingreso pasivo.",
     tipEn: "Dividend-paying stocks are popular for creating passive income."
   },
@@ -172,25 +172,25 @@ export const FINANCIAL_GLOSSARY: Record<string, GlossaryTerm> = {
   },
 
   rrsp: {
-    term: "RRSP",
-    termEn: "RRSP",
-    definition: "Registered Retirement Savings Plan. Cuenta de ahorro para el retiro donde no pagas impuestos hasta que retiras el dinero (idealmente cuando ganes menos).",
-    definitionEn: "Registered Retirement Savings Plan. Retirement savings account where you don't pay taxes until you withdraw the money (ideally when you earn less).",
-    example: "Si ganas $80,000 y pones $10,000 en RRSP, solo pagas impuestos sobre $70,000 este año.",
-    exampleEn: "If you earn $80,000 and put $10,000 in RRSP, you only pay taxes on $70,000 this year.",
-    tip: "Mejor si ganas más ahora que en el retiro. El límite es 18% de tu ingreso del año anterior.",
-    tipEn: "Best if you earn more now than in retirement. The limit is 18% of your previous year's income."
+    term: "RRSP / APV",
+    termEn: "RRSP / APV",
+    definition: "Cuenta de ahorro para el retiro con beneficios fiscales. En Canadá: RRSP (no pagas impuestos hasta retirar). En Chile: APV (ahorro previsional voluntario con beneficios tributarios).",
+    definitionEn: "Retirement savings account with tax benefits. In Canada: RRSP (you don't pay taxes until withdrawal). In Chile: APV (voluntary retirement savings with tax benefits).",
+    example: "Al contribuir a estas cuentas, reduces tu carga tributaria actual y ahorras para el futuro.",
+    exampleEn: "By contributing to these accounts, you reduce your current tax burden and save for the future.",
+    tip: "Ideal si esperas estar en un bracket tributario más bajo al jubilarte.",
+    tipEn: "Ideal if you expect to be in a lower tax bracket when you retire."
   },
 
   tfsa: {
-    term: "TFSA",
+    term: "TFSA / Cuenta Libre de Impuestos",
     termEn: "TFSA",
-    definition: "Tax-Free Savings Account. Cuenta donde TODO el crecimiento es libre de impuestos - dividendos, ganancias, intereses. ¡Nunca pagas impuestos!",
-    definitionEn: "Tax-Free Savings Account. Account where ALL growth is tax-free - dividends, gains, interest. You never pay taxes!",
-    example: "Inviertes $10,000 y crece a $50,000. Los $40,000 de ganancia son 100% tuyos, sin impuestos.",
-    exampleEn: "You invest $10,000 and it grows to $50,000. The $40,000 gain is 100% yours, no taxes.",
-    tip: "Ideal para inversiones de alto crecimiento. Límite anual ~$7,000 (varía por año).",
-    tipEn: "Ideal for high-growth investments. Annual limit ~$7,000 (varies by year)."
+    definition: "Cuenta donde TODO el crecimiento es libre de impuestos - dividendos, ganancias, intereses. ¡Nunca pagas impuestos sobre las ganancias!",
+    definitionEn: "Account where ALL growth is tax-free - dividends, gains, interest. You never pay taxes on the gains!",
+    example: "Inviertes y crece tu dinero. Todas las ganancias son 100% tuyas, sin impuestos.",
+    exampleEn: "You invest and your money grows. All gains are 100% yours, no taxes.",
+    tip: "Ideal para inversiones de alto crecimiento. Disponible en Canadá (TFSA) y cuentas similares en otros países.",
+    tipEn: "Ideal for high-growth investments. Available in Canada (TFSA) and similar accounts in other countries."
   },
 
   // ========== BUSINESS ==========
@@ -258,8 +258,8 @@ export const FINANCIAL_GLOSSARY: Record<string, GlossaryTerm> = {
     definitionEn: "Classification of your expenses to understand what you spend your money on. Helps identify patterns.",
     example: "Comida, transporte, entretenimiento, vivienda, salud, educación.",
     exampleEn: "Food, transportation, entertainment, housing, health, education.",
-    tip: "El CRA tiene categorías específicas para deducciones de negocio. Usa las correctas.",
-    tipEn: "The CRA has specific categories for business deductions. Use the correct ones."
+    tip: "Las autoridades fiscales tienen categorías específicas para deducciones de negocio. Usa las correctas.",
+    tipEn: "Tax authorities have specific categories for business deductions. Use the correct ones."
   }
 };
 
