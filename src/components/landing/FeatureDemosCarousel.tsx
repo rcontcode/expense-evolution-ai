@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Camera, Wallet, BarChart3, Car, Building2, Trophy, FileText, Flame, GraduationCap, Calculator } from "lucide-react";
+import { ChevronLeft, ChevronRight, Camera, Wallet, BarChart3, Car, Building2, Trophy, FileText, Flame, GraduationCap, Calculator, Mic } from "lucide-react";
 import { ReceiptDemoAnimation } from "./ReceiptDemoAnimation";
 import { NetWorthDemoAnimation } from "./NetWorthDemoAnimation";
 import { DashboardDemoAnimation } from "./DashboardDemoAnimation";
@@ -11,6 +11,7 @@ import { ContractsDemoAnimation } from "./ContractsDemoAnimation";
 import { FIREDemoAnimation } from "./FIREDemoAnimation";
 import { EducationDemoAnimation } from "./EducationDemoAnimation";
 import { TaxOptimizerDemoAnimation } from "./TaxOptimizerDemoAnimation";
+import { VoiceAssistantDemoAnimation } from "./VoiceAssistantDemoAnimation";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const getDemos = (language: string) => [
@@ -21,6 +22,14 @@ const getDemos = (language: string) => [
     icon: Camera,
     color: "from-cyan-500 to-blue-600",
     component: ReceiptDemoAnimation 
+  },
+  { 
+    id: "voice", 
+    title: language === 'es' ? "Asistente de Voz" : "Voice Assistant", 
+    subtitle: language === 'es' ? "Comandos por voz con detección ES/EN" : "Voice commands with ES/EN detection",
+    icon: Mic,
+    color: "from-violet-500 to-purple-600",
+    component: VoiceAssistantDemoAnimation 
   },
   { 
     id: "networth", 
@@ -73,14 +82,14 @@ const getDemos = (language: string) => [
   { 
     id: "tax", 
     title: "Tax Optimizer Smart", 
-    subtitle: language === 'es' ? "Maximiza deducciones CRA" : "Maximize CRA deductions",
+    subtitle: language === 'es' ? "Maximiza deducciones fiscales" : "Maximize tax deductions",
     icon: Calculator,
     color: "from-cyan-500 to-teal-600",
     component: TaxOptimizerDemoAnimation 
   },
   { 
     id: "mileage", 
-    title: language === 'es' ? "Kilometraje CRA" : "CRA Mileage", 
+    title: language === 'es' ? "Kilometraje Fiscal" : "Tax Mileage", 
     subtitle: language === 'es' ? "Cálculo automático de deducciones" : "Automatic deduction calculation",
     icon: Car,
     color: "from-blue-500 to-indigo-600",

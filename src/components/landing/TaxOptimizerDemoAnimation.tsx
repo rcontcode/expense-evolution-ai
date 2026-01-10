@@ -154,7 +154,7 @@ export function TaxOptimizerDemoAnimation() {
                   </motion.p>
                   <div className="mt-3 space-y-1 text-center">
                     <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-[10px] text-slate-400">
-                      ✓ {language === 'es' ? 'Revisando categorías CRA' : 'Reviewing CRA categories'}
+                      ✓ {language === 'es' ? 'Revisando categorías fiscales' : 'Reviewing tax categories'}
                     </motion.p>
                     <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="text-[10px] text-slate-400">
                       ✓ {language === 'es' ? 'Calculando deducciones' : 'Calculating deductions'}
@@ -230,7 +230,7 @@ export function TaxOptimizerDemoAnimation() {
                           ${totalSavings.toLocaleString()}
                         </motion.p>
                         <p className="text-cyan-100 text-[10px] mt-1">
-                          {language === 'es' ? 'basado en reglas CRA 2026' : 'based on CRA 2026 rules'}
+                          {language === 'es' ? 'basado en reglas fiscales 2026' : 'based on 2026 tax rules'}
                         </p>
                       </div>
                     </motion.div>
@@ -261,7 +261,7 @@ export function TaxOptimizerDemoAnimation() {
               transition={{ delay: 0.2 }}
               className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-teal-600 border border-teal-100"
             >
-              📋 {language === 'es' ? 'Reglas CRA actualizadas' : 'Updated CRA rules'}
+              📋 {language === 'es' ? 'Reglas fiscales actualizadas' : 'Updated tax rules'}
             </motion.div>
           </>
         )}
