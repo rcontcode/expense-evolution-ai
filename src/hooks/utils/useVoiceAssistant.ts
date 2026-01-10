@@ -27,6 +27,8 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
   const continuousModeRef = useRef(false);
+  // CRITICAL: Track if we're paused for speaking - prevents auto-restart in onend
+  const isPausedForSpeakingRef = useRef(false);
   // Track if we should resume listening after speaking ends
   const resumeAfterSpeakingRef = useRef(false);
 
@@ -92,10 +94,17 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error);
+      
+      // Don't restart if we're paused for speaking
+      if (isPausedForSpeakingRef.current) {
+        setIsListening(false);
+        return;
+      }
+      
       // In continuous mode, restart on some errors
       if (continuousModeRef.current && event.error !== 'aborted') {
         setTimeout(() => {
-          if (continuousModeRef.current) {
+          if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
             try {
               recognitionRef.current = initRecognition(true);
               recognitionRef.current?.start();
@@ -110,10 +119,16 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     };
 
     recognition.onend = () => {
+      // CRITICAL: Don't auto-restart if we're paused for speaking
+      if (isPausedForSpeakingRef.current) {
+        setIsListening(false);
+        return;
+      }
+      
       // In continuous mode, restart listening after each phrase
       if (continuousModeRef.current) {
         setTimeout(() => {
-          if (continuousModeRef.current) {
+          if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
             try {
               recognitionRef.current = initRecognition(true);
               recognitionRef.current?.start();
@@ -182,34 +197,43 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
 
   // Pause listening temporarily (for when speaking)
   const pauseListening = useCallback(() => {
-    if (recognitionRef.current && isListening) {
+    // CRITICAL: Set the flag BEFORE stopping to prevent auto-restart
+    isPausedForSpeakingRef.current = true;
+    
+    if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
       } catch (e) {
         console.error('Error pausing recognition:', e);
       }
     }
-  }, [isListening]);
+    setIsListening(false);
+  }, []);
 
   // Resume listening after pause (for continuous mode after speaking)
   const resumeListening = useCallback(() => {
-    if (continuousModeRef.current && !isListening) {
+    // CRITICAL: Clear the pause flag before resuming
+    isPausedForSpeakingRef.current = false;
+    
+    if (continuousModeRef.current) {
       recognitionRef.current = initRecognition(true);
       if (recognitionRef.current) {
         try {
           recognitionRef.current.start();
+          setIsListening(true);
         } catch (error) {
           console.error('Error resuming recognition:', error);
         }
       }
     }
-  }, [initRecognition, isListening]);
+  }, [initRecognition]);
 
   // Stop listening
   const stopListening = useCallback(() => {
     continuousModeRef.current = false;
     setIsContinuousMode(false);
     resumeAfterSpeakingRef.current = false;
+    isPausedForSpeakingRef.current = false;
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       setIsListening(false);
@@ -252,9 +276,9 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     // Cancel any ongoing speech
     window.speechSynthesis.cancel();
 
-    // CRITICAL: If in continuous mode, pause listening to prevent hearing ourselves
-    const wasListeningInContinuousMode = continuousModeRef.current && isListening;
-    if (wasListeningInContinuousMode) {
+    // CRITICAL: If in continuous mode, ALWAYS pause listening to prevent hearing ourselves
+    // We check continuousModeRef directly, not isListening state (which may lag)
+    if (continuousModeRef.current) {
       resumeAfterSpeakingRef.current = true;
       pauseListening();
     }
@@ -263,9 +287,14 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     const cleanedText = cleanTextForSpeech(text);
     if (!cleanedText) {
       // If no text to speak, resume listening immediately
-      if (wasListeningInContinuousMode) {
+      if (continuousModeRef.current) {
         resumeAfterSpeakingRef.current = false;
-        resumeListening();
+        // Small delay before resuming
+        setTimeout(() => {
+          if (continuousModeRef.current) {
+            resumeListening();
+          }
+        }, 300);
       }
       return;
     }
