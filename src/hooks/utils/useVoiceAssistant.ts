@@ -11,6 +11,7 @@ interface UseVoiceAssistantOptions {
   onInterrupted?: () => void; // Called when user interrupts speech
   speechSpeed?: number; // 0.5 to 2.0, default 1.0
   volume?: number; // 0 to 1, default 1.0
+  pitch?: number; // 0.5 to 2.0, default 1.0
 }
 
 // STRICT stop commands - must match EXACTLY
@@ -394,7 +395,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
     // Use provided speech speed or default
     utterance.rate = (options.speechSpeed ?? 1.0) * 0.95; // Slightly slower base for natural speech
-    utterance.pitch = 1.0;
+    utterance.pitch = options.pitch ?? 1.0;
     utterance.volume = options.volume ?? 1.0;
 
     // Get a native voice

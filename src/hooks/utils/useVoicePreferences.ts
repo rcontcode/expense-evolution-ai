@@ -152,6 +152,11 @@ export function useVoicePreferences() {
     setPreferences(prev => ({ ...prev, volume: Math.max(0, Math.min(1, volume)) }));
   }, []);
 
+  // Update pitch
+  const setPitch = useCallback((pitch: number) => {
+    setPreferences(prev => ({ ...prev, pitch: Math.max(0.5, Math.min(2, pitch)) }));
+  }, []);
+
   // Toggle sound effects
   const toggleSoundEffects = useCallback(() => {
     setPreferences(prev => ({ ...prev, enableSoundEffects: !prev.enableSoundEffects }));
@@ -318,6 +323,7 @@ export function useVoicePreferences() {
     preferences,
     speechSpeed: preferences.speechSpeed,
     volume: preferences.volume,
+    pitch: preferences.pitch,
     enableSoundEffects: preferences.enableSoundEffects,
     confirmDestructiveActions: preferences.confirmDestructiveActions,
     customShortcuts: preferences.customShortcuts,
@@ -329,6 +335,7 @@ export function useVoicePreferences() {
     // Settings
     setSpeechSpeed,
     setVolume,
+    setPitch,
     toggleSoundEffects,
     toggleConfirmDestructive,
     

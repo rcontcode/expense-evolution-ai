@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square, MapPin, Info, AlertTriangle, BookOpen, Zap, Settings, Volume1, Languages } from 'lucide-react';
+import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square, AlertTriangle, BookOpen, Settings, Volume1 } from 'lucide-react';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -670,10 +670,10 @@ export const ChatAssistant: React.FC = () => {
     pauseSpeech,
     resumeSpeech,
     stopSpeaking,
-    interruptAndListen,
   } = useVoiceAssistant({
     speechSpeed: voicePrefs.speechSpeed,
     volume: voicePrefs.volume,
+    pitch: voicePrefs.pitch,
     onInterimTranscript: (text) => {
       // Update input field with live transcript
       setInput(text);
@@ -1023,12 +1023,26 @@ export const ChatAssistant: React.FC = () => {
     }
   }, [isOpen, hasShownWelcome, messages.length, getContextualWelcome, getProactiveAlerts, autoSpeak, isVoiceSupported, speak, language]);
 
-  // Reset welcome flag when chat closes
+  // Check voice reminders periodically
   useEffect(() => {
-    if (!isOpen) {
-      // Keep the hasShownWelcome flag until page changes
-    }
-  }, [isOpen]);
+    if (!isOpen || !isVoiceSupported) return;
+    
+    const checkInterval = setInterval(() => {
+      const dueReminders = voicePrefs.checkReminders(language as 'es' | 'en');
+      if (dueReminders.length > 0) {
+        dueReminders.forEach(reminder => {
+          const reminderMsg: Message = { role: 'assistant', content: `🔔 ${reminder}` };
+          setMessages(prev => [...prev, reminderMsg]);
+          if (autoSpeak) {
+            speak(reminder);
+          }
+          voicePrefs.playSound('notification');
+        });
+      }
+    }, 60000); // Check every minute
+    
+    return () => clearInterval(checkInterval);
+  }, [isOpen, isVoiceSupported, language, autoSpeak, speak, voicePrefs]);
 
   // Track page navigation for contextual updates
   useEffect(() => {
@@ -1107,7 +1121,7 @@ export const ChatAssistant: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, userName, stats, totalIncome, clients, projects, messages, language, autoSpeak, isVoiceSupported, speak, isContinuousMode, audioPlayback]);
+  }, [isLoading, userName, stats, totalIncome, clients, projects, messages, language, autoSpeak, isVoiceSupported, speak, audioPlayback]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1240,6 +1254,20 @@ export const ChatAssistant: React.FC = () => {
                         />
                       </div>
                       
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span>{language === 'es' ? 'Tono' : 'Pitch'}</span>
+                          <span className="text-muted-foreground">{voicePrefs.pitch.toFixed(1)}</span>
+                        </div>
+                        <Slider
+                          value={[voicePrefs.pitch]}
+                          min={0.5}
+                          max={2}
+                          step={0.1}
+                          onValueChange={([v]) => voicePrefs.setPitch(v)}
+                        />
+                      </div>
+                      
                       <div className="flex items-center justify-between">
                         <span className="text-xs">{language === 'es' ? 'Sonidos' : 'Sounds'}</span>
                         <Button
@@ -1291,8 +1319,29 @@ export const ChatAssistant: React.FC = () => {
                   </TooltipContent>
                 </Tooltip>
               )}
+              {/* Stop speaking button - only show when speaking */}
+              {isVoiceSupported && isSpeaking && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => {
+                        stopSpeaking();
+                        voicePrefs.playSound('notification');
+                      }}
+                      className="h-8 w-8 text-red-500 hover:text-red-600 animate-pulse"
+                    >
+                      <Square className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {language === 'es' ? 'Detener habla' : 'Stop speaking'}
+                  </TooltipContent>
+                </Tooltip>
+              )}
               {/* Auto-speak toggle */}
-              {isVoiceSupported && (
+              {isVoiceSupported && !isSpeaking && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button 
@@ -1300,7 +1349,6 @@ export const ChatAssistant: React.FC = () => {
                       size="icon" 
                       onClick={() => {
                         setAutoSpeak(!autoSpeak);
-                        if (isSpeaking) stopSpeaking();
                       }}
                       className={cn(
                         "h-8 w-8",
