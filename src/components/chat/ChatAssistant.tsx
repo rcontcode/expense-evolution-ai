@@ -745,14 +745,29 @@ export const ChatAssistant: React.FC = () => {
           // Show success toast
           toast.success(action.message || (language === 'es' ? 'Navegando...' : 'Navigating...'));
           
-          // Trigger navigation highlights after navigation completes
+          // Trigger navigation highlights after navigation completes with retry logic
           if (isHighlightEnabled) {
-            setTimeout(() => {
+            const attemptHighlight = (attempt: number) => {
               const navHighlights = getNavigationHighlights(targetRoute, language as 'es' | 'en');
               if (navHighlights.length > 0) {
-                highlight(navHighlights);
+                // Check if elements exist in DOM
+                const firstTarget = navHighlights[0];
+                const element = document.querySelector(`[data-highlight="${firstTarget.selector}"]`);
+                
+                if (element) {
+                  highlight(navHighlights);
+                } else if (attempt < 3) {
+                  // Retry after additional delay if element not found
+                  setTimeout(() => attemptHighlight(attempt + 1), 500);
+                } else {
+                  // Last attempt, try anyway
+                  highlight(navHighlights);
+                }
               }
-            }, 1200);
+            };
+            
+            // Initial delay for page render
+            setTimeout(() => attemptHighlight(0), 800);
           }
         } else {
           console.warn('[AI Action] No route found for target:', action.target);
