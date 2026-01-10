@@ -184,8 +184,8 @@ const getPricingTiers = (language: string) => [
 
 const getStats = (language: string) => [
   { value: '12', label: language === 'es' ? 'Módulos' : 'Modules', icon: Sparkles },
-  { value: '100%', label: language === 'es' ? 'Cumplimiento Fiscal' : 'Tax Compliant', icon: Shield },
-  { value: 'Smart', label: 'Tech', icon: Zap },
+  { value: '20+', label: language === 'es' ? 'Comandos de Voz' : 'Voice Commands', icon: Zap },
+  { value: '🇨🇦🇨🇱', label: language === 'es' ? 'Multi-país' : 'Multi-country', icon: Shield },
   { value: '24/7', label: language === 'es' ? 'Acceso' : 'Access', icon: Star },
 ];
 

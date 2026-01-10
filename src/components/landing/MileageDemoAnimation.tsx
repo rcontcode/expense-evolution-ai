@@ -259,7 +259,7 @@ export function MileageDemoAnimation() {
                         <div className="flex items-center justify-center gap-2">
                           <DollarSign className="w-4 h-4 text-blue-100" />
                           <span className="text-xs text-blue-100">
-                            {language === 'es' ? 'Deducción CRA' : 'CRA Deduction'}
+                            {language === 'es' ? 'Deducción Fiscal' : 'Tax Deduction'}
                           </span>
                         </div>
                         <p className="text-xl font-black text-white">$29.75</p>
@@ -292,7 +292,7 @@ export function MileageDemoAnimation() {
               transition={{ delay: 0.2 }}
               className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-indigo-600 border border-indigo-100"
             >
-              💰 $0.70/km CRA
+              💰 {language === 'es' ? '$0.70/km fiscal' : '$0.70/km tax rate'}
             </motion.div>
           </>
         )}
