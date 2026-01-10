@@ -166,6 +166,238 @@ const VOICE_TUTORIALS: Tutorial[] = [
         }
       }
     ]
+  },
+  // ========== NEW TUTORIALS ==========
+  {
+    id: 'fire-calculator',
+    name: { es: 'Calculadora FIRE', en: 'FIRE Calculator' },
+    triggers: ['fire', 'retiro temprano', 'early retirement', 'libertad financiera', 'financial freedom', 'cuándo puedo retirarme', 'when can i retire'],
+    steps: [
+      {
+        title: { es: 'Paso 1: Abre el calculador FIRE', en: 'Step 1: Open the FIRE calculator' },
+        description: {
+          es: 'Ve al Dashboard y busca la pestaña "FIRE". Aquí puedes calcular cuánto necesitas ahorrar para jubilarte temprano.',
+          en: 'Go to the Dashboard and find the "FIRE" tab. Here you can calculate how much you need to save for early retirement.'
+        },
+        action: '/dashboard?tab=fire'
+      },
+      {
+        title: { es: 'Paso 2: Ingresa tus datos', en: 'Step 2: Enter your data' },
+        description: {
+          es: 'Introduce tu edad actual, edad objetivo de retiro, gastos mensuales, ahorros actuales, y tasa de retorno esperada. La app calculará automáticamente tu "número FIRE".',
+          en: 'Enter your current age, target retirement age, monthly expenses, current savings, and expected return rate. The app will automatically calculate your "FIRE number".'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Explora las variantes', en: 'Step 3: Explore the variants' },
+        description: {
+          es: 'Hay tres tipos de FIRE: Lean (austero), Regular, y Fat (holgado). Cada uno requiere diferentes niveles de ahorro. También revisa Coast FIRE para ver si ya puedes dejar de ahorrar.',
+          en: 'There are three types of FIRE: Lean, Regular, and Fat. Each requires different savings levels. Also check Coast FIRE to see if you can already stop saving.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'mileage-tracking',
+    name: { es: 'Registro de kilometraje', en: 'Mileage tracking' },
+    triggers: ['kilometraje', 'mileage', 'viajes de trabajo', 'work trips', 'cómo registro viajes', 'deducciones de auto', 'car deductions'],
+    steps: [
+      {
+        title: { es: 'Paso 1: Ve a Kilometraje', en: 'Step 1: Go to Mileage' },
+        description: {
+          es: 'Navega a la sección de Kilometraje desde el menú lateral. Aquí puedes registrar todos tus viajes de trabajo.',
+          en: 'Navigate to the Mileage section from the sidebar. Here you can record all your work trips.'
+        },
+        action: '/mileage'
+      },
+      {
+        title: { es: 'Paso 2: Agrega una ruta', en: 'Step 2: Add a route' },
+        description: {
+          es: 'Haz clic en "Agregar Viaje" e ingresa las direcciones de inicio y destino. La app calculará automáticamente los kilómetros usando mapas.',
+          en: 'Click "Add Trip" and enter the start and end addresses. The app will automatically calculate kilometers using maps.'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Configura recurrencia', en: 'Step 3: Set recurrence' },
+        description: {
+          es: 'Si haces el mismo viaje regularmente (ejemplo: ir a la oficina del cliente cada martes), puedes configurar que se repita automáticamente.',
+          en: 'If you make the same trip regularly (e.g., going to client\'s office every Tuesday), you can set it to repeat automatically.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'reimbursement-reports',
+    name: { es: 'Reportes de reembolso', en: 'Reimbursement reports' },
+    triggers: ['reembolso', 'reimbursement', 'facturar cliente', 'billing client', 'cómo cobro gastos', 'exportar reporte'],
+    steps: [
+      {
+        title: { es: 'Paso 1: Clasifica tus gastos', en: 'Step 1: Classify your expenses' },
+        description: {
+          es: 'Asegúrate de que cada gasto reembolsable esté marcado como "Reembolsable por Cliente" y asignado al cliente correcto.',
+          en: 'Make sure each reimbursable expense is marked as "Client Reimbursable" and assigned to the correct client.'
+        }
+      },
+      {
+        title: { es: 'Paso 2: Accede al reporte', en: 'Step 2: Access the report' },
+        description: {
+          es: 'Ve a Gastos, haz clic en el botón de exportar, y selecciona "Reporte de Reembolso". Puedes filtrarlo por cliente y fechas.',
+          en: 'Go to Expenses, click the export button, and select "Reimbursement Report". You can filter by client and dates.'
+        },
+        action: '/expenses'
+      },
+      {
+        title: { es: 'Paso 3: Exporta y envía', en: 'Step 3: Export and send' },
+        description: {
+          es: 'Descarga el reporte en Excel con todas las hojas profesionales: resumen ejecutivo, análisis por categoría, detalle completo, y más. Envíalo a tu cliente para cobrar.',
+          en: 'Download the report in Excel with all professional sheets: executive summary, category analysis, complete detail, and more. Send it to your client for billing.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'mentorship-system',
+    name: { es: 'Sistema de mentoría', en: 'Mentorship system' },
+    triggers: ['mentoría', 'mentorship', 'kiyosaki', 'educación financiera', 'financial education', 'cuadrante', 'quadrant'],
+    steps: [
+      {
+        title: { es: 'Paso 1: Explora la mentoría', en: 'Step 1: Explore mentorship' },
+        description: {
+          es: 'Ve a la sección de Mentoría. Aquí encontrarás herramientas basadas en principios de Robert Kiyosaki, Jim Rohn, y Brian Tracy.',
+          en: 'Go to the Mentorship section. Here you\'ll find tools based on principles from Robert Kiyosaki, Jim Rohn, and Brian Tracy.'
+        },
+        action: '/mentorship'
+      },
+      {
+        title: { es: 'Paso 2: Conoce tu cuadrante', en: 'Step 2: Know your quadrant' },
+        description: {
+          es: 'El Cuadrante del Flujo de Efectivo te muestra de dónde viene tu dinero: Empleado, Auto-empleado, Dueño de negocio, o Inversionista. La meta es moverse hacia la derecha.',
+          en: 'The Cashflow Quadrant shows you where your money comes from: Employee, Self-employed, Business owner, or Investor. The goal is to move to the right side.'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Establece metas SMART', en: 'Step 3: Set SMART goals' },
+        description: {
+          es: 'Usa el asistente de metas SMART para crear objetivos específicos, medibles, alcanzables, relevantes, y con tiempo definido. Te ayudará a mantener el enfoque.',
+          en: 'Use the SMART goal wizard to create specific, measurable, achievable, relevant, and time-bound objectives. It will help you stay focused.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'voice-commands',
+    name: { es: 'Comandos de voz', en: 'Voice commands' },
+    triggers: ['comandos de voz', 'voice commands', 'qué puedo decirte', 'what can i say', 'cómo uso la voz', 'how to use voice'],
+    steps: [
+      {
+        title: { es: 'Paso 1: Navegación por voz', en: 'Step 1: Voice navigation' },
+        description: {
+          es: 'Puedes navegar diciendo cosas como: "ir a gastos", "llévame a clientes", "abre el dashboard". Reconozco más de 20 destinos.',
+          en: 'You can navigate by saying things like: "go to expenses", "take me to clients", "open the dashboard". I recognize 20+ destinations.'
+        }
+      },
+      {
+        title: { es: 'Paso 2: Crear registros', en: 'Step 2: Create records' },
+        description: {
+          es: 'Crea gastos e ingresos por voz: "gasto de 100 en restaurante", "recibí 5000 de cliente ABC", "pagué 50 en gasolina". Auto-categorizo todo.',
+          en: 'Create expenses and income by voice: "expense of 100 at restaurant", "received 5000 from client ABC", "paid 50 for gas". I auto-categorize everything.'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Consultar datos', en: 'Step 3: Query data' },
+        description: {
+          es: 'Pregunta sobre tus finanzas: "cuánto gasté este mes", "cuál es mi balance", "cuántos clientes tengo", "cuál fue mi gasto más grande". Respondo al instante.',
+          en: 'Ask about your finances: "how much did I spend this month", "what is my balance", "how many clients do I have", "what was my biggest expense". I answer instantly.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'contract-analysis',
+    name: { es: 'Análisis de contratos', en: 'Contract analysis' },
+    triggers: ['analizar contrato', 'analyze contract', 'subir contrato', 'upload contract', 'términos de reembolso', 'reimbursement terms'],
+    steps: [
+      {
+        title: { es: 'Paso 1: Sube tu contrato', en: 'Step 1: Upload your contract' },
+        description: {
+          es: 'Ve a Contratos y haz clic en "Agregar Contrato". Sube el archivo PDF o Word de tu contrato con el cliente.',
+          en: 'Go to Contracts and click "Add Contract". Upload the PDF or Word file of your client contract.'
+        },
+        action: '/contracts'
+      },
+      {
+        title: { es: 'Paso 2: Análisis inteligente', en: 'Step 2: Smart analysis' },
+        description: {
+          es: 'EvoFinz analizará automáticamente el contrato para extraer términos importantes: fechas, montos, categorías de gastos reembolsables, y condiciones especiales.',
+          en: 'EvoFinz will automatically analyze the contract to extract important terms: dates, amounts, reimbursable expense categories, and special conditions.'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Clasificación automática', en: 'Step 3: Automatic classification' },
+        description: {
+          es: 'Una vez analizado, cuando captures gastos relacionados, EvoFinz sugerirá automáticamente si son reembolsables según los términos del contrato.',
+          en: 'Once analyzed, when you capture related expenses, EvoFinz will automatically suggest if they are reimbursable according to the contract terms.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'rrsp-tfsa-optimizer',
+    name: { es: 'Optimizador RRSP/TFSA', en: 'RRSP/TFSA Optimizer' },
+    triggers: ['rrsp', 'tfsa', 'apv', 'ahorro previsional', 'retirement savings', 'optimizar ahorro', 'optimize savings'],
+    steps: [
+      {
+        title: { es: 'Paso 1: Abre el optimizador', en: 'Step 1: Open the optimizer' },
+        description: {
+          es: 'Ve al Dashboard y abre la pestaña de Impuestos. Busca el "Optimizador RRSP/TFSA" (en Chile es APV).',
+          en: 'Go to the Dashboard and open the Taxes tab. Find the "RRSP/TFSA Optimizer" (in Chile it\'s APV).'
+        },
+        action: '/dashboard?tab=tax'
+      },
+      {
+        title: { es: 'Paso 2: Ingresa tu información', en: 'Step 2: Enter your information' },
+        description: {
+          es: 'Indica tu ingreso anual, provincia, cuánto puedes ahorrar mensualmente, y tus contribuciones actuales. La app calculará la distribución óptima.',
+          en: 'Enter your annual income, province, how much you can save monthly, and your current contributions. The app will calculate the optimal distribution.'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Sigue las recomendaciones', en: 'Step 3: Follow recommendations' },
+        description: {
+          es: 'El optimizador te dirá cuánto poner en cada cuenta para maximizar tus beneficios fiscales. También muestra proyecciones de crecimiento a largo plazo.',
+          en: 'The optimizer will tell you how much to put in each account to maximize your tax benefits. It also shows long-term growth projections.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'debt-manager',
+    name: { es: 'Gestor de deudas', en: 'Debt manager' },
+    triggers: ['deudas', 'debts', 'pagar deudas', 'pay off debts', 'estrategia deuda', 'debt strategy', 'avalancha', 'bola de nieve', 'snowball'],
+    steps: [
+      {
+        title: { es: 'Paso 1: Registra tus deudas', en: 'Step 1: Register your debts' },
+        description: {
+          es: 'Ve a Patrimonio Neto y agrega todos tus pasivos: tarjetas de crédito, préstamos, hipoteca. Incluye el saldo, tasa de interés, y pago mínimo.',
+          en: 'Go to Net Worth and add all your liabilities: credit cards, loans, mortgage. Include balance, interest rate, and minimum payment.'
+        },
+        action: '/net-worth'
+      },
+      {
+        title: { es: 'Paso 2: Elige tu estrategia', en: 'Step 2: Choose your strategy' },
+        description: {
+          es: 'El Dashboard muestra dos estrategias: "Avalancha" (pagar primero la de mayor interés) y "Bola de Nieve" (pagar primero la más pequeña para motivación).',
+          en: 'The Dashboard shows two strategies: "Avalanche" (pay highest interest first) and "Snowball" (pay smallest first for motivation).'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Simula pagos extra', en: 'Step 3: Simulate extra payments' },
+        description: {
+          es: 'Usa el simulador para ver cuánto tiempo ahorras agregando pagos extra. Te mostrará la fecha proyectada de liberación de deudas.',
+          en: 'Use the simulator to see how much time you save by adding extra payments. It will show you the projected debt-free date.'
+        }
+      }
+    ]
   }
 ];
 

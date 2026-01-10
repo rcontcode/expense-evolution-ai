@@ -17,6 +17,7 @@ import { useProjects } from '@/hooks/data/useProjects';
 import { useExpenses, useCreateExpense } from '@/hooks/data/useExpenses';
 import { KaraokeText } from './KaraokeText';
 import { MinimizedAssistant } from './MinimizedAssistant';
+import { MinimizedAssistantBubble } from './MinimizedAssistantBubble';
 import { VoiceOnboarding } from './voice/VoiceOnboarding';
 import { useMicrophonePermission, MicrophonePermissionAlert } from './voice/MicrophonePermission';
 import { ContinuousModeIndicator, FloatingVoiceIndicator } from './voice/ContinuousModeIndicator';
@@ -67,6 +68,7 @@ const LOCAL_QUICK_QUESTIONS = {
 export const ChatAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [isBubbleMode, setIsBubbleMode] = useState(false); // Compact bubble mode for tutorials/navigation
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -86,6 +88,20 @@ export const ChatAssistant: React.FC = () => {
   const previousPathRef = useRef<string>('');
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Auto-minimize to bubble mode when navigating or in tutorial
+  const autoMinimizeToBubble = useCallback(() => {
+    if (isOpen && !isMinimized) {
+      setIsBubbleMode(true);
+      setIsOpen(false);
+    }
+  }, [isOpen, isMinimized]);
+
+  // Expand from bubble mode
+  const expandFromBubble = useCallback(() => {
+    setIsBubbleMode(false);
+    setIsOpen(true);
+  }, []);
   
   // Microphone permission management
   const micPermission = useMicrophonePermission();
@@ -442,6 +458,8 @@ export const ChatAssistant: React.FC = () => {
             setCurrentTutorialStep(0);
             const tutorialResponse = formatTutorialForSpeech(tutorial);
             respondWithMessage(text, tutorialResponse);
+            // Auto-minimize to bubble mode so user can see the app while following tutorial
+            setTimeout(() => autoMinimizeToBubble(), 1500);
           }
           return;
 
@@ -554,6 +572,8 @@ export const ChatAssistant: React.FC = () => {
           voicePrefs.trackAction('navigation');
           respondWithMessage(text, result.response, 'success');
           navigate(result.route);
+          // Auto-minimize to bubble mode when navigating so user can see the destination
+          setTimeout(() => autoMinimizeToBubble(), 800);
           if (result.action) {
             setTimeout(() => {
               window.dispatchEvent(new CustomEvent('voice-command-action', { detail: { action: result.action } }));
@@ -1105,23 +1125,37 @@ export const ChatAssistant: React.FC = () => {
         />
       )}
 
-      {/* Floating Button */}
+      {/* Floating Button - only when chat is fully closed and not in bubble mode */}
       <Button
         onClick={() => setIsOpen(true)}
         className={cn(
           "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
           "bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500",
           "transition-all duration-300 hover:scale-110",
-          (isOpen || isMinimized || isContinuousMode || isListening || isSpeaking) && "hidden"
+          (isOpen || isMinimized || isBubbleMode || isContinuousMode || isListening || isSpeaking) && "hidden"
         )}
         size="icon"
       >
         <PhoenixLogo variant="badge" showEffects={false} className="h-7 w-7" />
       </Button>
 
-      {/* Minimized Assistant View */}
+      {/* Compact Bubble Mode - shows pulsating phoenix when auto-minimized during tutorials/navigation */}
       <AnimatePresence>
-        {isMinimized && (
+        {isBubbleMode && (
+          <MinimizedAssistantBubble
+            onExpand={expandFromBubble}
+            isSpeaking={isSpeaking}
+            isListening={isListening}
+            isTutorialActive={!!activeTutorial}
+            onStopSpeaking={stopSpeaking}
+            currentText={currentSpeakingText}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Minimized Assistant View - for manual minimize with more controls */}
+      <AnimatePresence>
+        {isMinimized && !isBubbleMode && (
           <MinimizedAssistant
             onExpand={() => setIsMinimized(false)}
             isSpeaking={isSpeaking}
