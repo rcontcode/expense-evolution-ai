@@ -21,8 +21,7 @@ import { VoiceOnboarding } from './voice/VoiceOnboarding';
 import { useMicrophonePermission, MicrophonePermissionAlert } from './voice/MicrophonePermission';
 import { ContinuousModeIndicator, FloatingVoiceIndicator } from './voice/ContinuousModeIndicator';
 import { useVoiceKeyboardShortcuts } from '@/hooks/utils/useKeyboardShortcuts';
-// Import centralized voice modules
-import { VOICE_COMMANDS, VOICE_QUERIES, QUICK_QUESTIONS, type QueryType } from './voice/VoiceCommands';
+// Import centralized voice modules (parsers still used for expense/income creation)
 import { parseVoiceExpense, parseVoiceIncome } from './voice/VoiceParsers';
 import { VoiceCommandsCheatsheet } from './voice/VoiceCommandsCheatsheet';
 import { AudioLevelIndicator } from './voice/AudioLevelIndicator';
@@ -201,190 +200,6 @@ export const ChatAssistant: React.FC = () => {
       navigator.vibrate(patterns[type]);
     }
   }, []);
-
-  // Check if text matches a voice query command
-  // STRICT: Only match short/direct queries with exact or start-of-phrase patterns
-  const checkVoiceQuery = useCallback((text: string): { matched: boolean; queryType?: QueryType } => {
-    const normalizedText = text.toLowerCase().trim().replace(/[.,!?¿¡]/g, '');
-    const words = normalizedText.split(/\s+/);
-    const queries = VOICE_QUERIES[language as keyof typeof VOICE_QUERIES] || VOICE_QUERIES.es;
-    
-    // Don't match queries in long sentences - those are complex questions for AI
-    if (words.length > 10) {
-      console.log('[Voice] Text too long for query matching, sending to AI');
-      return { matched: false };
-    }
-    
-    // Words that indicate a complex question that should go to AI instead
-    const complexIndicators = [
-      'puedes', 'podrías', 'puedo', 'cómo hacer', 'qué es', 'por qué', 'cuál es la diferencia',
-      'ayuda', 'ayudar', 'orientar', 'explicar', 'explicame', 'dime cómo', 'hacer por mí',
-      'can you', 'could you', 'how do', 'what is', 'why', 'explain', 'help me', 'tell me how',
-      'de chile', 'de canadá', 'from chile', 'from canada',
-      'en chile', 'en canadá', 'in chile', 'in canada',
-    ];
-    
-    // If the text contains complex question indicators, send to AI
-    const hasComplexIndicator = complexIndicators.some(indicator => normalizedText.includes(indicator));
-    if (hasComplexIndicator) {
-      console.log('[Voice] Complex indicator found, sending to AI');
-      return { matched: false };
-    }
-    
-    for (const query of queries) {
-      for (const pattern of query.patterns) {
-        // Exact match OR text starts with pattern
-        if (normalizedText === pattern || normalizedText.startsWith(pattern)) {
-          console.log('[Voice] Query matched:', pattern, '→', query.queryType);
-          return { matched: true, queryType: query.queryType };
-        }
-      }
-    }
-    return { matched: false };
-  }, [language]);
-
-  // Generate response for voice query
-  const getQueryResponse = useCallback((queryType: QueryType): string => {
-    const formatCurrency = (amount: number) => `$${amount.toFixed(2)}`;
-    
-    const responses: Record<QueryType, { es: string; en: string }> = {
-      expenses_month: {
-        es: `Este mes has gastado ${formatCurrency(monthlyExpenses)}.`,
-        en: `This month you've spent ${formatCurrency(monthlyExpenses)}.`,
-      },
-      expenses_year: {
-        es: `Este año has gastado ${formatCurrency(yearlyExpenses)} en total.`,
-        en: `This year you've spent ${formatCurrency(yearlyExpenses)} in total.`,
-      },
-      income_month: {
-        es: `Este mes has ingresado ${formatCurrency(monthlyIncome)}.`,
-        en: `This month you've earned ${formatCurrency(monthlyIncome)}.`,
-      },
-      income_year: {
-        es: `Este año has ingresado ${formatCurrency(yearlyIncome)} en total.`,
-        en: `This year you've earned ${formatCurrency(yearlyIncome)} in total.`,
-      },
-      balance: {
-        es: balance >= 0 
-          ? `Tu balance anual es positivo: ${formatCurrency(balance)}. ¡Vas bien!`
-          : `Tu balance anual es negativo: ${formatCurrency(Math.abs(balance))}. Considera revisar tus gastos.`,
-        en: balance >= 0
-          ? `Your yearly balance is positive: ${formatCurrency(balance)}. You're doing great!`
-          : `Your yearly balance is negative: ${formatCurrency(Math.abs(balance))}. Consider reviewing your expenses.`,
-      },
-      client_count: {
-        es: clients?.length === 1 
-          ? `Tienes 1 cliente registrado.`
-          : `Tienes ${clients?.length || 0} clientes registrados.`,
-        en: clients?.length === 1
-          ? `You have 1 registered client.`
-          : `You have ${clients?.length || 0} registered clients.`,
-      },
-      project_count: {
-        es: projects?.length === 1
-          ? `Tienes 1 proyecto activo.`
-          : `Tienes ${projects?.length || 0} proyectos registrados.`,
-        en: projects?.length === 1
-          ? `You have 1 active project.`
-          : `You have ${projects?.length || 0} registered projects.`,
-      },
-      pending_receipts: {
-        es: pendingReceipts === 0
-          ? `No tienes recibos pendientes de revisar. ¡Todo al día!`
-          : pendingReceipts === 1
-            ? `Tienes 1 recibo pendiente de revisar.`
-            : `Tienes ${pendingReceipts} recibos pendientes de revisar.`,
-        en: pendingReceipts === 0
-          ? `You have no pending receipts to review. All caught up!`
-          : pendingReceipts === 1
-            ? `You have 1 pending receipt to review.`
-            : `You have ${pendingReceipts} pending receipts to review.`,
-      },
-      // New advanced queries
-      biggest_expense: {
-        es: biggestExpense 
-          ? `Tu mayor gasto es ${formatCurrency(Number(biggestExpense.amount))} en ${biggestExpense.vendor || biggestExpense.description || 'un gasto sin descripción'}.`
-          : `No tienes gastos registrados aún.`,
-        en: biggestExpense
-          ? `Your biggest expense is ${formatCurrency(Number(biggestExpense.amount))} at ${biggestExpense.vendor || biggestExpense.description || 'an expense without description'}.`
-          : `You don't have any recorded expenses yet.`,
-      },
-      top_category: {
-        es: topCategory 
-          ? `Gastas más en ${topCategory[0]}: ${formatCurrency(topCategory[1])} en total.`
-          : `No tienes gastos categorizados aún.`,
-        en: topCategory
-          ? `You spend most on ${topCategory[0]}: ${formatCurrency(topCategory[1])} in total.`
-          : `You don't have any categorized expenses yet.`,
-      },
-      tax_summary: {
-        es: `Resumen fiscal: Ingresos ${formatCurrency(yearlyIncome)}, gastos ${formatCurrency(yearlyExpenses)}, deducible ${formatCurrency(deductibleTotal)}. Balance neto: ${formatCurrency(balance)}.`,
-        en: `Tax summary: Income ${formatCurrency(yearlyIncome)}, expenses ${formatCurrency(yearlyExpenses)}, deductible ${formatCurrency(deductibleTotal)}. Net balance: ${formatCurrency(balance)}.`,
-      },
-      tax_owed: {
-        es: estimatedTaxOwed > 0
-          ? `Estimación de impuestos por pagar: ${formatCurrency(estimatedTaxOwed)} (basado en tasa promedio del 25% sobre ingresos menos deducciones).`
-          : `No tienes impuestos estimados por pagar. Tus deducciones cubren tus ingresos gravables.`,
-        en: estimatedTaxOwed > 0
-          ? `Estimated taxes owed: ${formatCurrency(estimatedTaxOwed)} (based on 25% average rate on income minus deductions).`
-          : `You don't have estimated taxes owed. Your deductions cover your taxable income.`,
-      },
-      deductible_total: {
-        es: `Tienes ${formatCurrency(deductibleTotal)} en gastos deducibles para declarar.`,
-        en: `You have ${formatCurrency(deductibleTotal)} in deductible expenses to declare.`,
-      },
-      billable_total: {
-        es: billableTotal > 0
-          ? `Tienes ${formatCurrency(billableTotal)} en gastos facturables a clientes pendientes de cobrar.`
-          : `No tienes gastos facturables a clientes pendientes.`,
-        en: billableTotal > 0
-          ? `You have ${formatCurrency(billableTotal)} in client billable expenses pending collection.`
-          : `You don't have any client billable expenses pending.`,
-      },
-    };
-
-    return responses[queryType][language as 'es' | 'en'] || responses[queryType].es;
-  }, [monthlyExpenses, yearlyExpenses, monthlyIncome, yearlyIncome, balance, clients?.length, projects?.length, pendingReceipts, biggestExpense, topCategory, deductibleTotal, billableTotal, estimatedTaxOwed, language]);
-
-  // Check if text matches a voice command
-  // MORE FLEXIBLE: Match if text contains navigation intent patterns
-  const checkVoiceCommand = useCallback((text: string): { matched: boolean; route?: string; name?: string; action?: string } => {
-    const normalizedText = text.toLowerCase().trim().replace(/[.,!?¿¡]/g, '');
-    const words = normalizedText.split(/\s+/);
-    
-    // Don't match commands in very long sentences - those are complex questions for AI
-    if (words.length > 15) {
-      console.log('[Voice] Text too long for command matching, sending to AI:', normalizedText);
-      return { matched: false };
-    }
-    
-    const commands = VOICE_COMMANDS[language as keyof typeof VOICE_COMMANDS] || VOICE_COMMANDS.es;
-    
-    // Navigation intent indicators - if present, be more flexible with matching
-    const navIntentIndicators = [
-      'llévame', 'llevame', 'muéstrame', 'muestrame', 'ir a', 'abre', 'abrir', 'ver', 'mostrar',
-      'enséñame', 'ensename', 'dame', 'quiero ver', 'quiero ir',
-      'take me', 'show me', 'go to', 'open', 'view', 'display', 'let me see', 'i want to see'
-    ];
-    const hasNavIntent = navIntentIndicators.some(ind => normalizedText.includes(ind));
-    
-    for (const command of commands) {
-      for (const pattern of command.patterns) {
-        // Exact match OR text starts with pattern
-        if (normalizedText === pattern || normalizedText.startsWith(pattern + ' ') || normalizedText.startsWith(pattern)) {
-          console.log('[Voice] Command exact matched:', pattern, '→', command.name);
-          return { matched: true, route: command.route, name: command.name, action: command.action };
-        }
-        
-        // If there's navigation intent, also check if the pattern is contained in the text
-        if (hasNavIntent && normalizedText.includes(pattern)) {
-          console.log('[Voice] Command intent matched:', pattern, '→', command.name);
-          return { matched: true, route: command.route, name: command.name, action: command.action };
-        }
-      }
-    }
-    return { matched: false };
-  }, [language]);
 
   // Get current page context for the AI assistant to explain
   const getCurrentPageContext = useCallback((): { pageName: string; description: string } => {
@@ -606,92 +421,7 @@ export const ChatAssistant: React.FC = () => {
         return;
       }
       
-      // PRIORITY 1: Check if it's a navigation command first (most user-friendly)
-      const command = checkVoiceCommand(text);
-      if (command.matched && command.route && command.name) {
-        setInput('');
-        triggerHapticFeedback('medium');
-        voicePrefs.trackAction('navigation');
-        const confirmMsg = language === 'es' 
-          ? `Entendido. Navegando a ${command.name}.`
-          : `Got it. Navigating to ${command.name}.`;
-        
-        const userMessage: Message = { role: 'user', content: text };
-        const assistantMessage: Message = { role: 'assistant', content: confirmMsg };
-        setMessages(prev => [...prev, userMessage, assistantMessage]);
-        
-        speak(confirmMsg);
-        executeVoiceCommand(command.route, command.name, command.action);
-        
-        // Trigger navigation highlights after a short delay
-        if (isHighlightEnabled && command.route) {
-          setTimeout(() => {
-            const navHighlights = getNavigationHighlights(command.route!, language as 'es' | 'en');
-            if (navHighlights.length > 0) {
-              highlight(navHighlights);
-            }
-          }, 1000);
-        }
-        
-        // Post-navigation suggestion
-        setTimeout(() => {
-          const suggestion = getPostActionSuggestion('navigation');
-          if (suggestion && autoSpeak) {
-            // Don't speak this one, just add to chat silently
-          }
-        }, 2000);
-        return;
-      }
-      
-      // PRIORITY 2: Check if it's a data query command
-      const query = checkVoiceQuery(text);
-      if (query.matched && query.queryType) {
-        setInput('');
-        setIsProcessingVoice(true);
-        triggerHapticFeedback('light');
-        voicePrefs.trackAction('query');
-        const response = getQueryResponse(query.queryType);
-        
-        const userMessage: Message = { role: 'user', content: text };
-        const assistantMessage: Message = { role: 'assistant', content: response };
-        setMessages(prev => [...prev, userMessage, assistantMessage]);
-        setIsProcessingVoice(false);
-        
-        speak(response);
-        return;
-      }
-      
-      // PRIORITY 3: Check if user is asking about the current page (guide functionality)
-      if (isAskingAboutCurrentPage(text)) {
-        setInput('');
-        const pageContext = getCurrentPageContext();
-        const response = language === 'es'
-          ? `Estás en la página de ${pageContext.pageName}. ${pageContext.description}`
-          : `You're on the ${pageContext.pageName} page. ${pageContext.description}`;
-        
-        const userMessage: Message = { role: 'user', content: text };
-        const assistantMessage: Message = { role: 'assistant', content: response };
-        setMessages(prev => [...prev, userMessage, assistantMessage]);
-        speak(response);
-        return;
-      }
-      
-      // PRIORITY 3.5: Check for error recovery if user seems confused
-      const errorRecovery = getErrorRecovery(text);
-      if (errorRecovery) {
-        setInput('');
-        const response = language === 'es'
-          ? `Entiendo que puede ser confuso. Aquí hay algunas opciones:\n\n${errorRecovery.map((r, i) => `${i + 1}. ${r}`).join('\n')}`
-          : `I understand it can be confusing. Here are some options:\n\n${errorRecovery.map((r, i) => `${i + 1}. ${r}`).join('\n')}`;
-        
-        const userMessage: Message = { role: 'user', content: text };
-        const assistantMessage: Message = { role: 'assistant', content: response };
-        setMessages(prev => [...prev, userMessage, assistantMessage]);
-        speak(response);
-        return;
-      }
-      
-      // PRIORITY 4: Check if it's an expense creation command
+      // PRIORITY 1: Check if it's an expense creation command (structured data needs local parsing)
       const parsedExpense = parseVoiceExpense(text);
       if (parsedExpense) {
         setInput('');
@@ -736,7 +466,7 @@ export const ChatAssistant: React.FC = () => {
         return;
       }
       
-      // PRIORITY 5: Check if it's an income creation command
+      // PRIORITY 2: Check if it's an income creation command (structured data needs local parsing)
       const parsedIncome = parseVoiceIncome(text);
       if (parsedIncome) {
         setInput('');
@@ -787,9 +517,13 @@ export const ChatAssistant: React.FC = () => {
         return;
       }
       
-      // PRIORITY 6: Send to AI for complex questions
+      // PRIORITY 3: Send EVERYTHING ELSE to AI for intelligent intent detection
+      // The AI will determine if it's navigation, query, or conversational response
+      // and return structured actions that we execute automatically
       setInput('');
-      sendMessage(text);
+      const userMessage: Message = { role: 'user', content: text };
+      setMessages(prev => [...prev, userMessage]);
+      sendMessage(text, true); // true = skip adding user message again
     },
     onContinuousStopped: () => {
       // Notify user that continuous mode was stopped by voice
@@ -963,11 +697,59 @@ export const ChatAssistant: React.FC = () => {
     previousPathRef.current = location.pathname;
   }, [location.pathname, isOpen, hasShownWelcome, getCurrentPageContext, language]);
 
-  const sendMessage = useCallback(async (text: string) => {
+  // Execute action returned by AI
+  const executeAIAction = useCallback((action: {
+    action: string;
+    target?: string;
+    route?: string;
+    name?: string;
+    message: string;
+    data?: Record<string, unknown>;
+  }) => {
+    console.log('[AI Action] Executing:', action);
+    
+    switch (action.action) {
+      case 'navigate':
+        if (action.route) {
+          triggerHapticFeedback('medium');
+          voicePrefs.trackAction('navigation');
+          navigate(action.route);
+          
+          // Trigger navigation highlights
+          if (isHighlightEnabled && action.route) {
+            setTimeout(() => {
+              const navHighlights = getNavigationHighlights(action.route!, language as 'es' | 'en');
+              if (navHighlights.length > 0) {
+                highlight(navHighlights);
+              }
+            }, 1000);
+          }
+        }
+        break;
+        
+      case 'query':
+        triggerHapticFeedback('light');
+        voicePrefs.trackAction('query');
+        break;
+        
+      case 'highlight':
+        if (action.target && isHighlightEnabled) {
+          highlight([{ selector: action.target }]);
+        }
+        break;
+        
+      default:
+        console.log('[AI Action] Unknown action type:', action.action);
+    }
+  }, [navigate, triggerHapticFeedback, voicePrefs, isHighlightEnabled, highlight, language]);
+
+  const sendMessage = useCallback(async (text: string, skipAddingUserMessage = false) => {
     if (!text.trim() || isLoading) return;
 
     const userMessage: Message = { role: 'user', content: text };
-    setMessages(prev => [...prev, userMessage]);
+    if (!skipAddingUserMessage) {
+      setMessages(prev => [...prev, userMessage]);
+    }
     setInput('');
     setIsLoading(true);
     
@@ -975,13 +757,28 @@ export const ChatAssistant: React.FC = () => {
     voicePrefs.addToHistory({ role: 'user', content: text, page: location.pathname });
 
     try {
+      // Build comprehensive user context for AI
       const userContext = {
         userName,
         totalExpenses: stats?.monthlyTotal || 0,
-        totalIncome,
+        yearlyExpenses: stats?.totalExpenses || 0,
+        totalIncome: monthlyIncome,
+        yearlyIncome,
+        balance,
         pendingReceipts: stats?.pendingDocs || 0,
         clientCount: clients?.length || 0,
         projectCount: projects?.length || 0,
+        biggestExpense: biggestExpense ? {
+          amount: Number(biggestExpense.amount),
+          vendor: biggestExpense.vendor,
+          description: biggestExpense.description,
+        } : null,
+        topCategory: topCategory ? {
+          category: topCategory[0],
+          amount: topCategory[1],
+        } : null,
+        deductibleTotal,
+        billableTotal,
       };
 
       const { data, error } = await supabase.functions.invoke('app-assistant', {
@@ -991,14 +788,28 @@ export const ChatAssistant: React.FC = () => {
             content: m.content,
           })),
           userContext,
+          language,
         },
       });
 
       if (error) throw error;
 
-      const responseText = data.message || (language === 'es' 
-        ? 'Lo siento, no pude procesar tu pregunta.' 
-        : 'Sorry, I could not process your question.');
+      // Check if AI returned an action
+      const aiAction = data.action;
+      let responseText = '';
+      
+      if (aiAction && aiAction.message) {
+        // AI returned a structured action
+        responseText = aiAction.message;
+        
+        // Execute the action
+        executeAIAction(aiAction);
+      } else {
+        // Regular text response
+        responseText = data.message || (language === 'es' 
+          ? 'Lo siento, no pude procesar tu pregunta.' 
+          : 'Sorry, I could not process your question.');
+      }
 
       const assistantMessage: Message = {
         role: 'assistant',
@@ -1009,11 +820,10 @@ export const ChatAssistant: React.FC = () => {
       // Save assistant response to history
       voicePrefs.addToHistory({ role: 'assistant', content: responseText, page: location.pathname });
 
-      // Detect and trigger highlights based on response content
-      if (isHighlightEnabled) {
+      // Detect and trigger highlights based on response content (for text responses)
+      if (!aiAction && isHighlightEnabled) {
         const detectedHighlights = detectHighlightTargets(responseText, language as 'es' | 'en');
         if (detectedHighlights.length > 0) {
-          // Delay highlight to let user see/hear the response first
           setTimeout(() => {
             highlight(detectedHighlights);
           }, 1500);
@@ -1021,7 +831,6 @@ export const ChatAssistant: React.FC = () => {
       }
 
       // Auto-speak response if enabled
-      // IMPORTANT: ALWAYS use speak() so the mic is paused even if callbacks are stale.
       if (autoSpeak && isVoiceSupported) {
         window.speechSynthesis.cancel();
         audioPlayback.stop();
@@ -1040,7 +849,7 @@ export const ChatAssistant: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, userName, stats, totalIncome, clients, projects, messages, language, autoSpeak, isVoiceSupported, speak, audioPlayback, voicePrefs, location.pathname, isHighlightEnabled, highlight]);
+  }, [isLoading, userName, stats, monthlyIncome, yearlyIncome, balance, clients, projects, messages, language, autoSpeak, isVoiceSupported, speak, audioPlayback, voicePrefs, location.pathname, isHighlightEnabled, highlight, biggestExpense, topCategory, deductibleTotal, billableTotal, executeAIAction]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
