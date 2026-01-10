@@ -225,13 +225,18 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         return;
       }
       
-      // In continuous mode, try to restart on transient errors
+      // In continuous mode, try to restart on transient errors with AGGRESSIVE reconnection
       if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
+        // Use exponential backoff for mobile devices which have flaky connections
+        const isNetworkError = event.error === 'network' || event.error === 'service-not-allowed';
+        const delay = isNetworkError ? 500 : 200; // Longer delay for network issues
+        
         setTimeout(() => {
           if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
+            console.log('[Voice] Aggressive reconnection attempt');
             createAndStartRecognition(true);
           }
-        }, 300);
+        }, delay);
       } else {
         setIsListening(false);
       }
@@ -246,13 +251,18 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         return;
       }
       
-      // In continuous mode, restart automatically
+      // In continuous mode, restart automatically with AGGRESSIVE retry logic
       if (continuousModeRef.current) {
-        setTimeout(() => {
+        // Immediate retry for continuous mode - critical for mobile
+        const retryImmediate = () => {
           if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
+            console.log('[Voice] Auto-restart in continuous mode');
             createAndStartRecognition(true);
           }
-        }, 100);
+        };
+        
+        // Try immediate restart, if fails will be caught by onerror
+        setTimeout(retryImmediate, 50);
       } else {
         setIsListening(false);
       }

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square, AlertTriangle, BookOpen, Settings, Volume1 } from 'lucide-react';
+import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square, AlertTriangle, BookOpen, Settings, Volume1, History } from 'lucide-react';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -1068,6 +1068,9 @@ export const ChatAssistant: React.FC = () => {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    
+    // Save to conversation history
+    voicePrefs.addToHistory({ role: 'user', content: text, page: location.pathname });
 
     try {
       const userContext = {
@@ -1100,6 +1103,9 @@ export const ChatAssistant: React.FC = () => {
         content: responseText,
       };
       setMessages(prev => [...prev, assistantMessage]);
+      
+      // Save assistant response to history
+      voicePrefs.addToHistory({ role: 'assistant', content: responseText, page: location.pathname });
 
       // Auto-speak response if enabled
       // IMPORTANT: ALWAYS use speak() so the mic is paused even if callbacks are stale.
@@ -1121,7 +1127,7 @@ export const ChatAssistant: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, userName, stats, totalIncome, clients, projects, messages, language, autoSpeak, isVoiceSupported, speak, audioPlayback]);
+  }, [isLoading, userName, stats, totalIncome, clients, projects, messages, language, autoSpeak, isVoiceSupported, speak, audioPlayback, voicePrefs, location.pathname]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1198,9 +1204,15 @@ export const ChatAssistant: React.FC = () => {
                 className={cn(isSpeaking && "animate-pulse")}
               />
               <div>
-                <h3 className="font-semibold text-foreground">
-                  {language === 'es' ? 'Asistente Financiero' : 'Financial Assistant'}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-foreground">
+                    {language === 'es' ? 'Asistente Financiero' : 'Financial Assistant'}
+                  </h3>
+                  {/* Active Language Indicator */}
+                  <Badge variant="outline" className="text-[10px] h-5 px-1.5 gap-1">
+                    {language === 'es' ? '🇪🇸' : '🇬🇧'} {language.toUpperCase()}
+                  </Badge>
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {isContinuousMode
                     ? (language === 'es' ? '🎙️ Modo continuo activo - di "detener" para parar' : '🎙️ Continuous mode - say "stop" to end')
@@ -1214,6 +1226,23 @@ export const ChatAssistant: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-1">
+              {/* History button - quick access */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => navigate('/settings')}
+                    className="h-8 w-8"
+                  >
+                    <History className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {language === 'es' ? 'Ver historial en Configuración' : 'View history in Settings'}
+                </TooltipContent>
+              </Tooltip>
+              
               {/* Voice Settings Popover */}
               {isVoiceSupported && (
                 <Popover>
@@ -1224,12 +1253,18 @@ export const ChatAssistant: React.FC = () => {
                   </PopoverTrigger>
                   <PopoverContent className="w-64" align="end">
                     <div className="space-y-4">
-                      <h4 className="font-medium text-sm">{language === 'es' ? 'Configuración de voz' : 'Voice Settings'}</h4>
+                      <h4 className="font-medium text-sm">{language === 'es' ? 'Configuración de Voz' : 'Voice Settings'}</h4>
+                      
+                      <p className="text-[10px] text-muted-foreground">
+                        {language === 'es' 
+                          ? '💡 Gestiona atajos, recordatorios e historial en Configuración → Preferencias de Voz'
+                          : '💡 Manage shortcuts, reminders & history in Settings → Voice Preferences'}
+                      </p>
                       
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-xs">
                           <span>{language === 'es' ? 'Velocidad' : 'Speed'}</span>
-                          <span>{voicePrefs.speechSpeed.toFixed(1)}x</span>
+                          <Badge variant="secondary" className="text-[10px] h-5">{voicePrefs.speechSpeed.toFixed(1)}x</Badge>
                         </div>
                         <Slider
                           value={[voicePrefs.speechSpeed]}
@@ -1238,12 +1273,16 @@ export const ChatAssistant: React.FC = () => {
                           step={0.1}
                           onValueChange={([v]) => voicePrefs.setSpeechSpeed(v)}
                         />
+                        <div className="flex justify-between text-[9px] text-muted-foreground">
+                          <span>0.5x</span>
+                          <span>2.0x</span>
+                        </div>
                       </div>
                       
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-xs">
                           <span>{language === 'es' ? 'Volumen' : 'Volume'}</span>
-                          <Volume1 className="h-3 w-3" />
+                          <Badge variant="secondary" className="text-[10px] h-5">{Math.round(voicePrefs.volume * 100)}%</Badge>
                         </div>
                         <Slider
                           value={[voicePrefs.volume]}
@@ -1257,7 +1296,7 @@ export const ChatAssistant: React.FC = () => {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-xs">
                           <span>{language === 'es' ? 'Tono' : 'Pitch'}</span>
-                          <span className="text-muted-foreground">{voicePrefs.pitch.toFixed(1)}</span>
+                          <Badge variant="secondary" className="text-[10px] h-5">{voicePrefs.pitch.toFixed(1)}</Badge>
                         </div>
                         <Slider
                           value={[voicePrefs.pitch]}
@@ -1266,6 +1305,10 @@ export const ChatAssistant: React.FC = () => {
                           step={0.1}
                           onValueChange={([v]) => voicePrefs.setPitch(v)}
                         />
+                        <div className="flex justify-between text-[9px] text-muted-foreground">
+                          <span>{language === 'es' ? 'Grave' : 'Low'}</span>
+                          <span>{language === 'es' ? 'Agudo' : 'High'}</span>
+                        </div>
                       </div>
                       
                       <div className="flex items-center justify-between">
