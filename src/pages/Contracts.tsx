@@ -23,7 +23,7 @@ export default function Contracts() {
           title={t('nav.contracts')}
           description={t('contracts.description')}
         >
-          <Button onClick={() => setDialogOpen(true)}>
+          <Button data-highlight="upload-contract-button" onClick={() => setDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             {t('contracts.uploadContract')}
           </Button>
@@ -47,7 +47,9 @@ export default function Contracts() {
             <p className="text-muted-foreground">{t('common.loading')}</p>
           </div>
         ) : contracts && contracts.length > 0 ? (
-          <ContractsTable contracts={contracts} />
+          <div data-highlight="contracts-table">
+            <ContractsTable contracts={contracts} />
+          </div>
         ) : (
           <SectionEmptyState 
             section="contracts" 

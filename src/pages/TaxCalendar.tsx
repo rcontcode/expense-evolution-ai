@@ -104,7 +104,7 @@ export default function TaxCalendar() {
         )}
 
         {/* Quick Status Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-4" data-highlight="tax-status-cards">
           <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -219,8 +219,8 @@ export default function TaxCalendar() {
         )}
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="timeline" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs defaultValue="timeline" className="space-y-4" data-highlight="tax-tabs">
+          <TabsList className="grid w-full grid-cols-5" data-highlight="tax-tab-list">
             <TabsTrigger value="timeline" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">Timeline</span>
@@ -269,7 +269,9 @@ export default function TaxCalendar() {
           </TabsContent>
 
           <TabsContent value="estimator" className="space-y-4">
-            <TaxEstimator />
+            <div data-highlight="tax-estimator">
+              <TaxEstimator />
+            </div>
           </TabsContent>
 
           <TabsContent value="guide" className="space-y-4">

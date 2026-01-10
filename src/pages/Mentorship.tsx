@@ -63,12 +63,14 @@ export default function Mentorship() {
         />
 
         {/* Level Banner - Gamification Incentive */}
-        <MentorshipLevelBanner />
+        <div data-highlight="mentorship-level">
+          <MentorshipLevelBanner />
+        </div>
 
         <MentorQuoteBanner context="dashboard" />
 
-        <Tabs defaultValue="library" className="space-y-6">
-          <TabsList className="grid grid-cols-4 w-full max-w-2xl mx-auto bg-muted/50 p-1.5 rounded-xl">
+        <Tabs defaultValue="library" className="space-y-6" data-highlight="mentorship-tabs">
+          <TabsList className="grid grid-cols-4 w-full max-w-2xl mx-auto bg-muted/50 p-1.5 rounded-xl" data-highlight="mentor-selector">
             <TabsTrigger 
               value="library" 
               className="gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-violet-500 data-[state=active]:text-white rounded-lg transition-all"
@@ -121,7 +123,9 @@ export default function Mentorship() {
                 </div>
               </div>
             </motion.div>
-            <FinancialLibrary />
+            <div data-highlight="financial-library">
+              <FinancialLibrary />
+            </div>
           </TabsContent>
 
           {/* Kiyosaki Tab */}

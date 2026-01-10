@@ -128,6 +128,79 @@ const HIGHLIGHT_KEYWORDS: Record<string, { es: string[]; en: string[] }> = {
     es: ['exportar', 'descargar datos', 'exportar a excel'],
     en: ['export', 'download data', 'export to excel'],
   },
+  // Banking page
+  'bank-import-guide': {
+    es: ['importar estado de cuenta', 'subir estado bancario', 'importar banco', 'cargar extracto'],
+    en: ['import bank statement', 'upload statement', 'import bank', 'load extract'],
+  },
+  'bank-analysis-dashboard': {
+    es: ['análisis bancario', 'dashboard bancario', 'panel de bancos', 'ver análisis'],
+    en: ['bank analysis', 'bank dashboard', 'bank panel', 'view analysis'],
+  },
+  // Contracts page
+  'upload-contract-button': {
+    es: ['subir contrato', 'nuevo contrato', 'agregar contrato', 'cargar contrato'],
+    en: ['upload contract', 'new contract', 'add contract', 'load contract'],
+  },
+  'contracts-table': {
+    es: ['tabla de contratos', 'lista de contratos', 'contratos registrados', 'tus contratos'],
+    en: ['contracts table', 'contract list', 'registered contracts', 'your contracts'],
+  },
+  // Mentorship page
+  'mentorship-level': {
+    es: ['nivel de mentoría', 'tu nivel', 'progreso de mentoría', 'experiencia'],
+    en: ['mentorship level', 'your level', 'mentorship progress', 'experience'],
+  },
+  'mentorship-tabs': {
+    es: ['pestañas de mentoría', 'secciones de mentoría', 'mentores'],
+    en: ['mentorship tabs', 'mentorship sections', 'mentors'],
+  },
+  'mentor-selector': {
+    es: ['selector de mentor', 'elegir mentor', 'kiyosaki', 'jim rohn', 'brian tracy'],
+    en: ['mentor selector', 'choose mentor', 'kiyosaki', 'jim rohn', 'brian tracy'],
+  },
+  'financial-library': {
+    es: ['biblioteca financiera', 'libros', 'recursos educativos', 'biblioteca'],
+    en: ['financial library', 'books', 'educational resources', 'library'],
+  },
+  // Tax Calendar page
+  'tax-status-cards': {
+    es: ['tarjetas de estado fiscal', 'resumen fiscal', 'estado tributario'],
+    en: ['tax status cards', 'tax summary', 'tax status'],
+  },
+  'tax-tabs': {
+    es: ['pestañas de impuestos', 'secciones fiscales', 'herramientas fiscales'],
+    en: ['tax tabs', 'tax sections', 'tax tools'],
+  },
+  'tax-estimator': {
+    es: ['estimador de impuestos', 'calculadora fiscal', 'calcular impuestos', 'estimar impuestos'],
+    en: ['tax estimator', 'tax calculator', 'calculate taxes', 'estimate taxes'],
+  },
+  'tax-tab-list': {
+    es: ['línea de tiempo', 'fechas límite', 'guía fiscal', 'recursos fiscales'],
+    en: ['timeline', 'deadlines', 'tax guide', 'tax resources'],
+  },
+  // Settings page
+  'voice-preferences': {
+    es: ['preferencias de voz', 'configuración de voz', 'asistente de voz', 'velocidad de voz'],
+    en: ['voice preferences', 'voice settings', 'voice assistant', 'voice speed'],
+  },
+  'theme-settings': {
+    es: ['tema', 'apariencia', 'modo oscuro', 'modo claro', 'colores'],
+    en: ['theme', 'appearance', 'dark mode', 'light mode', 'colors'],
+  },
+  'language-settings': {
+    es: ['idioma', 'cambiar idioma', 'español', 'inglés'],
+    en: ['language', 'change language', 'spanish', 'english'],
+  },
+  'fiscal-entities': {
+    es: ['entidades fiscales', 'jurisdicciones', 'países fiscales', 'multi-país'],
+    en: ['fiscal entities', 'jurisdictions', 'tax countries', 'multi-country'],
+  },
+  'subscription-settings': {
+    es: ['suscripción', 'plan', 'premium', 'pro', 'actualizar plan'],
+    en: ['subscription', 'plan', 'premium', 'pro', 'upgrade plan'],
+  },
 };
 
 // Detect which elements should be highlighted based on assistant response text
@@ -167,6 +240,11 @@ export function getPageHighlightElements(pathname: string): string[] {
     '/clients': ['add-client-button', 'clients-grid'],
     '/projects': ['add-project-button', 'projects-grid'],
     '/net-worth': ['assets-section', 'liabilities-section', 'net-worth-chart'],
+    '/banking': ['bank-import-guide', 'bank-analysis-dashboard'],
+    '/contracts': ['upload-contract-button', 'contracts-table'],
+    '/mentorship': ['mentorship-level', 'mentorship-tabs', 'mentor-selector', 'financial-library'],
+    '/tax-calendar': ['tax-status-cards', 'tax-tabs', 'tax-estimator', 'tax-tab-list'],
+    '/settings': ['voice-preferences', 'theme-settings', 'language-settings', 'fiscal-entities', 'subscription-settings'],
   };
 
   return pageElements[pathname] || [];
@@ -193,6 +271,23 @@ export function getNavigationHighlights(pathname: string, language: 'es' | 'en' 
     ],
     '/net-worth': [
       { selector: 'assets-section', label: language === 'es' ? 'Activos' : 'Assets' },
+    ],
+    '/banking': [
+      { selector: 'bank-import-guide', label: language === 'es' ? 'Importar estados' : 'Import statements' },
+    ],
+    '/contracts': [
+      { selector: 'upload-contract-button', label: language === 'es' ? 'Subir contrato' : 'Upload contract' },
+    ],
+    '/mentorship': [
+      { selector: 'mentorship-level', label: language === 'es' ? 'Tu nivel' : 'Your level' },
+      { selector: 'mentor-selector', label: language === 'es' ? 'Elegir mentor' : 'Choose mentor' },
+    ],
+    '/tax-calendar': [
+      { selector: 'tax-status-cards', label: language === 'es' ? 'Estado fiscal' : 'Tax status' },
+      { selector: 'tax-estimator', label: language === 'es' ? 'Estimador' : 'Estimator' },
+    ],
+    '/settings': [
+      { selector: 'voice-preferences', label: language === 'es' ? 'Preferencias de voz' : 'Voice preferences' },
     ],
   };
 
