@@ -8,6 +8,9 @@ interface UseVoiceAssistantOptions {
   onSpeakEnd?: () => void;
   onContinuousStopped?: () => void;
   onSpeakProgress?: (sentenceIndex: number, totalSentences: number) => void;
+  onInterrupted?: () => void; // Called when user interrupts speech
+  speechSpeed?: number; // 0.5 to 2.0, default 1.0
+  volume?: number; // 0 to 1, default 1.0
 }
 
 // STRICT stop commands - must match EXACTLY
@@ -389,10 +392,10 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
 
     const utterance = new SpeechSynthesisUtterance(sentence);
     utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
-    // Slightly slower for more natural speech with pauses
-    utterance.rate = 0.95;
+    // Use provided speech speed or default
+    utterance.rate = (options.speechSpeed ?? 1.0) * 0.95; // Slightly slower base for natural speech
     utterance.pitch = 1.0;
-    utterance.volume = 1.0;
+    utterance.volume = options.volume ?? 1.0;
 
     // Get a native voice
     const voices = window.speechSynthesis.getVoices();
@@ -527,8 +530,10 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     }
   }, [isSpeaking, isSpeechPaused]);
 
-  // Stop speaking completely
-  const stopSpeaking = useCallback(() => {
+  // Stop speaking completely (user can call this to interrupt)
+  const stopSpeaking = useCallback((wasInterrupted = false) => {
+    const wasActuallySpeaking = isSpeaking;
+    
     window.speechSynthesis.cancel();
     sentenceQueueRef.current = [];
     currentSentenceIndexRef.current = 0;
@@ -536,6 +541,11 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     setIsSpeechPaused(false);
     setCurrentSpeakingText('');
     setCurrentSentenceIndex(0);
+    
+    // Notify if this was an interruption
+    if (wasInterrupted && wasActuallySpeaking) {
+      options.onInterrupted?.();
+    }
     
     // Unblock mic if needed
     if (continuousModeRef.current) {
@@ -546,11 +556,28 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
             createAndStartRecognition(true);
           }
         }, 200);
-      }, 500);
+      }, wasInterrupted ? 100 : 500); // Faster resume on interruption
     } else {
       isPausedForSpeakingRef.current = false;
     }
-  }, [createAndStartRecognition]);
+  }, [isSpeaking, createAndStartRecognition, options]);
+
+  // Interrupt current speech and immediately start listening
+  const interruptAndListen = useCallback(() => {
+    console.log('[Voice] User interrupted - stopping speech and starting listen');
+    stopSpeaking(true);
+    
+    // Small delay then start listening
+    setTimeout(() => {
+      if (!isPausedForSpeakingRef.current) {
+        if (continuousModeRef.current) {
+          createAndStartRecognition(true);
+        } else {
+          createAndStartRecognition(false);
+        }
+      }
+    }, 150);
+  }, [stopSpeaking, createAndStartRecognition]);
 
   // Toggle single listening
   const toggleListening = useCallback(() => {
@@ -597,5 +624,6 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     pauseSpeech,
     resumeSpeech,
     stopSpeaking,
+    interruptAndListen,
   };
 }
