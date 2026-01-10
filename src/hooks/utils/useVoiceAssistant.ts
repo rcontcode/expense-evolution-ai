@@ -26,6 +26,9 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const continuousModeRef = useRef(false);
+  // Track if we should resume listening after speaking ends
+  const resumeAfterSpeakingRef = useRef(false);
 
   // Check browser support
   useEffect(() => {
@@ -34,8 +37,6 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     const hasSpeechRecognition = !!(win.SpeechRecognition || win.webkitSpeechRecognition);
     setIsSupported(hasSpeechRecognition && 'speechSynthesis' in window);
   }, []);
-
-  const continuousModeRef = useRef(false);
 
   // Check if text contains a stop command
   const isStopCommand = useCallback((text: string) => {
@@ -179,10 +180,36 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     }
   }, []);
 
+  // Pause listening temporarily (for when speaking)
+  const pauseListening = useCallback(() => {
+    if (recognitionRef.current && isListening) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.error('Error pausing recognition:', e);
+      }
+    }
+  }, [isListening]);
+
+  // Resume listening after pause (for continuous mode after speaking)
+  const resumeListening = useCallback(() => {
+    if (continuousModeRef.current && !isListening) {
+      recognitionRef.current = initRecognition(true);
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.start();
+        } catch (error) {
+          console.error('Error resuming recognition:', error);
+        }
+      }
+    }
+  }, [initRecognition, isListening]);
+
   // Stop listening
   const stopListening = useCallback(() => {
     continuousModeRef.current = false;
     setIsContinuousMode(false);
+    resumeAfterSpeakingRef.current = false;
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       setIsListening(false);
@@ -218,16 +245,30 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       .trim();
   }, []);
 
-  // Speak text
+  // Speak text - IMPORTANT: Pause listening while speaking to prevent feedback loop
   const speak = useCallback((text: string) => {
     if (!isSupported || !text) return;
 
     // Cancel any ongoing speech
     window.speechSynthesis.cancel();
 
+    // CRITICAL: If in continuous mode, pause listening to prevent hearing ourselves
+    const wasListeningInContinuousMode = continuousModeRef.current && isListening;
+    if (wasListeningInContinuousMode) {
+      resumeAfterSpeakingRef.current = true;
+      pauseListening();
+    }
+
     // Clean the text before speaking
     const cleanedText = cleanTextForSpeech(text);
-    if (!cleanedText) return;
+    if (!cleanedText) {
+      // If no text to speak, resume listening immediately
+      if (wasListeningInContinuousMode) {
+        resumeAfterSpeakingRef.current = false;
+        resumeListening();
+      }
+      return;
+    }
 
     const utterance = new SpeechSynthesisUtterance(cleanedText);
     utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
@@ -254,16 +295,37 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     utterance.onend = () => {
       setIsSpeaking(false);
       options.onSpeakEnd?.();
+      
+      // CRITICAL: Resume listening after speaking ends in continuous mode
+      // Add a small delay to ensure the speaker has fully stopped
+      if (resumeAfterSpeakingRef.current && continuousModeRef.current) {
+        resumeAfterSpeakingRef.current = false;
+        setTimeout(() => {
+          if (continuousModeRef.current) {
+            resumeListening();
+          }
+        }, 500); // 500ms delay to ensure audio has fully stopped
+      }
     };
 
     utterance.onerror = (event) => {
       console.error('Speech synthesis error:', event);
       setIsSpeaking(false);
+      
+      // Resume listening even on error
+      if (resumeAfterSpeakingRef.current && continuousModeRef.current) {
+        resumeAfterSpeakingRef.current = false;
+        setTimeout(() => {
+          if (continuousModeRef.current) {
+            resumeListening();
+          }
+        }, 500);
+      }
     };
 
     synthRef.current = utterance;
     window.speechSynthesis.speak(utterance);
-  }, [isSupported, language, options, cleanTextForSpeech]);
+  }, [isSupported, language, options, cleanTextForSpeech, isListening, pauseListening, resumeListening]);
 
   // Stop speaking
   const stopSpeaking = useCallback(() => {
