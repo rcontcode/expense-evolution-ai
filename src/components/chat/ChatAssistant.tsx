@@ -1193,7 +1193,7 @@ export const ChatAssistant: React.FC = () => {
           )}
 
           {/* Audio Playback Controls - Spotify style */}
-          {(audioPlayback.isPlaying || audioPlayback.isPaused) && !
+          {(audioPlayback.isPlaying || audioPlayback.isPaused) && !isSpeaking && (
             <div className="px-4 py-3 border-t bg-muted/30">
               <div className="flex flex-col gap-2">
                 {/* Progress bar */}
