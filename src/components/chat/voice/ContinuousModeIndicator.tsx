@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Radio, Square, Volume2, VolumeX } from 'lucide-react';
+import { Radio, Square, Volume2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -41,9 +41,10 @@ export function ContinuousModeIndicator({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
         className={cn(
-          "fixed bottom-24 left-1/2 -translate-x-1/2 z-50",
+          "fixed bottom-36 left-1/2 -translate-x-1/2 z-40",
           "bg-background/95 backdrop-blur-sm border rounded-full shadow-lg",
           "px-4 py-2 flex items-center gap-3",
+          "pointer-events-auto",
           className
         )}
       >
@@ -131,8 +132,9 @@ export function FloatingVoiceIndicator({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.8 }}
       className={cn(
-        "fixed bottom-24 right-6 z-50",
+        "fixed bottom-36 right-6 z-40",
         "flex items-center gap-2 px-3 py-2 rounded-full shadow-lg",
+        "pointer-events-auto",
         isSpeaking 
           ? "bg-primary text-primary-foreground"
           : "bg-green-500 text-white"

@@ -318,15 +318,38 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     createAndStartRecognition(true);
   }, [isSupported, createAndStartRecognition, clearPauseTimeout]);
 
-  // Stop continuous mode
+  // Stop continuous mode - AGGRESSIVE CLEANUP
   const stopContinuousListening = useCallback(() => {
-    console.log('[Voice] Stopping continuous mode');
+    console.log('[Voice] FORCE stopping continuous mode');
+    
+    // CRITICAL: Set flags FIRST to prevent any restarts
     continuousModeRef.current = false;
+    isPausedForSpeakingRef.current = true; // Block any pending restarts
+    
     setIsContinuousMode(false);
+    setIsListening(false);
     accumulatedTextRef.current = '';
     clearPauseTimeout();
-    stopRecognition();
-  }, [stopRecognition, clearPauseTimeout]);
+    
+    // Kill recognition multiple times to ensure it's dead
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+        recognitionRef.current.stop();
+      } catch (e) {
+        // Ignore
+      }
+      recognitionRef.current = null;
+    }
+    
+    // Cancel any speech synthesis
+    window.speechSynthesis.cancel();
+    
+    // Unblock after a short delay
+    setTimeout(() => {
+      isPausedForSpeakingRef.current = false;
+    }, 500);
+  }, [clearPauseTimeout]);
 
   // Stop all listening
   const stopListening = useCallback(() => {
