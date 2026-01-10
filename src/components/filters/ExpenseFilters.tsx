@@ -20,7 +20,7 @@ const QUICK_STATUS_FILTERS = [
   { value: 'all', label: 'Todos', labelEn: 'All', icon: Filter, color: 'bg-muted text-muted-foreground' },
   { value: 'pending', label: 'Pendiente', labelEn: 'Pending', icon: Clock, color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-500' },
   { value: 'classified', label: 'Clasificado', labelEn: 'Classified', icon: FileCheck, color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-500' },
-  { value: 'deductible', label: 'Deducible CRA', labelEn: 'CRA Deductible', icon: Landmark, color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-500' },
+  { value: 'deductible', label: 'Deducible Fiscal', labelEn: 'Tax Deductible', icon: Landmark, color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-500' },
   { value: 'reimbursable', label: 'Reembolsable', labelEn: 'Reimbursable', icon: Building2, color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-500' },
   { value: 'non_deductible', label: 'No Deducible', labelEn: 'Non Deductible', icon: Ban, color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-500' },
   { value: 'under_review', label: 'En Revisión', labelEn: 'Under Review', icon: AlertCircle, color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-500' },

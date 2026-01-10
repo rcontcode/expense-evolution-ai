@@ -42,14 +42,14 @@ const getCategories = (language: string) => [
       { before: '📊 Horas en hojas de cálculo', after: '✨ Reportes automáticos' },
       { before: '🏦 Conciliación bancaria manual', after: '🔗 Match automático' },
       { before: '🚗 Kilometraje a mano', after: '📍 GPS + cálculo automático' },
-      { before: '📅 Preparar impuestos = semanas', after: '👆 T2125 listo en 1 click' },
+      { before: '📅 Preparar impuestos = semanas', after: '👆 Reportes fiscales en 1 click' },
       { before: '👀 Revisar gastos uno por uno', after: '🚀 Procesamiento batch inteligente' },
       { before: '✏️ Actualizar presupuestos manual', after: '🔄 Sync en tiempo real' },
     ] : [
       { before: '📊 Hours in spreadsheets', after: '✨ Automatic reports' },
       { before: '🏦 Manual bank reconciliation', after: '🔗 Automatic matching' },
       { before: '🚗 Manual mileage tracking', after: '📍 GPS + auto calculation' },
-      { before: '📅 Tax prep = weeks', after: '👆 T2125 ready in 1 click' },
+      { before: '📅 Tax prep = weeks', after: '👆 Tax reports in 1 click' },
       { before: '👀 Review expenses one by one', after: '🚀 Smart batch processing' },
       { before: '✏️ Update budgets manually', after: '🔄 Real-time sync' },
     ]
@@ -110,17 +110,17 @@ const getCategories = (language: string) => [
     painPoints: language === 'es' ? [
       { before: '😱 Estrés en época de taxes', after: '😌 Preparación continua' },
       { before: '🤔 No saber cuánto reservar', after: '🧮 Estimador en tiempo real' },
-      { before: '📆 Fechas límite olvidadas', after: '🗓️ Calendario fiscal CRA' },
-      { before: '🧮 GST/HST calculado a mano', after: '⚡ Cálculo automático' },
-      { before: '❌ Reportes incompatibles', after: '✅ 100% CRA Compliant' },
-      { before: '💭 Sin optimizar impuestos', after: '💎 Tips RRSP/TFSA' },
+      { before: '📆 Fechas límite olvidadas', after: '🗓️ Calendario fiscal inteligente' },
+      { before: '🧮 Impuestos calculados a mano', after: '⚡ Cálculo automático' },
+      { before: '❌ Reportes incompatibles', after: '✅ Cumplimiento fiscal 100%' },
+      { before: '💭 Sin optimizar impuestos', after: '💎 Optimización de retiro' },
     ] : [
       { before: '😱 Tax season stress', after: '😌 Continuous preparation' },
       { before: '🤔 Not knowing how much to save', after: '🧮 Real-time estimator' },
-      { before: '📆 Forgotten deadlines', after: '🗓️ CRA tax calendar' },
-      { before: '🧮 GST/HST calculated manually', after: '⚡ Automatic calculation' },
-      { before: '❌ Incompatible reports', after: '✅ 100% CRA Compliant' },
-      { before: '💭 Not optimizing taxes', after: '💎 RRSP/TFSA tips' },
+      { before: '📆 Forgotten deadlines', after: '🗓️ Smart tax calendar' },
+      { before: '🧮 Taxes calculated manually', after: '⚡ Automatic calculation' },
+      { before: '❌ Incompatible reports', after: '✅ 100% Tax Compliant' },
+      { before: '💭 Not optimizing taxes', after: '💎 Retirement optimization' },
     ]
   },
   {

@@ -249,14 +249,14 @@ export const PAGE_GUIDES = {
     },
     goals: [
       { es: 'Organizar gastos pendientes', en: 'Organize pending expenses' },
-      { es: 'Clasificar para CRA', en: 'Classify for CRA' },
+      { es: 'Clasificar para impuestos', en: 'Classify for taxes' },
       { es: 'Preparar reembolsos', en: 'Prepare reimbursements' },
       { es: 'Ver resumen del mes', en: 'View monthly summary' }
     ],
     workflows: [
       { step: 1, title: { es: 'Capturar', en: 'Capture' }, description: { es: 'Foto o manual', en: 'Photo or manual' } },
       { step: 2, title: { es: 'Revisar', en: 'Review' }, description: { es: 'Verificar datos', en: 'Verify data' } },
-      { step: 3, title: { es: 'Clasificar', en: 'Classify' }, description: { es: 'Cliente/CRA', en: 'Client/CRA' } },
+      { step: 3, title: { es: 'Clasificar', en: 'Classify' }, description: { es: 'Cliente/Fiscal', en: 'Client/Tax' } },
       { step: 4, title: { es: 'Reportar', en: 'Report' }, description: { es: 'Exportar', en: 'Export' } }
     ],
     tips: [
@@ -328,12 +328,12 @@ export const PAGE_GUIDES = {
     workflows: [
       { step: 1, title: { es: 'Registrar', en: 'Log' }, description: { es: 'Fecha y ruta', en: 'Date and route' } },
       { step: 2, title: { es: 'Asignar', en: 'Assign' }, description: { es: 'Cliente', en: 'Client' } },
-      { step: 3, title: { es: 'Calcular', en: 'Calculate' }, description: { es: 'Tarifa CRA', en: 'CRA rate' } },
+      { step: 3, title: { es: 'Calcular', en: 'Calculate' }, description: { es: 'Tarifa oficial', en: 'Official rate' } },
       { step: 4, title: { es: 'Deducir', en: 'Deduct' }, description: { es: 'En impuestos', en: 'On taxes' } }
     ],
     tips: [
-      { es: 'la CRA permite $0.70/km para los primeros 5,000 km y $0.64/km después.', en: 'CRA allows $0.70/km for the first 5,000 km and $0.64/km after.' },
-      { es: 'guarda un registro de cada viaje - la CRA puede solicitar comprobantes.', en: 'keep a record of each trip - CRA may request proof.' }
+      { es: 'cada país tiene tarifas oficiales por km que puedes deducir de impuestos.', en: 'each country has official per-km rates you can deduct from taxes.' },
+      { es: 'guarda un registro de cada viaje - las autoridades fiscales pueden solicitar comprobantes.', en: 'keep a record of each trip - tax authorities may request proof.' }
     ]
   },
   // contracts key moved to after banking

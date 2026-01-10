@@ -63,7 +63,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
   classified: 'Clasificado',
-  deductible: 'Deducible CRA',
+  deductible: 'Deducible Fiscal',
   non_deductible: 'No Deducible',
   reimbursable: 'Reembolsable',
   rejected: 'Rechazado',

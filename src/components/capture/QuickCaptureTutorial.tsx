@@ -42,8 +42,8 @@ const TUTORIAL_STEPS: TutorialStep[] = [
       en: 'EvoFinz automatically analyzes your receipt and extracts: vendor, amount, date, category, and more.'
     },
     tip: {
-      es: 'También detectamos si el gasto es deducible para CRA y si es típicamente reembolsable.',
-      en: 'We also detect if the expense is CRA deductible and typically reimbursable.'
+      es: 'También detectamos si el gasto es deducible fiscalmente y si es típicamente reembolsable.',
+      en: 'We also detect if the expense is tax deductible and typically reimbursable.'
     }
   },
   {

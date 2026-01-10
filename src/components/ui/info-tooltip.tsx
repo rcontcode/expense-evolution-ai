@@ -362,13 +362,13 @@ export const TOOLTIP_CONTENT = {
   },
   expenseCraDeductible: {
     es: {
-      title: "Deducible CRA",
-      description: "Indica si el gasto es deducible de impuestos según las reglas del CRA de Canadá.",
+      title: "Deducible Fiscal",
+      description: "Indica si el gasto es deducible de impuestos según las reglas de tu autoridad fiscal (CRA en Canadá, SII en Chile).",
       howToUse: "Los porcentajes varían: 100% para equipo, 50% para comidas de negocio.",
     },
     en: {
-      title: "CRA Deductible",
-      description: "Indicates if the expense is tax deductible according to Canada's CRA rules.",
+      title: "Tax Deductible",
+      description: "Indicates if the expense is tax deductible according to your tax authority's rules (CRA in Canada, SII in Chile).",
       howToUse: "Percentages vary: 100% for equipment, 50% for business meals.",
     },
   },

@@ -52,8 +52,8 @@ const GUIDE_STEPS: GuideStep[] = [
       en: 'Upload your bank statement as CSV, photo or PDF' 
     },
     tooltip: { 
-      es: 'Aceptamos archivos CSV de cualquier banco canadiense, fotos de estados impresos (usamos tecnología Smart para extraer datos), y PDFs de estados electrónicos. Los datos nunca se comparten con terceros.', 
-      en: 'We accept CSV files from any Canadian bank, photos of printed statements (we use Smart technology to extract data), and PDFs of electronic statements. Data is never shared with third parties.' 
+      es: 'Aceptamos archivos CSV de cualquier banco (Canadá, Chile, México y más), fotos de estados impresos (usamos tecnología Smart para extraer datos), y PDFs de estados electrónicos. Los datos nunca se comparten con terceros.', 
+      en: 'We accept CSV files from any bank (Canada, Chile, Mexico and more), photos of printed statements (we use Smart technology to extract data), and PDFs of electronic statements. Data is never shared with third parties.' 
     },
     badge: { es: 'Paso 1', en: 'Step 1' }
   },
@@ -230,8 +230,8 @@ export function BankingIntegrationGuide({ onImportClick }: BankingIntegrationGui
                     </p>
                     <p className="text-sm">
                       {language === 'es' 
-                        ? 'Descarga el CSV desde tu banca en línea. Debe incluir fecha, descripción y monto. Compatble con todos los bancos canadienses.'
-                        : 'Download the CSV from your online banking. It should include date, description, and amount. Compatible with all Canadian banks.'}
+                        ? 'Descarga el CSV desde tu banca en línea. Debe incluir fecha, descripción y monto. Compatible con bancos de Canadá, Chile, México y más.'
+                        : 'Download the CSV from your online banking. It should include date, description, and amount. Compatible with banks from Canada, Chile, Mexico and more.'}
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -366,8 +366,8 @@ export function BankingIntegrationGuide({ onImportClick }: BankingIntegrationGui
                 <TooltipContent className="max-w-sm">
                   <p className="text-sm">
                     {language === 'es' 
-                      ? 'Tus datos están protegidos con encriptación de nivel bancario. Nunca almacenamos credenciales de acceso a tu banco. Los archivos originales se eliminan después de procesar. Cumplimos con PIPEDA y estándares de seguridad canadienses.'
-                      : 'Your data is protected with bank-level encryption. We never store bank access credentials. Original files are deleted after processing. We comply with PIPEDA and Canadian security standards.'}
+                      ? 'Tus datos están protegidos con encriptación de nivel bancario. Nunca almacenamos credenciales de acceso a tu banco. Los archivos originales se eliminan después de procesar. Cumplimos con estándares internacionales de seguridad (PIPEDA, GDPR).'
+                      : 'Your data is protected with bank-level encryption. We never store bank access credentials. Original files are deleted after processing. We comply with international security standards (PIPEDA, GDPR).'}
                   </p>
                 </TooltipContent>
               </Tooltip>

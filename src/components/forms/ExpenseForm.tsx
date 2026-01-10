@@ -38,7 +38,7 @@ interface ExpenseFormProps {
 const REIMBURSEMENT_TYPES = [
   { value: 'pending_classification', label: 'Pendiente de clasificar', labelEn: 'Pending classification', icon: AlertTriangle, color: 'text-yellow-500' },
   { value: 'client_reimbursable', label: 'Reembolsable por cliente', labelEn: 'Client reimbursable', icon: Building2, color: 'text-blue-500' },
-  { value: 'cra_deductible', label: 'Deducible CRA', labelEn: 'CRA Deductible', icon: Landmark, color: 'text-green-500' },
+  { value: 'cra_deductible', label: 'Deducible Fiscal', labelEn: 'Tax Deductible', icon: Landmark, color: 'text-green-500' },
   { value: 'personal', label: 'Personal (sin reembolso)', labelEn: 'Personal (no reimbursement)', icon: User, color: 'text-muted-foreground' },
 ];
 

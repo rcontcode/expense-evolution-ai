@@ -248,7 +248,7 @@ export function BulkAssignDialog({ open, onClose, expenses }: BulkAssignDialogPr
                   <SelectItem value="cra_deductible">
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4 text-green-500" />
-                      {language === 'es' ? 'Deducible CRA' : 'CRA Deductible'}
+                      {language === 'es' ? 'Deducible Fiscal' : 'Tax Deductible'}
                     </div>
                   </SelectItem>
                   <SelectItem value="personal">
