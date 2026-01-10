@@ -697,6 +697,28 @@ export const ChatAssistant: React.FC = () => {
     previousPathRef.current = location.pathname;
   }, [location.pathname, isOpen, hasShownWelcome, getCurrentPageContext, language]);
 
+  // Route mapping for navigation actions (fallback if edge function doesn't provide route)
+  const ROUTE_MAP: Record<string, string> = {
+    expenses: '/expenses',
+    income: '/income',
+    clients: '/clients',
+    projects: '/projects',
+    contracts: '/contracts',
+    dashboard: '/dashboard',
+    mileage: '/mileage',
+    networth: '/net-worth',
+    banking: '/banking',
+    settings: '/settings',
+    capture: '/mobile-capture',
+    chaos: '/chaos-inbox',
+    reconciliation: '/reconciliation',
+    business: '/business-profile',
+    notifications: '/notifications',
+    mentorship: '/mentorship',
+    taxes: '/tax-calendar',
+    tags: '/tags',
+  };
+
   // Execute action returned by AI
   const executeAIAction = useCallback((action: {
     action: string;
@@ -710,26 +732,37 @@ export const ChatAssistant: React.FC = () => {
     
     switch (action.action) {
       case 'navigate':
-        if (action.route) {
+        // Get route from action or fallback to route map
+        const targetRoute = action.route || (action.target ? ROUTE_MAP[action.target] : null);
+        
+        if (targetRoute) {
           triggerHapticFeedback('medium');
           voicePrefs.trackAction('navigation');
-          navigate(action.route);
           
-          // Trigger navigation highlights
-          if (isHighlightEnabled && action.route) {
+          console.log('[AI Action] Navigating to:', targetRoute);
+          navigate(targetRoute);
+          
+          // Show success toast
+          toast.success(action.message || (language === 'es' ? 'Navegando...' : 'Navigating...'));
+          
+          // Trigger navigation highlights after navigation completes
+          if (isHighlightEnabled) {
             setTimeout(() => {
-              const navHighlights = getNavigationHighlights(action.route!, language as 'es' | 'en');
+              const navHighlights = getNavigationHighlights(targetRoute, language as 'es' | 'en');
               if (navHighlights.length > 0) {
                 highlight(navHighlights);
               }
-            }, 1000);
+            }, 1200);
           }
+        } else {
+          console.warn('[AI Action] No route found for target:', action.target);
         }
         break;
         
       case 'query':
         triggerHapticFeedback('light');
         voicePrefs.trackAction('query');
+        // Query responses are already in the message, no additional action needed
         break;
         
       case 'highlight':
