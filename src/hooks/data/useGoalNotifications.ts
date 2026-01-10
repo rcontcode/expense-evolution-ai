@@ -13,15 +13,21 @@ interface GoalNotificationsProps {
   userLevel: any;
 }
 
-// Celebrate with confetti
+// Phoenix-themed confetti colors
+const PHOENIX_COLORS = ['#FACC15', '#F59E0B', '#EF4444', '#FB923C', '#FEF08A'];
+const GOLDEN_COLORS = ['#FACC15', '#F59E0B', '#EAB308', '#FEF08A', '#FDE047'];
+
+// Celebrate goal completion with phoenix-themed confetti
 const celebrateGoal = () => {
   confetti({
     particleCount: 100,
     spread: 70,
-    origin: { y: 0.6 }
+    origin: { y: 0.6 },
+    colors: GOLDEN_COLORS,
   });
 };
 
+// Achievement celebration with phoenix rebirth effect
 const celebrateAchievement = () => {
   const duration = 3000;
   const end = Date.now() + duration;
@@ -32,14 +38,14 @@ const celebrateAchievement = () => {
       angle: 60,
       spread: 55,
       origin: { x: 0 },
-      colors: ['#10B981', '#8B5CF6', '#F59E0B']
+      colors: PHOENIX_COLORS
     });
     confetti({
       particleCount: 2,
       angle: 120,
       spread: 55,
       origin: { x: 1 },
-      colors: ['#10B981', '#8B5CF6', '#F59E0B']
+      colors: PHOENIX_COLORS
     });
 
     if (Date.now() < end) {
@@ -48,6 +54,27 @@ const celebrateAchievement = () => {
   };
 
   frame();
+};
+
+// Golden rebirth celebration for major achievements
+const celebrateRebirth = () => {
+  // First burst - flames
+  confetti({
+    particleCount: 60,
+    spread: 50,
+    origin: { y: 0.7 },
+    colors: ['#EF4444', '#FB923C', '#DC2626'],
+  });
+  
+  // Second burst - golden rebirth
+  setTimeout(() => {
+    confetti({
+      particleCount: 150,
+      spread: 100,
+      origin: { y: 0.5 },
+      colors: GOLDEN_COLORS,
+    });
+  }, 300);
 };
 
 // Create a notification in the database
@@ -189,13 +216,15 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
         for (const milestone of milestones) {
           if (previousProgress < milestone && currentProgress >= milestone) {
             if (milestone === 100) {
-              // Goal completed! Play full celebration
-              celebrateGoal();
+              // Goal completed! Phoenix rebirth celebration
+              celebrateRebirth();
               playFullCelebration();
               toast.success(
-                `🎉 ${t('gamification.goalCompleted')}: ${goal.name}!`,
+                `🔥➜✨ ${language === 'es' ? '¡Has renacido!' : 'You have been reborn!'} ${goal.name}`,
                 {
-                  description: t('gamification.congratulations'),
+                  description: language === 'es' 
+                    ? '¡Meta alcanzada! Tu fénix financiero brilla.'
+                    : 'Goal reached! Your financial phoenix shines.',
                   duration: 5000,
                 }
               );
@@ -206,14 +235,14 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
               }
               unlockAchievement.mutate('first_goal_complete');
               
-              // Create celebratory notification
+              // Create phoenix-themed celebratory notification
               if (user) {
                 createNotification(
                   user.id,
-                  language === 'es' ? `🎉 ¡Meta completada!` : `🎉 Goal completed!`,
+                  language === 'es' ? `🔥➜✨ ¡Renacimiento financiero!` : `🔥➜✨ Financial rebirth!`,
                   language === 'es' 
-                    ? `Has alcanzado tu meta "${goal.name}". ¡Felicidades!`
-                    : `You've reached your goal "${goal.name}". Congratulations!`,
+                    ? `Has alcanzado tu meta "${goal.name}". ¡Tu fénix financiero ha renacido!`
+                    : `You've reached your goal "${goal.name}". Your financial phoenix has been reborn!`,
                   'goal_complete',
                   '/dashboard'
                 );
@@ -345,7 +374,7 @@ export function useGoalNotifications({ savingsGoals, investmentGoals, userLevel 
 
 // Hook for displaying level up notifications
 export function useLevelUpNotification(userLevel: any) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const { playFullCelebration } = useCelebrationSound();
   const previousLevelRef = useRef<number | null>(null);
@@ -354,18 +383,14 @@ export function useLevelUpNotification(userLevel: any) {
     if (!userLevel) return;
 
     if (previousLevelRef.current !== null && userLevel.level > previousLevelRef.current) {
-      // Level up! Play celebration sound
+      // Level up! Phoenix rebirth celebration
       playFullCelebration();
-      confetti({
-        particleCount: 150,
-        spread: 100,
-        origin: { y: 0.5 }
-      });
+      celebrateRebirth();
 
       toast.success(
-        `🎊 ${t('gamification.levelUp')}!`,
+        `🔥➜✨ ${language === 'es' ? '¡Nivel Alcanzado!' : 'Level Up!'}`,
         {
-          description: `${t('gamification.reachedLevel')} ${userLevel.level}`,
+          description: `${language === 'es' ? 'Tu fénix ha evolucionado al nivel' : 'Your phoenix has evolved to level'} ${userLevel.level}`,
           duration: 5000,
         }
       );
@@ -374,8 +399,8 @@ export function useLevelUpNotification(userLevel: any) {
       if (user) {
         createNotification(
           user.id,
-          `🎊 ${t('gamification.levelUp')}!`,
-          `${t('gamification.reachedLevel')} ${userLevel.level}`,
+          `🔥➜✨ ${language === 'es' ? '¡Nivel Alcanzado!' : 'Level Up!'}`,
+          `${language === 'es' ? 'Tu fénix ha evolucionado al nivel' : 'Your phoenix has evolved to level'} ${userLevel.level}`,
           'level_up',
           '/dashboard'
         );
@@ -383,7 +408,7 @@ export function useLevelUpNotification(userLevel: any) {
     }
 
     previousLevelRef.current = userLevel.level;
-  }, [userLevel?.level, t, user, playFullCelebration]);
+  }, [userLevel?.level, language, user, playFullCelebration]);
 }
 
 // Hook for achievement unlock notifications
@@ -395,12 +420,12 @@ export function useAchievementNotification() {
   const notifyAchievement = useCallback(async (achievementKey: string, achievementName: string) => {
     if (!user) return;
 
-    // Play celebration sound and confetti
+    // Phoenix-themed celebration
     playCelebrationSound();
     celebrateAchievement();
 
     toast.success(
-      language === 'es' ? '🏆 ¡Logro desbloqueado!' : '🏆 Achievement unlocked!',
+      language === 'es' ? '🔥 ¡Logro desbloqueado!' : '🔥 Achievement unlocked!',
       {
         description: achievementName,
         duration: 5000,
@@ -409,7 +434,7 @@ export function useAchievementNotification() {
 
     await createNotification(
       user.id,
-      language === 'es' ? '🏆 ¡Logro desbloqueado!' : '🏆 Achievement unlocked!',
+      language === 'es' ? '🔥 ¡Logro desbloqueado!' : '🔥 Achievement unlocked!',
       achievementName,
       'achievement',
       '/notifications'

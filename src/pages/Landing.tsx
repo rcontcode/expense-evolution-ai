@@ -18,7 +18,7 @@ import { FloatingStars } from '@/components/landing/FloatingStars';
 import { FeaturesShowcase } from '@/components/landing/FeaturesShowcase';
 import { AnimatedStats } from '@/components/landing/AnimatedStats';
 import { TestimonialsCarousel } from '@/components/landing/TestimonialsCarousel';
-import PhoenixFlameEffect from '@/components/landing/PhoenixFlameEffect';
+import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { FeatureDemosCarousel } from '@/components/landing/FeatureDemosCarousel';
 import { TrustSecuritySection } from '@/components/landing/TrustSecuritySection';
 import { PainPointsSection } from '@/components/landing/PainPointsSection';
@@ -347,43 +347,8 @@ export default function Landing() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="flex flex-col items-center mb-8 relative"
             >
-              {/* Animated glow behind logo */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <motion.div 
-                  className="w-48 h-48 rounded-full blur-3xl"
-                  animate={{
-                    background: [
-                      'radial-gradient(circle, rgba(34, 211, 238, 0.6) 0%, rgba(59, 130, 246, 0.4) 50%, transparent 70%)',
-                      'radial-gradient(circle, rgba(251, 146, 60, 0.6) 0%, rgba(239, 68, 68, 0.4) 50%, transparent 70%)',
-                      'radial-gradient(circle, rgba(34, 211, 238, 0.6) 0%, rgba(59, 130, 246, 0.4) 50%, transparent 70%)'
-                    ]
-                  }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                />
-              </div>
-              {/* Phoenix Logo with flame effect on hover */}
-              <PhoenixFlameEffect />
-              {/* Brand name below logo */}
-              <motion.h2
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="relative z-10 mt-4 text-3xl md:text-4xl font-black tracking-tight"
-              >
-                <motion.span 
-                  className="bg-clip-text text-transparent"
-                  animate={{
-                    backgroundImage: [
-                      'linear-gradient(to right, rgb(8, 145, 178), rgb(37, 99, 235), rgb(20, 184, 166))',
-                      'linear-gradient(to right, rgb(234, 88, 12), rgb(220, 38, 38), rgb(245, 158, 11))',
-                      'linear-gradient(to right, rgb(8, 145, 178), rgb(37, 99, 235), rgb(20, 184, 166))'
-                    ]
-                  }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  EvoFinz
-                </motion.span>
-              </motion.h2>
+              {/* Unified Phoenix Logo with hero variant */}
+              <PhoenixLogo variant="hero" showText={true} />
             </motion.div>
 
             {/* Main headline with animated gradient */}

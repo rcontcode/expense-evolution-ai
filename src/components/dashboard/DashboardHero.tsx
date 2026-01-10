@@ -15,6 +15,8 @@ import { useEntity } from '@/contexts/EntityContext';
 import { useCurrencyConversion } from '@/hooks/data/useCurrencyConversion';
 import { EntityViewToggle } from './EntityViewToggle';
 import { cn } from '@/lib/utils';
+import { PhoenixLogo, PhoenixState } from '@/components/ui/phoenix-logo';
+import { useMemo } from 'react';
 
 interface DashboardHeroProps {
   totalIncome: number;
@@ -41,6 +43,14 @@ export function DashboardHero({
 
   const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || '';
   const isPositive = netBalance >= 0;
+
+  // Dynamic phoenix state based on financial health
+  const phoenixState: PhoenixState = useMemo(() => {
+    if (isLoading) return 'default';
+    if (netBalance < 0) return 'flames'; // Financial crisis - working through it
+    if (netBalance === 0 || (totalIncome === 0 && totalExpenses === 0)) return 'smoke'; // Neutral/transitioning
+    return 'rebirth'; // Positive balance - thriving!
+  }, [netBalance, totalIncome, totalExpenses, isLoading]);
 
   // Get time-based greeting
   const getGreeting = () => {
@@ -85,20 +95,27 @@ export function DashboardHero({
           )}
 
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mt-6 lg:mt-0">
-            {/* Left: Greeting */}
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">
-                {getGreeting()}
-              </p>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                {firstName ? `${firstName} 👋` : '👋'}
-              </h1>
-              <p className="text-sm text-muted-foreground max-w-md">
-                {language === 'es'
-                  ? 'Aquí tienes el resumen de tus finanzas'
-                  : 'Here\'s your financial summary'
-                }
-              </p>
+            {/* Left: Phoenix Badge + Greeting */}
+            <div className="flex items-center gap-4">
+              {/* Dynamic Phoenix Badge */}
+              <div className="hidden sm:block">
+                <PhoenixLogo variant="mini" state={phoenixState} showEffects={true} />
+              </div>
+              
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">
+                  {getGreeting()}
+                </p>
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                  {firstName ? `${firstName} 👋` : '👋'}
+                </h1>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  {language === 'es'
+                    ? 'Aquí tienes el resumen de tus finanzas'
+                    : 'Here\'s your financial summary'
+                  }
+                </p>
+              </div>
             </div>
 
             {/* Center: Balance Cards */}

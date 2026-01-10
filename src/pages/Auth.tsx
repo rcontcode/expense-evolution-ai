@@ -11,8 +11,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowRight, Sparkles, Receipt, TrendingUp, ChevronDown, Gift, Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
-import evofinzLogo from '@/assets/evofinz-logo.png';
+import { ArrowRight, Sparkles, Receipt, TrendingUp, ChevronDown, Gift, Loader2, CheckCircle2, XCircle, AlertCircle, Flame } from 'lucide-react';
+import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { 
   emailSchema, 
   passwordSchema, 
@@ -351,7 +351,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left side - Branding */}
+      {/* Left side - Branding with Phoenix */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-hero relative overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute inset-0 opacity-10">
@@ -359,24 +359,30 @@ export default function Auth() {
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full blur-3xl" />
         </div>
         
-        <div className="relative z-10 flex flex-col justify-center px-12 text-white">
-          {/* Logo */}
-          <div className="flex items-center gap-4 mb-12">
-            <img src={evofinzLogo} alt="EvoFinz" className="h-16 w-auto object-contain drop-shadow-lg" />
+        <div className="relative z-10 flex flex-col justify-center items-center px-12 text-white w-full">
+          {/* Phoenix Logo - Interactive Hero */}
+          <div className="mb-8">
+            <PhoenixLogo variant="hero" showText={true} />
           </div>
 
-          {/* Main headline */}
-          <h2 className="text-5xl font-display font-bold leading-tight mb-6">
-            {t('auth.yourFinances')}<br />
-            <span className="text-white/90">{t('auth.simplified')}</span>
-          </h2>
-          
-          <p className="text-xl text-white/80 mb-10 max-w-md">
-            {t('auth.smartestWay')}
-          </p>
+          {/* Inspirational Message */}
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-display font-bold leading-tight mb-4">
+              {language === 'es' 
+                ? 'Tu Renacimiento Financiero' 
+                : 'Your Financial Rebirth'}
+            </h2>
+            <p className="text-xl text-white/80 max-w-md flex items-center justify-center gap-2">
+              <Flame className="h-5 w-5 text-orange-300" />
+              {language === 'es' 
+                ? 'Del caos a la claridad, comienza aquí' 
+                : 'From chaos to clarity, starts here'}
+              <Flame className="h-5 w-5 text-orange-300" />
+            </p>
+          </div>
 
           {/* Features */}
-          <div className="space-y-4">
+          <div className="space-y-4 max-w-sm">
             {features.map((feature, index) => (
               <div 
                 key={index}
@@ -400,9 +406,9 @@ export default function Auth() {
         </div>
         
         <div className="w-full max-w-md space-y-8 animate-fade-in">
-          {/* Mobile logo */}
+          {/* Mobile logo - Phoenix */}
           <div className="lg:hidden flex items-center justify-center mb-8">
-            <img src={evofinzLogo} alt="EvoFinz" className="h-14 w-auto object-contain" />
+            <PhoenixLogo variant="sidebar" showText={true} />
           </div>
 
           <div className="text-center lg:text-left">
