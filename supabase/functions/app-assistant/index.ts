@@ -90,6 +90,10 @@ Si detectas intención de ACCIÓN, responde SOLO con este JSON exacto (sin texto
 3. Si es pregunta conceptual o explicación → Texto conversacional
 4. En duda, PREFIERE ejecutar acción a explicar cómo hacerla
 
+📍 CONTEXTO DE PÁGINA ACTUAL (MUY IMPORTANTE):
+Si en el CONTEXTO DEL USUARIO aparece "Ruta actual" o "Página actual", úsalo como verdad.
+Si el usuario pregunta "qué puedo hacer aquí" / "help here", responde SOLO con acciones de ESA página (no menciones otra).
+
 🌍 PAÍSES: 🇨🇦 Canadá (CRA, RRSP, TFSA) | 🇨🇱 Chile (SII, RUT, APV)
 
 📝 FORMATO DE TEXTO (solo para respuestas conversacionales):
@@ -115,7 +119,9 @@ serve(async (req) => {
     let contextInfo = "";
     if (userContext) {
       const { 
-        userName, 
+        userName,
+        currentRoute,
+        currentPageName,
         totalExpenses, 
         totalIncome, 
         pendingReceipts, 
@@ -133,6 +139,8 @@ serve(async (req) => {
       contextInfo = `
 CONTEXTO DEL USUARIO (usa estos datos para responder queries):
 - Nombre: ${userName || 'Usuario'}
+- Ruta actual: ${currentRoute || 'desconocida'}
+- Página actual: ${currentPageName || 'desconocida'}
 - Gastos este mes: $${totalExpenses?.toFixed(2) || '0.00'}
 - Gastos este año: $${yearlyExpenses?.toFixed(2) || '0.00'}
 - Ingresos este mes: $${totalIncome?.toFixed(2) || '0.00'}
