@@ -748,9 +748,14 @@ export const ChatAssistant: React.FC = () => {
       setMessages(prev => [...prev, assistantMessage]);
 
       // Auto-speak response if enabled
-      // CRITICAL: In continuous mode, use speak() which properly pauses listening
+      // CRITICAL: Cancel ANY previous speech first, then speak new response
+      // In continuous mode, use speak() which properly pauses listening
       // Otherwise use audioPlayback for the Spotify-like controls
       if (autoSpeak && isVoiceSupported) {
+        // ALWAYS cancel previous speech to prevent overlap
+        window.speechSynthesis.cancel();
+        audioPlayback.stop();
+        
         if (isContinuousMode) {
           // Use speak() which coordinates with listening pause/resume
           speak(responseText);
@@ -785,6 +790,10 @@ export const ChatAssistant: React.FC = () => {
   };
 
   const handleMicClick = () => {
+    // CRITICAL: Cancel ALL speech synthesis first
+    window.speechSynthesis.cancel();
+    audioPlayback.stop();
+    
     if (isSpeaking) {
       stopSpeaking();
     }
@@ -796,6 +805,10 @@ export const ChatAssistant: React.FC = () => {
   };
 
   const handleContinuousModeToggle = () => {
+    // CRITICAL: Cancel ALL speech synthesis before toggling
+    window.speechSynthesis.cancel();
+    audioPlayback.stop();
+    
     if (isSpeaking) {
       stopSpeaking();
     }

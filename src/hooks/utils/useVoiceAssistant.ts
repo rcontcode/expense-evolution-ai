@@ -273,7 +273,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   const speak = useCallback((text: string) => {
     if (!isSupported || !text) return;
 
-    // Cancel any ongoing speech
+    // CRITICAL: Cancel ANY ongoing speech first - this prevents overlapping voices
     window.speechSynthesis.cancel();
 
     // CRITICAL: If in continuous mode, ALWAYS pause listening to prevent hearing ourselves
@@ -299,62 +299,65 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(cleanedText);
-    utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
+    // Small delay to ensure cancel takes full effect before starting new speech
+    setTimeout(() => {
+      const utterance = new SpeechSynthesisUtterance(cleanedText);
+      utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
 
-    // Try to get a native voice for the language
-    const voices = window.speechSynthesis.getVoices();
-    const langCode = language === 'es' ? 'es' : 'en';
-    const preferredVoice = voices.find(v => 
-      v.lang.startsWith(langCode) && v.localService
-    ) || voices.find(v => v.lang.startsWith(langCode));
-    
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
-    }
-
-    utterance.onstart = () => {
-      setIsSpeaking(true);
-      options.onSpeakStart?.();
-    };
-
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      options.onSpeakEnd?.();
+      // Try to get a native voice for the language
+      const voices = window.speechSynthesis.getVoices();
+      const langCode = language === 'es' ? 'es' : 'en';
+      const preferredVoice = voices.find(v => 
+        v.lang.startsWith(langCode) && v.localService
+      ) || voices.find(v => v.lang.startsWith(langCode));
       
-      // CRITICAL: Resume listening after speaking ends in continuous mode
-      // Add a small delay to ensure the speaker has fully stopped
-      if (resumeAfterSpeakingRef.current && continuousModeRef.current) {
-        resumeAfterSpeakingRef.current = false;
-        setTimeout(() => {
-          if (continuousModeRef.current) {
-            resumeListening();
-          }
-        }, 500); // 500ms delay to ensure audio has fully stopped
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
       }
-    };
 
-    utterance.onerror = (event) => {
-      console.error('Speech synthesis error:', event);
-      setIsSpeaking(false);
-      
-      // Resume listening even on error
-      if (resumeAfterSpeakingRef.current && continuousModeRef.current) {
-        resumeAfterSpeakingRef.current = false;
-        setTimeout(() => {
-          if (continuousModeRef.current) {
-            resumeListening();
-          }
-        }, 500);
-      }
-    };
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+        options.onSpeakStart?.();
+      };
 
-    synthRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
-  }, [isSupported, language, options, cleanTextForSpeech, isListening, pauseListening, resumeListening]);
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        options.onSpeakEnd?.();
+        
+        // CRITICAL: Resume listening after speaking ends in continuous mode
+        // Add a small delay to ensure the speaker has fully stopped
+        if (resumeAfterSpeakingRef.current && continuousModeRef.current) {
+          resumeAfterSpeakingRef.current = false;
+          setTimeout(() => {
+            if (continuousModeRef.current) {
+              resumeListening();
+            }
+          }, 500); // 500ms delay to ensure audio has fully stopped
+        }
+      };
+
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+        setIsSpeaking(false);
+        
+        // Resume listening even on error
+        if (resumeAfterSpeakingRef.current && continuousModeRef.current) {
+          resumeAfterSpeakingRef.current = false;
+          setTimeout(() => {
+            if (continuousModeRef.current) {
+              resumeListening();
+            }
+          }, 500);
+        }
+      };
+
+      synthRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+    }, 50); // 50ms delay to ensure cancel completes
+  }, [isSupported, language, options, cleanTextForSpeech, pauseListening, resumeListening]);
 
   // Stop speaking
   const stopSpeaking = useCallback(() => {
