@@ -343,35 +343,39 @@ export const ChatAssistant: React.FC = () => {
   const quickQuestions = QUICK_QUESTIONS[language as keyof typeof QUICK_QUESTIONS] || QUICK_QUESTIONS.es;
 
   // Check if text matches a voice query command
-  // IMPROVED: Only match simple/direct queries, not complex questions that should go to AI
+  // STRICT: Only match short/direct queries with exact or start-of-phrase patterns
   const checkVoiceQuery = useCallback((text: string): { matched: boolean; queryType?: QueryType } => {
-    const normalizedText = text.toLowerCase().trim();
+    const normalizedText = text.toLowerCase().trim().replace(/[.,!?¿¡]/g, '');
+    const words = normalizedText.split(/\s+/);
     const queries = VOICE_QUERIES[language as keyof typeof VOICE_QUERIES] || VOICE_QUERIES.es;
+    
+    // Don't match queries in long sentences - those are complex questions for AI
+    if (words.length > 10) {
+      console.log('[Voice] Text too long for query matching, sending to AI');
+      return { matched: false };
+    }
     
     // Words that indicate a complex question that should go to AI instead
     const complexIndicators = [
-      'puedes', 'podrías', 'puedo', 'cómo', 'qué', 'por qué', 'cuál es la diferencia',
-      'ayuda', 'ayudar', 'orientar', 'explicar', 'explicame', 'dime', 'hacer por mí',
-      'can you', 'could you', 'how', 'what', 'why', 'explain', 'help me', 'tell me',
-      'de chile', 'de canadá', 'de méxico', 'from chile', 'from canada', 'from mexico',
-      'en chile', 'en canadá', 'en méxico', 'in chile', 'in canada', 'in mexico',
+      'puedes', 'podrías', 'puedo', 'cómo hacer', 'qué es', 'por qué', 'cuál es la diferencia',
+      'ayuda', 'ayudar', 'orientar', 'explicar', 'explicame', 'dime cómo', 'hacer por mí',
+      'can you', 'could you', 'how do', 'what is', 'why', 'explain', 'help me', 'tell me how',
+      'de chile', 'de canadá', 'from chile', 'from canada',
+      'en chile', 'en canadá', 'in chile', 'in canada',
     ];
     
     // If the text contains complex question indicators, send to AI
     const hasComplexIndicator = complexIndicators.some(indicator => normalizedText.includes(indicator));
     if (hasComplexIndicator) {
-      return { matched: false };
-    }
-    
-    // Only match if the query is relatively short and direct (less than 50 chars)
-    // Long questions are likely more nuanced and should go to AI
-    if (normalizedText.length > 50) {
+      console.log('[Voice] Complex indicator found, sending to AI');
       return { matched: false };
     }
     
     for (const query of queries) {
       for (const pattern of query.patterns) {
-        if (normalizedText.includes(pattern)) {
+        // Exact match OR text starts with pattern
+        if (normalizedText === pattern || normalizedText.startsWith(pattern)) {
+          console.log('[Voice] Query matched:', pattern, '→', query.queryType);
           return { matched: true, queryType: query.queryType };
         }
       }
@@ -483,13 +487,24 @@ export const ChatAssistant: React.FC = () => {
   }, [monthlyExpenses, yearlyExpenses, monthlyIncome, yearlyIncome, balance, clients?.length, projects?.length, pendingReceipts, biggestExpense, topCategory, deductibleTotal, billableTotal, estimatedTaxOwed, language]);
 
   // Check if text matches a voice command
+  // STRICT: Only match if text is short (max 6 words) AND pattern is at the START or is EXACT
   const checkVoiceCommand = useCallback((text: string): { matched: boolean; route?: string; name?: string; action?: string } => {
-    const normalizedText = text.toLowerCase().trim();
+    const normalizedText = text.toLowerCase().trim().replace(/[.,!?¿¡]/g, '');
+    const words = normalizedText.split(/\s+/);
+    
+    // Don't match commands in long sentences - those are questions for the AI
+    if (words.length > 6) {
+      console.log('[Voice] Text too long for command matching, sending to AI:', normalizedText);
+      return { matched: false };
+    }
+    
     const commands = VOICE_COMMANDS[language as keyof typeof VOICE_COMMANDS] || VOICE_COMMANDS.es;
     
     for (const command of commands) {
       for (const pattern of command.patterns) {
-        if (normalizedText.includes(pattern)) {
+        // Exact match OR text starts with pattern
+        if (normalizedText === pattern || normalizedText.startsWith(pattern + ' ') || normalizedText.startsWith(pattern)) {
+          console.log('[Voice] Command matched:', pattern, '→', command.name);
           return { matched: true, route: command.route, name: command.name, action: command.action };
         }
       }
