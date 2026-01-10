@@ -79,12 +79,12 @@ export default function Mileage() {
                   </SelectContent>
                 </Select>
               </InfoTooltip>
-              <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+              <Button variant="outline" onClick={() => setImportDialogOpen(true)} data-highlight="import-button">
                 <Upload className="mr-2 h-4 w-4" />
                 {t('mileage.import')}
               </Button>
               <InfoTooltip content={TOOLTIP_CONTENT.addTrip} variant="wrapper">
-                <Button onClick={handleCreate}>
+                <Button onClick={handleCreate} data-highlight="add-trip-button">
                   <Plus className="mr-2 h-4 w-4" />
                   {t('mileage.addTrip')}
                 </Button>
@@ -108,7 +108,7 @@ export default function Mileage() {
             <MileageMonthlyChart data={mileageRecords} year={selectedYear} />
           )}
 
-          <Tabs defaultValue="records" className="space-y-4">
+          <Tabs defaultValue="records" className="space-y-4" data-highlight="mileage-table">
             <TabsList>
               <InfoTooltip content={TOOLTIP_CONTENT.mileageTripsTab} variant="wrapper">
                 <TabsTrigger value="records">{t('mileage.tripsTab')}</TabsTrigger>

@@ -10,16 +10,18 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useVoicePreferences } from '@/hooks/utils/useVoicePreferences';
+import { useHighlight, type HighlightColor } from '@/contexts/HighlightContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   Mic, Volume2, Bell, Zap, Trash2, Plus, Clock, Calendar, 
-  MessageSquare, History, Play, Settings2, VolumeX, Volume1
+  MessageSquare, History, Play, Settings2, VolumeX, Volume1, Highlighter
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function VoicePreferencesCard() {
   const { language } = useLanguage();
   const voicePrefs = useVoicePreferences();
+  const highlightCtx = useHighlight();
   
   const [showShortcutDialog, setShowShortcutDialog] = useState(false);
   const [showReminderDialog, setShowReminderDialog] = useState(false);
@@ -221,6 +223,52 @@ export function VoicePreferencesCard() {
               </Label>
             </div>
           </div>
+        </div>
+
+        {/* Highlight Color Settings */}
+        <div className="space-y-3 pt-4 border-t">
+          <h4 className="font-medium text-sm flex items-center gap-2">
+            <Highlighter className="h-4 w-4" />
+            {language === 'es' ? 'Resaltado Tutorial' : 'Tutorial Highlight'}
+          </h4>
+          <p className="text-xs text-muted-foreground">
+            {language === 'es' 
+              ? 'El asistente puede resaltar secciones de la app mientras te las explica.'
+              : 'The assistant can highlight app sections while explaining them.'}
+          </p>
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={highlightCtx.isHighlightEnabled}
+              onCheckedChange={() => highlightCtx.toggleHighlightEnabled()}
+            />
+            <Label className="text-sm">
+              {language === 'es' ? 'Activar resaltado' : 'Enable highlighting'}
+            </Label>
+          </div>
+          {highlightCtx.isHighlightEnabled && (
+            <div className="flex items-center gap-2 pt-2">
+              <Label className="text-xs">{language === 'es' ? 'Color:' : 'Color:'}</Label>
+              <div className="flex gap-1">
+                {(['orange', 'green', 'red', 'blue', 'purple'] as HighlightColor[]).map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => highlightCtx.setHighlightColor(color)}
+                    className={`w-6 h-6 rounded-full border-2 transition-all ${
+                      highlightCtx.highlightColor === color ? 'ring-2 ring-offset-2 ring-primary scale-110' : ''
+                    }`}
+                    style={{ 
+                      backgroundColor: color === 'orange' ? '#f97316' 
+                        : color === 'green' ? '#22c55e' 
+                        : color === 'red' ? '#ef4444' 
+                        : color === 'blue' ? '#3b82f6' 
+                        : '#a855f7' 
+                    }}
+                    title={color}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Custom Shortcuts */}

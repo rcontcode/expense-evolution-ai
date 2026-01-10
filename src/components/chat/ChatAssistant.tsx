@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square, AlertTriangle, BookOpen, Settings, Volume1, History, Zap, TrendingUp, ArrowRight } from 'lucide-react';
+import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square, AlertTriangle, BookOpen, Settings, Volume1, History, Zap, TrendingUp, ArrowRight, Minimize2 } from 'lucide-react';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ import { useClients } from '@/hooks/data/useClients';
 import { useProjects } from '@/hooks/data/useProjects';
 import { useExpenses, useCreateExpense } from '@/hooks/data/useExpenses';
 import { KaraokeText } from './KaraokeText';
+import { MinimizedAssistant } from './MinimizedAssistant';
 import { VoiceOnboarding } from './voice/VoiceOnboarding';
 import { useMicrophonePermission, MicrophonePermissionAlert } from './voice/MicrophonePermission';
 import { ContinuousModeIndicator, FloatingVoiceIndicator } from './voice/ContinuousModeIndicator';
@@ -28,6 +29,7 @@ import { AudioLevelIndicator } from './voice/AudioLevelIndicator';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useHighlight, HIGHLIGHTABLE_ELEMENTS } from '@/contexts/HighlightContext';
 import { useVoiceAssistant } from '@/hooks/utils/useVoiceAssistant';
 import { useAudioPlayback } from '@/hooks/utils/useAudioPlayback';
 import { useSmartGuidance } from '@/hooks/utils/useSmartGuidance';
@@ -38,6 +40,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
+import { AnimatePresence } from 'framer-motion';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -62,6 +65,7 @@ const LOCAL_QUICK_QUESTIONS = {
 
 export const ChatAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -84,6 +88,9 @@ export const ChatAssistant: React.FC = () => {
   
   // Microphone permission management
   const micPermission = useMicrophonePermission();
+  
+  // Highlight system for interactive tutorials
+  const highlightContext = useHighlight();
 
   const { user } = useAuth();
   const { data: profile } = useProfile();
@@ -1079,15 +1086,30 @@ export const ChatAssistant: React.FC = () => {
           "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
           "bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500",
           "transition-all duration-300 hover:scale-110",
-          (isOpen || isContinuousMode || isListening || isSpeaking) && "hidden"
+          (isOpen || isMinimized || isContinuousMode || isListening || isSpeaking) && "hidden"
         )}
         size="icon"
       >
         <PhoenixLogo variant="badge" showEffects={false} className="h-7 w-7" />
       </Button>
 
+      {/* Minimized Assistant View */}
+      <AnimatePresence>
+        {isMinimized && (
+          <MinimizedAssistant
+            onExpand={() => setIsMinimized(false)}
+            isSpeaking={isSpeaking}
+            isListening={isListening}
+            isContinuousMode={isContinuousMode}
+            onStopSpeaking={stopSpeaking}
+            onStopContinuous={stopContinuousListening}
+            currentText={currentSpeakingText}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Chat Window */}
-      {isOpen && (
+      {isOpen && !isMinimized && (
         <div className={cn(
           "fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-48px)]",
           "bg-background border border-border rounded-2xl shadow-2xl",
@@ -1322,6 +1344,22 @@ export const ChatAssistant: React.FC = () => {
                   </TooltipContent>
                 </Tooltip>
               )}
+              {/* Minimize button */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setIsMinimized(true)}
+                    className="h-8 w-8"
+                  >
+                    <Minimize2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {language === 'es' ? 'Minimizar' : 'Minimize'}
+                </TooltipContent>
+              </Tooltip>
               <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="h-8 w-8">
                 <X className="h-5 w-5" />
               </Button>
