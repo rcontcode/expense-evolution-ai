@@ -548,7 +548,7 @@ export function VoicePreferencesCard() {
         </div>
 
         {/* Test Sound */}
-        <div className="pt-4 border-t">
+        <div className="pt-4 border-t flex flex-wrap gap-2">
           <Button 
             variant="outline" 
             size="sm" 
@@ -558,8 +558,77 @@ export function VoicePreferencesCard() {
             }}
             className="gap-2"
           >
-            <Play className="h-3 w-3" />
+            <Volume1 className="h-3 w-3" />
             {language === 'es' ? 'Probar Sonido' : 'Test Sound'}
+          </Button>
+
+          {/* Test Voice TTS */}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => {
+              const testMessage = language === 'es'
+                ? '¡Hola! Esta es una prueba de voz del asistente.'
+                : 'Hello! This is a voice test from the assistant.';
+              
+              if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(testMessage);
+                utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
+                utterance.rate = voicePrefs.speechSpeed;
+                utterance.volume = voicePrefs.volume;
+                utterance.pitch = voicePrefs.pitch;
+                window.speechSynthesis.speak(utterance);
+                toast.success(language === 'es' ? 'Reproduciendo voz...' : 'Playing voice...');
+              } else {
+                toast.error(language === 'es' ? 'Voz no soportada' : 'Voice not supported');
+              }
+            }}
+            className="gap-2"
+          >
+            <Volume2 className="h-3 w-3" />
+            {language === 'es' ? 'Probar Voz TTS' : 'Test Voice TTS'}
+          </Button>
+
+          {/* Export History */}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => {
+              const history = voicePrefs.getRecentContext(100);
+              if (history.length === 0) {
+                toast.error(language === 'es' ? 'No hay historial para exportar' : 'No history to export');
+                return;
+              }
+              
+              const exportData = {
+                exportedAt: new Date().toISOString(),
+                language,
+                messagesCount: history.length,
+                messages: history.map(entry => ({
+                  role: entry.role,
+                  content: entry.content,
+                  timestamp: entry.timestamp,
+                  page: entry.page,
+                })),
+              };
+              
+              const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `voice-history-${new Date().toISOString().split('T')[0]}.json`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+              
+              toast.success(language === 'es' ? 'Historial exportado' : 'History exported');
+            }}
+            className="gap-2"
+          >
+            <History className="h-3 w-3" />
+            {language === 'es' ? 'Exportar Historial' : 'Export History'}
           </Button>
         </div>
       </CardContent>

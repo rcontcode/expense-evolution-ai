@@ -52,7 +52,7 @@ import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Link } from 'react-router-dom';
 import { EntitySelector } from '@/components/EntitySelector';
 import { useGlobalReminders } from '@/hooks/utils/useGlobalReminders';
-import { FloatingVoiceIndicator } from '@/components/chat/voice/ContinuousModeIndicator';
+// FloatingVoiceIndicator is managed by ChatAssistant, not needed here
 
 interface LayoutProps {
   children: ReactNode;
