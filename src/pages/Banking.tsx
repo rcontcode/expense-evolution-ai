@@ -41,9 +41,13 @@ export default function Banking() {
         <MiniWorkflow workflowId="bank-reconciliation" />
 
         {/* Banking Integration Guide with Tooltips */}
-        <BankingIntegrationGuide onImportClick={() => setImportDialogOpen(true)} />
+        <div data-highlight="bank-import-guide">
+          <BankingIntegrationGuide onImportClick={() => setImportDialogOpen(true)} />
+        </div>
         
-        <BankAnalysisDashboard />
+        <div data-highlight="bank-analysis-dashboard">
+          <BankAnalysisDashboard />
+        </div>
 
         {/* Import Dialog */}
         <BankImportDialog open={importDialogOpen} onClose={() => setImportDialogOpen(false)} />

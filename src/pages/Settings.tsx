@@ -74,13 +74,17 @@ export default function Settings() {
           {/* ============== PREFERENCES TAB ============== */}
           <TabsContent value="preferences" className="space-y-6">
             {/* Fiscal Jurisdictions - Multi-country support */}
-            <FiscalEntitiesCard />
+            <div data-highlight="fiscal-entities">
+              <FiscalEntitiesCard />
+            </div>
 
             {/* Subscription Management */}
-            <SubscriptionManager />
+            <div data-highlight="subscription-settings">
+              <SubscriptionManager />
+            </div>
 
             {/* Language Section */}
-            <Card>
+            <Card data-highlight="language-settings">
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Globe className="h-5 w-5 text-primary" />
@@ -111,11 +115,13 @@ export default function Settings() {
 
             {/* Voice Preferences */}
             <Suspense fallback={<SectionSkeleton />}>
-              <VoicePreferencesCard />
+              <div data-highlight="voice-preferences">
+                <VoicePreferencesCard />
+              </div>
             </Suspense>
 
             {/* Theme Section */}
-            <Card>
+            <Card data-highlight="theme-settings">
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Palette className="h-5 w-5 text-primary" />
