@@ -23,6 +23,7 @@ import { ContinuousModeIndicator, FloatingVoiceIndicator } from './voice/Continu
 import { useVoiceKeyboardShortcuts } from '@/hooks/utils/useKeyboardShortcuts';
 // Import centralized voice modules (parsers still used for expense/income creation)
 import { parseVoiceExpense, parseVoiceIncome } from './voice/VoiceParsers';
+import { parseOpenClientCommand } from './voice/VoiceActionParsers';
 import { VoiceCommandsCheatsheet } from './voice/VoiceCommandsCheatsheet';
 import { AudioLevelIndicator } from './voice/AudioLevelIndicator';
 
@@ -794,22 +795,97 @@ export const ChatAssistant: React.FC = () => {
   }, [navigate, triggerHapticFeedback, voicePrefs, isHighlightEnabled, highlight, language]);
 
   const sendMessage = useCallback(async (text: string, skipAddingUserMessage = false) => {
-    if (!text.trim() || isLoading) return;
+    const trimmedText = text.trim();
+    if (!trimmedText || isLoading) return;
 
-    const userMessage: Message = { role: 'user', content: text };
+    const userMessage: Message = { role: 'user', content: trimmedText };
     if (!skipAddingUserMessage) {
       setMessages(prev => [...prev, userMessage]);
     }
     setInput('');
-    setIsLoading(true);
-    
+
     // Save to conversation history
-    voicePrefs.addToHistory({ role: 'user', content: text, page: location.pathname });
+    voicePrefs.addToHistory({ role: 'user', content: trimmedText, page: location.pathname });
+
+    const respondLocal = (responseText: string, highlightsPath?: string) => {
+      const assistantMessage: Message = { role: 'assistant', content: responseText };
+      setMessages(prev => [...prev, assistantMessage]);
+      voicePrefs.addToHistory({ role: 'assistant', content: responseText, page: location.pathname });
+
+      if (isHighlightEnabled && highlightsPath) {
+        const highlights = getNavigationHighlights(highlightsPath, language as 'es' | 'en');
+        if (highlights.length > 0) {
+          setTimeout(() => highlight(highlights), 250);
+        }
+      }
+
+      if (autoSpeak && isVoiceSupported) {
+        window.speechSynthesis.cancel();
+        audioPlayback.stop();
+        speak(responseText);
+      }
+    };
+
+    // LOCAL GUARANTEE: "qué puedo hacer aquí" must always reflect the REAL current page.
+    if (isAskingAboutCurrentPage(trimmedText)) {
+      const page = getCurrentPageContext();
+      const responseText = language === 'es'
+        ? `${page.description} Si quieres, dime: "agregar" para crear algo, "muéstrame" para navegar, o "abre el cliente NOMBRE" para entrar directo a un cliente.`
+        : `${page.description} If you want, say: "add" to create something, "show" to navigate, or "open client NAME" to jump directly to a client.`;
+      respondLocal(responseText, location.pathname);
+      return;
+    }
+
+    // LOCAL ACTION: open a client by name (reliable in continuous voice mode)
+    const requestedClientName = parseOpenClientCommand(trimmedText, language as 'es' | 'en');
+    if (requestedClientName) {
+      const normalize = (s: string) =>
+        s
+          .toLowerCase()
+          .replace(/[.,!?¿¡"“”'’]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+      const needle = normalize(requestedClientName);
+      const target =
+        clients?.find(c => normalize(c.name) === needle) ||
+        clients?.find(c => normalize(c.name).includes(needle)) ||
+        clients?.find(c => needle.includes(normalize(c.name)));
+
+      if (!target) {
+        const responseText = language === 'es'
+          ? `No encontré un cliente llamado "${requestedClientName}". Dime "muéstrame mis clientes" para ver la lista, o repite el nombre tal como aparece.`
+          : `I couldn't find a client named "${requestedClientName}". Say "show my clients" to see the list, or repeat the name as it appears.`;
+        respondLocal(responseText, '/clients');
+        return;
+      }
+
+      const responseText = language === 'es'
+        ? `Abriendo el cliente ${target.name}.`
+        : `Opening client ${target.name}.`;
+      respondLocal(responseText, '/clients');
+
+      navigate('/clients');
+      setTimeout(() => {
+        window.dispatchEvent(
+          new CustomEvent('voice-command-action', {
+            detail: { action: 'open-client', clientId: target.id },
+          })
+        );
+      }, 650);
+
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
       // Build comprehensive user context for AI
+      const currentPage = getCurrentPageContext();
       const userContext = {
         userName,
+        currentRoute: location.pathname,
+        currentPageName: currentPage.pageName,
         totalExpenses: stats?.monthlyTotal || 0,
         yearlyExpenses: stats?.totalExpenses || 0,
         totalIncome: monthlyIncome,
@@ -830,6 +906,7 @@ export const ChatAssistant: React.FC = () => {
         deductibleTotal,
         billableTotal,
       };
+
 
       const { data, error } = await supabase.functions.invoke('app-assistant', {
         body: {

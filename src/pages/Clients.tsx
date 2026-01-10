@@ -48,6 +48,7 @@ export default function Clients() {
   const { t, language } = useLanguage();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | undefined>();
+  const [pendingOpenClientId, setPendingOpenClientId] = useState<string | null>(null);
   const [financialClient, setFinancialClient] = useState<Client | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteTestDataId, setDeleteTestDataId] = useState<string | null>(null);
@@ -62,10 +63,15 @@ export default function Clients() {
 
   // Listen for voice command actions
   useEffect(() => {
-    const handleVoiceAction = (event: CustomEvent<{ action: string }>) => {
+    const handleVoiceAction = (event: CustomEvent<{ action: string; clientId?: string }>) => {
       if (event.detail.action === 'add-client') {
         setSelectedClient(undefined);
         setDialogOpen(true);
+        return;
+      }
+
+      if (event.detail.action === 'open-client' && event.detail.clientId) {
+        setPendingOpenClientId(event.detail.clientId);
       }
     };
 
@@ -74,6 +80,18 @@ export default function Clients() {
       window.removeEventListener('voice-command-action', handleVoiceAction as EventListener);
     };
   }, []);
+
+  // If a voice action requests opening a client, wait for data and then open the dialog
+  useEffect(() => {
+    if (!pendingOpenClientId || !clients?.length) return;
+
+    const target = clients.find(c => c.id === pendingOpenClientId);
+    if (target) {
+      setSelectedClient(target);
+      setDialogOpen(true);
+    }
+    setPendingOpenClientId(null);
+  }, [pendingOpenClientId, clients]);
 
   // Check which clients have test data (any associated records)
   const getClientHasTestData = (clientId: string) => {
