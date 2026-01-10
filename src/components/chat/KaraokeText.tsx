@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 interface KaraokeTextProps {
   text: string;
+  currentSentenceIndex: number; // Received from voice assistant hook
   isPlaying: boolean;
   isPaused: boolean;
   onPause: () => void;
@@ -22,17 +23,9 @@ function splitIntoSentences(text: string): string[] {
   return sentences.filter(s => s.trim().length > 0);
 }
 
-// Estimate reading time per sentence (avg 150 words/min for speech)
-function estimateSentenceTime(sentence: string): number {
-  const words = sentence.split(/\s+/).length;
-  // Base time: 400ms per word, plus extra time for punctuation pauses
-  const baseTime = words * 400;
-  const punctuationPauses = (sentence.match(/[.!?,;:。、]/g) || []).length * 200;
-  return baseTime + punctuationPauses;
-}
-
 export const KaraokeText: React.FC<KaraokeTextProps> = ({
   text,
+  currentSentenceIndex,
   isPlaying,
   isPaused,
   onPause,
@@ -41,64 +34,10 @@ export const KaraokeText: React.FC<KaraokeTextProps> = ({
   className,
 }) => {
   const { language } = useLanguage();
-  const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentenceRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef<number | null>(null);
-  const pausedAtRef = useRef<number>(0);
 
   const sentences = splitIntoSentences(text);
-
-  // Reset when text changes
-  useEffect(() => {
-    setCurrentSentenceIndex(0);
-    pausedAtRef.current = 0;
-    startTimeRef.current = null;
-  }, [text]);
-
-  // Handle sentence progression
-  useEffect(() => {
-    if (!isPlaying || isPaused || currentSentenceIndex >= sentences.length) {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-      return;
-    }
-
-    const currentSentence = sentences[currentSentenceIndex];
-    const duration = estimateSentenceTime(currentSentence);
-    
-    // Calculate remaining time if resuming from pause
-    let remainingTime = duration;
-    if (pausedAtRef.current > 0 && startTimeRef.current) {
-      const elapsed = pausedAtRef.current - startTimeRef.current;
-      remainingTime = Math.max(duration - elapsed, 100);
-      pausedAtRef.current = 0;
-    }
-    
-    startTimeRef.current = Date.now();
-
-    timerRef.current = setTimeout(() => {
-      if (currentSentenceIndex < sentences.length - 1) {
-        setCurrentSentenceIndex(prev => prev + 1);
-      }
-    }, remainingTime);
-
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, [isPlaying, isPaused, currentSentenceIndex, sentences]);
-
-  // Track pause timing
-  useEffect(() => {
-    if (isPaused && startTimeRef.current) {
-      pausedAtRef.current = Date.now();
-    }
-  }, [isPaused]);
 
   // Auto-scroll to current sentence
   useEffect(() => {

@@ -49,44 +49,48 @@ const QUICK_QUESTIONS = {
 // Voice navigation commands
 const VOICE_COMMANDS = {
   es: [
-    { patterns: ['ir a gastos', 'gastos', 'ver gastos', 'mostrar gastos', 'abrir gastos'], route: '/expenses', name: 'Gastos' },
-    { patterns: ['ir a ingresos', 'ingresos', 'ver ingresos', 'mostrar ingresos'], route: '/income', name: 'Ingresos' },
-    { patterns: ['ir a clientes', 'clientes', 'ver clientes', 'mostrar clientes'], route: '/clients', name: 'Clientes' },
-    { patterns: ['ir a proyectos', 'proyectos', 'ver proyectos'], route: '/projects', name: 'Proyectos' },
-    { patterns: ['ir a contratos', 'contratos', 'ver contratos'], route: '/contracts', name: 'Contratos' },
-    { patterns: ['ir al dashboard', 'dashboard', 'inicio', 'ir al inicio', 'panel'], route: '/dashboard', name: 'Dashboard' },
-    { patterns: ['ir a kilometraje', 'kilometraje', 'millas', 'kilómetros'], route: '/mileage', name: 'Kilometraje' },
-    { patterns: ['ir a patrimonio', 'patrimonio', 'patrimonio neto', 'net worth'], route: '/net-worth', name: 'Patrimonio' },
-    { patterns: ['ir a banca', 'banca', 'banco', 'transacciones bancarias'], route: '/banking', name: 'Banca' },
-    { patterns: ['ir a configuración', 'configuración', 'ajustes', 'settings'], route: '/settings', name: 'Configuración' },
-    { patterns: ['capturar', 'capturar gasto', 'tomar foto', 'escanear recibo'], route: '/capture', name: 'Captura Rápida' },
-    { patterns: ['agregar gasto', 'nuevo gasto', 'añadir gasto'], route: '/expenses', action: 'add-expense', name: 'Agregar Gasto' },
-    { patterns: ['agregar ingreso', 'nuevo ingreso', 'añadir ingreso'], route: '/income', action: 'add-income', name: 'Agregar Ingreso' },
-    { patterns: ['agregar cliente', 'nuevo cliente'], route: '/clients', action: 'add-client', name: 'Agregar Cliente' },
-    { patterns: ['bandeja', 'bandeja de caos', 'revisar recibos', 'chaos inbox'], route: '/chaos-inbox', name: 'Bandeja de Caos' },
-    { patterns: ['reconciliación', 'reconciliar', 'conciliación'], route: '/reconciliation', name: 'Reconciliación' },
-    { patterns: ['perfil de negocio', 'perfil empresarial', 'mi negocio'], route: '/business-profile', name: 'Perfil de Negocio' },
-    { patterns: ['notificaciones', 'alertas', 'ver notificaciones'], route: '/notifications', name: 'Notificaciones' },
+    { patterns: ['ir a gastos', 'gastos', 'ver gastos', 'mostrar gastos', 'abrir gastos', 'llévame a gastos', 'llevame a gastos', 'quiero ver gastos', 'abre gastos', 'muéstrame gastos', 'muestrame gastos'], route: '/expenses', name: 'Gastos' },
+    { patterns: ['ir a ingresos', 'ingresos', 'ver ingresos', 'mostrar ingresos', 'llévame a ingresos', 'llevame a ingresos', 'quiero ver ingresos', 'abre ingresos', 'muéstrame ingresos'], route: '/income', name: 'Ingresos' },
+    { patterns: ['ir a clientes', 'clientes', 'ver clientes', 'mostrar clientes', 'llévame a clientes', 'llevame a clientes', 'quiero ver clientes', 'abre clientes', 'muéstrame clientes'], route: '/clients', name: 'Clientes' },
+    { patterns: ['ir a proyectos', 'proyectos', 'ver proyectos', 'llévame a proyectos', 'llevame a proyectos', 'quiero ver proyectos', 'abre proyectos', 'muéstrame proyectos', 'muestrame proyectos'], route: '/projects', name: 'Proyectos' },
+    { patterns: ['ir a contratos', 'contratos', 'ver contratos', 'llévame a contratos', 'llevame a contratos', 'quiero ver contratos', 'abre contratos'], route: '/contracts', name: 'Contratos' },
+    { patterns: ['ir al dashboard', 'dashboard', 'inicio', 'ir al inicio', 'panel', 'llévame al inicio', 'llevame al inicio', 'quiero ir al inicio', 'abre el dashboard', 'página principal'], route: '/dashboard', name: 'Dashboard' },
+    { patterns: ['ir a kilometraje', 'kilometraje', 'millas', 'kilómetros', 'llévame a kilometraje', 'llevame a kilometraje', 'ver kilometraje'], route: '/mileage', name: 'Kilometraje' },
+    { patterns: ['ir a patrimonio', 'patrimonio', 'patrimonio neto', 'net worth', 'llévame a patrimonio', 'llevame a patrimonio', 'quiero ver patrimonio', 'mis activos'], route: '/net-worth', name: 'Patrimonio' },
+    { patterns: ['ir a banca', 'banca', 'banco', 'transacciones bancarias', 'llévame a banca', 'llevame a banca', 'análisis bancario'], route: '/banking', name: 'Banca' },
+    { patterns: ['ir a configuración', 'configuración', 'ajustes', 'settings', 'llévame a configuración', 'llevame a configuración', 'quiero configurar'], route: '/settings', name: 'Configuración' },
+    { patterns: ['capturar', 'capturar gasto', 'tomar foto', 'escanear recibo', 'quiero capturar', 'escanea un recibo'], route: '/capture', name: 'Captura Rápida' },
+    { patterns: ['agregar gasto', 'nuevo gasto', 'añadir gasto', 'quiero agregar un gasto', 'registrar gasto'], route: '/expenses', action: 'add-expense', name: 'Agregar Gasto' },
+    { patterns: ['agregar ingreso', 'nuevo ingreso', 'añadir ingreso', 'quiero agregar un ingreso', 'registrar ingreso'], route: '/income', action: 'add-income', name: 'Agregar Ingreso' },
+    { patterns: ['agregar cliente', 'nuevo cliente', 'quiero agregar un cliente', 'registrar cliente'], route: '/clients', action: 'add-client', name: 'Agregar Cliente' },
+    { patterns: ['bandeja', 'bandeja de caos', 'revisar recibos', 'chaos inbox', 'recibos pendientes'], route: '/chaos-inbox', name: 'Bandeja de Caos' },
+    { patterns: ['reconciliación', 'reconciliar', 'conciliación', 'conciliar cuentas'], route: '/reconciliation', name: 'Reconciliación' },
+    { patterns: ['perfil de negocio', 'perfil empresarial', 'mi negocio', 'datos del negocio'], route: '/business-profile', name: 'Perfil de Negocio' },
+    { patterns: ['notificaciones', 'alertas', 'ver notificaciones', 'mis alertas'], route: '/notifications', name: 'Notificaciones' },
+    { patterns: ['mentoría', 'mentoria', 'ir a mentoría', 'educación financiera', 'aprender finanzas'], route: '/mentorship', name: 'Mentoría' },
+    { patterns: ['impuestos', 'calendario fiscal', 'ir a impuestos', 'ver impuestos', 'fechas de impuestos'], route: '/tax-calendar', name: 'Calendario Fiscal' },
   ],
   en: [
-    { patterns: ['go to expenses', 'expenses', 'show expenses', 'open expenses'], route: '/expenses', name: 'Expenses' },
-    { patterns: ['go to income', 'income', 'show income'], route: '/income', name: 'Income' },
-    { patterns: ['go to clients', 'clients', 'show clients'], route: '/clients', name: 'Clients' },
-    { patterns: ['go to projects', 'projects', 'show projects'], route: '/projects', name: 'Projects' },
-    { patterns: ['go to contracts', 'contracts', 'show contracts'], route: '/contracts', name: 'Contracts' },
-    { patterns: ['go to dashboard', 'dashboard', 'home', 'go home'], route: '/dashboard', name: 'Dashboard' },
-    { patterns: ['go to mileage', 'mileage', 'miles', 'kilometers'], route: '/mileage', name: 'Mileage' },
-    { patterns: ['go to net worth', 'net worth', 'wealth', 'assets'], route: '/net-worth', name: 'Net Worth' },
-    { patterns: ['go to banking', 'banking', 'bank', 'bank transactions'], route: '/banking', name: 'Banking' },
-    { patterns: ['go to settings', 'settings', 'configuration'], route: '/settings', name: 'Settings' },
-    { patterns: ['capture', 'capture expense', 'take photo', 'scan receipt'], route: '/capture', name: 'Quick Capture' },
-    { patterns: ['add expense', 'new expense', 'create expense'], route: '/expenses', action: 'add-expense', name: 'Add Expense' },
-    { patterns: ['add income', 'new income', 'create income'], route: '/income', action: 'add-income', name: 'Add Income' },
-    { patterns: ['add client', 'new client', 'create client'], route: '/clients', action: 'add-client', name: 'Add Client' },
-    { patterns: ['inbox', 'chaos inbox', 'review receipts'], route: '/chaos-inbox', name: 'Chaos Inbox' },
-    { patterns: ['reconciliation', 'reconcile', 'bank reconciliation'], route: '/reconciliation', name: 'Reconciliation' },
-    { patterns: ['business profile', 'my business'], route: '/business-profile', name: 'Business Profile' },
-    { patterns: ['notifications', 'alerts', 'show notifications'], route: '/notifications', name: 'Notifications' },
+    { patterns: ['go to expenses', 'expenses', 'show expenses', 'open expenses', 'take me to expenses', 'i want to see expenses', 'show me expenses'], route: '/expenses', name: 'Expenses' },
+    { patterns: ['go to income', 'income', 'show income', 'take me to income', 'i want to see income', 'show me income'], route: '/income', name: 'Income' },
+    { patterns: ['go to clients', 'clients', 'show clients', 'take me to clients', 'i want to see clients', 'show me clients'], route: '/clients', name: 'Clients' },
+    { patterns: ['go to projects', 'projects', 'show projects', 'take me to projects', 'i want to see projects', 'show me projects'], route: '/projects', name: 'Projects' },
+    { patterns: ['go to contracts', 'contracts', 'show contracts', 'take me to contracts', 'i want to see contracts'], route: '/contracts', name: 'Contracts' },
+    { patterns: ['go to dashboard', 'dashboard', 'home', 'go home', 'take me home', 'main page', 'i want to go home'], route: '/dashboard', name: 'Dashboard' },
+    { patterns: ['go to mileage', 'mileage', 'miles', 'kilometers', 'take me to mileage', 'show mileage'], route: '/mileage', name: 'Mileage' },
+    { patterns: ['go to net worth', 'net worth', 'wealth', 'assets', 'take me to net worth', 'show my assets'], route: '/net-worth', name: 'Net Worth' },
+    { patterns: ['go to banking', 'banking', 'bank', 'bank transactions', 'take me to banking', 'bank analysis'], route: '/banking', name: 'Banking' },
+    { patterns: ['go to settings', 'settings', 'configuration', 'take me to settings', 'i want to configure'], route: '/settings', name: 'Settings' },
+    { patterns: ['capture', 'capture expense', 'take photo', 'scan receipt', 'i want to capture', 'scan a receipt'], route: '/capture', name: 'Quick Capture' },
+    { patterns: ['add expense', 'new expense', 'create expense', 'i want to add an expense', 'record expense'], route: '/expenses', action: 'add-expense', name: 'Add Expense' },
+    { patterns: ['add income', 'new income', 'create income', 'i want to add income', 'record income'], route: '/income', action: 'add-income', name: 'Add Income' },
+    { patterns: ['add client', 'new client', 'create client', 'i want to add a client', 'register client'], route: '/clients', action: 'add-client', name: 'Add Client' },
+    { patterns: ['inbox', 'chaos inbox', 'review receipts', 'pending receipts'], route: '/chaos-inbox', name: 'Chaos Inbox' },
+    { patterns: ['reconciliation', 'reconcile', 'bank reconciliation', 'reconcile accounts'], route: '/reconciliation', name: 'Reconciliation' },
+    { patterns: ['business profile', 'my business', 'business data'], route: '/business-profile', name: 'Business Profile' },
+    { patterns: ['notifications', 'alerts', 'show notifications', 'my alerts'], route: '/notifications', name: 'Notifications' },
+    { patterns: ['mentorship', 'go to mentorship', 'financial education', 'learn finance'], route: '/mentorship', name: 'Mentorship' },
+    { patterns: ['taxes', 'tax calendar', 'go to taxes', 'see taxes', 'tax dates'], route: '/tax-calendar', name: 'Tax Calendar' },
   ],
 };
 
@@ -489,13 +493,13 @@ export const ChatAssistant: React.FC = () => {
   }, [monthlyExpenses, yearlyExpenses, monthlyIncome, yearlyIncome, balance, clients?.length, projects?.length, pendingReceipts, biggestExpense, topCategory, deductibleTotal, billableTotal, estimatedTaxOwed, language]);
 
   // Check if text matches a voice command
-  // STRICT: Only match if text is short (max 6 words) AND pattern is at the START or is EXACT
+  // STRICT: Only match if text is short (max 10 words) AND pattern is at the START or is EXACT
   const checkVoiceCommand = useCallback((text: string): { matched: boolean; route?: string; name?: string; action?: string } => {
     const normalizedText = text.toLowerCase().trim().replace(/[.,!?¿¡]/g, '');
     const words = normalizedText.split(/\s+/);
     
     // Don't match commands in long sentences - those are questions for the AI
-    if (words.length > 6) {
+    if (words.length > 10) {
       console.log('[Voice] Text too long for command matching, sending to AI:', normalizedText);
       return { matched: false };
     }
@@ -643,12 +647,57 @@ export const ChatAssistant: React.FC = () => {
     onTranscript: (text) => {
       console.log('[ChatAssistant] Received transcript:', text);
       
-      // First check if it's an expense creation command
+      // PRIORITY 1: Check if it's a navigation command first (most user-friendly)
+      const command = checkVoiceCommand(text);
+      if (command.matched && command.route && command.name) {
+        setInput('');
+        const confirmMsg = language === 'es' 
+          ? `Entendido. Navegando a ${command.name}.`
+          : `Got it. Navigating to ${command.name}.`;
+        
+        const userMessage: Message = { role: 'user', content: text };
+        const assistantMessage: Message = { role: 'assistant', content: confirmMsg };
+        setMessages(prev => [...prev, userMessage, assistantMessage]);
+        
+        speak(confirmMsg);
+        executeVoiceCommand(command.route, command.name, command.action);
+        return;
+      }
+      
+      // PRIORITY 2: Check if it's a data query command
+      const query = checkVoiceQuery(text);
+      if (query.matched && query.queryType) {
+        setInput('');
+        const response = getQueryResponse(query.queryType);
+        
+        const userMessage: Message = { role: 'user', content: text };
+        const assistantMessage: Message = { role: 'assistant', content: response };
+        setMessages(prev => [...prev, userMessage, assistantMessage]);
+        
+        speak(response);
+        return;
+      }
+      
+      // PRIORITY 3: Check if user is asking about the current page (guide functionality)
+      if (isAskingAboutCurrentPage(text)) {
+        setInput('');
+        const pageContext = getCurrentPageContext();
+        const response = language === 'es'
+          ? `Estás en la página de ${pageContext.pageName}. ${pageContext.description}`
+          : `You're on the ${pageContext.pageName} page. ${pageContext.description}`;
+        
+        const userMessage: Message = { role: 'user', content: text };
+        const assistantMessage: Message = { role: 'assistant', content: response };
+        setMessages(prev => [...prev, userMessage, assistantMessage]);
+        speak(response);
+        return;
+      }
+      
+      // PRIORITY 4: Check if it's an expense creation command
       const parsedExpense = parseVoiceExpense(text);
       if (parsedExpense) {
         setInput('');
         
-        // Create the expense (user_id is added by the hook)
         createExpense.mutate({
           amount: parsedExpense.amount,
           vendor: parsedExpense.vendor,
@@ -656,14 +705,13 @@ export const ChatAssistant: React.FC = () => {
           date: new Date().toISOString().split('T')[0],
           status: 'pending',
           reimbursement_type: 'pending_classification',
-          user_id: '', // Will be overwritten by the hook
+          user_id: '',
         }, {
           onSuccess: () => {
             const confirmMsg = language === 'es'
               ? `Gasto creado: $${parsedExpense.amount} en ${parsedExpense.vendor}, categoría ${parsedExpense.category}.`
               : `Expense created: $${parsedExpense.amount} at ${parsedExpense.vendor}, category ${parsedExpense.category}.`;
             
-            // Add to chat messages
             const userMessage: Message = { role: 'user', content: text };
             const assistantMessage: Message = { role: 'assistant', content: confirmMsg };
             setMessages(prev => [...prev, userMessage, assistantMessage]);
@@ -681,12 +729,11 @@ export const ChatAssistant: React.FC = () => {
         return;
       }
       
-      // Check if it's an income creation command
+      // PRIORITY 5: Check if it's an income creation command
       const parsedIncome = parseVoiceIncome(text);
       if (parsedIncome) {
         setInput('');
         
-        // Create the income
         createIncome.mutate({
           amount: parsedIncome.amount,
           currency: 'CAD',
@@ -707,7 +754,6 @@ export const ChatAssistant: React.FC = () => {
               ? `Ingreso registrado: $${parsedIncome.amount}${parsedIncome.source ? ` de ${parsedIncome.source}` : ''}, tipo: ${incomeTypeLabel}.`
               : `Income recorded: $${parsedIncome.amount}${parsedIncome.source ? ` from ${parsedIncome.source}` : ''}, type: ${incomeTypeLabel}.`;
             
-            // Add to chat messages
             const userMessage: Message = { role: 'user', content: text };
             const assistantMessage: Message = { role: 'assistant', content: confirmMsg };
             setMessages(prev => [...prev, userMessage, assistantMessage]);
@@ -725,56 +771,7 @@ export const ChatAssistant: React.FC = () => {
         return;
       }
       
-      // Check if user is asking about the current page (guide functionality)
-      if (isAskingAboutCurrentPage(text)) {
-        setInput('');
-        const pageContext = getCurrentPageContext();
-        const response = language === 'es'
-          ? `Estás en la página de ${pageContext.pageName}. ${pageContext.description}`
-          : `You're on the ${pageContext.pageName} page. ${pageContext.description}`;
-        
-        const userMessage: Message = { role: 'user', content: text };
-        const assistantMessage: Message = { role: 'assistant', content: response };
-        setMessages(prev => [...prev, userMessage, assistantMessage]);
-        speak(response);
-        return;
-      }
-      
-      // Then check if it's a data query command
-      const query = checkVoiceQuery(text);
-      if (query.matched && query.queryType) {
-        setInput('');
-        const response = getQueryResponse(query.queryType);
-        
-        // Add to chat messages
-        const userMessage: Message = { role: 'user', content: text };
-        const assistantMessage: Message = { role: 'assistant', content: response };
-        setMessages(prev => [...prev, userMessage, assistantMessage]);
-        
-        // Speak the response
-        speak(response);
-        return;
-      }
-      
-      // Then check if it's a navigation command
-      const command = checkVoiceCommand(text);
-      if (command.matched && command.route && command.name) {
-        setInput('');
-        const confirmMsg = language === 'es' 
-          ? `Entendido. Navegando a ${command.name}.`
-          : `Got it. Navigating to ${command.name}.`;
-        
-        // Add to chat messages
-        const userMessage: Message = { role: 'user', content: text };
-        const assistantMessage: Message = { role: 'assistant', content: confirmMsg };
-        setMessages(prev => [...prev, userMessage, assistantMessage]);
-        
-        speak(confirmMsg);
-        executeVoiceCommand(command.route, command.name, command.action);
-        return;
-      }
-      
-      // Otherwise, send as a chat message
+      // PRIORITY 6: Send to AI for complex questions
       setInput('');
       sendMessage(text);
     },
@@ -1183,6 +1180,7 @@ export const ChatAssistant: React.FC = () => {
           {isSpeaking && currentSpeakingText && (
             <KaraokeText
               text={currentSpeakingText}
+              currentSentenceIndex={currentSentenceIndex}
               isPlaying={isSpeaking}
               isPaused={isSpeechPaused}
               onPause={pauseSpeech}
