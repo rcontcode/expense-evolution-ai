@@ -10,9 +10,11 @@ interface UseVoiceAssistantOptions {
 }
 
 // Voice commands to stop continuous mode
+// IMPORTANT: keep this strict to avoid accidentally stopping when the assistant says
+// phrases like "para detener...".
 const STOP_COMMANDS = {
-  es: ['detener', 'parar', 'stop'],
-  en: ['stop', 'pause', 'quit'],
+  es: ['detener', 'parar', 'stop', 'detener asistente', 'parar asistente'],
+  en: ['stop', 'pause', 'quit', 'stop assistant', 'pause assistant'],
 };
 
 export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
@@ -30,6 +32,11 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   const blockedRef = useRef(false);
   // Accumulated text in continuous mode
   const accumulatedRef = useRef('');
+
+  // Anti-echo: keep a normalized copy of what we just spoke, and a short suppression window
+  const lastSpokenNormalizedRef = useRef('');
+  const suppressRecognitionUntilRef = useRef(0);
+
   // Speech synthesis utterance
   const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
 
@@ -41,16 +48,11 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     setIsSupported(hasSpeechRecognition && 'speechSynthesis' in window);
   }, []);
 
-  // Check if text is just a stop command
+  // Check if text is a stop command (strict match)
   const isStopCommand = useCallback((text: string) => {
-    const normalizedText = text.toLowerCase().trim();
+    const normalizedText = text.toLowerCase().trim().replace(/[\p{P}\p{S}]+/gu, '');
     const commands = STOP_COMMANDS[language as keyof typeof STOP_COMMANDS] || STOP_COMMANDS.en;
-    // Match if the text is exactly a stop command or starts with it
-    return commands.some(cmd => 
-      normalizedText === cmd || 
-      normalizedText.startsWith(cmd + ' ') ||
-      normalizedText.endsWith(' ' + cmd)
-    );
+    return commands.some((cmd) => normalizedText === cmd);
   }, [language]);
 
   // Stop recognition completely
@@ -117,7 +119,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       // Update transcript display
       const currentText = interimTranscript || finalTranscript;
       setTranscript(currentText);
-      
+
       // Call interim callback for live display
       if (interimTranscript && options.onInterimTranscript) {
         options.onInterimTranscript(interimTranscript);
@@ -125,7 +127,38 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
 
       if (finalTranscript) {
         const trimmedFinal = finalTranscript.trim();
-        
+
+        // Anti-echo: ignore likely self-transcriptions right after we speak
+        if (continuousModeRef.current) {
+          const nowTs = Date.now();
+          if (nowTs < suppressRecognitionUntilRef.current) {
+            return;
+          }
+
+          const normalizedFinal = trimmedFinal
+            .toLowerCase()
+            .trim()
+            .replace(/[\p{P}\p{S}]+/gu, ' ')
+            .replace(/\s+/g, ' ');
+
+          const lastSpoken = lastSpokenNormalizedRef.current;
+          if (lastSpoken && normalizedFinal.length >= 12) {
+            // If the transcript is contained within what we just spoke (or vice versa), ignore.
+            if (lastSpoken.includes(normalizedFinal) || normalizedFinal.includes(lastSpoken)) {
+              return;
+            }
+
+            // If the first few words match a snippet of what we just spoke, ignore.
+            const words = normalizedFinal.split(' ');
+            if (words.length >= 4) {
+              const snippet = words.slice(0, 4).join(' ');
+              if (lastSpoken.includes(snippet)) {
+                return;
+              }
+            }
+          }
+        }
+
         // Check for stop command in continuous mode
         if (continuousModeRef.current && isStopCommand(trimmedFinal)) {
           console.log('[Voice] Stop command detected, stopping continuous mode');
@@ -135,12 +168,12 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
           options.onContinuousStopped?.();
           return;
         }
-        
+
         // Accumulate in continuous mode
         if (continuousModeRef.current) {
           accumulatedRef.current += (accumulatedRef.current ? ' ' : '') + trimmedFinal;
         }
-        
+
         // Send to callback
         if (options.onTranscript) {
           options.onTranscript(trimmedFinal);
@@ -311,6 +344,8 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
 
     // CRITICAL: Pause listening BEFORE speaking
     if (continuousModeRef.current) {
+      // Block recognition immediately and for a short window to avoid echo loops
+      suppressRecognitionUntilRef.current = Date.now() + 1400;
       pauseListening();
     }
 
@@ -322,6 +357,13 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       }
       return;
     }
+
+    // Store what we're about to say (normalized) to filter self-transcriptions
+    lastSpokenNormalizedRef.current = cleanedText
+      .toLowerCase()
+      .trim()
+      .replace(/[\p{P}\p{S}]+/gu, ' ')
+      .replace(/\s+/g, ' ');
 
     // Small delay to ensure cancel takes effect
     setTimeout(() => {
@@ -352,12 +394,15 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         console.log('[Voice] Speech ended');
         setIsSpeaking(false);
         options.onSpeakEnd?.();
-        
+
+        // Keep a short suppression window after speech ends as well
+        suppressRecognitionUntilRef.current = Date.now() + 900;
+
         // Resume listening after a delay
         if (continuousModeRef.current) {
           setTimeout(() => {
             resumeListening();
-          }, 500);
+          }, 650);
         }
       };
 
