@@ -770,22 +770,11 @@ export const ChatAssistant: React.FC = () => {
       setMessages(prev => [...prev, assistantMessage]);
 
       // Auto-speak response if enabled
-      // CRITICAL: Cancel ANY previous speech first, then speak new response
-      // In continuous mode, use speak() which properly pauses listening
-      // Otherwise use audioPlayback for the Spotify-like controls
+      // IMPORTANT: ALWAYS use speak() so the mic is paused even if callbacks are stale.
       if (autoSpeak && isVoiceSupported) {
-        // ALWAYS cancel previous speech to prevent overlap
         window.speechSynthesis.cancel();
         audioPlayback.stop();
-        
-        if (isContinuousMode) {
-          // Use speak() which coordinates with listening pause/resume
-          speak(responseText);
-        } else {
-          // Use audioPlayback for controls (non-continuous mode)
-          const msgIndex = messages.length + 1;
-          audioPlayback.play(responseText, msgIndex);
-        }
+        speak(responseText);
       }
     } catch (error) {
       console.error('Chat error:', error);
@@ -1023,9 +1012,18 @@ export const ChatAssistant: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => {
+                            // If the mic is currently listening, avoid audioPlayback because it doesn't pause recognition.
+                            // This prevents speaker-echo loops.
+                            if (isListening || isContinuousMode) {
+                              window.speechSynthesis.cancel();
+                              audioPlayback.stop();
+                              speak(msg.content);
+                              return;
+                            }
+
                             const isThisPlaying = audioPlayback.isPlaying && audioPlayback.currentMessageIndex === i;
                             const isThisPaused = audioPlayback.isPaused && audioPlayback.currentMessageIndex === i;
-                            
+
                             if (isThisPlaying && !isThisPaused) {
                               audioPlayback.pause();
                             } else if (isThisPaused) {
