@@ -343,9 +343,31 @@ export const ChatAssistant: React.FC = () => {
   const quickQuestions = QUICK_QUESTIONS[language as keyof typeof QUICK_QUESTIONS] || QUICK_QUESTIONS.es;
 
   // Check if text matches a voice query command
+  // IMPROVED: Only match simple/direct queries, not complex questions that should go to AI
   const checkVoiceQuery = useCallback((text: string): { matched: boolean; queryType?: QueryType } => {
     const normalizedText = text.toLowerCase().trim();
     const queries = VOICE_QUERIES[language as keyof typeof VOICE_QUERIES] || VOICE_QUERIES.es;
+    
+    // Words that indicate a complex question that should go to AI instead
+    const complexIndicators = [
+      'puedes', 'podrías', 'puedo', 'cómo', 'qué', 'por qué', 'cuál es la diferencia',
+      'ayuda', 'ayudar', 'orientar', 'explicar', 'explicame', 'dime', 'hacer por mí',
+      'can you', 'could you', 'how', 'what', 'why', 'explain', 'help me', 'tell me',
+      'de chile', 'de canadá', 'de méxico', 'from chile', 'from canada', 'from mexico',
+      'en chile', 'en canadá', 'en méxico', 'in chile', 'in canada', 'in mexico',
+    ];
+    
+    // If the text contains complex question indicators, send to AI
+    const hasComplexIndicator = complexIndicators.some(indicator => normalizedText.includes(indicator));
+    if (hasComplexIndicator) {
+      return { matched: false };
+    }
+    
+    // Only match if the query is relatively short and direct (less than 50 chars)
+    // Long questions are likely more nuanced and should go to AI
+    if (normalizedText.length > 50) {
+      return { matched: false };
+    }
     
     for (const query of queries) {
       for (const pattern of query.patterns) {
