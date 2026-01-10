@@ -48,7 +48,7 @@ import { SyncStatusIndicator } from '@/components/SyncStatusIndicator';
 import { AuthStatusIndicator } from '@/components/AuthStatusIndicator';
 import { useUnreadNotifications } from '@/hooks/data/useUnreadNotifications';
 import { ThemeBackground } from '@/components/ThemeBackground';
-import evofinzLogo from '@/assets/evofinz-logo.png';
+import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Link } from 'react-router-dom';
 import { EntitySelector } from '@/components/EntitySelector';
 
@@ -190,7 +190,8 @@ export const Layout = ({ children }: LayoutProps) => {
         <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <img src={evofinzLogo} alt="EvoFinz" className="h-20 w-auto object-contain" />
+              <PhoenixLogo size="sm" />
+              <span className="text-lg font-bold bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">EvoFinz</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -382,13 +383,14 @@ export const Layout = ({ children }: LayoutProps) => {
         >
           {/* Logo */}
           <div className={cn(
-            "flex h-16 items-center border-b border-border px-4 transition-all",
-            collapsed ? "justify-center" : "px-6"
+            "flex h-20 items-center border-b border-border px-4 transition-all gap-3",
+            collapsed ? "justify-center" : "px-4"
           )}>
-            {collapsed ? (
-              <img src={evofinzLogo} alt="EvoFinz" className="h-12 w-auto object-contain" />
-            ) : (
-              <img src={evofinzLogo} alt="EvoFinz" className="h-20 w-auto object-contain" />
+            <PhoenixLogo size={collapsed ? "sm" : "md"} />
+            {!collapsed && (
+              <span className="text-xl font-bold bg-gradient-to-r from-primary via-cyan-500 to-teal-500 bg-clip-text text-transparent">
+                EvoFinz
+              </span>
             )}
           </div>
 
