@@ -63,21 +63,23 @@ export default function Mileage() {
           >
             <div className="flex items-center gap-2">
               <InfoTooltip content={TOOLTIP_CONTENT.yearSelector} variant="wrapper">
-                <Select
-                  value={selectedYear.toString()}
-                  onValueChange={(value) => setSelectedYear(parseInt(value))}
-                >
-                  <SelectTrigger className="w-[120px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {years.map((year) => (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div data-highlight="year-selector">
+                  <Select
+                    value={selectedYear.toString()}
+                    onValueChange={(value) => setSelectedYear(parseInt(value))}
+                  >
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {years.map((year) => (
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </InfoTooltip>
               <Button variant="outline" onClick={() => setImportDialogOpen(true)} data-highlight="import-button">
                 <Upload className="mr-2 h-4 w-4" />
@@ -144,7 +146,9 @@ export default function Mileage() {
                   <Skeleton className="h-32" />
                 </div>
               ) : summary ? (
-                <MileageSummaryCard summary={summary} />
+                <div data-highlight="mileage-summary">
+                  <MileageSummaryCard summary={summary} />
+                </div>
               ) : (
                 <Card className="border-dashed">
                   <CardContent className="flex flex-col items-center justify-center py-12">

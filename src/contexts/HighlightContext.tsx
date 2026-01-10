@@ -90,8 +90,8 @@ export function HighlightProvider({ children }: { children: ReactNode }) {
 
   // Apply highlight styles to elements
   useEffect(() => {
-    if (!isHighlightEnabled || activeHighlights.length === 0) {
-      // Remove all highlights
+    // Clear previous highlights first
+    const clearAllHighlights = () => {
       document.querySelectorAll('[data-evofinz-highlighted]').forEach((el) => {
         const htmlEl = el as HTMLElement;
         htmlEl.style.removeProperty('outline');
@@ -100,14 +100,23 @@ export function HighlightProvider({ children }: { children: ReactNode }) {
         htmlEl.style.removeProperty('background-color');
         htmlEl.style.removeProperty('z-index');
         htmlEl.style.removeProperty('position');
+        htmlEl.style.removeProperty('transition');
         htmlEl.removeAttribute('data-evofinz-highlighted');
       });
+    };
+
+    if (!isHighlightEnabled || activeHighlights.length === 0) {
+      clearAllHighlights();
       return;
     }
 
+    // Clear before applying new highlights
+    clearAllHighlights();
+
     const colors = HIGHLIGHT_COLORS[highlightColor];
+    let firstHighlightedElement: HTMLElement | null = null;
     
-    activeHighlights.forEach((target) => {
+    activeHighlights.forEach((target, index) => {
       // Try to find element by data-highlight attribute first, then by selector
       let elements = document.querySelectorAll(`[data-highlight="${target.selector}"]`);
       
@@ -124,36 +133,52 @@ export function HighlightProvider({ children }: { children: ReactNode }) {
       elements.forEach((el) => {
         const htmlEl = el as HTMLElement;
         htmlEl.setAttribute('data-evofinz-highlighted', 'true');
+        htmlEl.style.transition = 'all 0.3s ease-in-out';
         htmlEl.style.outline = `3px solid ${colors.border}`;
         htmlEl.style.outlineOffset = '4px';
-        htmlEl.style.boxShadow = colors.glow;
+        htmlEl.style.boxShadow = `${colors.glow}, inset 0 0 30px ${colors.bg}`;
         htmlEl.style.backgroundColor = colors.bg;
         htmlEl.style.zIndex = '100';
+        htmlEl.style.borderRadius = '8px';
         if (htmlEl.style.position === 'static' || !htmlEl.style.position) {
           htmlEl.style.position = 'relative';
         }
         
-        // Scroll into view smoothly
-        htmlEl.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center',
-          inline: 'nearest'
-        });
+        // Store first element for scrolling
+        if (index === 0 && !firstHighlightedElement) {
+          firstHighlightedElement = htmlEl;
+        }
       });
     });
 
+    // Scroll to first highlighted element with a slight delay for DOM updates
+    if (firstHighlightedElement) {
+      setTimeout(() => {
+        if (firstHighlightedElement) {
+          // Get element position and scroll with offset for better visibility
+          const rect = firstHighlightedElement.getBoundingClientRect();
+          const isInViewport = (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+          );
+
+          // Only scroll if element is not fully visible
+          if (!isInViewport) {
+            firstHighlightedElement.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center',
+              inline: 'nearest'
+            });
+          }
+        }
+      }, 100);
+    }
+
     // Cleanup function
     return () => {
-      document.querySelectorAll('[data-evofinz-highlighted]').forEach((el) => {
-        const htmlEl = el as HTMLElement;
-        htmlEl.style.removeProperty('outline');
-        htmlEl.style.removeProperty('outline-offset');
-        htmlEl.style.removeProperty('box-shadow');
-        htmlEl.style.removeProperty('background-color');
-        htmlEl.style.removeProperty('z-index');
-        htmlEl.style.removeProperty('position');
-        htmlEl.removeAttribute('data-evofinz-highlighted');
-      });
+      clearAllHighlights();
     };
   }, [activeHighlights, highlightColor, isHighlightEnabled]);
 
@@ -219,6 +244,9 @@ export const HIGHLIGHTABLE_ELEMENTS = {
   'expenses-table': 'expenses-table',
   'expense-filters': 'expense-filters',
   'quick-capture': 'quick-capture',
+  'bulk-assign-button': 'bulk-assign-button',
+  'reimbursement-report': 'reimbursement-report',
+  'export-button': 'export-button',
   
   // Income page
   'add-income-button': 'add-income-button',
@@ -241,6 +269,31 @@ export const HIGHLIGHTABLE_ELEMENTS = {
   'assets-section': 'assets-section',
   'liabilities-section': 'liabilities-section',
   'net-worth-chart': 'net-worth-chart',
+  
+  // Banking
+  'bank-import-guide': 'bank-import-guide',
+  'bank-analysis-dashboard': 'bank-analysis-dashboard',
+  
+  // Contracts
+  'upload-contract-button': 'upload-contract-button',
+  'contracts-table': 'contracts-table',
+  
+  // Mentorship
+  'mentorship-level': 'mentorship-level',
+  'mentorship-tabs': 'mentorship-tabs',
+  'mentor-selector': 'mentor-selector',
+  'financial-library': 'financial-library',
+  
+  // Tax Calendar
+  'tax-status-cards': 'tax-status-cards',
+  'tax-tabs': 'tax-tabs',
+  'tax-tab-list': 'tax-tab-list',
+  'tax-estimator': 'tax-estimator',
+  
+  // Capture
+  'capture-photo-button': 'capture-photo-button',
+  'capture-file-button': 'capture-file-button',
+  'capture-voice-button': 'capture-voice-button',
   
   // General
   'sidebar-nav': 'sidebar-nav',

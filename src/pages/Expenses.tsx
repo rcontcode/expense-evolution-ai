@@ -83,19 +83,19 @@ export default function Expenses() {
           >
             <div className="flex gap-2 flex-wrap">
               <InfoTooltip content={TOOLTIP_CONTENT.bulkAssign} variant="wrapper" side="bottom">
-                <Button variant="outline" onClick={() => setBulkAssignOpen(true)}>
+                <Button variant="outline" onClick={() => setBulkAssignOpen(true)} data-highlight="bulk-assign-button">
                   <Users className="mr-2 h-4 w-4" />
                   {t('expenses.bulkAssign')}
                 </Button>
               </InfoTooltip>
               <InfoTooltip content={TOOLTIP_CONTENT.reimbursementReport} variant="wrapper" side="bottom">
-                <Button variant="outline" onClick={() => setReimbursementReportOpen(true)}>
+                <Button variant="outline" onClick={() => setReimbursementReportOpen(true)} data-highlight="reimbursement-report">
                   <FileText className="mr-2 h-4 w-4" />
                   {t('reimbursements.title')}
                 </Button>
               </InfoTooltip>
               <InfoTooltip content={TOOLTIP_CONTENT.exportButton} variant="wrapper" side="bottom">
-                <Button variant="outline" onClick={() => setExportDialogOpen(true)}>
+                <Button variant="outline" onClick={() => setExportDialogOpen(true)} data-highlight="export-button">
                   <Download className="mr-2 h-4 w-4" />
                   {t('common.export')}
                 </Button>

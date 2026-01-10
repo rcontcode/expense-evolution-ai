@@ -458,10 +458,12 @@ export const Layout = ({ children }: LayoutProps) => {
           </div>
 
           {/* Entity/Jurisdiction Selector */}
-          <EntitySelector collapsed={collapsed} />
+          <div data-highlight="entity-selector">
+            <EntitySelector collapsed={collapsed} />
+          </div>
 
           {/* Navigation */}
-          <nav className="flex-1 py-2 px-2 space-y-1.5 overflow-y-auto">
+          <nav className="flex-1 py-2 px-2 space-y-1.5 overflow-y-auto" data-highlight="sidebar-nav">
             {NAV_SECTIONS.map((section) => {
               const theme = sectionThemes[section.themeKey];
               return (

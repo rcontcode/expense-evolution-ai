@@ -252,7 +252,7 @@ export default function Income() {
                 </CardContent>
               </Card>
             ) : incomeList && incomeList.length > 0 ? (
-              <Card>
+              <Card data-highlight="income-table">
                 <Table>
                   <TableHeader>
                     <TableRow>
