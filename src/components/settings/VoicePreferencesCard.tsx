@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,14 +15,25 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   Mic, Volume2, Bell, Zap, Trash2, Plus, Clock, Calendar, 
   MessageSquare, History, Play, Settings2, VolumeX, Volume1, Highlighter,
-  User, UserCircle
+  User, UserCircle, Globe, ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
+interface VoiceInfo {
+  name: string;
+  lang: string;
+  localService: boolean;
+  default: boolean;
+}
 
 export function VoicePreferencesCard() {
   const { language } = useLanguage();
   const voicePrefs = useVoicePreferences();
   const highlightCtx = useHighlight();
+  
+  const [availableVoices, setAvailableVoices] = useState<VoiceInfo[]>([]);
+  const [showVoiceList, setShowVoiceList] = useState(false);
   
   const [showShortcutDialog, setShowShortcutDialog] = useState(false);
   const [showReminderDialog, setShowReminderDialog] = useState(false);
@@ -43,6 +54,95 @@ export function VoicePreferencesCard() {
     time: '09:00',
     days: [1, 2, 3, 4, 5], // Mon-Fri by default
   });
+
+  // Load available voices
+  useEffect(() => {
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const voiceInfos: VoiceInfo[] = voices.map(v => ({
+        name: v.name,
+        lang: v.lang,
+        localService: v.localService,
+        default: v.default,
+      }));
+      
+      // Sort: prioritize Chile (es-CL) and Canada (en-CA, fr-CA), then by language
+      const sortedVoices = voiceInfos.sort((a, b) => {
+        // Prioritize Spanish/English/French voices
+        const aIsRelevant = a.lang.startsWith('es') || a.lang.startsWith('en') || a.lang.startsWith('fr');
+        const bIsRelevant = b.lang.startsWith('es') || b.lang.startsWith('en') || b.lang.startsWith('fr');
+        
+        if (aIsRelevant && !bIsRelevant) return -1;
+        if (!aIsRelevant && bIsRelevant) return 1;
+        
+        // Priority locales for Chile and Canada
+        const priorityLocales = ['es-CL', 'es-MX', 'en-CA', 'fr-CA', 'es-ES', 'en-US', 'en-GB'];
+        const aHasPriority = priorityLocales.some(p => a.lang === p);
+        const bHasPriority = priorityLocales.some(p => b.lang === p);
+        
+        if (aHasPriority && !bHasPriority) return -1;
+        if (!aHasPriority && bHasPriority) return 1;
+        
+        return a.lang.localeCompare(b.lang);
+      });
+      
+      setAvailableVoices(sortedVoices);
+    };
+    
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
+  // Get language flag emoji
+  const getLangFlag = (lang: string): string => {
+    if (lang.startsWith('es-CL')) return '🇨🇱';
+    if (lang.startsWith('es-MX')) return '🇲🇽';
+    if (lang.startsWith('es-AR')) return '🇦🇷';
+    if (lang.startsWith('es-CO')) return '🇨🇴';
+    if (lang.startsWith('es-ES')) return '🇪🇸';
+    if (lang.startsWith('es-US')) return '🇺🇸';
+    if (lang.startsWith('es')) return '🌎';
+    if (lang.startsWith('en-CA')) return '🇨🇦';
+    if (lang.startsWith('en-US')) return '🇺🇸';
+    if (lang.startsWith('en-GB')) return '🇬🇧';
+    if (lang.startsWith('en-AU')) return '🇦🇺';
+    if (lang.startsWith('en')) return '🌍';
+    if (lang.startsWith('fr-CA')) return '🇨🇦';
+    if (lang.startsWith('fr')) return '🇫🇷';
+    if (lang.startsWith('pt-BR')) return '🇧🇷';
+    if (lang.startsWith('pt')) return '🇵🇹';
+    if (lang.startsWith('de')) return '🇩🇪';
+    if (lang.startsWith('it')) return '🇮🇹';
+    if (lang.startsWith('ja')) return '🇯🇵';
+    if (lang.startsWith('ko')) return '🇰🇷';
+    if (lang.startsWith('zh')) return '🇨🇳';
+    return '🌐';
+  };
+
+  // Test a specific voice
+  const testVoice = (voiceName: string) => {
+    const voices = window.speechSynthesis.getVoices();
+    const voice = voices.find(v => v.name === voiceName);
+    if (!voice) return;
+    
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(
+      voice.lang.startsWith('es') 
+        ? 'Hola, soy tu asistente financiero. ¿En qué puedo ayudarte hoy?'
+        : voice.lang.startsWith('fr')
+        ? 'Bonjour, je suis votre assistant financier. Comment puis-je vous aider?'
+        : 'Hello, I am your financial assistant. How can I help you today?'
+    );
+    utterance.voice = voice;
+    utterance.rate = voicePrefs.speechSpeed * 0.95;
+    utterance.pitch = voicePrefs.pitch;
+    utterance.volume = voicePrefs.volume;
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleAddShortcut = () => {
     if (!newShortcut.trigger || !newShortcut.route) {
@@ -215,7 +315,7 @@ export function VoicePreferencesCard() {
                   key={gender}
                   onClick={() => voicePrefs.setVoiceGender(gender)}
                   className={`flex-1 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
-                    voicePrefs.voiceGender === gender
+                    voicePrefs.voiceGender === gender && !voicePrefs.selectedVoiceName
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'bg-muted/50 hover:bg-muted border-border'
                   }`}
@@ -228,12 +328,97 @@ export function VoicePreferencesCard() {
                 </button>
               ))}
             </div>
-            <p className="text-[10px] text-muted-foreground">
-              {language === 'es' 
-                ? 'La disponibilidad depende de las voces instaladas en tu dispositivo'
-                : 'Availability depends on voices installed on your device'}
-            </p>
           </div>
+
+          {/* Available Voices - Expandable List */}
+          <Collapsible open={showVoiceList} onOpenChange={setShowVoiceList} className="pt-2">
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" size="sm" className="w-full justify-between">
+                <span className="flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  {language === 'es' 
+                    ? `${availableVoices.length} Voces Disponibles` 
+                    : `${availableVoices.length} Voices Available`}
+                  {voicePrefs.selectedVoiceName && (
+                    <Badge variant="default" className="ml-2 text-[10px]">
+                      {voicePrefs.selectedVoiceName.substring(0, 20)}...
+                    </Badge>
+                  )}
+                </span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${showVoiceList ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-2">
+              <div className="rounded-lg border bg-muted/30 p-2">
+                <p className="text-xs text-muted-foreground mb-2">
+                  {language === 'es' 
+                    ? '🇨🇱 Chile y 🇨🇦 Canadá priorizados. Haz clic para seleccionar una voz específica.'
+                    : '🇨🇱 Chile and 🇨🇦 Canada prioritized. Click to select a specific voice.'}
+                </p>
+                <ScrollArea className="h-[200px]">
+                  <div className="space-y-1">
+                    {availableVoices.map((voice) => {
+                      const isSelected = voicePrefs.selectedVoiceName === voice.name;
+                      const isRelevant = voice.lang.startsWith('es') || voice.lang.startsWith('en') || voice.lang.startsWith('fr');
+                      
+                      return (
+                        <div
+                          key={voice.name}
+                          onClick={() => voicePrefs.setSelectedVoice(isSelected ? null : voice.name)}
+                          className={`flex items-center justify-between p-2 rounded-md cursor-pointer transition-all ${
+                            isSelected 
+                              ? 'bg-primary text-primary-foreground' 
+                              : isRelevant 
+                                ? 'bg-background hover:bg-muted'
+                                : 'bg-muted/20 hover:bg-muted/50 opacity-60'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <span className="text-lg flex-shrink-0">{getLangFlag(voice.lang)}</span>
+                            <div className="min-w-0 flex-1">
+                              <p className={`text-sm font-medium truncate ${isSelected ? '' : 'text-foreground'}`}>
+                                {voice.name}
+                              </p>
+                              <p className={`text-[10px] ${isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                                {voice.lang} {voice.localService && '• Local'}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant={isSelected ? "secondary" : "ghost"}
+                            size="icon"
+                            className="h-7 w-7 flex-shrink-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              testVoice(voice.name);
+                            }}
+                          >
+                            <Play className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+                {voicePrefs.selectedVoiceName && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full mt-2"
+                    onClick={() => voicePrefs.setSelectedVoice(null)}
+                  >
+                    {language === 'es' ? '✕ Usar selección automática' : '✕ Use automatic selection'}
+                  </Button>
+                )}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+
+          <p className="text-[10px] text-muted-foreground">
+            {language === 'es' 
+              ? 'Nota: Las voces disponibles dependen de tu sistema operativo y navegador.'
+              : 'Note: Available voices depend on your operating system and browser.'}
+          </p>
 
           {/* Toggles */}
           <div className="flex flex-wrap gap-4 pt-2">

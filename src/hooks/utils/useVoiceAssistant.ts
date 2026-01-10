@@ -15,6 +15,7 @@ interface UseVoiceAssistantOptions {
   volume?: number; // 0 to 1, default 1.0
   pitch?: number; // 0.5 to 2.0, default 1.0
   voiceGender?: VoiceGender; // female, male, or auto
+  selectedVoiceName?: string | null; // Specific voice name selected by user
 }
 
 // STRICT stop commands - must match EXACTLY
@@ -434,54 +435,87 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     utterance.pitch = options.pitch ?? 1.0;
     utterance.volume = options.volume ?? 1.0;
 
-    // Get a native voice with gender preference
+    // Get a native voice - check for user-selected specific voice first
     const voices = window.speechSynthesis.getVoices();
-    const langCode = language === 'es' ? 'es' : 'en';
-    const voiceGender = options.voiceGender ?? 'female';
-    
-    // Filter voices by language
-    const langVoices = voices.filter(v => v.lang.startsWith(langCode));
-    
-    // Try to find a voice matching gender preference
     let preferredVoice: SpeechSynthesisVoice | undefined;
     
-    if (voiceGender !== 'auto' && langVoices.length > 0) {
-      // Common patterns for female voice names
-      const femalePatterns = /female|mujer|femenin|samantha|victoria|karen|monica|paulina|helena|zira|hazel|susan|alice|fiona|moira|tessa|ava|allison|kate|siri.*female/i;
-      // Common patterns for male voice names
-      const malePatterns = /male|hombre|masculin|alex|jorge|daniel|david|diego|enrique|carlos|mark|thomas|oliver|james|fred|lee|rishi|aaron|siri.*male/i;
-      
-      const targetPattern = voiceGender === 'female' ? femalePatterns : malePatterns;
-      const fallbackPattern = voiceGender === 'female' ? malePatterns : femalePatterns;
-      
-      // First try: exact gender match with local service
-      preferredVoice = langVoices.find(v => 
-        v.localService && targetPattern.test(v.name)
-      );
-      
-      // Second try: exact gender match any
-      if (!preferredVoice) {
-        preferredVoice = langVoices.find(v => targetPattern.test(v.name));
+    // PRIORITY 1: User selected a specific voice by name
+    if (options.selectedVoiceName) {
+      preferredVoice = voices.find(v => v.name === options.selectedVoiceName);
+      if (preferredVoice) {
+        console.log('[Voice] Using user-selected voice:', preferredVoice.name, 'lang:', preferredVoice.lang);
+        utterance.voice = preferredVoice;
+        utterance.lang = preferredVoice.lang;
       }
-      
-      // Third try: local service (might be the preferred gender naturally)
-      if (!preferredVoice) {
-        preferredVoice = langVoices.find(v => v.localService);
-      }
-      
-      // Fourth try: any voice in language
-      if (!preferredVoice) {
-        preferredVoice = langVoices[0];
-      }
-      
-      console.log('[Voice] Selected voice:', preferredVoice?.name, 'for gender:', voiceGender);
-    } else {
-      // Auto mode: prefer local service
-      preferredVoice = langVoices.find(v => v.localService) || langVoices[0];
     }
     
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
+    // PRIORITY 2: Auto-select based on gender and locale preferences
+    if (!preferredVoice) {
+      const voiceGender = options.voiceGender ?? 'female';
+      
+      // Priority locale codes for Chile (es-CL) and Canada (en-CA, fr-CA)
+      // Then fallback to generic Spanish/English
+      const localePreference = language === 'es' 
+        ? ['es-CL', 'es-MX', 'es-419', 'es-ES', 'es-US', 'es'] // Chile first, then Latin America
+        : ['en-CA', 'en-US', 'en-GB', 'en-AU', 'en']; // Canada first
+      
+      // Filter voices by language with locale priority
+      let langVoices: SpeechSynthesisVoice[] = [];
+      for (const locale of localePreference) {
+        const matchingVoices = voices.filter(v => 
+          locale.includes('-') ? v.lang === locale : v.lang.startsWith(locale)
+        );
+        if (matchingVoices.length > 0) {
+          langVoices = matchingVoices;
+          break;
+        }
+      }
+      
+      // If no voices found, fallback to any matching the base language
+      if (langVoices.length === 0) {
+        const baseLang = language === 'es' ? 'es' : 'en';
+        langVoices = voices.filter(v => v.lang.startsWith(baseLang));
+      }
+      
+      if (voiceGender !== 'auto' && langVoices.length > 0) {
+        // Common patterns for female voice names (expanded for Chile/Canada)
+        const femalePatterns = /female|mujer|femenin|samantha|victoria|karen|monica|paulina|helena|zira|hazel|susan|alice|fiona|moira|tessa|ava|allison|kate|siri.*female|google.*female|microsoft.*female|francisca|catalina|ximena|carmen|valentina|amelie|chloe|marie|nathalie|sylvie|angelica|ines|consuelo|esperanza|lucia|rosa/i;
+        // Common patterns for male voice names (expanded for Chile/Canada)
+        const malePatterns = /male|hombre|masculin|alex|jorge|daniel|david|diego|enrique|carlos|mark|thomas|oliver|james|fred|lee|rishi|aaron|siri.*male|google.*male|microsoft.*male|andres|pablo|rodrigo|mateo|sebastian|nicolas|felipe|ivan|pedro|antonio|luis|miguel|juan|manuel|jean|pierre|jacques|claude|benoit|francois/i;
+        
+        const targetPattern = voiceGender === 'female' ? femalePatterns : malePatterns;
+        
+        // First try: exact gender match with local service (better quality)
+        preferredVoice = langVoices.find(v => 
+          v.localService && targetPattern.test(v.name)
+        );
+        
+        // Second try: exact gender match with any service
+        if (!preferredVoice) {
+          preferredVoice = langVoices.find(v => targetPattern.test(v.name));
+        }
+        
+        // Third try: local service (might be the preferred gender naturally)
+        if (!preferredVoice) {
+          preferredVoice = langVoices.find(v => v.localService);
+        }
+        
+        // Fourth try: any voice in language
+        if (!preferredVoice) {
+          preferredVoice = langVoices[0];
+        }
+        
+        console.log('[Voice] Auto-selected voice:', preferredVoice?.name, 'lang:', preferredVoice?.lang, 'for gender:', voiceGender);
+      } else {
+        // Auto mode: prefer local service for better quality
+        preferredVoice = langVoices.find(v => v.localService) || langVoices[0];
+      }
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+        // Also set the utterance language to match the voice locale
+        utterance.lang = preferredVoice.lang;
+      }
     }
 
     utterance.onstart = () => {
