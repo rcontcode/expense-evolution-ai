@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square, MapPin, Info, AlertTriangle, BookOpen, Zap } from 'lucide-react';
+import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square, MapPin, Info, AlertTriangle, BookOpen, Zap, Settings, Volume1, Languages } from 'lucide-react';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Slider } from '@/components/ui/slider';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
@@ -20,6 +22,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useVoiceAssistant } from '@/hooks/utils/useVoiceAssistant';
 import { useAudioPlayback } from '@/hooks/utils/useAudioPlayback';
 import { useSmartGuidance } from '@/hooks/utils/useSmartGuidance';
+import { useVoicePreferences } from '@/hooks/utils/useVoicePreferences';
+import { useVoiceConfirmation } from '@/hooks/utils/useVoiceConfirmation';
+import { useLanguageDetection } from '@/hooks/utils/useLanguageDetection';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -318,6 +323,15 @@ export const ChatAssistant: React.FC = () => {
     getErrorRecovery,
     getQuickActions 
   } = useSmartGuidance();
+
+  // Voice preferences (speed, volume, sounds, shortcuts, reminders)
+  const voicePrefs = useVoicePreferences();
+
+  // Voice confirmation system
+  const voiceConfirmation = useVoiceConfirmation();
+
+  // Language detection
+  const langDetection = useLanguageDetection();
 
   // Calculate financial data for queries
   const now = new Date();
@@ -639,7 +653,7 @@ export const ChatAssistant: React.FC = () => {
     }
   }, [navigate, language]);
 
-  // Voice assistant hook
+  // Voice assistant hook with preferences
   const {
     isListening,
     isContinuousMode,
@@ -656,14 +670,77 @@ export const ChatAssistant: React.FC = () => {
     pauseSpeech,
     resumeSpeech,
     stopSpeaking,
+    interruptAndListen,
   } = useVoiceAssistant({
+    speechSpeed: voicePrefs.speechSpeed,
+    volume: voicePrefs.volume,
     onInterimTranscript: (text) => {
       // Update input field with live transcript
       setInput(text);
     },
+    onInterrupted: () => {
+      voicePrefs.playSound('notification');
+      const msg = language === 'es' ? 'Interrumpido. ¿Qué necesitas?' : 'Interrupted. What do you need?';
+      toast.info(msg);
+    },
     onTranscript: (text) => {
       console.log('[ChatAssistant] Received transcript:', text);
       
+      // Track action for learning
+      voicePrefs.trackAction('voice_input');
+      
+      // Check for language switch commands first
+      const langCmd = langDetection.checkLanguageCommand(text);
+      if (langCmd.isCommand && langCmd.targetLanguage) {
+        setInput('');
+        const response = langDetection.executeLanguageSwitch(langCmd.targetLanguage);
+        const userMessage: Message = { role: 'user', content: text };
+        const assistantMessage: Message = { role: 'assistant', content: response };
+        setMessages(prev => [...prev, userMessage, assistantMessage]);
+        speak(response);
+        voicePrefs.playSound('success');
+        return;
+      }
+
+      // Auto-detect language and switch if needed
+      const langSwitch = langDetection.autoSwitchLanguage(text);
+      if (langSwitch.switched && langSwitch.message) {
+        const notifyMsg = langSwitch.message[langSwitch.newLanguage];
+        toast.info(notifyMsg);
+      }
+
+      // Check if waiting for confirmation
+      if (voiceConfirmation.isWaitingForConfirmation) {
+        const confirmResult = voiceConfirmation.processConfirmationVoice(text);
+        if (confirmResult.handled) {
+          setInput('');
+          if (confirmResult.message) {
+            const confirmMessage: Message = { role: 'assistant', content: confirmResult.message };
+            setMessages(prev => [...prev, confirmMessage]);
+            speak(confirmResult.message);
+            voicePrefs.playSound(confirmResult.confirmed ? 'success' : 'notification');
+          }
+          return;
+        }
+      }
+
+      // Check for custom shortcuts
+      const customShortcut = voicePrefs.checkCustomShortcut(text);
+      if (customShortcut) {
+        setInput('');
+        voicePrefs.trackAction(`shortcut_${customShortcut.id}`);
+        
+        if (customShortcut.route) {
+          const confirmMsg = customShortcut.name[language as 'es' | 'en'];
+          const userMessage: Message = { role: 'user', content: text };
+          const assistantMessage: Message = { role: 'assistant', content: confirmMsg };
+          setMessages(prev => [...prev, userMessage, assistantMessage]);
+          speak(confirmMsg);
+          navigate(customShortcut.route);
+          voicePrefs.playSound('success');
+        }
+        return;
+      }
       // PRIORITY 0: Check for tutorial requests
       const tutorial = findTutorial(text);
       if (tutorial) {
@@ -1123,6 +1200,73 @@ export const ChatAssistant: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-1">
+              {/* Voice Settings Popover */}
+              {isVoiceSupported && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64" align="end">
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-sm">{language === 'es' ? 'Configuración de voz' : 'Voice Settings'}</h4>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span>{language === 'es' ? 'Velocidad' : 'Speed'}</span>
+                          <span>{voicePrefs.speechSpeed.toFixed(1)}x</span>
+                        </div>
+                        <Slider
+                          value={[voicePrefs.speechSpeed]}
+                          min={0.5}
+                          max={2}
+                          step={0.1}
+                          onValueChange={([v]) => voicePrefs.setSpeechSpeed(v)}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span>{language === 'es' ? 'Volumen' : 'Volume'}</span>
+                          <Volume1 className="h-3 w-3" />
+                        </div>
+                        <Slider
+                          value={[voicePrefs.volume]}
+                          min={0}
+                          max={1}
+                          step={0.1}
+                          onValueChange={([v]) => voicePrefs.setVolume(v)}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs">{language === 'es' ? 'Sonidos' : 'Sounds'}</span>
+                        <Button
+                          variant={voicePrefs.enableSoundEffects ? "default" : "outline"}
+                          size="sm"
+                          className="h-6 text-xs"
+                          onClick={() => voicePrefs.toggleSoundEffects()}
+                        >
+                          {voicePrefs.enableSoundEffects ? 'On' : 'Off'}
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs">{language === 'es' ? 'Confirmar acciones' : 'Confirm actions'}</span>
+                        <Button
+                          variant={voicePrefs.confirmDestructiveActions ? "default" : "outline"}
+                          size="sm"
+                          className="h-6 text-xs"
+                          onClick={() => voicePrefs.toggleConfirmDestructive()}
+                        >
+                          {voicePrefs.confirmDestructiveActions ? 'On' : 'Off'}
+                        </Button>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
               {/* Continuous mode toggle */}
               {isVoiceSupported && (
                 <Tooltip>
