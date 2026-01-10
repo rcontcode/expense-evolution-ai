@@ -101,13 +101,13 @@ export default function Expenses() {
                 </Button>
               </InfoTooltip>
               <InfoTooltip content={TOOLTIP_CONTENT.addExpense} variant="wrapper" side="bottom">
-                <Button variant="outline" onClick={handleCreate}>
+                <Button variant="outline" onClick={handleCreate} data-highlight="add-expense-button">
                   <Plus className="mr-2 h-4 w-4" />
                   {t('expenses.addExpense')}
                 </Button>
               </InfoTooltip>
               <InfoTooltip content={TOOLTIP_CONTENT.quickCapture} variant="wrapper" side="bottom">
-                <Button onClick={() => setQuickCaptureOpen(true)} className="bg-primary">
+                <Button onClick={() => setQuickCaptureOpen(true)} className="bg-primary" data-highlight="quick-capture">
                   <Sparkles className="mr-2 h-4 w-4" />
                   {t('quickCapture.title')}
                 </Button>
@@ -135,7 +135,7 @@ export default function Expenses() {
           {/* Setup Progress Banner - Compact */}
           <SetupProgressBanner variant="compact" />
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" data-highlight="expense-filters">
             <ExpenseFilters filters={filters} onChange={setFilters} />
             <InfoTooltip content={TOOLTIP_CONTENT.expenseFilters} />
           </div>
@@ -147,7 +147,9 @@ export default function Expenses() {
             </CardContent>
           </Card>
         ) : expenses && expenses.length > 0 ? (
-          <ExpensesTable expenses={expenses} onEdit={handleEdit} />
+          <div data-highlight="expenses-table">
+            <ExpensesTable expenses={expenses} onEdit={handleEdit} />
+          </div>
         ) : (
           <SectionEmptyState 
             section="expenses" 

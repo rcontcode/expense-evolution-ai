@@ -136,7 +136,7 @@ export default function Income() {
               <FolderKanban className="mr-2 h-4 w-4" />
               {t('income.newProject')}
             </Button>
-            <Button onClick={() => setIncomeDialogOpen(true)}>
+            <Button onClick={() => setIncomeDialogOpen(true)} data-highlight="add-income-button">
               <Plus className="mr-2 h-4 w-4" />
               {t('income.addIncome')}
             </Button>
