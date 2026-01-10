@@ -347,24 +347,38 @@ export const ChatAssistant: React.FC = () => {
   }, [monthlyExpenses, yearlyExpenses, monthlyIncome, yearlyIncome, balance, clients?.length, projects?.length, pendingReceipts, biggestExpense, topCategory, deductibleTotal, billableTotal, estimatedTaxOwed, language]);
 
   // Check if text matches a voice command
-  // STRICT: Only match if text is short (max 10 words) AND pattern is at the START or is EXACT
+  // MORE FLEXIBLE: Match if text contains navigation intent patterns
   const checkVoiceCommand = useCallback((text: string): { matched: boolean; route?: string; name?: string; action?: string } => {
     const normalizedText = text.toLowerCase().trim().replace(/[.,!?¿¡]/g, '');
     const words = normalizedText.split(/\s+/);
     
-    // Don't match commands in long sentences - those are questions for the AI
-    if (words.length > 10) {
+    // Don't match commands in very long sentences - those are complex questions for AI
+    if (words.length > 15) {
       console.log('[Voice] Text too long for command matching, sending to AI:', normalizedText);
       return { matched: false };
     }
     
     const commands = VOICE_COMMANDS[language as keyof typeof VOICE_COMMANDS] || VOICE_COMMANDS.es;
     
+    // Navigation intent indicators - if present, be more flexible with matching
+    const navIntentIndicators = [
+      'llévame', 'llevame', 'muéstrame', 'muestrame', 'ir a', 'abre', 'abrir', 'ver', 'mostrar',
+      'enséñame', 'ensename', 'dame', 'quiero ver', 'quiero ir',
+      'take me', 'show me', 'go to', 'open', 'view', 'display', 'let me see', 'i want to see'
+    ];
+    const hasNavIntent = navIntentIndicators.some(ind => normalizedText.includes(ind));
+    
     for (const command of commands) {
       for (const pattern of command.patterns) {
         // Exact match OR text starts with pattern
         if (normalizedText === pattern || normalizedText.startsWith(pattern + ' ') || normalizedText.startsWith(pattern)) {
-          console.log('[Voice] Command matched:', pattern, '→', command.name);
+          console.log('[Voice] Command exact matched:', pattern, '→', command.name);
+          return { matched: true, route: command.route, name: command.name, action: command.action };
+        }
+        
+        // If there's navigation intent, also check if the pattern is contained in the text
+        if (hasNavIntent && normalizedText.includes(pattern)) {
+          console.log('[Voice] Command intent matched:', pattern, '→', command.name);
           return { matched: true, route: command.route, name: command.name, action: command.action };
         }
       }
