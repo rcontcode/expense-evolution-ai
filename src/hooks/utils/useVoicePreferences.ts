@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+export type VoiceGender = 'female' | 'male' | 'auto';
+
 interface VoicePreferences {
   // Voice experience
   speechSpeed: number; // 0.5 to 2.0
   volume: number; // 0 to 1
   pitch: number; // 0 to 2
+  voiceGender: VoiceGender; // Female, male, or auto
   enableSoundEffects: boolean;
   confirmDestructiveActions: boolean;
   
@@ -54,6 +57,7 @@ const DEFAULT_PREFERENCES: VoicePreferences = {
   speechSpeed: 1.0,
   volume: 1.0,
   pitch: 1.0,
+  voiceGender: 'female',
   enableSoundEffects: true,
   confirmDestructiveActions: true,
   customShortcuts: [],
@@ -174,6 +178,11 @@ export function useVoicePreferences() {
   // Update pitch
   const setPitch = useCallback((pitch: number) => {
     setPreferences(prev => ({ ...prev, pitch: Math.max(0.5, Math.min(2, pitch)) }));
+  }, []);
+
+  // Update voice gender
+  const setVoiceGender = useCallback((gender: VoiceGender) => {
+    setPreferences(prev => ({ ...prev, voiceGender: gender }));
   }, []);
 
   // Toggle sound effects
@@ -343,6 +352,7 @@ export function useVoicePreferences() {
     speechSpeed: preferences.speechSpeed,
     volume: preferences.volume,
     pitch: preferences.pitch,
+    voiceGender: preferences.voiceGender,
     enableSoundEffects: preferences.enableSoundEffects,
     confirmDestructiveActions: preferences.confirmDestructiveActions,
     customShortcuts: preferences.customShortcuts,
@@ -355,6 +365,7 @@ export function useVoicePreferences() {
     setSpeechSpeed,
     setVolume,
     setPitch,
+    setVoiceGender,
     toggleSoundEffects,
     toggleConfirmDestructive,
     

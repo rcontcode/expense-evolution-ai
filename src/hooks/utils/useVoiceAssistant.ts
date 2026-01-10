@@ -1,6 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+import type { VoiceGender } from './useVoicePreferences';
+
 interface UseVoiceAssistantOptions {
   onTranscript?: (text: string) => void;
   onInterimTranscript?: (text: string) => void;
@@ -12,6 +14,7 @@ interface UseVoiceAssistantOptions {
   speechSpeed?: number; // 0.5 to 2.0, default 1.0
   volume?: number; // 0 to 1, default 1.0
   pitch?: number; // 0.5 to 2.0, default 1.0
+  voiceGender?: VoiceGender; // female, male, or auto
 }
 
 // STRICT stop commands - must match EXACTLY
@@ -431,12 +434,51 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     utterance.pitch = options.pitch ?? 1.0;
     utterance.volume = options.volume ?? 1.0;
 
-    // Get a native voice
+    // Get a native voice with gender preference
     const voices = window.speechSynthesis.getVoices();
     const langCode = language === 'es' ? 'es' : 'en';
-    const preferredVoice = voices.find(v => 
-      v.lang.startsWith(langCode) && v.localService
-    ) || voices.find(v => v.lang.startsWith(langCode));
+    const voiceGender = options.voiceGender ?? 'female';
+    
+    // Filter voices by language
+    const langVoices = voices.filter(v => v.lang.startsWith(langCode));
+    
+    // Try to find a voice matching gender preference
+    let preferredVoice: SpeechSynthesisVoice | undefined;
+    
+    if (voiceGender !== 'auto' && langVoices.length > 0) {
+      // Common patterns for female voice names
+      const femalePatterns = /female|mujer|femenin|samantha|victoria|karen|monica|paulina|helena|zira|hazel|susan|alice|fiona|moira|tessa|ava|allison|kate|siri.*female/i;
+      // Common patterns for male voice names
+      const malePatterns = /male|hombre|masculin|alex|jorge|daniel|david|diego|enrique|carlos|mark|thomas|oliver|james|fred|lee|rishi|aaron|siri.*male/i;
+      
+      const targetPattern = voiceGender === 'female' ? femalePatterns : malePatterns;
+      const fallbackPattern = voiceGender === 'female' ? malePatterns : femalePatterns;
+      
+      // First try: exact gender match with local service
+      preferredVoice = langVoices.find(v => 
+        v.localService && targetPattern.test(v.name)
+      );
+      
+      // Second try: exact gender match any
+      if (!preferredVoice) {
+        preferredVoice = langVoices.find(v => targetPattern.test(v.name));
+      }
+      
+      // Third try: local service (might be the preferred gender naturally)
+      if (!preferredVoice) {
+        preferredVoice = langVoices.find(v => v.localService);
+      }
+      
+      // Fourth try: any voice in language
+      if (!preferredVoice) {
+        preferredVoice = langVoices[0];
+      }
+      
+      console.log('[Voice] Selected voice:', preferredVoice?.name, 'for gender:', voiceGender);
+    } else {
+      // Auto mode: prefer local service
+      preferredVoice = langVoices.find(v => v.localService) || langVoices[0];
+    }
     
     if (preferredVoice) {
       utterance.voice = preferredVoice;
