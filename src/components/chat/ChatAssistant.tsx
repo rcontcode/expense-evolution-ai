@@ -71,6 +71,7 @@ export const ChatAssistant: React.FC = () => {
   const [currentTutorialStep, setCurrentTutorialStep] = useState<number | null>(null);
   const [activeTutorial, setActiveTutorial] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isOnboardingMicTest, setIsOnboardingMicTest] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -464,6 +465,17 @@ export const ChatAssistant: React.FC = () => {
     },
     onTranscript: (text) => {
       console.log('[ChatAssistant] Received transcript:', text);
+      
+      // ONBOARDING MIC TEST MODE: Only acknowledge hearing the user, don't process commands
+      if (isOnboardingMicTest) {
+        setInput('');
+        const greeting = language === 'es'
+          ? `¡Te escucho perfectamente! Dijiste: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}". Tu micrófono funciona bien.`
+          : `I hear you perfectly! You said: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}". Your microphone is working great.`;
+        speak(greeting);
+        setIsOnboardingMicTest(false);
+        return;
+      }
       
       // Track action for learning
       voicePrefs.trackAction('voice_input');
@@ -999,7 +1011,10 @@ export const ChatAssistant: React.FC = () => {
         }}
         isVoiceSupported={isVoiceSupported}
         onTestVoice={(text) => speak(text)}
-        onTestMic={() => toggleListening()}
+        onTestMic={() => {
+          setIsOnboardingMicTest(true);
+          toggleListening();
+        }}
         isListening={isListening}
         isSpeaking={isSpeaking}
       />
