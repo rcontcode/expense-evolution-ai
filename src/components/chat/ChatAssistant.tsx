@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square, MapPin, Info } from 'lucide-react';
+import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square, MapPin, Info, AlertTriangle, BookOpen, Zap } from 'lucide-react';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useVoiceAssistant } from '@/hooks/utils/useVoiceAssistant';
 import { useAudioPlayback } from '@/hooks/utils/useAudioPlayback';
+import { useSmartGuidance } from '@/hooks/utils/useSmartGuidance';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -285,9 +286,14 @@ export const ChatAssistant: React.FC = () => {
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const [hasShownWelcome, setHasShownWelcome] = useState(false);
+  const [showAlerts, setShowAlerts] = useState(false);
+  const [currentTutorialStep, setCurrentTutorialStep] = useState<number | null>(null);
+  const [activeTutorial, setActiveTutorial] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const previousPathRef = useRef<string>('');
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -301,6 +307,17 @@ export const ChatAssistant: React.FC = () => {
   const { language } = useLanguage();
   const createExpense = useCreateExpense();
   const createIncome = useCreateIncome();
+
+  // Smart guidance system
+  const { 
+    getContextualWelcome, 
+    getProactiveAlerts, 
+    findTutorial, 
+    formatTutorialForSpeech,
+    getPostActionSuggestion,
+    getErrorRecovery,
+    getQuickActions 
+  } = useSmartGuidance();
 
   // Calculate financial data for queries
   const now = new Date();
@@ -647,6 +664,22 @@ export const ChatAssistant: React.FC = () => {
     onTranscript: (text) => {
       console.log('[ChatAssistant] Received transcript:', text);
       
+      // PRIORITY 0: Check for tutorial requests
+      const tutorial = findTutorial(text);
+      if (tutorial) {
+        setInput('');
+        setActiveTutorial(tutorial.id);
+        setCurrentTutorialStep(0);
+        
+        const tutorialResponse = formatTutorialForSpeech(tutorial);
+        const userMessage: Message = { role: 'user', content: text };
+        const assistantMessage: Message = { role: 'assistant', content: tutorialResponse };
+        setMessages(prev => [...prev, userMessage, assistantMessage]);
+        
+        speak(tutorialResponse);
+        return;
+      }
+      
       // PRIORITY 1: Check if it's a navigation command first (most user-friendly)
       const command = checkVoiceCommand(text);
       if (command.matched && command.route && command.name) {
@@ -661,6 +694,14 @@ export const ChatAssistant: React.FC = () => {
         
         speak(confirmMsg);
         executeVoiceCommand(command.route, command.name, command.action);
+        
+        // Post-navigation suggestion
+        setTimeout(() => {
+          const suggestion = getPostActionSuggestion('navigation');
+          if (suggestion && autoSpeak) {
+            // Don't speak this one, just add to chat silently
+          }
+        }, 2000);
         return;
       }
       
@@ -685,6 +726,21 @@ export const ChatAssistant: React.FC = () => {
         const response = language === 'es'
           ? `Estás en la página de ${pageContext.pageName}. ${pageContext.description}`
           : `You're on the ${pageContext.pageName} page. ${pageContext.description}`;
+        
+        const userMessage: Message = { role: 'user', content: text };
+        const assistantMessage: Message = { role: 'assistant', content: response };
+        setMessages(prev => [...prev, userMessage, assistantMessage]);
+        speak(response);
+        return;
+      }
+      
+      // PRIORITY 3.5: Check for error recovery if user seems confused
+      const errorRecovery = getErrorRecovery(text);
+      if (errorRecovery) {
+        setInput('');
+        const response = language === 'es'
+          ? `Entiendo que puede ser confuso. Aquí hay algunas opciones:\n\n${errorRecovery.map((r, i) => `${i + 1}. ${r}`).join('\n')}`
+          : `I understand it can be confusing. Here are some options:\n\n${errorRecovery.map((r, i) => `${i + 1}. ${r}`).join('\n')}`;
         
         const userMessage: Message = { role: 'user', content: text };
         const assistantMessage: Message = { role: 'assistant', content: response };
@@ -718,6 +774,15 @@ export const ChatAssistant: React.FC = () => {
             
             speak(confirmMsg);
             toast.success(language === 'es' ? 'Gasto creado por voz' : 'Expense created by voice');
+            
+            // Post-action suggestion
+            setTimeout(() => {
+              const suggestion = getPostActionSuggestion('expense_created');
+              if (suggestion) {
+                const suggestionMsg: Message = { role: 'assistant', content: `💡 ${suggestion}` };
+                setMessages(prev => [...prev, suggestionMsg]);
+              }
+            }, 1500);
           },
           onError: () => {
             const errorMsg = language === 'es'
@@ -760,6 +825,15 @@ export const ChatAssistant: React.FC = () => {
             
             speak(confirmMsg);
             toast.success(language === 'es' ? 'Ingreso creado por voz' : 'Income created by voice');
+            
+            // Post-action suggestion
+            setTimeout(() => {
+              const suggestion = getPostActionSuggestion('income_created');
+              if (suggestion) {
+                const suggestionMsg: Message = { role: 'assistant', content: `💡 ${suggestion}` };
+                setMessages(prev => [...prev, suggestionMsg]);
+              }
+            }, 1500);
           },
           onError: () => {
             const errorMsg = language === 'es'
@@ -837,7 +911,64 @@ export const ChatAssistant: React.FC = () => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
     }
+    
+    // Contextual welcome message when chat opens
+    if (isOpen && !hasShownWelcome && messages.length === 0) {
+      setHasShownWelcome(true);
+      
+      const welcome = getContextualWelcome();
+      const welcomeMessage: Message = { role: 'assistant', content: welcome };
+      setMessages([welcomeMessage]);
+      
+      // Check for proactive alerts
+      const alerts = getProactiveAlerts();
+      if (alerts.length > 0) {
+        setShowAlerts(true);
+        // Add first high-priority alert as a message
+        const highPriorityAlert = alerts.find(a => a.priority === 'high');
+        if (highPriorityAlert) {
+          setTimeout(() => {
+            const alertMsg: Message = { 
+              role: 'assistant', 
+              content: `⚠️ ${highPriorityAlert.message[language as 'es' | 'en']}` 
+            };
+            setMessages(prev => [...prev, alertMsg]);
+          }, 2000);
+        }
+      }
+      
+      // Speak welcome if autoSpeak enabled
+      if (autoSpeak && isVoiceSupported) {
+        setTimeout(() => {
+          speak(welcome);
+        }, 500);
+      }
+    }
+  }, [isOpen, hasShownWelcome, messages.length, getContextualWelcome, getProactiveAlerts, autoSpeak, isVoiceSupported, speak, language]);
+
+  // Reset welcome flag when chat closes
+  useEffect(() => {
+    if (!isOpen) {
+      // Keep the hasShownWelcome flag until page changes
+    }
   }, [isOpen]);
+
+  // Track page navigation for contextual updates
+  useEffect(() => {
+    if (location.pathname !== previousPathRef.current && isOpen && hasShownWelcome) {
+      previousPathRef.current = location.pathname;
+      
+      // Offer help on new page
+      const pageContext = getCurrentPageContext();
+      const navMsg = language === 'es'
+        ? `Ahora estás en ${pageContext.pageName}. ¿Necesitas ayuda aquí?`
+        : `You're now on ${pageContext.pageName}. Need help here?`;
+      
+      const navMessage: Message = { role: 'assistant', content: navMsg };
+      setMessages(prev => [...prev, navMessage]);
+    }
+    previousPathRef.current = location.pathname;
+  }, [location.pathname, isOpen, hasShownWelcome, getCurrentPageContext, language]);
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isLoading) return;
@@ -1066,6 +1197,64 @@ export const ChatAssistant: React.FC = () => {
                 ? '🎙️ Toca el micrófono para hablar o activa el modo continuo (📻)'
                 : '🎙️ Tap the microphone to speak or enable continuous mode (📻)'
               }
+            </div>
+          )}
+
+          {/* Proactive Alerts Banner */}
+          {showAlerts && getProactiveAlerts().length > 0 && (
+            <div className="px-4 py-2 bg-amber-500/10 border-b border-amber-500/20">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                <span className="text-xs text-amber-700 dark:text-amber-400 flex-1">
+                  {getProactiveAlerts()[0].message[language as 'es' | 'en']}
+                </span>
+                <div className="flex gap-1">
+                  {getProactiveAlerts()[0].route && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 text-xs text-amber-700"
+                      onClick={() => {
+                        navigate(getProactiveAlerts()[0].route!);
+                        setShowAlerts(false);
+                      }}
+                    >
+                      {getProactiveAlerts()[0].action?.[language as 'es' | 'en'] || (language === 'es' ? 'Ver' : 'View')}
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-amber-600"
+                    onClick={() => setShowAlerts(false)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Active Tutorial Indicator */}
+          {activeTutorial && currentTutorialStep !== null && (
+            <div className="px-4 py-2 bg-blue-500/10 border-b border-blue-500/20">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                <span className="text-xs text-blue-700 dark:text-blue-400 flex-1">
+                  {language === 'es' ? 'Tutorial en curso' : 'Tutorial in progress'}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs text-blue-700"
+                  onClick={() => {
+                    setActiveTutorial(null);
+                    setCurrentTutorialStep(null);
+                  }}
+                >
+                  {language === 'es' ? 'Cerrar' : 'Close'}
+                </Button>
+              </div>
             </div>
           )}
 
