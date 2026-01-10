@@ -8,6 +8,7 @@ interface VoicePreferences {
   volume: number; // 0 to 1
   pitch: number; // 0 to 2
   voiceGender: VoiceGender; // Female, male, or auto
+  selectedVoiceName: string | null; // Specific voice name selected by user
   enableSoundEffects: boolean;
   confirmDestructiveActions: boolean;
   
@@ -58,6 +59,7 @@ const DEFAULT_PREFERENCES: VoicePreferences = {
   volume: 1.0,
   pitch: 1.0,
   voiceGender: 'female',
+  selectedVoiceName: null,
   enableSoundEffects: true,
   confirmDestructiveActions: true,
   customShortcuts: [],
@@ -182,7 +184,12 @@ export function useVoicePreferences() {
 
   // Update voice gender
   const setVoiceGender = useCallback((gender: VoiceGender) => {
-    setPreferences(prev => ({ ...prev, voiceGender: gender }));
+    setPreferences(prev => ({ ...prev, voiceGender: gender, selectedVoiceName: null }));
+  }, []);
+
+  // Set specific voice by name
+  const setSelectedVoice = useCallback((voiceName: string | null) => {
+    setPreferences(prev => ({ ...prev, selectedVoiceName: voiceName }));
   }, []);
 
   // Toggle sound effects
@@ -353,6 +360,7 @@ export function useVoicePreferences() {
     volume: preferences.volume,
     pitch: preferences.pitch,
     voiceGender: preferences.voiceGender,
+    selectedVoiceName: preferences.selectedVoiceName,
     enableSoundEffects: preferences.enableSoundEffects,
     confirmDestructiveActions: preferences.confirmDestructiveActions,
     customShortcuts: preferences.customShortcuts,
@@ -366,6 +374,7 @@ export function useVoicePreferences() {
     setVolume,
     setPitch,
     setVoiceGender,
+    setSelectedVoice,
     toggleSoundEffects,
     toggleConfirmDestructive,
     
