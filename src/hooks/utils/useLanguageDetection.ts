@@ -1,41 +1,55 @@
 import { useCallback, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-// Common words/patterns for each language
+// Common words/patterns for each language - enhanced with more patterns
 const SPANISH_INDICATORS = [
   // Question words
-  'qué', 'que', 'cómo', 'como', 'cuánto', 'cuanto', 'dónde', 'donde', 'cuál', 'cual', 'quién', 'quien',
-  // Verbs
-  'tengo', 'quiero', 'puedo', 'necesito', 'hay', 'estoy', 'soy', 'voy', 'hago', 'digo',
-  'gasté', 'gané', 'gaste', 'gane', 'agregar', 'crear', 'ver', 'mostrar', 'abrir', 'ir',
+  'qué', 'que', 'cómo', 'como', 'cuánto', 'cuanto', 'dónde', 'donde', 'cuál', 'cual', 'quién', 'quien', 'cuándo', 'cuando',
+  // Verbs - present
+  'tengo', 'quiero', 'puedo', 'necesito', 'hay', 'estoy', 'soy', 'voy', 'hago', 'digo', 'sé', 'se', 'creo', 'pienso',
+  // Verbs - past
+  'gasté', 'gané', 'gaste', 'gane', 'hice', 'fui', 'tuve', 'pude', 'quise', 'dije', 'pagué', 'recibí', 'compré',
+  // Verbs - imperative/infinitive
+  'agregar', 'crear', 'ver', 'mostrar', 'abrir', 'ir', 'ayudar', 'explicar', 'decir', 'hacer', 'cambiar', 'buscar',
   // Pronouns
-  'yo', 'mi', 'mis', 'mío', 'mio', 'tú', 'tu', 'él', 'ella', 'nosotros', 'ellos',
+  'yo', 'mi', 'mis', 'mío', 'mio', 'tú', 'tu', 'él', 'ella', 'nosotros', 'ellos', 'me', 'te', 'nos',
   // Prepositions/articles
-  'de', 'del', 'al', 'en', 'con', 'por', 'para', 'el', 'la', 'los', 'las', 'un', 'una',
+  'de', 'del', 'al', 'en', 'con', 'por', 'para', 'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas',
   // Common words
   'hola', 'gracias', 'por favor', 'ayuda', 'gastos', 'ingresos', 'clientes', 'proyectos',
-  'dinero', 'balance', 'este', 'esta', 'mes', 'año', 'día', 'hoy', 'ayer', 'mañana',
-  'bien', 'mal', 'mucho', 'poco', 'más', 'menos', 'sí', 'no', 'ahora', 'después',
+  'dinero', 'balance', 'este', 'esta', 'estos', 'estas', 'mes', 'año', 'día', 'hoy', 'ayer', 'mañana',
+  'bien', 'mal', 'mucho', 'poco', 'más', 'menos', 'sí', 'no', 'ahora', 'después', 'antes', 'siempre', 'nunca',
   // Business terms
-  'factura', 'pago', 'deducible', 'impuesto', 'reembolso', 'cliente', 'proyecto',
+  'factura', 'pago', 'deducible', 'impuesto', 'reembolso', 'cliente', 'proyecto', 'contrato', 'recibo',
+  // Financial terms
+  'patrimonio', 'activos', 'pasivos', 'deuda', 'ahorro', 'inversión', 'retiro', 'jubilación',
+  // Commands
+  'llévame', 'llevame', 'abre', 'muéstrame', 'muestrame', 'dime', 'cuéntame', 'cuentame',
 ];
 
 const ENGLISH_INDICATORS = [
   // Question words
-  'what', 'how', 'when', 'where', 'which', 'who', 'why',
-  // Verbs
-  'have', 'want', 'can', 'need', 'there', 'am', 'is', 'are', 'go', 'do', 'did',
-  'spent', 'earned', 'add', 'create', 'show', 'open', 'take',
+  'what', 'how', 'when', 'where', 'which', 'who', 'why', 'whose',
+  // Verbs - present
+  'have', 'want', 'can', 'need', 'there', 'am', 'is', 'are', 'go', 'do', 'know', 'think', 'believe',
+  // Verbs - past
+  'spent', 'earned', 'did', 'was', 'were', 'had', 'went', 'made', 'paid', 'received', 'bought', 'got',
+  // Verbs - imperative/infinitive
+  'add', 'create', 'show', 'open', 'take', 'help', 'explain', 'tell', 'make', 'change', 'find', 'search',
   // Pronouns
-  'i', 'my', 'me', 'mine', 'you', 'your', 'he', 'she', 'we', 'they', 'it',
+  'i', 'my', 'me', 'mine', 'you', 'your', 'yours', 'he', 'she', 'we', 'they', 'it', 'us', 'them',
   // Prepositions/articles
-  'of', 'to', 'in', 'on', 'at', 'for', 'the', 'a', 'an', 'with', 'from',
+  'of', 'to', 'in', 'on', 'at', 'for', 'the', 'a', 'an', 'with', 'from', 'about', 'into',
   // Common words
-  'hello', 'hi', 'thanks', 'please', 'help', 'expenses', 'income', 'clients', 'projects',
-  'money', 'balance', 'this', 'that', 'month', 'year', 'day', 'today', 'yesterday', 'tomorrow',
-  'good', 'bad', 'much', 'many', 'more', 'less', 'yes', 'no', 'now', 'later',
+  'hello', 'hi', 'thanks', 'thank', 'please', 'help', 'expenses', 'income', 'clients', 'projects',
+  'money', 'balance', 'this', 'that', 'these', 'those', 'month', 'year', 'day', 'today', 'yesterday', 'tomorrow',
+  'good', 'bad', 'much', 'many', 'more', 'less', 'yes', 'no', 'now', 'later', 'before', 'always', 'never',
   // Business terms
-  'invoice', 'payment', 'deductible', 'tax', 'reimbursement', 'client', 'project',
+  'invoice', 'payment', 'deductible', 'tax', 'reimbursement', 'client', 'project', 'contract', 'receipt',
+  // Financial terms
+  'net worth', 'assets', 'liabilities', 'debt', 'savings', 'investment', 'retirement',
+  // Commands
+  'take me', 'show me', 'tell me', 'give me', 'let me',
 ];
 
 interface LanguageDetectionResult {

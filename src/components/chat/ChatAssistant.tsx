@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square, AlertTriangle, BookOpen, Settings, Volume1, History } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square, AlertTriangle, BookOpen, Settings, Volume1, History, Zap, TrendingUp, ArrowRight } from 'lucide-react';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,8 @@ import { useVoiceKeyboardShortcuts } from '@/hooks/utils/useKeyboardShortcuts';
 // Import centralized voice modules
 import { VOICE_COMMANDS, VOICE_QUERIES, QUICK_QUESTIONS, type QueryType } from './voice/VoiceCommands';
 import { parseVoiceExpense, parseVoiceIncome } from './voice/VoiceParsers';
+import { VoiceCommandsCheatsheet } from './voice/VoiceCommandsCheatsheet';
+import { AudioLevelIndicator } from './voice/AudioLevelIndicator';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -72,6 +74,7 @@ export const ChatAssistant: React.FC = () => {
   const [activeTutorial, setActiveTutorial] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isOnboardingMicTest, setIsOnboardingMicTest] = useState(false);
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -158,6 +161,38 @@ export const ChatAssistant: React.FC = () => {
 
   const userName = profile?.full_name?.split(' ')[0] || 'Usuario'
   const quickQuestions = LOCAL_QUICK_QUESTIONS[language as keyof typeof LOCAL_QUICK_QUESTIONS] || LOCAL_QUICK_QUESTIONS.es;
+  
+  // Get personalized frequent actions
+  const frequentActions = useMemo(() => {
+    const topActions = voicePrefs.getTopActions(3);
+    return topActions.map(action => {
+      // Map action names to route/display info
+      const actionMap: Record<string, { route: string; name: { es: string; en: string }; icon: typeof Zap }> = {
+        'voice_input': { route: '', name: { es: 'Entrada de voz', en: 'Voice input' }, icon: Mic },
+        'navigation': { route: '', name: { es: 'Navegación', en: 'Navigation' }, icon: ArrowRight },
+        'query': { route: '', name: { es: 'Consulta de datos', en: 'Data query' }, icon: TrendingUp },
+        'shortcut_expenses': { route: '/expenses', name: { es: 'Gastos', en: 'Expenses' }, icon: Zap },
+        'shortcut_income': { route: '/income', name: { es: 'Ingresos', en: 'Income' }, icon: Zap },
+        'shortcut_dashboard': { route: '/dashboard', name: { es: 'Dashboard', en: 'Dashboard' }, icon: Zap },
+      };
+      return { 
+        ...action, 
+        info: actionMap[action.action] || { route: '', name: { es: action.action, en: action.action }, icon: Zap }
+      };
+    }).filter(a => a.info.route); // Only show navigable actions
+  }, [voicePrefs]);
+
+  // Haptic feedback helper (for mobile)
+  const triggerHapticFeedback = useCallback((type: 'light' | 'medium' | 'heavy' = 'medium') => {
+    if ('vibrate' in navigator) {
+      const patterns = {
+        light: [10],
+        medium: [30],
+        heavy: [50, 30, 50],
+      };
+      navigator.vibrate(patterns[type]);
+    }
+  }, []);
 
   // Check if text matches a voice query command
   // STRICT: Only match short/direct queries with exact or start-of-phrase patterns
@@ -536,6 +571,7 @@ export const ChatAssistant: React.FC = () => {
       const tutorial = findTutorial(text);
       if (tutorial) {
         setInput('');
+        triggerHapticFeedback('light');
         setActiveTutorial(tutorial.id);
         setCurrentTutorialStep(0);
         
@@ -552,6 +588,8 @@ export const ChatAssistant: React.FC = () => {
       const command = checkVoiceCommand(text);
       if (command.matched && command.route && command.name) {
         setInput('');
+        triggerHapticFeedback('medium');
+        voicePrefs.trackAction('navigation');
         const confirmMsg = language === 'es' 
           ? `Entendido. Navegando a ${command.name}.`
           : `Got it. Navigating to ${command.name}.`;
@@ -577,11 +615,15 @@ export const ChatAssistant: React.FC = () => {
       const query = checkVoiceQuery(text);
       if (query.matched && query.queryType) {
         setInput('');
+        setIsProcessingVoice(true);
+        triggerHapticFeedback('light');
+        voicePrefs.trackAction('query');
         const response = getQueryResponse(query.queryType);
         
         const userMessage: Message = { role: 'user', content: text };
         const assistantMessage: Message = { role: 'assistant', content: response };
         setMessages(prev => [...prev, userMessage, assistantMessage]);
+        setIsProcessingVoice(false);
         
         speak(response);
         return;
@@ -1086,6 +1128,17 @@ export const ChatAssistant: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-1">
+              {/* Voice Commands Cheatsheet */}
+              {isVoiceSupported && (
+                <VoiceCommandsCheatsheet 
+                  trigger={
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <HelpCircle className="h-4 w-4" />
+                    </Button>
+                  }
+                />
+              )}
+              
               {/* History button - quick access */}
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -1396,6 +1449,32 @@ export const ChatAssistant: React.FC = () => {
                     ))}
                   </div>
                 </div>
+                
+                {/* Personalized frequent actions */}
+                {frequentActions.length > 0 && (
+                  <div className="space-y-2 mt-4">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+                      <Zap className="h-3 w-3 text-amber-500" />
+                      {language === 'es' ? 'Tus acciones frecuentes' : 'Your frequent actions'}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {frequentActions.map((action, i) => (
+                        <Badge
+                          key={i}
+                          variant="secondary"
+                          className="cursor-pointer hover:bg-primary/20 transition-colors py-2 px-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10"
+                          onClick={() => navigate(action.info.route)}
+                        >
+                          <action.info.icon className="h-3 w-3 mr-1.5 text-amber-600" />
+                          {action.info.name[language as 'es' | 'en']}
+                          <span className="ml-1.5 text-[10px] text-muted-foreground">
+                            ({action.count}x)
+                          </span>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
@@ -1573,21 +1652,25 @@ export const ChatAssistant: React.FC = () => {
               isSpeaking ? "bg-primary/10" : "bg-red-500/10"
             )}>
               <div className="flex items-center gap-3">
-                <div className={cn(
-                  "h-3 w-3 rounded-full animate-pulse",
-                  isSpeaking ? "bg-primary" : "bg-red-500"
-                )} />
+                {/* Audio Level Indicator */}
+                <AudioLevelIndicator 
+                  isListening={isListening && !isSpeaking} 
+                  variant="bars"
+                  className="w-8"
+                />
                 <span className={cn(
                   "text-sm font-medium flex-1",
                   isSpeaking 
                     ? "text-primary" 
                     : "text-red-600 dark:text-red-400"
                 )}>
-                  {isSpeaking 
-                    ? (language === 'es' ? '🔊 Hablando...' : '🔊 Speaking...')
-                    : isContinuousMode
-                      ? (language === 'es' ? '🎙️ Modo Continuo' : '🎙️ Continuous Mode')
-                      : (language === 'es' ? 'Grabando' : 'Recording')
+                  {isProcessingVoice 
+                    ? (language === 'es' ? '⏳ Procesando...' : '⏳ Processing...')
+                    : isSpeaking 
+                      ? (language === 'es' ? '🔊 Hablando...' : '🔊 Speaking...')
+                      : isContinuousMode
+                        ? (language === 'es' ? '🎙️ Modo Continuo' : '🎙️ Continuous Mode')
+                        : (language === 'es' ? 'Grabando' : 'Recording')
                   }: {Math.floor(recordingDuration / 60)}:{(recordingDuration % 60).toString().padStart(2, '0')}
                 </span>
                 <Button
