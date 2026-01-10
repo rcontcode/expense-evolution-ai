@@ -7,6 +7,7 @@ interface UseVoiceAssistantOptions {
   onSpeakStart?: () => void;
   onSpeakEnd?: () => void;
   onContinuousStopped?: () => void;
+  onSpeakProgress?: (sentenceIndex: number, totalSentences: number) => void;
 }
 
 // STRICT stop commands - must match EXACTLY
@@ -23,8 +24,11 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   const [isListening, setIsListening] = useState(false);
   const [isContinuousMode, setIsContinuousMode] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isSpeechPaused, setIsSpeechPaused] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [currentSpeakingText, setCurrentSpeakingText] = useState('');
+  const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
@@ -39,6 +43,10 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   
   // Speech synthesis ref
   const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
+  
+  // Sentence-by-sentence speech queue
+  const sentenceQueueRef = useRef<string[]>([]);
+  const currentSentenceIndexRef = useRef(0);
 
   // Check browser support
   useEffect(() => {
@@ -335,7 +343,118 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       .trim();
   }, []);
 
-  // Speak text with COMPLETE mic blocking
+  // Split text into sentences for natural pauses
+  const splitIntoSentences = useCallback((text: string): string[] => {
+    // Split by sentence-ending punctuation but keep the punctuation
+    const sentences = text.split(/(?<=[.!?。])\s+/);
+    return sentences.filter(s => s.trim().length > 0);
+  }, []);
+
+  // Speak the next sentence in queue
+  const speakNextSentence = useCallback(() => {
+    if (currentSentenceIndexRef.current >= sentenceQueueRef.current.length) {
+      // All done
+      console.log('[Voice] All sentences spoken');
+      setIsSpeaking(false);
+      setIsSpeechPaused(false);
+      setCurrentSpeakingText('');
+      setCurrentSentenceIndex(0);
+      sentenceQueueRef.current = [];
+      currentSentenceIndexRef.current = 0;
+      options.onSpeakEnd?.();
+      
+      // Resume listening after delay if in continuous mode
+      if (continuousModeRef.current) {
+        setTimeout(() => {
+          console.log('[Voice] Unblocking mic after speech');
+          isPausedForSpeakingRef.current = false;
+          
+          setTimeout(() => {
+            if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
+              createAndStartRecognition(true);
+            }
+          }, 200);
+        }, 1000);
+      } else {
+        isPausedForSpeakingRef.current = false;
+      }
+      return;
+    }
+
+    const sentence = sentenceQueueRef.current[currentSentenceIndexRef.current];
+    console.log('[Voice] Speaking sentence', currentSentenceIndexRef.current + 1, '/', sentenceQueueRef.current.length);
+    
+    setCurrentSentenceIndex(currentSentenceIndexRef.current);
+    options.onSpeakProgress?.(currentSentenceIndexRef.current, sentenceQueueRef.current.length);
+
+    const utterance = new SpeechSynthesisUtterance(sentence);
+    utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
+    // Slightly slower for more natural speech with pauses
+    utterance.rate = 0.95;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+
+    // Get a native voice
+    const voices = window.speechSynthesis.getVoices();
+    const langCode = language === 'es' ? 'es' : 'en';
+    const preferredVoice = voices.find(v => 
+      v.lang.startsWith(langCode) && v.localService
+    ) || voices.find(v => v.lang.startsWith(langCode));
+    
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+
+    utterance.onstart = () => {
+      if (currentSentenceIndexRef.current === 0) {
+        setIsSpeaking(true);
+        options.onSpeakStart?.();
+      }
+    };
+
+    utterance.onend = () => {
+      currentSentenceIndexRef.current++;
+      
+      // Add a natural pause between sentences (400ms)
+      setTimeout(() => {
+        if (!window.speechSynthesis.paused && sentenceQueueRef.current.length > 0) {
+          speakNextSentence();
+        }
+      }, 400);
+    };
+
+    utterance.onerror = (event) => {
+      console.error('[Voice] Speech synthesis error:', event);
+      
+      // Try next sentence or finish
+      currentSentenceIndexRef.current++;
+      if (currentSentenceIndexRef.current < sentenceQueueRef.current.length) {
+        speakNextSentence();
+      } else {
+        setIsSpeaking(false);
+        setIsSpeechPaused(false);
+        setCurrentSpeakingText('');
+        
+        if (continuousModeRef.current) {
+          setTimeout(() => {
+            isPausedForSpeakingRef.current = false;
+            setTimeout(() => {
+              if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
+                createAndStartRecognition(true);
+              }
+            }, 200);
+          }, 500);
+        } else {
+          isPausedForSpeakingRef.current = false;
+        }
+      }
+    };
+
+    synthRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  }, [language, options, createAndStartRecognition]);
+
+  // Speak text with COMPLETE mic blocking and natural sentence pauses
   const speak = useCallback((text: string) => {
     if (!isSupported || !text) return;
 
@@ -376,84 +495,62 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       return;
     }
 
+    // Split into sentences for natural pauses
+    const sentences = splitIntoSentences(cleanedText);
+    sentenceQueueRef.current = sentences;
+    currentSentenceIndexRef.current = 0;
+    setCurrentSpeakingText(text);
+    setCurrentSentenceIndex(0);
+    setIsSpeechPaused(false);
+
     // Small delay to ensure abort takes effect
     setTimeout(() => {
-      const utterance = new SpeechSynthesisUtterance(cleanedText);
-      utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-
-      // Get a native voice
-      const voices = window.speechSynthesis.getVoices();
-      const langCode = language === 'es' ? 'es' : 'en';
-      const preferredVoice = voices.find(v => 
-        v.lang.startsWith(langCode) && v.localService
-      ) || voices.find(v => v.lang.startsWith(langCode));
-      
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-      }
-
-      utterance.onstart = () => {
-        console.log('[Voice] Speech started');
-        setIsSpeaking(true);
-        options.onSpeakStart?.();
-      };
-
-      utterance.onend = () => {
-        console.log('[Voice] Speech ended');
-        setIsSpeaking(false);
-        options.onSpeakEnd?.();
-
-        // Resume listening after delay if in continuous mode
-        if (continuousModeRef.current) {
-          // Wait 1 second AFTER speech ends to avoid echo
-          setTimeout(() => {
-            console.log('[Voice] Unblocking mic after speech');
-            isPausedForSpeakingRef.current = false;
-            
-            // Additional delay before starting recognition
-            setTimeout(() => {
-              if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-                createAndStartRecognition(true);
-              }
-            }, 200);
-          }, 1000);
-        } else {
-          isPausedForSpeakingRef.current = false;
-        }
-      };
-
-      utterance.onerror = (event) => {
-        console.error('[Voice] Speech synthesis error:', event);
-        setIsSpeaking(false);
-        
-        // Resume listening even on error
-        if (continuousModeRef.current) {
-          setTimeout(() => {
-            isPausedForSpeakingRef.current = false;
-            setTimeout(() => {
-              if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-                createAndStartRecognition(true);
-              }
-            }, 200);
-          }, 500);
-        } else {
-          isPausedForSpeakingRef.current = false;
-        }
-      };
-
-      synthRef.current = utterance;
-      window.speechSynthesis.speak(utterance);
+      speakNextSentence();
     }, 150);
-  }, [isSupported, language, options, cleanTextForSpeech, clearPauseTimeout, createAndStartRecognition]);
+  }, [isSupported, cleanTextForSpeech, splitIntoSentences, clearPauseTimeout, speakNextSentence, createAndStartRecognition]);
 
-  // Stop speaking
+  // Pause speech
+  const pauseSpeech = useCallback(() => {
+    if (isSpeaking && !isSpeechPaused) {
+      window.speechSynthesis.pause();
+      setIsSpeechPaused(true);
+      console.log('[Voice] Speech paused');
+    }
+  }, [isSpeaking, isSpeechPaused]);
+
+  // Resume speech
+  const resumeSpeech = useCallback(() => {
+    if (isSpeaking && isSpeechPaused) {
+      window.speechSynthesis.resume();
+      setIsSpeechPaused(false);
+      console.log('[Voice] Speech resumed');
+    }
+  }, [isSpeaking, isSpeechPaused]);
+
+  // Stop speaking completely
   const stopSpeaking = useCallback(() => {
     window.speechSynthesis.cancel();
+    sentenceQueueRef.current = [];
+    currentSentenceIndexRef.current = 0;
     setIsSpeaking(false);
-  }, []);
+    setIsSpeechPaused(false);
+    setCurrentSpeakingText('');
+    setCurrentSentenceIndex(0);
+    
+    // Unblock mic if needed
+    if (continuousModeRef.current) {
+      setTimeout(() => {
+        isPausedForSpeakingRef.current = false;
+        setTimeout(() => {
+          if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
+            createAndStartRecognition(true);
+          }
+        }, 200);
+      }, 500);
+    } else {
+      isPausedForSpeakingRef.current = false;
+    }
+  }, [createAndStartRecognition]);
 
   // Toggle single listening
   const toggleListening = useCallback(() => {
@@ -469,6 +566,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     return () => {
       isPausedForSpeakingRef.current = true;
       clearPauseTimeout();
+      sentenceQueueRef.current = [];
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
@@ -484,14 +582,20 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     isListening,
     isContinuousMode,
     isSpeaking,
+    isSpeechPaused,
     isSupported,
     transcript,
+    currentSpeakingText,
+    currentSentenceIndex,
+    totalSentences: sentenceQueueRef.current.length,
     startListening,
     stopListening,
     startContinuousListening,
     stopContinuousListening,
     toggleListening,
     speak,
+    pauseSpeech,
+    resumeSpeech,
     stopSpeaking,
   };
 }
