@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { MessageCircle, X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square } from 'lucide-react';
+import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square } from 'lucide-react';
+import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -777,13 +778,13 @@ export const ChatAssistant: React.FC = () => {
         onClick={() => setIsOpen(true)}
         className={cn(
           "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
-          "bg-primary hover:bg-primary/90 text-primary-foreground",
+          "bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500",
           "transition-all duration-300 hover:scale-110",
           isOpen && "hidden"
         )}
         size="icon"
       >
-        <MessageCircle className="h-6 w-6" />
+        <PhoenixLogo variant="badge" showEffects={false} className="h-7 w-7" />
       </Button>
 
       {/* Chat Window */}
@@ -799,15 +800,12 @@ export const ChatAssistant: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b bg-primary/5">
             <div className="flex items-center gap-3">
-              <div className={cn(
-                "h-10 w-10 rounded-full flex items-center justify-center transition-colors",
-                isSpeaking ? "bg-primary animate-pulse" : "bg-primary/10"
-              )}>
-                <Sparkles className={cn(
-                  "h-5 w-5",
-                  isSpeaking ? "text-primary-foreground" : "text-primary"
-                )} />
-              </div>
+              <PhoenixLogo 
+                variant="mini" 
+                state={isSpeaking ? "rebirth" : "auto"} 
+                showEffects={isSpeaking}
+                className={cn(isSpeaking && "animate-pulse")}
+              />
               <div>
                 <h3 className="font-semibold text-foreground">
                   {language === 'es' ? 'Asistente Financiero' : 'Financial Assistant'}
