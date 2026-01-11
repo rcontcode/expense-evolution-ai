@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Camera, Wallet, BarChart3, Car, Building2, Trophy, FileText, Flame, GraduationCap, Calculator, Mic } from "lucide-react";
+import { ChevronLeft, ChevronRight, Camera, Wallet, BarChart3, Car, Building2, Trophy, FileText, Flame, GraduationCap, Calculator, Mic, TrendingDown, CreditCard, BookOpen, Target } from "lucide-react";
 import { ReceiptDemoAnimation } from "./ReceiptDemoAnimation";
 import { NetWorthDemoAnimation } from "./NetWorthDemoAnimation";
 import { DashboardDemoAnimation } from "./DashboardDemoAnimation";
@@ -12,6 +12,10 @@ import { FIREDemoAnimation } from "./FIREDemoAnimation";
 import { EducationDemoAnimation } from "./EducationDemoAnimation";
 import { TaxOptimizerDemoAnimation } from "./TaxOptimizerDemoAnimation";
 import { VoiceAssistantDemoAnimation } from "./VoiceAssistantDemoAnimation";
+import { DebtManagerDemoAnimation } from "./DebtManagerDemoAnimation";
+import { SubscriptionsDemoAnimation } from "./SubscriptionsDemoAnimation";
+import { JournalDemoAnimation } from "./JournalDemoAnimation";
+import { HabitsDemoAnimation } from "./HabitsDemoAnimation";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const getDemos = (language: string) => [
@@ -48,12 +52,44 @@ const getDemos = (language: string) => [
     component: DashboardDemoAnimation 
   },
   { 
+    id: "habits", 
+    title: language === 'es' ? "Hábitos Atómicos" : "Atomic Habits", 
+    subtitle: language === 'es' ? "Construye hábitos financieros ganadores" : "Build winning financial habits",
+    icon: Target,
+    color: "from-indigo-500 to-violet-600",
+    component: HabitsDemoAnimation 
+  },
+  { 
     id: "gamification", 
     title: language === 'es' ? "Gamificación" : "Gamification", 
     subtitle: language === 'es' ? "XP, niveles, logros y rachas" : "XP, levels, achievements and streaks",
     icon: Trophy,
     color: "from-amber-500 to-orange-600",
     component: GamificationDemoAnimation 
+  },
+  { 
+    id: "debt", 
+    title: language === 'es' ? "Gestor de Deudas" : "Debt Manager", 
+    subtitle: language === 'es' ? "Avalancha vs Bola de nieve" : "Avalanche vs Snowball methods",
+    icon: TrendingDown,
+    color: "from-rose-500 to-red-600",
+    component: DebtManagerDemoAnimation 
+  },
+  { 
+    id: "subscriptions", 
+    title: language === 'es' ? "Detector Suscripciones" : "Subscription Detector", 
+    subtitle: language === 'es' ? "Encuentra suscripciones olvidadas" : "Find forgotten subscriptions",
+    icon: CreditCard,
+    color: "from-pink-500 to-rose-600",
+    component: SubscriptionsDemoAnimation 
+  },
+  { 
+    id: "journal", 
+    title: language === 'es' ? "Diario Financiero" : "Financial Journal", 
+    subtitle: language === 'es' ? "Reflexiona y aprende de tus decisiones" : "Reflect and learn from decisions",
+    icon: BookOpen,
+    color: "from-amber-500 to-orange-600",
+    component: JournalDemoAnimation 
   },
   { 
     id: "contracts", 
