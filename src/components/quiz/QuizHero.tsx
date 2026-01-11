@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Flame, Shield, Clock, Users } from "lucide-react";
+import { Flame, Shield, Clock, Users, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import phoenixLogo from "@/assets/phoenix-transparent.png";
+import { PhoenixLogo } from "@/components/ui/phoenix-logo";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 interface QuizHeroProps {
   onStartQuiz: () => void;
@@ -80,6 +81,11 @@ export const QuizHero = ({ onStartQuiz }: QuizHeroProps) => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative z-10">
+      {/* Language Selector */}
+      <div className="absolute top-4 right-4 z-30">
+        <LanguageSelector />
+      </div>
+
       {/* Badge */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -87,27 +93,20 @@ export const QuizHero = ({ onStartQuiz }: QuizHeroProps) => {
         transition={{ duration: 0.5 }}
         className="mb-6"
       >
-        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-sm font-medium">
-          <Flame className="w-4 h-4" />
+        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-sm font-medium backdrop-blur-sm">
+          <Sparkles className="w-4 h-4" />
           {t.badge}
         </span>
       </motion.div>
 
-      {/* Phoenix Logo */}
+      {/* Phoenix Logo - Using unified component */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, delay: 0.1 }}
         className="mb-8"
       >
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-t from-amber-500/30 to-orange-500/20 blur-3xl rounded-full" />
-          <img
-            src={phoenixLogo}
-            alt="Phoenix"
-            className="w-32 h-32 md:w-40 md:h-40 object-contain relative z-10 drop-shadow-2xl"
-          />
-        </div>
+        <PhoenixLogo variant="hero" showText={false} showEffects={true} />
       </motion.div>
 
       {/* Title */}
@@ -140,17 +139,15 @@ export const QuizHero = ({ onStartQuiz }: QuizHeroProps) => {
         transition={{ duration: 0.6, delay: 0.4 }}
         className="flex flex-wrap items-center justify-center gap-4 mb-8"
       >
-        <div className="flex items-center gap-2 text-slate-400">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 backdrop-blur-sm border border-slate-700/50">
           <Clock className="w-4 h-4 text-amber-400" />
-          <span className="text-sm">{t.trustBadges.time}</span>
+          <span className="text-sm text-slate-300">{t.trustBadges.time}</span>
         </div>
-        <span className="text-slate-600">•</span>
-        <div className="flex items-center gap-2 text-slate-400">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 backdrop-blur-sm border border-slate-700/50">
           <Shield className="w-4 h-4 text-emerald-400" />
-          <span className="text-sm">{t.trustBadges.private}</span>
+          <span className="text-sm text-slate-300">{t.trustBadges.private}</span>
         </div>
-        <span className="text-slate-600">•</span>
-        <div className="flex items-center gap-2 text-slate-400">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 backdrop-blur-sm border border-emerald-500/30">
           <span className="text-sm font-medium text-emerald-400">{t.trustBadges.free}</span>
         </div>
       </motion.div>
@@ -165,12 +162,15 @@ export const QuizHero = ({ onStartQuiz }: QuizHeroProps) => {
         <Button
           onClick={onStartQuiz}
           size="lg"
-          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold text-lg px-8 py-6 rounded-xl shadow-lg shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/30 transition-all duration-300 hover:scale-105"
+          className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-600 hover:via-orange-600 hover:to-amber-600 text-white font-semibold text-lg px-10 py-7 rounded-2xl shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 transition-all duration-300 hover:scale-105 border border-amber-400/30"
         >
-          <Flame className="w-5 h-5 mr-2" />
+          <Flame className="w-6 h-6 mr-2" />
           {t.cta}
         </Button>
-        <p className="text-sm text-slate-500">{t.ctaSubtext}</p>
+        <p className="text-sm text-slate-500 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          {t.ctaSubtext}
+        </p>
       </motion.div>
 
       {/* Social Proof */}
@@ -178,19 +178,19 @@ export const QuizHero = ({ onStartQuiz }: QuizHeroProps) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.6 }}
-        className="flex items-center gap-2 mb-12"
+        className="flex items-center gap-3 mb-12 px-4 py-2 rounded-full bg-slate-800/30 backdrop-blur-sm border border-slate-700/30"
       >
         <div className="flex -space-x-2">
-          {[...Array(4)].map((_, i) => (
+          {[...Array(5)].map((_, i) => (
             <div
               key={i}
-              className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 border-2 border-slate-900 flex items-center justify-center text-white text-xs font-bold"
+              className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 border-2 border-slate-900 flex items-center justify-center text-white text-xs font-bold shadow-lg"
             >
-              {["👨", "👩", "👨", "👩"][i]}
+              {["👨‍💼", "👩‍💼", "👨‍💻", "👩‍🎓", "👨‍🔧"][i]}
             </div>
           ))}
         </div>
-        <span className="text-slate-400 text-sm">{t.socialProof}</span>
+        <span className="text-slate-400 text-sm font-medium">{t.socialProof}</span>
       </motion.div>
 
       {/* Features */}
@@ -201,17 +201,39 @@ export const QuizHero = ({ onStartQuiz }: QuizHeroProps) => {
         className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl"
       >
         {t.features.map((feature, index) => (
-          <div
+          <motion.div
             key={index}
-            className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 text-center hover:bg-slate-800/70 transition-colors"
+            whileHover={{ scale: 1.02, y: -4 }}
+            transition={{ duration: 0.2 }}
+            className="bg-gradient-to-b from-slate-800/60 to-slate-900/60 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 text-center hover:border-amber-500/30 transition-colors group"
           >
-            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
-              <feature.icon className="w-6 h-6 text-amber-400" />
+            <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center group-hover:from-amber-500/30 group-hover:to-orange-500/30 transition-colors">
+              <feature.icon className="w-7 h-7 text-amber-400" />
             </div>
-            <h3 className="text-white font-semibold mb-2">{feature.title}</h3>
+            <h3 className="text-white font-semibold mb-2 text-lg">{feature.title}</h3>
             <p className="text-slate-400 text-sm">{feature.description}</p>
-          </div>
+          </motion.div>
         ))}
+      </motion.div>
+
+      {/* Scroll indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 1 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+      >
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          className="w-6 h-10 rounded-full border-2 border-slate-600 flex items-start justify-center p-2"
+        >
+          <motion.div
+            animate={{ opacity: [1, 0.3, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="w-1.5 h-1.5 rounded-full bg-amber-400"
+          />
+        </motion.div>
       </motion.div>
     </div>
   );
