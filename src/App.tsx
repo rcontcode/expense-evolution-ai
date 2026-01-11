@@ -1,4 +1,4 @@
-import { lazy, Suspense, ComponentType } from "react";
+import { lazy, Suspense, Component, type ReactNode, ComponentType } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -78,6 +78,27 @@ const PageLoader = () => (
   </div>
 );
 
+class LazyErrorBoundary extends Component<
+  { children: ReactNode; name?: string },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    // Keep the app running even if a lazy chunk fails to load.
+    console.warn(`[LazyErrorBoundary] Failed to load: ${this.props.name ?? 'lazy component'}`, error);
+  }
+
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -141,9 +162,11 @@ const App = () => (
                     </Routes>
                   </Suspense>
                   {/* Lazy load global components with null fallback (non-blocking) */}
-                  <Suspense fallback={null}>
-                    <ChatAssistant />
-                  </Suspense>
+                  <LazyErrorBoundary name="ChatAssistant">
+                    <Suspense fallback={null}>
+                      <ChatAssistant />
+                    </Suspense>
+                  </LazyErrorBoundary>
                   <Suspense fallback={null}>
                     <OnboardingTutorial />
                   </Suspense>
