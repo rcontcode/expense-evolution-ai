@@ -193,38 +193,64 @@ export default function Legal() {
     {
       id: 'education',
       icon: BookOpen,
-      title: isEs ? 'Contenido Educativo' : 'Educational Content',
+      title: isEs ? 'Contenido Educativo e Inspirado' : 'Educational & Inspired Content',
       color: 'text-purple-500',
       content: isEs ? (
         <>
           <p className="mb-4">
-            El sistema de mentoría financiera de EvoFinz está inspirado en principios de expertos reconocidos 
-            (Robert Kiyosaki, Jim Rohn, Brian Tracy) y tiene como objetivo <strong>educar sobre conceptos 
-            financieros fundamentales</strong>.
+            El sistema de mentoría financiera de EvoFinz está <strong>inspirado en principios</strong> de expertos 
+            reconocidos en educación financiera y tiene como objetivo <strong>educar sobre conceptos 
+            financieros fundamentales</strong> de manera accesible.
+          </p>
+          <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20 mb-4">
+            <p className="text-sm font-medium mb-2">📚 Atribución de Contenido:</p>
+            <ul className="text-sm space-y-1">
+              <li>• "Padre Rico, Padre Pobre", "El Cuadrante del Flujo de Dinero" y conceptos relacionados son obras de <strong>Robert T. Kiyosaki</strong></li>
+              <li>• "Hábitos Atómicos" es obra de <strong>James Clear</strong></li>
+              <li>• Metas SMART y principios de productividad son atribuidos a <strong>Brian Tracy</strong></li>
+              <li>• "Págate Primero" y filosofía de desarrollo personal son de <strong>Jim Rohn</strong></li>
+            </ul>
+          </div>
+          <p className="mb-4">
+            <strong>Nota:</strong> EvoFinz NO está afiliada, patrocinada ni respaldada por ninguno de estos autores 
+            o sus organizaciones. Las referencias son con fines educativos y de atribución adecuada.
           </p>
           <p className="mb-4">
-            Los conceptos como el Cuadrante del Flujo de Dinero, clasificación de deudas, y metas SMART 
-            son marcos educativos generales que pueden no aplicar directamente a su situación personal.
+            Las citas incluidas se utilizan bajo el principio de <strong>Uso Justo</strong> con fines educativos, 
+            siempre con atribución al autor original y su obra.
           </p>
           <p className="text-sm text-muted-foreground">
-            Este contenido no reemplaza la educación financiera formal ni el asesoramiento profesional 
-            personalizado. Use estos conceptos como punto de partida para su aprendizaje financiero.
+            Se recomienda encarecidamente adquirir las obras originales de estos autores para una comprensión 
+            completa de sus metodologías.
           </p>
         </>
       ) : (
         <>
           <p className="mb-4">
-            EvoFinz's financial mentorship system is inspired by principles from recognized experts 
-            (Robert Kiyosaki, Jim Rohn, Brian Tracy) and aims to <strong>educate about fundamental 
-            financial concepts</strong>.
+            EvoFinz's financial mentorship system is <strong>inspired by principles</strong> from recognized 
+            experts in financial education and aims to <strong>educate about fundamental 
+            financial concepts</strong> in an accessible way.
+          </p>
+          <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20 mb-4">
+            <p className="text-sm font-medium mb-2">📚 Content Attribution:</p>
+            <ul className="text-sm space-y-1">
+              <li>• "Rich Dad Poor Dad", "Cashflow Quadrant" and related concepts are works by <strong>Robert T. Kiyosaki</strong></li>
+              <li>• "Atomic Habits" is a work by <strong>James Clear</strong></li>
+              <li>• SMART Goals and productivity principles are attributed to <strong>Brian Tracy</strong></li>
+              <li>• "Pay Yourself First" and personal development philosophy are from <strong>Jim Rohn</strong></li>
+            </ul>
+          </div>
+          <p className="mb-4">
+            <strong>Note:</strong> EvoFinz is NOT affiliated with, sponsored by, or endorsed by any of these authors 
+            or their organizations. References are for educational purposes and proper attribution.
           </p>
           <p className="mb-4">
-            Concepts like the Cashflow Quadrant, debt classification, and SMART goals are general 
-            educational frameworks that may not directly apply to your personal situation.
+            Quotes included are used under the principle of <strong>Fair Use</strong> for educational purposes, 
+            always with attribution to the original author and their work.
           </p>
           <p className="text-sm text-muted-foreground">
-            This content does not replace formal financial education or personalized professional 
-            advice. Use these concepts as a starting point for your financial learning.
+            It is strongly recommended to acquire the original works by these authors for a complete 
+            understanding of their methodologies.
           </p>
         </>
       ),
@@ -375,7 +401,18 @@ export default function Legal() {
 
         {/* Footer */}
         <Separator className="my-8" />
-        <div className="text-center text-sm text-muted-foreground pb-8">
+        <div className="text-center text-sm text-muted-foreground pb-8 space-y-4">
+          <div className="p-4 rounded-lg bg-muted/50 text-left">
+            <p className="text-xs font-medium mb-2">
+              {isEs ? '* Uso de Marcas Registradas y Propiedad Intelectual:' : '* Trademark and Intellectual Property Notice:'}
+            </p>
+            <p className="text-xs">
+              {isEs 
+                ? 'Los nombres "Rich Dad", "Cashflow Quadrant", "Rich Dad Poor Dad" son marcas registradas de Cashflow Technologies, Inc. "Atomic Habits" es marca de James Clear. Todos los demás nombres de libros, autores y conceptos pertenecen a sus respectivos propietarios. EvoFinz utiliza estas referencias exclusivamente con fines educativos y de atribución, bajo los principios de Uso Justo. No existe afiliación, patrocinio ni respaldo por parte de los titulares de dichas marcas.'
+                : '"Rich Dad", "Cashflow Quadrant", "Rich Dad Poor Dad" are registered trademarks of Cashflow Technologies, Inc. "Atomic Habits" is a trademark of James Clear. All other book names, authors, and concepts belong to their respective owners. EvoFinz uses these references solely for educational and attribution purposes, under Fair Use principles. There is no affiliation, sponsorship, or endorsement by the trademark holders.'
+              }
+            </p>
+          </div>
           <p>© 2026 EvoFinz. {isEs ? 'Todos los derechos reservados.' : 'All rights reserved.'}</p>
           <p className="mt-2">
             {isEs 

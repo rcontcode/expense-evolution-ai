@@ -429,9 +429,10 @@ export function MentorQuoteBanner({
               {quote.book && (
                 <>
                   <span>•</span>
-                  <span className="text-xs">{quote.book}</span>
+                  <span className="text-xs italic">{quote.book}</span>
                 </>
               )}
+              <span className="text-[10px] opacity-60" title={language === 'es' ? 'Cita con fines educativos' : 'Quote for educational purposes'}>*</span>
             </div>
 
             {/* Personalized Application */}
