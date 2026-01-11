@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Accordion,
   AccordionContent,
@@ -11,6 +10,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
 import { 
   Atom, 
   Eye, 
@@ -27,9 +27,14 @@ import {
   PiggyBank,
   Receipt,
   Calculator,
-  BookOpen
+  BookOpen,
+  Flame,
+  Star,
+  Trophy,
+  Rocket
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
 
 interface AtomicHabitTip {
   id: string;
@@ -203,10 +208,12 @@ const LAW_INFO = {
     number: 1,
     nameEs: 'Hazlo Obvio',
     nameEn: 'Make It Obvious',
-    colorClass: 'bg-blue-500',
-    borderClass: 'border-blue-500/30',
-    bgClass: 'bg-blue-500/10',
+    colorClass: 'bg-gradient-to-r from-blue-500 to-cyan-500',
+    borderClass: 'border-blue-500/40',
+    bgClass: 'bg-gradient-to-br from-blue-500/15 via-cyan-500/10 to-blue-500/5',
+    glowClass: 'shadow-blue-500/20',
     icon: <Eye className="h-5 w-5 text-blue-500" />,
+    emoji: '👁️',
     principleEs: 'Diseña tu ambiente para que las señales de buenos hábitos sean visibles.',
     principleEn: 'Design your environment so that cues for good habits are visible.',
   },
@@ -214,10 +221,12 @@ const LAW_INFO = {
     number: 2,
     nameEs: 'Hazlo Atractivo',
     nameEn: 'Make It Attractive',
-    colorClass: 'bg-pink-500',
-    borderClass: 'border-pink-500/30',
-    bgClass: 'bg-pink-500/10',
+    colorClass: 'bg-gradient-to-r from-pink-500 to-rose-500',
+    borderClass: 'border-pink-500/40',
+    bgClass: 'bg-gradient-to-br from-pink-500/15 via-rose-500/10 to-pink-500/5',
+    glowClass: 'shadow-pink-500/20',
     icon: <Sparkles className="h-5 w-5 text-pink-500" />,
+    emoji: '✨',
     principleEs: 'Asocia hábitos con emociones positivas y recompensas anticipadas.',
     principleEn: 'Associate habits with positive emotions and anticipated rewards.',
   },
@@ -225,10 +234,12 @@ const LAW_INFO = {
     number: 3,
     nameEs: 'Hazlo Fácil',
     nameEn: 'Make It Easy',
-    colorClass: 'bg-green-500',
-    borderClass: 'border-green-500/30',
-    bgClass: 'bg-green-500/10',
+    colorClass: 'bg-gradient-to-r from-green-500 to-emerald-500',
+    borderClass: 'border-green-500/40',
+    bgClass: 'bg-gradient-to-br from-green-500/15 via-emerald-500/10 to-green-500/5',
+    glowClass: 'shadow-green-500/20',
     icon: <Zap className="h-5 w-5 text-green-500" />,
+    emoji: '⚡',
     principleEs: 'Reduce la fricción. El mejor hábito es el que requiere menos esfuerzo iniciar.',
     principleEn: 'Reduce friction. The best habit is the one that requires the least effort to start.',
   },
@@ -236,10 +247,12 @@ const LAW_INFO = {
     number: 4,
     nameEs: 'Hazlo Satisfactorio',
     nameEn: 'Make It Satisfying',
-    colorClass: 'bg-amber-500',
-    borderClass: 'border-amber-500/30',
-    bgClass: 'bg-amber-500/10',
+    colorClass: 'bg-gradient-to-r from-amber-500 to-orange-500',
+    borderClass: 'border-amber-500/40',
+    bgClass: 'bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-amber-500/5',
+    glowClass: 'shadow-amber-500/20',
     icon: <Gift className="h-5 w-5 text-amber-500" />,
+    emoji: '🎁',
     principleEs: 'Lo que se recompensa se repite. Lo que se castiga se evita.',
     principleEn: 'What is rewarded is repeated. What is punished is avoided.',
   },
@@ -247,7 +260,10 @@ const LAW_INFO = {
 
 export function AtomicHabitsCard() {
   const { language } = useLanguage();
+  const { playCelebrationSound } = useCelebrationSound();
   const [selectedLaw, setSelectedLaw] = useState<'all' | 'obvious' | 'attractive' | 'easy' | 'satisfying'>('all');
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [pulseProgress, setPulseProgress] = useState(false);
   
   const filteredTips = selectedLaw === 'all' 
     ? ATOMIC_HABITS_TIPS 
@@ -257,87 +273,248 @@ export function AtomicHabitsCard() {
   const totalCount = ATOMIC_HABITS_TIPS.length;
   const progressPercent = Math.round((implementedCount / totalCount) * 100);
 
+  // Celebración inicial cuando el progreso es alto
+  useEffect(() => {
+    if (progressPercent >= 80) {
+      setPulseProgress(true);
+      const timer = setTimeout(() => setPulseProgress(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [progressPercent]);
+
+  const handleLawClick = (law: typeof selectedLaw) => {
+    setSelectedLaw(selectedLaw === law ? 'all' : law);
+    // Mini celebración al explorar una ley
+    if (selectedLaw !== law) {
+      playCelebrationSound();
+    }
+  };
+
+  const triggerCelebration = () => {
+    setShowCelebration(true);
+    playCelebrationSound();
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#3b82f6', '#ec4899', '#22c55e', '#f59e0b']
+    });
+    setTimeout(() => setShowCelebration(false), 2000);
+  };
+
   return (
-    <Card className="overflow-hidden border-2 border-primary/20">
-      <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
+    <Card className="overflow-hidden border-2 border-primary/30 relative">
+      {/* Animated background glow */}
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+      
+      {/* Celebration overlay */}
+      <AnimatePresence>
+        {showCelebration && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-amber-500/20 backdrop-blur-sm z-10 flex items-center justify-center"
+          >
+            <motion.div
+              animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 0.5 }}
+              className="text-6xl"
+            >
+              🎉
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <CardHeader className="pb-3 bg-gradient-to-r from-cyan-500/10 via-sky-500/5 to-blue-500/10 relative">
+        {/* Floating particles */}
+        <motion.div
+          animate={{ y: [-5, 5, -5], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 3, repeat: Infinity }}
+          className="absolute top-2 right-2 text-2xl"
+        >
+          ⚛️
+        </motion.div>
+        
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Atom className="h-6 w-6 text-primary animate-pulse" />
-            {language === 'es' ? 'Hábitos Atómicos' : 'Atomic Habits'}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            >
+              <Atom className="h-6 w-6 text-cyan-500" />
+            </motion.div>
+            <span className="bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent font-bold">
+              {language === 'es' ? 'Hábitos Atómicos' : 'Atomic Habits'}
+            </span>
           </CardTitle>
-          <Badge variant="secondary" className="text-xs bg-primary/10">
+          <Badge className="text-xs bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border-cyan-500/30 hover:from-cyan-500/30 hover:to-blue-500/30 transition-all">
+            <BookOpen className="h-3 w-3 mr-1" />
             James Clear 📖
           </Badge>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">
-          {language === 'es' 
-            ? '"Pequeños cambios, resultados extraordinarios" - Aplicado a tus finanzas'
-            : '"Tiny changes, remarkable results" - Applied to your finances'}
-        </p>
         
-        {/* Progress Bar */}
-        <div className="mt-3 space-y-1">
-          <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">
-              {language === 'es' ? 'Estrategias implementadas en la app' : 'Strategies implemented in the app'}
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-sm text-muted-foreground mt-1 italic"
+        >
+          {language === 'es' 
+            ? '"Pequeños cambios, resultados extraordinarios" ✨'
+            : '"Tiny changes, remarkable results" ✨'}
+        </motion.p>
+        
+        {/* Animated Progress Bar */}
+        <div className="mt-3 space-y-2">
+          <div className="flex justify-between text-xs items-center">
+            <span className="text-muted-foreground flex items-center gap-1">
+              <Rocket className="h-3 w-3 text-cyan-500" />
+              {language === 'es' ? 'Estrategias en la app' : 'Strategies in the app'}
             </span>
-            <span className="font-medium text-primary">{implementedCount}/{totalCount}</span>
+            <motion.span 
+              className={`font-bold ${progressPercent >= 80 ? 'text-green-500' : 'text-cyan-500'}`}
+              animate={pulseProgress ? { scale: [1, 1.2, 1] } : {}}
+              transition={{ duration: 0.5, repeat: pulseProgress ? 3 : 0 }}
+            >
+              {implementedCount}/{totalCount} 
+              {progressPercent >= 80 && ' 🏆'}
+            </motion.span>
           </div>
-          <Progress value={progressPercent} className="h-2" />
+          <div className="relative">
+            <Progress 
+              value={progressPercent} 
+              className={`h-3 ${pulseProgress ? 'animate-pulse' : ''}`}
+            />
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+              animate={{ x: ['-100%', '100%'] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              style={{ width: '30%' }}
+            />
+          </div>
+          {progressPercent >= 80 && (
+            <motion.p
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-xs text-green-600 font-medium flex items-center gap-1"
+            >
+              <Trophy className="h-3 w-3" />
+              {language === 'es' ? '¡Increíble! Dominas los hábitos atómicos' : 'Amazing! You master atomic habits'}
+            </motion.p>
+          )}
         </div>
       </CardHeader>
 
-      <CardContent className="pt-4 space-y-4">
-        {/* 4 Laws Overview */}
+      <CardContent className="pt-4 space-y-4 relative">
+        {/* 4 Laws Overview - Enhanced */}
         <div className="grid grid-cols-4 gap-2">
-          {(['obvious', 'attractive', 'easy', 'satisfying'] as const).map((law) => {
+          {(['obvious', 'attractive', 'easy', 'satisfying'] as const).map((law, index) => {
             const info = LAW_INFO[law];
             const lawTips = ATOMIC_HABITS_TIPS.filter(t => t.law === law);
             const lawImplemented = lawTips.filter(t => t.implemented).length;
+            const isSelected = selectedLaw === law;
             
             return (
-              <button
+              <motion.button
                 key={law}
-                onClick={() => setSelectedLaw(selectedLaw === law ? 'all' : law)}
-                className={`p-2 rounded-lg border transition-all text-center ${
-                  selectedLaw === law 
-                    ? `${info.bgClass} ${info.borderClass} scale-105` 
-                    : 'border-border hover:border-primary/30'
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleLawClick(law)}
+                className={`p-3 rounded-xl border-2 transition-all text-center relative overflow-hidden ${
+                  isSelected 
+                    ? `${info.bgClass} ${info.borderClass} shadow-lg ${info.glowClass}` 
+                    : 'border-border/50 hover:border-primary/30 bg-background/50'
                 }`}
               >
-                <div className="flex justify-center mb-1">{info.icon}</div>
-                <p className="text-xs font-medium truncate">
+                {/* Glow effect when selected */}
+                {isSelected && (
+                  <motion.div
+                    className="absolute inset-0 opacity-30"
+                    animate={{ 
+                      background: [
+                        'radial-gradient(circle at 50% 50%, currentColor, transparent 70%)',
+                        'radial-gradient(circle at 50% 50%, currentColor, transparent 50%)',
+                        'radial-gradient(circle at 50% 50%, currentColor, transparent 70%)',
+                      ]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                )}
+                
+                <motion.div 
+                  className="flex justify-center mb-1 text-2xl"
+                  animate={isSelected ? { scale: [1, 1.2, 1] } : {}}
+                  transition={{ duration: 0.5 }}
+                >
+                  {info.emoji}
+                </motion.div>
+                <p className="text-xs font-bold truncate">
                   {language === 'es' ? info.nameEs.split(' ')[1] : info.nameEn.split(' ')[2]}
                 </p>
-                <p className="text-[10px] text-muted-foreground">{lawImplemented}/{lawTips.length}</p>
-              </button>
+                <div className="flex items-center justify-center gap-1 mt-1">
+                  <div className="flex">
+                    {[...Array(lawTips.length)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: i * 0.1 }}
+                        className={`w-1.5 h-1.5 rounded-full mr-0.5 ${
+                          i < lawImplemented ? 'bg-green-500' : 'bg-muted-foreground/30'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </motion.button>
             );
           })}
         </div>
 
-        {/* Selected Law Principle */}
-        {selectedLaw !== 'all' && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className={`p-3 rounded-lg ${LAW_INFO[selectedLaw].bgClass} ${LAW_INFO[selectedLaw].borderClass} border`}
-          >
-            <div className="flex items-center gap-2 mb-1">
-              {LAW_INFO[selectedLaw].icon}
-              <span className="font-medium text-sm">
-                {language === 'es' ? `Ley ${LAW_INFO[selectedLaw].number}:` : `Law ${LAW_INFO[selectedLaw].number}:`}
-                {' '}
-                {language === 'es' ? LAW_INFO[selectedLaw].nameEs : LAW_INFO[selectedLaw].nameEn}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {language === 'es' ? LAW_INFO[selectedLaw].principleEs : LAW_INFO[selectedLaw].principleEn}
-            </p>
-          </motion.div>
-        )}
+        {/* Selected Law Principle - Enhanced */}
+        <AnimatePresence>
+          {selectedLaw !== 'all' && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, y: -10 }}
+              animate={{ opacity: 1, height: 'auto', y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -10 }}
+              className={`p-4 rounded-xl ${LAW_INFO[selectedLaw].bgClass} ${LAW_INFO[selectedLaw].borderClass} border-2 relative overflow-hidden`}
+            >
+              {/* Decorative sparkles */}
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="absolute top-2 right-2 opacity-30"
+              >
+                <Star className="h-6 w-6" />
+              </motion.div>
+              
+              <div className="flex items-center gap-3 mb-2">
+                <motion.span
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                  className="text-2xl"
+                >
+                  {LAW_INFO[selectedLaw].emoji}
+                </motion.span>
+                <span className="font-bold text-base">
+                  {language === 'es' ? `Ley ${LAW_INFO[selectedLaw].number}:` : `Law ${LAW_INFO[selectedLaw].number}:`}
+                  {' '}
+                  {language === 'es' ? LAW_INFO[selectedLaw].nameEs : LAW_INFO[selectedLaw].nameEn}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground italic">
+                "{language === 'es' ? LAW_INFO[selectedLaw].principleEs : LAW_INFO[selectedLaw].principleEn}"
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Tips Accordion */}
+        {/* Tips Accordion - Enhanced */}
         <Accordion type="single" collapsible className="space-y-2">
           <AnimatePresence mode="popLayout">
             {filteredTips.map((tip, index) => {
@@ -346,47 +523,75 @@ export function AtomicHabitsCard() {
               return (
                 <motion.div
                   key={tip.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
                   transition={{ delay: index * 0.05 }}
+                  whileHover={{ scale: 1.01 }}
                 >
-                  <AccordionItem value={tip.id} className={`border rounded-lg ${lawInfo.borderClass}`}>
-                    <AccordionTrigger className="px-3 py-2 hover:no-underline">
-                      <div className="flex items-center gap-2 text-left">
-                        <div className={`p-1.5 rounded ${lawInfo.bgClass}`}>
+                  <AccordionItem 
+                    value={tip.id} 
+                    className={`border-2 rounded-xl overflow-hidden ${lawInfo.borderClass} bg-background/50 backdrop-blur-sm`}
+                  >
+                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/30 transition-colors">
+                      <div className="flex items-center gap-3 text-left">
+                        <motion.div 
+                          className={`p-2 rounded-lg ${lawInfo.bgClass} shadow-sm`}
+                          whileHover={{ rotate: 5 }}
+                        >
                           {tip.icon}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">
+                        </motion.div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold">
                             {language === 'es' ? tip.titleEs : tip.titleEn}
                           </p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <Badge variant="outline" className="text-[10px] h-4">
-                              {language === 'es' ? lawInfo.nameEs : lawInfo.nameEn}
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <Badge 
+                              variant="outline" 
+                              className={`text-[10px] h-5 ${lawInfo.borderClass}`}
+                            >
+                              {lawInfo.emoji} {language === 'es' ? lawInfo.nameEs : lawInfo.nameEn}
                             </Badge>
                             {tip.implemented && (
-                              <Badge className="text-[10px] h-4 bg-green-500/20 text-green-700 border-green-500/30">
-                                ✓ {language === 'es' ? 'En la app' : 'In app'}
-                              </Badge>
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: "spring", stiffness: 500 }}
+                              >
+                                <Badge className="text-[10px] h-5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-700 border-green-500/40 shadow-sm">
+                                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                                  {language === 'es' ? 'Activo' : 'Active'}
+                                </Badge>
+                              </motion.div>
                             )}
                           </div>
                         </div>
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent className="px-3 pb-3">
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {language === 'es' ? tip.descriptionEs : tip.descriptionEn}
-                      </p>
-                      <div className={`p-2 rounded-lg ${lawInfo.bgClass} border ${lawInfo.borderClass}`}>
-                        <p className="text-xs font-medium flex items-center gap-1">
-                          <Zap className="h-3 w-3" />
-                          {language === 'es' ? 'Aplícalo en EvoFinz:' : 'Apply it in EvoFinz:'}
+                    <AccordionContent className="px-4 pb-4">
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.1 }}
+                      >
+                        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                          {language === 'es' ? tip.descriptionEs : tip.descriptionEn}
                         </p>
-                        <p className="text-sm mt-1">
-                          {language === 'es' ? tip.appActionEs : tip.appActionEn}
-                        </p>
-                      </div>
+                        <motion.div 
+                          className={`p-3 rounded-xl ${lawInfo.bgClass} border-2 ${lawInfo.borderClass} relative overflow-hidden`}
+                          whileHover={{ scale: 1.02 }}
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <Flame className="h-4 w-4 text-orange-500" />
+                            <p className="text-xs font-bold uppercase tracking-wide">
+                              {language === 'es' ? 'Aplícalo en EvoFinz' : 'Apply it in EvoFinz'}
+                            </p>
+                          </div>
+                          <p className="text-sm font-medium">
+                            {language === 'es' ? tip.appActionEs : tip.appActionEn}
+                          </p>
+                        </motion.div>
+                      </motion.div>
                     </AccordionContent>
                   </AccordionItem>
                 </motion.div>
@@ -395,48 +600,91 @@ export function AtomicHabitsCard() {
           </AnimatePresence>
         </Accordion>
 
-        {/* 1% Better Every Day */}
-        <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/20">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-primary/20">
-              <TrendingUp className="h-5 w-5 text-primary" />
-            </div>
+        {/* 1% Better Every Day - Enhanced */}
+        <motion.div 
+          className="mt-4 p-5 rounded-2xl bg-gradient-to-r from-cyan-500/15 via-purple-500/10 to-amber-500/15 border-2 border-primary/20 relative overflow-hidden"
+          whileHover={{ scale: 1.02 }}
+        >
+          {/* Animated background */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-amber-500/10"
+            animate={{ 
+              x: ['0%', '100%', '0%'],
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+          />
+          
+          <div className="flex items-center gap-4 relative z-10">
+            <motion.div 
+              className="p-3 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/30"
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <TrendingUp className="h-6 w-6 text-white" />
+            </motion.div>
             <div>
-              <p className="font-medium text-sm">
-                {language === 'es' ? '1% mejor cada día = 37x mejor en un año' : '1% better every day = 37x better in a year'}
+              <p className="font-bold text-base flex items-center gap-2">
+                {language === 'es' ? '1% mejor cada día' : '1% better every day'}
+                <motion.span
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                >
+                  🚀
+                </motion.span>
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
+                = <span className="font-bold text-primary">37x</span> {language === 'es' ? 'mejor en un año' : 'better in a year'}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1 italic">
                 {language === 'es' 
-                  ? 'Registrar UN gasto hoy es el 1% que te hará millonario mañana.'
-                  : 'Logging ONE expense today is the 1% that will make you a millionaire tomorrow.'}
+                  ? '"Registrar UN gasto hoy es el 1% que te hará millonario mañana"'
+                  : '"Logging ONE expense today is the 1% that will make you a millionaire tomorrow"'}
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Quick Start Tips */}
-        <div className="space-y-2">
-          <p className="text-sm font-medium flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-primary" />
-            {language === 'es' ? 'Empieza ahora (2 minutos):' : 'Start now (2 minutes):'}
+        {/* Quick Start Tips - Enhanced */}
+        <div className="space-y-3">
+          <p className="text-sm font-bold flex items-center gap-2">
+            <motion.span
+              animate={{ rotate: [0, 20, -20, 0] }}
+              transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
+            >
+              ⚡
+            </motion.span>
+            {language === 'es' ? 'Empieza AHORA (2 minutos):' : 'Start NOW (2 minutes):'}
           </p>
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" size="sm" className="justify-start text-xs h-auto py-2">
-              <Receipt className="h-3 w-3 mr-1" />
-              {language === 'es' ? 'Registrar 1 gasto' : 'Log 1 expense'}
-            </Button>
-            <Button variant="outline" size="sm" className="justify-start text-xs h-auto py-2">
-              <Calculator className="h-3 w-3 mr-1" />
-              {language === 'es' ? 'Ver mi balance' : 'View my balance'}
-            </Button>
-            <Button variant="outline" size="sm" className="justify-start text-xs h-auto py-2">
-              <PiggyBank className="h-3 w-3 mr-1" />
-              {language === 'es' ? 'Definir 1 meta' : 'Define 1 goal'}
-            </Button>
-            <Button variant="outline" size="sm" className="justify-start text-xs h-auto py-2">
-              <DollarSign className="h-3 w-3 mr-1" />
-              {language === 'es' ? 'Revisar patrimonio' : 'Review net worth'}
-            </Button>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { icon: Receipt, labelEs: 'Registrar 1 gasto', labelEn: 'Log 1 expense', color: 'from-blue-500 to-cyan-500' },
+              { icon: Calculator, labelEs: 'Ver mi balance', labelEn: 'View my balance', color: 'from-green-500 to-emerald-500' },
+              { icon: PiggyBank, labelEs: 'Definir 1 meta', labelEn: 'Define 1 goal', color: 'from-amber-500 to-orange-500' },
+              { icon: DollarSign, labelEs: 'Revisar patrimonio', labelEn: 'Review net worth', color: 'from-purple-500 to-pink-500' },
+            ].map((action, index) => (
+              <motion.div
+                key={action.labelEn}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 + index * 0.1 }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={`w-full justify-start text-xs h-auto py-3 border-2 hover:border-primary/50 transition-all group`}
+                  onClick={triggerCelebration}
+                >
+                  <div className={`p-1.5 rounded-md bg-gradient-to-r ${action.color} mr-2 group-hover:shadow-md transition-shadow`}>
+                    <action.icon className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <span className="font-medium">
+                    {language === 'es' ? action.labelEs : action.labelEn}
+                  </span>
+                </Button>
+              </motion.div>
+            ))}
           </div>
         </div>
       </CardContent>
