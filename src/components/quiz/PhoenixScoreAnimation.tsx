@@ -1,94 +1,105 @@
 import { motion } from "framer-motion";
-import phoenixLogo from "@/assets/phoenix-transparent.png";
+import { PhoenixLogo } from "@/components/ui/phoenix-logo";
 import type { QuizResult } from "@/pages/FinancialQuiz";
 
 interface PhoenixScoreAnimationProps {
   level: QuizResult["level"];
 }
 
-const levelStyles = {
+const levelConfig = {
   principiante: {
-    glow: "from-red-500/40 to-orange-500/30",
-    pulse: "bg-red-500/20",
-    filter: "grayscale(50%) brightness(0.7)",
+    state: "smoke" as const,
+    glowColors: ["rgba(239, 68, 68, 0.3)", "rgba(251, 146, 60, 0.2)"],
+    particleColor: "bg-red-400",
+    ringColor: "ring-red-500/30",
   },
   emergente: {
-    glow: "from-orange-500/40 to-amber-500/30",
-    pulse: "bg-orange-500/20",
-    filter: "grayscale(20%) brightness(0.85)",
+    state: "default" as const,
+    glowColors: ["rgba(251, 146, 60, 0.3)", "rgba(245, 158, 11, 0.2)"],
+    particleColor: "bg-orange-400",
+    ringColor: "ring-orange-500/30",
   },
   evolucionando: {
-    glow: "from-amber-400/50 to-yellow-400/40",
-    pulse: "bg-amber-500/25",
-    filter: "brightness(1.1) saturate(1.2)",
+    state: "flames" as const,
+    glowColors: ["rgba(245, 158, 11, 0.4)", "rgba(250, 204, 21, 0.3)"],
+    particleColor: "bg-amber-400",
+    ringColor: "ring-amber-500/30",
   },
   maestro: {
-    glow: "from-emerald-400/50 to-teal-400/40",
-    pulse: "bg-emerald-500/25",
-    filter: "brightness(1.2) saturate(1.3) hue-rotate(30deg)",
+    state: "rebirth" as const,
+    glowColors: ["rgba(52, 211, 153, 0.4)", "rgba(45, 212, 191, 0.3)"],
+    particleColor: "bg-emerald-400",
+    ringColor: "ring-emerald-500/30",
   },
 };
 
 export const PhoenixScoreAnimation = ({ level }: PhoenixScoreAnimationProps) => {
-  const style = levelStyles[level];
+  const config = levelConfig[level];
+  const particleCount = level === "maestro" ? 12 : level === "evolucionando" ? 8 : level === "emergente" ? 4 : 0;
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.5 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.8, type: "spring" }}
-      className="relative"
+      className="relative flex items-center justify-center"
     >
       {/* Pulsing glow background */}
       <motion.div
         animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.5, 0.8, 0.5],
+          scale: [1, 1.3, 1],
+          opacity: [0.4, 0.7, 0.4],
         }}
         transition={{
-          duration: 2,
+          duration: 3,
           repeat: Infinity,
           ease: "easeInOut",
         }}
-        className={`absolute inset-0 bg-gradient-radial ${style.glow} blur-3xl rounded-full`}
-        style={{ width: "200px", height: "200px", margin: "-25px" }}
+        className="absolute rounded-full blur-3xl"
+        style={{ 
+          width: "280px", 
+          height: "280px",
+          background: `radial-gradient(circle, ${config.glowColors[0]} 0%, ${config.glowColors[1]} 50%, transparent 70%)`,
+        }}
+      />
+
+      {/* Orbiting ring */}
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        className={`absolute w-52 h-52 rounded-full border-2 border-dashed ${config.ringColor}`}
       />
 
       {/* Orbiting particles */}
-      {level !== "principiante" && (
+      {particleCount > 0 && (
         <>
-          {[...Array(level === "maestro" ? 8 : level === "evolucionando" ? 5 : 3)].map((_, i) => (
+          {[...Array(particleCount)].map((_, i) => (
             <motion.div
               key={i}
-              animate={{
-                rotate: 360,
-              }}
+              animate={{ rotate: 360 }}
               transition={{
-                duration: 4 + i,
+                duration: 4 + i * 0.5,
                 repeat: Infinity,
                 ease: "linear",
               }}
-              className="absolute inset-0 flex items-center justify-center"
-              style={{ width: "150px", height: "150px" }}
+              className="absolute"
+              style={{ width: "200px", height: "200px" }}
             >
               <motion.div
-                className={`w-2 h-2 rounded-full ${
-                  level === "maestro" 
-                    ? "bg-emerald-400" 
-                    : level === "evolucionando" 
-                    ? "bg-amber-400" 
-                    : "bg-orange-400"
-                }`}
+                className={`absolute w-2 h-2 rounded-full ${config.particleColor} shadow-lg`}
                 style={{
-                  transform: `translateX(${60 + i * 10}px)`,
+                  top: "50%",
+                  left: "50%",
+                  transform: `translate(-50%, -50%) translateX(${85 + (i % 3) * 10}px)`,
                 }}
                 animate={{
                   opacity: [0.4, 1, 0.4],
+                  scale: [0.8, 1.2, 0.8],
                 }}
                 transition={{
                   duration: 1.5,
                   repeat: Infinity,
-                  delay: i * 0.2,
+                  delay: i * 0.15,
                 }}
               />
             </motion.div>
@@ -96,62 +107,56 @@ export const PhoenixScoreAnimation = ({ level }: PhoenixScoreAnimationProps) => 
         </>
       )}
 
-      {/* Phoenix image */}
-      <motion.div
-        animate={
-          level === "maestro"
-            ? {
-                y: [0, -5, 0],
-              }
-            : level === "evolucionando"
-            ? {
-                y: [0, -3, 0],
-              }
-            : {}
-        }
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className="relative z-10"
-      >
-        <img
-          src={phoenixLogo}
-          alt="Phoenix"
-          className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-2xl"
-          style={{ filter: style.filter }}
-        />
-      </motion.div>
-
-      {/* Flame particles for higher levels */}
+      {/* Rising particles for higher levels */}
       {(level === "evolucionando" || level === "maestro") && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          {[...Array(level === "maestro" ? 12 : 6)].map((_, i) => (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-visible">
+          {[...Array(level === "maestro" ? 16 : 8)].map((_, i) => (
             <motion.div
-              key={i}
+              key={`rise-${i}`}
               initial={{ opacity: 0, y: 0 }}
               animate={{
                 opacity: [0, 1, 0],
-                y: [-20, -60],
-                x: [0, (Math.random() - 0.5) * 40],
+                y: [-30, -100],
+                x: [(Math.random() - 0.5) * 20, (Math.random() - 0.5) * 60],
               }}
               transition={{
-                duration: 1.5,
+                duration: 2 + Math.random(),
                 repeat: Infinity,
                 delay: i * 0.2,
               }}
-              className={`absolute w-1 h-1 rounded-full ${
-                level === "maestro" ? "bg-emerald-400" : "bg-amber-400"
-              }`}
+              className={`absolute w-1.5 h-1.5 rounded-full ${config.particleColor}`}
               style={{
-                left: `${40 + Math.random() * 20}%`,
-                bottom: "30%",
+                left: `${35 + Math.random() * 30}%`,
+                bottom: "20%",
               }}
             />
           ))}
         </div>
       )}
+
+      {/* Phoenix Logo - Using unified component with state based on level */}
+      <motion.div
+        animate={
+          level === "maestro"
+            ? { y: [0, -8, 0] }
+            : level === "evolucionando"
+            ? { y: [0, -4, 0] }
+            : {}
+        }
+        transition={{
+          duration: 2.5,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className="relative z-10"
+      >
+        <PhoenixLogo 
+          variant="hero" 
+          state={config.state}
+          showEffects={level !== "principiante"}
+          showText={false}
+        />
+      </motion.div>
     </motion.div>
   );
 };
