@@ -74,7 +74,7 @@ export function MileageRoutePreview({
   const hasAddresses = startAddress || endAddress;
 
   if (compact) {
-    // Compact view for table - just a small icon/badge
+    // Compact view for table - larger, cleaner map preview
     if (!hasAddresses && !hasCoordinates) {
       return (
         <Badge variant="outline" className="text-muted-foreground">
@@ -89,45 +89,65 @@ export function MileageRoutePreview({
         <Tooltip>
           <TooltipTrigger asChild>
             <div 
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex items-center gap-3 cursor-pointer group"
               onClick={() => hasCoordinates && setShowFullMap(true)}
             >
               {hasCoordinates ? (
-                <div className="relative w-16 h-10 rounded overflow-hidden border bg-muted group">
+                <div className="relative w-24 h-16 rounded-lg overflow-hidden border-2 border-border/50 shadow-sm bg-muted group-hover:border-primary/50 group-hover:shadow-md transition-all">
                   <LeafletRouteMap
                     startLat={startLat!}
                     startLng={startLng!}
                     endLat={endLat!}
                     endLng={endLng!}
-                    className="h-10 pointer-events-none"
+                    className="h-16 pointer-events-none"
                   />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition-colors">
-                    <span className="text-[10px] font-bold text-white drop-shadow">
-                      {kilometers.toFixed(0)}km
-                    </span>
+                  {/* Clean expand indicator on hover only */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
+                    <Maximize2 className="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                  </div>
+                  {/* Small distance badge at bottom */}
+                  <div className="absolute bottom-1 right-1">
+                    <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 bg-background/90 backdrop-blur-sm">
+                      {kilometers.toFixed(0)} km
+                    </Badge>
                   </div>
                 </div>
               ) : (
                 <Badge variant="secondary" className="gap-1">
                   <MapPin className="h-3 w-3" />
-                  {kilometers.toFixed(1)}km
+                  {kilometers.toFixed(1)} km
                 </Badge>
               )}
             </div>
           </TooltipTrigger>
-          <TooltipContent side="right" className="max-w-xs">
-            <div className="space-y-1 text-xs">
+          <TooltipContent side="right" className="max-w-xs p-3">
+            <div className="space-y-2 text-sm">
               {startAddress && (
-                <p><strong>Desde:</strong> {startAddress}</p>
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500 shrink-0 mt-1.5" />
+                  <div>
+                    <span className="text-muted-foreground text-xs">Desde</span>
+                    <p className="font-medium">{startAddress}</p>
+                  </div>
+                </div>
               )}
               {endAddress && (
-                <p><strong>Hasta:</strong> {endAddress}</p>
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 rounded-full bg-red-500 shrink-0 mt-1.5" />
+                  <div>
+                    <span className="text-muted-foreground text-xs">Hasta</span>
+                    <p className="font-medium">{endAddress}</p>
+                  </div>
+                </div>
               )}
               {!startAddress && !endAddress && route && (
                 <p>{route}</p>
               )}
               {hasCoordinates && (
-                <p className="text-primary">Click para ver mapa interactivo</p>
+                <p className="text-primary text-xs mt-2 flex items-center gap-1">
+                  <Maximize2 className="h-3 w-3" />
+                  Click para ver mapa interactivo
+                </p>
               )}
             </div>
           </TooltipContent>
