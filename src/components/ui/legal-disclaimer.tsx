@@ -54,13 +54,13 @@ const DISCLAIMER_CONTENT = {
   education: {
     es: {
       title: 'Contenido Educativo',
-      text: 'Este contenido es educacional basado en principios de finanzas personales. No reemplaza el asesoramiento profesional personalizado para su situación específica.',
-      compact: 'Contenido educativo. No reemplaza asesoramiento profesional.',
+      text: 'Contenido educativo inspirado en principios de finanzas personales. Las referencias a autores son con fines de atribución. No reemplaza asesoramiento profesional.',
+      compact: 'Inspirado en expertos. No afiliado. Solo fines educativos.',
     },
     en: {
       title: 'Educational Content',
-      text: 'This is educational content based on personal finance principles. It does not replace personalized professional advice for your specific situation.',
-      compact: 'Educational content. Does not replace professional advice.',
+      text: 'Educational content inspired by personal finance principles. Author references are for attribution purposes. Does not replace professional advice.',
+      compact: 'Inspired by experts. Not affiliated. Educational purposes only.',
     },
   },
 };
