@@ -1,3 +1,4 @@
+export { AtomicHabitsCard } from './AtomicHabitsCard';
 export { CashflowQuadrantCard } from './CashflowQuadrantCard';
 export { FinancialFreedomCard } from './FinancialFreedomCard';
 export { PayYourselfFirstCard } from './PayYourselfFirstCard';

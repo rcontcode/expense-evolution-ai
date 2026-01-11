@@ -1,6 +1,7 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
+  AtomicHabitsCard,
   CashflowQuadrantCard, 
   FinancialFreedomCard, 
   PayYourselfFirstCard,
@@ -16,7 +17,7 @@ import {
   TracyGoalWizard,
 } from '@/components/mentorship';
 import { MentorshipLevelBanner } from '@/components/mentorship/MentorshipLevelBanner';
-import { Target, Sparkles, ListChecks, GraduationCap, BookOpen, TrendingUp, Brain, Coins } from 'lucide-react';
+import { Target, Sparkles, ListChecks, GraduationCap, BookOpen, TrendingUp, Brain, Coins, Atom } from 'lucide-react';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { Layout } from '@/components/Layout';
 import { PageHeader } from '@/components/PageHeader';
@@ -28,6 +29,12 @@ const MENTOR_THEMES = {
     border: 'border-purple-500/20',
     icon: '📚',
     color: 'text-purple-500',
+  },
+  atomic: {
+    gradient: 'from-cyan-500/10 via-sky-500/5 to-blue-500/10',
+    border: 'border-cyan-500/20',
+    icon: '⚛️',
+    color: 'text-cyan-500',
   },
   kiyosaki: {
     gradient: 'from-emerald-500/10 via-teal-500/5 to-cyan-500/10',
@@ -70,34 +77,41 @@ export default function Mentorship() {
         <MentorQuoteBanner context="dashboard" />
 
         <Tabs defaultValue="library" className="space-y-6" data-highlight="mentorship-tabs">
-          <TabsList className="grid grid-cols-4 w-full max-w-2xl mx-auto bg-muted/50 p-1.5 rounded-xl" data-highlight="mentor-selector">
+          <TabsList className="grid grid-cols-5 w-full max-w-3xl mx-auto bg-muted/50 p-1.5 rounded-xl" data-highlight="mentor-selector">
             <TabsTrigger 
               value="library" 
-              className="gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-violet-500 data-[state=active]:text-white rounded-lg transition-all"
+              className="gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-violet-500 data-[state=active]:text-white rounded-lg transition-all"
             >
               <span className="text-lg">📚</span>
-              <span className="hidden sm:inline text-sm">{language === 'es' ? 'Biblioteca' : 'Library'}</span>
+              <span className="hidden sm:inline text-xs">{language === 'es' ? 'Biblioteca' : 'Library'}</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="atomic" 
+              className="gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-sky-500 data-[state=active]:text-white rounded-lg transition-all"
+            >
+              <span className="text-lg">⚛️</span>
+              <span className="hidden sm:inline text-xs">{language === 'es' ? 'Atómicos' : 'Atomic'}</span>
             </TabsTrigger>
             <TabsTrigger 
               value="kiyosaki" 
-              className="gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white rounded-lg transition-all"
+              className="gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white rounded-lg transition-all"
             >
               <span className="text-lg">💰</span>
-              <span className="hidden sm:inline text-sm">Kiyosaki</span>
+              <span className="hidden sm:inline text-xs">Kiyosaki</span>
             </TabsTrigger>
             <TabsTrigger 
               value="rohn" 
-              className="gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg transition-all"
+              className="gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg transition-all"
             >
               <span className="text-lg">🌟</span>
-              <span className="hidden sm:inline text-sm">Jim Rohn</span>
+              <span className="hidden sm:inline text-xs">Jim Rohn</span>
             </TabsTrigger>
             <TabsTrigger 
               value="tracy" 
-              className="gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white rounded-lg transition-all"
+              className="gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white rounded-lg transition-all"
             >
               <span className="text-lg">🎯</span>
-              <span className="hidden sm:inline text-sm">Brian Tracy</span>
+              <span className="hidden sm:inline text-xs">Brian Tracy</span>
             </TabsTrigger>
           </TabsList>
 
@@ -125,6 +139,55 @@ export default function Mentorship() {
             </motion.div>
             <div data-highlight="financial-library">
               <FinancialLibrary />
+            </div>
+          </TabsContent>
+
+          {/* Atomic Habits Tab - James Clear */}
+          <TabsContent value="atomic" className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`rounded-2xl p-4 bg-gradient-to-r ${MENTOR_THEMES.atomic.gradient} border ${MENTOR_THEMES.atomic.border}`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">⚛️</span>
+                <div>
+                  <h3 className="text-lg font-bold flex items-center gap-2">
+                    <Atom className={`h-5 w-5 ${MENTOR_THEMES.atomic.color}`} />
+                    {language === 'es' ? 'Hábitos Atómicos - James Clear' : 'Atomic Habits - James Clear'}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'es' 
+                      ? 'Las 4 leyes del cambio de comportamiento aplicadas a tus finanzas 🧬'
+                      : 'The 4 laws of behavior change applied to your finances 🧬'}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+            
+            <div className="grid gap-6 lg:grid-cols-2">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+                className="lg:col-span-2"
+              >
+                <AtomicHabitsCard />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <FinancialHabitsCard />
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <PayYourselfFirstCard />
+              </motion.div>
             </div>
           </TabsContent>
 
