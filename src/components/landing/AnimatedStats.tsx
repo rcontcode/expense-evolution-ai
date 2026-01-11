@@ -461,7 +461,7 @@ export function AnimatedStats() {
 
                       {/* Value with count-up */}
                       <motion.div 
-                        className="text-2xl md:text-3xl font-black text-slate-800 mb-1 text-center"
+                        className="text-2xl md:text-3xl font-black text-foreground mb-1 text-center"
                         animate={{ 
                           scale: isHovered ? [1, 1.1, 1] : 1
                         }}
