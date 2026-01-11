@@ -23,6 +23,7 @@
 import { VOICE_COMMANDS, VOICE_QUERIES, QueryType } from './VoiceCommands';
 import { parseOpenClientCommand } from './VoiceActionParsers';
 import { parseVoiceExpense, parseVoiceIncome } from './VoiceParsers';
+import { parseAdvancedAction, AdvancedAction } from './VoiceAdvancedActions';
 
 export type ProcessingResult = 
   | { handled: false }
@@ -37,6 +38,7 @@ export type ProcessingResult =
   | { handled: true; type: 'open-client'; clientId: string; clientName: string; response: string }
   | { handled: true; type: 'navigation'; route: string; name: string; action?: string; response: string }
   | { handled: true; type: 'data-query'; queryType: QueryType; response: string }
+  | { handled: true; type: 'advanced-action'; action: AdvancedAction; response: string }
   | { handled: true; type: 'ai-fallback' };
 
 interface ProcessorContext {
@@ -68,6 +70,15 @@ interface ProcessorContext {
     deductibleTotal: number;
     billableTotal: number;
     estimatedTaxOwed: number;
+    // Extended data for new queries
+    lastMonthExpenses?: number;
+    lastMonthIncome?: number;
+    subscriptions?: Array<{ name: string; amount: number; frequency: string }>;
+    netWorth?: { assets: number; liabilities: number; total: number };
+    fireProgress?: { current: number; target: number; percentage: number; yearsToFire: number };
+    mileageSummary?: { totalKm: number; totalTrips: number; deductionValue: number };
+    categoryBreakdown?: Array<{ category: string; amount: number; percentage: number }>;
+    incomeBreakdown?: Array<{ source: string; amount: number; percentage: number }>;
   };
 }
 
@@ -238,10 +249,146 @@ function generateQueryResponse(
       return language === 'es'
         ? `Tienes ${formatCurrency(data.billableTotal)} en gastos facturables a clientes.`
         : `You have ${formatCurrency(data.billableTotal)} in client-billable expenses.`;
+    
+    // ===== NEW QUERY TYPES =====
+    case 'month_comparison': {
+      const lastMonth = data.lastMonthExpenses ?? 0;
+      const diff = data.monthlyExpenses - lastMonth;
+      const diffPercent = lastMonth > 0 ? ((diff / lastMonth) * 100).toFixed(0) : 0;
+      const trend = diff > 0 ? (language === 'es' ? 'más' : 'more') : (language === 'es' ? 'menos' : 'less');
+      return language === 'es'
+        ? `Este mes: ${formatCurrency(data.monthlyExpenses)}. Mes anterior: ${formatCurrency(lastMonth)}. ${diff !== 0 ? `Gastaste ${formatCurrency(Math.abs(diff))} (${Math.abs(Number(diffPercent))}%) ${trend}.` : 'Sin cambios.'}`
+        : `This month: ${formatCurrency(data.monthlyExpenses)}. Last month: ${formatCurrency(lastMonth)}. ${diff !== 0 ? `You spent ${formatCurrency(Math.abs(diff))} (${Math.abs(Number(diffPercent))}%) ${trend}.` : 'No change.'}`;
+    }
+    case 'subscriptions_list': {
+      if (!data.subscriptions || data.subscriptions.length === 0) {
+        return language === 'es'
+          ? 'No he detectado suscripciones recurrentes todavía. Importa tu estado bancario para analizarlas.'
+          : "I haven't detected recurring subscriptions yet. Import your bank statement to analyze them.";
+      }
+      const total = data.subscriptions.reduce((sum, s) => sum + s.amount, 0);
+      const list = data.subscriptions.slice(0, 5).map(s => s.name).join(', ');
+      return language === 'es'
+        ? `Tienes ${data.subscriptions.length} suscripciones que suman ${formatCurrency(total)}/mes: ${list}${data.subscriptions.length > 5 ? '...' : ''}.`
+        : `You have ${data.subscriptions.length} subscriptions totaling ${formatCurrency(total)}/month: ${list}${data.subscriptions.length > 5 ? '...' : ''}.`;
+    }
+    case 'savings_needed': {
+      // Basic savings calculation
+      const monthlyNet = data.monthlyIncome - data.monthlyExpenses;
+      return language === 'es'
+        ? `Tu capacidad de ahorro actual es ${formatCurrency(monthlyNet)}/mes. Para alcanzar metas específicas, ve al calculador FIRE en el Dashboard.`
+        : `Your current savings capacity is ${formatCurrency(monthlyNet)}/month. For specific goal calculations, check the FIRE calculator on the Dashboard.`;
+    }
+    case 'cash_flow_projection': {
+      const monthlyNet = data.monthlyIncome - data.monthlyExpenses;
+      const projectedAnnual = monthlyNet * 12;
+      return language === 'es'
+        ? `Flujo mensual: ${formatCurrency(monthlyNet)}. Proyección anual: ${formatCurrency(projectedAnnual)}. ${monthlyNet >= 0 ? '¡Vas bien!' : 'Considera reducir gastos.'}`
+        : `Monthly cash flow: ${formatCurrency(monthlyNet)}. Annual projection: ${formatCurrency(projectedAnnual)}. ${monthlyNet >= 0 ? 'Looking good!' : 'Consider reducing expenses.'}`;
+    }
+    case 'expense_by_category': {
+      if (!data.categoryBreakdown || data.categoryBreakdown.length === 0) {
+        return language === 'es'
+          ? 'No tengo suficientes datos para el desglose por categoría.'
+          : "I don't have enough data for category breakdown.";
+      }
+      const top3 = data.categoryBreakdown.slice(0, 3).map(c => 
+        `${c.category}: ${formatCurrency(c.amount)} (${c.percentage}%)`
+      ).join(', ');
+      return language === 'es'
+        ? `Tus principales categorías: ${top3}.`
+        : `Your top categories: ${top3}.`;
+    }
+    case 'income_by_source': {
+      if (!data.incomeBreakdown || data.incomeBreakdown.length === 0) {
+        return language === 'es'
+          ? 'No tengo suficientes datos para el desglose de ingresos.'
+          : "I don't have enough data for income breakdown.";
+      }
+      const top3 = data.incomeBreakdown.slice(0, 3).map(s => 
+        `${s.source}: ${formatCurrency(s.amount)} (${s.percentage}%)`
+      ).join(', ');
+      return language === 'es'
+        ? `Tus principales fuentes: ${top3}.`
+        : `Your top sources: ${top3}.`;
+    }
+    case 'net_worth_summary': {
+      if (!data.netWorth) {
+        return language === 'es'
+          ? 'No has registrado activos ni pasivos aún. Ve a Patrimonio para comenzar.'
+          : "You haven't registered assets or liabilities yet. Go to Net Worth to start.";
+      }
+      return language === 'es'
+        ? `Activos: ${formatCurrency(data.netWorth.assets)}. Pasivos: ${formatCurrency(data.netWorth.liabilities)}. Patrimonio neto: ${formatCurrency(data.netWorth.total)}.`
+        : `Assets: ${formatCurrency(data.netWorth.assets)}. Liabilities: ${formatCurrency(data.netWorth.liabilities)}. Net worth: ${formatCurrency(data.netWorth.total)}.`;
+    }
+    case 'fire_progress': {
+      if (!data.fireProgress) {
+        return language === 'es'
+          ? 'Configura tus metas FIRE en el Dashboard para ver tu progreso.'
+          : 'Set up your FIRE goals in the Dashboard to see your progress.';
+      }
+      return language === 'es'
+        ? `Progreso FIRE: ${data.fireProgress.percentage.toFixed(0)}%. Meta: ${formatCurrency(data.fireProgress.target)}. Actual: ${formatCurrency(data.fireProgress.current)}. Años restantes: ~${data.fireProgress.yearsToFire}.`
+        : `FIRE progress: ${data.fireProgress.percentage.toFixed(0)}%. Target: ${formatCurrency(data.fireProgress.target)}. Current: ${formatCurrency(data.fireProgress.current)}. Years remaining: ~${data.fireProgress.yearsToFire}.`;
+    }
+    case 'mileage_summary': {
+      if (!data.mileageSummary) {
+        return language === 'es'
+          ? 'No tienes viajes registrados. Ve a Kilometraje para agregar tus rutas de trabajo.'
+          : "You don't have trips recorded. Go to Mileage to add your work routes.";
+      }
+      return language === 'es'
+        ? `Kilometraje total: ${data.mileageSummary.totalKm} km en ${data.mileageSummary.totalTrips} viajes. Deducción estimada: ${formatCurrency(data.mileageSummary.deductionValue)}.`
+        : `Total mileage: ${data.mileageSummary.totalKm} km in ${data.mileageSummary.totalTrips} trips. Estimated deduction: ${formatCurrency(data.mileageSummary.deductionValue)}.`;
+    }
     default:
       return language === 'es'
         ? 'No pude obtener esa información.'
         : "I couldn't get that information.";
+  }
+}
+
+/**
+ * Genera respuesta para acciones avanzadas
+ */
+function generateAdvancedActionResponse(
+  action: AdvancedAction,
+  language: 'es' | 'en'
+): string {
+  switch (action.type) {
+    case 'spending_alert':
+      const categoryText = action.category 
+        ? (language === 'es' ? ` en ${action.category}` : ` on ${action.category}`)
+        : '';
+      return language === 'es'
+        ? `¡Alerta configurada! Te avisaré cuando gastes más de $${action.threshold}${categoryText}.`
+        : `Alert set! I'll notify you when you spend more than $${action.threshold}${categoryText}.`;
+    case 'reminder':
+      return language === 'es'
+        ? `¡Recordatorio guardado! Te recordaré "${action.action}" el ${action.dayOrDate}${action.time ? ` a las ${action.time}` : ''}.`
+        : `Reminder saved! I'll remind you to "${action.action}" on ${action.dayOrDate}${action.time ? ` at ${action.time}` : ''}.`;
+    case 'duplicate':
+      const targetName = action.target === 'last_expense' 
+        ? (language === 'es' ? 'el último gasto' : 'the last expense')
+        : (language === 'es' ? 'el último ingreso' : 'the last income');
+      return language === 'es'
+        ? `Duplicando ${targetName}. ¿Confirmas?`
+        : `Duplicating ${targetName}. Confirm?`;
+    case 'export':
+      const exportTypeNames: Record<string, { es: string; en: string }> = {
+        tax_report: { es: 'reporte fiscal', en: 'tax report' },
+        reimbursement: { es: 'reporte de reembolsos', en: 'reimbursement report' },
+        all_expenses: { es: 'todos los gastos', en: 'all expenses' },
+        all_income: { es: 'todos los ingresos', en: 'all income' },
+        full_report: { es: 'reporte completo', en: 'full report' },
+      };
+      const typeName = exportTypeNames[action.exportType]?.[language] || action.exportType;
+      return language === 'es'
+        ? `Preparando ${typeName} en formato ${action.format?.toUpperCase() || 'Excel'}. Te lo descargo en un momento.`
+        : `Preparing ${typeName} in ${action.format?.toUpperCase() || 'Excel'} format. Downloading shortly.`;
+    default:
+      return language === 'es' ? 'Procesando tu solicitud...' : 'Processing your request...';
   }
 }
 
@@ -414,7 +561,17 @@ export function processVoiceCommand(
   }
 
   // ─────────────────────────────────────────────────────────────
-  // PRIORITY 12: AI FALLBACK
+  // PRIORITY 12: ADVANCED ACTIONS (LOCAL)
+  // Alerts, reminders, duplicates, exports
+  // ─────────────────────────────────────────────────────────────
+  const advancedAction = parseAdvancedAction(trimmed);
+  if (advancedAction) {
+    const response = generateAdvancedActionResponse(advancedAction, language);
+    return { handled: true, type: 'advanced-action', action: advancedAction, response };
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // PRIORITY 13: AI FALLBACK
   // Everything else goes to the AI for intelligent response
   // ─────────────────────────────────────────────────────────────
   return { handled: true, type: 'ai-fallback' };
