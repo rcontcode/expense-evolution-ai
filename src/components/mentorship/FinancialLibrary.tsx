@@ -22,13 +22,51 @@ interface Resource {
 
 // ==================== BOOKS ====================
 const BOOKS: Resource[] = [
-  // Spanish Books
+  // ========== ROBERT KIYOSAKI ==========
   { title: "Padre Rico, Padre Pobre", author: "Robert Kiyosaki", description: "El clásico que enseña la diferencia entre activos y pasivos, y cómo pensar como los ricos.", link: "https://www.amazon.com/dp/1644732769", platform: "Amazon", language: 'es', category: 'mindset' },
+  { title: "El Cuadrante del Flujo de Dinero", author: "Robert Kiyosaki", description: "Descubre en qué cuadrante estás (E, S, B, I) y cómo moverte hacia la libertad financiera.", link: "https://www.amazon.com/dp/1945540362", platform: "Amazon", language: 'es', category: 'mindset' },
+  { title: "Guía para Invertir", author: "Robert Kiyosaki", description: "Aprende en qué invierten los ricos y cómo reducir el riesgo de las inversiones.", link: "https://www.amazon.com/dp/1644732319", platform: "Amazon", language: 'es', category: 'investing' },
+  { title: "Retírate Joven y Rico", author: "Robert Kiyosaki", description: "Cómo volverse rico rápidamente usando el apalancamiento.", link: "https://www.amazon.com/dp/6071134943", platform: "Amazon", language: 'es', category: 'fire' },
+  { title: "La Ventaja del Ganador", author: "Robert Kiyosaki", description: "El poder de la educación financiera para salir adelante en tiempos de crisis.", link: "https://www.amazon.com/dp/6073114206", platform: "Amazon", language: 'es', category: 'mindset' },
+  { title: "Segunda Oportunidad", author: "Robert Kiyosaki", description: "Prepárate para el mayor colapso económico de la historia y aprovéchalo.", link: "https://www.amazon.com/dp/6073133510", platform: "Amazon", language: 'es', category: 'investing' },
+  { title: "Por Qué los Ricos se Vuelven Más Ricos", author: "Robert Kiyosaki", description: "La educación financiera real sobre cómo funcionan realmente el dinero y los impuestos.", link: "https://www.amazon.com/dp/1945540826", platform: "Amazon", language: 'es', category: 'wealth' },
+  { title: "Rich Dad Poor Dad", author: "Robert Kiyosaki", description: "The classic book teaching the difference between assets and liabilities.", link: "https://www.amazon.com/dp/1612681131", platform: "Amazon", language: 'en', category: 'mindset' },
+  { title: "Cashflow Quadrant", author: "Robert Kiyosaki", description: "The guide to achieving financial freedom by moving from E and S to B and I.", link: "https://www.amazon.com/dp/1612680054", platform: "Amazon", language: 'en', category: 'wealth' },
+  { title: "Rich Dad's Guide to Investing", author: "Robert Kiyosaki", description: "What the rich invest in, that the poor and middle class do not.", link: "https://www.amazon.com/dp/1612680216", platform: "Amazon", language: 'en', category: 'investing' },
+
+  // ========== JAMES CLEAR ==========
+  { title: "Hábitos Atómicos", author: "James Clear", description: "Pequeños cambios producen resultados extraordinarios. El 1% diario te hace 37x mejor en un año.", link: "https://www.amazon.com/dp/6075690840", platform: "Amazon", language: 'es', category: 'habits' },
+  { title: "Atomic Habits", author: "James Clear", description: "Tiny changes, remarkable results for building wealth habits.", link: "https://www.amazon.com/dp/0735211299", platform: "Amazon", language: 'en', category: 'habits' },
+
+  // ========== BRIAN TRACY ==========
+  { title: "Las 21 Leyes del Liderazgo en Ventas", author: "Brian Tracy", description: "Sigue estas leyes y la gente te seguirá. Principios probados de liderazgo efectivo.", link: "https://www.amazon.com/dp/1602555680", platform: "Amazon", language: 'es', category: 'business' },
+  { title: "Metas", author: "Brian Tracy", description: "Cómo obtener todo lo que quieres más rápido de lo que jamás pensaste posible.", link: "https://www.amazon.com/dp/8417963979", platform: "Amazon", language: 'es', category: 'mindset' },
+  { title: "Psicología de Ventas", author: "Brian Tracy", description: "Cómo vender más, más fácil y rápidamente de lo que alguna vez pensaste posible.", link: "https://www.amazon.com/dp/1602551146", platform: "Amazon", language: 'es', category: 'business' },
+  { title: "¡Tráguese Ese Sapo!", author: "Brian Tracy", description: "21 estrategias para tomar decisiones rápidas y mejorar la eficacia personal.", link: "https://www.amazon.com/dp/8492921862", platform: "Amazon", language: 'es', category: 'habits' },
+  { title: "El Camino Hacia la Riqueza", author: "Brian Tracy", description: "La guía definitiva para hacer fortuna.", link: "https://www.amazon.com/dp/0814472958", platform: "Amazon", language: 'es', category: 'wealth' },
+  { title: "Goals!", author: "Brian Tracy", description: "How to get everything you want faster than you ever thought possible.", link: "https://www.amazon.com/dp/1626566554", platform: "Amazon", language: 'en', category: 'mindset' },
+  { title: "Eat That Frog!", author: "Brian Tracy", description: "21 great ways to stop procrastinating and get more done in less time.", link: "https://www.amazon.com/dp/162656941X", platform: "Amazon", language: 'en', category: 'habits' },
+  { title: "The Psychology of Selling", author: "Brian Tracy", description: "Increase your sales faster and easier than you ever thought possible.", link: "https://www.amazon.com/dp/0785288066", platform: "Amazon", language: 'en', category: 'business' },
+  { title: "Maximum Achievement", author: "Brian Tracy", description: "Strategies and skills that will unlock your hidden powers to succeed.", link: "https://www.amazon.com/dp/0684803313", platform: "Amazon", language: 'en', category: 'mindset' },
+  { title: "No Excuses!", author: "Brian Tracy", description: "The power of self-discipline for success in your life.", link: "https://www.amazon.com/dp/1593156324", platform: "Amazon", language: 'en', category: 'habits' },
+
+  // ========== JIM ROHN ==========
+  { title: "Las 7 Estrategias para la Riqueza y la Felicidad", author: "Jim Rohn", description: "Lecciones poderosas de orientación personal para conseguir lo que deseas.", link: "https://www.amazon.com/dp/8496627438", platform: "Amazon", language: 'es', category: 'wealth' },
+  { title: "El Arte de la Vida Excepcional", author: "Jim Rohn", description: "Principios probados para vivir una vida extraordinaria.", link: "https://www.amazon.com/dp/8417963456", platform: "Amazon", language: 'es', category: 'mindset' },
+  { title: "Cinco Piezas Principales del Rompecabezas de la Vida", author: "Jim Rohn", description: "Filosofía, actitud, actividad, resultados y estilo de vida.", link: "https://www.amazon.com/dp/0939490005", platform: "Amazon", language: 'es', category: 'mindset' },
+  { title: "7 Strategies for Wealth & Happiness", author: "Jim Rohn", description: "Power ideas from America's foremost business philosopher.", link: "https://www.amazon.com/dp/0761506160", platform: "Amazon", language: 'en', category: 'wealth' },
+  { title: "The Art of Exceptional Living", author: "Jim Rohn", description: "Proven principles for living a life of purpose and significance.", link: "https://www.amazon.com/dp/0743220285", platform: "Amazon", language: 'en', category: 'mindset' },
+  { title: "Leading an Inspired Life", author: "Jim Rohn", description: "The ultimate guide to personal development and success.", link: "https://www.amazon.com/dp/1555252540", platform: "Amazon", language: 'en', category: 'mindset' },
+  { title: "The Five Major Pieces to the Life Puzzle", author: "Jim Rohn", description: "Philosophy, Attitude, Activity, Results, Lifestyle - the building blocks of success.", link: "https://www.amazon.com/dp/0939490021", platform: "Amazon", language: 'en', category: 'mindset' },
+  { title: "My Philosophy for Successful Living", author: "Jim Rohn", description: "Essential principles for achieving success and happiness.", link: "https://www.amazon.com/dp/0991363469", platform: "Amazon", language: 'en', category: 'mindset' },
+  { title: "Seasons of Life", author: "Jim Rohn", description: "Learning to embrace life's cycles for growth and prosperity.", link: "https://www.amazon.com/dp/0939490021", platform: "Amazon", language: 'en', category: 'mindset' },
+  { title: "The Treasury of Quotes", author: "Jim Rohn", description: "A collection of timeless wisdom on success, leadership, and personal growth.", link: "https://www.amazon.com/dp/0939490048", platform: "Amazon", language: 'en', category: 'mindset' },
+
+  // ========== OTHER CLASSICS ==========
   { title: "El Hombre Más Rico de Babilonia", author: "George S. Clason", description: "Principios atemporales de ahorro e inversión a través de parábolas de la antigua Babilonia.", link: "https://www.amazon.com/dp/607070230X", platform: "Amazon", language: 'es', category: 'basics' },
   { title: "El Inversor Inteligente", author: "Benjamin Graham", description: "La biblia de la inversión en valor, recomendado por Warren Buffett.", link: "https://www.amazon.com/dp/0063356724", platform: "Amazon", language: 'es', category: 'investing' },
   { title: "Piense y Hágase Rico", author: "Napoleon Hill", description: "Los 13 principios del éxito financiero basados en entrevistas con millonarios.", link: "https://www.amazon.com/dp/1640951741", platform: "Amazon", language: 'es', category: 'mindset' },
   { title: "Los Secretos de la Mente Millonaria", author: "T. Harv Eker", description: "Cómo dominar el juego interior de la riqueza y cambiar tu programación financiera.", link: "https://www.amazon.com/dp/8478086080", platform: "Amazon", language: 'es', category: 'mindset' },
-  { title: "El Cuadrante del Flujo de Dinero", author: "Robert Kiyosaki", description: "Descubre en qué cuadrante estás (E, S, B, I) y cómo moverte hacia la libertad financiera.", link: "https://www.amazon.com/dp/1945540362", platform: "Amazon", language: 'es', category: 'mindset' },
   { title: "Pequeño Cerdo Capitalista", author: "Sofía Macías", description: "Finanzas personales explicadas de forma divertida para principiantes en Latinoamérica.", link: "https://www.amazon.com/dp/6073152795", platform: "Amazon", language: 'es', category: 'basics' },
   { title: "La Bolsa o la Vida", author: "Vicki Robin", description: "Cómo transformar tu relación con el dinero y lograr independencia financiera.", link: "https://www.amazon.com/dp/8417963324", platform: "Amazon", language: 'es', category: 'fire' },
   { title: "Finanzas Personales para Dummies", author: "Vicente Hernández", description: "Guía completa de finanzas personales explicada de forma sencilla.", link: "https://www.amazon.com/dp/8432904333", platform: "Amazon", language: 'es', category: 'basics' },
@@ -40,7 +78,6 @@ const BOOKS: Resource[] = [
   { title: "Cómo Piensan los Ricos", author: "Morgan Housel", description: "18 lecciones sobre la psicología del dinero y la inversión.", link: "https://www.amazon.com/dp/8408241478", platform: "Amazon", language: 'es', category: 'mindset' },
   
   // English Books
-  { title: "Rich Dad Poor Dad", author: "Robert Kiyosaki", description: "The classic book teaching the difference between assets and liabilities.", link: "https://www.amazon.com/dp/1612681131", platform: "Amazon", language: 'en', category: 'mindset' },
   { title: "The Psychology of Money", author: "Morgan Housel", description: "Timeless lessons on wealth, greed, and happiness.", link: "https://www.amazon.com/dp/0857197681", platform: "Amazon", language: 'en', category: 'mindset' },
   { title: "The Intelligent Investor", author: "Benjamin Graham", description: "The definitive book on value investing, recommended by Warren Buffett.", link: "https://www.amazon.com/dp/0060555661", platform: "Amazon", language: 'en', category: 'investing' },
   { title: "A Random Walk Down Wall Street", author: "Burton Malkiel", description: "The time-tested strategy for successful investing.", link: "https://www.amazon.com/dp/1324002182", platform: "Amazon", language: 'en', category: 'investing' },
@@ -54,7 +91,6 @@ const BOOKS: Resource[] = [
   { title: "Die With Zero", author: "Bill Perkins", description: "Getting all you can from your money and your life.", link: "https://www.amazon.com/dp/0358099765", platform: "Amazon", language: 'en', category: 'fire' },
   { title: "The Bogleheads' Guide to Investing", author: "Taylor Larimore", description: "A DIY guide to investing using Vanguard's founder's philosophy.", link: "https://www.amazon.com/dp/1118921283", platform: "Amazon", language: 'en', category: 'investing' },
   { title: "The Richest Man in Babylon", author: "George S. Clason", description: "Ancient wisdom for modern wealth building.", link: "https://www.amazon.com/dp/1505339111", platform: "Amazon", language: 'en', category: 'basics' },
-  { title: "Atomic Habits", author: "James Clear", description: "Tiny changes, remarkable results for building wealth habits.", link: "https://www.amazon.com/dp/0735211299", platform: "Amazon", language: 'en', category: 'habits' },
   { title: "The 4-Hour Workweek", author: "Tim Ferriss", description: "Escape 9-5, live anywhere, and join the new rich.", link: "https://www.amazon.com/dp/0307465357", platform: "Amazon", language: 'en', category: 'entrepreneurship' },
   { title: "The Millionaire Fastlane", author: "MJ DeMarco", description: "Crack the code to wealth and live rich for a lifetime.", link: "https://www.amazon.com/dp/0984358102", platform: "Amazon", language: 'en', category: 'entrepreneurship' },
   { title: "Set for Life", author: "Scott Trench", description: "Dominate life, money, and the American dream.", link: "https://www.amazon.com/dp/0997584718", platform: "Amazon", language: 'en', category: 'fire' },
@@ -68,7 +104,6 @@ const BOOKS: Resource[] = [
   { title: "Quit Like a Millionaire", author: "Kristy Shen", description: "No gimmicks, luck, or trust fund required.", link: "https://www.amazon.com/dp/0525538690", platform: "Amazon", language: 'en', category: 'fire' },
   { title: "Financial Freedom", author: "Grant Sabatier", description: "A proven path to all the money you will ever need.", link: "https://www.amazon.com/dp/052553458X", platform: "Amazon", language: 'en', category: 'fire' },
   { title: "The Two-Income Trap", author: "Elizabeth Warren", description: "Why middle-class parents are going broke.", link: "https://www.amazon.com/dp/0465090907", platform: "Amazon", language: 'en', category: 'basics' },
-  { title: "MONEY Master the Game", author: "Tony Robbins", description: "7 Simple Steps to Financial Freedom.", link: "https://www.amazon.com/dp/1476757860", platform: "Amazon", language: 'en', category: 'investing' },
 ];
 
 // ==================== DOCUMENTARIES ====================
