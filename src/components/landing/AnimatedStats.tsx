@@ -461,16 +461,13 @@ export function AnimatedStats() {
 
                       {/* Value with count-up */}
                       <motion.div 
-                        className={`text-2xl md:text-3xl font-black bg-gradient-to-r ${stat.color} bg-clip-text text-transparent mb-1 text-center`}
+                        className="text-2xl md:text-3xl font-black text-slate-800 mb-1 text-center"
                         animate={{ 
-                          scale: isHovered ? [1, 1.1, 1] : 1,
-                          backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"]
+                          scale: isHovered ? [1, 1.1, 1] : 1
                         }}
                         transition={{ 
-                          scale: { duration: 0.3 },
-                          backgroundPosition: { duration: 3, repeat: Infinity }
+                          scale: { duration: 0.3 }
                         }}
-                        style={{ backgroundSize: "200% 200%" }}
                       >
                         <AnimatedCounter 
                           value={stat.value} 
