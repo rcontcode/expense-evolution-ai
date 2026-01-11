@@ -197,7 +197,7 @@ export function AnimatedStats() {
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-50/80 via-white/60 to-slate-50/80" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background/80" />
       
       {/* Animated floating orbs */}
       <FloatingOrb color={currentStats[0]?.glowColor || "rgba(34, 211, 238, 0.4)"} size={300} delay={0} x="10%" y="20%" />
@@ -227,7 +227,7 @@ export function AnimatedStats() {
               exit={{ opacity: 0, y: -20, rotateX: 90 }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="text-3xl md:text-4xl font-black text-slate-800 mb-2">
+              <h2 className="text-3xl md:text-4xl font-black text-foreground mb-2">
                 <motion.span
                   className={`bg-gradient-to-r ${currentStats[0]?.color} bg-clip-text text-transparent inline-block`}
                   animate={{ 
@@ -239,7 +239,7 @@ export function AnimatedStats() {
                   {currentTitle.title}
                 </motion.span>
               </h2>
-              <p className="text-slate-600 text-lg">{currentTitle.subtitle}</p>
+              <p className="text-muted-foreground text-lg">{currentTitle.subtitle}</p>
             </motion.div>
           </AnimatePresence>
           
@@ -339,12 +339,12 @@ export function AnimatedStats() {
                     className="group cursor-pointer"
                   >
                     <motion.div 
-                      className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-white/50 h-full overflow-hidden"
+                      className="relative bg-card/90 text-card-foreground backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-border/60 h-full overflow-hidden"
                       animate={{
                         boxShadow: isHovered 
                           ? `0 25px 50px -12px ${stat.glowColor}` 
                           : "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                        borderColor: isHovered ? stat.glowColor : "rgba(255,255,255,0.5)"
+                        borderColor: isHovered ? stat.glowColor : "hsl(var(--border) / 0.6)"
                       }}
                     >
                       {/* Animated gradient bar with color cycling */}
@@ -461,7 +461,7 @@ export function AnimatedStats() {
 
                       {/* Value with count-up */}
                       <motion.div 
-                        className="text-2xl md:text-3xl font-black text-foreground mb-1 text-center"
+                        className="text-2xl md:text-3xl font-black text-card-foreground mb-1 text-center"
                         animate={{ 
                           scale: isHovered ? [1, 1.1, 1] : 1
                         }}
@@ -478,7 +478,7 @@ export function AnimatedStats() {
 
                       {/* Label */}
                       <motion.p 
-                        className="text-slate-600 text-xs font-medium text-center leading-tight"
+                        className="text-muted-foreground text-xs font-medium text-center leading-tight"
                         animate={isHovered ? { y: [0, -2, 0] } : {}}
                       >
                         {stat.label}
@@ -511,7 +511,7 @@ export function AnimatedStats() {
                 setIsTransitioning(false);
               }, 300);
             }}
-            className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm shadow-lg flex items-center justify-center text-slate-600 hover:text-slate-900 border border-slate-200"
+            className="w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm shadow-lg flex items-center justify-center text-muted-foreground hover:text-foreground border border-border"
             whileHover={{ scale: 1.1, x: -3 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -525,7 +525,7 @@ export function AnimatedStats() {
                 setIsTransitioning(false);
               }, 300);
             }}
-            className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm shadow-lg flex items-center justify-center text-slate-600 hover:text-slate-900 border border-slate-200"
+            className="w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm shadow-lg flex items-center justify-center text-muted-foreground hover:text-foreground border border-border"
             whileHover={{ scale: 1.1, x: 3 }}
             whileTap={{ scale: 0.95 }}
           >
