@@ -26,13 +26,16 @@ import {
   Bell,
   GraduationCap,
   Upload,
-  ScanLine
+  ScanLine,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/data/useProfile';
+import { useTheme, ThemeStyle } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import {
   Tooltip,
@@ -171,6 +174,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const { t, language } = useLanguage();
   const { signOut } = useAuth();
   const { data: profile } = useProfile();
+  const { mode, setMode, setStyle } = useTheme();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
@@ -181,6 +185,13 @@ export const Layout = ({ children }: LayoutProps) => {
   
   // Global reminders - works even when chat is closed
   useGlobalReminders();
+  
+  // Toggle theme between light/dark with optimized themes
+  const toggleTheme = () => {
+    const newMode = mode === 'dark' ? 'light' : 'dark';
+    setMode(newMode);
+    setStyle(newMode === 'dark' ? 'evo-dark' as ThemeStyle : 'evo-light' as ThemeStyle);
+  };
   
   // Get tax authority badge based on country
   const taxBadge = profile?.country === 'CL' ? 'SII' : profile?.country === 'CA' ? 'CRA' : null;
@@ -655,6 +666,25 @@ export const Layout = ({ children }: LayoutProps) => {
             )}>
               {!collapsed && <LanguageSelector />}
               
+              {/* Theme Toggle */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-7 w-7"
+                    onClick={toggleTheme}
+                  >
+                    {mode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side={collapsed ? "right" : "top"}>
+                  {mode === 'dark' 
+                    ? (language === 'es' ? 'Modo Claro' : 'Light Mode')
+                    : (language === 'es' ? 'Modo Oscuro' : 'Dark Mode')}
+                </TooltipContent>
+              </Tooltip>
+
               {/* Notifications */}
               <Tooltip>
                 <TooltipTrigger asChild>

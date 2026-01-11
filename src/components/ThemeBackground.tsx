@@ -11,6 +11,11 @@ export const ThemeBackground = memo(() => {
 
   const renderPattern = () => {
     switch (style) {
+      // Optimized themes have no background decorations for maximum performance
+      case 'evo-light':
+      case 'evo-dark':
+        return null;
+      
       case 'spring':
         return (
           <>

@@ -2,6 +2,9 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type ThemeStyle = 
+  // Optimized themes (default)
+  | 'evo-light' | 'evo-dark'
+  // Classic
   | 'modern' | 'vintage' | 'ocean' | 'forest' | 'sunset' | 'minimal'
   // Seasons
   | 'spring' | 'summer' | 'autumn' | 'winter'
@@ -62,9 +65,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const [style, setStyleState] = useState<ThemeStyle>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem(THEME_STYLE_KEY) as ThemeStyle) || 'modern';
+      const saved = localStorage.getItem(THEME_STYLE_KEY) as ThemeStyle;
+      // Default to optimized themes
+      if (!saved) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        return prefersDark ? 'evo-dark' : 'evo-light';
+      }
+      return saved;
     }
-    return 'modern';
+    return 'evo-light';
   });
 
   const [animationSpeed, setAnimationSpeedState] = useState<AnimationSpeed>(() => {
@@ -120,6 +129,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Remove all theme classes
     root.classList.remove('light', 'dark');
     root.classList.remove(
+      'theme-evo-light', 'theme-evo-dark',
       'theme-modern', 'theme-vintage', 'theme-ocean', 'theme-forest', 'theme-sunset', 'theme-minimal',
       'theme-spring', 'theme-summer', 'theme-autumn', 'theme-winter',
       'theme-crypto', 'theme-gaming', 'theme-sports', 'theme-music', 'theme-coffee', 'theme-nature',

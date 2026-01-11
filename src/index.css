@@ -8,11 +8,126 @@
 
 @layer base {
   /* ----------------------------------------------------------------
-     MODERN THEME (Default) - Clean, Professional, Tech-forward
+     EVO-LIGHT THEME (Default Light) - Ultra-optimized, Clean, Fast
+     Designed for maximum performance with minimal visual overhead
      ---------------------------------------------------------------- */
   :root,
+  .theme-evo-light {
+    --background: 210 20% 98%;
+    --foreground: 222 25% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 25% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 25% 12%;
+    --primary: 217 91% 50%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 217 91% 60%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --success-glow: 142 71% 55%;
+    --secondary: 210 15% 93%;
+    --secondary-foreground: 222 20% 25%;
+    --muted: 210 15% 90%;
+    --muted-foreground: 215 15% 45%;
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 38 92% 15%;
+    --border: 214 20% 88%;
+    --input: 214 20% 88%;
+    --ring: 217 91% 55%;
+    --radius: 0.75rem;
+    --chart-1: 217 91% 55%;
+    --chart-2: 142 71% 50%;
+    --chart-3: 38 92% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 199 89% 52%;
+    --gradient-primary: linear-gradient(135deg, hsl(217, 91%, 50%) 0%, hsl(199, 89%, 48%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142, 71%, 45%) 0%, hsl(158, 64%, 52%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(217, 91%, 50%) 0%, hsl(142, 71%, 50%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(210, 20%, 98%) 100%);
+    --gradient-shine: linear-gradient(45deg, transparent 40%, hsl(0, 0%, 100% / 0.4) 50%, transparent 60%);
+    --shadow-sm: 0 1px 2px 0 hsl(222 25% 12% / 0.04);
+    --shadow-md: 0 4px 6px -1px hsl(222 25% 12% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(222 25% 12% / 0.08);
+    --shadow-xl: 0 20px 25px -5px hsl(222 25% 12% / 0.1);
+    --shadow-glow: 0 0 20px hsl(217 91% 55% / 0.12);
+    --shadow-success-glow: 0 0 20px hsl(142 71% 50% / 0.15);
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 25% 12%;
+    --sidebar-primary: 217 91% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 15% 95%;
+    --sidebar-accent-foreground: 222 25% 12%;
+    --sidebar-border: 214 20% 90%;
+    --sidebar-ring: 217 91% 55%;
+    --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+  }
+
+  /* ----------------------------------------------------------------
+     EVO-DARK THEME (Default Dark) - Ultra-optimized, Elegant, Fast
+     Designed for maximum performance with minimal visual overhead
+     ---------------------------------------------------------------- */
+  .dark.theme-evo-dark,
+  .dark:root {
+    --background: 222 35% 8%;
+    --foreground: 210 20% 95%;
+    --card: 222 30% 11%;
+    --card-foreground: 210 20% 95%;
+    --popover: 222 30% 11%;
+    --popover-foreground: 210 20% 95%;
+    --primary: 199 89% 52%;
+    --primary-foreground: 222 35% 8%;
+    --primary-glow: 199 89% 62%;
+    --success: 142 64% 52%;
+    --success-foreground: 222 35% 8%;
+    --success-glow: 142 64% 62%;
+    --secondary: 222 25% 16%;
+    --secondary-foreground: 210 20% 92%;
+    --muted: 222 25% 18%;
+    --muted-foreground: 215 15% 58%;
+    --accent: 217 85% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --warning: 38 85% 55%;
+    --warning-foreground: 38 90% 10%;
+    --border: 222 25% 18%;
+    --input: 222 25% 18%;
+    --ring: 199 89% 55%;
+    --chart-1: 199 89% 55%;
+    --chart-2: 142 64% 55%;
+    --chart-3: 38 85% 58%;
+    --chart-4: 280 60% 62%;
+    --chart-5: 217 85% 58%;
+    --gradient-primary: linear-gradient(135deg, hsl(199, 89%, 48%) 0%, hsl(217, 85%, 55%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142, 64%, 48%) 0%, hsl(158, 60%, 52%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(199, 89%, 48%) 0%, hsl(142, 64%, 52%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(222, 30%, 12%) 0%, hsl(222, 30%, 10%) 100%);
+    --gradient-shine: linear-gradient(45deg, transparent 40%, hsl(0, 0%, 100% / 0.04) 50%, transparent 60%);
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.15);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.2);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.25);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.3);
+    --shadow-glow: 0 0 25px hsl(199 89% 55% / 0.15);
+    --shadow-success-glow: 0 0 25px hsl(142 64% 55% / 0.18);
+    --sidebar-background: 222 30% 9%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-primary: 199 89% 52%;
+    --sidebar-primary-foreground: 222 35% 8%;
+    --sidebar-accent: 222 25% 14%;
+    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-border: 222 25% 16%;
+    --sidebar-ring: 199 89% 55%;
+  }
+
+  /* ----------------------------------------------------------------
+     MODERN THEME - Clean, Professional, Tech-forward
+     ---------------------------------------------------------------- */
   .theme-modern {
-    --background: 220 20% 97%;
     --foreground: 220 25% 10%;
     --card: 0 0% 100%;
     --card-foreground: 220 25% 10%;
