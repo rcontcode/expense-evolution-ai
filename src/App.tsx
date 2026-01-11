@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, ComponentType } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,40 +13,59 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useLoginMissionListener } from "@/hooks/data/useMissions";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Lazy load all pages for better initial load performance
-const Landing = lazy(() => import("./pages/Landing"));
-const Legal = lazy(() => import("./pages/Legal"));
-const Auth = lazy(() => import("./pages/Auth"));
-const Onboarding = lazy(() => import("./pages/Onboarding"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const ChaosInbox = lazy(() => import("./pages/ChaosInbox"));
-const Expenses = lazy(() => import("./pages/Expenses"));
-const Clients = lazy(() => import("./pages/Clients"));
-const Projects = lazy(() => import("./pages/Projects"));
-const Contracts = lazy(() => import("./pages/Contracts"));
-const Mileage = lazy(() => import("./pages/Mileage"));
-const Reconciliation = lazy(() => import("./pages/Reconciliation"));
-const Settings = lazy(() => import("./pages/Settings"));
-const BusinessProfile = lazy(() => import("./pages/BusinessProfile"));
-const Tags = lazy(() => import("./pages/Tags"));
-const Income = lazy(() => import("./pages/Income"));
-const Install = lazy(() => import("./pages/Install"));
-const MobileCapture = lazy(() => import("./pages/MobileCapture"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const NetWorth = lazy(() => import("./pages/NetWorth"));
-const Banking = lazy(() => import("./pages/Banking"));
-const Notifications = lazy(() => import("./pages/Notifications"));
-const Mentorship = lazy(() => import("./pages/Mentorship"));
-const TaxCalendar = lazy(() => import("./pages/TaxCalendar"));
-const BetaWelcome = lazy(() => import("./pages/BetaWelcome"));
-const BetaFeatures = lazy(() => import("./pages/BetaFeatures"));
-const BetaCodesAdmin = lazy(() => import("./pages/admin/BetaCodes"));
+// Lazy loader with retry on failure (handles transient network/build errors)
+function lazyWithRetry<T extends ComponentType<unknown>>(
+  importFn: () => Promise<{ default: T }>,
+  retries = 3,
+  delay = 1000
+): React.LazyExoticComponent<T> {
+  return lazy(async () => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await importFn();
+      } catch (error) {
+        if (i === retries - 1) throw error;
+        await new Promise(r => setTimeout(r, delay * (i + 1)));
+      }
+    }
+    throw new Error('Failed to load module after retries');
+  });
+}
 
-// Lazy load heavy global components
-const ChatAssistant = lazy(() => import("./components/chat/ChatAssistant").then(m => ({ default: m.ChatAssistant })));
-const OnboardingTutorial = lazy(() => import("./components/guidance/OnboardingTutorial").then(m => ({ default: m.OnboardingTutorial })));
-const CookieConsent = lazy(() => import("./components/CookieConsent").then(m => ({ default: m.CookieConsent })));
-const FeedbackButton = lazy(() => import("./components/FeedbackButton").then(m => ({ default: m.FeedbackButton })));
+// Lazy load all pages for better initial load performance
+const Landing = lazyWithRetry(() => import("./pages/Landing"));
+const Legal = lazyWithRetry(() => import("./pages/Legal"));
+const Auth = lazyWithRetry(() => import("./pages/Auth"));
+const Onboarding = lazyWithRetry(() => import("./pages/Onboarding"));
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
+const ChaosInbox = lazyWithRetry(() => import("./pages/ChaosInbox"));
+const Expenses = lazyWithRetry(() => import("./pages/Expenses"));
+const Clients = lazyWithRetry(() => import("./pages/Clients"));
+const Projects = lazyWithRetry(() => import("./pages/Projects"));
+const Contracts = lazyWithRetry(() => import("./pages/Contracts"));
+const Mileage = lazyWithRetry(() => import("./pages/Mileage"));
+const Reconciliation = lazyWithRetry(() => import("./pages/Reconciliation"));
+const Settings = lazyWithRetry(() => import("./pages/Settings"));
+const BusinessProfile = lazyWithRetry(() => import("./pages/BusinessProfile"));
+const Tags = lazyWithRetry(() => import("./pages/Tags"));
+const Income = lazyWithRetry(() => import("./pages/Income"));
+const Install = lazyWithRetry(() => import("./pages/Install"));
+const MobileCapture = lazyWithRetry(() => import("./pages/MobileCapture"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const NetWorth = lazyWithRetry(() => import("./pages/NetWorth"));
+const Banking = lazyWithRetry(() => import("./pages/Banking"));
+const Notifications = lazyWithRetry(() => import("./pages/Notifications"));
+const Mentorship = lazyWithRetry(() => import("./pages/Mentorship"));
+const TaxCalendar = lazyWithRetry(() => import("./pages/TaxCalendar"));
+const BetaWelcome = lazyWithRetry(() => import("./pages/BetaWelcome"));
+const BetaFeatures = lazyWithRetry(() => import("./pages/BetaFeatures"));
+const BetaCodesAdmin = lazyWithRetry(() => import("./pages/admin/BetaCodes"));
+
+// Lazy load heavy global components with retry
+const ChatAssistant = lazyWithRetry(() => import("./components/chat/ChatAssistant").then(m => ({ default: m.ChatAssistant })));
+const OnboardingTutorial = lazyWithRetry(() => import("./components/guidance/OnboardingTutorial").then(m => ({ default: m.OnboardingTutorial })));
+const CookieConsent = lazyWithRetry(() => import("./components/CookieConsent").then(m => ({ default: m.CookieConsent })));
+const FeedbackButton = lazyWithRetry(() => import("./components/FeedbackButton").then(m => ({ default: m.FeedbackButton })));
 
 // Page loading fallback - minimal skeleton
 const PageLoader = () => (
