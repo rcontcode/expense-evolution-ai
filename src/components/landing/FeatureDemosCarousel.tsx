@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Camera, Wallet, BarChart3, Car, Building2, Trophy, FileText, Flame, GraduationCap, Calculator, Mic, TrendingDown, CreditCard, BookOpen, Target } from "lucide-react";
 import { ReceiptDemoAnimation } from "./ReceiptDemoAnimation";
@@ -17,6 +17,25 @@ import { SubscriptionsDemoAnimation } from "./SubscriptionsDemoAnimation";
 import { JournalDemoAnimation } from "./JournalDemoAnimation";
 import { HabitsDemoAnimation } from "./HabitsDemoAnimation";
 import { useLanguage } from "@/contexts/LanguageContext";
+
+// Animation durations for each demo (in ms) - time needed for full animation cycle
+const ANIMATION_DURATIONS: Record<string, number> = {
+  receipt: 9000,
+  voice: 11000,
+  networth: 12000,
+  dashboard: 10000,
+  habits: 10000,
+  gamification: 10000,
+  debt: 12000,
+  subscriptions: 11000,
+  journal: 10000,
+  contracts: 11000,
+  fire: 11000,
+  education: 10000,
+  tax: 11000,
+  mileage: 10000,
+  banking: 11000,
+};
 
 const getDemos = (language: string) => [
   { 
@@ -145,21 +164,42 @@ export function FeatureDemosCarousel() {
   const { language } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const demos = getDemos(language);
 
-  // Auto-rotation - 15s optimal for interactive demos with animations
+  // Get the duration for the current demo
+  const getCurrentDuration = useCallback(() => {
+    const currentDemo = demos[currentIndex];
+    return ANIMATION_DURATIONS[currentDemo.id] || 10000;
+  }, [currentIndex, demos]);
+
+  // Auto-rotation based on each animation's actual duration
   useEffect(() => {
     if (!autoPlay) return;
     
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % demos.length);
-    }, 15000);
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
     
-    return () => clearInterval(timer);
-  }, [autoPlay, demos.length]);
+    // Set timer for the current animation's duration
+    const duration = getCurrentDuration();
+    timerRef.current = setTimeout(() => {
+      setCurrentIndex((prev) => (prev + 1) % demos.length);
+    }, duration);
+    
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [autoPlay, currentIndex, demos.length, getCurrentDuration]);
 
   const goTo = (index: number) => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
     setCurrentIndex(index);
     setAutoPlay(false);
     // Resume autoplay after 30 seconds
