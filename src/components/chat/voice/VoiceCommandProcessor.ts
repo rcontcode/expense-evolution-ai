@@ -14,10 +14,11 @@
  * 9. OPEN CLIENT BY NAME - "abre el cliente ACME" (SIEMPRE local, busca en datos)
  * 10. NAVIGATION COMMANDS - "llévame a gastos" (local patterns de VOICE_COMMANDS)
  * 11. DATA QUERIES - "cuánto gasté este mes" (local patterns de VOICE_QUERIES)
- * 12. AI FALLBACK - Todo lo demás va a la IA para respuesta inteligente
+ * 12. ADVANCED ACTIONS - Alertas, recordatorios, duplicar, exportar
+ * 13. AI FALLBACK - Todo lo demás va a la IA para respuesta inteligente
  * 
  * REGLA CLAVE: Cada nivel tiene precedencia absoluta sobre los siguientes.
- * Si el nivel N maneja el comando, los niveles N+1 a 12 NO se ejecutan.
+ * Si el nivel N maneja el comando, los niveles N+1 a 13 NO se ejecutan.
  */
 
 import { VOICE_COMMANDS, VOICE_QUERIES, QueryType } from './VoiceCommands';
