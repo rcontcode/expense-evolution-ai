@@ -1819,6 +1819,63 @@ export type Database = {
           },
         ]
       }
+      quiz_leads: {
+        Row: {
+          converted_at: string | null
+          converted_to_user: boolean | null
+          country: string | null
+          created_at: string
+          email: string
+          failed_questions: number[] | null
+          goal: string | null
+          id: string
+          name: string
+          obstacle: string | null
+          phone: string | null
+          quiz_level: string | null
+          quiz_score: number | null
+          situation: string | null
+          time_spent: string | null
+          updated_at: string
+        }
+        Insert: {
+          converted_at?: string | null
+          converted_to_user?: boolean | null
+          country?: string | null
+          created_at?: string
+          email: string
+          failed_questions?: number[] | null
+          goal?: string | null
+          id?: string
+          name: string
+          obstacle?: string | null
+          phone?: string | null
+          quiz_level?: string | null
+          quiz_score?: number | null
+          situation?: string | null
+          time_spent?: string | null
+          updated_at?: string
+        }
+        Update: {
+          converted_at?: string | null
+          converted_to_user?: boolean | null
+          country?: string | null
+          created_at?: string
+          email?: string
+          failed_questions?: number[] | null
+          goal?: string | null
+          id?: string
+          name?: string
+          obstacle?: string | null
+          phone?: string | null
+          quiz_level?: string | null
+          quiz_score?: number | null
+          situation?: string | null
+          time_spent?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       savings_goals: {
         Row: {
           color: string | null
