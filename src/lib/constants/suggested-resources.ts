@@ -11,10 +11,11 @@ export interface SuggestedResource {
   practicalTipsEn: string[];
   totalPages?: number;
   totalMinutes?: number;
-  category: 'mindset' | 'investing' | 'business' | 'habits' | 'wealth' | 'entrepreneurship';
+  category: 'mindset' | 'investing' | 'business' | 'habits' | 'wealth' | 'entrepreneurship' | 'fire';
 }
 
 export const SUGGESTED_RESOURCES: SuggestedResource[] = [
+  // ========== ROBERT KIYOSAKI ==========
   {
     id: 'rich-dad-poor-dad',
     type: 'book',
@@ -60,6 +61,300 @@ export const SUGGESTED_RESOURCES: SuggestedResource[] = [
     category: 'wealth'
   },
   {
+    id: 'guide-to-investing',
+    type: 'book',
+    title: 'Guía para Invertir',
+    author: 'Robert Kiyosaki',
+    summaryEs: 'Descubre en qué invierten los ricos que los pobres y clase media no. Aprende a reducir riesgos y maximizar retornos.',
+    summaryEn: 'Discover what the rich invest in that the poor and middle class do not. Learn to reduce risks and maximize returns.',
+    practicalTipsEs: [
+      'Estudia una inversión nueva cada semana',
+      'Busca un mentor que ya tenga inversiones exitosas',
+      'Empieza con inversiones pequeñas para aprender',
+      'Diversifica tus inversiones gradualmente'
+    ],
+    practicalTipsEn: [
+      'Study one new investment each week',
+      'Find a mentor who already has successful investments',
+      'Start with small investments to learn',
+      'Gradually diversify your investments'
+    ],
+    totalPages: 480,
+    category: 'investing'
+  },
+  {
+    id: 'retire-young-retire-rich',
+    type: 'book',
+    title: 'Retírate Joven y Rico',
+    author: 'Robert Kiyosaki',
+    summaryEs: 'El poder del apalancamiento: cómo usar el dinero, tiempo y esfuerzo de otros para acelerar tu camino a la riqueza.',
+    summaryEn: 'The power of leverage: how to use other people\'s money, time and effort to accelerate your path to wealth.',
+    practicalTipsEs: [
+      'Identifica 3 formas de apalancamiento disponibles para ti',
+      'Busca socios que complementen tus habilidades',
+      'Automatiza una tarea que haces manualmente',
+      'Calcula cuánto tiempo te tomaría retirarte sin apalancamiento'
+    ],
+    practicalTipsEn: [
+      'Identify 3 forms of leverage available to you',
+      'Find partners who complement your skills',
+      'Automate a task you do manually',
+      'Calculate how long it would take to retire without leverage'
+    ],
+    totalPages: 336,
+    category: 'fire'
+  },
+
+  // ========== JAMES CLEAR ==========
+  {
+    id: 'atomic-habits',
+    type: 'book',
+    title: 'Hábitos Atómicos',
+    author: 'James Clear',
+    summaryEs: 'Pequeños cambios producen resultados extraordinarios. El 1% de mejora diaria te hace 37 veces mejor en un año.',
+    summaryEn: 'Small changes produce extraordinary results. 1% daily improvement makes you 37 times better in a year.',
+    practicalTipsEs: [
+      'Empieza con un hábito financiero de 2 minutos',
+      'Vincula un nuevo hábito a uno existente',
+      'Haz visible tu meta de ahorro cada día',
+      'Celebra cada pequeña victoria financiera'
+    ],
+    practicalTipsEn: [
+      'Start with a 2-minute financial habit',
+      'Link a new habit to an existing one',
+      'Make your savings goal visible every day',
+      'Celebrate every small financial victory'
+    ],
+    totalPages: 320,
+    category: 'habits'
+  },
+
+  // ========== BRIAN TRACY ==========
+  {
+    id: 'goals-brian-tracy',
+    type: 'book',
+    title: 'Metas',
+    author: 'Brian Tracy',
+    summaryEs: 'Un sistema probado para establecer y alcanzar objetivos. Escribe tus metas, planifica y actúa con determinación.',
+    summaryEn: 'A proven system for setting and achieving goals. Write your goals, plan and act with determination.',
+    practicalTipsEs: [
+      'Escribe 10 metas financieras que quieres lograr',
+      'Elige la meta más importante y enfócate en ella',
+      'Crea un plan de acción con pasos diarios',
+      'Revisa tus metas cada mañana y noche'
+    ],
+    practicalTipsEn: [
+      'Write 10 financial goals you want to achieve',
+      'Choose the most important goal and focus on it',
+      'Create an action plan with daily steps',
+      'Review your goals every morning and night'
+    ],
+    totalPages: 288,
+    category: 'mindset'
+  },
+  {
+    id: 'eat-that-frog',
+    type: 'book',
+    title: '¡Tráguese Ese Sapo!',
+    author: 'Brian Tracy',
+    summaryEs: 'Haz primero lo más difícil. 21 estrategias para vencer la procrastinación y ser más productivo.',
+    summaryEn: 'Do the hardest thing first. 21 strategies to overcome procrastination and be more productive.',
+    practicalTipsEs: [
+      'Identifica tu "sapo" financiero más grande hoy',
+      'Hazlo a primera hora de la mañana',
+      'Divide tareas grandes en pasos pequeños',
+      'Elimina distracciones durante tareas importantes'
+    ],
+    practicalTipsEn: [
+      'Identify your biggest financial "frog" today',
+      'Do it first thing in the morning',
+      'Break big tasks into small steps',
+      'Eliminate distractions during important tasks'
+    ],
+    totalPages: 144,
+    category: 'habits'
+  },
+  {
+    id: 'psychology-of-selling',
+    type: 'book',
+    title: 'Psicología de Ventas',
+    author: 'Brian Tracy',
+    summaryEs: 'Cómo vender más, más fácil y rápidamente. Domina la psicología detrás de cada venta exitosa.',
+    summaryEn: 'How to sell more, easier and faster. Master the psychology behind every successful sale.',
+    practicalTipsEs: [
+      'Practica escuchar más de lo que hablas',
+      'Identifica las necesidades reales de tus clientes',
+      'Construye relaciones antes de vender',
+      'Maneja objeciones con empatía'
+    ],
+    practicalTipsEn: [
+      'Practice listening more than talking',
+      'Identify the real needs of your clients',
+      'Build relationships before selling',
+      'Handle objections with empathy'
+    ],
+    totalPages: 240,
+    category: 'business'
+  },
+  {
+    id: 'maximum-achievement',
+    type: 'book',
+    title: 'Logro Máximo',
+    author: 'Brian Tracy',
+    summaryEs: 'Estrategias y habilidades para desbloquear tu potencial oculto y alcanzar el éxito en todas las áreas.',
+    summaryEn: 'Strategies and skills to unlock your hidden potential and achieve success in all areas.',
+    practicalTipsEs: [
+      'Define tu propósito de vida claramente',
+      'Invierte en tu desarrollo personal diariamente',
+      'Rodéate de personas exitosas',
+      'Toma 100% responsabilidad de tu vida financiera'
+    ],
+    practicalTipsEn: [
+      'Define your life purpose clearly',
+      'Invest in your personal development daily',
+      'Surround yourself with successful people',
+      'Take 100% responsibility for your financial life'
+    ],
+    totalPages: 352,
+    category: 'mindset'
+  },
+  {
+    id: 'no-excuses',
+    type: 'book',
+    title: 'Sin Excusas',
+    author: 'Brian Tracy',
+    summaryEs: 'El poder de la autodisciplina para el éxito. Elimina las excusas y toma control total de tu vida.',
+    summaryEn: 'The power of self-discipline for success. Eliminate excuses and take total control of your life.',
+    practicalTipsEs: [
+      'Identifica tus 3 excusas financieras más comunes',
+      'Reemplaza cada excusa con una acción',
+      'Practica autodisciplina en algo pequeño hoy',
+      'Mide tu progreso semanalmente'
+    ],
+    practicalTipsEn: [
+      'Identify your 3 most common financial excuses',
+      'Replace each excuse with an action',
+      'Practice self-discipline in something small today',
+      'Measure your progress weekly'
+    ],
+    totalPages: 304,
+    category: 'habits'
+  },
+
+  // ========== JIM ROHN ==========
+  {
+    id: '7-strategies-wealth-happiness',
+    type: 'book',
+    title: 'Las 7 Estrategias para la Riqueza y la Felicidad',
+    author: 'Jim Rohn',
+    summaryEs: 'Ideas poderosas del filósofo empresarial más importante de América. Aprende a mejorar tu vida en todas las áreas.',
+    summaryEn: 'Powerful ideas from America\'s foremost business philosopher. Learn to improve your life in all areas.',
+    practicalTipsEs: [
+      'Desarrolla un plan de lectura diario',
+      'Mejora tus habilidades de comunicación',
+      'Trabaja más duro en ti mismo que en tu trabajo',
+      'Lleva un diario de tus ideas y reflexiones'
+    ],
+    practicalTipsEn: [
+      'Develop a daily reading plan',
+      'Improve your communication skills',
+      'Work harder on yourself than on your job',
+      'Keep a journal of your ideas and reflections'
+    ],
+    totalPages: 176,
+    category: 'wealth'
+  },
+  {
+    id: 'art-exceptional-living',
+    type: 'book',
+    title: 'El Arte de la Vida Excepcional',
+    author: 'Jim Rohn',
+    summaryEs: 'Principios probados para vivir una vida extraordinaria. Tu nivel de éxito rara vez excederá tu nivel de desarrollo personal.',
+    summaryEn: 'Proven principles for living an extraordinary life. Your level of success will rarely exceed your level of personal development.',
+    practicalTipsEs: [
+      'Invierte 1 hora diaria en tu desarrollo personal',
+      'Rodéate de las 5 personas que quieres ser',
+      'Establece estándares más altos para ti mismo',
+      'Practica la gratitud diariamente'
+    ],
+    practicalTipsEn: [
+      'Invest 1 hour daily in your personal development',
+      'Surround yourself with the 5 people you want to become',
+      'Set higher standards for yourself',
+      'Practice gratitude daily'
+    ],
+    totalPages: 160,
+    category: 'mindset'
+  },
+  {
+    id: 'five-major-pieces',
+    type: 'book',
+    title: 'Las Cinco Piezas del Rompecabezas de la Vida',
+    author: 'Jim Rohn',
+    summaryEs: 'Filosofía, Actitud, Actividad, Resultados y Estilo de Vida - los 5 pilares fundamentales para una vida exitosa.',
+    summaryEn: 'Philosophy, Attitude, Activity, Results and Lifestyle - the 5 fundamental pillars for a successful life.',
+    practicalTipsEs: [
+      'Examina tu filosofía personal sobre el dinero',
+      'Ajusta tu actitud hacia los desafíos',
+      'Enfócate en actividades que producen resultados',
+      'Diseña el estilo de vida que deseas'
+    ],
+    practicalTipsEn: [
+      'Examine your personal philosophy about money',
+      'Adjust your attitude towards challenges',
+      'Focus on activities that produce results',
+      'Design the lifestyle you desire'
+    ],
+    totalPages: 128,
+    category: 'mindset'
+  },
+  {
+    id: 'leading-inspired-life',
+    type: 'book',
+    title: 'Vivir una Vida Inspirada',
+    author: 'Jim Rohn',
+    summaryEs: 'La guía definitiva para el desarrollo personal y el éxito. Despierta tu potencial máximo.',
+    summaryEn: 'The ultimate guide to personal development and success. Awaken your maximum potential.',
+    practicalTipsEs: [
+      'Encuentra tu "por qué" más profundo',
+      'Crea una visión inspiradora para tu futuro',
+      'Actúa con propósito cada día',
+      'Comparte tu conocimiento con otros'
+    ],
+    practicalTipsEn: [
+      'Find your deepest "why"',
+      'Create an inspiring vision for your future',
+      'Act with purpose every day',
+      'Share your knowledge with others'
+    ],
+    totalPages: 240,
+    category: 'mindset'
+  },
+  {
+    id: 'seasons-of-life',
+    type: 'book',
+    title: 'Las Estaciones de la Vida',
+    author: 'Jim Rohn',
+    summaryEs: 'Aprende a abrazar los ciclos de la vida para el crecimiento y la prosperidad. Cada estación tiene su propósito.',
+    summaryEn: 'Learn to embrace life\'s cycles for growth and prosperity. Each season has its purpose.',
+    practicalTipsEs: [
+      'Identifica en qué estación financiera estás',
+      'Prepárate durante el verano para el invierno',
+      'Siembra en primavera, cosecha en otoño',
+      'Acepta los desafíos como oportunidades de crecimiento'
+    ],
+    practicalTipsEn: [
+      'Identify which financial season you are in',
+      'Prepare during summer for winter',
+      'Plant in spring, harvest in fall',
+      'Accept challenges as growth opportunities'
+    ],
+    totalPages: 112,
+    category: 'mindset'
+  },
+
+  // ========== OTHER CLASSICS ==========
+  {
     id: 'intelligent-investor',
     type: 'book',
     title: 'El Inversor Inteligente',
@@ -102,28 +397,6 @@ export const SUGGESTED_RESOURCES: SuggestedResource[] = [
     ],
     totalPages: 320,
     category: 'mindset'
-  },
-  {
-    id: 'atomic-habits',
-    type: 'book',
-    title: 'Hábitos Atómicos',
-    author: 'James Clear',
-    summaryEs: 'Pequeños cambios producen resultados extraordinarios. El 1% de mejora diaria te hace 37 veces mejor en un año.',
-    summaryEn: 'Small changes produce extraordinary results. 1% daily improvement makes you 37 times better in a year.',
-    practicalTipsEs: [
-      'Empieza con un hábito financiero de 2 minutos',
-      'Vincula un nuevo hábito a uno existente',
-      'Haz visible tu meta de ahorro cada día',
-      'Celebra cada pequeña victoria financiera'
-    ],
-    practicalTipsEn: [
-      'Start with a 2-minute financial habit',
-      'Link a new habit to an existing one',
-      'Make your savings goal visible every day',
-      'Celebrate every small financial victory'
-    ],
-    totalPages: 320,
-    category: 'habits'
   },
   {
     id: 'psychology-of-money',
