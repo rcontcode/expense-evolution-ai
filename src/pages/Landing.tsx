@@ -1,5 +1,5 @@
 import { useState, useEffect, memo, lazy, Suspense } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -179,6 +179,7 @@ const getStats = (language: string) => [
 
 export default function Landing() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { language } = useLanguage();
   const { user, loading } = useAuth();
   const [showBetaInput, setShowBetaInput] = useState(false);
@@ -187,9 +188,12 @@ export default function Landing() {
   const [isAnnual, setIsAnnual] = useState(false);
 
   useEffect(() => {
-    // If user is already logged in, send them straight into the app
-    if (!loading && user) navigate('/dashboard');
-  }, [loading, user, navigate]);
+    // If user is logged in and on root path, redirect to dashboard
+    // But allow /landing route to show landing page for preview purposes
+    if (!loading && user && location.pathname === '/') {
+      navigate('/dashboard');
+    }
+  }, [loading, user, navigate, location.pathname]);
 
   const features = getFeatures(language);
   const pricingTiers = getPricingTiers(language);
