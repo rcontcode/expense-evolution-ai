@@ -398,6 +398,179 @@ const VOICE_TUTORIALS: Tutorial[] = [
         }
       }
     ]
+  },
+  // ========== ADDITIONAL ADVANCED TUTORIALS ==========
+  {
+    id: 'spending-alerts',
+    name: { es: 'Alertas de gasto', en: 'Spending alerts' },
+    triggers: ['alerta de gasto', 'spending alert', 'notificar gasto', 'notify spending', 'avisar cuando gaste', 'warn when i spend'],
+    steps: [
+      {
+        title: { es: 'Paso 1: Configura una alerta', en: 'Step 1: Set up an alert' },
+        description: {
+          es: 'Puedes configurar alertas por voz diciendo: "alerta cuando gaste más de 500" o "avísame si gasto más de 100 en restaurantes".',
+          en: 'You can set alerts by voice saying: "alert when I spend more than 500" or "notify me if I spend more than 100 on restaurants".'
+        }
+      },
+      {
+        title: { es: 'Paso 2: Recibe notificaciones', en: 'Step 2: Receive notifications' },
+        description: {
+          es: 'Cuando captures un gasto que supere tu límite, recibirás una notificación inmediata. También puedes ver todas tus alertas en Configuración.',
+          en: 'When you capture an expense that exceeds your limit, you\'ll receive an immediate notification. You can also see all your alerts in Settings.'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Ajusta tus límites', en: 'Step 3: Adjust your limits' },
+        description: {
+          es: 'Revisa y ajusta tus alertas según tu presupuesto mensual. Puedes tener múltiples alertas para diferentes categorías.',
+          en: 'Review and adjust your alerts based on your monthly budget. You can have multiple alerts for different categories.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'export-reports',
+    name: { es: 'Exportar reportes', en: 'Export reports' },
+    triggers: ['exportar', 'export', 'descargar reporte', 'download report', 'para contador', 'for accountant', 'generar excel', 'generate excel'],
+    steps: [
+      {
+        title: { es: 'Paso 1: Elige qué exportar', en: 'Step 1: Choose what to export' },
+        description: {
+          es: 'Tienes varias opciones de exportación: reporte fiscal para impuestos, reporte de reembolsos para clientes, o todos tus gastos/ingresos.',
+          en: 'You have several export options: tax report for taxes, reimbursement report for clients, or all your expenses/income.'
+        }
+      },
+      {
+        title: { es: 'Paso 2: Usa comandos de voz', en: 'Step 2: Use voice commands' },
+        description: {
+          es: 'Di "exportar para mi contador" para generar el reporte fiscal, o "exportar reembolsos" para el reporte de clientes. También funciona desde el menú de Gastos.',
+          en: 'Say "export for my accountant" for the tax report, or "export reimbursements" for client reports. It also works from the Expenses menu.'
+        },
+        action: '/expenses'
+      },
+      {
+        title: { es: 'Paso 3: Revisa el archivo', en: 'Step 3: Review the file' },
+        description: {
+          es: 'El reporte Excel incluye múltiples hojas: resumen ejecutivo, análisis por categoría, tendencias mensuales, y detalle completo. Perfecto para tu contador.',
+          en: 'The Excel report includes multiple sheets: executive summary, category analysis, monthly trends, and complete detail. Perfect for your accountant.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'voice-reminders',
+    name: { es: 'Recordatorios por voz', en: 'Voice reminders' },
+    triggers: ['recordatorio', 'reminder', 'recuérdame', 'remind me', 'no olvidar', 'don\'t forget'],
+    steps: [
+      {
+        title: { es: 'Paso 1: Crea un recordatorio', en: 'Step 1: Create a reminder' },
+        description: {
+          es: 'Di algo como: "recuérdame revisar gastos el viernes" o "recordatorio: pagar facturas mañana a las 10".',
+          en: 'Say something like: "remind me to review expenses on Friday" or "reminder: pay bills tomorrow at 10".'
+        }
+      },
+      {
+        title: { es: 'Paso 2: Gestiona tus recordatorios', en: 'Step 2: Manage your reminders' },
+        description: {
+          es: 'Todos tus recordatorios se guardan y puedes verlos en Configuración > Preferencias de Voz. Recibe notificaciones en el día/hora programados.',
+          en: 'All your reminders are saved and you can see them in Settings > Voice Preferences. Receive notifications on the scheduled day/time.'
+        },
+        action: '/settings'
+      },
+      {
+        title: { es: 'Paso 3: Acciones sugeridas', en: 'Step 3: Suggested actions' },
+        description: {
+          es: 'Cuando llegue la hora, te recordaré y te ofreceré acciones rápidas relacionadas, como abrir la sección correspondiente o capturar un gasto.',
+          en: 'When the time comes, I\'ll remind you and offer quick related actions, like opening the corresponding section or capturing an expense.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'subscription-tracking',
+    name: { es: 'Seguimiento de suscripciones', en: 'Subscription tracking' },
+    triggers: ['suscripciones', 'subscriptions', 'pagos recurrentes', 'recurring payments', 'netflix', 'spotify', 'cuánto pago mensual'],
+    steps: [
+      {
+        title: { es: 'Paso 1: Importa tu banco', en: 'Step 1: Import your bank' },
+        description: {
+          es: 'Para detectar suscripciones, primero importa tus estados bancarios en la sección de Banca. EvoFinz analizará los patrones de pago.',
+          en: 'To detect subscriptions, first import your bank statements in the Banking section. EvoFinz will analyze payment patterns.'
+        },
+        action: '/banking'
+      },
+      {
+        title: { es: 'Paso 2: Revisa las suscripciones detectadas', en: 'Step 2: Review detected subscriptions' },
+        description: {
+          es: 'El sistema identifica pagos recurrentes como Netflix, Spotify, seguros, etc. Di "mis suscripciones" para ver la lista y el total mensual.',
+          en: 'The system identifies recurring payments like Netflix, Spotify, insurance, etc. Say "my subscriptions" to see the list and monthly total.'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Optimiza tus gastos', en: 'Step 3: Optimize your spending' },
+        description: {
+          es: 'Revisa si hay suscripciones que ya no usas. Cancela las innecesarias y ahorra dinero cada mes.',
+          en: 'Check if there are subscriptions you no longer use. Cancel the unnecessary ones and save money each month.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'month-comparison',
+    name: { es: 'Comparación mensual', en: 'Monthly comparison' },
+    triggers: ['comparar meses', 'compare months', 'vs mes anterior', 'vs last month', 'diferencia mensual', 'monthly difference'],
+    steps: [
+      {
+        title: { es: 'Paso 1: Consulta la comparación', en: 'Step 1: Query the comparison' },
+        description: {
+          es: 'Di "comparar este mes con el anterior" o "cómo voy vs mes pasado". Te diré la diferencia en gastos e ingresos.',
+          en: 'Say "compare this month to last month" or "how am I vs last month". I\'ll tell you the difference in expenses and income.'
+        }
+      },
+      {
+        title: { es: 'Paso 2: Analiza las tendencias', en: 'Step 2: Analyze trends' },
+        description: {
+          es: 'En el Dashboard, la línea de tiempo anual te muestra cada mes con colores: verde para meses positivos, rojo para negativos.',
+          en: 'On the Dashboard, the annual timeline shows you each month with colors: green for positive months, red for negative ones.'
+        },
+        action: '/dashboard'
+      },
+      {
+        title: { es: 'Paso 3: Identifica patrones', en: 'Step 3: Identify patterns' },
+        description: {
+          es: 'Busca patrones estacionales: ¿gastas más en diciembre? ¿Ganas menos en verano? Usa esta información para planificar mejor.',
+          en: 'Look for seasonal patterns: do you spend more in December? Earn less in summer? Use this information to plan better.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'duplicate-entries',
+    name: { es: 'Duplicar registros', en: 'Duplicate entries' },
+    triggers: ['duplicar gasto', 'duplicate expense', 'repetir ingreso', 'repeat income', 'otro igual', 'another same'],
+    steps: [
+      {
+        title: { es: 'Paso 1: Usa el comando de voz', en: 'Step 1: Use the voice command' },
+        description: {
+          es: 'Después de crear un gasto o ingreso, di "duplicar el último gasto" o "repetir el ingreso anterior" para crear una copia idéntica.',
+          en: 'After creating an expense or income, say "duplicate last expense" or "repeat last income" to create an identical copy.'
+        }
+      },
+      {
+        title: { es: 'Paso 2: Modifica si es necesario', en: 'Step 2: Modify if needed' },
+        description: {
+          es: 'El duplicado aparecerá listo para editar. Puedes cambiar la fecha, monto, o cualquier otro campo antes de guardarlo.',
+          en: 'The duplicate will appear ready to edit. You can change the date, amount, or any other field before saving.'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Úsalo para gastos recurrentes', en: 'Step 3: Use for recurring expenses' },
+        description: {
+          es: 'Esta función es perfecta para gastos que se repiten: café semanal, transporte diario, pagos mensuales similares.',
+          en: 'This feature is perfect for recurring expenses: weekly coffee, daily transport, similar monthly payments.'
+        }
+      }
+    ]
   }
 ];
 

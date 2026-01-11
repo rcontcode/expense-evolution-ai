@@ -48,7 +48,15 @@ export const VOICE_COMMANDS = {
 };
 
 // Voice query commands (return data directly)
-export type QueryType = 'expenses_month' | 'expenses_year' | 'income_month' | 'income_year' | 'balance' | 'client_count' | 'project_count' | 'pending_receipts' | 'biggest_expense' | 'top_category' | 'tax_summary' | 'tax_owed' | 'deductible_total' | 'billable_total';
+export type QueryType = 
+  | 'expenses_month' | 'expenses_year' | 'income_month' | 'income_year' 
+  | 'balance' | 'client_count' | 'project_count' | 'pending_receipts' 
+  | 'biggest_expense' | 'top_category' | 'tax_summary' | 'tax_owed' 
+  | 'deductible_total' | 'billable_total'
+  // NEW QUERIES
+  | 'month_comparison' | 'subscriptions_list' | 'savings_needed' 
+  | 'cash_flow_projection' | 'expense_by_category' | 'income_by_source'
+  | 'net_worth_summary' | 'fire_progress' | 'mileage_summary';
 
 export interface VoiceQuery {
   patterns: string[];
@@ -71,6 +79,16 @@ export const VOICE_QUERIES: { es: VoiceQuery[]; en: VoiceQuery[] } = {
     { patterns: ['cuánto debo a hacienda', 'cuánto debo de impuestos', 'impuestos por pagar', 'deuda fiscal'], queryType: 'tax_owed' },
     { patterns: ['gastos deducibles', 'cuánto puedo deducir', 'total deducible', 'deducciones'], queryType: 'deductible_total' },
     { patterns: ['gastos facturables', 'cuánto puedo facturar', 'reembolsables', 'por facturar a clientes'], queryType: 'billable_total' },
+    // NEW SPANISH QUERIES
+    { patterns: ['comparar este mes', 'comparar mes anterior', 'diferencia con mes pasado', 'cómo voy vs mes anterior', 'comparación mensual'], queryType: 'month_comparison' },
+    { patterns: ['mis suscripciones', 'mostrar suscripciones', 'cuánto pago en suscripciones', 'pagos recurrentes', 'lista de suscripciones'], queryType: 'subscriptions_list' },
+    { patterns: ['cuánto debo ahorrar', 'cuánto necesito ahorrar', 'meta de ahorro', 'ahorro necesario para'], queryType: 'savings_needed' },
+    { patterns: ['proyección de flujo', 'flujo de caja', 'proyección financiera', 'cómo me irá', 'pronóstico'], queryType: 'cash_flow_projection' },
+    { patterns: ['gastos por categoría', 'desglose de gastos', 'distribución de gastos'], queryType: 'expense_by_category' },
+    { patterns: ['ingresos por fuente', 'desglose de ingresos', 'de dónde viene mi dinero'], queryType: 'income_by_source' },
+    { patterns: ['mi patrimonio', 'patrimonio neto', 'cuánto tengo en total', 'activos menos pasivos'], queryType: 'net_worth_summary' },
+    { patterns: ['progreso fire', 'cuánto falta para fire', 'libertad financiera progreso', 'cómo voy con fire'], queryType: 'fire_progress' },
+    { patterns: ['resumen de kilometraje', 'kilómetros recorridos', 'viajes de trabajo total', 'deducción por auto'], queryType: 'mileage_summary' },
   ],
   en: [
     { patterns: ['how much did i spend this month', 'monthly expenses', 'expenses this month', 'spending this month'], queryType: 'expenses_month' },
@@ -87,6 +105,16 @@ export const VOICE_QUERIES: { es: VoiceQuery[]; en: VoiceQuery[] } = {
     { patterns: ['how much do i owe in taxes', 'taxes owed', 'tax debt', 'tax liability'], queryType: 'tax_owed' },
     { patterns: ['deductible expenses', 'how much can i deduct', 'total deductions', 'tax deductions'], queryType: 'deductible_total' },
     { patterns: ['billable expenses', 'reimbursable expenses', 'client billable', 'to bill clients'], queryType: 'billable_total' },
+    // NEW ENGLISH QUERIES
+    { patterns: ['compare this month', 'compare to last month', 'difference from last month', 'how am i vs last month', 'monthly comparison'], queryType: 'month_comparison' },
+    { patterns: ['my subscriptions', 'show subscriptions', 'how much do i pay in subscriptions', 'recurring payments', 'list subscriptions'], queryType: 'subscriptions_list' },
+    { patterns: ['how much should i save', 'how much do i need to save', 'savings goal', 'savings needed for'], queryType: 'savings_needed' },
+    { patterns: ['cash flow projection', 'financial projection', 'how will i do', 'forecast'], queryType: 'cash_flow_projection' },
+    { patterns: ['expenses by category', 'expense breakdown', 'expense distribution'], queryType: 'expense_by_category' },
+    { patterns: ['income by source', 'income breakdown', 'where does my money come from'], queryType: 'income_by_source' },
+    { patterns: ['my net worth', 'net worth summary', 'total assets', 'assets minus liabilities'], queryType: 'net_worth_summary' },
+    { patterns: ['fire progress', 'how far from fire', 'financial freedom progress', 'how am i doing with fire'], queryType: 'fire_progress' },
+    { patterns: ['mileage summary', 'kilometers driven', 'work trips total', 'car deduction'], queryType: 'mileage_summary' },
   ],
 };
 
