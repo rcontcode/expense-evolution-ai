@@ -84,11 +84,12 @@ export function TaxOptimizerDemoAnimation() {
   }, [step]);
 
   return (
-    <div className="relative w-full max-w-sm mx-auto">
-      <div className="relative bg-slate-900 rounded-[2.5rem] p-2 shadow-2xl shadow-slate-900/50">
+    <div className="relative flex flex-col items-center">
+      {/* Phone frame - standardized size */}
+      <div className="relative w-[260px] h-[520px] bg-gradient-to-b from-slate-900 to-slate-800 rounded-[2.5rem] p-2 shadow-2xl border border-slate-700">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-slate-900 rounded-b-2xl z-20" />
         
-        <div className="relative bg-gradient-to-b from-slate-100 to-slate-200 rounded-[2rem] overflow-hidden aspect-[9/16]">
+        <div className="relative w-full h-full bg-gradient-to-b from-slate-100 to-slate-200 rounded-[2rem] overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-8 bg-slate-800/10 backdrop-blur-sm flex items-center justify-between px-6 pt-1 z-10">
             <span className="text-xs font-medium text-slate-600">9:41</span>
             <div className="flex gap-1">
@@ -242,28 +243,22 @@ export function TaxOptimizerDemoAnimation() {
         </div>
       </div>
 
-      {/* Floating labels */}
+      {/* Floating labels - positioned below phone */}
       <AnimatePresence>
         {step === "complete" && (
-          <>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0 }}
-              className="absolute -right-4 top-1/3 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-cyan-600 border border-cyan-100"
-            >
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-wrap justify-center gap-2 mt-4"
+          >
+            <span className="bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-cyan-600 border border-cyan-100">
               🧠 {language === 'es' ? 'Análisis Smart' : 'Smart Analysis'}
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ delay: 0.2 }}
-              className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-teal-600 border border-teal-100"
-            >
+            </span>
+            <span className="bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-teal-600 border border-teal-100">
               📋 {language === 'es' ? 'Reglas fiscales actualizadas' : 'Updated tax rules'}
-            </motion.div>
-          </>
+            </span>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
