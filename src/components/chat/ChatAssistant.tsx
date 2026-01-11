@@ -65,7 +65,15 @@ const LOCAL_QUICK_QUESTIONS = {
   ],
 };
 
+// Public routes where ChatAssistant should NOT appear
+const PUBLIC_ROUTES = ['/', '/landing', '/quiz', '/auth', '/legal', '/install'];
+
 export const ChatAssistant: React.FC = () => {
+  const location = useLocation();
+  
+  // Don't render on public/marketing pages
+  const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname);
+  
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isBubbleMode, setIsBubbleMode] = useState(false); // Compact bubble mode for tutorials/navigation
@@ -87,7 +95,6 @@ export const ChatAssistant: React.FC = () => {
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const previousPathRef = useRef<string>('');
   const navigate = useNavigate();
-  const location = useLocation();
   
   // Auto-minimize to bubble mode when navigating or in tutorial
   const autoMinimizeToBubble = useCallback(() => {
@@ -96,6 +103,11 @@ export const ChatAssistant: React.FC = () => {
       setIsOpen(false);
     }
   }, [isOpen, isMinimized]);
+  
+  // Early return for public routes - must be after all hooks
+  if (isPublicRoute) {
+    return null;
+  }
 
   // Expand from bubble mode
   const expandFromBubble = useCallback(() => {
