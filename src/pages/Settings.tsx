@@ -11,8 +11,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
-  Palette, Sun, Moon, Monitor, RotateCcw, BookOpen, Globe, 
-  Shield, Ticket, Settings2, Target, Database, GraduationCap, Bell
+  Palette, Sun, Moon, Monitor, RotateCcw, Globe, BookOpen,
+  Shield, Ticket, Settings2, Database
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { NotificationPreferences } from '@/components/settings/NotificationPreferences';
@@ -26,9 +26,6 @@ import { useIsAdmin } from '@/hooks/data/useIsAdmin';
 // Lazy load heavy sections
 const DataPrivacyCard = lazy(() => import('@/components/settings/DataPrivacyCard').then(m => ({ default: m.DataPrivacyCard })));
 const SampleDataManager = lazy(() => import('@/components/settings/SampleDataManager').then(m => ({ default: m.SampleDataManager })));
-const FinancialEducationResources = lazy(() => import('@/components/settings/FinancialEducationResources').then(m => ({ default: m.FinancialEducationResources })));
-const InvestmentSection = lazy(() => import('@/components/investments/InvestmentSection').then(m => ({ default: m.InvestmentSection })));
-const SavingsGoalsSection = lazy(() => import('@/components/settings/SavingsGoalsSection').then(m => ({ default: m.SavingsGoalsSection })));
 const VoicePreferencesCard = lazy(() => import('@/components/settings/VoicePreferencesCard').then(m => ({ default: m.VoicePreferencesCard })));
 
 const SectionSkeleton = () => (
@@ -56,14 +53,10 @@ export default function Settings() {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="preferences" className="gap-2">
               <Settings2 className="h-4 w-4" />
               <span className="hidden sm:inline">{language === 'es' ? 'Preferencias' : 'Preferences'}</span>
-            </TabsTrigger>
-            <TabsTrigger value="goals" className="gap-2">
-              <Target className="h-4 w-4" />
-              <span className="hidden sm:inline">{language === 'es' ? 'Metas' : 'Goals'}</span>
             </TabsTrigger>
             <TabsTrigger value="data" className="gap-2">
               <Database className="h-4 w-4" />
@@ -439,15 +432,6 @@ export default function Settings() {
               </Card>
             )}
           </TabsContent>
-
-          {/* ============== GOALS TAB ============== */}
-          <TabsContent value="goals" className="space-y-6">
-            <Suspense fallback={<SectionSkeleton />}>
-              <SavingsGoalsSection />
-              <InvestmentSection />
-            </Suspense>
-          </TabsContent>
-
 
           {/* ============== DATA TAB ============== */}
           <TabsContent value="data" className="space-y-6">

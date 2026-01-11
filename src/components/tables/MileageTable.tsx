@@ -90,8 +90,8 @@ export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
                 <TableCell className="font-medium">
                   {format(new Date(record.date), 'dd/MM/yyyy')}
                 </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
+                <TableCell className="py-3">
+                  <div className="flex items-center gap-3">
                     <MileageRoutePreview
                       startAddress={(record as any).start_address}
                       endAddress={(record as any).end_address}
@@ -103,14 +103,16 @@ export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
                       route={record.route}
                       compact
                     />
-                    <span className="max-w-[150px] truncate text-sm">
-                      {record.route.replace('[SAMPLE] ', '')}
-                    </span>
-                    {isSample(record.route) && (
-                      <Badge variant="outline" className="text-xs shrink-0">
-                        SAMPLE
-                      </Badge>
-                    )}
+                    <div className="flex flex-col min-w-0">
+                      <span className="max-w-[180px] truncate text-sm font-medium">
+                        {record.route.replace('[SAMPLE] ', '')}
+                      </span>
+                      {isSample(record.route) && (
+                        <Badge variant="outline" className="text-xs w-fit mt-1">
+                          SAMPLE
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell className="text-right">

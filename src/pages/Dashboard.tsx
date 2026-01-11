@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Upload, Receipt, Users, Download, Scale, MapPin, RefreshCw, Landmark, Briefcase, BarChart3, GraduationCap, ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react';
+import { Upload, Receipt, Users, Download, Scale, MapPin, RefreshCw, Landmark, Briefcase, BarChart3, GraduationCap, ChevronDown, ChevronUp, MoreHorizontal, Target } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useSubscription } from '@/hooks/data/useSubscription';
@@ -65,6 +65,7 @@ const FinancialJournalCard = lazy(() => import('@/components/mentorship/Financia
 const FinancialHabitsCard = lazy(() => import('@/components/mentorship/FinancialHabitsCard').then(m => ({ default: m.FinancialHabitsCard })));
 const FinancialEducationCard = lazy(() => import('@/components/mentorship/FinancialEducationCard').then(m => ({ default: m.FinancialEducationCard })));
 const SMARTGoalsCard = lazy(() => import('@/components/mentorship/SMARTGoalsCard').then(m => ({ default: m.SMARTGoalsCard })));
+const SavingsGoalsSection = lazy(() => import('@/components/settings/SavingsGoalsSection').then(m => ({ default: m.SavingsGoalsSection })));
 const GlobalLearningChart = lazy(() => import('@/components/mentorship/GlobalLearningChart').then(m => ({ default: m.GlobalLearningChart })));
 const ReadingReminderSettings = lazy(() => import('@/components/mentorship/ReadingReminderSettings').then(m => ({ default: m.ReadingReminderSettings })));
 const ReadingPaceComparison = lazy(() => import('@/components/mentorship/ReadingPaceComparison').then(m => ({ default: m.ReadingPaceComparison })));
@@ -146,6 +147,7 @@ export default function Dashboard() {
       'charts',
       'analytics',
       'mentorship',
+      'goals',
       'tax',
       'mileage',
       'subscriptions',
@@ -302,6 +304,10 @@ export default function Dashboard() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => setActiveTab('goals')}>
+                                <Target className="h-4 w-4 mr-2" />
+                                {language === 'es' ? 'Metas de Ahorro' : 'Savings Goals'}
+                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => setActiveTab('tax')}>
                                 <Receipt className="h-4 w-4 mr-2" />
                                 {language === 'es' ? 'Impuestos' : 'Taxes'}
@@ -411,6 +417,14 @@ export default function Dashboard() {
                                   <FinancialEducationCard />
                                 </div>
                               </div>
+                            </Suspense>
+                          )}
+                        </TabsContent>
+
+                        <TabsContent value="goals" className="space-y-4">
+                          {activeTab === 'goals' && (
+                            <Suspense fallback={<Skeleton className="h-[400px]" />}>
+                              <SavingsGoalsSection />
                             </Suspense>
                           )}
                         </TabsContent>
