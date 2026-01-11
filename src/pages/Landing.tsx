@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, lazy, Suspense } from 'react';
+import { useState, useEffect, memo, lazy, Suspense, ComponentType } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -19,18 +19,37 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Lazy load heavy components
-const TransformationCarousel = lazy(() => import('@/components/landing/TransformationCarousel').then(m => ({ default: m.TransformationCarousel })));
-const FeaturesShowcase = lazy(() => import('@/components/landing/FeaturesShowcase').then(m => ({ default: m.FeaturesShowcase })));
-const AnimatedStats = lazy(() => import('@/components/landing/AnimatedStats').then(m => ({ default: m.AnimatedStats })));
-const TestimonialsCarousel = lazy(() => import('@/components/landing/TestimonialsCarousel').then(m => ({ default: m.TestimonialsCarousel })));
-const FeatureDemosCarousel = lazy(() => import('@/components/landing/FeatureDemosCarousel').then(m => ({ default: m.FeatureDemosCarousel })));
-const TrustSecuritySection = lazy(() => import('@/components/landing/TrustSecuritySection').then(m => ({ default: m.TrustSecuritySection })));
-const PainPointsSection = lazy(() => import('@/components/landing/PainPointsSection').then(m => ({ default: m.PainPointsSection })));
-const HowItWorksSection = lazy(() => import('@/components/landing/HowItWorksSection').then(m => ({ default: m.HowItWorksSection })));
-const TargetAudienceSection = lazy(() => import('@/components/landing/TargetAudienceSection').then(m => ({ default: m.TargetAudienceSection })));
-const FAQSection = lazy(() => import('@/components/landing/FAQSection').then(m => ({ default: m.FAQSection })));
-const GuaranteesSection = lazy(() => import('@/components/landing/GuaranteesSection').then(m => ({ default: m.GuaranteesSection })));
+// Lazy loader with retry for transient network errors
+function lazyWithRetry<T extends ComponentType<unknown>>(
+  importFn: () => Promise<{ default: T }>,
+  retries = 3,
+  delay = 1000
+): React.LazyExoticComponent<T> {
+  return lazy(async () => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await importFn();
+      } catch (error) {
+        if (i === retries - 1) throw error;
+        await new Promise(r => setTimeout(r, delay * (i + 1)));
+      }
+    }
+    throw new Error('Failed to load module after retries');
+  });
+}
+
+// Lazy load heavy components with retry
+const TransformationCarousel = lazyWithRetry(() => import('@/components/landing/TransformationCarousel').then(m => ({ default: m.TransformationCarousel })));
+const FeaturesShowcase = lazyWithRetry(() => import('@/components/landing/FeaturesShowcase').then(m => ({ default: m.FeaturesShowcase })));
+const AnimatedStats = lazyWithRetry(() => import('@/components/landing/AnimatedStats').then(m => ({ default: m.AnimatedStats })));
+const TestimonialsCarousel = lazyWithRetry(() => import('@/components/landing/TestimonialsCarousel').then(m => ({ default: m.TestimonialsCarousel })));
+const FeatureDemosCarousel = lazyWithRetry(() => import('@/components/landing/FeatureDemosCarousel').then(m => ({ default: m.FeatureDemosCarousel })));
+const TrustSecuritySection = lazyWithRetry(() => import('@/components/landing/TrustSecuritySection').then(m => ({ default: m.TrustSecuritySection })));
+const PainPointsSection = lazyWithRetry(() => import('@/components/landing/PainPointsSection').then(m => ({ default: m.PainPointsSection })));
+const HowItWorksSection = lazyWithRetry(() => import('@/components/landing/HowItWorksSection').then(m => ({ default: m.HowItWorksSection })));
+const TargetAudienceSection = lazyWithRetry(() => import('@/components/landing/TargetAudienceSection').then(m => ({ default: m.TargetAudienceSection })));
+const FAQSection = lazyWithRetry(() => import('@/components/landing/FAQSection').then(m => ({ default: m.FAQSection })));
+const GuaranteesSection = lazyWithRetry(() => import('@/components/landing/GuaranteesSection').then(m => ({ default: m.GuaranteesSection })));
 
 // Simplified parallax - uses CSS transform for better performance
 function ParallaxSection({ 
