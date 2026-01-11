@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, memo, lazy, Suspense } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Camera, Receipt, FileText, Calculator, Trophy, GraduationCap,
   BarChart3, BookOpen, Building2, CreditCard, Mic, TrendingUp,
@@ -13,66 +13,54 @@ import {
   Star, Flame, Target, Crown, Heart, AlertTriangle, Clock, Lightbulb, ChevronRight, Quote, Globe
 } from 'lucide-react';
 import phoenixLogo from '@/assets/phoenix-clean-logo.png';
-import { TransformationCarousel } from '@/components/landing/TransformationCarousel';
 import { FloatingStars } from '@/components/landing/FloatingStars';
-import { FeaturesShowcase } from '@/components/landing/FeaturesShowcase';
-import { AnimatedStats } from '@/components/landing/AnimatedStats';
-import { TestimonialsCarousel } from '@/components/landing/TestimonialsCarousel';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
-import { FeatureDemosCarousel } from '@/components/landing/FeatureDemosCarousel';
-import { TrustSecuritySection } from '@/components/landing/TrustSecuritySection';
-import { PainPointsSection } from '@/components/landing/PainPointsSection';
-import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
-import { TargetAudienceSection } from '@/components/landing/TargetAudienceSection';
-import { FAQSection } from '@/components/landing/FAQSection';
-import { GuaranteesSection } from '@/components/landing/GuaranteesSection';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Parallax wrapper component for scroll-based animations
+// Lazy load heavy components
+const TransformationCarousel = lazy(() => import('@/components/landing/TransformationCarousel').then(m => ({ default: m.TransformationCarousel })));
+const FeaturesShowcase = lazy(() => import('@/components/landing/FeaturesShowcase').then(m => ({ default: m.FeaturesShowcase })));
+const AnimatedStats = lazy(() => import('@/components/landing/AnimatedStats').then(m => ({ default: m.AnimatedStats })));
+const TestimonialsCarousel = lazy(() => import('@/components/landing/TestimonialsCarousel').then(m => ({ default: m.TestimonialsCarousel })));
+const FeatureDemosCarousel = lazy(() => import('@/components/landing/FeatureDemosCarousel').then(m => ({ default: m.FeatureDemosCarousel })));
+const TrustSecuritySection = lazy(() => import('@/components/landing/TrustSecuritySection').then(m => ({ default: m.TrustSecuritySection })));
+const PainPointsSection = lazy(() => import('@/components/landing/PainPointsSection').then(m => ({ default: m.PainPointsSection })));
+const HowItWorksSection = lazy(() => import('@/components/landing/HowItWorksSection').then(m => ({ default: m.HowItWorksSection })));
+const TargetAudienceSection = lazy(() => import('@/components/landing/TargetAudienceSection').then(m => ({ default: m.TargetAudienceSection })));
+const FAQSection = lazy(() => import('@/components/landing/FAQSection').then(m => ({ default: m.FAQSection })));
+const GuaranteesSection = lazy(() => import('@/components/landing/GuaranteesSection').then(m => ({ default: m.GuaranteesSection })));
+
+// Simplified parallax - uses CSS transform for better performance
 function ParallaxSection({ 
   children, 
-  speed = 0.5, 
   className = "" 
 }: { 
   children: React.ReactNode; 
   speed?: number; 
   className?: string;
 }) {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"]
-  });
-  
-  const y = useTransform(scrollYProgress, [0, 1], [100 * speed, -100 * speed]);
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.6, 1, 1, 0.6]);
-  
   return (
-    <motion.div ref={ref} style={{ y, opacity }} className={className}>
+    <div className={className}>
       {children}
-    </motion.div>
+    </div>
   );
 }
 
-// Parallax background layer for depth effects
+// Static decorative layer - no scroll tracking for performance
 function ParallaxLayer({ 
-  speed, 
   className, 
   children 
 }: { 
-  speed: number; 
+  speed?: number; 
   className?: string; 
   children?: React.ReactNode;
 }) {
-  const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [0, 3000], [0, 3000 * speed]);
-  
   return (
-    <motion.div style={{ y }} className={className}>
+    <div className={className}>
       {children}
-    </motion.div>
+    </div>
   );
 }
 

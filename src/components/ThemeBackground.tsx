@@ -1,7 +1,13 @@
+import { memo } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 
-export const ThemeBackground = () => {
-  const { style } = useTheme();
+export const ThemeBackground = memo(() => {
+  const { style, animationSpeed, animationIntensity } = useTheme();
+
+  // Early exit if animations are disabled
+  if (animationSpeed === 'off') {
+    return null;
+  }
 
   const renderPattern = () => {
     switch (style) {
@@ -782,28 +788,24 @@ export const ThemeBackground = () => {
 
   const themedStyles = ['spring', 'summer', 'autumn', 'winter', 'crypto', 'gaming', 'sports', 'music', 'coffee', 'nature', 'space', 'photography', 'travel', 'cinema'];
   
+  // Early exit if style is not themed
   if (!themedStyles.includes(style)) {
     return null;
   }
-
-  // Get animation speed multiplier
-  const { animationSpeed, animationIntensity } = useTheme();
   
-  const getAnimationStyle = () => {
-    if (animationSpeed === 'off') return { display: 'none' };
-    
-    const speedMultiplier = animationSpeed === 'slow' ? 2 : animationSpeed === 'fast' ? 0.5 : 1;
-    const opacityMultiplier = animationIntensity === 'subtle' ? 0.5 : animationIntensity === 'vibrant' ? 1.3 : 1;
-    
-    return {
-      '--animation-speed': speedMultiplier,
-      opacity: Math.min(1, opacityMultiplier),
-    } as React.CSSProperties;
-  };
+  const speedMultiplier = animationSpeed === 'slow' ? 2 : animationSpeed === 'fast' ? 0.5 : 1;
+  const opacityMultiplier = animationIntensity === 'subtle' ? 0.5 : animationIntensity === 'vibrant' ? 1.3 : 1;
+  
+  const animationStyle = {
+    '--animation-speed': speedMultiplier,
+    opacity: Math.min(1, opacityMultiplier),
+  } as React.CSSProperties;
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={getAnimationStyle()}>
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 will-change-auto" style={animationStyle}>
       {renderPattern()}
     </div>
   );
-};
+});
+
+ThemeBackground.displayName = 'ThemeBackground';
