@@ -60,6 +60,7 @@ const TaxCalendar = lazyWithRetry(() => import("./pages/TaxCalendar"));
 const BetaWelcome = lazyWithRetry(() => import("./pages/BetaWelcome"));
 const BetaFeatures = lazyWithRetry(() => import("./pages/BetaFeatures"));
 const BetaCodesAdmin = lazyWithRetry(() => import("./pages/admin/BetaCodes"));
+const FinancialQuiz = lazyWithRetry(() => import("./pages/FinancialQuiz"));
 
 // Lazy load heavy global components with retry
 const ChatAssistant = lazyWithRetry(() => import("./components/chat/ChatAssistant").then(m => ({ default: m.ChatAssistant })));
@@ -132,6 +133,7 @@ const App = () => (
                   <Suspense fallback={<PageLoader />}>
                     <Routes>
                       <Route path="/" element={<Landing />} />
+                      <Route path="/quiz" element={<FinancialQuiz />} />
                       <Route path="/landing" element={<Landing />} />
                       <Route path="/legal" element={<Legal />} />
                       <Route path="/auth" element={<Auth />} />
