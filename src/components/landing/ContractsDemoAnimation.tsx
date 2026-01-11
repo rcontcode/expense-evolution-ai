@@ -250,28 +250,22 @@ export function ContractsDemoAnimation() {
         </div>
       </div>
 
-      {/* Floating labels */}
+      {/* Floating labels - positioned below phone */}
       <AnimatePresence>
         {step === "complete" && (
-          <>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0 }}
-              className="absolute -right-4 top-1/3 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-indigo-600 border border-indigo-100"
-            >
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-wrap justify-center gap-2 mt-4"
+          >
+            <span className="bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-indigo-600 border border-indigo-100">
               {language === 'es' ? '📄 Extracción automática' : '📄 Auto extraction'}
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ delay: 0.2 }}
-              className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-blue-600 border border-blue-100"
-            >
+            </span>
+            <span className="bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-blue-600 border border-blue-100">
               {language === 'es' ? '💼 Reglas de reembolso' : '💼 Reimbursement rules'}
-            </motion.div>
-          </>
+            </span>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
