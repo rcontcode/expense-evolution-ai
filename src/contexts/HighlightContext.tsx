@@ -88,7 +88,7 @@ export function HighlightProvider({ children }: { children: ReactNode }) {
     }
   }, [highlightColor, isHighlightEnabled]);
 
-  // Apply highlight styles to elements
+  // Apply highlight styles to elements with retry logic for elements that might not be rendered yet
   useEffect(() => {
     // Clear previous highlights first
     const clearAllHighlights = () => {
@@ -110,74 +110,102 @@ export function HighlightProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Clear before applying new highlights
-    clearAllHighlights();
+    // Function to apply highlights with retry
+    const applyHighlights = (attempt: number = 0) => {
+      // Clear before applying new highlights
+      clearAllHighlights();
 
-    const colors = HIGHLIGHT_COLORS[highlightColor];
-    let firstHighlightedElement: HTMLElement | null = null;
-    
-    activeHighlights.forEach((target, index) => {
-      // Try to find element by data-highlight attribute first, then by selector
-      let elements = document.querySelectorAll(`[data-highlight="${target.selector}"]`);
+      const colors = HIGHLIGHT_COLORS[highlightColor];
+      let firstHighlightedElement: HTMLElement | null = null;
+      let foundAny = false;
       
-      if (elements.length === 0) {
-        // Try CSS selector
-        try {
-          elements = document.querySelectorAll(target.selector);
-        } catch (e) {
-          console.warn('Invalid selector:', target.selector);
-          return;
-        }
-      }
-
-      elements.forEach((el) => {
-        const htmlEl = el as HTMLElement;
-        htmlEl.setAttribute('data-evofinz-highlighted', 'true');
-        htmlEl.style.transition = 'all 0.3s ease-in-out';
-        htmlEl.style.outline = `3px solid ${colors.border}`;
-        htmlEl.style.outlineOffset = '4px';
-        htmlEl.style.boxShadow = `${colors.glow}, inset 0 0 30px ${colors.bg}`;
-        htmlEl.style.backgroundColor = colors.bg;
-        htmlEl.style.zIndex = '100';
-        htmlEl.style.borderRadius = '8px';
-        if (htmlEl.style.position === 'static' || !htmlEl.style.position) {
-          htmlEl.style.position = 'relative';
-        }
+      activeHighlights.forEach((target, index) => {
+        // Try multiple selector strategies
+        let elements: NodeListOf<Element> | null = null;
         
-        // Store first element for scrolling
-        if (index === 0 && !firstHighlightedElement) {
-          firstHighlightedElement = htmlEl;
-        }
-      });
-    });
-
-    // Scroll to first highlighted element with a slight delay for DOM updates
-    if (firstHighlightedElement) {
-      setTimeout(() => {
-        if (firstHighlightedElement) {
-          // Get element position and scroll with offset for better visibility
-          const rect = firstHighlightedElement.getBoundingClientRect();
-          const isInViewport = (
-            rect.top >= 0 &&
-            rect.left >= 0 &&
-            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-          );
-
-          // Only scroll if element is not fully visible
-          if (!isInViewport) {
-            firstHighlightedElement.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'center',
-              inline: 'nearest'
-            });
+        // Strategy 1: data-highlight attribute (preferred)
+        elements = document.querySelectorAll(`[data-highlight="${target.selector}"]`);
+        
+        // Strategy 2: CSS selector fallback
+        if (elements.length === 0) {
+          try {
+            elements = document.querySelectorAll(target.selector);
+          } catch (e) {
+            console.warn('Invalid selector:', target.selector);
           }
         }
-      }, 100);
-    }
+        
+        // Strategy 3: ID selector
+        if (elements && elements.length === 0) {
+          const byId = document.getElementById(target.selector);
+          if (byId) {
+            elements = document.querySelectorAll(`#${target.selector}`);
+          }
+        }
+
+        if (elements && elements.length > 0) {
+          foundAny = true;
+          elements.forEach((el) => {
+            const htmlEl = el as HTMLElement;
+            htmlEl.setAttribute('data-evofinz-highlighted', 'true');
+            htmlEl.style.transition = 'all 0.3s ease-in-out';
+            htmlEl.style.outline = `3px solid ${colors.border}`;
+            htmlEl.style.outlineOffset = '4px';
+            htmlEl.style.boxShadow = `${colors.glow}, inset 0 0 30px ${colors.bg}`;
+            htmlEl.style.backgroundColor = colors.bg;
+            htmlEl.style.zIndex = '100';
+            htmlEl.style.borderRadius = '8px';
+            if (htmlEl.style.position === 'static' || !htmlEl.style.position) {
+              htmlEl.style.position = 'relative';
+            }
+            
+            // Store first element for scrolling
+            if (index === 0 && !firstHighlightedElement) {
+              firstHighlightedElement = htmlEl;
+            }
+          });
+        }
+      });
+
+      // If no elements found and we have retries left, try again after a delay
+      if (!foundAny && attempt < 5) {
+        console.log(`[Highlight] No elements found, retry ${attempt + 1}/5...`);
+        setTimeout(() => applyHighlights(attempt + 1), 300 * (attempt + 1));
+        return;
+      }
+
+      // Scroll to first highlighted element with a slight delay for DOM updates
+      if (firstHighlightedElement) {
+        setTimeout(() => {
+          if (firstHighlightedElement) {
+            // Get element position and scroll with offset for better visibility
+            const rect = firstHighlightedElement.getBoundingClientRect();
+            const isInViewport = (
+              rect.top >= 0 &&
+              rect.left >= 0 &&
+              rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+              rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+            );
+
+            // Only scroll if element is not fully visible
+            if (!isInViewport) {
+              firstHighlightedElement.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center',
+                inline: 'nearest'
+              });
+            }
+          }
+        }, 150);
+      }
+    };
+
+    // Start applying highlights with initial delay to allow for page render
+    const initialDelay = setTimeout(() => applyHighlights(0), 100);
 
     // Cleanup function
     return () => {
+      clearTimeout(initialDelay);
       clearAllHighlights();
     };
   }, [activeHighlights, highlightColor, isHighlightEnabled]);

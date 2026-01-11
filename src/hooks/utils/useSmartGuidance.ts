@@ -23,11 +23,25 @@ interface Tutorial {
 }
 
 // Voice tutorials for guided walkthroughs
+// ENHANCED: Added more natural triggers including "enséñame X", "muéstrame cómo", "cómo uso X"
 const VOICE_TUTORIALS: Tutorial[] = [
   {
     id: 'capture-expense',
     name: { es: 'Capturar gastos', en: 'Capture expenses' },
-    triggers: ['enseñame a capturar', 'cómo capturo', 'tutorial captura', 'teach me to capture', 'how to capture', 'capture tutorial'],
+    triggers: [
+      // Spanish triggers - COMPREHENSIVE
+      'enseñame a capturar', 'enséñame a capturar', 'cómo capturo', 'como capturo', 
+      'tutorial captura', 'cómo capturar', 'como capturar', 'quiero aprender a capturar',
+      'enséñame gastos', 'enseñame gastos', 'enséñame los gastos', 'enseñame los gastos',
+      'enséñame la captura', 'enseñame la captura', 'cómo uso la captura', 'como uso la captura',
+      'muéstrame cómo capturar', 'muestrame como capturar', 'explícame la captura', 'explicame la captura',
+      'cómo funciona la captura', 'como funciona la captura', 'ayuda con captura', 'ayuda captura',
+      'tutorial de gastos', 'cómo registro un gasto', 'como registro un gasto',
+      // English triggers
+      'teach me to capture', 'how to capture', 'capture tutorial', 'how do i capture',
+      'teach me expenses', 'show me how to capture', 'explain capture', 'help with capture',
+      'expense tutorial', 'how do i record an expense', 'capturing expenses'
+    ],
     steps: [
       {
         title: { es: 'Paso 1: Accede a la captura', en: 'Step 1: Access capture' },
@@ -55,7 +69,17 @@ const VOICE_TUTORIALS: Tutorial[] = [
   {
     id: 'setup-client',
     name: { es: 'Configurar cliente', en: 'Setup client' },
-    triggers: ['configurar cliente', 'agregar cliente', 'nuevo cliente', 'setup client', 'add client', 'new client', 'cómo agrego un cliente'],
+    triggers: [
+      // Spanish - COMPREHENSIVE
+      'configurar cliente', 'agregar cliente', 'nuevo cliente', 'cómo agrego un cliente', 'como agrego un cliente',
+      'enséñame clientes', 'enseñame clientes', 'enséñame los clientes', 'enseñame los clientes',
+      'cómo uso clientes', 'como uso clientes', 'muéstrame cómo agregar cliente', 'muestrame como agregar cliente',
+      'tutorial clientes', 'tutorial de clientes', 'ayuda con clientes', 'cómo funcionan los clientes',
+      'explícame los clientes', 'explicame los clientes',
+      // English
+      'setup client', 'add client', 'new client', 'how do i add a client',
+      'teach me clients', 'show me how to add client', 'client tutorial', 'help with clients'
+    ],
     steps: [
       {
         title: { es: 'Paso 1: Ve a Clientes', en: 'Step 1: Go to Clients' },
@@ -84,7 +108,16 @@ const VOICE_TUTORIALS: Tutorial[] = [
   {
     id: 'tax-deductions',
     name: { es: 'Deducciones fiscales', en: 'Tax deductions' },
-    triggers: ['deducciones', 'deducir impuestos', 'tax deductions', 'how to deduct', 'cómo deduzco', 'maximizar deducciones'],
+    triggers: [
+      // Spanish - COMPREHENSIVE  
+      'deducciones', 'deducir impuestos', 'maximizar deducciones', 'cómo deduzco', 'como deduzco',
+      'enséñame impuestos', 'enseñame impuestos', 'enséñame los impuestos', 'enseñame los impuestos',
+      'tutorial impuestos', 'tutorial de impuestos', 'ayuda con impuestos', 'cómo funcionan los impuestos',
+      'qué puedo deducir', 'que puedo deducir', 'gastos deducibles', 'cómo uso impuestos',
+      // English
+      'tax deductions', 'how to deduct', 'maximize deductions', 'teach me taxes',
+      'tax tutorial', 'help with taxes', 'what can i deduct', 'deductible expenses'
+    ],
     steps: [
       {
         title: { es: 'Paso 1: Clasifica tus gastos', en: 'Step 1: Classify your expenses' },
@@ -112,7 +145,17 @@ const VOICE_TUTORIALS: Tutorial[] = [
   {
     id: 'banking-analysis',
     name: { es: 'Análisis bancario', en: 'Banking analysis' },
-    triggers: ['análisis bancario', 'importar banco', 'banking analysis', 'import bank', 'cómo importo mi banco', 'analizar cuenta'],
+    triggers: [
+      // Spanish - COMPREHENSIVE
+      'análisis bancario', 'analisis bancario', 'importar banco', 'cómo importo mi banco', 'como importo mi banco',
+      'analizar cuenta', 'enséñame banca', 'enseñame banca', 'enséñame la banca', 'enseñame la banca',
+      'enséñame el banco', 'enseñame el banco', 'tutorial banca', 'tutorial de banca',
+      'cómo uso banca', 'como uso banca', 'ayuda con banca', 'cómo funciona banca',
+      'importar estado de cuenta', 'subir estado bancario',
+      // English
+      'banking analysis', 'import bank', 'how do i import bank', 'analyze account',
+      'teach me banking', 'banking tutorial', 'help with banking', 'import bank statement'
+    ],
     steps: [
       {
         title: { es: 'Paso 1: Descarga tu estado', en: 'Step 1: Download your statement' },
@@ -141,7 +184,16 @@ const VOICE_TUTORIALS: Tutorial[] = [
   {
     id: 'net-worth',
     name: { es: 'Patrimonio neto', en: 'Net worth' },
-    triggers: ['patrimonio', 'net worth', 'activos', 'assets', 'cómo registro activos', 'mis inversiones'],
+    triggers: [
+      // Spanish - COMPREHENSIVE
+      'patrimonio', 'patrimonio neto', 'activos', 'cómo registro activos', 'como registro activos',
+      'mis inversiones', 'enséñame patrimonio', 'enseñame patrimonio', 'enséñame el patrimonio', 'enseñame el patrimonio',
+      'tutorial patrimonio', 'tutorial de patrimonio', 'cómo uso patrimonio', 'como uso patrimonio',
+      'ayuda con patrimonio', 'cómo funciona patrimonio', 'registrar activos', 'mis pasivos',
+      // English  
+      'net worth', 'assets', 'how do i record assets', 'my investments',
+      'teach me net worth', 'net worth tutorial', 'help with net worth', 'record assets', 'liabilities'
+    ],
     steps: [
       {
         title: { es: 'Paso 1: Lista tus activos', en: 'Step 1: List your assets' },
