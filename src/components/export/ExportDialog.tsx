@@ -5,13 +5,15 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { exportExpenses, ExportOptions } from '@/lib/export/expense-export';
 import { exportT2125Report } from '@/lib/export/t2125-export';
-import { exportT2125ToPDF } from '@/lib/export/pdf-export';
+import { exportT2125ToPDF, exportExpensesToPDF, PDFExportOptions } from '@/lib/export/pdf-export';
 import { useToast } from '@/hooks/use-toast';
-import { FileSpreadsheet, FileText, Download, Loader2, FileCheck, FileJson, FileType } from 'lucide-react';
+import { useProfile } from '@/hooks/data/useProfile';
+import { FileSpreadsheet, FileText, Download, Loader2, FileCheck, FileJson, FileType, FileWarning } from 'lucide-react';
 
 interface ExportDialogProps {
   open: boolean;
@@ -20,13 +22,15 @@ interface ExportDialogProps {
 }
 
 export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
+  const { data: profile } = useProfile();
   const [exportType, setExportType] = useState<'general' | 't2125'>('general');
   const [format, setFormat] = useState<'csv' | 'xlsx' | 'json' | 'pdf'>('xlsx');
   const [t2125Format, setT2125Format] = useState<'xlsx' | 'pdf'>('xlsx');
   const [yearFilter, setYearFilter] = useState<string>('all');
   const [isExporting, setIsExporting] = useState(false);
+  const [isDraft, setIsDraft] = useState(false);
 
   // Get available years from expenses
   const years = [...new Set(expenses.map(e => new Date(e.date).getFullYear()))].sort((a, b) => b - a);
@@ -51,18 +55,33 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
         return;
       }
 
+      // PDF options with user/business info
+      const pdfOptions: PDFExportOptions = {
+        language: language as 'es' | 'en',
+        year: selectedYear,
+        isDraft,
+        userName: profile?.full_name || undefined,
+        businessName: profile?.business_name || undefined,
+        businessNumber: profile?.business_number || undefined,
+        country: profile?.country || 'CA',
+      };
+
       if (exportType === 't2125') {
         if (t2125Format === 'pdf') {
-          exportT2125ToPDF(filteredExpenses, selectedYear);
+          exportT2125ToPDF(filteredExpenses, selectedYear, pdfOptions);
         } else {
           exportT2125Report(filteredExpenses, selectedYear);
         }
       } else {
-        const options: ExportOptions = {
-          format,
-          year: selectedYear,
-        };
-        exportExpenses(filteredExpenses, options);
+        if (format === 'pdf') {
+          exportExpensesToPDF(filteredExpenses, pdfOptions);
+        } else {
+          const options: ExportOptions = {
+            format,
+            year: selectedYear,
+          };
+          exportExpenses(filteredExpenses, options);
+        }
       }
 
       toast({
@@ -219,6 +238,22 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
             </Select>
           </div>
 
+          {/* Draft toggle - for PDF formats */}
+          {(format === 'pdf' || t2125Format === 'pdf') && (
+            <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
+              <div className="flex items-center gap-2">
+                <FileWarning className="h-4 w-4 text-amber-500" />
+                <div>
+                  <p className="text-sm font-medium">{language === 'es' ? 'Marcar como Borrador' : 'Mark as Draft'}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {language === 'es' ? 'Agrega marca de agua "BORRADOR"' : 'Adds "DRAFT" watermark'}
+                  </p>
+                </div>
+              </div>
+              <Switch checked={isDraft} onCheckedChange={setIsDraft} />
+            </div>
+          )}
+
           {/* Summary */}
           <div className="bg-muted p-3 rounded-lg mt-4">
             <p className="text-sm">
@@ -232,6 +267,11 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
             {exportType === 't2125' && (
               <p className="text-xs text-muted-foreground mt-1">
                 {t('export.t2125Includes')}
+              </p>
+            )}
+            {format === 'pdf' && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {language === 'es' ? '✓ Logo EvoFinz • Datos de empresa • Bilingüe' : '✓ EvoFinz logo • Business data • Bilingual'}
               </p>
             )}
           </div>
