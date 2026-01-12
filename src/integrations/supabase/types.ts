@@ -169,6 +169,51 @@ export type Database = {
           },
         ]
       }
+      beta_bug_reports: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          description: string
+          id: string
+          page_path: string | null
+          report_type: string
+          screenshot_url: string | null
+          severity: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          page_path?: string | null
+          report_type?: string
+          screenshot_url?: string | null
+          severity?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          page_path?: string | null
+          report_type?: string
+          screenshot_url?: string | null
+          severity?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       beta_code_uses: {
         Row: {
           code_id: string | null
@@ -204,6 +249,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      beta_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          design_rating: number | null
+          ease_of_use: number | null
+          id: string
+          rating: number
+          section: string
+          suggestions: string | null
+          usefulness: number | null
+          user_id: string
+          would_recommend: boolean | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          design_rating?: number | null
+          ease_of_use?: number | null
+          id?: string
+          rating: number
+          section: string
+          suggestions?: string | null
+          usefulness?: number | null
+          user_id: string
+          would_recommend?: boolean | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          design_rating?: number | null
+          ease_of_use?: number | null
+          id?: string
+          rating?: number
+          section?: string
+          suggestions?: string | null
+          usefulness?: number | null
+          user_id?: string
+          would_recommend?: boolean | null
+        }
+        Relationships: []
       }
       beta_invitation_codes: {
         Row: {
@@ -937,6 +1024,39 @@ export type Database = {
           filters?: Json | null
           id?: string
           record_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      feature_usage_logs: {
+        Row: {
+          action_type: string
+          created_at: string
+          feature_name: string
+          id: string
+          metadata: Json | null
+          page_path: string
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type?: string
+          created_at?: string
+          feature_name: string
+          id?: string
+          metadata?: Json | null
+          page_path: string
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          feature_name?: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string
+          session_id?: string | null
           user_id?: string
         }
         Relationships: []
@@ -2337,6 +2457,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_user_beta_stats: { Args: { target_user_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["user_role"]
