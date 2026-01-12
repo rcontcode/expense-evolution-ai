@@ -69,8 +69,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
       
-      // Clean up URL hash after OAuth callback
-      if (event === 'SIGNED_IN' && window.location.hash) {
+      // Clean up URL hash after OAuth callback.
+      // IMPORTANT: Do not strip hash-router paths like "#/quiz" (used as a deep-link fallback on some hosts),
+      // otherwise the app can end up at "/quiz" which may 404 on refresh.
+      const hash = window.location.hash || "";
+      const isHashRouterPath = hash.startsWith("#/");
+      const looksLikeOAuthHash = !isHashRouterPath && /access_token=|refresh_token=|type=/.test(hash);
+
+      if (event === 'SIGNED_IN' && hash && looksLikeOAuthHash) {
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
       }
     });

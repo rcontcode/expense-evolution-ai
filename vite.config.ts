@@ -55,6 +55,17 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
+          // SPA routing stability (prevents "random" 404s when a service worker serves navigations)
+          navigateFallback: "/index.html",
+          // Avoid treating asset URLs as navigations
+          navigateFallbackDenylist: [
+            /\/assets\//,
+            /\/.*\.(?:js|css|png|jpg|jpeg|gif|svg|webp|ico|woff2?)$/,
+          ],
+          // Ensure updates activate promptly so users don't get stuck on an old UI
+          clientsClaim: true,
+          skipWaiting: true,
+
           globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MiB
           cleanupOutdatedCaches: true,
