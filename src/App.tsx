@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, HashRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -25,10 +25,10 @@ function lazyWithRetry<T extends ComponentType<unknown>>(
         return await importFn();
       } catch (error) {
         if (i === retries - 1) throw error;
-        await new Promise(r => setTimeout(r, delay * (i + 1)));
+        await new Promise((r) => setTimeout(r, delay * (i + 1)));
       }
     }
-    throw new Error('Failed to load module after retries');
+    throw new Error("Failed to load module after retries");
   });
 }
 
@@ -63,10 +63,18 @@ const BetaCodesAdmin = lazyWithRetry(() => import("./pages/admin/BetaCodes"));
 const FinancialQuiz = lazyWithRetry(() => import("./pages/FinancialQuiz"));
 
 // Lazy load heavy global components with retry
-const ChatAssistant = lazyWithRetry(() => import("./components/chat/ChatAssistant").then(m => ({ default: m.ChatAssistant })));
-const OnboardingTutorial = lazyWithRetry(() => import("./components/guidance/OnboardingTutorial").then(m => ({ default: m.OnboardingTutorial })));
-const CookieConsent = lazyWithRetry(() => import("./components/CookieConsent").then(m => ({ default: m.CookieConsent })));
-const FeedbackButton = lazyWithRetry(() => import("./components/FeedbackButton").then(m => ({ default: m.FeedbackButton })));
+const ChatAssistant = lazyWithRetry(() =>
+  import("./components/chat/ChatAssistant").then((m) => ({ default: m.ChatAssistant }))
+);
+const OnboardingTutorial = lazyWithRetry(() =>
+  import("./components/guidance/OnboardingTutorial").then((m) => ({ default: m.OnboardingTutorial }))
+);
+const CookieConsent = lazyWithRetry(() =>
+  import("./components/CookieConsent").then((m) => ({ default: m.CookieConsent }))
+);
+const FeedbackButton = lazyWithRetry(() =>
+  import("./components/FeedbackButton").then((m) => ({ default: m.FeedbackButton }))
+);
 
 // Page loading fallback - minimal skeleton
 const PageLoader = () => (
@@ -91,7 +99,10 @@ class LazyErrorBoundary extends Component<
 
   componentDidCatch(error: unknown) {
     // Keep the app running even if a lazy chunk fails to load.
-    console.warn(`[LazyErrorBoundary] Failed to load: ${this.props.name ?? 'lazy component'}`, error);
+    console.warn(
+      `[LazyErrorBoundary] Failed to load: ${this.props.name ?? "lazy component"}`,
+      error
+    );
   }
 
   render() {
@@ -118,13 +129,20 @@ function MissionListenerInitializer() {
   return null;
 }
 
+// Router selection:
+// - Prefer clean URLs via BrowserRouter
+// - If the host redirected a deep-link to hash-based fallback (see public/404.html), use HashRouter.
+const shouldUseHashRouter =
+  typeof window !== "undefined" && window.location.hash.startsWith("#/");
+const Router = shouldUseHashRouter ? HashRouter : BrowserRouter;
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <Router>
           <LanguageProvider>
             <AuthProvider>
               <EntityProvider>
@@ -137,29 +155,183 @@ const App = () => (
                       <Route path="/landing" element={<Landing />} />
                       <Route path="/legal" element={<Legal />} />
                       <Route path="/auth" element={<Auth />} />
-                      <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                      <Route path="/beta-welcome" element={<ProtectedRoute><BetaWelcome /></ProtectedRoute>} />
-                      <Route path="/beta-features" element={<ProtectedRoute><BetaFeatures /></ProtectedRoute>} />
-                      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                      <Route path="/chaos" element={<ProtectedRoute><ChaosInbox /></ProtectedRoute>} />
-                      <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
-                      <Route path="/income" element={<ProtectedRoute><Income /></ProtectedRoute>} />
-                      <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
-                      <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-                      <Route path="/tags" element={<ProtectedRoute><Tags /></ProtectedRoute>} />
-                      <Route path="/contracts" element={<ProtectedRoute><Contracts /></ProtectedRoute>} />
-                      <Route path="/mileage" element={<ProtectedRoute><Mileage /></ProtectedRoute>} />
-                      <Route path="/reconciliation" element={<ProtectedRoute><Reconciliation /></ProtectedRoute>} />
-                      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                      <Route path="/business-profile" element={<ProtectedRoute><BusinessProfile /></ProtectedRoute>} />
-                      <Route path="/net-worth" element={<ProtectedRoute><NetWorth /></ProtectedRoute>} />
-                      <Route path="/banking" element={<ProtectedRoute><Banking /></ProtectedRoute>} />
-                      <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-                      <Route path="/mentorship" element={<ProtectedRoute><Mentorship /></ProtectedRoute>} />
-                      <Route path="/tax-calendar" element={<ProtectedRoute><TaxCalendar /></ProtectedRoute>} />
+                      <Route
+                        path="/onboarding"
+                        element={
+                          <ProtectedRoute>
+                            <Onboarding />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/beta-welcome"
+                        element={
+                          <ProtectedRoute>
+                            <BetaWelcome />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/beta-features"
+                        element={
+                          <ProtectedRoute>
+                            <BetaFeatures />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/dashboard"
+                        element={
+                          <ProtectedRoute>
+                            <Dashboard />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/chaos"
+                        element={
+                          <ProtectedRoute>
+                            <ChaosInbox />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/expenses"
+                        element={
+                          <ProtectedRoute>
+                            <Expenses />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/income"
+                        element={
+                          <ProtectedRoute>
+                            <Income />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/clients"
+                        element={
+                          <ProtectedRoute>
+                            <Clients />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/projects"
+                        element={
+                          <ProtectedRoute>
+                            <Projects />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/tags"
+                        element={
+                          <ProtectedRoute>
+                            <Tags />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/contracts"
+                        element={
+                          <ProtectedRoute>
+                            <Contracts />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/mileage"
+                        element={
+                          <ProtectedRoute>
+                            <Mileage />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/reconciliation"
+                        element={
+                          <ProtectedRoute>
+                            <Reconciliation />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/settings"
+                        element={
+                          <ProtectedRoute>
+                            <Settings />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/business-profile"
+                        element={
+                          <ProtectedRoute>
+                            <BusinessProfile />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/net-worth"
+                        element={
+                          <ProtectedRoute>
+                            <NetWorth />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/banking"
+                        element={
+                          <ProtectedRoute>
+                            <Banking />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/notifications"
+                        element={
+                          <ProtectedRoute>
+                            <Notifications />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/mentorship"
+                        element={
+                          <ProtectedRoute>
+                            <Mentorship />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/tax-calendar"
+                        element={
+                          <ProtectedRoute>
+                            <TaxCalendar />
+                          </ProtectedRoute>
+                        }
+                      />
                       <Route path="/install" element={<Install />} />
-                      <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
-                      <Route path="/admin/beta-codes" element={<ProtectedRoute><BetaCodesAdmin /></ProtectedRoute>} />
+                      <Route
+                        path="/capture"
+                        element={
+                          <ProtectedRoute>
+                            <MobileCapture />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/admin/beta-codes"
+                        element={
+                          <ProtectedRoute>
+                            <BetaCodesAdmin />
+                          </ProtectedRoute>
+                        }
+                      />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
@@ -182,7 +354,7 @@ const App = () => (
               </EntityProvider>
             </AuthProvider>
           </LanguageProvider>
-        </BrowserRouter>
+        </Router>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>

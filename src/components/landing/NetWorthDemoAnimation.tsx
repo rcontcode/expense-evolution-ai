@@ -228,28 +228,22 @@ export function NetWorthDemoAnimation() {
         </div>
       </div>
 
-      {/* Floating labels */}
+      {/* Info badges - positioned below phone (standardized) */}
       <AnimatePresence>
         {step === "complete" && (
-          <>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0 }}
-              className="absolute -right-4 top-1/4 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-emerald-600 border border-emerald-100"
-            >
-              📈 {language === 'es' ? 'Tracking automático' : 'Auto tracking'}
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ delay: 0.2 }}
-              className="absolute -left-4 top-1/2 bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-teal-600 border border-teal-100"
-            >
-              🎯 {language === 'es' ? 'Proyección 6 meses' : '6-month projection'}
-            </motion.div>
-          </>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-wrap justify-center gap-2 mt-4"
+          >
+            <span className="bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-emerald-600 border border-emerald-100">
+              📈 {language === "es" ? "Tracking automático" : "Auto tracking"}
+            </span>
+            <span className="bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-teal-600 border border-teal-100">
+              🎯 {language === "es" ? "Proyección 6 meses" : "6-month projection"}
+            </span>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
