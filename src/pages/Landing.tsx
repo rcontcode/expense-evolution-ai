@@ -84,18 +84,102 @@ function ParallaxLayer({
 }
 
 const getFeatures = (language: string) => [
-  { icon: Camera, title: language === 'es' ? 'Captura Inteligente' : 'Smart Capture', description: 'OCR + Voice', tier: 'Pro', color: 'from-orange-500 to-red-500' },
-  { icon: Receipt, title: language === 'es' ? 'Gestión Completa' : 'Complete Management', description: language === 'es' ? 'Gastos e Ingresos' : 'Expenses & Income', tier: 'Premium', color: 'from-emerald-500 to-teal-500' },
-  { icon: FileText, title: language === 'es' ? 'Contratos Smart' : 'Smart Contracts', description: language === 'es' ? 'Análisis automático' : 'Auto analysis', tier: 'Pro', color: 'from-blue-500 to-indigo-500' },
-  { icon: Calculator, title: language === 'es' ? 'Calculadoras' : 'Calculators', description: 'FIRE/RRSP/APV', tier: 'Pro', color: 'from-purple-500 to-pink-500' },
-  { icon: Trophy, title: language === 'es' ? 'Gamificación' : 'Gamification', description: 'XP & Badges', tier: 'Premium', color: 'from-amber-500 to-orange-500' },
-  { icon: GraduationCap, title: language === 'es' ? 'Mentoría' : 'Mentorship', description: 'Kiyosaki/Tracy', tier: 'Pro', color: 'from-cyan-500 to-blue-500' },
-  { icon: BarChart3, title: 'Analytics', description: language === 'es' ? '9+ visualizaciones' : '9+ charts', tier: 'Pro', color: 'from-rose-500 to-red-500' },
-  { icon: BookOpen, title: language === 'es' ? 'Educación' : 'Education', description: language === 'es' ? 'Tracking de recursos' : 'Resource tracking', tier: 'Premium', color: 'from-green-500 to-emerald-500' },
-  { icon: Building2, title: language === 'es' ? 'Análisis Bancario' : 'Bank Analysis', description: language === 'es' ? 'Detección de anomalías' : 'Anomaly detection', tier: 'Pro', color: 'from-violet-500 to-purple-500' },
-  { icon: CreditCard, title: language === 'es' ? 'Suscripciones' : 'Subscriptions', description: language === 'es' ? 'Detector automático' : 'Auto detector', tier: 'Premium', color: 'from-pink-500 to-rose-500' },
-  { icon: Mic, title: language === 'es' ? 'Asistente Voz' : 'Voice Assistant', description: language === 'es' ? 'Dictado inteligente' : 'Smart dictation', tier: 'Pro', color: 'from-indigo-500 to-blue-500' },
-  { icon: TrendingUp, title: language === 'es' ? 'Patrimonio' : 'Net Worth', description: language === 'es' ? 'Activos vs Pasivos' : 'Assets vs Liabilities', tier: 'Premium', color: 'from-teal-500 to-cyan-500' },
+  { 
+    icon: Camera, 
+    title: language === 'es' ? 'Captura Inteligente' : 'Smart Capture', 
+    description: language === 'es' ? '📸 Foto → Gasto en 3 segundos' : '📸 Photo → Expense in 3 seconds', 
+    tier: 'Pro', 
+    color: 'from-orange-500 to-red-500',
+    row: 1
+  },
+  { 
+    icon: Receipt, 
+    title: language === 'es' ? 'Gestión Completa' : 'Complete Management', 
+    description: language === 'es' ? '💰 Todo tu dinero, un solo lugar' : '💰 All your money, one place', 
+    tier: 'Premium', 
+    color: 'from-emerald-500 to-teal-500',
+    row: 1
+  },
+  { 
+    icon: FileText, 
+    title: language === 'es' ? 'Contratos Smart' : 'Smart Contracts', 
+    description: language === 'es' ? '📋 Análisis automático de términos' : '📋 Auto term analysis', 
+    tier: 'Pro', 
+    color: 'from-blue-500 to-indigo-500',
+    row: 1
+  },
+  { 
+    icon: Calculator, 
+    title: language === 'es' ? 'Calculadoras Pro' : 'Pro Calculators', 
+    description: language === 'es' ? '🔥 FIRE, RRSP, APV optimizado' : '🔥 FIRE, RRSP, APV optimized', 
+    tier: 'Pro', 
+    color: 'from-purple-500 to-pink-500',
+    row: 1
+  },
+  { 
+    icon: Trophy, 
+    title: language === 'es' ? 'Gamificación' : 'Gamification', 
+    description: language === 'es' ? '🏆 Logros, XP y niveles' : '🏆 Achievements, XP & levels', 
+    tier: 'Premium', 
+    color: 'from-amber-500 to-orange-500',
+    row: 2
+  },
+  { 
+    icon: GraduationCap, 
+    title: language === 'es' ? 'Mentoría Elite' : 'Elite Mentorship', 
+    description: language === 'es' ? '📚 Kiyosaki, Tracy, Clear' : '📚 Kiyosaki, Tracy, Clear', 
+    tier: 'Pro', 
+    color: 'from-cyan-500 to-blue-500',
+    row: 2
+  },
+  { 
+    icon: BarChart3, 
+    title: language === 'es' ? 'Analytics Avanzado' : 'Advanced Analytics', 
+    description: language === 'es' ? '📊 +15 visualizaciones épicas' : '📊 +15 epic visualizations', 
+    tier: 'Pro', 
+    color: 'from-rose-500 to-red-500',
+    row: 2
+  },
+  { 
+    icon: BookOpen, 
+    title: language === 'es' ? 'Biblioteca Financiera' : 'Financial Library', 
+    description: language === 'es' ? '📖 Libros, podcasts, cursos' : '📖 Books, podcasts, courses', 
+    tier: 'Premium', 
+    color: 'from-green-500 to-emerald-500',
+    row: 2
+  },
+  { 
+    icon: Building2, 
+    title: language === 'es' ? 'Análisis Bancario' : 'Bank Analysis', 
+    description: language === 'es' ? '🏦 Detecta anomalías ocultas' : '🏦 Detect hidden anomalies', 
+    tier: 'Pro', 
+    color: 'from-violet-500 to-purple-500',
+    row: 3
+  },
+  { 
+    icon: CreditCard, 
+    title: language === 'es' ? 'Suscripciones' : 'Subscriptions', 
+    description: language === 'es' ? '💳 Encuentra gastos fantasma' : '💳 Find phantom expenses', 
+    tier: 'Premium', 
+    color: 'from-pink-500 to-rose-500',
+    row: 3
+  },
+  { 
+    icon: Mic, 
+    title: language === 'es' ? 'Asistente de Voz' : 'Voice Assistant', 
+    description: language === 'es' ? '🎤 Controla todo hablando' : '🎤 Control everything by speaking', 
+    tier: 'Pro', 
+    color: 'from-indigo-500 to-blue-500',
+    row: 3
+  },
+  { 
+    icon: TrendingUp, 
+    title: language === 'es' ? 'Patrimonio Neto' : 'Net Worth', 
+    description: language === 'es' ? '📈 Activos vs Pasivos visual' : '📈 Visual Assets vs Liabilities', 
+    tier: 'Premium', 
+    color: 'from-teal-500 to-cyan-500',
+    row: 3
+  },
 ];
 
 const getPricingTiers = (language: string) => [
@@ -267,7 +351,7 @@ const getPricingTiers = (language: string) => [
 
 const getStats = (language: string) => [
   { value: '12', label: language === 'es' ? 'Módulos' : 'Modules', icon: Sparkles },
-  { value: '20+', label: language === 'es' ? 'Comandos de Voz' : 'Voice Commands', icon: Zap },
+  { value: '100+', label: language === 'es' ? 'Comandos de Voz' : 'Voice Commands', icon: Zap },
   { value: '🇨🇦🇨🇱', label: language === 'es' ? 'Multi-país' : 'Multi-country', icon: Shield },
   { value: '24/7', label: language === 'es' ? 'Acceso' : 'Access', icon: Star },
 ];
@@ -366,7 +450,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 overflow-hidden">
-      {/* Sticky Pricing Bar - appears after scroll */}
+      {/* Sticky Pricing Bar - Premium design */}
       <motion.div
         initial={{ y: -100, opacity: 0 }}
         animate={{ 
@@ -374,109 +458,98 @@ export default function Landing() {
           opacity: showStickyBar ? 1 : 0 
         }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 backdrop-blur-md border-b border-amber-500/20 shadow-2xl"
+        className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-black/50"
       >
         {/* Animated glow line at bottom */}
         <motion.div 
-          className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent"
+          className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500 via-amber-400 to-violet-500"
           animate={{ 
-            opacity: [0.3, 0.7, 0.3],
-            scaleX: [0.8, 1, 0.8]
+            opacity: [0.5, 1, 0.5],
+            backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
           }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         />
         
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-4">
-            {/* Logo with glow */}
+            {/* Logo */}
             <motion.div 
               className="flex items-center gap-2"
-              animate={{ 
-                filter: ['drop-shadow(0 0 4px rgba(251,191,36,0.3))', 'drop-shadow(0 0 8px rgba(251,191,36,0.5))', 'drop-shadow(0 0 4px rgba(251,191,36,0.3))']
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
+              whileHover={{ scale: 1.05 }}
             >
-              <img src={phoenixLogo} alt="EvoFinz" className="h-8 w-8" />
+              <img src={phoenixLogo} alt="EvoFinz" className="h-8 w-8 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
               <span className="font-bold text-white hidden sm:inline">EvoFinz</span>
             </motion.div>
 
-            {/* Plans - Enhanced with badges and glows */}
-            <div className="flex items-center gap-2 md:gap-4">
-              <div className="hidden sm:flex items-center gap-3 text-sm">
-                {/* Free Plan Badge */}
+            {/* Plans - Clean badges with prices */}
+            <div className="flex items-center gap-3 md:gap-4">
+              <div className="hidden sm:flex items-center gap-3">
+                {/* Free Plan */}
                 <motion.div 
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30"
-                  whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(16,185,129,0.4)' }}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-400/30"
+                  whileHover={{ scale: 1.05, backgroundColor: 'rgba(16,185,129,0.3)' }}
                 >
-                  <Gift className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-300 font-bold">Free</span>
-                  <span className="text-emerald-400 font-black">$0</span>
+                  <Gift className="w-4 h-4 text-emerald-400" />
+                  <span className="text-emerald-300 font-semibold text-sm">Free</span>
+                  <span className="text-white font-bold">$0</span>
                 </motion.div>
                 
-                {/* Premium Plan Badge */}
+                {/* Premium Plan - featured */}
                 <motion.div 
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/20 border border-amber-400/30"
-                  whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(251,191,36,0.4)' }}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-400/40"
+                  whileHover={{ scale: 1.05 }}
                   animate={{
-                    boxShadow: ['0 0 5px rgba(251,191,36,0.2)', '0 0 12px rgba(251,191,36,0.4)', '0 0 5px rgba(251,191,36,0.2)']
+                    borderColor: ['rgba(251,191,36,0.4)', 'rgba(251,191,36,0.7)', 'rgba(251,191,36,0.4)']
                   }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <Star className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-amber-300 font-bold">Premium</span>
-                  <span className="text-amber-400 font-black">${isAnnual ? '5.59' : '6.99'}</span>
+                  <Star className="w-4 h-4 text-amber-400" />
+                  <span className="text-amber-300 font-semibold text-sm">Premium</span>
+                  <span className="text-white font-bold">${isAnnual ? '5.59' : '6.99'}</span>
+                  <span className="text-amber-200/60 text-xs">/mo</span>
                 </motion.div>
                 
-                {/* Pro Plan Badge */}
+                {/* Pro Plan */}
                 <motion.div 
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-500/20 border border-violet-400/30"
-                  whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(139,92,246,0.4)' }}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-500/20 border border-violet-400/40"
+                  whileHover={{ scale: 1.05 }}
                   animate={{
-                    boxShadow: ['0 0 5px rgba(139,92,246,0.2)', '0 0 12px rgba(139,92,246,0.4)', '0 0 5px rgba(139,92,246,0.2)']
+                    borderColor: ['rgba(139,92,246,0.4)', 'rgba(139,92,246,0.7)', 'rgba(139,92,246,0.4)']
                   }}
                   transition={{ duration: 2, repeat: Infinity, delay: 1 }}
                 >
-                  <Crown className="w-3.5 h-3.5 text-violet-400" />
-                  <span className="text-violet-300 font-bold">Pro</span>
-                  <span className="text-violet-400 font-black">${isAnnual ? '11.99' : '14.99'}</span>
+                  <Crown className="w-4 h-4 text-violet-400" />
+                  <span className="text-violet-300 font-semibold text-sm">Pro</span>
+                  <span className="text-white font-bold">${isAnnual ? '11.99' : '14.99'}</span>
+                  <span className="text-violet-200/60 text-xs">/mo</span>
                 </motion.div>
               </div>
               
-              {/* Ver Planes - Enhanced with glow effect */}
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                animate={{
-                  textShadow: ['0 0 5px rgba(255,255,255,0.3)', '0 0 15px rgba(255,255,255,0.5)', '0 0 5px rgba(255,255,255,0.3)']
+              {/* Ver Planes */}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  const pricingSection = document.getElementById('pricing-section');
+                  pricingSection?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                transition={{ duration: 1.5, repeat: Infinity }}
+                className="text-white/80 hover:text-white hover:bg-white/10 font-medium text-sm"
               >
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    const pricingSection = document.getElementById('pricing-section');
-                    pricingSection?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="text-white border-white/40 bg-white/10 hover:bg-white/20 hover:border-white/60 font-semibold text-sm backdrop-blur-sm"
-                >
-                  <Sparkles className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
-                  {language === 'es' ? 'Ver planes' : 'View plans'}
-                </Button>
-              </motion.div>
+                <Sparkles className="w-4 h-4 mr-1.5 text-amber-400" />
+                {language === 'es' ? 'Ver planes' : 'View plans'}
+              </Button>
               
-              {/* CTA Button - Enhanced with animated shine */}
+              {/* CTA Button - Enhanced */}
               <motion.div className="relative" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
                 <motion.div
-                  className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400 opacity-75 blur-sm"
-                  animate={{
-                    opacity: [0.5, 0.8, 0.5],
-                  }}
+                  className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400 opacity-60 blur-sm"
+                  animate={{ opacity: [0.4, 0.8, 0.4] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 />
                 <Button
                   size="sm"
                   onClick={() => navigate('/auth')}
-                  className="relative bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold text-sm overflow-hidden"
+                  className="relative bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold text-sm shadow-lg overflow-hidden"
                 >
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
@@ -747,53 +820,66 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Quick Pricing Preview - Right after hero */}
+      {/* Quick Pricing Preview - Redesigned */}
       <motion.section 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
-        className="relative py-8 bg-gradient-to-b from-slate-100 to-white border-y border-slate-200"
+        className="relative py-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-y border-amber-500/20"
       >
+        {/* Animated glow line */}
+        <motion.div 
+          className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent"
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+        
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
-            {/* Plans preview */}
-            <div className="flex items-center gap-3 flex-wrap justify-center">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+            {/* Plans with visual hierarchy */}
+            <div className="flex items-center gap-4 flex-wrap justify-center">
               {/* Free */}
               <motion.div 
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/30"
+                whileHover={{ scale: 1.05, y: -2 }}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-400/40 shadow-lg shadow-emerald-500/10"
               >
-                <Gift className="w-4 h-4 text-emerald-500" />
-                <span className="font-bold text-emerald-600">Free</span>
-                <span className="text-slate-500 text-sm">$0</span>
+                <Gift className="w-5 h-5 text-emerald-400" />
+                <span className="font-bold text-emerald-300">Free</span>
+                <span className="font-black text-white text-lg">$0</span>
               </motion.div>
               
-              {/* Premium */}
+              {/* Premium - highlighted */}
               <motion.div 
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/30"
+                whileHover={{ scale: 1.05, y: -2 }}
+                animate={{ boxShadow: ['0 0 10px rgba(251,191,36,0.2)', '0 0 20px rgba(251,191,36,0.4)', '0 0 10px rgba(251,191,36,0.2)'] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500/30 to-orange-500/30 border border-amber-400/50"
               >
-                <Star className="w-4 h-4 text-orange-500" />
-                <span className="font-bold text-orange-600">Premium</span>
-                <span className="text-slate-500 text-sm">${isAnnual ? '5.59' : '6.99'}{language === 'es' ? '/mes' : '/mo'}</span>
+                <Star className="w-5 h-5 text-amber-400" />
+                <span className="font-bold text-amber-300">Premium</span>
+                <span className="font-black text-white text-lg">${isAnnual ? '5.59' : '6.99'}</span>
+                <span className="text-amber-200/70 text-xs">{language === 'es' ? '/mes' : '/mo'}</span>
               </motion.div>
               
-              {/* Pro */}
+              {/* Pro - crown */}
               <motion.div 
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/30"
+                whileHover={{ scale: 1.05, y: -2 }}
+                animate={{ boxShadow: ['0 0 10px rgba(139,92,246,0.2)', '0 0 20px rgba(139,92,246,0.4)', '0 0 10px rgba(139,92,246,0.2)'] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-500/30 to-purple-500/30 border border-violet-400/50"
               >
-                <Crown className="w-4 h-4 text-violet-500" />
-                <span className="font-bold text-violet-600">Pro</span>
-                <span className="text-slate-500 text-sm">${isAnnual ? '11.99' : '14.99'}{language === 'es' ? '/mes' : '/mo'}</span>
+                <Crown className="w-5 h-5 text-violet-400" />
+                <span className="font-bold text-violet-300">Pro</span>
+                <span className="font-black text-white text-lg">${isAnnual ? '11.99' : '14.99'}</span>
+                <span className="text-violet-200/70 text-xs">{language === 'es' ? '/mes' : '/mo'}</span>
               </motion.div>
             </div>
 
-            {/* Divider */}
-            <div className="hidden md:block w-px h-8 bg-slate-300" />
+            {/* Divider with glow */}
+            <div className="hidden md:block w-px h-10 bg-gradient-to-b from-transparent via-amber-400/50 to-transparent" />
             
-            {/* CTA */}
+            {/* CTAs - improved */}
             <div className="flex items-center gap-3">
               <Button
                 size="sm"
@@ -802,19 +888,29 @@ export default function Landing() {
                   const pricingSection = document.getElementById('pricing-section');
                   pricingSection?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="text-sm border-slate-300 hover:border-cyan-400"
+                className="text-sm border-white/30 bg-white/5 hover:bg-white/10 hover:border-white/50 text-white font-semibold"
               >
-                {language === 'es' ? 'Ver planes' : 'View plans'}
-                <ChevronRight className="w-4 h-4 ml-1" />
+                <Sparkles className="w-4 h-4 mr-1.5 text-amber-400" />
+                {language === 'es' ? 'Comparar planes' : 'Compare plans'}
               </Button>
-              <Button
-                size="sm"
-                onClick={() => navigate('/auth')}
-                className="text-sm bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
-              >
-                {language === 'es' ? 'Empezar gratis' : 'Start free'}
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
+              
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  size="sm"
+                  onClick={() => navigate('/auth')}
+                  className="relative text-sm bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold shadow-lg shadow-orange-500/30 overflow-hidden"
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                  />
+                  <span className="relative z-10 flex items-center">
+                    {language === 'es' ? '¡Comenzar Gratis!' : 'Start Free!'}
+                    <ArrowRight className="w-4 h-4 ml-1.5" />
+                  </span>
+                </Button>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -924,7 +1020,7 @@ export default function Landing() {
       {/* Trust & Security */}
       <TrustSecuritySection />
 
-      {/* 12 Modules Section with parallax background */}
+      {/* 12 Modules Section with infinite carousel */}
       <section className="relative py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
         {/* Parallax decorative elements */}
         <ParallaxLayer speed={0.2} className="absolute inset-0 pointer-events-none">
@@ -945,57 +1041,116 @@ export default function Landing() {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <Badge className="mb-4 px-4 py-2 bg-orange-500/20 text-orange-400 border-orange-500/30 text-sm">
+            <Badge className="mb-4 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 text-sm shadow-lg">
               <Flame className="w-4 h-4 mr-2 inline" />
-              {language === 'es' ? 'Potencia Total' : 'Full Power'}
+              {language === 'es' ? '🚀 Arsenal Completo' : '🚀 Complete Arsenal'}
             </Badge>
             <h2 className="text-4xl md:text-5xl font-black mb-4">
-              <span className="text-white">{language === 'es' ? '12 Módulos ' : '12 Powerful '}</span>
-              <span className="bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">{language === 'es' ? 'Potentes' : 'Modules'}</span>
+              <span className="text-white">{language === 'es' ? '12 Herramientas ' : '12 Transformation '}</span>
+              <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-400 bg-clip-text text-transparent">{language === 'es' ? 'de Transformación' : 'Tools'}</span>
             </h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              {language === 'es' ? 'Todo lo que necesitas para gestionar tus finanzas personales y de negocio en un solo lugar.' : 'Everything you need to manage your personal and business finances in one place.'}
+            <p className="text-slate-300 text-lg max-w-3xl mx-auto">
+              {language === 'es' 
+                ? 'Del caos financiero a la claridad total. Cada módulo es una pieza de tu arsenal hacia la libertad financiera.' 
+                : 'From financial chaos to total clarity. Each module is a piece of your arsenal towards financial freedom.'}
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05, duration: 0.4 }}
-                >
-                  <Card 
-                    className="relative p-5 bg-slate-900/50 backdrop-blur-sm border-slate-800 hover:border-orange-500/50 transition-all duration-300 hover:scale-105 hover:-translate-y-1 cursor-pointer group overflow-hidden h-full hover:shadow-xl hover:shadow-orange-500/10"
-                  >
-                    {/* Gradient overlay on hover */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-                    
-                    <Badge 
-                      className={`absolute top-3 right-3 text-xs font-bold ${
-                        feature.tier === 'Pro' 
-                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0' 
-                          : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0'
-                      }`}
-                    >
-                      {feature.tier}
-                    </Badge>
-                    
-                    <div className={`p-3 rounded-xl bg-gradient-to-br ${feature.color} w-fit mb-4 shadow-lg`}>
-                      <Icon className="h-6 w-6 text-white" />
-                    </div>
-                    
-                    <h3 className="font-bold text-white mb-1">{feature.title}</h3>
-                    <p className="text-sm text-slate-400">{feature.description}</p>
-                  </Card>
-                </motion.div>
-              );
-            })}
+          {/* Row 1 - moves right to left */}
+          <div className="relative overflow-hidden mb-4">
+            <motion.div 
+              className="flex gap-4"
+              animate={{ x: ['0%', '-50%'] }}
+              transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+            >
+              {[...features.filter(f => f.row === 1), ...features.filter(f => f.row === 1)].map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <div key={`row1-${index}`} className="flex-shrink-0 w-[280px]">
+                    <Card className="relative p-5 bg-slate-900/50 backdrop-blur-sm border-slate-800 hover:border-orange-500/50 transition-all duration-300 hover:scale-105 cursor-pointer group overflow-hidden h-full hover:shadow-xl hover:shadow-orange-500/10">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                      <Badge className={`absolute top-3 right-3 text-xs font-bold ${feature.tier === 'Pro' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0' : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0'}`}>
+                        {feature.tier}
+                      </Badge>
+                      <div className={`p-3 rounded-xl bg-gradient-to-br ${feature.color} w-fit mb-4 shadow-lg`}>
+                        <Icon className="h-6 w-6 text-white" />
+                      </div>
+                      <h3 className="font-bold text-white mb-1">{feature.title}</h3>
+                      <p className="text-sm text-slate-300">{feature.description}</p>
+                    </Card>
+                  </div>
+                );
+              })}
+            </motion.div>
           </div>
+
+          {/* Row 2 - moves left to right */}
+          <div className="relative overflow-hidden mb-4">
+            <motion.div 
+              className="flex gap-4"
+              animate={{ x: ['-50%', '0%'] }}
+              transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}
+            >
+              {[...features.filter(f => f.row === 2), ...features.filter(f => f.row === 2)].map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <div key={`row2-${index}`} className="flex-shrink-0 w-[280px]">
+                    <Card className="relative p-5 bg-slate-900/50 backdrop-blur-sm border-slate-800 hover:border-violet-500/50 transition-all duration-300 hover:scale-105 cursor-pointer group overflow-hidden h-full hover:shadow-xl hover:shadow-violet-500/10">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                      <Badge className={`absolute top-3 right-3 text-xs font-bold ${feature.tier === 'Pro' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0' : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0'}`}>
+                        {feature.tier}
+                      </Badge>
+                      <div className={`p-3 rounded-xl bg-gradient-to-br ${feature.color} w-fit mb-4 shadow-lg`}>
+                        <Icon className="h-6 w-6 text-white" />
+                      </div>
+                      <h3 className="font-bold text-white mb-1">{feature.title}</h3>
+                      <p className="text-sm text-slate-300">{feature.description}</p>
+                    </Card>
+                  </div>
+                );
+              })}
+            </motion.div>
+          </div>
+
+          {/* Row 3 - moves right to left (slower) */}
+          <div className="relative overflow-hidden">
+            <motion.div 
+              className="flex gap-4"
+              animate={{ x: ['0%', '-50%'] }}
+              transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+            >
+              {[...features.filter(f => f.row === 3), ...features.filter(f => f.row === 3)].map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <div key={`row3-${index}`} className="flex-shrink-0 w-[280px]">
+                    <Card className="relative p-5 bg-slate-900/50 backdrop-blur-sm border-slate-800 hover:border-cyan-500/50 transition-all duration-300 hover:scale-105 cursor-pointer group overflow-hidden h-full hover:shadow-xl hover:shadow-cyan-500/10">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                      <Badge className={`absolute top-3 right-3 text-xs font-bold ${feature.tier === 'Pro' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0' : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0'}`}>
+                        {feature.tier}
+                      </Badge>
+                      <div className={`p-3 rounded-xl bg-gradient-to-br ${feature.color} w-fit mb-4 shadow-lg`}>
+                        <Icon className="h-6 w-6 text-white" />
+                      </div>
+                      <h3 className="font-bold text-white mb-1">{feature.title}</h3>
+                      <p className="text-sm text-slate-300">{feature.description}</p>
+                    </Card>
+                  </div>
+                );
+              })}
+            </motion.div>
+          </div>
+
+          {/* Bottom message */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mt-10 text-slate-400 text-sm"
+          >
+            {language === 'es' 
+              ? '✨ Cada herramienta diseñada para acelerar tu transformación financiera'
+              : '✨ Each tool designed to accelerate your financial transformation'}
+          </motion.p>
         </div>
       </section>
 
