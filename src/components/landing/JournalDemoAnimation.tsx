@@ -80,25 +80,33 @@ export function JournalDemoAnimation() {
   }, []);
 
   return (
-    <div className="relative flex items-center justify-center py-8">
+    <div className="relative flex flex-col items-center">
       <div className="relative">
-        {/* Phone frame - Standard size */}
-        <div className="relative w-[260px] h-[520px] bg-gradient-to-b from-slate-900 to-slate-800 rounded-[3rem] p-2 shadow-2xl border border-slate-700">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-slate-900 rounded-b-2xl z-20" />
-          
+        {/* Phone frame - standardized size */}
+        <div className="relative w-[240px] sm:w-[260px] md:w-[280px] aspect-[1/2] bg-gradient-to-b from-slate-900 to-slate-800 rounded-[2.5rem] p-2 shadow-2xl border border-slate-700">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 sm:w-24 h-6 bg-slate-900 rounded-b-2xl z-20" />
+
           {/* Screen */}
-          <div className="relative w-full h-full bg-gradient-to-b from-amber-50 to-white rounded-[2.5rem] overflow-hidden">
-            {/* Header - Compact */}
-            <div className="bg-gradient-to-r from-amber-500 to-orange-600 px-3 py-4 pt-8">
-              <div className="flex items-center gap-2 text-white">
-                <BookOpen className="w-4 h-4" />
-                <span className="font-bold text-sm">{language === 'es' ? 'Diario Financiero' : 'Financial Journal'}</span>
+          <div className="relative w-full h-full bg-gradient-to-b from-amber-50 to-white rounded-[2rem] overflow-hidden">
+            {/* Status bar */}
+            <div className="absolute top-0 inset-x-0 h-8 bg-slate-800/10 backdrop-blur-sm flex items-center justify-between px-6 pt-1 z-10">
+              <span className="text-xs font-medium text-slate-600">9:41</span>
+              <div className="flex gap-1">
+                <div className="w-4 h-2 bg-slate-600 rounded-sm" />
               </div>
             </div>
 
-            <div className="p-3 space-y-2">
+            {/* Header - Compact */}
+            <div className="absolute top-8 inset-x-0 h-12 bg-gradient-to-r from-amber-500 to-orange-600 flex items-center px-3 z-10">
+              <BookOpen className="w-4 h-4 text-white mr-2" />
+              <span className="font-bold text-sm text-white">
+                {language === "es" ? "Diario Financiero" : "Financial Journal"}
+              </span>
+            </div>
+
+            <div className="pt-20 p-3 space-y-2">
               <AnimatePresence mode="wait">
-                {step === 'idle' && (
+                {step === "idle" && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -113,12 +121,12 @@ export function JournalDemoAnimation() {
                       <PenLine className="w-7 h-7 text-white" />
                     </motion.div>
                     <p className="mt-3 text-xs text-slate-600">
-                      {language === 'es' ? 'Tu diario financiero...' : 'Your financial journal...'}
+                      {language === "es" ? "Tu diario financiero..." : "Your financial journal..."}
                     </p>
                   </motion.div>
                 )}
 
-                {(step !== 'idle') && (
+                {step !== "idle" && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -137,17 +145,23 @@ export function JournalDemoAnimation() {
                             className="p-2 rounded-lg bg-white border border-slate-200 shadow-sm"
                           >
                             <div className="flex items-start gap-2">
-                              <div className={`w-7 h-7 rounded-full bg-gradient-to-br ${entry.color} flex items-center justify-center flex-shrink-0`}>
+                              <div
+                                className={`w-7 h-7 rounded-full bg-gradient-to-br ${entry.color} flex items-center justify-center flex-shrink-0`}
+                              >
                                 <MoodIcon className="w-3.5 h-3.5 text-white" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5 mb-0.5">
                                   <span className="text-[10px] text-slate-500">{entry.date}</span>
                                 </div>
-                                <p className="text-xs font-medium text-slate-800 line-clamp-1">{entry.title}</p>
+                                <p className="text-xs font-medium text-slate-800 line-clamp-1">
+                                  {entry.title}
+                                </p>
                                 <div className="flex items-center gap-1 mt-0.5">
                                   <Lightbulb className="w-2.5 h-2.5 text-amber-500" />
-                                  <span className="text-[10px] text-amber-700 line-clamp-1">{entry.lesson}</span>
+                                  <span className="text-[10px] text-amber-700 line-clamp-1">
+                                    {entry.lesson}
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -157,7 +171,7 @@ export function JournalDemoAnimation() {
                     </div>
 
                     {/* Writing New Entry - Compact */}
-                    {(step === 'writing' || step === 'insight' || step === 'complete') && (
+                    {(step === "writing" || step === "insight" || step === "complete") && (
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -166,13 +180,15 @@ export function JournalDemoAnimation() {
                         <div className="flex items-center gap-1.5 mb-1">
                           <PenLine className="w-3 h-3 text-amber-600" />
                           <span className="text-[10px] font-bold text-amber-800">
-                            {language === 'es' ? 'Nueva entrada' : 'New entry'}
+                            {language === "es" ? "Nueva entrada" : "New entry"}
                           </span>
-                          <span className="text-[10px] text-amber-600 ml-auto">{language === 'es' ? 'Hoy' : 'Today'}</span>
+                          <span className="text-[10px] text-amber-600 ml-auto">
+                            {language === "es" ? "Hoy" : "Today"}
+                          </span>
                         </div>
                         <p className="text-[11px] text-slate-700 min-h-[28px] line-clamp-2">
                           {typedText}
-                          {step === 'writing' && (
+                          {step === "writing" && (
                             <motion.span
                               animate={{ opacity: [1, 0] }}
                               transition={{ duration: 0.5, repeat: Infinity }}
@@ -184,7 +200,7 @@ export function JournalDemoAnimation() {
                     )}
 
                     {/* AI Insight - Compact */}
-                    {(step === 'insight' || step === 'complete') && (
+                    {(step === "insight" || step === "complete") && (
                       <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -192,16 +208,20 @@ export function JournalDemoAnimation() {
                       >
                         <div className="flex items-center gap-1.5 mb-1">
                           <Sparkles className="w-3 h-3" />
-                          <span className="font-bold text-[10px]">{language === 'es' ? 'Insight EvoFinz' : 'EvoFinz Insight'}</span>
+                          <span className="font-bold text-[10px]">
+                            {language === "es" ? "Insight EvoFinz" : "EvoFinz Insight"}
+                          </span>
                         </div>
                         <p className="text-[10px] text-violet-100 line-clamp-2">
-                          {language === 'es' 
-                            ? '¡Excelente! Tu autocontrol ha mejorado 40% este mes.'
-                            : 'Excellent! Your self-control improved 40% this month.'}
+                          {language === "es"
+                            ? "¡Excelente! Tu autocontrol ha mejorado 40% este mes."
+                            : "Excellent! Your self-control improved 40% this month."}
                         </p>
                         <div className="flex items-center gap-1.5 mt-1">
                           <TrendingUp className="w-3 h-3 text-violet-200" />
-                          <span className="text-[10px] text-violet-200">+40% {language === 'es' ? 'autocontrol' : 'self-control'}</span>
+                          <span className="text-[10px] text-violet-200">
+                            +40% {language === "es" ? "autocontrol" : "self-control"}
+                          </span>
                         </div>
                       </motion.div>
                     )}
@@ -212,37 +232,23 @@ export function JournalDemoAnimation() {
           </div>
         </div>
 
-        {/* Floating labels - Below phone */}
-        <div className="flex justify-center gap-3 mt-4">
-          {step === 'complete' && (
-            <>
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-lg px-3 py-2 shadow-lg border border-amber-200"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center">
-                    <BookOpen className="w-3 h-3 text-amber-600" />
-                  </div>
-                  <span className="text-xs font-medium text-slate-700">{language === 'es' ? 'Reflexiona' : 'Reflect'}</span>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-white rounded-lg px-3 py-2 shadow-lg border border-violet-200"
-              >
-                <div className="flex items-center gap-2">
-                  <Lightbulb className="w-4 h-4 text-violet-500" />
-                  <span className="text-xs font-medium text-violet-700">{language === 'es' ? 'Aprende' : 'Learn'}</span>
-                </div>
-              </motion.div>
-            </>
+        {/* Info badges - positioned below phone (standardized) */}
+        <AnimatePresence>
+          {step === "complete" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-wrap justify-center gap-2 mt-4"
+            >
+              <span className="bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-amber-700 border border-amber-100">
+                📓 {language === "es" ? "Reflexiona" : "Reflect"}
+              </span>
+              <span className="bg-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium text-violet-700 border border-violet-100">
+                💡 {language === "es" ? "Aprende" : "Learn"}
+              </span>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       </div>
     </div>
   );

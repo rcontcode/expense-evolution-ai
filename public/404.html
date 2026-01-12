@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting…</title>
+    <!-- Fallback for hosts that don't support SPA rewrites on deep links -->
+    <meta http-equiv="refresh" content="0; url=/" />
+    <script>
+      (function () {
+        try {
+          // If we already have a hash route, do nothing.
+          if (window.location.hash && window.location.hash.startsWith("#/")) return;
+
+          var path = window.location.pathname || "/";
+          var search = window.location.search || "";
+
+          // Redirect deep links like /landing to /#/landing (works with HashRouter fallback)
+          var target = "/#" + path + search;
+          window.location.replace(target);
+        } catch (e) {
+          // Best-effort; meta refresh handles the rest.
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <noscript>
+      <p>Redirecting…</p>
+      <a href="/">Go to home</a>
+    </noscript>
+  </body>
+</html>
