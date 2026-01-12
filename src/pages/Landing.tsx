@@ -281,6 +281,16 @@ export default function Landing() {
   const [betaCode, setBetaCode] = useState('');
   const [codeStatus, setCodeStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
   const [isAnnual, setIsAnnual] = useState(false);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+
+  // Show sticky bar after scrolling past hero
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowStickyBar(window.scrollY > 600);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     // If user is logged in and on root path, redirect to dashboard
@@ -356,6 +366,59 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 overflow-hidden">
+      {/* Sticky Pricing Bar - appears after scroll */}
+      <motion.div
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ 
+          y: showStickyBar ? 0 : -100, 
+          opacity: showStickyBar ? 1 : 0 
+        }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-700/50 shadow-xl"
+      >
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between gap-4">
+            {/* Logo */}
+            <div className="flex items-center gap-2">
+              <img src={phoenixLogo} alt="EvoFinz" className="h-8 w-8" />
+              <span className="font-bold text-white hidden sm:inline">EvoFinz</span>
+            </div>
+
+            {/* Plans */}
+            <div className="flex items-center gap-2 md:gap-4">
+              <div className="hidden sm:flex items-center gap-2 text-sm">
+                <span className="text-emerald-400 font-semibold">Free $0</span>
+                <span className="text-slate-500">•</span>
+                <span className="text-orange-400 font-semibold">Premium ${isAnnual ? '5.59' : '6.99'}</span>
+                <span className="text-slate-500">•</span>
+                <span className="text-violet-400 font-semibold">Pro ${isAnnual ? '11.99' : '14.99'}</span>
+              </div>
+              
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  const pricingSection = document.getElementById('pricing-section');
+                  pricingSection?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="text-slate-300 hover:text-white hover:bg-slate-800 text-sm"
+              >
+                {language === 'es' ? 'Ver planes' : 'View plans'}
+              </Button>
+              
+              <Button
+                size="sm"
+                onClick={() => navigate('/auth')}
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-sm shadow-lg shadow-orange-500/25"
+              >
+                {language === 'es' ? 'Comenzar Gratis' : 'Start Free'}
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
       {/* Animated Background with parallax layers */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {/* Parallax gradient orbs - different speeds for depth */}
@@ -609,6 +672,79 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Quick Pricing Preview - Right after hero */}
+      <motion.section 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="relative py-8 bg-gradient-to-b from-slate-100 to-white border-y border-slate-200"
+      >
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
+            {/* Plans preview */}
+            <div className="flex items-center gap-3 flex-wrap justify-center">
+              {/* Free */}
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/30"
+              >
+                <Gift className="w-4 h-4 text-emerald-500" />
+                <span className="font-bold text-emerald-600">Free</span>
+                <span className="text-slate-500 text-sm">$0</span>
+              </motion.div>
+              
+              {/* Premium */}
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/30"
+              >
+                <Star className="w-4 h-4 text-orange-500" />
+                <span className="font-bold text-orange-600">Premium</span>
+                <span className="text-slate-500 text-sm">${isAnnual ? '5.59' : '6.99'}{language === 'es' ? '/mes' : '/mo'}</span>
+              </motion.div>
+              
+              {/* Pro */}
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/30"
+              >
+                <Crown className="w-4 h-4 text-violet-500" />
+                <span className="font-bold text-violet-600">Pro</span>
+                <span className="text-slate-500 text-sm">${isAnnual ? '11.99' : '14.99'}{language === 'es' ? '/mes' : '/mo'}</span>
+              </motion.div>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden md:block w-px h-8 bg-slate-300" />
+            
+            {/* CTA */}
+            <div className="flex items-center gap-3">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const pricingSection = document.getElementById('pricing-section');
+                  pricingSection?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="text-sm border-slate-300 hover:border-cyan-400"
+              >
+                {language === 'es' ? 'Ver planes' : 'View plans'}
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => navigate('/auth')}
+                className="text-sm bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+              >
+                {language === 'es' ? 'Empezar gratis' : 'Start free'}
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
       {/* Transformation Journey Carousel - Right after hero */}
       <TransformationCarousel />
 
@@ -789,7 +925,7 @@ export default function Landing() {
       </section>
 
       {/* Pricing Section with parallax */}
-      <section className="relative py-24 bg-slate-950 overflow-hidden">
+      <section id="pricing-section" className="relative py-24 bg-slate-950 overflow-hidden">
         {/* Parallax background elements */}
         <ParallaxLayer speed={0.15} className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-20 w-72 h-72 bg-violet-600/10 rounded-full blur-3xl" />
