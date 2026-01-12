@@ -1,9 +1,11 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Flame, Shield, Clock, Users, Sparkles } from "lucide-react";
+import { Flame, Shield, Clock, Users, Sparkles, TrendingUp, Lock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { PhoenixLogo } from "@/components/ui/phoenix-logo";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { Link } from "react-router-dom";
 
 interface QuizHeroProps {
   onStartQuiz: () => void;
@@ -11,6 +13,19 @@ interface QuizHeroProps {
 
 export const QuizHero = ({ onStartQuiz }: QuizHeroProps) => {
   const { language } = useLanguage();
+  
+  // Animated today counter (starts at base and increments randomly)
+  const [todayEvaluations, setTodayEvaluations] = useState(47);
+  
+  useEffect(() => {
+    // Simulate real-time activity
+    const interval = setInterval(() => {
+      if (Math.random() > 0.7) {
+        setTodayEvaluations(prev => prev + 1);
+      }
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
 
   const content = {
     es: {
@@ -26,6 +41,9 @@ export const QuizHero = ({ onStartQuiz }: QuizHeroProps) => {
         free: "Gratis",
       },
       socialProof: "5,000+ profesionales evaluados",
+      todayCount: "evaluaciones hoy",
+      alreadyHaveAccount: "¿Ya tienes cuenta?",
+      login: "Inicia sesión",
       features: [
         {
           icon: Flame,
@@ -57,6 +75,9 @@ export const QuizHero = ({ onStartQuiz }: QuizHeroProps) => {
         free: "Free",
       },
       socialProof: "5,000+ professionals assessed",
+      todayCount: "evaluations today",
+      alreadyHaveAccount: "Already have an account?",
+      login: "Log in",
       features: [
         {
           icon: Flame,
@@ -143,13 +164,29 @@ export const QuizHero = ({ onStartQuiz }: QuizHeroProps) => {
           <Clock className="w-4 h-4 text-amber-400" />
           <span className="text-sm text-slate-300">{t.trustBadges.time}</span>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 backdrop-blur-sm border border-slate-700/50">
-          <Shield className="w-4 h-4 text-emerald-400" />
-          <span className="text-sm text-slate-300">{t.trustBadges.private}</span>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 backdrop-blur-sm border border-emerald-500/30">
+          <Lock className="w-4 h-4 text-emerald-400" />
+          <span className="text-sm font-medium text-emerald-400">{t.trustBadges.private}</span>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 backdrop-blur-sm border border-emerald-500/30">
           <span className="text-sm font-medium text-emerald-400">{t.trustBadges.free}</span>
         </div>
+        {/* Urgency counter */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 backdrop-blur-sm border border-orange-500/30"
+        >
+          <TrendingUp className="w-4 h-4 text-orange-400" />
+          <motion.span 
+            key={todayEvaluations}
+            initial={{ scale: 1.2, color: "#fb923c" }}
+            animate={{ scale: 1, color: "#fdba74" }}
+            className="text-sm font-medium text-orange-300"
+          >
+            {todayEvaluations} {t.todayCount}
+          </motion.span>
+        </motion.div>
       </motion.div>
 
       {/* CTA Button */}
@@ -168,8 +205,18 @@ export const QuizHero = ({ onStartQuiz }: QuizHeroProps) => {
           {t.cta}
         </Button>
         <p className="text-sm text-slate-500 flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
           {t.ctaSubtext}
+        </p>
+        {/* Already have account link */}
+        <p className="text-sm text-slate-500">
+          {t.alreadyHaveAccount}{" "}
+          <Link 
+            to="/auth" 
+            className="text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors"
+          >
+            {t.login}
+          </Link>
         </p>
       </motion.div>
 
