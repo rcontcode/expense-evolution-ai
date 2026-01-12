@@ -467,17 +467,20 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
-        className="w-full max-w-md bg-warning/10 border border-warning/30 rounded-xl p-5 mb-6"
+        className="w-full max-w-md bg-card/80 border border-warning/40 backdrop-blur-sm rounded-xl p-5 mb-6"
       >
         <h3 className="text-lg font-bold text-warning mb-3 flex items-center gap-2">
           <Sparkles className="w-5 h-5" />
           {t.personalAnalysis}
         </h3>
-        <p className="text-foreground text-sm leading-relaxed font-medium" 
-           dangerouslySetInnerHTML={{ 
-             __html: personalizedMessage
-               .replace(/\*\*(.*?)\*\*/g, '<strong class="text-warning">$1</strong>')
-           }} 
+        <p
+          className="text-card-foreground/90 text-sm leading-relaxed font-medium"
+          dangerouslySetInnerHTML={{
+            __html: personalizedMessage.replace(
+              /\*\*(.*?)\*\*/g,
+              '<strong class="text-warning font-semibold">$1</strong>'
+            ),
+          }}
         />
       </motion.div>
 
@@ -487,28 +490,33 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-           className="w-full max-w-md bg-success/10 border border-success/30 rounded-xl p-5 mb-6"
-         >
-           <h3 className="text-lg font-semibold text-success mb-3 flex items-center gap-2">
-             <Rocket className="w-5 h-5" />
-             {language === "es" ? "¿Por qué EvoFinz para ti?" : "Why EvoFinz for you?"}
-           </h3>
-           <ul className="space-y-2">
-             {(language === "es" ? [
-               "🚀 Automatiza lo que ya haces bien – ahorra horas cada mes",
-               "📊 Dashboard ejecutivo con métricas que importan",
-               "🎯 Optimizador fiscal que encuentra deducciones ocultas",
-               "⚡ Captura gastos en 3 segundos con foto o voz",
-             ] : [
-               "🚀 Automate what you already do well – save hours monthly",
-               "📊 Executive dashboard with metrics that matter",
-               "🎯 Tax optimizer that finds hidden deductions",
-               "⚡ Capture expenses in 3 seconds with photo or voice",
-             ]).map((item, i) => (
-               <li key={i} className="text-foreground text-sm font-medium">{item}</li>
-             ))}
-           </ul>
-         </motion.div>
+          className="w-full max-w-md bg-card/80 border border-success/40 backdrop-blur-sm rounded-xl p-5 mb-6"
+        >
+          <h3 className="text-lg font-semibold text-success mb-3 flex items-center gap-2">
+            <Rocket className="w-5 h-5" />
+            {language === "es" ? "¿Por qué EvoFinz para ti?" : "Why EvoFinz for you?"}
+          </h3>
+          <ul className="space-y-2">
+            {(language === "es"
+              ? [
+                  "🚀 Automatiza lo que ya haces bien – ahorra horas cada mes",
+                  "📊 Dashboard ejecutivo con métricas que importan",
+                  "🎯 Optimizador fiscal que encuentra deducciones ocultas.",
+                  "⚡ Captura gastos en 3 segundos con foto o voz",
+                ]
+              : [
+                  "🚀 Automate what you already do well – save hours monthly",
+                  "📊 Executive dashboard with metrics that matter",
+                  "🎯 Tax optimizer that finds hidden deductions.",
+                  "⚡ Capture expenses in 3 seconds with photo or voice",
+                ]
+            ).map((item, i) => (
+              <li key={i} className="text-card-foreground/90 text-sm font-medium">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </motion.div>
       )}
 
       {/* Recommendations - only show if there are failed questions */}
