@@ -433,28 +433,28 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
         </h3>
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div className="bg-slate-900/50 rounded-lg p-3">
-            <span className="text-slate-400 block text-xs">{t.situation}</span>
-            <span className="text-white flex items-center gap-1.5 mt-1">
+            <span className="text-white/70 block text-xs font-medium">{t.situation}</span>
+            <span className="text-white flex items-center gap-1.5 mt-1 font-semibold">
               <span>{profileDisplay.situationIcon}</span>
               <span className="truncate">{result.data.situation}</span>
             </span>
           </div>
           <div className="bg-slate-900/50 rounded-lg p-3">
-            <span className="text-slate-400 block text-xs">{t.country}</span>
-            <span className="text-white flex items-center gap-1.5 mt-1">
+            <span className="text-white/70 block text-xs font-medium">{t.country}</span>
+            <span className="text-white flex items-center gap-1.5 mt-1 font-semibold">
               <span className="truncate">{result.data.country}</span>
             </span>
           </div>
           <div className="bg-slate-900/50 rounded-lg p-3">
-            <span className="text-slate-400 block text-xs">{t.goal}</span>
-            <span className="text-white flex items-center gap-1.5 mt-1">
+            <span className="text-white/70 block text-xs font-medium">{t.goal}</span>
+            <span className="text-white flex items-center gap-1.5 mt-1 font-semibold">
               <span>{profileDisplay.goalIcon}</span>
               <span className="truncate">{result.data.goal}</span>
             </span>
           </div>
           <div className="bg-slate-900/50 rounded-lg p-3">
-            <span className="text-slate-400 block text-xs">{t.obstacle}</span>
-            <span className="text-white flex items-center gap-1.5 mt-1">
+            <span className="text-white/70 block text-xs font-medium">{t.obstacle}</span>
+            <span className="text-white flex items-center gap-1.5 mt-1 font-semibold">
               <span>{profileDisplay.obstacleIcon}</span>
               <span className="truncate">{result.data.obstacle}</span>
             </span>
@@ -467,15 +467,18 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
-        className="w-full max-w-md bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl p-4 mb-6"
+        className="w-full max-w-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 rounded-xl p-5 mb-6"
       >
-        <h3 className="text-lg font-semibold text-amber-400 mb-2 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-amber-300 mb-3 flex items-center gap-2">
           <Sparkles className="w-5 h-5" />
           {t.personalAnalysis}
         </h3>
-        <p className="text-slate-200 text-sm leading-relaxed">
-          {personalizedMessage}
-        </p>
+        <p className="text-white text-sm leading-relaxed font-medium" 
+           dangerouslySetInnerHTML={{ 
+             __html: personalizedMessage
+               .replace(/\*\*(.*?)\*\*/g, '<strong class="text-amber-300">$1</strong>')
+           }} 
+        />
       </motion.div>
 
       {/* For HIGH scorers - show why EvoFinz enhances excellence */}
@@ -544,9 +547,9 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
             {/* Features list */}
             <ul className="text-left space-y-2.5 mb-5">
               {t.features.slice(0, 4).map((feature, index) => (
-                <li key={index} className="flex items-start gap-2.5 text-slate-300">
+                <li key={index} className="flex items-start gap-2.5 text-white">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <span className="text-sm">{feature}</span>
+                  <span className="text-sm font-medium">{feature}</span>
                 </li>
               ))}
             </ul>
@@ -565,7 +568,7 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
             {/* Trust badges */}
             <div className="flex items-center justify-center gap-4 mt-4 text-xs">
               {t.benefits.map((benefit, index) => (
-                <span key={index} className="flex items-center gap-1 text-slate-400">
+                <span key={index} className="flex items-center gap-1 text-white/80">
                   <benefit.icon className="w-3.5 h-3.5 text-emerald-400" />
                   {benefit.text}
                 </span>
@@ -576,7 +579,7 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
 
         <button
           onClick={onRetake}
-          className="flex items-center justify-center gap-2 mx-auto mt-5 text-slate-400 hover:text-white transition-colors"
+          className="flex items-center justify-center gap-2 mx-auto mt-5 text-white/70 hover:text-white transition-colors font-medium"
         >
           <RotateCcw className="w-4 h-4" />
           <span className="text-sm">{t.retake}</span>
