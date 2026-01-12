@@ -374,46 +374,121 @@ export default function Landing() {
           opacity: showStickyBar ? 1 : 0 
         }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-700/50 shadow-xl"
+        className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 backdrop-blur-md border-b border-amber-500/20 shadow-2xl"
       >
+        {/* Animated glow line at bottom */}
+        <motion.div 
+          className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent"
+          animate={{ 
+            opacity: [0.3, 0.7, 0.3],
+            scaleX: [0.8, 1, 0.8]
+          }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        />
+        
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-4">
-            {/* Logo */}
-            <div className="flex items-center gap-2">
+            {/* Logo with glow */}
+            <motion.div 
+              className="flex items-center gap-2"
+              animate={{ 
+                filter: ['drop-shadow(0 0 4px rgba(251,191,36,0.3))', 'drop-shadow(0 0 8px rgba(251,191,36,0.5))', 'drop-shadow(0 0 4px rgba(251,191,36,0.3))']
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
               <img src={phoenixLogo} alt="EvoFinz" className="h-8 w-8" />
               <span className="font-bold text-white hidden sm:inline">EvoFinz</span>
-            </div>
+            </motion.div>
 
-            {/* Plans */}
+            {/* Plans - Enhanced with badges and glows */}
             <div className="flex items-center gap-2 md:gap-4">
-              <div className="hidden sm:flex items-center gap-2 text-sm">
-                <span className="text-emerald-400 font-semibold">Free $0</span>
-                <span className="text-slate-500">•</span>
-                <span className="text-orange-400 font-semibold">Premium ${isAnnual ? '5.59' : '6.99'}</span>
-                <span className="text-slate-500">•</span>
-                <span className="text-violet-400 font-semibold">Pro ${isAnnual ? '11.99' : '14.99'}</span>
+              <div className="hidden sm:flex items-center gap-3 text-sm">
+                {/* Free Plan Badge */}
+                <motion.div 
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30"
+                  whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(16,185,129,0.4)' }}
+                >
+                  <Gift className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-emerald-300 font-bold">Free</span>
+                  <span className="text-emerald-400 font-black">$0</span>
+                </motion.div>
+                
+                {/* Premium Plan Badge */}
+                <motion.div 
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/20 border border-amber-400/30"
+                  whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(251,191,36,0.4)' }}
+                  animate={{
+                    boxShadow: ['0 0 5px rgba(251,191,36,0.2)', '0 0 12px rgba(251,191,36,0.4)', '0 0 5px rgba(251,191,36,0.2)']
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Star className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="text-amber-300 font-bold">Premium</span>
+                  <span className="text-amber-400 font-black">${isAnnual ? '5.59' : '6.99'}</span>
+                </motion.div>
+                
+                {/* Pro Plan Badge */}
+                <motion.div 
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-500/20 border border-violet-400/30"
+                  whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(139,92,246,0.4)' }}
+                  animate={{
+                    boxShadow: ['0 0 5px rgba(139,92,246,0.2)', '0 0 12px rgba(139,92,246,0.4)', '0 0 5px rgba(139,92,246,0.2)']
+                  }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                >
+                  <Crown className="w-3.5 h-3.5 text-violet-400" />
+                  <span className="text-violet-300 font-bold">Pro</span>
+                  <span className="text-violet-400 font-black">${isAnnual ? '11.99' : '14.99'}</span>
+                </motion.div>
               </div>
               
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  const pricingSection = document.getElementById('pricing-section');
-                  pricingSection?.scrollIntoView({ behavior: 'smooth' });
+              {/* Ver Planes - Enhanced with glow effect */}
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                animate={{
+                  textShadow: ['0 0 5px rgba(255,255,255,0.3)', '0 0 15px rgba(255,255,255,0.5)', '0 0 5px rgba(255,255,255,0.3)']
                 }}
-                className="text-slate-300 hover:text-white hover:bg-slate-800 text-sm"
+                transition={{ duration: 1.5, repeat: Infinity }}
               >
-                {language === 'es' ? 'Ver planes' : 'View plans'}
-              </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const pricingSection = document.getElementById('pricing-section');
+                    pricingSection?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="text-white border-white/40 bg-white/10 hover:bg-white/20 hover:border-white/60 font-semibold text-sm backdrop-blur-sm"
+                >
+                  <Sparkles className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
+                  {language === 'es' ? 'Ver planes' : 'View plans'}
+                </Button>
+              </motion.div>
               
-              <Button
-                size="sm"
-                onClick={() => navigate('/auth')}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-sm shadow-lg shadow-orange-500/25"
-              >
-                {language === 'es' ? 'Comenzar Gratis' : 'Start Free'}
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
+              {/* CTA Button - Enhanced with animated shine */}
+              <motion.div className="relative" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+                <motion.div
+                  className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400 opacity-75 blur-sm"
+                  animate={{
+                    opacity: [0.5, 0.8, 0.5],
+                  }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+                <Button
+                  size="sm"
+                  onClick={() => navigate('/auth')}
+                  className="relative bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold text-sm overflow-hidden"
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0.5 }}
+                  />
+                  <span className="relative z-10 flex items-center">
+                    {language === 'es' ? 'Comenzar Gratis' : 'Start Free'}
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </span>
+                </Button>
+              </motion.div>
             </div>
           </div>
         </div>
