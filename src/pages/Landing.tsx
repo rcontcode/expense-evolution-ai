@@ -891,11 +891,8 @@ export default function Landing() {
               viewport={{ once: true }}
               className="inline-block mb-6"
             >
-              <img 
-                src={phoenixLogo} 
-                alt="EvoFinz" 
-                className="h-20 w-auto mx-auto drop-shadow-lg"
-              />
+              {/* Use PhoenixLogo component for consistency */}
+              <PhoenixLogo variant="hero" showText={false} />
             </motion.div>
             
             <h2 className="text-4xl md:text-5xl font-black mb-4 text-white drop-shadow-lg">
@@ -905,14 +902,101 @@ export default function Landing() {
               {language === 'es' ? 'Únete a cientos de profesionales que ya están optimizando sus finanzas con EvoFinz.' : 'Join hundreds of professionals already optimizing their finances with EvoFinz.'}
             </p>
             
-            <Button 
-              size="lg" 
-              onClick={() => navigate('/auth')}
-              className="bg-slate-900 text-white hover:bg-slate-800 text-lg px-10 py-7 shadow-2xl font-bold group"
+            {/* SUPER LLAMATIVO CTA BUTTON */}
+            <motion.div
+              className="relative inline-block"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {language === 'es' ? 'Crear Cuenta Gratis' : 'Create Free Account'}
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
+              {/* Outer glow rings */}
+              <motion.div
+                className="absolute inset-0 rounded-full bg-white/30 blur-2xl"
+                animate={{
+                  scale: [1, 1.5, 1],
+                  opacity: [0.3, 0.1, 0.3]
+                }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+              
+              {/* Pulsing ring */}
+              <motion.div
+                className="absolute -inset-2 rounded-2xl border-2 border-white/50"
+                animate={{
+                  scale: [1, 1.1, 1],
+                  opacity: [0.5, 0, 0.5]
+                }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              />
+              
+              {/* Sparkle particles */}
+              {[...Array(6)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-2 h-2 bg-white rounded-full"
+                  style={{
+                    left: `${10 + i * 16}%`,
+                    top: i % 2 === 0 ? '-10px' : 'auto',
+                    bottom: i % 2 === 1 ? '-10px' : 'auto',
+                  }}
+                  animate={{
+                    y: i % 2 === 0 ? [-5, -15, -5] : [5, 15, 5],
+                    opacity: [0, 1, 0],
+                    scale: [0.5, 1, 0.5]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: i * 0.3
+                  }}
+                />
+              ))}
+              
+              <Button 
+                size="lg" 
+                onClick={() => navigate('/auth')}
+                className="relative bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white text-lg px-12 py-8 shadow-2xl font-bold group overflow-hidden border-2 border-white/20"
+              >
+                {/* Inner shine effect */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                  animate={{ x: ['-100%', '200%'] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                />
+                
+                {/* Star sparkle icon */}
+                <motion.span
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                  className="mr-2"
+                >
+                  <Sparkles className="h-5 w-5 text-amber-400" />
+                </motion.span>
+                
+                <span className="relative z-10">
+                  {language === 'es' ? 'Crear Cuenta Gratis' : 'Create Free Account'}
+                </span>
+                
+                <motion.span
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                  className="ml-2"
+                >
+                  <ArrowRight className="h-5 w-5" />
+                </motion.span>
+              </Button>
+            </motion.div>
+            
+            {/* Bonus text under button */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+              className="mt-4 text-white/80 text-sm flex items-center justify-center gap-2"
+            >
+              <Check className="h-4 w-4 text-emerald-300" />
+              {language === 'es' ? 'Sin tarjeta de crédito requerida' : 'No credit card required'}
+            </motion.p>
           </motion.div>
         </div>
       </section>
@@ -923,8 +1007,8 @@ export default function Landing() {
           <div className="flex flex-col gap-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-3">
-                <img src={phoenixLogo} alt="EvoFinz" className="h-10 w-auto" />
-                <span className="font-bold text-white">EvoFinz</span>
+                {/* Use PhoenixLogo component for consistency */}
+                <PhoenixLogo variant="mini" showText={true} />
               </div>
               <div className="flex items-center gap-6 text-sm pr-16">
                 <Link to="/legal" className="text-slate-400 hover:text-cyan-400 transition-colors">
