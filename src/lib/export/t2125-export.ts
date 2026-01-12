@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { format } from 'date-fns';
 
@@ -202,7 +202,7 @@ export function calculateT2125Totals(expenses: ExpenseWithRelations[]): T2125Lin
     .sort((a, b) => parseInt(a.line) - parseInt(b.line));
 }
 
-export function exportT2125Report(expenses: ExpenseWithRelations[], year?: number): void {
+export async function exportT2125Report(expenses: ExpenseWithRelations[], year?: number): Promise<void> {
   const filteredExpenses = year 
     ? expenses.filter(e => new Date(e.date).getFullYear() === year)
     : expenses;
@@ -218,110 +218,187 @@ export function exportT2125Report(expenses: ExpenseWithRelations[], year?: numbe
   const totalHstGst = totalGross - (totalGross / (1 + HST_RATE));
   const itcClaimable = totalDeductible - (totalDeductible / (1 + HST_RATE));
 
-  const wb = XLSX.utils.book_new();
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'EvoFinz';
+  workbook.created = new Date();
 
-  // Sheet 1: T2125 Summary by Line
-  const summaryData = [
-    ['FORMULARIO T2125 - RESUMEN DE GASTOS DE NEGOCIO'],
-    ['T2125 FORM - STATEMENT OF BUSINESS EXPENSES'],
-    [''],
-    [`Año Fiscal / Tax Year: ${year || 'Todos / All'}`],
-    [`Fecha de Generación / Generated: ${format(new Date(), 'yyyy-MM-dd HH:mm')}`],
-    [''],
-    ['═══════════════════════════════════════════════════════════════════════════'],
-    ['PARTE 5 - GASTOS DE NEGOCIO / PART 5 - BUSINESS EXPENSES'],
-    ['═══════════════════════════════════════════════════════════════════════════'],
-    [''],
-    ['Línea', 'Descripción (ES)', 'Description (EN)', 'Monto Bruto', 'Tasa', 'Monto Deducible', 'Cantidad'],
-    ['Line', '', '', 'Gross Amount', 'Rate', 'Deductible Amount', 'Count'],
-  ];
+  // ========== Sheet 1: T2125 Summary ==========
+  const summarySheet = workbook.addWorksheet('T2125 Resumen', {
+    properties: { tabColor: { argb: 'DC2626' } }
+  });
 
-  lineTotals.forEach(line => {
-    summaryData.push([
-      line.line,
-      line.nameEs,
-      line.name,
-      `$${line.grossAmount.toFixed(2)}`,
-      `${(line.deductionRate * 100).toFixed(0)}%`,
-      `$${line.netDeductible.toFixed(2)}`,
-      line.expenseCount.toString(),
-    ]);
+  // Title
+  summarySheet.mergeCells('A1:G1');
+  const titleCell = summarySheet.getCell('A1');
+  titleCell.value = '📋 FORMULARIO T2125 - RESUMEN DE GASTOS DE NEGOCIO';
+  titleCell.font = { bold: true, size: 16, color: { argb: 'FFFFFF' } };
+  titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'DC2626' } };
+  titleCell.alignment = { horizontal: 'center' };
+  summarySheet.getRow(1).height = 30;
+
+  // Subtitle
+  summarySheet.mergeCells('A2:G2');
+  summarySheet.getCell('A2').value = 'T2125 FORM - STATEMENT OF BUSINESS EXPENSES';
+  summarySheet.getCell('A2').font = { italic: true, color: { argb: '666666' } };
+  summarySheet.getCell('A2').alignment = { horizontal: 'center' };
+
+  // Info section
+  summarySheet.getCell('A4').value = `Año Fiscal / Tax Year: ${year || 'Todos / All'}`;
+  summarySheet.getCell('A4').font = { bold: true };
+  summarySheet.getCell('A5').value = `Fecha de Generación / Generated: ${format(new Date(), 'yyyy-MM-dd HH:mm')}`;
+
+  // Section header
+  summarySheet.mergeCells('A7:G7');
+  summarySheet.getCell('A7').value = 'PARTE 5 - GASTOS DE NEGOCIO / PART 5 - BUSINESS EXPENSES';
+  summarySheet.getCell('A7').font = { bold: true, size: 12, color: { argb: 'FFFFFF' } };
+  summarySheet.getCell('A7').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '991B1B' } };
+
+  // Headers
+  const headers = ['Línea/Line', 'Descripción (ES)', 'Description (EN)', 'Monto Bruto', 'Tasa', 'Monto Deducible', 'Cantidad'];
+  headers.forEach((header, idx) => {
+    const cell = summarySheet.getCell(9, idx + 1);
+    cell.value = header;
+    cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'B91C1C' } };
+    cell.alignment = { horizontal: 'center' };
+  });
+
+  // Data rows
+  lineTotals.forEach((line, idx) => {
+    const row = 10 + idx;
+    summarySheet.getCell(row, 1).value = line.line;
+    summarySheet.getCell(row, 2).value = line.nameEs;
+    summarySheet.getCell(row, 3).value = line.name;
+    summarySheet.getCell(row, 4).value = line.grossAmount;
+    summarySheet.getCell(row, 4).numFmt = '"$"#,##0.00';
+    summarySheet.getCell(row, 5).value = line.deductionRate;
+    summarySheet.getCell(row, 5).numFmt = '0%';
+    summarySheet.getCell(row, 6).value = line.netDeductible;
+    summarySheet.getCell(row, 6).numFmt = '"$"#,##0.00';
+    summarySheet.getCell(row, 7).value = line.expenseCount;
+
+    // Alternate row colors
+    if (idx % 2 === 0) {
+      for (let c = 1; c <= 7; c++) {
+        summarySheet.getCell(row, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FEF2F2' } };
+      }
+    }
+
+    // Add note if exists
     if (line.note) {
-      summaryData.push(['', `  ⚠️ ${line.noteEs}`, `  ⚠️ ${line.note}`, '', '', '', '']);
+      const noteRow = row + 0.5; // Can't do half rows, we'll add notes separately
     }
   });
 
-  summaryData.push(['']);
-  summaryData.push(['───────────────────────────────────────────────────────────────────────────']);
-  summaryData.push([
-    'TOTAL',
-    'Total de Gastos de Negocio',
-    'Total Business Expenses',
-    `$${totalGross.toFixed(2)}`,
-    '',
-    `$${totalDeductible.toFixed(2)}`,
-    deductibleExpenses.length.toString(),
-  ]);
-  summaryData.push(['']);
-  summaryData.push(['═══════════════════════════════════════════════════════════════════════════']);
-  summaryData.push(['RESUMEN HST/GST - INPUT TAX CREDITS (ITC)']);
-  summaryData.push(['HST/GST SUMMARY - INPUT TAX CREDITS (ITC)']);
-  summaryData.push(['═══════════════════════════════════════════════════════════════════════════']);
-  summaryData.push(['']);
-  summaryData.push(['', 'Descripción', 'Description', 'Monto / Amount']);
-  summaryData.push(['', 'Total HST/GST pagado en gastos deducibles', 'Total HST/GST paid on deductible expenses', `$${totalHstGst.toFixed(2)}`]);
-  summaryData.push(['', 'ITC Reclamable (según tasas de deducción)', 'Claimable ITC (per deduction rates)', `$${itcClaimable.toFixed(2)}`]);
-  summaryData.push(['', 'Tasa de recuperación', 'Recovery rate', `${((itcClaimable / totalHstGst) * 100).toFixed(1)}%`]);
-  summaryData.push(['']);
-  summaryData.push(['', '⚠️ Los ITC de comidas y entretenimiento son 50% como la deducción del gasto']);
-  summaryData.push(['', '⚠️ Meals and entertainment ITCs are 50% like the expense deduction']);
-  summaryData.push(['']);
-  summaryData.push(['═══════════════════════════════════════════════════════════════════════════']);
-  summaryData.push(['NOTAS IMPORTANTES / IMPORTANT NOTES']);
-  summaryData.push(['═══════════════════════════════════════════════════════════════════════════']);
-  summaryData.push(['']);
-  summaryData.push(['1. Los montos en "Monto Deducible" ya tienen aplicadas las tasas de deducción CRA']);
-  summaryData.push(['   Amounts in "Deductible Amount" already have CRA deduction rates applied']);
-  summaryData.push(['']);
-  summaryData.push(['2. Comidas y entretenimiento (Línea 8523) solo son 50% deducibles']);
-  summaryData.push(['   Meals and entertainment (Line 8523) are only 50% deductible']);
-  summaryData.push(['']);
-  summaryData.push(['3. CCA (Línea 9281) requiere cálculo separado según la clase del activo']);
-  summaryData.push(['   CCA (Line 9281) requires separate calculation based on asset class']);
-  summaryData.push(['']);
-  summaryData.push(['4. ITC calculado asumiendo HST 13% (Ontario). Ajustar según su provincia.']);
-  summaryData.push(['   ITC calculated assuming 13% HST (Ontario). Adjust for your province.']);
-  summaryData.push(['']);
-  summaryData.push(['5. Este reporte es solo para referencia. Consulte con un contador profesional.']);
-  summaryData.push(['   This report is for reference only. Consult a professional accountant.']);
-  summaryData.push(['']);
-  summaryData.push(['Referencias / References:']);
-  summaryData.push(['T2125: https://www.canada.ca/en/revenue-agency/services/forms-publications/forms/t2125.html']);
-  summaryData.push(['ITC: https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/complete-file-input-tax-credit.html']);
+  // Totals row
+  const totalRow = 10 + lineTotals.length + 1;
+  summarySheet.getCell(totalRow, 1).value = 'TOTAL';
+  summarySheet.getCell(totalRow, 1).font = { bold: true };
+  summarySheet.getCell(totalRow, 2).value = 'Total de Gastos de Negocio';
+  summarySheet.getCell(totalRow, 3).value = 'Total Business Expenses';
+  summarySheet.getCell(totalRow, 4).value = totalGross;
+  summarySheet.getCell(totalRow, 4).numFmt = '"$"#,##0.00';
+  summarySheet.getCell(totalRow, 4).font = { bold: true };
+  summarySheet.getCell(totalRow, 6).value = totalDeductible;
+  summarySheet.getCell(totalRow, 6).numFmt = '"$"#,##0.00';
+  summarySheet.getCell(totalRow, 6).font = { bold: true };
+  summarySheet.getCell(totalRow, 7).value = deductibleExpenses.length;
+  
+  for (let c = 1; c <= 7; c++) {
+    summarySheet.getCell(totalRow, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FECACA' } };
+    summarySheet.getCell(totalRow, c).border = { top: { style: 'double' } };
+  }
 
-  const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
-  summaryWs['!cols'] = [
-    { wch: 8 },   // Line
-    { wch: 40 },  // Description ES
-    { wch: 40 },  // Description EN
-    { wch: 15 },  // Gross
-    { wch: 8 },   // Rate
-    { wch: 18 },  // Deductible
-    { wch: 10 },  // Count
-  ];
-  XLSX.utils.book_append_sheet(wb, summaryWs, 'T2125 Resumen');
+  // HST/GST Section
+  const hstStartRow = totalRow + 3;
+  summarySheet.mergeCells(`A${hstStartRow}:G${hstStartRow}`);
+  summarySheet.getCell(`A${hstStartRow}`).value = 'RESUMEN HST/GST - INPUT TAX CREDITS (ITC)';
+  summarySheet.getCell(`A${hstStartRow}`).font = { bold: true, size: 12, color: { argb: 'FFFFFF' } };
+  summarySheet.getCell(`A${hstStartRow}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0369A1' } };
 
-  // Sheet 2: Detailed expenses by T2125 line
-  const detailData = [
-    ['DETALLE DE GASTOS POR LÍNEA T2125 / EXPENSE DETAILS BY T2125 LINE'],
-    [''],
+  const hstData = [
+    ['Total HST/GST pagado en gastos deducibles', 'Total HST/GST paid on deductible expenses', totalHstGst],
+    ['ITC Reclamable (según tasas de deducción)', 'Claimable ITC (per deduction rates)', itcClaimable],
+    ['Tasa de recuperación', 'Recovery rate', totalHstGst > 0 ? (itcClaimable / totalHstGst) : 0],
   ];
 
+  hstData.forEach((row, idx) => {
+    const rowNum = hstStartRow + 2 + idx;
+    summarySheet.getCell(rowNum, 2).value = row[0];
+    summarySheet.getCell(rowNum, 3).value = row[1];
+    summarySheet.getCell(rowNum, 4).value = row[2];
+    if (idx < 2) {
+      summarySheet.getCell(rowNum, 4).numFmt = '"$"#,##0.00';
+    } else {
+      summarySheet.getCell(rowNum, 4).numFmt = '0.0%';
+    }
+  });
+
+  // Notes section
+  const notesStartRow = hstStartRow + 7;
+  const notes = [
+    ['1.', 'Los montos en "Monto Deducible" ya tienen aplicadas las tasas de deducción CRA'],
+    ['', 'Amounts in "Deductible Amount" already have CRA deduction rates applied'],
+    ['2.', 'Comidas y entretenimiento (Línea 8523) solo son 50% deducibles'],
+    ['', 'Meals and entertainment (Line 8523) are only 50% deductible'],
+    ['3.', 'CCA (Línea 9281) requiere cálculo separado según la clase del activo'],
+    ['', 'CCA (Line 9281) requires separate calculation based on asset class'],
+    ['4.', 'ITC calculado asumiendo HST 13% (Ontario). Ajustar según su provincia.'],
+    ['', 'ITC calculated assuming 13% HST (Ontario). Adjust for your province.'],
+    ['5.', 'Este reporte es solo para referencia. Consulte con un contador profesional.'],
+    ['', 'This report is for reference only. Consult a professional accountant.'],
+  ];
+
+  summarySheet.getCell(notesStartRow, 1).value = 'NOTAS IMPORTANTES / IMPORTANT NOTES';
+  summarySheet.getCell(notesStartRow, 1).font = { bold: true };
+
+  notes.forEach((note, idx) => {
+    summarySheet.getCell(notesStartRow + 1 + idx, 1).value = note[0];
+    summarySheet.getCell(notesStartRow + 1 + idx, 2).value = note[1];
+  });
+
+  // References
+  const refRow = notesStartRow + notes.length + 3;
+  summarySheet.getCell(refRow, 1).value = 'Referencias / References:';
+  summarySheet.getCell(refRow, 1).font = { bold: true };
+  summarySheet.getCell(refRow + 1, 1).value = 'T2125: https://www.canada.ca/en/revenue-agency/services/forms-publications/forms/t2125.html';
+  summarySheet.getCell(refRow + 2, 1).value = 'ITC: https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/complete-file-input-tax-credit.html';
+
+  // Column widths
+  summarySheet.columns = [
+    { width: 10 }, { width: 40 }, { width: 40 }, { width: 15 }, { width: 10 }, { width: 18 }, { width: 12 }
+  ];
+
+  // ========== Sheet 2: Detailed expenses by T2125 line ==========
+  const detailSheet = workbook.addWorksheet('Detalle por Línea', {
+    properties: { tabColor: { argb: 'F59E0B' } }
+  });
+
+  detailSheet.mergeCells('A1:E1');
+  detailSheet.getCell('A1').value = '📝 DETALLE DE GASTOS POR LÍNEA T2125';
+  detailSheet.getCell('A1').font = { bold: true, size: 16, color: { argb: 'FFFFFF' } };
+  detailSheet.getCell('A1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F59E0B' } };
+  detailSheet.getCell('A1').alignment = { horizontal: 'center' };
+
+  let currentRow = 3;
   lineTotals.forEach(line => {
-    detailData.push(['']);
-    detailData.push([`═══ LÍNEA ${line.line}: ${line.nameEs} / ${line.name} ═══`]);
-    detailData.push(['Fecha', 'Proveedor', 'Descripción', 'Monto', 'Cliente']);
+    // Line header
+    detailSheet.mergeCells(`A${currentRow}:E${currentRow}`);
+    detailSheet.getCell(`A${currentRow}`).value = `═══ LÍNEA ${line.line}: ${line.nameEs} / ${line.name} ═══`;
+    detailSheet.getCell(`A${currentRow}`).font = { bold: true, color: { argb: 'FFFFFF' } };
+    detailSheet.getCell(`A${currentRow}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'D97706' } };
+    currentRow++;
 
+    // Column headers
+    ['Fecha', 'Proveedor', 'Descripción', 'Monto', 'Cliente'].forEach((header, idx) => {
+      const cell = detailSheet.getCell(currentRow, idx + 1);
+      cell.value = header;
+      cell.font = { bold: true };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FEF3C7' } };
+    });
+    currentRow++;
+
+    // Line expenses
     const lineExpenses = deductibleExpenses.filter(e => {
       const cat = e.category || 'other';
       return CATEGORY_TO_T2125[cat] === line.line || 
@@ -329,57 +406,81 @@ export function exportT2125Report(expenses: ExpenseWithRelations[], year?: numbe
     });
 
     lineExpenses.forEach(exp => {
-      detailData.push([
-        exp.date,
-        exp.vendor || '',
-        exp.description || '',
-        `$${parseFloat(exp.amount?.toString() || '0').toFixed(2)}`,
-        exp.client?.name || '',
-      ]);
+      detailSheet.getCell(currentRow, 1).value = exp.date;
+      detailSheet.getCell(currentRow, 2).value = exp.vendor || '';
+      detailSheet.getCell(currentRow, 3).value = exp.description || '';
+      detailSheet.getCell(currentRow, 4).value = parseFloat(exp.amount?.toString() || '0');
+      detailSheet.getCell(currentRow, 4).numFmt = '"$"#,##0.00';
+      detailSheet.getCell(currentRow, 5).value = exp.client?.name || '';
+      currentRow++;
     });
 
-    detailData.push([
-      '',
-      '',
-      'Subtotal:',
-      `$${line.grossAmount.toFixed(2)}`,
-      '',
-    ]);
+    // Subtotal
+    detailSheet.getCell(currentRow, 3).value = 'Subtotal:';
+    detailSheet.getCell(currentRow, 3).font = { bold: true };
+    detailSheet.getCell(currentRow, 4).value = line.grossAmount;
+    detailSheet.getCell(currentRow, 4).numFmt = '"$"#,##0.00';
+    detailSheet.getCell(currentRow, 4).font = { bold: true };
+    currentRow += 2;
   });
 
-  const detailWs = XLSX.utils.aoa_to_sheet(detailData);
-  detailWs['!cols'] = [
-    { wch: 12 },  // Date
-    { wch: 25 },  // Vendor
-    { wch: 35 },  // Description
-    { wch: 15 },  // Amount
-    { wch: 20 },  // Client
+  detailSheet.columns = [
+    { width: 12 }, { width: 25 }, { width: 35 }, { width: 15 }, { width: 20 }
   ];
-  XLSX.utils.book_append_sheet(wb, detailWs, 'Detalle por Línea');
 
-  // Sheet 3: All deductible expenses raw data
-  const rawData = deductibleExpenses.map(exp => ({
-    'Fecha / Date': exp.date,
-    'Proveedor / Vendor': exp.vendor || '',
-    'Descripción / Description': exp.description || '',
-    'Categoría / Category': exp.category || '',
-    'Línea T2125': CATEGORY_TO_T2125[exp.category || 'other'] || '9270',
-    'Monto / Amount': parseFloat(exp.amount?.toString() || '0'),
-    'Cliente / Client': exp.client?.name || '',
-    'Notas / Notes': exp.notes || '',
-  }));
+  // ========== Sheet 3: Raw data ==========
+  const rawSheet = workbook.addWorksheet('Datos Completos', {
+    properties: { tabColor: { argb: '6366F1' } }
+  });
 
-  const rawWs = XLSX.utils.json_to_sheet(rawData);
-  rawWs['!cols'] = [
-    { wch: 12 }, { wch: 25 }, { wch: 35 }, { wch: 20 },
-    { wch: 12 }, { wch: 12 }, { wch: 20 }, { wch: 30 },
+  rawSheet.mergeCells('A1:H1');
+  rawSheet.getCell('A1').value = '📊 DATOS COMPLETOS DE GASTOS DEDUCIBLES';
+  rawSheet.getCell('A1').font = { bold: true, size: 16, color: { argb: 'FFFFFF' } };
+  rawSheet.getCell('A1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '6366F1' } };
+  rawSheet.getCell('A1').alignment = { horizontal: 'center' };
+
+  const rawHeaders = ['Fecha / Date', 'Proveedor / Vendor', 'Descripción', 'Categoría', 'Línea T2125', 'Monto', 'Cliente', 'Notas'];
+  rawHeaders.forEach((header, idx) => {
+    const cell = rawSheet.getCell(3, idx + 1);
+    cell.value = header;
+    cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '4F46E5' } };
+  });
+
+  deductibleExpenses.forEach((exp, idx) => {
+    const row = 4 + idx;
+    rawSheet.getCell(row, 1).value = exp.date;
+    rawSheet.getCell(row, 2).value = exp.vendor || '';
+    rawSheet.getCell(row, 3).value = exp.description || '';
+    rawSheet.getCell(row, 4).value = exp.category || '';
+    rawSheet.getCell(row, 5).value = CATEGORY_TO_T2125[exp.category || 'other'] || '9270';
+    rawSheet.getCell(row, 6).value = parseFloat(exp.amount?.toString() || '0');
+    rawSheet.getCell(row, 6).numFmt = '"$"#,##0.00';
+    rawSheet.getCell(row, 7).value = exp.client?.name || '';
+    rawSheet.getCell(row, 8).value = exp.notes || '';
+
+    if (idx % 2 === 0) {
+      for (let c = 1; c <= 8; c++) {
+        rawSheet.getCell(row, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'EEF2FF' } };
+      }
+    }
+  });
+
+  // Auto filter
+  rawSheet.autoFilter = {
+    from: { row: 3, column: 1 },
+    to: { row: 3 + deductibleExpenses.length, column: 8 }
+  };
+
+  rawSheet.columns = [
+    { width: 12 }, { width: 25 }, { width: 35 }, { width: 20 },
+    { width: 12 }, { width: 12 }, { width: 20 }, { width: 30 }
   ];
-  XLSX.utils.book_append_sheet(wb, rawWs, 'Datos Completos');
 
   // Generate and download
   const filename = `T2125_Report_${year || 'All'}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
-  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
