@@ -623,6 +623,90 @@ const VOICE_TUTORIALS: Tutorial[] = [
         }
       }
     ]
+  },
+  // ========== TUTORIALS FOR PROJECTS AND INCOME ==========
+  {
+    id: 'projects-management',
+    name: { es: 'Gestión de proyectos', en: 'Projects management' },
+    triggers: [
+      // Spanish - COMPREHENSIVE
+      'proyectos', 'proyecto', 'cómo uso proyectos', 'como uso proyectos', 'agregar proyecto',
+      'enséñame proyectos', 'enseñame proyectos', 'enséñame los proyectos', 'enseñame los proyectos',
+      'tutorial proyectos', 'tutorial de proyectos', 'ayuda con proyectos', 'cómo funcionan los proyectos',
+      'explícame proyectos', 'explicame proyectos', 'explícame los proyectos', 'explicame los proyectos',
+      'muéstrame cómo usar proyectos', 'muestrame como usar proyectos', 'gestionar proyectos',
+      'nuevo proyecto', 'crear proyecto',
+      // English
+      'projects', 'project', 'how to use projects', 'add project', 'teach me projects',
+      'projects tutorial', 'help with projects', 'how do projects work', 'explain projects',
+      'show me how to use projects', 'manage projects', 'new project', 'create project'
+    ],
+    steps: [
+      {
+        title: { es: 'Paso 1: Ve a Proyectos', en: 'Step 1: Go to Projects' },
+        description: {
+          es: 'Navega a la sección de Proyectos desde el menú lateral. Aquí puedes organizar tu trabajo por proyectos y ver las finanzas de cada uno.',
+          en: 'Navigate to the Projects section from the sidebar. Here you can organize your work by projects and see the finances of each one.'
+        },
+        action: '/projects'
+      },
+      {
+        title: { es: 'Paso 2: Crea un proyecto', en: 'Step 2: Create a project' },
+        description: {
+          es: 'Haz clic en "Agregar Proyecto" e ingresa nombre, descripción, presupuesto, y asígnalo a un cliente. Puedes establecer fechas de inicio y fin.',
+          en: 'Click "Add Project" and enter name, description, budget, and assign it to a client. You can set start and end dates.'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Vincula gastos e ingresos', en: 'Step 3: Link expenses and income' },
+        description: {
+          es: 'Al crear gastos o ingresos, selecciona el proyecto correspondiente. Así podrás ver el balance financiero de cada proyecto: cuánto has facturado vs cuánto has gastado.',
+          en: 'When creating expenses or income, select the corresponding project. This way you can see the financial balance of each project: how much you billed vs how much you spent.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'income-management',
+    name: { es: 'Gestión de ingresos', en: 'Income management' },
+    triggers: [
+      // Spanish - COMPREHENSIVE
+      'ingresos', 'ingreso', 'cómo uso ingresos', 'como uso ingresos', 'agregar ingreso',
+      'enséñame ingresos', 'enseñame ingresos', 'enséñame los ingresos', 'enseñame los ingresos',
+      'tutorial ingresos', 'tutorial de ingresos', 'ayuda con ingresos', 'cómo funcionan los ingresos',
+      'explícame ingresos', 'explicame ingresos', 'explícame los ingresos', 'explicame los ingresos',
+      'muéstrame cómo usar ingresos', 'muestrame como usar ingresos', 'registrar ingresos',
+      'nuevo ingreso', 'crear ingreso', 'cómo registro un ingreso', 'como registro un ingreso',
+      // English
+      'income', 'how to use income', 'add income', 'teach me income',
+      'income tutorial', 'help with income', 'how does income work', 'explain income',
+      'show me how to use income', 'record income', 'new income', 'create income',
+      'how do i record income'
+    ],
+    steps: [
+      {
+        title: { es: 'Paso 1: Ve a Ingresos', en: 'Step 1: Go to Income' },
+        description: {
+          es: 'Navega a la sección de Ingresos desde el menú lateral. Aquí puedes ver todos tus ingresos registrados y agregar nuevos.',
+          en: 'Navigate to the Income section from the sidebar. Here you can see all your recorded income and add new ones.'
+        },
+        action: '/income'
+      },
+      {
+        title: { es: 'Paso 2: Registra un ingreso', en: 'Step 2: Record an income' },
+        description: {
+          es: 'Haz clic en "Agregar Ingreso" y selecciona el tipo: pago de cliente, salario, freelance, inversiones, o ingreso pasivo. Puedes asignarlo a un cliente o proyecto.',
+          en: 'Click "Add Income" and select the type: client payment, salary, freelance, investments, or passive income. You can assign it to a client or project.'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Analiza tus fuentes', en: 'Step 3: Analyze your sources' },
+        description: {
+          es: 'EvoFinz categoriza tus ingresos automáticamente. Podrás ver análisis de tendencias, comparaciones mensuales, y cuánto aporta cada cliente o fuente a tus finanzas.',
+          en: 'EvoFinz automatically categorizes your income. You can see trend analysis, monthly comparisons, and how much each client or source contributes to your finances.'
+        }
+      }
+    ]
   }
 ];
 
@@ -858,10 +942,15 @@ export function useSmartGuidance() {
     });
   }, [stats, expenses, income, clients, projects]);
 
-  // Check if user is asking for a tutorial
-  const findTutorial = useCallback((text: string): Tutorial | null => {
-    const normalizedText = text.toLowerCase().trim();
+  // Check if user is asking for a tutorial - can search by ID or by trigger text
+  const findTutorial = useCallback((textOrId: string): Tutorial | null => {
+    const normalizedText = textOrId.toLowerCase().trim();
     
+    // First, try to find by exact tutorial ID
+    const byId = VOICE_TUTORIALS.find(t => t.id === textOrId);
+    if (byId) return byId;
+    
+    // Then, search by trigger patterns
     for (const tutorial of VOICE_TUTORIALS) {
       for (const trigger of tutorial.triggers) {
         if (normalizedText.includes(trigger)) {
@@ -945,10 +1034,38 @@ export function useSmartGuidance() {
     return actionsMap[path] || { es: [], en: [] };
   }, [location.pathname]);
 
+  // Get tutorial for current page route
+  const getTutorialForCurrentPage = useCallback((): Tutorial | null => {
+    const path = location.pathname;
+    
+    // Map routes to their corresponding tutorial IDs
+    const routeToTutorialMap: Record<string, string> = {
+      '/expenses': 'capture-expense',
+      '/income': 'income-management',
+      '/clients': 'setup-client',
+      '/projects': 'projects-management',
+      '/contracts': 'contract-analysis',
+      '/mileage': 'mileage-tracking',
+      '/net-worth': 'net-worth',
+      '/banking': 'banking-analysis',
+      '/mentorship': 'mentorship-system',
+      '/tax-calendar': 'tax-deductions',
+      '/dashboard': 'fire-calculator', // Default to FIRE for dashboard
+    };
+    
+    const tutorialId = routeToTutorialMap[path];
+    if (tutorialId) {
+      return VOICE_TUTORIALS.find(t => t.id === tutorialId) || null;
+    }
+    
+    return null;
+  }, [location.pathname]);
+
   return {
     getContextualWelcome,
     getProactiveAlerts,
     findTutorial,
+    getTutorialForCurrentPage,
     formatTutorialForSpeech,
     getPostActionSuggestion,
     getErrorRecovery,
