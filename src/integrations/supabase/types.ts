@@ -328,6 +328,71 @@ export type Database = {
         }
         Relationships: []
       }
+      beta_referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          current_referrals: number | null
+          id: string
+          is_active: boolean | null
+          max_referrals: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          current_referrals?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_referrals?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          current_referrals?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_referrals?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      beta_referrals: {
+        Row: {
+          created_at: string
+          id: string
+          referral_code_id: string
+          referred_id: string
+          referrer_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referral_code_id: string
+          referred_id: string
+          referrer_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referral_code_id?: string
+          referred_id?: string
+          referrer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beta_referrals_referral_code_id_fkey"
+            columns: ["referral_code_id"]
+            isOneToOne: false
+            referencedRelation: "beta_referral_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       category_budgets: {
         Row: {
           alert_threshold: number
@@ -2133,6 +2198,57 @@ export type Database = {
           },
         ]
       }
+      system_status_alerts: {
+        Row: {
+          affected_features: string[] | null
+          alert_type: string
+          created_at: string
+          created_by: string | null
+          estimated_resolution: string | null
+          estimated_resolution_en: string | null
+          id: string
+          is_active: boolean | null
+          message: string
+          message_en: string | null
+          resolved_at: string | null
+          severity: string
+          title: string
+          title_en: string | null
+        }
+        Insert: {
+          affected_features?: string[] | null
+          alert_type: string
+          created_at?: string
+          created_by?: string | null
+          estimated_resolution?: string | null
+          estimated_resolution_en?: string | null
+          id?: string
+          is_active?: boolean | null
+          message: string
+          message_en?: string | null
+          resolved_at?: string | null
+          severity: string
+          title: string
+          title_en?: string | null
+        }
+        Update: {
+          affected_features?: string[] | null
+          alert_type?: string
+          created_at?: string
+          created_by?: string | null
+          estimated_resolution?: string | null
+          estimated_resolution_en?: string | null
+          id?: string
+          is_active?: boolean | null
+          message?: string
+          message_en?: string | null
+          resolved_at?: string | null
+          severity?: string
+          title?: string
+          title_en?: string | null
+        }
+        Relationships: []
+      }
       tags: {
         Row: {
           color: string | null
@@ -2470,6 +2586,10 @@ export type Database = {
         Returns: boolean
       }
       use_beta_invitation_code: {
+        Args: { p_code: string; p_user_id: string }
+        Returns: Json
+      }
+      use_beta_referral_code: {
         Args: { p_code: string; p_user_id: string }
         Returns: Json
       }

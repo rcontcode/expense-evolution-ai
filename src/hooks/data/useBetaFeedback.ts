@@ -74,6 +74,7 @@ interface CreateBugReportParams {
   title: string;
   description: string;
   page_path?: string;
+  screenshot_url?: string;
 }
 
 export const useBetaFeedback = () => {

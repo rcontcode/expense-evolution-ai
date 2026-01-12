@@ -34,6 +34,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Layout } from '@/components/Layout';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
+import { SystemAlertsBanner } from '@/components/beta/SystemAlertsBanner';
+import { ReferralCard } from '@/components/beta/ReferralCard';
+import { ScreenshotUpload } from '@/components/beta/ScreenshotUpload';
 
 const APP_SECTIONS = [
   { id: 'dashboard', label: { es: 'Dashboard', en: 'Dashboard' }, emoji: '📊', color: 'from-violet-500 to-purple-600' },
@@ -139,6 +142,7 @@ const BetaFeedback = () => {
   const [severity, setSeverity] = useState('medium');
   const [bugTitle, setBugTitle] = useState('');
   const [bugDescription, setBugDescription] = useState('');
+  const [bugScreenshot, setBugScreenshot] = useState('');
   const [bugSent, setBugSent] = useState(false);
 
   const t = {
@@ -258,6 +262,7 @@ const BetaFeedback = () => {
       title: bugTitle,
       description: bugDescription,
       page_path: window.location.pathname,
+      screenshot_url: bugScreenshot || undefined,
     });
 
     triggerConfetti();
@@ -281,6 +286,7 @@ const BetaFeedback = () => {
     setSeverity('medium');
     setBugTitle('');
     setBugDescription('');
+    setBugScreenshot('');
     setBugSent(false);
   };
 
@@ -349,6 +355,8 @@ const BetaFeedback = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* System Alerts Banner */}
+        <SystemAlertsBanner />
         {/* Hero Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -668,6 +676,12 @@ const BetaFeedback = () => {
                         />
                       </div>
 
+                      {/* Screenshot Upload */}
+                      <ScreenshotUpload 
+                        onUpload={setBugScreenshot}
+                        currentUrl={bugScreenshot}
+                      />
+
                       <motion.div
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -705,6 +719,11 @@ const BetaFeedback = () => {
             <Crown className="h-4 w-4 text-amber-500" />
           </p>
         </motion.div>
+
+        {/* Referral Card */}
+        <div className="mt-8">
+          <ReferralCard />
+        </div>
       </div>
     </Layout>
   );
