@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { TAX_DEDUCTION_RULES } from '@/hooks/data/useTaxCalculations';
 import { format } from 'date-fns';
@@ -160,7 +160,7 @@ export function exportToCSV(expenses: ExpenseWithRelations[], filename: string =
   downloadBlob(blob, `${filename}_${format(new Date(), 'yyyy-MM-dd')}.csv`);
 }
 
-export function exportToExcel(expenses: ExpenseWithRelations[], filename: string = 'expenses'): void {
+export async function exportToExcel(expenses: ExpenseWithRelations[], filename: string = 'expenses'): Promise<void> {
   const rows = expenses.map(formatExpenseForExport);
   
   if (rows.length === 0) {
@@ -169,80 +169,165 @@ export function exportToExcel(expenses: ExpenseWithRelations[], filename: string
 
   const summary = calculateSummary(expenses);
 
-  // Create workbook
-  const wb = XLSX.utils.book_new();
+  // Create workbook with ExcelJS
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'EvoFinz';
+  workbook.created = new Date();
 
   // Sheet 1: All Expenses
-  const ws = XLSX.utils.json_to_sheet(rows);
-  
+  const expensesSheet = workbook.addWorksheet('Gastos / Expenses', {
+    properties: { tabColor: { argb: '4F46E5' } }
+  });
+
+  // Add title
+  expensesSheet.mergeCells('A1:N1');
+  const titleCell = expensesSheet.getCell('A1');
+  titleCell.value = '📊 REPORTE DE GASTOS - EVOFINZ';
+  titleCell.font = { bold: true, size: 16, color: { argb: 'FFFFFF' } };
+  titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '4F46E5' } };
+  titleCell.alignment = { horizontal: 'center' };
+  expensesSheet.getRow(1).height = 30;
+
+  // Headers
+  const headers = Object.keys(rows[0]);
+  headers.forEach((header, idx) => {
+    const cell = expensesSheet.getCell(3, idx + 1);
+    cell.value = header;
+    cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '6366F1' } };
+    cell.alignment = { horizontal: 'center' };
+  });
+
+  // Data rows
+  rows.forEach((row, rowIdx) => {
+    headers.forEach((header, colIdx) => {
+      const cell = expensesSheet.getCell(4 + rowIdx, colIdx + 1);
+      cell.value = row[header as keyof ExportRow];
+      
+      // Format currency columns
+      if (header === 'Amount' || header === 'Deductible Amount' || header === 'Non-Deductible Amount') {
+        cell.numFmt = '"$"#,##0.00';
+      }
+      
+      // Alternate row colors
+      if (rowIdx % 2 === 0) {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F3F4F6' } };
+      }
+    });
+  });
+
   // Set column widths
-  ws['!cols'] = [
-    { wch: 12 }, // Date
-    { wch: 25 }, // Vendor
-    { wch: 30 }, // Description
-    { wch: 25 }, // Category
-    { wch: 40 }, // Category (CRA)
-    { wch: 12 }, // Amount
-    { wch: 8 },  // Currency
-    { wch: 20 }, // Status
-    { wch: 20 }, // Client
-    { wch: 15 }, // Deduction Rate
-    { wch: 18 }, // Deductible Amount
-    { wch: 20 }, // Non-Deductible Amount
-    { wch: 25 }, // Tags
-    { wch: 30 }, // Notes
+  expensesSheet.columns = [
+    { width: 12 }, // Date
+    { width: 25 }, // Vendor
+    { width: 30 }, // Description
+    { width: 25 }, // Category
+    { width: 40 }, // Category (CRA)
+    { width: 12 }, // Amount
+    { width: 8 },  // Currency
+    { width: 20 }, // Status
+    { width: 20 }, // Client
+    { width: 15 }, // Deduction Rate
+    { width: 18 }, // Deductible Amount
+    { width: 20 }, // Non-Deductible Amount
+    { width: 25 }, // Tags
+    { width: 30 }, // Notes
   ];
-  
-  XLSX.utils.book_append_sheet(wb, ws, 'Gastos / Expenses');
+
+  // Auto filter
+  expensesSheet.autoFilter = {
+    from: { row: 3, column: 1 },
+    to: { row: 3 + rows.length, column: headers.length }
+  };
 
   // Sheet 2: Tax Summary
+  const summarySheet = workbook.addWorksheet('Resumen Fiscal / Tax Summary', {
+    properties: { tabColor: { argb: '10B981' } }
+  });
+
+  // Title
+  summarySheet.mergeCells('A1:D1');
+  const summaryTitle = summarySheet.getCell('A1');
+  summaryTitle.value = '💰 RESUMEN FISCAL / TAX SUMMARY';
+  summaryTitle.font = { bold: true, size: 16, color: { argb: 'FFFFFF' } };
+  summaryTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '10B981' } };
+  summaryTitle.alignment = { horizontal: 'center' };
+
+  // Summary totals
   const summaryData = [
-    ['RESUMEN FISCAL / TAX SUMMARY', ''],
     ['', ''],
-    ['Total de Gastos / Total Expenses', `$${summary.totalExpenses.toFixed(2)}`],
-    ['Total Deducible / Total Deductible', `$${summary.totalDeductible.toFixed(2)}`],
-    ['Total Reembolsable / Total Reimbursable', `$${summary.totalReimbursable.toFixed(2)}`],
-    ['Total No Deducible / Total Non-Deductible', `$${summary.totalNonDeductible.toFixed(2)}`],
+    ['Total de Gastos / Total Expenses', summary.totalExpenses],
+    ['Total Deducible / Total Deductible', summary.totalDeductible],
+    ['Total Reembolsable / Total Reimbursable', summary.totalReimbursable],
+    ['Total No Deducible / Total Non-Deductible', summary.totalNonDeductible],
     ['', ''],
-    ['DESGLOSE POR CATEGORÍA / BREAKDOWN BY CATEGORY', '', ''],
-    ['Categoría', 'Total', 'Deducible', 'Cantidad'],
+    ['DESGLOSE POR CATEGORÍA / BREAKDOWN BY CATEGORY', '', '', ''],
   ];
 
-  Object.entries(summary.categoryTotals).forEach(([cat, data]) => {
-    summaryData.push([
-      CATEGORY_LABELS[cat] || cat,
-      `$${data.total.toFixed(2)}`,
-      `$${data.deductible.toFixed(2)}`,
-      data.count.toString(),
-    ]);
+  summaryData.forEach((row, idx) => {
+    summarySheet.getCell(3 + idx, 1).value = row[0];
+    if (row[1] !== undefined && row[1] !== '') {
+      const valueCell = summarySheet.getCell(3 + idx, 2);
+      valueCell.value = row[1];
+      if (typeof row[1] === 'number') {
+        valueCell.numFmt = '"$"#,##0.00';
+      }
+    }
   });
 
-  summaryData.push(['', '']);
-  summaryData.push(['INFORMACIÓN CRA / CRA INFORMATION', '']);
-  summaryData.push(['', '']);
-  
-  TAX_DEDUCTION_RULES.forEach(rule => {
-    summaryData.push([
-      CATEGORY_LABELS[rule.category] || rule.category,
-      `${(rule.deductionRate * 100).toFixed(0)}%`,
-      rule.description,
-    ]);
+  // Category headers
+  const catHeaderRow = 10;
+  ['Categoría', 'Total', 'Deducible', 'Cantidad'].forEach((header, idx) => {
+    const cell = summarySheet.getCell(catHeaderRow, idx + 1);
+    cell.value = header;
+    cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '059669' } };
   });
 
-  summaryData.push(['', '']);
-  summaryData.push(['Fecha de Exportación / Export Date', format(new Date(), 'yyyy-MM-dd HH:mm')]);
-  summaryData.push(['', '']);
-  summaryData.push(['NOTA: Este reporte es para referencia. Consulte con un contador para su declaración de impuestos oficial.']);
-  summaryData.push(['NOTE: This report is for reference. Consult with an accountant for your official tax filing.']);
+  // Category data
+  let catRowOffset = 0;
+  Object.entries(summary.categoryTotals).forEach(([cat, data], idx) => {
+    const row = catHeaderRow + 1 + idx;
+    summarySheet.getCell(row, 1).value = CATEGORY_LABELS[cat] || cat;
+    summarySheet.getCell(row, 2).value = data.total;
+    summarySheet.getCell(row, 2).numFmt = '"$"#,##0.00';
+    summarySheet.getCell(row, 3).value = data.deductible;
+    summarySheet.getCell(row, 3).numFmt = '"$"#,##0.00';
+    summarySheet.getCell(row, 4).value = data.count;
+    
+    if (idx % 2 === 0) {
+      for (let c = 1; c <= 4; c++) {
+        summarySheet.getCell(row, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'ECFDF5' } };
+      }
+    }
+    catRowOffset = idx;
+  });
 
-  const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
-  summaryWs['!cols'] = [{ wch: 45 }, { wch: 20 }, { wch: 50 }, { wch: 15 }];
-  
-  XLSX.utils.book_append_sheet(wb, summaryWs, 'Resumen Fiscal / Tax Summary');
+  // CRA Information section
+  const craStartRow = catHeaderRow + catRowOffset + 4;
+  summarySheet.getCell(craStartRow, 1).value = 'INFORMACIÓN CRA / CRA INFORMATION';
+  summarySheet.getCell(craStartRow, 1).font = { bold: true, size: 12 };
+
+  TAX_DEDUCTION_RULES.forEach((rule, idx) => {
+    const row = craStartRow + 1 + idx;
+    summarySheet.getCell(row, 1).value = CATEGORY_LABELS[rule.category] || rule.category;
+    summarySheet.getCell(row, 2).value = `${(rule.deductionRate * 100).toFixed(0)}%`;
+    summarySheet.getCell(row, 3).value = rule.description;
+  });
+
+  // Footer notes
+  const footerRow = craStartRow + TAX_DEDUCTION_RULES.length + 3;
+  summarySheet.getCell(footerRow, 1).value = `Fecha de Exportación / Export Date: ${format(new Date(), 'yyyy-MM-dd HH:mm')}`;
+  summarySheet.getCell(footerRow + 2, 1).value = 'NOTA: Este reporte es para referencia. Consulte con un contador para su declaración de impuestos oficial.';
+  summarySheet.getCell(footerRow + 3, 1).value = 'NOTE: This report is for reference. Consult with an accountant for your official tax filing.';
+
+  summarySheet.columns = [
+    { width: 45 }, { width: 20 }, { width: 50 }, { width: 15 }
+  ];
 
   // Generate and download
-  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   downloadBlob(blob, `${filename}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
 }
 
@@ -289,7 +374,7 @@ export function exportToJSON(expenses: ExpenseWithRelations[], filename: string 
   downloadBlob(blob, `${filename}_${format(new Date(), 'yyyy-MM-dd')}.json`);
 }
 
-export function exportExpenses(expenses: ExpenseWithRelations[], options: ExportOptions): void {
+export async function exportExpenses(expenses: ExpenseWithRelations[], options: ExportOptions): Promise<void> {
   const filename = options.year 
     ? `gastos_fiscales_${options.year}` 
     : 'gastos_fiscales';
@@ -301,6 +386,6 @@ export function exportExpenses(expenses: ExpenseWithRelations[], options: Export
   } else if (options.format === 'pdf') {
     exportExpensesToPDF(expenses, { year: options.year });
   } else {
-    exportToExcel(expenses, filename);
+    await exportToExcel(expenses, filename);
   }
 }

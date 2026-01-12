@@ -70,7 +70,7 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
         if (t2125Format === 'pdf') {
           exportT2125ToPDF(filteredExpenses, selectedYear, pdfOptions);
         } else {
-          exportT2125Report(filteredExpenses, selectedYear);
+          await exportT2125Report(filteredExpenses, selectedYear);
         }
       } else {
         if (format === 'pdf') {
@@ -80,7 +80,7 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
             format,
             year: selectedYear,
           };
-          exportExpenses(filteredExpenses, options);
+          await exportExpenses(filteredExpenses, options);
         }
       }
 
