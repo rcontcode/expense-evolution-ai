@@ -106,6 +106,16 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
   const [comments, setComments] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Keyboard navigation - Enter to continue
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (step === 0 || step === 16) {
+        handleNext();
+      }
+    }
+  };
+
   const validateStep = () => {
     const newErrors: Record<string, string> = {};
 
@@ -332,6 +342,8 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
     if (step >= 6 && step <= 15) {
       const questionIndex = step - 6;
       const question = questions.practices[questionIndex];
+      const isAnsweredYes = formData.answers[questionIndex] === true;
+      
       return (
         <div className="space-y-8">
           <h2 className="text-xl md:text-2xl font-bold text-white text-center">
@@ -342,14 +354,36 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => handleYesNo(questionIndex, true)}
-              className={`flex items-center gap-3 px-8 py-4 rounded-xl font-semibold transition-all ${
-                formData.answers[questionIndex] === true
-                  ? "bg-emerald-500 text-white"
+              className={`relative flex items-center gap-3 px-8 py-4 rounded-xl font-semibold transition-all overflow-hidden ${
+                isAnsweredYes
+                  ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
                   : "bg-slate-800/50 border border-slate-700 text-slate-300 hover:bg-emerald-500/20 hover:border-emerald-500/50"
               }`}
             >
-              <Check className="w-6 h-6" />
+              {isAnsweredYes && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 0.4 }}
+                  className="absolute inset-0 bg-emerald-400/20"
+                />
+              )}
+              <motion.div
+                animate={isAnsweredYes ? { scale: [1, 1.3, 1], rotate: [0, 10, 0] } : {}}
+                transition={{ duration: 0.3 }}
+              >
+                <Check className="w-6 h-6" />
+              </motion.div>
               {language === "es" ? "Sí" : "Yes"}
+              {isAnsweredYes && (
+                <motion.span
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="text-emerald-200 text-sm"
+                >
+                  ✓
+                </motion.span>
+              )}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -357,14 +391,24 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
               onClick={() => handleYesNo(questionIndex, false)}
               className={`flex items-center gap-3 px-8 py-4 rounded-xl font-semibold transition-all ${
                 formData.answers[questionIndex] === false && step > 6
-                  ? "bg-red-500 text-white"
-                  : "bg-slate-800/50 border border-slate-700 text-slate-300 hover:bg-red-500/20 hover:border-red-500/50"
+                  ? "bg-slate-600 text-white"
+                  : "bg-slate-800/50 border border-slate-700 text-slate-300 hover:bg-slate-600/50 hover:border-slate-500/50"
               }`}
             >
               <X className="w-6 h-6" />
               {language === "es" ? "No" : "No"}
             </motion.button>
           </div>
+          {/* Encouraging tip for "Yes" answers */}
+          {isAnsweredYes && (
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center text-emerald-400 text-sm"
+            >
+              {language === "es" ? "¡Excelente práctica financiera! 🎯" : "Excellent financial practice! 🎯"}
+            </motion.p>
+          )}
         </div>
       );
     }
@@ -391,9 +435,12 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg bg-gradient-to-b from-slate-900 to-slate-950 border-slate-800 p-0 overflow-hidden">
+      <DialogContent 
+        className="max-w-lg bg-gradient-to-b from-slate-900 to-slate-950 border-slate-800 p-0 overflow-hidden"
+        onKeyDown={handleKeyDown}
+      >
         {/* Progress bar */}
-        <QuizProgress currentStep={step} totalSteps={TOTAL_STEPS} />
+        <QuizProgress currentStep={step} totalSteps={TOTAL_STEPS} language={language} />
 
         {/* Content */}
         <div className="p-6 md:p-8">
