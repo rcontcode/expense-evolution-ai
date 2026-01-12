@@ -80,7 +80,7 @@ export function DebtManagerDemoAnimation() {
               </span>
             </div>
 
-            <div className="pt-20 px-4 space-y-3">
+            <div className="pt-20 px-3 pb-3 space-y-2 h-[calc(100%-2rem)] overflow-y-auto">
               <AnimatePresence mode="wait">
                 {step === "idle" && (
                   <motion.div
@@ -89,15 +89,15 @@ export function DebtManagerDemoAnimation() {
                     exit={{ opacity: 0, y: -20 }}
                     className="space-y-4"
                   >
-                    <div className="text-center py-8">
+                    <div className="text-center py-6">
                       <motion.div
                         animate={{ scale: [1, 1.1, 1] }}
                         transition={{ duration: 1.5, repeat: Infinity }}
-                        className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-rose-500 to-red-600 flex items-center justify-center"
+                        className="w-14 h-14 mx-auto mb-3 rounded-full bg-gradient-to-br from-rose-500 to-red-600 flex items-center justify-center"
                       >
-                        <DollarSign className="w-8 h-8 text-white" />
+                        <DollarSign className="w-7 h-7 text-white" />
                       </motion.div>
-                      <p className="text-slate-600 text-sm">
+                      <p className="text-slate-600 text-xs">
                         {language === "es" ? "Analizando tus deudas..." : "Analyzing your debts..."}
                       </p>
                     </div>
@@ -111,10 +111,10 @@ export function DebtManagerDemoAnimation() {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="space-y-3"
+                    className="space-y-2"
                   >
                     {/* Debts list */}
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       {debts.map((debt, index) => (
                         <motion.div
                           key={debt.name}
@@ -125,29 +125,29 @@ export function DebtManagerDemoAnimation() {
                             scale: index < debtIndex ? 1 : 0.95,
                           }}
                           transition={{ delay: index * 0.2 }}
-                          className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm"
+                          className="p-2 rounded-lg bg-white border border-slate-200 shadow-sm"
                         >
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="font-medium text-slate-800 text-sm">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="font-medium text-slate-800 text-xs">
                               {debt.name}
                             </span>
                             <span
-                              className={`text-xs font-bold bg-gradient-to-r ${debt.color} bg-clip-text text-transparent`}
+                              className={`text-[10px] font-bold bg-gradient-to-r ${debt.color} bg-clip-text text-transparent`}
                             >
                               {debt.rate}% APR
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-lg font-bold text-slate-900">
+                            <span className="text-sm font-bold text-slate-900">
                               ${debt.balance.toLocaleString()}
                             </span>
-                            <span className="text-xs text-slate-500">Min: ${debt.min}</span>
+                            <span className="text-[10px] text-slate-500">Min: ${debt.min}</span>
                           </div>
                           {index < debtIndex && (
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: "100%" }}
-                              className={`h-1 mt-2 rounded-full bg-gradient-to-r ${debt.color}`}
+                              className={`h-0.5 mt-1 rounded-full bg-gradient-to-r ${debt.color}`}
                             />
                           )}
                         </motion.div>
@@ -161,22 +161,22 @@ export function DebtManagerDemoAnimation() {
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="p-3 rounded-xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200"
+                        className="p-2 rounded-lg bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200"
                       >
-                        <div className="flex items-center gap-2 mb-2">
-                          <Zap className="w-4 h-4 text-violet-600" />
-                          <span className="font-bold text-violet-900 text-sm">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Zap className="w-3 h-3 text-violet-600" />
+                          <span className="font-bold text-violet-900 text-xs">
                             {language === "es" ? "Método Avalancha" : "Avalanche Method"}
                           </span>
                         </div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center text-xs">
+                        <div className="space-y-1">
+                          <div className="flex justify-between items-center text-[10px]">
                             <span className="text-slate-600">
                               {language === "es" ? "Pago extra:" : "Extra payment:"}
                             </span>
                             <span className="font-bold text-violet-700">${extraPayment}/mo</span>
                           </div>
-                          <div className="h-2 bg-violet-100 rounded-full overflow-hidden">
+                          <div className="h-1.5 bg-violet-100 rounded-full overflow-hidden">
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${(extraPayment / 200) * 100}%` }}
@@ -192,31 +192,31 @@ export function DebtManagerDemoAnimation() {
                       <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="p-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
+                        className="p-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
                       >
-                        <div className="flex items-center gap-2 mb-2">
-                          <Calendar className="w-4 h-4" />
-                          <span className="font-bold text-sm">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Calendar className="w-3 h-3" />
+                          <span className="font-bold text-xs">
                             {language === "es" ? "Libre de deudas en:" : "Debt-free in:"}
                           </span>
                         </div>
-                        <div className="flex items-baseline gap-2">
+                        <div className="flex items-baseline gap-1">
                           <motion.span
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="text-3xl font-black"
+                            className="text-xl font-black"
                           >
                             2.5
                           </motion.span>
-                          <span className="text-emerald-100">
+                          <span className="text-emerald-100 text-xs">
                             {language === "es" ? "años" : "years"}
                           </span>
-                          <span className="text-xs text-emerald-200 ml-auto">
+                          <span className="text-[10px] text-emerald-200 ml-auto">
                             vs 4.2 {language === "es" ? "sin extra" : "without extra"}
                           </span>
                         </div>
-                        <div className="mt-2 text-xs text-emerald-100">
-                          <CheckCircle2 className="w-3 h-3 inline mr-1" />
+                        <div className="mt-1 text-[10px] text-emerald-100">
+                          <CheckCircle2 className="w-2.5 h-2.5 inline mr-0.5" />
                           {language === "es"
                             ? "Ahorras $1,847 en intereses"
                             : "Save $1,847 in interest"}
