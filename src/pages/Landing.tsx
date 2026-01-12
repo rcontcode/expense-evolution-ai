@@ -943,9 +943,11 @@ export default function Landing() {
                     className={`w-full py-6 font-bold ${
                       tier.popular 
                         ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-900' 
-                        : 'isFree' in tier && tier.isFree
-                          ? 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg shadow-emerald-500/30'
-                          : 'bg-slate-800 hover:bg-slate-700 text-white'
+                        : 'featured' in tier && tier.featured
+                          ? 'bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 text-white shadow-lg shadow-violet-500/30 ring-2 ring-white/30'
+                          : 'isFree' in tier && tier.isFree
+                            ? 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg shadow-emerald-500/30'
+                            : 'bg-slate-800 hover:bg-slate-700 text-white'
                     }`}
                     onClick={() => navigate('/auth')}
                   >
@@ -1020,6 +1022,14 @@ export default function Landing() {
                       </Badge>
                     </div>
                   )}
+                  {'featured' in tier && tier.featured && (
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-white text-violet-600 text-xs px-2 py-0.5 shadow-lg font-bold">
+                        <Crown className="w-2 h-2 mr-1 inline" />
+                        {language === 'es' ? 'Más Completo' : 'Most Complete'}
+                      </Badge>
+                    </div>
+                  )}
                   {'isFree' in tier && tier.isFree && (
                     <div className="absolute -top-2 left-1/2 -translate-x-1/2">
                       <Badge className="bg-white text-emerald-600 text-xs px-2 py-0.5 shadow-lg font-bold">
@@ -1030,14 +1040,14 @@ export default function Landing() {
                   )}
                   
                   <div className="text-center">
-                    <h4 className={`font-bold text-lg ${tier.popular || ('isFree' in tier && tier.isFree) ? 'text-white' : 'text-slate-800'}`}>
+                    <h4 className={`font-bold text-lg ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) ? 'text-white' : 'text-slate-800'}`}>
                       {tier.name}
                     </h4>
                     <div className="flex items-baseline justify-center gap-1 my-2">
-                      <span className={`text-3xl font-black ${tier.popular || ('isFree' in tier && tier.isFree) ? 'text-white' : `bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}`}>
+                      <span className={`text-3xl font-black ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) ? 'text-white' : `bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}`}>
                         {priceInfo.display}
                       </span>
-                      <span className={`text-sm ${tier.popular || ('isFree' in tier && tier.isFree) ? 'text-white/80' : 'text-slate-500'}`}>
+                      <span className={`text-sm ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) ? 'text-white/80' : 'text-slate-500'}`}>
                         {priceInfo.period}
                       </span>
                     </div>
@@ -1045,11 +1055,13 @@ export default function Landing() {
                     {/* Transformation highlight */}
                     {'transformation' in tier && tier.transformation && (
                       <div className={`text-xs font-medium px-2 py-1 rounded-full inline-block ${
-                        tier.popular || ('isFree' in tier && tier.isFree)
+                        tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured)
                           ? 'bg-white/20 text-white' 
                           : 'bg-slate-100 text-slate-600'
                       }`}>
-                        {'isFree' in tier && tier.isFree ? <Gift className="w-3 h-3 inline mr-1" /> : <Flame className="w-3 h-3 inline mr-1" />}
+                        {'isFree' in tier && tier.isFree ? <Gift className="w-3 h-3 inline mr-1" /> : 
+                         'featured' in tier && tier.featured ? <Crown className="w-3 h-3 inline mr-1" /> : 
+                         <Flame className="w-3 h-3 inline mr-1" />}
                         {tier.transformation}
                       </div>
                     )}
@@ -1059,9 +1071,11 @@ export default function Landing() {
                       className={`w-full mt-3 ${
                         tier.popular
                           ? 'bg-slate-900 hover:bg-slate-800 text-white'
-                          : 'isFree' in tier && tier.isFree
-                            ? 'bg-white hover:bg-slate-100 text-emerald-600 font-bold'
-                            : 'bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white'
+                          : 'featured' in tier && tier.featured
+                            ? 'bg-white hover:bg-slate-100 text-violet-600 font-bold shadow-lg'
+                            : 'isFree' in tier && tier.isFree
+                              ? 'bg-white hover:bg-slate-100 text-emerald-600 font-bold'
+                              : 'bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white'
                       }`}
                     >
                       {tier.cta}
