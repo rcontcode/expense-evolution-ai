@@ -34,6 +34,7 @@ import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'da
 import { es, enUS } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import { exportReimbursementReportWithCharts } from '@/lib/export/reimbursement-excel-export';
+import { exportReimbursementToPDF } from '@/lib/export/pdf-export';
 
 interface ClientReimbursementReportProps {
   expenses: ExpenseWithRelations[];
@@ -677,6 +678,16 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
     });
   };
 
+  const exportPDFReport = () => {
+    exportReimbursementToPDF(
+      clientGroups,
+      totalReimbursable,
+      filteredExpenses,
+      categoryTotals,
+      dateRange
+    );
+  };
+
   if (clientGroups.length === 0) {
     return (
       <Card className="border-dashed border-2 bg-gradient-to-br from-muted/30 to-muted/10">
@@ -728,14 +739,24 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
               Total a facturar • {totalExpenses} gastos • {clientGroups.length} cliente(s)
             </p>
           </div>
-          <Button 
-            onClick={exportProfessionalReport} 
-            variant="secondary" 
-            className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Exportar Excel Pro
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={exportPDFReport} 
+              variant="secondary" 
+              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              PDF
+            </Button>
+            <Button 
+              onClick={exportProfessionalReport} 
+              variant="secondary" 
+              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Excel Pro
+            </Button>
+          </div>
         </div>
       </div>
 
