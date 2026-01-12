@@ -1344,11 +1344,11 @@ export default function Landing() {
               <Button 
                 size="lg" 
                 onClick={() => navigate('/auth')}
-                className="relative bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white text-lg px-12 py-8 shadow-2xl font-bold group overflow-hidden border-2 border-white/20"
+                className="relative bg-gradient-to-r from-white via-slate-100 to-white text-slate-900 text-lg px-12 py-8 shadow-2xl font-bold group overflow-hidden border-2 border-white/50 hover:from-amber-50 hover:to-orange-50"
               >
                 {/* Inner shine effect */}
                 <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-200/40 to-transparent"
                   animate={{ x: ['-100%', '200%'] }}
                   transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
                 />
@@ -1359,10 +1359,10 @@ export default function Landing() {
                   transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                   className="mr-2"
                 >
-                  <Sparkles className="h-5 w-5 text-amber-400" />
+                  <Sparkles className="h-5 w-5 text-amber-500" />
                 </motion.span>
                 
-                <span className="relative z-10">
+                <span className="relative z-10 text-slate-900 font-black">
                   {language === 'es' ? 'Crear Cuenta Gratis' : 'Create Free Account'}
                 </span>
                 
@@ -1371,7 +1371,7 @@ export default function Landing() {
                   transition={{ duration: 1, repeat: Infinity }}
                   className="ml-2"
                 >
-                  <ArrowRight className="h-5 w-5" />
+                  <ArrowRight className="h-5 w-5 text-slate-900" />
                 </motion.span>
               </Button>
             </motion.div>
