@@ -102,26 +102,52 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Free',
     monthlyPrice: 0,
-    description: language === 'es' ? '¡Sin costo, para siempre!' : 'No cost, forever!',
+    description: language === 'es' 
+      ? '¡Sin costo, para siempre! Perfecto para explorar y empezar tu viaje financiero.' 
+      : 'No cost, forever! Perfect to explore and start your financial journey.',
     transformation: language === 'es' 
       ? '🎁 ¡Empieza HOY gratis!'
       : '🎁 Start FREE today!',
     features: language === 'es' ? [
-      '50 gastos manuales/mes',
-      '20 ingresos manuales/mes',
-      '5 escaneos OCR gratis',
-      'Dashboard básico',
-      '2 clientes / 2 proyectos',
-      'Vista previa de analytics'
+      '✏️ 50 gastos manuales/mes',
+      '💵 20 ingresos manuales/mes',
+      '📷 5 escaneos OCR para probar',
+      '📊 Dashboard básico con resumen',
+      '👥 2 clientes / 2 proyectos',
+      '📈 Vista previa de analytics',
+      '🏷️ Tags básicos predefinidos',
+      '📅 Vista mensual simple'
     ] : [
-      '50 manual expenses/month',
-      '20 manual incomes/month',
-      '5 free OCR scans',
-      'Basic dashboard',
-      '2 clients / 2 projects',
-      'Analytics preview'
+      '✏️ 50 manual expenses/month',
+      '💵 20 manual incomes/month',
+      '📷 5 OCR scans to try',
+      '📊 Basic dashboard with summary',
+      '👥 2 clients / 2 projects',
+      '📈 Analytics preview',
+      '🏷️ Basic predefined tags',
+      '📅 Simple monthly view'
     ],
-    notIncluded: ['Mileage', language === 'es' ? 'Gamificación' : 'Gamification', language === 'es' ? 'Mentoría' : 'Mentorship'],
+    notIncluded: language === 'es' ? [
+      '🚗 Mileage tracking',
+      '🎮 Gamificación y XP',
+      '📚 Mentoría financiera',
+      '💰 Net Worth tracking',
+      '📋 Contratos inteligentes',
+      '🏦 Análisis bancario',
+      '🧮 Calculadoras FIRE/RRSP',
+      '🎤 Asistente de voz',
+      '📤 Exportación avanzada'
+    ] : [
+      '🚗 Mileage tracking',
+      '🎮 Gamification & XP',
+      '📚 Financial mentorship',
+      '💰 Net Worth tracking',
+      '📋 Smart contracts',
+      '🏦 Bank analysis',
+      '🧮 FIRE/RRSP calculators',
+      '🎤 Voice assistant',
+      '📤 Advanced export'
+    ],
     cta: language === 'es' ? '¡Comenzar Gratis!' : 'Start Free!',
     popular: false,
     gradient: 'from-emerald-500 via-green-500 to-teal-500',
@@ -130,32 +156,62 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Premium',
     monthlyPrice: 6.99,
-    description: language === 'es' ? 'Para freelancers serios' : 'For serious freelancers',
+    description: language === 'es' 
+      ? 'Para freelancers y emprendedores que quieren control total de sus finanzas.' 
+      : 'For freelancers and entrepreneurs who want total control of their finances.',
     transformation: language === 'es' 
-      ? 'De desorganizado → Control financiero total'
-      : 'From disorganized → Total financial control',
+      ? '🔥 De desorden → Control total'
+      : '🔥 From chaos → Total control',
     features: language === 'es' ? [
-      'Gastos e ingresos ilimitados',
-      '50 escaneos OCR/mes',
-      'Clientes y proyectos ilimitados',
-      'Mileage tracking completo',
-      'Tags personalizados',
-      'Exportación Excel',
-      'Gamificación + XP + Logros',
-      'Net Worth tracking',
-      'Calendario fiscal'
+      '✨ TODO lo del plan Free +',
+      '♾️ Gastos e ingresos ILIMITADOS',
+      '📷 50 escaneos OCR/mes',
+      '👥 Clientes ilimitados',
+      '📁 Proyectos ilimitados',
+      '🚗 Mileage tracking completo',
+      '🏷️ Tags personalizados infinitos',
+      '📤 Exportación Excel/CSV',
+      '🎮 Gamificación + XP + Logros',
+      '💰 Net Worth tracking completo',
+      '📅 Calendario fiscal con alertas',
+      '📊 Analytics avanzados (9+ gráficos)',
+      '🔔 Notificaciones inteligentes',
+      '📚 Biblioteca de educación financiera'
     ] : [
-      'Unlimited expenses & income',
-      '50 OCR scans/month',
-      'Unlimited clients & projects',
-      'Complete mileage tracking',
-      'Custom tags',
-      'Excel export',
-      'Gamification + XP + Badges',
-      'Net Worth tracking',
-      'Tax calendar'
+      '✨ EVERYTHING in Free +',
+      '♾️ UNLIMITED expenses & income',
+      '📷 50 OCR scans/month',
+      '👥 Unlimited clients',
+      '📁 Unlimited projects',
+      '🚗 Complete mileage tracking',
+      '🏷️ Infinite custom tags',
+      '📤 Excel/CSV export',
+      '🎮 Gamification + XP + Badges',
+      '💰 Complete Net Worth tracking',
+      '📅 Tax calendar with alerts',
+      '📊 Advanced analytics (9+ charts)',
+      '🔔 Smart notifications',
+      '📚 Financial education library'
     ],
-    notIncluded: [language === 'es' ? 'Análisis de contratos' : 'Contract analysis', 'FIRE Calculator'],
+    notIncluded: language === 'es' ? [
+      '📋 Análisis inteligente de contratos',
+      '🏦 Análisis bancario avanzado',
+      '🧮 Optimizador fiscal inteligente',
+      '💎 Optimizador RRSP/APV',
+      '🔥 FIRE Calculator completo',
+      '🎓 8 módulos de mentoría',
+      '🎤 Asistente de voz',
+      '📄 Exportación fiscal (T2125/F29)'
+    ] : [
+      '📋 Smart contract analysis',
+      '🏦 Advanced bank analysis',
+      '🧮 Smart tax optimizer',
+      '💎 RRSP/APV optimizer',
+      '🔥 Complete FIRE Calculator',
+      '🎓 8 mentorship modules',
+      '🎤 Voice assistant',
+      '📄 Tax export (T2125/F29)'
+    ],
     cta: language === 'es' ? 'Elegir Premium' : 'Choose Premium',
     popular: true,
     gradient: 'from-amber-500 via-orange-500 to-red-500'
@@ -163,37 +219,45 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Pro',
     monthlyPrice: 14.99,
-    description: language === 'es' ? 'Dominio absoluto' : 'Absolute mastery',
+    description: language === 'es' 
+      ? 'Dominio absoluto. Todas las herramientas para convertirte en un profesional financiero.' 
+      : 'Absolute mastery. All the tools to become a financial professional.',
     transformation: language === 'es' 
-      ? 'De empleado → Profesional financiero'
-      : 'From employee → Financial professional',
+      ? '🚀 De empleado → Experto financiero'
+      : '🚀 From employee → Financial expert',
     features: language === 'es' ? [
-      'Todo de Premium',
-      'OCR ilimitado',
-      'Análisis inteligente de contratos',
-      'Análisis bancario avanzado',
-      'Optimizador fiscal inteligente',
-      'Optimizador RRSP/APV',
-      'FIRE Calculator completo',
-      '8 componentes de mentoría',
-      'Asistente de voz',
-      'Exportación fiscal (T2125/F29)',
-      'Soporte prioritario'
+      '👑 TODO lo del plan Premium +',
+      '📷 OCR ILIMITADO (sin límites)',
+      '📋 Análisis inteligente de contratos',
+      '🏦 Análisis bancario con detección de anomalías',
+      '🧮 Optimizador fiscal inteligente',
+      '💎 Optimizador RRSP/TFSA/APV',
+      '🔥 FIRE Calculator completo + proyecciones',
+      '🎓 8 módulos de mentoría (Kiyosaki, Tracy, Clear)',
+      '🎤 Asistente de voz inteligente',
+      '📄 Exportación fiscal oficial (T2125/F29)',
+      '🔄 Detector de suscripciones automático',
+      '📊 Predicciones y tendencias',
+      '💳 Reconciliación bancaria',
+      '⭐ Soporte prioritario 24/7'
     ] : [
-      'Everything in Premium',
-      'Unlimited OCR',
-      'Smart contract analysis',
-      'Advanced bank analysis',
-      'Smart tax optimizer',
-      'RRSP/APV optimizer',
-      'Complete FIRE Calculator',
-      '8 mentorship components',
-      'Voice assistant',
-      'Tax export (T2125/F29)',
-      'Priority support'
+      '👑 EVERYTHING in Premium +',
+      '📷 UNLIMITED OCR (no limits)',
+      '📋 Smart contract analysis',
+      '🏦 Bank analysis with anomaly detection',
+      '🧮 Smart tax optimizer',
+      '💎 RRSP/TFSA/APV optimizer',
+      '🔥 Complete FIRE Calculator + projections',
+      '🎓 8 mentorship modules (Kiyosaki, Tracy, Clear)',
+      '🎤 Smart voice assistant',
+      '📄 Official tax export (T2125/F29)',
+      '🔄 Automatic subscription detector',
+      '📊 Predictions & trends',
+      '💳 Bank reconciliation',
+      '⭐ Priority 24/7 support'
     ],
     notIncluded: [],
-    cta: language === 'es' ? 'Elegir Pro' : 'Choose Pro',
+    cta: language === 'es' ? '¡Quiero Pro!' : 'Get Pro!',
     popular: false,
     gradient: 'from-violet-600 via-purple-600 to-indigo-600'
   }
