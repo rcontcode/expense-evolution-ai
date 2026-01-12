@@ -132,7 +132,7 @@ const App = () => (
                   <MissionListenerInitializer />
                   <Suspense fallback={<PageLoader />}>
                     <Routes>
-                      <Route path="/" element={<Landing />} />
+                      <Route path="/" element={<FinancialQuiz />} />
                       <Route path="/quiz" element={<FinancialQuiz />} />
                       <Route path="/landing" element={<Landing />} />
                       <Route path="/legal" element={<Legal />} />

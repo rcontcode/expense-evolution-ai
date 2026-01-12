@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Check, X, Flame } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, X, Flame, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { QuizProgress } from "./QuizProgress";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import type { QuizData, QuizResult } from "@/pages/FinancialQuiz";
 
 interface QuizModalProps {
@@ -89,6 +91,7 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
   const questions = getQuestions(language);
 
   const [step, setStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<QuizData>({
     name: "",
     email: "",
@@ -151,13 +154,52 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
     };
   };
 
-  const handleNext = () => {
+  const sendQuizLead = async (result: QuizResult) => {
+    try {
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        country: formData.country,
+        situation: formData.situation,
+        goal: formData.goal,
+        obstacle: formData.obstacle,
+        time_spent: formData.timeSpent,
+        quiz_score: result.score,
+        quiz_level: result.level,
+        failed_questions: result.failedQuestions,
+      };
+
+      const { data, error } = await supabase.functions.invoke("send-quiz-lead", {
+        body: payload,
+      });
+
+      if (error) {
+        console.error("Error sending quiz lead:", error);
+        // Don't show error to user - silently fail
+      } else {
+        console.log("Quiz lead captured:", data?.lead_id);
+      }
+    } catch (err) {
+      console.error("Failed to send quiz lead:", err);
+      // Don't show error to user - silently fail
+    }
+  };
+
+  const handleNext = async () => {
     if (!validateStep()) return;
 
     if (step < TOTAL_STEPS - 1) {
       setStep(step + 1);
     } else {
+      // Final step - calculate and send
+      setIsSubmitting(true);
       const result = calculateScore();
+      
+      // Send lead data in background
+      await sendQuizLead(result);
+      
+      setIsSubmitting(false);
       onComplete(result);
     }
   };
@@ -373,7 +415,7 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
           <Button
             variant="ghost"
             onClick={handleBack}
-            disabled={step === 0}
+            disabled={step === 0 || isSubmitting}
             className="text-slate-400 hover:text-white"
           >
             <ChevronLeft className="w-5 h-5 mr-1" />
@@ -383,12 +425,18 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
           {step === 0 || step === 16 ? (
             <Button
               onClick={handleNext}
+              disabled={isSubmitting}
               className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
             >
-              {step === 16 ? (
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  {language === "es" ? "Procesando..." : "Processing..."}
+                </>
+              ) : step === 16 ? (
                 <>
                   <Flame className="w-5 h-5 mr-2" />
-                  {language === "es" ? "Ver Resultados" : "See Results"}
+                  {language === "es" ? "Ver Mi Diagnóstico" : "See My Diagnosis"}
                 </>
               ) : (
                 <>
