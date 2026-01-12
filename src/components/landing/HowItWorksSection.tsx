@@ -345,14 +345,14 @@ export function HowItWorksSection() {
               onClick={() => goTo(index)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 border drop-shadow-[0_1px_1px_rgba(0,0,0,0.55)] ${
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 border backdrop-blur-sm !opacity-100 drop-shadow-[0_1px_1px_rgba(0,0,0,0.55)] ${
                 index === currentIndex
-                  ? `bg-gradient-to-r ${workflow.colors.primary} text-white shadow-lg border-transparent`
-                  : 'bg-black/35 text-white border-white/15 shadow-[0_10px_20px_rgba(0,0,0,0.25)] hover:bg-black/50 hover:border-white/25 hover:shadow-[0_12px_24px_rgba(0,0,0,0.35)]'
+                  ? `bg-gradient-to-r ${workflow.colors.primary} !text-white shadow-lg border-transparent`
+                  : 'bg-white/10 !text-white border-white/25 shadow-[0_10px_20px_rgba(0,0,0,0.25)] hover:bg-white/15 hover:border-white/35 hover:shadow-[0_12px_24px_rgba(0,0,0,0.35)]'
               }`}
             >
               <span className="text-lg">{workflow.emoji}</span>
-              <span className="hidden sm:inline">{workflow.title}</span>
+              <span className="hidden sm:inline text-white">{workflow.title}</span>
             </motion.button>
           ))}
         </div>
