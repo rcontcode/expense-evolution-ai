@@ -137,6 +137,7 @@ export const ChatAssistant: React.FC = () => {
     getContextualWelcome, 
     getProactiveAlerts, 
     findTutorial, 
+    getTutorialForCurrentPage,
     formatTutorialForSpeech,
     getPostActionSuggestion,
     getErrorRecovery,
@@ -416,13 +417,16 @@ export const ChatAssistant: React.FC = () => {
         return;
       }
 
-      // Helper to add messages and speak
+      // Helper to add messages and speak (respects autoSpeak setting)
       const respondWithMessage = (userText: string, response: string, sound?: 'success' | 'notification' | 'error') => {
         setInput('');
         const userMessage: Message = { role: 'user', content: userText };
         const assistantMessage: Message = { role: 'assistant', content: response };
         setMessages(prev => [...prev, userMessage, assistantMessage]);
-        speak(response);
+        // Only speak if autoSpeak is enabled
+        if (autoSpeak) {
+          speak(response);
+        }
         if (sound) voicePrefs.playSound(sound);
       };
 
@@ -464,14 +468,22 @@ export const ChatAssistant: React.FC = () => {
         case 'tutorial':
           setInput('');
           triggerHapticFeedback('light');
-          const tutorial = findTutorial(text);
-          if (tutorial) {
-            setActiveTutorial(tutorial.id);
+          // Find tutorial by the ID returned from processor, then by text, then by current page
+          const tutorialMatch = findTutorial(result.tutorialId) || findTutorial(text) || getTutorialForCurrentPage();
+          if (tutorialMatch) {
+            setActiveTutorial(tutorialMatch.id);
             setCurrentTutorialStep(0);
-            const tutorialResponse = formatTutorialForSpeech(tutorial);
+            const tutorialResponse = formatTutorialForSpeech(tutorialMatch);
             respondWithMessage(text, tutorialResponse);
             // Auto-minimize to bubble mode so user can see the app while following tutorial
             setTimeout(() => autoMinimizeToBubble(), 1500);
+          } else {
+            // Fallback: if no tutorial found even for current page, give page context instead
+            const pageCtx = getCurrentPageContext();
+            const fallbackResponse = language === 'es'
+              ? `${pageCtx.description} ¿Hay algo específico que quieras saber?`
+              : `${pageCtx.description} Is there something specific you'd like to know?`;
+            respondWithMessage(text, fallbackResponse);
           }
           return;
 
@@ -558,9 +570,15 @@ export const ChatAssistant: React.FC = () => {
           return;
 
         case 'page-context':
-          respondWithMessage(text, result.response);
+          // Use REAL current path from location, not from result (which may be stale after navigation)
+          const actualCurrentPath = location.pathname;
+          const actualPageContext = getCurrentPageContext();
+          const contextResponse = language === 'es'
+            ? `${actualPageContext.description} Dime "agregar" para crear algo, "muéstrame" para navegar, o "abre el cliente NOMBRE" para acceder a un cliente específico.`
+            : `${actualPageContext.description} Say "add" to create something, "show me" to navigate, or "open client NAME" to access a specific client.`;
+          respondWithMessage(text, contextResponse);
           if (isHighlightEnabled) {
-            const highlights = getNavigationHighlights(result.currentPath, language as 'es' | 'en');
+            const highlights = getNavigationHighlights(actualCurrentPath, language as 'es' | 'en');
             if (highlights.length > 0) {
               setTimeout(() => highlight(highlights), 500);
             }
@@ -732,10 +750,10 @@ export const ChatAssistant: React.FC = () => {
     return () => clearInterval(checkInterval);
   }, [isOpen, isVoiceSupported, language, autoSpeak, speak, voicePrefs]);
 
-  // Check if voice onboarding is needed
+  // Check if voice onboarding is needed - use CONSISTENT key with VoiceOnboarding.tsx
   useEffect(() => {
     if (isOpen && isVoiceSupported) {
-      const hasCompletedOnboarding = localStorage.getItem('voice-onboarding-complete');
+      const hasCompletedOnboarding = localStorage.getItem('evofinz_voice_onboarding_completed');
       if (!hasCompletedOnboarding) {
         setShowOnboarding(true);
       }

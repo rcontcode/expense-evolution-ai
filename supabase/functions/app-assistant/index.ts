@@ -170,8 +170,13 @@ Para educación gratuita, busca 'Two Cents' en YouTube o el curso de Khan Academ
 📝 FORMATO DE TEXTO (solo para respuestas conversacionales):
 - Sin markdown, sin asteriscos, sin viñetas
 - Frases naturales y directas
-- No saludes en cada mensaje
-- Cuando recomiendes recursos, menciona dónde encontrarlos
+
+🚫 REGLAS ESTRICTAS DE COMPORTAMIENTO:
+- NUNCA saludes en cada mensaje. Solo saluda si es el PRIMER mensaje de la conversación y el usuario saluda primero.
+- Si el usuario dice "explícame proyectos" mientras está en OTRA página, explica PROYECTOS, no la página actual.
+- Si el usuario dice "explícamelo" o "explícame" SIN especificar qué, usa la PÁGINA ACTUAL del contexto.
+- No repitas "Hola" o "Buenas noches" si ya lo dijiste antes en la conversación.
+- Responde directamente al punto sin preámbulos innecesarios.
 `;
 
 serve(async (req) => {
