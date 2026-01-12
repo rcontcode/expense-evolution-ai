@@ -102,10 +102,10 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Free',
     monthlyPrice: 0,
-    description: language === 'es' ? 'Para explorar' : 'To explore',
+    description: language === 'es' ? '¡Sin costo, para siempre!' : 'No cost, forever!',
     transformation: language === 'es' 
-      ? 'De caos financiero → Claridad básica'
-      : 'From financial chaos → Basic clarity',
+      ? '🎁 ¡Empieza HOY gratis!'
+      : '🎁 Start FREE today!',
     features: language === 'es' ? [
       '50 gastos manuales/mes',
       '20 ingresos manuales/mes',
@@ -122,9 +122,10 @@ const getPricingTiers = (language: string) => [
       'Analytics preview'
     ],
     notIncluded: ['Mileage', language === 'es' ? 'Gamificación' : 'Gamification', language === 'es' ? 'Mentoría' : 'Mentorship'],
-    cta: language === 'es' ? 'Comenzar Gratis' : 'Start Free',
+    cta: language === 'es' ? '¡Comenzar Gratis!' : 'Start Free!',
     popular: false,
-    gradient: 'from-slate-500 to-slate-600'
+    gradient: 'from-emerald-500 via-green-500 to-teal-500',
+    isFree: true
   },
   {
     name: 'Premium',
@@ -786,7 +787,7 @@ export default function Landing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
-                className={`relative ${tier.popular ? 'pt-4' : ''}`}
+                className={`relative ${tier.popular ? 'pt-4' : 'isFree' in tier && tier.isFree ? 'pt-4' : ''}`}
               >
                 {/* Badge FUERA del Card para evitar overflow-hidden */}
                 {tier.popular && (
@@ -795,16 +796,27 @@ export default function Landing() {
                     {language === 'es' ? 'Más Popular' : 'Most Popular'}
                   </Badge>
                 )}
+                {'isFree' in tier && tier.isFree && (
+                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-green-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-pulse">
+                    <Gift className="w-3 h-3 mr-1 inline" />
+                    {language === 'es' ? '¡100% GRATIS!' : '100% FREE!'}
+                  </Badge>
+                )}
                 <Card 
                   className={`relative p-8 bg-slate-900/80 backdrop-blur-sm border-2 overflow-hidden h-full flex flex-col transition-all duration-300 ${
                     tier.popular 
                       ? 'border-orange-500 shadow-2xl shadow-orange-500/20 scale-105 z-10 hover:shadow-orange-500/40 hover:-translate-y-2' 
-                      : 'border-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-slate-900/50 hover:-translate-y-2'
+                      : 'isFree' in tier && tier.isFree
+                        ? 'border-emerald-500 shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-2'
+                        : 'border-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-slate-900/50 hover:-translate-y-2'
                   }`}
                 >
                   {/* Popular glow effect */}
                   {tier.popular && (
                     <div className="absolute -top-20 -right-20 w-40 h-40 bg-orange-500/30 rounded-full blur-3xl" />
+                  )}
+                  {'isFree' in tier && tier.isFree && (
+                    <div className="absolute -top-20 -left-20 w-40 h-40 bg-emerald-500/30 rounded-full blur-3xl" />
                   )}
                   
                   <div className="text-center mb-6 relative">
@@ -857,7 +869,9 @@ export default function Landing() {
                     className={`w-full py-6 font-bold ${
                       tier.popular 
                         ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-900' 
-                        : 'bg-slate-800 hover:bg-slate-700 text-white'
+                        : 'isFree' in tier && tier.isFree
+                          ? 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg shadow-emerald-500/30'
+                          : 'bg-slate-800 hover:bg-slate-700 text-white'
                     }`}
                     onClick={() => navigate('/auth')}
                   >
@@ -916,7 +930,9 @@ export default function Landing() {
                   className={`relative rounded-xl p-5 cursor-pointer transition-all ${
                     tier.popular
                       ? 'bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-500 text-white shadow-xl shadow-orange-500/30'
-                      : 'bg-white/80 backdrop-blur-sm border border-slate-200 hover:shadow-lg'
+                      : 'isFree' in tier && tier.isFree
+                        ? 'bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 text-white shadow-xl shadow-emerald-500/30'
+                        : 'bg-white/80 backdrop-blur-sm border border-slate-200 hover:shadow-lg'
                   }`}
                   onClick={() => navigate('/auth')}
                 >
@@ -928,16 +944,24 @@ export default function Landing() {
                       </Badge>
                     </div>
                   )}
+                  {'isFree' in tier && tier.isFree && (
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-white text-emerald-600 text-xs px-2 py-0.5 shadow-lg font-bold">
+                        <Gift className="w-2 h-2 mr-1 inline" />
+                        {language === 'es' ? '¡GRATIS!' : 'FREE!'}
+                      </Badge>
+                    </div>
+                  )}
                   
                   <div className="text-center">
-                    <h4 className={`font-bold text-lg ${tier.popular ? 'text-white' : 'text-slate-800'}`}>
+                    <h4 className={`font-bold text-lg ${tier.popular || ('isFree' in tier && tier.isFree) ? 'text-white' : 'text-slate-800'}`}>
                       {tier.name}
                     </h4>
                     <div className="flex items-baseline justify-center gap-1 my-2">
-                      <span className={`text-3xl font-black ${tier.popular ? 'text-white' : `bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}`}>
+                      <span className={`text-3xl font-black ${tier.popular || ('isFree' in tier && tier.isFree) ? 'text-white' : `bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}`}>
                         {priceInfo.display}
                       </span>
-                      <span className={`text-sm ${tier.popular ? 'text-white/80' : 'text-slate-500'}`}>
+                      <span className={`text-sm ${tier.popular || ('isFree' in tier && tier.isFree) ? 'text-white/80' : 'text-slate-500'}`}>
                         {priceInfo.period}
                       </span>
                     </div>
@@ -945,11 +969,11 @@ export default function Landing() {
                     {/* Transformation highlight */}
                     {'transformation' in tier && tier.transformation && (
                       <div className={`text-xs font-medium px-2 py-1 rounded-full inline-block ${
-                        tier.popular 
+                        tier.popular || ('isFree' in tier && tier.isFree)
                           ? 'bg-white/20 text-white' 
                           : 'bg-slate-100 text-slate-600'
                       }`}>
-                        <Flame className="w-3 h-3 inline mr-1" />
+                        {'isFree' in tier && tier.isFree ? <Gift className="w-3 h-3 inline mr-1" /> : <Flame className="w-3 h-3 inline mr-1" />}
                         {tier.transformation}
                       </div>
                     )}
@@ -959,7 +983,9 @@ export default function Landing() {
                       className={`w-full mt-3 ${
                         tier.popular
                           ? 'bg-slate-900 hover:bg-slate-800 text-white'
-                          : 'bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white'
+                          : 'isFree' in tier && tier.isFree
+                            ? 'bg-white hover:bg-slate-100 text-emerald-600 font-bold'
+                            : 'bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white'
                       }`}
                     >
                       {tier.cta}
