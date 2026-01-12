@@ -9,10 +9,22 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+// Detect browser language and return 'en' or 'es'
+const detectBrowserLanguage = (): Language => {
+  const browserLang = navigator.language || (navigator as any).userLanguage || 'es';
+  // If browser language starts with 'en', use English; otherwise default to Spanish
+  return browserLang.toLowerCase().startsWith('en') ? 'en' : 'es';
+};
+
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>(() => {
+    // First check if user has a saved preference
     const stored = localStorage.getItem('language');
-    return (stored as Language) || 'es';
+    if (stored === 'en' || stored === 'es') {
+      return stored;
+    }
+    // Otherwise, detect from browser
+    return detectBrowserLanguage();
   });
 
   useEffect(() => {
