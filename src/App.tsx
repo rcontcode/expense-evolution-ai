@@ -87,18 +87,33 @@ const PageLoader = () => (
   </div>
 );
 
-class LazyErrorBoundary extends Component<
-  { children: ReactNode; name?: string },
-  { hasError: boolean }
-> {
-  state = { hasError: false };
+// Critical page error fallback - allows retry
+const PageErrorFallback = () => (
+  <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="text-center space-y-4 p-8">
+      <p className="text-lg text-muted-foreground">Error cargando la página</p>
+      <button
+        onClick={() => window.location.reload()}
+        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition"
+      >
+        Reintentar
+      </button>
+    </div>
+  </div>
+);
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
+// Error boundary for lazy components with visual feedback
+class LazyErrorBoundary extends Component<
+  { children: ReactNode; name?: string; fallback?: ReactNode },
+  { hasError: boolean; error?: unknown }
+> {
+  state = { hasError: false, error: undefined as unknown };
+
+  static getDerivedStateFromError(error: unknown) {
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: unknown) {
-    // Keep the app running even if a lazy chunk fails to load.
     console.warn(
       `[LazyErrorBoundary] Failed to load: ${this.props.name ?? "lazy component"}`,
       error
@@ -106,7 +121,14 @@ class LazyErrorBoundary extends Component<
   }
 
   render() {
-    if (this.state.hasError) return null;
+    if (this.state.hasError) {
+      // For critical components like pages, show a retry option instead of blank
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+      // For non-critical components (like ChatAssistant), return null
+      return null;
+    }
     return this.props.children;
   }
 }
@@ -148,193 +170,41 @@ const App = () => (
               <EntityProvider>
                 <HighlightProvider>
                   <MissionListenerInitializer />
-                  <Suspense fallback={<PageLoader />}>
-                    <Routes>
-                      <Route path="/" element={<FinancialQuiz />} />
-                      <Route path="/quiz" element={<FinancialQuiz />} />
-                      <Route path="/landing" element={<Landing />} />
-                      <Route path="/legal" element={<Legal />} />
-                      <Route path="/auth" element={<Auth />} />
-                      <Route
-                        path="/onboarding"
-                        element={
-                          <ProtectedRoute>
-                            <Onboarding />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/beta-welcome"
-                        element={
-                          <ProtectedRoute>
-                            <BetaWelcome />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/beta-features"
-                        element={
-                          <ProtectedRoute>
-                            <BetaFeatures />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/dashboard"
-                        element={
-                          <ProtectedRoute>
-                            <Dashboard />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/chaos"
-                        element={
-                          <ProtectedRoute>
-                            <ChaosInbox />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/expenses"
-                        element={
-                          <ProtectedRoute>
-                            <Expenses />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/income"
-                        element={
-                          <ProtectedRoute>
-                            <Income />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/clients"
-                        element={
-                          <ProtectedRoute>
-                            <Clients />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/projects"
-                        element={
-                          <ProtectedRoute>
-                            <Projects />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/tags"
-                        element={
-                          <ProtectedRoute>
-                            <Tags />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/contracts"
-                        element={
-                          <ProtectedRoute>
-                            <Contracts />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/mileage"
-                        element={
-                          <ProtectedRoute>
-                            <Mileage />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/reconciliation"
-                        element={
-                          <ProtectedRoute>
-                            <Reconciliation />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/settings"
-                        element={
-                          <ProtectedRoute>
-                            <Settings />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/business-profile"
-                        element={
-                          <ProtectedRoute>
-                            <BusinessProfile />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/net-worth"
-                        element={
-                          <ProtectedRoute>
-                            <NetWorth />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/banking"
-                        element={
-                          <ProtectedRoute>
-                            <Banking />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/notifications"
-                        element={
-                          <ProtectedRoute>
-                            <Notifications />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/mentorship"
-                        element={
-                          <ProtectedRoute>
-                            <Mentorship />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/tax-calendar"
-                        element={
-                          <ProtectedRoute>
-                            <TaxCalendar />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route path="/install" element={<Install />} />
-                      <Route
-                        path="/capture"
-                        element={
-                          <ProtectedRoute>
-                            <MobileCapture />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/admin/beta-codes"
-                        element={
-                          <ProtectedRoute>
-                            <BetaCodesAdmin />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route path="*" element={<NotFound />} />
+                  <LazyErrorBoundary name="Routes" fallback={<PageErrorFallback />}>
+                    <Suspense fallback={<PageLoader />}>
+                      <Routes>
+                        <Route path="/" element={<FinancialQuiz />} />
+                        <Route path="/quiz" element={<FinancialQuiz />} />
+                        <Route path="/landing" element={<Landing />} />
+                        <Route path="/legal" element={<Legal />} />
+                        <Route path="/auth" element={<Auth />} />
+                        <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                        <Route path="/beta-welcome" element={<ProtectedRoute><BetaWelcome /></ProtectedRoute>} />
+                        <Route path="/beta-features" element={<ProtectedRoute><BetaFeatures /></ProtectedRoute>} />
+                        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                        <Route path="/chaos" element={<ProtectedRoute><ChaosInbox /></ProtectedRoute>} />
+                        <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
+                        <Route path="/income" element={<ProtectedRoute><Income /></ProtectedRoute>} />
+                        <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+                        <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+                        <Route path="/tags" element={<ProtectedRoute><Tags /></ProtectedRoute>} />
+                        <Route path="/contracts" element={<ProtectedRoute><Contracts /></ProtectedRoute>} />
+                        <Route path="/mileage" element={<ProtectedRoute><Mileage /></ProtectedRoute>} />
+                        <Route path="/reconciliation" element={<ProtectedRoute><Reconciliation /></ProtectedRoute>} />
+                        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                        <Route path="/business-profile" element={<ProtectedRoute><BusinessProfile /></ProtectedRoute>} />
+                        <Route path="/net-worth" element={<ProtectedRoute><NetWorth /></ProtectedRoute>} />
+                        <Route path="/banking" element={<ProtectedRoute><Banking /></ProtectedRoute>} />
+                        <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+                        <Route path="/mentorship" element={<ProtectedRoute><Mentorship /></ProtectedRoute>} />
+                        <Route path="/tax-calendar" element={<ProtectedRoute><TaxCalendar /></ProtectedRoute>} />
+                        <Route path="/install" element={<Install />} />
+                        <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
+                        <Route path="/admin/beta-codes" element={<ProtectedRoute><BetaCodesAdmin /></ProtectedRoute>} />
+                        <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
+                </LazyErrorBoundary>
                   {/* Lazy load global components with null fallback (non-blocking) */}
                   <LazyErrorBoundary name="ChatAssistant">
                     <Suspense fallback={null}>
