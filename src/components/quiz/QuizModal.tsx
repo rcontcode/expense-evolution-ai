@@ -270,13 +270,13 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
     // Show encouragement for "Yes" answers
     if (answer) {
       setShowEncouragement(questionIndex);
-      // Keep showing for 2.5 seconds before advancing
+      // Keep showing for 3.5 seconds before advancing
       setTimeout(() => {
         setShowEncouragement(null);
         if (step < TOTAL_STEPS - 1) {
           setStep(step + 1);
         }
-      }, 2500);
+      }, 3500);
     } else {
       // For "No" answers, advance quickly
       setTimeout(() => {
@@ -374,7 +374,7 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
                 <motion.div
                   initial={{ width: "100%" }}
                   animate={{ width: "0%" }}
-                  transition={{ duration: 2.5, ease: "linear" }}
+                  transition={{ duration: 3.5, ease: "linear" }}
                   className="h-1 bg-emerald-500 rounded-full mt-4"
                 />
               </motion.div>
