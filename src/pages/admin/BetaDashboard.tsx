@@ -38,7 +38,8 @@ import { Progress } from '@/components/ui/progress';
 import { useBetaFeedback } from '@/hooks/data/useBetaFeedback';
 import { useBetaCodes } from '@/hooks/data/useBetaCodes';
 import { Layout } from '@/components/Layout';
-import evofinzLogo from '@/assets/evofinz-logo.png';
+import { PhoenixLogo } from '@/components/ui/phoenix-logo';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const APP_SECTIONS = [
   { id: 'dashboard', emoji: '📊' }, { id: 'expenses', emoji: '💸' }, { id: 'income', emoji: '💰' },
@@ -132,6 +133,7 @@ const RatingBadge = ({ rating }: { rating: number }) => {
 };
 
 const BetaDashboard = () => {
+  const { language } = useLanguage();
   const { 
     allFeedback, 
     bugReports, 
@@ -148,8 +150,168 @@ const BetaDashboard = () => {
   const [expandedBugId, setExpandedBugId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
 
+  // Translations
+  const t = {
+    es: {
+      title: '🎯 Centro de Comando Beta',
+      subtitle: 'El poder de mejorar EvoFinz está en tus manos',
+      admin: 'ADMIN',
+      systemActive: 'Sistema Activo',
+      betaTesters: '🧪 Beta Testers',
+      avgRating: '⭐ Rating Promedio',
+      bugsReported: '🐛 Bugs Reportados',
+      featuresUsed: '🚀 Features Usados',
+      activeCodes: 'códigos activos',
+      evaluations: 'evaluaciones',
+      newBugs: 'nuevos',
+      resolved: 'resueltos',
+      featuresExplored: 'Features explorados',
+      wouldRecommend: 'Recomendarían',
+      easeOfUse: 'Facilidad de Uso',
+      usefulness: 'Utilidad',
+      design: 'Diseño',
+      testersTab: '👥 Testers',
+      feedbackTab: '⭐ Feedback',
+      bugsTab: '🐛 Bugs',
+      usageTab: '📊 Uso',
+      vipTesters: '🏆 Beta Testers VIP',
+      vipTestersDesc: 'Los pioneros que están construyendo EvoFinz contigo',
+      user: '👤 Usuario',
+      email: '📧 Email',
+      actions: '⚡ Acciones',
+      features: '🎯 Features',
+      pages: '📄 Páginas',
+      daysActive: '📅 Días Activo',
+      rating: '⭐ Rating',
+      lastActivity: '🕐 Última Actividad',
+      noName: 'Sin nombre',
+      days: 'días',
+      noActivity: 'Sin actividad',
+      noTesters: 'Aún no hay testers registrados',
+      shareCodesHint: '¡Comparte tus códigos beta para empezar!',
+      allEvaluations: '⭐ Todas las Evaluaciones',
+      allEvaluationsDesc: 'Cada opinión es oro para mejorar',
+      anonymous: 'Anónimo',
+      ease: 'Facilidad',
+      comments: '💬 Comentarios:',
+      suggestions: '💡 Sugerencias:',
+      wouldRecommendBadge: '👍 Recomendaría',
+      wouldNotRecommend: '👎 No recomendaría (aún)',
+      noFeedback: 'Aún no hay feedback',
+      noFeedbackHint: 'El feedback aparecerá aquí cuando los testers evalúen',
+      newBugsLabel: '🆕 Nuevos',
+      pendingReview: 'Pendientes de revisar',
+      inProgress: '⚙️ En Progreso',
+      workingOn: 'Trabajando en ellos',
+      resolvedLabel: '✅ Resueltos',
+      problemsFixed: 'Problemas arreglados',
+      bySeverity: 'Por Severidad',
+      low: 'baja',
+      medium: 'media',
+      high: 'alta',
+      critical: 'crítica',
+      bugReports: '🐛 Reportes de Bugs',
+      bugReportsDesc: 'Gestiona y resuelve los problemas reportados',
+      fullDescription: '📋 Descripción completa:',
+      changeStatus: '🔄 Cambiar Estado:',
+      adminNotes: '📝 Notas Admin:',
+      adminNotesPlaceholder: 'Agrega notas sobre este bug...',
+      saveNotes: '💾 Guardar Notas',
+      statusNew: '🆕 Nuevo',
+      statusReviewed: '👀 Revisado',
+      statusInProgress: '⚙️ En Progreso',
+      statusResolved: '✅ Resuelto',
+      statusWontFix: '⏭️ No se hará',
+      noBugs: 'No hay bugs reportados',
+      noBugsHint: 'Los reportes aparecerán aquí cuando los testers encuentren problemas',
+      featureUsage: '📊 Uso de Features',
+      featureUsageDesc: 'Descubre qué features son los más populares',
+      noUsage: 'Aún no hay datos de uso',
+      noUsageHint: 'Los datos aparecerán cuando los testers usen la app',
+    },
+    en: {
+      title: '🎯 Beta Command Center',
+      subtitle: 'The power to improve EvoFinz is in your hands',
+      admin: 'ADMIN',
+      systemActive: 'System Active',
+      betaTesters: '🧪 Beta Testers',
+      avgRating: '⭐ Average Rating',
+      bugsReported: '🐛 Bugs Reported',
+      featuresUsed: '🚀 Features Used',
+      activeCodes: 'active codes',
+      evaluations: 'evaluations',
+      newBugs: 'new',
+      resolved: 'resolved',
+      featuresExplored: 'Features explored',
+      wouldRecommend: 'Would Recommend',
+      easeOfUse: 'Ease of Use',
+      usefulness: 'Usefulness',
+      design: 'Design',
+      testersTab: '👥 Testers',
+      feedbackTab: '⭐ Feedback',
+      bugsTab: '🐛 Bugs',
+      usageTab: '📊 Usage',
+      vipTesters: '🏆 VIP Beta Testers',
+      vipTestersDesc: 'The pioneers building EvoFinz with you',
+      user: '👤 User',
+      email: '📧 Email',
+      actions: '⚡ Actions',
+      features: '🎯 Features',
+      pages: '📄 Pages',
+      daysActive: '📅 Days Active',
+      rating: '⭐ Rating',
+      lastActivity: '🕐 Last Activity',
+      noName: 'No name',
+      days: 'days',
+      noActivity: 'No activity',
+      noTesters: 'No testers registered yet',
+      shareCodesHint: 'Share your beta codes to get started!',
+      allEvaluations: '⭐ All Evaluations',
+      allEvaluationsDesc: 'Every opinion is gold for improvement',
+      anonymous: 'Anonymous',
+      ease: 'Ease',
+      comments: '💬 Comments:',
+      suggestions: '💡 Suggestions:',
+      wouldRecommendBadge: '👍 Would recommend',
+      wouldNotRecommend: '👎 Would not recommend (yet)',
+      noFeedback: 'No feedback yet',
+      noFeedbackHint: 'Feedback will appear here when testers evaluate',
+      newBugsLabel: '🆕 New',
+      pendingReview: 'Pending review',
+      inProgress: '⚙️ In Progress',
+      workingOn: 'Working on them',
+      resolvedLabel: '✅ Resolved',
+      problemsFixed: 'Problems fixed',
+      bySeverity: 'By Severity',
+      low: 'low',
+      medium: 'medium',
+      high: 'high',
+      critical: 'critical',
+      bugReports: '🐛 Bug Reports',
+      bugReportsDesc: 'Manage and resolve reported issues',
+      fullDescription: '📋 Full description:',
+      changeStatus: '🔄 Change Status:',
+      adminNotes: '📝 Admin Notes:',
+      adminNotesPlaceholder: 'Add notes about this bug...',
+      saveNotes: '💾 Save Notes',
+      statusNew: '🆕 New',
+      statusReviewed: '👀 Reviewed',
+      statusInProgress: '⚙️ In Progress',
+      statusResolved: '✅ Resolved',
+      statusWontFix: '⏭️ Won\'t Fix',
+      noBugs: 'No bugs reported',
+      noBugsHint: 'Reports will appear here when testers find issues',
+      featureUsage: '📊 Feature Usage',
+      featureUsageDesc: 'Discover which features are most popular',
+      noUsage: 'No usage data yet',
+      noUsageHint: 'Data will appear when testers use the app',
+    },
+  };
+
+  const text = t[language];
+
   const formatDate = (date: string) => 
-    format(new Date(date), "d MMM yyyy, HH:mm", { locale: esLocale });
+    format(new Date(date), "d MMM yyyy, HH:mm", { locale: language === 'es' ? esLocale : undefined });
 
   const getSeverityBadge = (severity: string) => {
     const config: Record<string, { className: string; emoji: string }> = {
@@ -163,14 +325,19 @@ const BetaDashboard = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const config: Record<string, { className: string; emoji: string; label: string }> = {
-      new: { className: 'bg-blue-100 text-blue-700 border-blue-200', emoji: '🆕', label: 'Nuevo' },
-      reviewed: { className: 'bg-purple-100 text-purple-700 border-purple-200', emoji: '👀', label: 'Revisado' },
-      in_progress: { className: 'bg-amber-100 text-amber-700 border-amber-200', emoji: '⚙️', label: 'En Progreso' },
-      resolved: { className: 'bg-emerald-100 text-emerald-700 border-emerald-200', emoji: '✅', label: 'Resuelto' },
-      wont_fix: { className: 'bg-slate-100 text-slate-700 border-slate-200', emoji: '⏭️', label: 'No se hará' },
+    const labels = {
+      es: { new: 'Nuevo', reviewed: 'Revisado', in_progress: 'En Progreso', resolved: 'Resuelto', wont_fix: 'No se hará' },
+      en: { new: 'New', reviewed: 'Reviewed', in_progress: 'In Progress', resolved: 'Resolved', wont_fix: 'Won\'t Fix' },
     };
-    const { className, emoji, label } = config[status] || { className: '', emoji: '', label: status };
+    const config: Record<string, { className: string; emoji: string }> = {
+      new: { className: 'bg-blue-100 text-blue-700 border-blue-200', emoji: '🆕' },
+      reviewed: { className: 'bg-purple-100 text-purple-700 border-purple-200', emoji: '👀' },
+      in_progress: { className: 'bg-amber-100 text-amber-700 border-amber-200', emoji: '⚙️' },
+      resolved: { className: 'bg-emerald-100 text-emerald-700 border-emerald-200', emoji: '✅' },
+      wont_fix: { className: 'bg-slate-100 text-slate-700 border-slate-200', emoji: '⏭️' },
+    };
+    const { className, emoji } = config[status] || { className: '', emoji: '' };
+    const label = labels[language][status as keyof typeof labels.es] || status;
     return <Badge className={`${className} border font-medium`}>{emoji} {label}</Badge>;
   };
 
@@ -208,33 +375,32 @@ const BetaDashboard = () => {
   return (
     <Layout>
       <div className="container mx-auto p-6 space-y-8">
-        {/* Premium Header */}
+        {/* Premium Header with PhoenixLogo */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col md:flex-row md:items-center justify-between gap-4"
         >
           <div className="flex items-center gap-4">
-            <motion.img 
-              src={evofinzLogo} 
-              alt="EvoFinz" 
-              className="h-14 w-auto"
+            <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', stiffness: 200 }}
-            />
+            >
+              <PhoenixLogo variant="sidebar" state="auto" showEffects={true} />
+            </motion.div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-3xl font-black bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                  🎯 Centro de Comando Beta
+                  {text.title}
                 </h1>
                 <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 font-bold">
-                  <Crown className="h-3 w-3 mr-1" /> ADMIN
+                  <Crown className="h-3 w-3 mr-1" /> {text.admin}
                 </Badge>
               </div>
               <p className="text-muted-foreground flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-amber-500" />
-                El poder de mejorar EvoFinz está en tus manos
+                {text.subtitle}
               </p>
             </div>
           </div>
@@ -242,7 +408,7 @@ const BetaDashboard = () => {
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="px-3 py-1.5 text-sm">
               <Activity className="h-4 w-4 mr-1 text-emerald-500" />
-              Sistema Activo
+              {text.systemActive}
             </Badge>
           </div>
         </motion.div>
@@ -250,32 +416,32 @@ const BetaDashboard = () => {
         {/* Overview Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
-            title="🧪 Beta Testers"
+            title={text.betaTesters}
             value={userStats?.length || 0}
             icon={Users}
-            trend={`${codeStats.activeCodes} códigos activos`}
+            trend={`${codeStats.activeCodes} ${text.activeCodes}`}
             gradient="from-violet-500 via-purple-500 to-indigo-600"
             emoji="👥"
           />
           <StatCard
-            title="⭐ Rating Promedio"
+            title={text.avgRating}
             value={feedbackStats.avgRating}
             icon={Star}
-            trend={`${feedbackStats.totalFeedback} evaluaciones`}
+            trend={`${feedbackStats.totalFeedback} ${text.evaluations}`}
             gradient="from-amber-500 via-orange-500 to-yellow-500"
           />
           <StatCard
-            title="🐛 Bugs Reportados"
+            title={text.bugsReported}
             value={bugStats.total}
             icon={Bug}
-            trend={`${bugStats.new} nuevos, ${bugStats.resolved} resueltos`}
+            trend={`${bugStats.new} ${text.newBugs}, ${bugStats.resolved} ${text.resolved}`}
             gradient="from-rose-500 via-pink-500 to-red-500"
           />
           <StatCard
-            title="🚀 Features Usados"
+            title={text.featuresUsed}
             value={featureUsage?.length || 0}
             icon={Activity}
-            trend="Features explorados"
+            trend={text.featuresExplored}
             gradient="from-emerald-500 via-teal-500 to-cyan-500"
           />
         </div>
@@ -293,7 +459,7 @@ const BetaDashboard = () => {
                 <Heart className="h-5 w-5 text-emerald-600" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Recomendarían</p>
+                <p className="text-xs text-muted-foreground">{text.wouldRecommend}</p>
                 <p className="text-2xl font-black text-emerald-600">{feedbackStats.wouldRecommend}%</p>
               </div>
             </CardContent>
@@ -304,7 +470,7 @@ const BetaDashboard = () => {
                 <Zap className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Facilidad de Uso</p>
+                <p className="text-xs text-muted-foreground">{text.easeOfUse}</p>
                 <p className="text-2xl font-black text-blue-600">{feedbackStats.avgEaseOfUse}/5</p>
               </div>
             </CardContent>
@@ -315,7 +481,7 @@ const BetaDashboard = () => {
                 <Target className="h-5 w-5 text-amber-600" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Utilidad</p>
+                <p className="text-xs text-muted-foreground">{text.usefulness}</p>
                 <p className="text-2xl font-black text-amber-600">{feedbackStats.avgUsefulness}/5</p>
               </div>
             </CardContent>
@@ -326,7 +492,7 @@ const BetaDashboard = () => {
                 <Flame className="h-5 w-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Diseño</p>
+                <p className="text-xs text-muted-foreground">{text.design}</p>
                 <p className="text-2xl font-black text-purple-600">{feedbackStats.avgRating}/5</p>
               </div>
             </CardContent>
@@ -346,28 +512,28 @@ const BetaDashboard = () => {
                 className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold"
               >
                 <Users className="h-4 w-4" />
-                👥 Testers
+                {text.testersTab}
               </TabsTrigger>
               <TabsTrigger 
                 value="feedback" 
                 className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold"
               >
                 <MessageSquare className="h-4 w-4" />
-                ⭐ Feedback
+                {text.feedbackTab}
               </TabsTrigger>
               <TabsTrigger 
                 value="bugs" 
                 className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-pink-500 data-[state=active]:text-white rounded-lg font-semibold"
               >
                 <Bug className="h-4 w-4" />
-                🐛 Bugs
+                {text.bugsTab}
               </TabsTrigger>
               <TabsTrigger 
                 value="usage" 
                 className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white rounded-lg font-semibold"
               >
                 <BarChart3 className="h-4 w-4" />
-                📊 Uso
+                {text.usageTab}
               </TabsTrigger>
             </TabsList>
 
@@ -381,10 +547,10 @@ const BetaDashboard = () => {
                     </div>
                     <div>
                       <CardTitle className="flex items-center gap-2">
-                        🏆 Beta Testers VIP
+                        {text.vipTesters}
                       </CardTitle>
                       <CardDescription>
-                        Los pioneros que están construyendo EvoFinz contigo
+                        {text.vipTestersDesc}
                       </CardDescription>
                     </div>
                   </div>
@@ -393,14 +559,14 @@ const BetaDashboard = () => {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-muted/30">
-                        <TableHead className="font-bold">👤 Usuario</TableHead>
-                        <TableHead className="font-bold">📧 Email</TableHead>
-                        <TableHead className="text-center font-bold">⚡ Acciones</TableHead>
-                        <TableHead className="text-center font-bold">🎯 Features</TableHead>
-                        <TableHead className="text-center font-bold">📄 Páginas</TableHead>
-                        <TableHead className="text-center font-bold">📅 Días Activo</TableHead>
-                        <TableHead className="text-center font-bold">⭐ Rating</TableHead>
-                        <TableHead className="font-bold">🕐 Última Actividad</TableHead>
+                        <TableHead className="font-bold">{text.user}</TableHead>
+                        <TableHead className="font-bold">{text.email}</TableHead>
+                        <TableHead className="text-center font-bold">{text.actions}</TableHead>
+                        <TableHead className="text-center font-bold">{text.features}</TableHead>
+                        <TableHead className="text-center font-bold">{text.pages}</TableHead>
+                        <TableHead className="text-center font-bold">{text.daysActive}</TableHead>
+                        <TableHead className="text-center font-bold">{text.rating}</TableHead>
+                        <TableHead className="font-bold">{text.lastActivity}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -419,7 +585,7 @@ const BetaDashboard = () => {
                                   {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
                                 </span>
                               )}
-                              {user.user_name || 'Sin nombre'}
+                              {user.user_name || text.noName}
                             </div>
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
@@ -438,7 +604,7 @@ const BetaDashboard = () => {
                           </TableCell>
                           <TableCell className="text-center">
                             <Badge variant="outline" className="font-medium">
-                              {user.days_active} días
+                              {user.days_active} {text.days}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center">
@@ -451,7 +617,7 @@ const BetaDashboard = () => {
                           <TableCell className="text-sm text-muted-foreground">
                             {user.last_activity 
                               ? formatDate(user.last_activity)
-                              : 'Sin actividad'}
+                              : text.noActivity}
                           </TableCell>
                         </motion.tr>
                       ))}
@@ -460,8 +626,8 @@ const BetaDashboard = () => {
                           <TableCell colSpan={8} className="text-center py-12">
                             <div className="flex flex-col items-center gap-3">
                               <Users className="h-12 w-12 text-muted-foreground/30" />
-                              <p className="text-muted-foreground">Aún no hay testers registrados</p>
-                              <p className="text-sm text-muted-foreground/70">¡Comparte tus códigos beta para empezar!</p>
+                              <p className="text-muted-foreground">{text.noTesters}</p>
+                              <p className="text-sm text-muted-foreground/70">{text.shareCodesHint}</p>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -482,10 +648,10 @@ const BetaDashboard = () => {
                     </div>
                     <div>
                       <CardTitle className="flex items-center gap-2">
-                        ⭐ Todas las Evaluaciones
+                        {text.allEvaluations}
                       </CardTitle>
                       <CardDescription>
-                        Cada opinión es oro para mejorar
+                        {text.allEvaluationsDesc}
                       </CardDescription>
                     </div>
                   </div>
@@ -511,7 +677,7 @@ const BetaDashboard = () => {
                                 <RatingBadge rating={feedback.rating} />
                               </div>
                               <p className="text-sm text-muted-foreground flex items-center gap-2">
-                                <span className="font-medium text-foreground">{feedback.user_name || 'Anónimo'}</span>
+                                <span className="font-medium text-foreground">{feedback.user_name || text.anonymous}</span>
                                 <span>•</span>
                                 <span>{feedback.user_email}</span>
                               </p>
@@ -526,21 +692,21 @@ const BetaDashboard = () => {
                             {feedback.ease_of_use && (
                               <div className="flex items-center gap-2">
                                 <span className="text-lg">🎮</span>
-                                <span className="text-muted-foreground">Facilidad:</span>
+                                <span className="text-muted-foreground">{text.ease}:</span>
                                 <span className="font-bold">{feedback.ease_of_use}/5</span>
                               </div>
                             )}
                             {feedback.usefulness && (
                               <div className="flex items-center gap-2">
                                 <span className="text-lg">🎯</span>
-                                <span className="text-muted-foreground">Utilidad:</span>
+                                <span className="text-muted-foreground">{text.usefulness}:</span>
                                 <span className="font-bold">{feedback.usefulness}/5</span>
                               </div>
                             )}
                             {feedback.design_rating && (
                               <div className="flex items-center gap-2">
                                 <span className="text-lg">🎨</span>
-                                <span className="text-muted-foreground">Diseño:</span>
+                                <span className="text-muted-foreground">{text.design}:</span>
                                 <span className="font-bold">{feedback.design_rating}/5</span>
                               </div>
                             )}
@@ -549,7 +715,7 @@ const BetaDashboard = () => {
                           {feedback.comment && (
                             <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg border border-blue-100 dark:border-blue-900/50">
                               <p className="text-sm font-semibold mb-2 flex items-center gap-2">
-                                💬 Comentarios:
+                                {text.comments}
                               </p>
                               <p className="text-sm leading-relaxed">{feedback.comment}</p>
                             </div>
@@ -558,7 +724,7 @@ const BetaDashboard = () => {
                           {feedback.suggestions && (
                             <div className="p-4 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 rounded-lg border border-amber-100 dark:border-amber-900/50">
                               <p className="text-sm font-semibold mb-2 flex items-center gap-2">
-                                💡 Sugerencias:
+                                {text.suggestions}
                               </p>
                               <p className="text-sm leading-relaxed">{feedback.suggestions}</p>
                             </div>
@@ -570,7 +736,7 @@ const BetaDashboard = () => {
                                 ? 'bg-emerald-100 text-emerald-700 border-emerald-200' 
                                 : 'bg-rose-100 text-rose-700 border-rose-200'
                             } border font-medium`}>
-                              {feedback.would_recommend ? '👍 Recomendaría' : '👎 No recomendaría (aún)'}
+                              {feedback.would_recommend ? text.wouldRecommendBadge : text.wouldNotRecommend}
                             </Badge>
                           )}
                         </motion.div>
@@ -579,8 +745,8 @@ const BetaDashboard = () => {
                     {(!allFeedback || allFeedback.length === 0) && (
                       <div className="text-center py-12">
                         <Star className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-                        <p className="text-muted-foreground">Aún no hay feedback</p>
-                        <p className="text-sm text-muted-foreground/70">El feedback aparecerá aquí cuando los testers evalúen</p>
+                        <p className="text-muted-foreground">{text.noFeedback}</p>
+                        <p className="text-sm text-muted-foreground/70">{text.noFeedbackHint}</p>
                       </div>
                     )}
                   </div>
@@ -596,8 +762,8 @@ const BetaDashboard = () => {
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="text-3xl font-black text-blue-600">{bugStats.new}</div>
                     <div>
-                      <p className="text-sm font-medium">🆕 Nuevos</p>
-                      <p className="text-xs text-muted-foreground">Pendientes de revisar</p>
+                      <p className="text-sm font-medium">{text.newBugsLabel}</p>
+                      <p className="text-xs text-muted-foreground">{text.pendingReview}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -605,8 +771,8 @@ const BetaDashboard = () => {
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="text-3xl font-black text-amber-600">{bugStats.inProgress}</div>
                     <div>
-                      <p className="text-sm font-medium">⚙️ En Progreso</p>
-                      <p className="text-xs text-muted-foreground">Trabajando en ellos</p>
+                      <p className="text-sm font-medium">{text.inProgress}</p>
+                      <p className="text-xs text-muted-foreground">{text.workingOn}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -614,8 +780,8 @@ const BetaDashboard = () => {
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="text-3xl font-black text-emerald-600">{bugStats.resolved}</div>
                     <div>
-                      <p className="text-sm font-medium">✅ Resueltos</p>
-                      <p className="text-xs text-muted-foreground">Problemas arreglados</p>
+                      <p className="text-sm font-medium">{text.resolvedLabel}</p>
+                      <p className="text-xs text-muted-foreground">{text.problemsFixed}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -623,13 +789,13 @@ const BetaDashboard = () => {
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <AlertTriangle className="h-4 w-4 text-rose-500" />
-                      <span className="text-sm font-semibold">Por Severidad</span>
+                      <span className="text-sm font-semibold">{text.bySeverity}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-1 text-xs">
-                      <span>🟢 {bugStats.bySeverity.low} baja</span>
-                      <span>🟡 {bugStats.bySeverity.medium} media</span>
-                      <span>🟠 {bugStats.bySeverity.high} alta</span>
-                      <span>🔴 {bugStats.bySeverity.critical} crítica</span>
+                      <span>🟢 {bugStats.bySeverity.low} {text.low}</span>
+                      <span>🟡 {bugStats.bySeverity.medium} {text.medium}</span>
+                      <span>🟠 {bugStats.bySeverity.high} {text.high}</span>
+                      <span>🔴 {bugStats.bySeverity.critical} {text.critical}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -643,10 +809,10 @@ const BetaDashboard = () => {
                     </div>
                     <div>
                       <CardTitle className="flex items-center gap-2">
-                        🐛 Reportes de Bugs
+                        {text.bugReports}
                       </CardTitle>
                       <CardDescription>
-                        Gestiona y resuelve los problemas reportados
+                        {text.bugReportsDesc}
                       </CardDescription>
                     </div>
                   </div>
@@ -697,13 +863,13 @@ const BetaDashboard = () => {
 
                               <CollapsibleContent className="mt-4 pt-4 border-t space-y-4">
                                 <div className="p-4 bg-muted/50 rounded-lg">
-                                  <p className="text-sm font-medium mb-2">📋 Descripción completa:</p>
+                                  <p className="text-sm font-medium mb-2">{text.fullDescription}</p>
                                   <p className="text-sm whitespace-pre-wrap">{bug.description}</p>
                                 </div>
 
                                 <div className="grid gap-4 sm:grid-cols-2">
                                   <div className="space-y-2">
-                                    <label className="text-sm font-medium">🔄 Cambiar Estado:</label>
+                                    <label className="text-sm font-medium">{text.changeStatus}</label>
                                     <Select
                                       value={bug.status}
                                       onValueChange={(status) => handleUpdateBugStatus(bug.id, status)}
@@ -712,17 +878,17 @@ const BetaDashboard = () => {
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        <SelectItem value="new">🆕 Nuevo</SelectItem>
-                                        <SelectItem value="reviewed">👀 Revisado</SelectItem>
-                                        <SelectItem value="in_progress">⚙️ En Progreso</SelectItem>
-                                        <SelectItem value="resolved">✅ Resuelto</SelectItem>
-                                        <SelectItem value="wont_fix">⏭️ No se hará</SelectItem>
+                                        <SelectItem value="new">{text.statusNew}</SelectItem>
+                                        <SelectItem value="reviewed">{text.statusReviewed}</SelectItem>
+                                        <SelectItem value="in_progress">{text.statusInProgress}</SelectItem>
+                                        <SelectItem value="resolved">{text.statusResolved}</SelectItem>
+                                        <SelectItem value="wont_fix">{text.statusWontFix}</SelectItem>
                                       </SelectContent>
                                     </Select>
                                   </div>
 
                                   <div className="space-y-2">
-                                    <label className="text-sm font-medium">📝 Notas Admin:</label>
+                                    <label className="text-sm font-medium">{text.adminNotes}</label>
                                     <Textarea
                                       value={adminNotes[bug.id] || bug.admin_notes || ''}
                                       onChange={(e) => setAdminNotes(prev => ({

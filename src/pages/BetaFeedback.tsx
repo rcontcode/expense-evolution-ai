@@ -33,7 +33,7 @@ import { useBetaFeedback } from '@/hooks/data/useBetaFeedback';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Layout } from '@/components/Layout';
-import evofinzLogo from '@/assets/evofinz-logo.png';
+import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 
 const APP_SECTIONS = [
   { id: 'dashboard', label: { es: 'Dashboard', en: 'Dashboard' }, emoji: '📊', color: 'from-violet-500 to-purple-600' },
@@ -355,14 +355,14 @@ const BetaFeedback = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          {/* Logo */}
+          {/* Logo with Effects */}
           <motion.div 
-            className="flex justify-center mb-4"
+            className="flex justify-center mb-6"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200 }}
           >
-            <img src={evofinzLogo} alt="EvoFinz" className="h-16 w-auto" />
+            <PhoenixLogo variant="sidebar" state="auto" showEffects={true} />
           </motion.div>
 
           {/* Founding Member Badge */}
