@@ -2,9 +2,10 @@ import * as XLSX from 'xlsx';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { TAX_DEDUCTION_RULES } from '@/hooks/data/useTaxCalculations';
 import { format } from 'date-fns';
+import { exportExpensesToPDF } from './pdf-export';
 
 export interface ExportOptions {
-  format: 'csv' | 'xlsx' | 'json';
+  format: 'csv' | 'xlsx' | 'json' | 'pdf';
   includeAll?: boolean;
   year?: number;
 }
@@ -297,6 +298,8 @@ export function exportExpenses(expenses: ExpenseWithRelations[], options: Export
     exportToCSV(expenses, filename);
   } else if (options.format === 'json') {
     exportToJSON(expenses, filename);
+  } else if (options.format === 'pdf') {
+    exportExpensesToPDF(expenses, { year: options.year });
   } else {
     exportToExcel(expenses, filename);
   }

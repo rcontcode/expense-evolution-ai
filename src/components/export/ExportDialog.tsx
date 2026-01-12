@@ -9,8 +9,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { exportExpenses, ExportOptions } from '@/lib/export/expense-export';
 import { exportT2125Report } from '@/lib/export/t2125-export';
+import { exportT2125ToPDF } from '@/lib/export/pdf-export';
 import { useToast } from '@/hooks/use-toast';
-import { FileSpreadsheet, FileText, Download, Loader2, FileCheck, FileJson } from 'lucide-react';
+import { FileSpreadsheet, FileText, Download, Loader2, FileCheck, FileJson, FileType } from 'lucide-react';
 
 interface ExportDialogProps {
   open: boolean;
@@ -22,7 +23,8 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [exportType, setExportType] = useState<'general' | 't2125'>('general');
-  const [format, setFormat] = useState<'csv' | 'xlsx' | 'json'>('xlsx');
+  const [format, setFormat] = useState<'csv' | 'xlsx' | 'json' | 'pdf'>('xlsx');
+  const [t2125Format, setT2125Format] = useState<'xlsx' | 'pdf'>('xlsx');
   const [yearFilter, setYearFilter] = useState<string>('all');
   const [isExporting, setIsExporting] = useState(false);
 
@@ -50,7 +52,11 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
       }
 
       if (exportType === 't2125') {
-        exportT2125Report(filteredExpenses, selectedYear);
+        if (t2125Format === 'pdf') {
+          exportT2125ToPDF(filteredExpenses, selectedYear);
+        } else {
+          exportT2125Report(filteredExpenses, selectedYear);
+        }
       } else {
         const options: ExportOptions = {
           format,
@@ -103,7 +109,7 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
             {/* Format Selection */}
             <div className="space-y-3">
               <Label>{t('export.format')}</Label>
-              <RadioGroup value={format} onValueChange={(v) => setFormat(v as 'csv' | 'xlsx' | 'json')}>
+              <RadioGroup value={format} onValueChange={(v) => setFormat(v as 'csv' | 'xlsx' | 'json' | 'pdf')}>
                 <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
                   <RadioGroupItem value="xlsx" id="xlsx" />
                   <Label htmlFor="xlsx" className="flex items-center gap-2 cursor-pointer flex-1">
@@ -111,6 +117,16 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
                     <div>
                       <p className="font-medium">Excel (.xlsx)</p>
                       <p className="text-xs text-muted-foreground">{t('export.excelDescription')}</p>
+                    </div>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
+                  <RadioGroupItem value="pdf" id="pdf" />
+                  <Label htmlFor="pdf" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <FileType className="h-5 w-5 text-red-600" />
+                    <div>
+                      <p className="font-medium">PDF (.pdf)</p>
+                      <p className="text-xs text-muted-foreground">Documento profesional para enviar a clientes</p>
                     </div>
                   </Label>
                 </div>
@@ -154,6 +170,33 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
                   </ul>
                 </div>
               </div>
+            </div>
+            
+            {/* T2125 Format Selection */}
+            <div className="space-y-3">
+              <Label>Formato de exportación</Label>
+              <RadioGroup value={t2125Format} onValueChange={(v) => setT2125Format(v as 'xlsx' | 'pdf')}>
+                <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
+                  <RadioGroupItem value="xlsx" id="t2125-xlsx" />
+                  <Label htmlFor="t2125-xlsx" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <FileSpreadsheet className="h-5 w-5 text-green-600" />
+                    <div>
+                      <p className="font-medium">Excel (.xlsx)</p>
+                      <p className="text-xs text-muted-foreground">Detalle completo con múltiples hojas</p>
+                    </div>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
+                  <RadioGroupItem value="pdf" id="t2125-pdf" />
+                  <Label htmlFor="t2125-pdf" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <FileType className="h-5 w-5 text-red-600" />
+                    <div>
+                      <p className="font-medium">PDF (.pdf)</p>
+                      <p className="text-xs text-muted-foreground">Resumen profesional para tu contador</p>
+                    </div>
+                  </Label>
+                </div>
+              </RadioGroup>
             </div>
           </TabsContent>
 
