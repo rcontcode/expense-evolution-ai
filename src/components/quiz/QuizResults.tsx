@@ -54,7 +54,7 @@ const getLevelInfo = (level: QuizResult["level"], language: string) => {
     evolucionando: {
       es: {
         title: "Phoenix en Evolución",
-        description: "Tu Phoenix está volando alto. Vas por buen camino, optimicemos juntos.",
+        description: "Tu Phoenix está volando alto. Vas por buen camino, ¡automaticemos para que vueles aún más alto!",
         color: "from-amber-400 to-yellow-400",
         bgColor: "bg-amber-500/10",
         borderColor: "border-amber-500/30",
@@ -62,7 +62,7 @@ const getLevelInfo = (level: QuizResult["level"], language: string) => {
       },
       en: {
         title: "Evolving Phoenix",
-        description: "Your Phoenix is flying high. You're on the right track, let's optimize together.",
+        description: "Your Phoenix is flying high. You're on the right track, let's automate so you can soar even higher!",
         color: "from-amber-400 to-yellow-400",
         bgColor: "bg-amber-500/10",
         borderColor: "border-amber-500/30",
@@ -72,7 +72,7 @@ const getLevelInfo = (level: QuizResult["level"], language: string) => {
     maestro: {
       es: {
         title: "Phoenix Maestro",
-        description: "¡Tu Phoenix brilla con luz propia! Tienes un excelente control, llevémoslo al siguiente nivel.",
+        description: "¡Tu Phoenix brilla con luz propia! Tienes un excelente control financiero. EvoFinz es tu copiloto para ir más lejos, más rápido.",
         color: "from-emerald-400 to-teal-400",
         bgColor: "bg-emerald-500/10",
         borderColor: "border-emerald-500/30",
@@ -80,7 +80,7 @@ const getLevelInfo = (level: QuizResult["level"], language: string) => {
       },
       en: {
         title: "Master Phoenix",
-        description: "Your Phoenix shines bright! You have excellent control, let's take it to the next level.",
+        description: "Your Phoenix shines bright! You have excellent financial control. EvoFinz is your copilot to go further, faster.",
         color: "from-emerald-400 to-teal-400",
         bgColor: "bg-emerald-500/10",
         borderColor: "border-emerald-500/30",
@@ -92,7 +92,7 @@ const getLevelInfo = (level: QuizResult["level"], language: string) => {
   return levels[level][language as "es" | "en"] || levels[level].es;
 };
 
-// Generate personalized message based on profile
+// Generate personalized message based on profile - NOW WITH HIGH SCORE STRATEGY
 const getPersonalizedMessage = (
   name: string,
   situation: string,
@@ -100,12 +100,73 @@ const getPersonalizedMessage = (
   goal: string,
   obstacle: string,
   level: QuizResult["level"],
+  score: number,
   language: string
 ): string => {
   const firstName = name.split(" ")[0];
   const isCanada = country.includes("Canadá") || country.includes("Canada");
   const isChile = country.includes("Chile");
   
+  // Special messages for HIGH SCORERS (80-100) - Show how EvoFinz ENHANCES their excellence
+  if (score >= 80) {
+    const highScoreMessages = {
+      es: {
+        freelancer: {
+          canada: `${firstName}, ¡impresionante dominio financiero! 🏆 Como freelancer en Canadá que ya controla sus finanzas, EvoFinz es tu **multiplicador de resultados**: captura gastos en segundos con foto o voz, genera reportes T2125 automáticamente, y nuestro optimizador fiscal encuentra deducciones que incluso los expertos pasan por alto. Transforma tu excelencia en **máxima rentabilidad**.`,
+          chile: `${firstName}, ¡excelente gestión! 🏆 Como freelancer en Chile con control financiero, EvoFinz te da **superpoderes**: automatiza la organización de boletas, calcula retenciones de honorarios automáticamente, y te alerta de deadlines del SII. Menos tiempo administrando, más tiempo facturando.`,
+          default: `${firstName}, ¡felicitaciones por tu disciplina financiera! 🏆 EvoFinz no es para "arreglarte" – es para **potenciarte**. Automatiza las tareas repetitivas que ya haces bien, centraliza todo en un solo lugar, y libera tu tiempo para lo que realmente importa: hacer crecer tu negocio.`,
+        },
+        employee: {
+          canada: `${firstName}, ¡tienes una base financiera sólida! 🏆 Como empleado en Canadá, EvoFinz te ayuda a descubrir **deducciones ocultas** (home office, educación, gastos médicos) que podrías estar perdiendo. Además, nuestro calculador FIRE te muestra exactamente cuándo podrás ser financieramente libre.`,
+          chile: `${firstName}, ¡excelente control! 🏆 Como empleado en Chile, EvoFinz te ayuda a **maximizar tu APV**, optimizar gastos de salud y educación, y visualizar tu camino hacia la libertad financiera con nuestro calculador FIRE personalizado.`,
+          default: `${firstName}, ¡admirable disciplina! 🏆 Para alguien con tu nivel de control, EvoFinz es el **copiloto perfecto**: tracking automático de patrimonio neto, proyecciones de jubilación, y análisis de tendencias que transforman datos en decisiones inteligentes.`,
+        },
+        business: {
+          canada: `${firstName}, ¡gestión empresarial ejemplar! 🏆 EvoFinz es tu **centro de comando financiero**: genera reportes T2125 con un clic, identifica gastos deducibles automáticamente, y rastrea rentabilidad por cliente/proyecto. Menos contabilidad, más estrategia.`,
+          chile: `${firstName}, ¡control empresarial impecable! 🏆 EvoFinz automatiza tu gestión con el SII: organiza facturas, calcula IVA, genera reportes para tu contador, y te da visibilidad total de tu flujo de caja por cliente.`,
+          default: `${firstName}, ¡excelente visión de negocio! 🏆 EvoFinz escala contigo: desde tracking automático de gastos hasta análisis de rentabilidad por proyecto, tienes el dashboard empresarial que mereces.`,
+        },
+        default: `${firstName}, ¡eres un ejemplo de disciplina financiera! 🏆 EvoFinz no reemplaza tu expertise – lo **amplifica**. Automatización inteligente, insights basados en datos, y herramientas que transforman buenas prácticas en resultados extraordinarios.`,
+      },
+      en: {
+        freelancer: {
+          canada: `${firstName}, impressive financial mastery! 🏆 As a freelancer in Canada who already controls their finances, EvoFinz is your **results multiplier**: capture expenses in seconds with photo or voice, auto-generate T2125 reports, and our tax optimizer finds deductions even experts miss. Transform your excellence into **maximum profitability**.`,
+          chile: `${firstName}, excellent management! 🏆 As a freelancer in Chile with financial control, EvoFinz gives you **superpowers**: automate invoice organization, auto-calculate withholdings, and get SII deadline alerts. Less time managing, more time billing.`,
+          default: `${firstName}, congratulations on your financial discipline! 🏆 EvoFinz isn't here to "fix" you – it's here to **supercharge** you. Automate repetitive tasks you already do well, centralize everything, and free your time for what matters: growing your business.`,
+        },
+        employee: {
+          canada: `${firstName}, you have a solid financial foundation! 🏆 As a Canadian employee, EvoFinz helps you discover **hidden deductions** (home office, education, medical) you might be missing. Plus, our FIRE calculator shows exactly when you can be financially free.`,
+          chile: `${firstName}, excellent control! 🏆 As a Chilean employee, EvoFinz helps you **maximize APV**, optimize health and education expenses, and visualize your path to financial freedom with our personalized FIRE calculator.`,
+          default: `${firstName}, admirable discipline! 🏆 For someone at your level, EvoFinz is the **perfect copilot**: automatic net worth tracking, retirement projections, and trend analysis that turns data into smart decisions.`,
+        },
+        business: {
+          canada: `${firstName}, exemplary business management! 🏆 EvoFinz is your **financial command center**: generate T2125 reports with one click, auto-identify deductible expenses, and track profitability by client/project. Less accounting, more strategy.`,
+          chile: `${firstName}, impeccable business control! 🏆 EvoFinz automates your SII management: organize invoices, calculate VAT, generate reports for your accountant, and get full cash flow visibility by client.`,
+          default: `${firstName}, excellent business vision! 🏆 EvoFinz scales with you: from automatic expense tracking to per-project profitability analysis, you get the enterprise dashboard you deserve.`,
+        },
+        default: `${firstName}, you're an example of financial discipline! 🏆 EvoFinz doesn't replace your expertise – it **amplifies** it. Smart automation, data-driven insights, and tools that transform good practices into extraordinary results.`,
+      },
+    };
+
+    const lang = language === "en" ? "en" : "es";
+    const sitKey = situation.toLowerCase().includes("freelancer") || situation.toLowerCase().includes("contratista") 
+      ? "freelancer" 
+      : situation.toLowerCase().includes("empleado") || situation.toLowerCase().includes("employee")
+      ? "employee"
+      : situation.toLowerCase().includes("negocio") || situation.toLowerCase().includes("business") || situation.toLowerCase().includes("dueño")
+      ? "business"
+      : "default";
+    
+    const countryKey = isCanada ? "canada" : isChile ? "chile" : "default";
+    
+    if (sitKey === "default") {
+      return highScoreMessages[lang].default;
+    }
+    
+    return highScoreMessages[lang][sitKey][countryKey] || highScoreMessages[lang][sitKey].default;
+  }
+
+  // Regular messages for scores below 80
   const messages = {
     es: {
       freelancer: {
@@ -210,6 +271,7 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
     result.data.goal,
     result.data.obstacle,
     result.level,
+    result.score,
     language
   );
   const profileDisplay = getProfileDisplay(
@@ -416,7 +478,37 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
         </p>
       </motion.div>
 
-      {/* Recommendations */}
+      {/* For HIGH scorers - show why EvoFinz enhances excellence */}
+      {result.score >= 80 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="w-full max-w-md bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-xl p-5 mb-6"
+        >
+          <h3 className="text-lg font-semibold text-emerald-400 mb-3 flex items-center gap-2">
+            <Rocket className="w-5 h-5" />
+            {language === "es" ? "¿Por qué EvoFinz para ti?" : "Why EvoFinz for you?"}
+          </h3>
+          <ul className="space-y-2">
+            {(language === "es" ? [
+              "🚀 Automatiza lo que ya haces bien – ahorra horas cada mes",
+              "📊 Dashboard ejecutivo con métricas que importan",
+              "🎯 Optimizador fiscal que encuentra deducciones ocultas",
+              "⚡ Captura gastos en 3 segundos con foto o voz",
+            ] : [
+              "🚀 Automate what you already do well – save hours monthly",
+              "📊 Executive dashboard with metrics that matter",
+              "🎯 Tax optimizer that finds hidden deductions",
+              "⚡ Capture expenses in 3 seconds with photo or voice",
+            ]).map((item, i) => (
+              <li key={i} className="text-slate-300 text-sm">{item}</li>
+            ))}
+          </ul>
+        </motion.div>
+      )}
+
+      {/* Recommendations - only show if there are failed questions */}
       {result.failedQuestions.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
