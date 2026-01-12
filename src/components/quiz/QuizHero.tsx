@@ -181,12 +181,23 @@ export const QuizHero = ({ onStartQuiz }: QuizHeroProps) => {
         className="flex items-center gap-3 mb-12 px-4 py-2 rounded-full bg-slate-800/30 backdrop-blur-sm border border-slate-700/30"
       >
         <div className="flex -space-x-2">
-          {[...Array(5)].map((_, i) => (
+          {[
+            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=64&h=64&fit=crop&crop=face",
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop&crop=face",
+            "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=64&h=64&fit=crop&crop=face",
+            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=face",
+            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face",
+          ].map((avatar, i) => (
             <div
               key={i}
-              className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 border-2 border-slate-900 flex items-center justify-center text-white text-xs font-bold shadow-lg"
+              className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-900 shadow-lg"
             >
-              {["👨‍💼", "👩‍💼", "👨‍💻", "👩‍🎓", "👨‍🔧"][i]}
+              <img
+                src={avatar}
+                alt=""
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
             </div>
           ))}
         </div>
