@@ -76,7 +76,7 @@ export function TargetAudienceSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <Badge className="mb-4 px-4 py-2 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 text-emerald-600 border-emerald-500/30 text-sm font-semibold">
+          <Badge className="mb-4 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 text-sm font-semibold shadow-lg">
             <Sparkles className="w-4 h-4 mr-2 inline" />
             {language === 'es' ? 'Diseñado Para Ti' : 'Designed For You'}
           </Badge>
