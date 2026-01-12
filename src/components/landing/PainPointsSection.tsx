@@ -274,14 +274,14 @@ export function PainPointsSection() {
                   onClick={() => handleCategoryClick(index)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`relative px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center gap-2 border drop-shadow-[0_1px_1px_rgba(0,0,0,0.55)] ${
+                  className={`relative px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center gap-2 border backdrop-blur-sm !opacity-100 drop-shadow-[0_1px_1px_rgba(0,0,0,0.55)] ${
                     isActive 
-                      ? `bg-gradient-to-r ${category.color} text-white shadow-xl ${category.glow} border-transparent` 
-                      : 'text-white bg-black/30 border-white/15 hover:bg-black/45 hover:border-white/25'
+                      ? `bg-gradient-to-r ${category.color} !text-white shadow-xl ${category.glow} border-transparent` 
+                      : '!text-white bg-white/10 border-white/25 hover:bg-white/15 hover:border-white/35'
                   }`}
                 >
                   <span className="text-lg">{category.emoji}</span>
-                  <span className="hidden sm:inline">{category.name}</span>
+                  <span className="hidden sm:inline text-white">{category.name}</span>
                 </motion.button>
               );
             })}
