@@ -1091,6 +1091,21 @@ export const ChatAssistant: React.FC = () => {
     sendMessage(question);
   };
 
+  // UNIFIED STOP FUNCTION - Stops ALL voice activity (speaking, listening, continuous mode)
+  // This prevents the user from having to press stop multiple times
+  const stopAllVoiceActivity = useCallback(() => {
+    console.log('[Voice] Stopping ALL voice activity');
+    window.speechSynthesis.cancel();
+    audioPlayback.stop();
+    stopSpeaking();
+    if (isContinuousMode) {
+      stopContinuousListening();
+    }
+    if (isListening) {
+      toggleListening(); // This will stop listening
+    }
+  }, [audioPlayback, stopSpeaking, isContinuousMode, stopContinuousListening, isListening, toggleListening]);
+
   const handleMicClick = () => {
     // CRITICAL: Cancel ALL speech synthesis first
     window.speechSynthesis.cancel();
@@ -1128,11 +1143,11 @@ export const ChatAssistant: React.FC = () => {
         open={showOnboarding}
         onComplete={() => {
           setShowOnboarding(false);
-          localStorage.setItem('voice-onboarding-complete', 'true');
+          localStorage.setItem('evofinz_voice_onboarding_completed', 'true');
         }}
         onSkip={() => {
           setShowOnboarding(false);
-          localStorage.setItem('voice-onboarding-complete', 'true');
+          localStorage.setItem('evofinz_voice_onboarding_completed', 'true');
         }}
         isVoiceSupported={isVoiceSupported}
         onTestVoice={(text) => speak(text)}
@@ -1151,7 +1166,7 @@ export const ChatAssistant: React.FC = () => {
           isListening={isListening}
           isSpeaking={isSpeaking}
           onOpen={() => setIsOpen(true)}
-          onStop={stopContinuousListening}
+          onStop={stopAllVoiceActivity}
         />
       )}
 
@@ -1177,7 +1192,7 @@ export const ChatAssistant: React.FC = () => {
             isSpeaking={isSpeaking}
             isListening={isListening}
             isTutorialActive={!!activeTutorial}
-            onStopSpeaking={stopSpeaking}
+            onStopSpeaking={stopAllVoiceActivity}
             currentText={currentSpeakingText}
           />
         )}
@@ -1191,8 +1206,8 @@ export const ChatAssistant: React.FC = () => {
             isSpeaking={isSpeaking}
             isListening={isListening}
             isContinuousMode={isContinuousMode}
-            onStopSpeaking={stopSpeaking}
-            onStopContinuous={stopContinuousListening}
+            onStopSpeaking={stopAllVoiceActivity}
+            onStopContinuous={stopAllVoiceActivity}
             currentText={currentSpeakingText}
           />
         )}
@@ -1478,7 +1493,7 @@ export const ChatAssistant: React.FC = () => {
               isListening={isListening}
               isSpeaking={isSpeaking}
               duration={recordingDuration}
-              onStop={stopContinuousListening}
+              onStop={stopAllVoiceActivity}
             />
           )}
 
@@ -1804,7 +1819,7 @@ export const ChatAssistant: React.FC = () => {
                 <Button
                   variant={isSpeaking ? "secondary" : "destructive"}
                   size="sm"
-                  onClick={isContinuousMode ? stopContinuousListening : handleMicClick}
+                  onClick={stopAllVoiceActivity}
                   className="h-8"
                 >
                   <Square className="h-3 w-3 mr-1.5" />
