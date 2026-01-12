@@ -3,22 +3,33 @@ import App from "./App.tsx";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import "./index.css";
 
-// Dev/preview safety: disable PWA caching that can prevent the preview from updating.
-// Clean up service workers + caches silently in background without forcing reload.
+// Aggressive cleanup of service workers and caches to prevent 404 errors on SPA routes.
+// This runs on ALL environments to ensure fresh content delivery.
+const cleanupServiceWorkers = async () => {
+  try {
+    if ("serviceWorker" in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((r) => r.unregister()));
+    }
+    
+    if ("caches" in window) {
+      const cacheKeys = await caches.keys();
+      await Promise.all(cacheKeys.map((k) => caches.delete(k)));
+    }
+  } catch (e) {
+    // Silently ignore - cleanup is best effort
+    console.debug("[SW Cleanup]", e);
+  }
+};
+
+// Run cleanup immediately on load
+cleanupServiceWorkers();
+
+// Also run cleanup periodically to catch any new SW registrations
 const isPreviewHost = typeof window !== "undefined" && /lovableproject\.com$/i.test(window.location.hostname);
-
 if (import.meta.env.DEV || isPreviewHost) {
-  if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-    navigator.serviceWorker.getRegistrations()
-      .then((regs) => regs.forEach((r) => r.unregister()))
-      .catch(() => {});
-  }
-
-  if (typeof window !== "undefined" && "caches" in window) {
-    caches.keys()
-      .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
-      .catch(() => {});
-  }
+  // In dev/preview, run cleanup every 30 seconds
+  setInterval(cleanupServiceWorkers, 30000);
 }
 
 createRoot(document.getElementById("root")!).render(
