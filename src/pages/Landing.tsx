@@ -103,6 +103,9 @@ const getPricingTiers = (language: string) => [
     name: 'Free',
     monthlyPrice: 0,
     description: language === 'es' ? 'Para explorar' : 'To explore',
+    transformation: language === 'es' 
+      ? 'De caos financiero → Claridad básica'
+      : 'From financial chaos → Basic clarity',
     features: language === 'es' ? [
       '50 gastos manuales/mes',
       '20 ingresos manuales/mes',
@@ -126,7 +129,10 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Premium',
     monthlyPrice: 6.99,
-    description: language === 'es' ? 'Para freelancers' : 'For freelancers',
+    description: language === 'es' ? 'Para freelancers serios' : 'For serious freelancers',
+    transformation: language === 'es' 
+      ? 'De desorganizado → Control financiero total'
+      : 'From disorganized → Total financial control',
     features: language === 'es' ? [
       'Gastos e ingresos ilimitados',
       '50 escaneos OCR/mes',
@@ -156,7 +162,10 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Pro',
     monthlyPrice: 14.99,
-    description: language === 'es' ? 'Poder total' : 'Full power',
+    description: language === 'es' ? 'Dominio absoluto' : 'Absolute mastery',
+    transformation: language === 'es' 
+      ? 'De empleado → Profesional financiero'
+      : 'From employee → Financial professional',
     features: language === 'es' ? [
       'Todo de Premium',
       'OCR ilimitado',
@@ -810,6 +819,18 @@ export default function Landing() {
                       <p className="text-sm text-green-400 mt-1 font-medium">{priceInfo.savings}</p>
                     )}
                     <p className="text-sm text-slate-400 mt-2">{tier.description}</p>
+                    
+                    {/* Transformation Badge */}
+                    {'transformation' in tier && tier.transformation && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${tier.gradient} text-xs font-bold text-white shadow-lg`}
+                      >
+                        <Flame className="h-3 w-3" />
+                        {tier.transformation}
+                      </motion.div>
+                    )}
                   </div>
 
                   <ul className="space-y-3 mb-8 flex-grow">
@@ -856,6 +877,123 @@ export default function Landing() {
 
       {/* FAQ Section */}
       <FAQSection />
+
+      {/* Compact Pricing Reminder - Second appearance */}
+      <section className="relative py-16 bg-gradient-to-b from-slate-100 to-slate-200 overflow-hidden">
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-10"
+          >
+            <Badge className="mb-3 px-3 py-1 bg-violet-500/20 text-violet-600 border-violet-500/30 text-sm">
+              <TrendingUp className="w-3 h-3 mr-1 inline" />
+              {language === 'es' ? 'Tu Transformación' : 'Your Transformation'}
+            </Badge>
+            <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">
+              {language === 'es' ? 'Elige Tu Nivel de Evolución' : 'Choose Your Evolution Level'}
+            </h3>
+            <p className="text-slate-600 max-w-2xl mx-auto">
+              {language === 'es' 
+                ? 'Cada plan te acerca más a la libertad financiera. ¿Cuál es tu siguiente paso?'
+                : 'Each plan brings you closer to financial freedom. What\'s your next step?'}
+            </p>
+          </motion.div>
+
+          {/* Compact pricing cards */}
+          <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+            {pricingTiers.map((tier, index) => {
+              const priceInfo = getPrice(tier.monthlyPrice);
+              return (
+                <motion.div
+                  key={`compact-${tier.name}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ scale: 1.03, y: -5 }}
+                  className={`relative rounded-xl p-5 cursor-pointer transition-all ${
+                    tier.popular
+                      ? 'bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-500 text-white shadow-xl shadow-orange-500/30'
+                      : 'bg-white/80 backdrop-blur-sm border border-slate-200 hover:shadow-lg'
+                  }`}
+                  onClick={() => navigate('/auth')}
+                >
+                  {tier.popular && (
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-slate-900 text-white text-xs px-2 py-0.5 shadow-lg">
+                        <Star className="w-2 h-2 mr-1 inline" />
+                        {language === 'es' ? 'Popular' : 'Popular'}
+                      </Badge>
+                    </div>
+                  )}
+                  
+                  <div className="text-center">
+                    <h4 className={`font-bold text-lg ${tier.popular ? 'text-white' : 'text-slate-800'}`}>
+                      {tier.name}
+                    </h4>
+                    <div className="flex items-baseline justify-center gap-1 my-2">
+                      <span className={`text-3xl font-black ${tier.popular ? 'text-white' : `bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}`}>
+                        {priceInfo.display}
+                      </span>
+                      <span className={`text-sm ${tier.popular ? 'text-white/80' : 'text-slate-500'}`}>
+                        {priceInfo.period}
+                      </span>
+                    </div>
+                    
+                    {/* Transformation highlight */}
+                    {'transformation' in tier && tier.transformation && (
+                      <div className={`text-xs font-medium px-2 py-1 rounded-full inline-block ${
+                        tier.popular 
+                          ? 'bg-white/20 text-white' 
+                          : 'bg-slate-100 text-slate-600'
+                      }`}>
+                        <Flame className="w-3 h-3 inline mr-1" />
+                        {tier.transformation}
+                      </div>
+                    )}
+                    
+                    <Button
+                      size="sm"
+                      className={`w-full mt-3 ${
+                        tier.popular
+                          ? 'bg-slate-900 hover:bg-slate-800 text-white'
+                          : 'bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white'
+                      }`}
+                    >
+                      {tier.cta}
+                      <ArrowRight className="ml-1 h-3 w-3" />
+                    </Button>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Annual toggle reminder */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mt-6 flex items-center justify-center gap-3"
+          >
+            <button
+              onClick={() => setIsAnnual(!isAnnual)}
+              className={`text-sm font-medium px-4 py-2 rounded-full transition-all ${
+                isAnnual 
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg' 
+                  : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+              }`}
+            >
+              {isAnnual 
+                ? (language === 'es' ? '✨ Ahorrando 20% Anual' : '✨ Saving 20% Annual')
+                : (language === 'es' ? 'Cambiar a Anual (-20%)' : 'Switch to Annual (-20%)')
+              }
+            </button>
+          </motion.div>
+        </div>
+      </section>
 
       {/* Final CTA with parallax */}
       <section className="relative py-24 overflow-hidden">
