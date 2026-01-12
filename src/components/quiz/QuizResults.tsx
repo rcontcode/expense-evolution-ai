@@ -381,7 +381,7 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
         transition={{ duration: 0.5 }}
         className="text-center mb-6"
       >
-        <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
           {t.greeting}
         </h1>
       </motion.div>
@@ -396,12 +396,12 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
         <PhoenixScoreAnimation level={result.level} />
         
         <div className="mt-4">
-          <p className="text-white/80 text-sm mb-1 font-medium">{t.yourScore}</p>
+          <p className="text-muted-foreground text-sm mb-1 font-medium">{t.yourScore}</p>
           <div className="flex items-baseline justify-center gap-2">
             <span className={`text-5xl md:text-6xl font-bold bg-gradient-to-r ${levelInfo.color} bg-clip-text text-transparent`}>
               {animatedScore}
             </span>
-            <span className="text-white/60 text-lg">{t.outOf}</span>
+            <span className="text-muted-foreground text-lg">{t.outOf}</span>
           </div>
         </div>
       </motion.div>
@@ -425,36 +425,36 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
-        className="w-full max-w-md bg-slate-800/30 border border-slate-700/50 rounded-xl p-4 mb-6"
+        className="w-full max-w-md bg-card/70 border border-border/70 backdrop-blur-sm rounded-xl p-4 mb-6"
       >
-        <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-          <Target className="w-5 h-5 text-amber-400" />
+        <h3 className="text-lg font-semibold text-card-foreground mb-3 flex items-center gap-2">
+          <Target className="w-5 h-5 text-warning" />
           {t.yourProfile}
         </h3>
         <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="bg-slate-900/50 rounded-lg p-3">
-            <span className="text-white/70 block text-xs font-medium">{t.situation}</span>
-            <span className="text-white flex items-center gap-1.5 mt-1 font-semibold">
+          <div className="bg-muted/50 rounded-lg p-3">
+            <span className="text-muted-foreground block text-xs font-medium">{t.situation}</span>
+            <span className="text-card-foreground flex items-center gap-1.5 mt-1 font-semibold">
               <span>{profileDisplay.situationIcon}</span>
               <span className="truncate">{result.data.situation}</span>
             </span>
           </div>
-          <div className="bg-slate-900/50 rounded-lg p-3">
-            <span className="text-white/70 block text-xs font-medium">{t.country}</span>
-            <span className="text-white flex items-center gap-1.5 mt-1 font-semibold">
+          <div className="bg-muted/50 rounded-lg p-3">
+            <span className="text-muted-foreground block text-xs font-medium">{t.country}</span>
+            <span className="text-card-foreground flex items-center gap-1.5 mt-1 font-semibold">
               <span className="truncate">{result.data.country}</span>
             </span>
           </div>
-          <div className="bg-slate-900/50 rounded-lg p-3">
-            <span className="text-white/70 block text-xs font-medium">{t.goal}</span>
-            <span className="text-white flex items-center gap-1.5 mt-1 font-semibold">
+          <div className="bg-muted/50 rounded-lg p-3">
+            <span className="text-muted-foreground block text-xs font-medium">{t.goal}</span>
+            <span className="text-card-foreground flex items-center gap-1.5 mt-1 font-semibold">
               <span>{profileDisplay.goalIcon}</span>
               <span className="truncate">{result.data.goal}</span>
             </span>
           </div>
-          <div className="bg-slate-900/50 rounded-lg p-3">
-            <span className="text-white/70 block text-xs font-medium">{t.obstacle}</span>
-            <span className="text-white flex items-center gap-1.5 mt-1 font-semibold">
+          <div className="bg-muted/50 rounded-lg p-3">
+            <span className="text-muted-foreground block text-xs font-medium">{t.obstacle}</span>
+            <span className="text-card-foreground flex items-center gap-1.5 mt-1 font-semibold">
               <span>{profileDisplay.obstacleIcon}</span>
               <span className="truncate">{result.data.obstacle}</span>
             </span>
@@ -467,16 +467,16 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
-        className="w-full max-w-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 rounded-xl p-5 mb-6"
+        className="w-full max-w-md bg-warning/10 border border-warning/30 rounded-xl p-5 mb-6"
       >
-        <h3 className="text-lg font-bold text-amber-300 mb-3 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-warning mb-3 flex items-center gap-2">
           <Sparkles className="w-5 h-5" />
           {t.personalAnalysis}
         </h3>
-        <p className="text-white text-sm leading-relaxed font-medium" 
+        <p className="text-foreground text-sm leading-relaxed font-medium" 
            dangerouslySetInnerHTML={{ 
              __html: personalizedMessage
-               .replace(/\*\*(.*?)\*\*/g, '<strong class="text-amber-300">$1</strong>')
+               .replace(/\*\*(.*?)\*\*/g, '<strong class="text-warning">$1</strong>')
            }} 
         />
       </motion.div>
@@ -487,28 +487,28 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="w-full max-w-md bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-xl p-5 mb-6"
-        >
-          <h3 className="text-lg font-semibold text-emerald-400 mb-3 flex items-center gap-2">
-            <Rocket className="w-5 h-5" />
-            {language === "es" ? "¿Por qué EvoFinz para ti?" : "Why EvoFinz for you?"}
-          </h3>
-          <ul className="space-y-2">
-            {(language === "es" ? [
-              "🚀 Automatiza lo que ya haces bien – ahorra horas cada mes",
-              "📊 Dashboard ejecutivo con métricas que importan",
-              "🎯 Optimizador fiscal que encuentra deducciones ocultas",
-              "⚡ Captura gastos en 3 segundos con foto o voz",
-            ] : [
-              "🚀 Automate what you already do well – save hours monthly",
-              "📊 Executive dashboard with metrics that matter",
-              "🎯 Tax optimizer that finds hidden deductions",
-              "⚡ Capture expenses in 3 seconds with photo or voice",
-            ]).map((item, i) => (
-              <li key={i} className="text-white/90 text-sm font-medium">{item}</li>
-            ))}
-          </ul>
-        </motion.div>
+           className="w-full max-w-md bg-success/10 border border-success/30 rounded-xl p-5 mb-6"
+         >
+           <h3 className="text-lg font-semibold text-success mb-3 flex items-center gap-2">
+             <Rocket className="w-5 h-5" />
+             {language === "es" ? "¿Por qué EvoFinz para ti?" : "Why EvoFinz for you?"}
+           </h3>
+           <ul className="space-y-2">
+             {(language === "es" ? [
+               "🚀 Automatiza lo que ya haces bien – ahorra horas cada mes",
+               "📊 Dashboard ejecutivo con métricas que importan",
+               "🎯 Optimizador fiscal que encuentra deducciones ocultas",
+               "⚡ Captura gastos en 3 segundos con foto o voz",
+             ] : [
+               "🚀 Automate what you already do well – save hours monthly",
+               "📊 Executive dashboard with metrics that matter",
+               "🎯 Tax optimizer that finds hidden deductions",
+               "⚡ Capture expenses in 3 seconds with photo or voice",
+             ]).map((item, i) => (
+               <li key={i} className="text-foreground text-sm font-medium">{item}</li>
+             ))}
+           </ul>
+         </motion.div>
       )}
 
       {/* Recommendations - only show if there are failed questions */}
@@ -519,8 +519,8 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="w-full max-w-2xl mb-6"
         >
-          <h3 className="text-lg font-bold text-white mb-2 text-center">{t.recommendations}</h3>
-          <p className="text-slate-400 text-sm text-center mb-4">{t.recommendationsSubtitle}</p>
+          <h3 className="text-lg font-bold text-foreground mb-2 text-center">{t.recommendations}</h3>
+          <p className="text-muted-foreground text-sm text-center mb-4">{t.recommendationsSubtitle}</p>
           <QuizRecommendations 
             failedQuestions={result.failedQuestions} 
             language={language}
@@ -536,19 +536,19 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
         transition={{ duration: 0.6, delay: 0.6 }}
         className="w-full max-w-md"
       >
-        <div className="relative bg-gradient-to-b from-slate-800/80 to-slate-900/80 border border-amber-500/30 rounded-2xl p-6 text-center overflow-hidden">
+        <div className="relative bg-gradient-to-b from-card/95 to-card/75 border border-border/70 backdrop-blur-sm rounded-2xl p-6 text-center overflow-hidden">
           {/* Shimmer effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/5 to-transparent animate-pulse" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-warning/10 to-transparent animate-pulse" />
           
           <div className="relative z-10">
-            <h3 className="text-xl md:text-2xl font-bold text-white mb-2">{t.ctaTitle}</h3>
-            <p className="text-slate-300 text-sm mb-4">{t.ctaSubtitle}</p>
+            <h3 className="text-xl md:text-2xl font-bold text-card-foreground mb-2">{t.ctaTitle}</h3>
+            <p className="text-muted-foreground text-sm mb-4">{t.ctaSubtitle}</p>
             
             {/* Features list */}
             <ul className="text-left space-y-2.5 mb-5">
               {t.features.slice(0, 4).map((feature, index) => (
-                <li key={index} className="flex items-start gap-2.5 text-white">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <li key={index} className="flex items-start gap-2.5 text-card-foreground">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
                   <span className="text-sm font-medium">{feature}</span>
                 </li>
               ))}
@@ -568,8 +568,8 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
             {/* Trust badges */}
             <div className="flex items-center justify-center gap-4 mt-4 text-xs">
               {t.benefits.map((benefit, index) => (
-                <span key={index} className="flex items-center gap-1 text-white/80">
-                  <benefit.icon className="w-3.5 h-3.5 text-emerald-400" />
+                <span key={index} className="flex items-center gap-1 text-muted-foreground">
+                  <benefit.icon className="w-3.5 h-3.5 text-success" />
                   {benefit.text}
                 </span>
               ))}
@@ -579,7 +579,7 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
 
         <button
           onClick={onRetake}
-          className="flex items-center justify-center gap-2 mx-auto mt-5 text-white/70 hover:text-white transition-colors font-medium"
+          className="flex items-center justify-center gap-2 mx-auto mt-5 text-muted-foreground hover:text-foreground transition-colors font-medium"
         >
           <RotateCcw className="w-4 h-4" />
           <span className="text-sm">{t.retake}</span>
