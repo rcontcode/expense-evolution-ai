@@ -264,7 +264,7 @@ export function PainPointsSection() {
 
         {/* Category Pills */}
         <div className="flex justify-center mb-10">
-          <div className="inline-flex flex-wrap justify-center gap-2 p-2 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50">
+          <div className="inline-flex flex-wrap justify-center gap-2 p-2 bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-600/50">
             {categories.map((category, index) => {
               const isActive = index === activeCategory;
               
@@ -274,10 +274,10 @@ export function PainPointsSection() {
                   onClick={() => handleCategoryClick(index)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`relative px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center gap-2 ${
+                  className={`relative px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center gap-2 border ${
                     isActive 
-                      ? `bg-gradient-to-r ${category.color} text-white shadow-xl ${category.glow}` 
-                      : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                      ? `bg-gradient-to-r ${category.color} text-white shadow-xl ${category.glow} border-transparent` 
+                      : 'text-white bg-slate-700/80 border-slate-500 hover:bg-slate-600 hover:border-slate-400'
                   }`}
                 >
                   <span className="text-lg">{category.emoji}</span>

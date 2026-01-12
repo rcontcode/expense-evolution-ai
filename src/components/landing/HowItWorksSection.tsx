@@ -345,10 +345,10 @@ export function HowItWorksSection() {
               onClick={() => goTo(index)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 border ${
                 index === currentIndex
-                  ? `bg-gradient-to-r ${workflow.colors.primary} text-white shadow-lg`
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                  ? `bg-gradient-to-r ${workflow.colors.primary} text-white shadow-lg border-transparent`
+                  : 'bg-slate-800/80 text-white border-slate-600 hover:bg-slate-700 hover:border-slate-500'
               }`}
             >
               <span className="text-lg">{workflow.emoji}</span>
