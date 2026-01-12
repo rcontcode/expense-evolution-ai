@@ -225,6 +225,8 @@ const getPricingTiers = (language: string) => [
     transformation: language === 'es' 
       ? '🚀 De empleado → Experto financiero'
       : '🚀 From employee → Financial expert',
+    // Highlight Pro as the most complete plan
+    featured: true,
     features: language === 'es' ? [
       '👑 TODO lo del plan Premium +',
       '📷 OCR ILIMITADO (sin límites)',
@@ -851,7 +853,7 @@ export default function Landing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
-                className={`relative ${tier.popular ? 'pt-4' : 'isFree' in tier && tier.isFree ? 'pt-4' : ''}`}
+                className={`relative ${tier.popular ? 'pt-4' : 'isFree' in tier && tier.isFree ? 'pt-4' : 'featured' in tier && tier.featured ? 'pt-4' : ''}`}
               >
                 {/* Badge FUERA del Card para evitar overflow-hidden */}
                 {tier.popular && (
@@ -866,13 +868,21 @@ export default function Landing() {
                     {language === 'es' ? '¡100% GRATIS!' : '100% FREE!'}
                   </Badge>
                 )}
+                {'featured' in tier && tier.featured && (
+                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2.2s_ease-in-out_infinite]">
+                    <Crown className="w-3 h-3 mr-1 inline" />
+                    {language === 'es' ? 'Más Completo' : 'Most Complete'}
+                  </Badge>
+                )}
                 <Card 
                   className={`relative p-8 bg-slate-900/80 backdrop-blur-sm border-2 overflow-hidden h-full flex flex-col transition-all duration-300 ${
                     tier.popular 
                       ? 'border-orange-500 shadow-2xl shadow-orange-500/20 scale-105 z-10 hover:shadow-orange-500/40 hover:-translate-y-2' 
                       : 'isFree' in tier && tier.isFree
                         ? 'border-emerald-500 shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-2'
-                        : 'border-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-slate-900/50 hover:-translate-y-2'
+                        : 'featured' in tier && tier.featured
+                          ? 'border-violet-500 shadow-2xl shadow-violet-500/25 scale-105 z-10 hover:shadow-violet-500/40 hover:-translate-y-2'
+                          : 'border-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-slate-900/50 hover:-translate-y-2'
                   }`}
                 >
                   {/* Popular glow effect */}
@@ -994,9 +1004,11 @@ export default function Landing() {
                   className={`relative rounded-xl p-5 cursor-pointer transition-all ${
                     tier.popular
                       ? 'bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-500 text-white shadow-xl shadow-orange-500/30'
-                      : 'isFree' in tier && tier.isFree
-                        ? 'bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 text-white shadow-xl shadow-emerald-500/30'
-                        : 'bg-white/80 backdrop-blur-sm border border-slate-200 hover:shadow-lg'
+                      : 'featured' in tier && tier.featured
+                        ? 'bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 text-white shadow-xl shadow-violet-500/30'
+                        : 'isFree' in tier && tier.isFree
+                          ? 'bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 text-white shadow-xl shadow-emerald-500/30'
+                          : 'bg-white/80 backdrop-blur-sm border border-slate-200 hover:shadow-lg'
                   }`}
                   onClick={() => navigate('/auth')}
                 >
