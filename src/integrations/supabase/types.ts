@@ -2311,6 +2311,7 @@ export type Database = {
         Args: { credit_limit?: number; user_uuid: string }
         Returns: boolean
       }
+      claim_first_admin: { Args: never; Returns: boolean }
       get_monthly_ai_credits_used: {
         Args: { user_uuid: string }
         Returns: number
