@@ -396,12 +396,12 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
         <PhoenixScoreAnimation level={result.level} />
         
         <div className="mt-4">
-          <p className="text-slate-400 text-sm mb-1">{t.yourScore}</p>
+          <p className="text-white/80 text-sm mb-1 font-medium">{t.yourScore}</p>
           <div className="flex items-baseline justify-center gap-2">
             <span className={`text-5xl md:text-6xl font-bold bg-gradient-to-r ${levelInfo.color} bg-clip-text text-transparent`}>
               {animatedScore}
             </span>
-            <span className="text-slate-500 text-lg">{t.outOf}</span>
+            <span className="text-white/60 text-lg">{t.outOf}</span>
           </div>
         </div>
       </motion.div>
@@ -417,7 +417,7 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
         <h2 className={`text-xl font-bold bg-gradient-to-r ${levelInfo.color} bg-clip-text text-transparent mb-1`}>
           {levelInfo.title}
         </h2>
-        <p className="text-slate-300 text-sm">{levelInfo.description}</p>
+        <p className="text-white/90 text-sm font-medium">{levelInfo.description}</p>
       </motion.div>
 
       {/* Your Profile Card */}
@@ -502,7 +502,7 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
               "🎯 Tax optimizer that finds hidden deductions",
               "⚡ Capture expenses in 3 seconds with photo or voice",
             ]).map((item, i) => (
-              <li key={i} className="text-slate-300 text-sm">{item}</li>
+              <li key={i} className="text-white/90 text-sm font-medium">{item}</li>
             ))}
           </ul>
         </motion.div>
