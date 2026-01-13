@@ -38,6 +38,7 @@ import { SystemAlertsBanner } from '@/components/beta/SystemAlertsBanner';
 import { ReferralCard } from '@/components/beta/ReferralCard';
 import { ScreenshotUpload } from '@/components/beta/ScreenshotUpload';
 import { BetaGamificationCard } from '@/components/beta/BetaGamificationCard';
+import { MissionsCard } from '@/components/beta/MissionsCard';
 
 const APP_SECTIONS = [
   { id: 'dashboard', label: { es: 'Dashboard', en: 'Dashboard' }, emoji: '📊', color: 'from-violet-500 to-purple-600' },
@@ -358,6 +359,12 @@ const BetaFeedback = () => {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* System Alerts Banner */}
         <SystemAlertsBanner />
+        
+        {/* Missions Quick Actions Card */}
+        <div className="mb-6">
+          <MissionsCard />
+        </div>
+        
         {/* Hero Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
