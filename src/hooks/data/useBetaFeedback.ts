@@ -55,6 +55,7 @@ interface UserStats {
   days_active: number;
   feedback_count: number;
   avg_rating: number;
+  beta_expires_at: string | null;
 }
 
 interface CreateFeedbackParams {
@@ -186,10 +187,10 @@ export const useBetaFeedback = () => {
       
       if (userIds.length === 0) return [];
 
-      // Get profiles
+      // Get profiles with beta_expires_at
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, email, full_name')
+        .select('id, email, full_name, beta_expires_at')
         .in('id', userIds);
 
       // Get usage logs
@@ -230,6 +231,7 @@ export const useBetaFeedback = () => {
           avg_rating: userFeedback.length > 0 
             ? userFeedback.reduce((sum, f) => sum + f.rating, 0) / userFeedback.length 
             : 0,
+          beta_expires_at: profile?.beta_expires_at || null,
         };
       }).sort((a, b) => b.total_actions - a.total_actions) as UserStats[];
     },

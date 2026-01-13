@@ -14,7 +14,8 @@ import {
   Lock,
   Sparkles,
   Medal,
-  TrendingUp
+  TrendingUp,
+  Clock
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,9 +32,12 @@ import {
 } from '@/components/ui/dialog';
 import { useBetaGamification, TIER_CONFIG, REWARDS_CONFIG } from '@/hooks/data/useBetaGamification';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useProfile } from '@/hooks/data/useProfile';
+import { BetaExpirationBadge } from './BetaExpirationBadge';
 
 export const BetaGamificationCard = () => {
   const { language } = useLanguage();
+  const { data: profile } = useProfile();
   const {
     userPoints,
     goalsWithProgress,
@@ -199,6 +203,13 @@ export const BetaGamificationCard = () => {
               </div>
             )}
           </div>
+
+          {/* Beta Expiration Warning */}
+          {profile?.beta_expires_at && (
+            <div className="px-6 py-3 border-b border-white/10">
+              <BetaExpirationBadge expiresAt={profile.beta_expires_at} showDetailed />
+            </div>
+          )}
 
           {/* Quick Stats Row */}
           <div className="grid grid-cols-3 gap-1 p-1 bg-muted/50">

@@ -24,7 +24,8 @@ import {
   Trophy,
   Target,
   Flame,
-  Shield
+  Shield,
+  Calendar
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +41,8 @@ import { useBetaCodes } from '@/hooks/data/useBetaCodes';
 import { Layout } from '@/components/Layout';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { AdminBetaControls } from '@/components/beta/AdminBetaControls';
+import { BetaExpirationBadge } from '@/components/beta/BetaExpirationBadge';
 
 const APP_SECTIONS = [
   { id: 'dashboard', emoji: '📊' }, { id: 'expenses', emoji: '💸' }, { id: 'income', emoji: '💰' },
@@ -561,12 +564,16 @@ const BetaDashboard = () => {
                       <TableRow className="bg-muted/30">
                         <TableHead className="font-bold">{text.user}</TableHead>
                         <TableHead className="font-bold">{text.email}</TableHead>
+                        <TableHead className="text-center font-bold">
+                          <div className="flex items-center justify-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {language === 'es' ? 'Vencimiento' : 'Expiration'}
+                          </div>
+                        </TableHead>
                         <TableHead className="text-center font-bold">{text.actions}</TableHead>
                         <TableHead className="text-center font-bold">{text.features}</TableHead>
-                        <TableHead className="text-center font-bold">{text.pages}</TableHead>
-                        <TableHead className="text-center font-bold">{text.daysActive}</TableHead>
                         <TableHead className="text-center font-bold">{text.rating}</TableHead>
-                        <TableHead className="font-bold">{text.lastActivity}</TableHead>
+                        <TableHead className="font-bold">{language === 'es' ? '⚙️ Control' : '⚙️ Control'}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -592,20 +599,15 @@ const BetaDashboard = () => {
                             {user.user_email}
                           </TableCell>
                           <TableCell className="text-center">
+                            <BetaExpirationBadge expiresAt={user.beta_expires_at} />
+                          </TableCell>
+                          <TableCell className="text-center">
                             <Badge className="bg-violet-100 text-violet-700 border-violet-200 border font-bold">
                               {user.total_actions}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center font-medium">
                             {user.unique_features}
-                          </TableCell>
-                          <TableCell className="text-center font-medium">
-                            {user.unique_pages}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge variant="outline" className="font-medium">
-                              {user.days_active} {text.days}
-                            </Badge>
                           </TableCell>
                           <TableCell className="text-center">
                             {user.avg_rating > 0 ? (
@@ -614,16 +616,20 @@ const BetaDashboard = () => {
                               <span className="text-muted-foreground text-sm">—</span>
                             )}
                           </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {user.last_activity 
-                              ? formatDate(user.last_activity)
-                              : text.noActivity}
+                          <TableCell>
+                            <AdminBetaControls
+                              userId={user.user_id}
+                              userName={user.user_name || text.noName}
+                              userEmail={user.user_email}
+                              expiresAt={user.beta_expires_at}
+                              isBetaTester={true}
+                            />
                           </TableCell>
                         </motion.tr>
                       ))}
                       {(!userStats || userStats.length === 0) && (
                         <TableRow>
-                          <TableCell colSpan={8} className="text-center py-12">
+                          <TableCell colSpan={7} className="text-center py-12">
                             <div className="flex flex-col items-center gap-3">
                               <Users className="h-12 w-12 text-muted-foreground/30" />
                               <p className="text-muted-foreground">{text.noTesters}</p>

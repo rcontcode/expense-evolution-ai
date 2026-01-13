@@ -2014,6 +2014,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          beta_expires_at: string | null
+          beta_extended_by: string | null
+          beta_extension_reason: string | null
           business_name: string | null
           business_number: string | null
           business_start_date: string | null
@@ -2037,6 +2040,9 @@ export type Database = {
           work_types: Database["public"]["Enums"]["work_type"][] | null
         }
         Insert: {
+          beta_expires_at?: string | null
+          beta_extended_by?: string | null
+          beta_extension_reason?: string | null
           business_name?: string | null
           business_number?: string | null
           business_start_date?: string | null
@@ -2060,6 +2066,9 @@ export type Database = {
           work_types?: Database["public"]["Enums"]["work_type"][] | null
         }
         Update: {
+          beta_expires_at?: string | null
+          beta_extended_by?: string | null
+          beta_extension_reason?: string | null
           business_name?: string | null
           business_number?: string | null
           business_start_date?: string | null
@@ -2725,6 +2734,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_beta_tester: {
+        Args: { p_days?: number; p_user_id: string }
+        Returns: undefined
+      }
       award_beta_points: {
         Args: { p_category?: string; p_points: number; p_user_id: string }
         Returns: {
@@ -2777,6 +2790,10 @@ export type Database = {
         }
       }
       claim_first_admin: { Args: never; Returns: boolean }
+      extend_beta_access: {
+        Args: { p_days: number; p_reason?: string; p_user_id: string }
+        Returns: undefined
+      }
       get_monthly_ai_credits_used: {
         Args: { user_uuid: string }
         Returns: number
@@ -2813,6 +2830,10 @@ export type Database = {
       increment_usage: {
         Args: { p_usage_type: string; p_user_id: string }
         Returns: boolean
+      }
+      revoke_beta_access: {
+        Args: { p_reason?: string; p_user_id: string }
+        Returns: undefined
       }
       update_beta_streak: {
         Args: { p_user_id: string }
