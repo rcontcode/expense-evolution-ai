@@ -139,19 +139,24 @@ export const ProgressChart = () => {
         ))}
       </div>
 
-      {/* Milestones timeline */}
-      <div className="relative">
-        <div className="absolute left-0 right-0 h-1 bg-muted top-4" />
+      {/* Milestones timeline - Fixed layout */}
+      <div className="relative pt-6 pb-2">
+        {/* Background track */}
+        <div className="absolute left-[5%] right-[5%] h-1.5 bg-muted top-2 rounded-full" />
+        
+        {/* Progress track */}
         <motion.div
-          className="absolute left-0 h-1 bg-gradient-to-r from-primary to-accent top-4 rounded-full"
+          className="absolute left-[5%] h-1.5 bg-gradient-to-r from-primary to-accent top-2 rounded-full"
+          style={{ maxWidth: '90%' }}
           initial={{ width: 0 }}
-          animate={{ width: `${percentage}%` }}
+          animate={{ width: `${Math.min(percentage * 0.9, 90)}%` }}
           transition={{ duration: 1.5, ease: 'easeOut' }}
         />
-        <div className="relative flex justify-between">
+        
+        {/* Milestone markers */}
+        <div className="relative flex justify-between px-[5%]">
           {milestones.map((milestone, i) => {
             const isReached = totalPoints >= milestone.points;
-            const position = (milestone.points / maxPoints) * 100;
             
             return (
               <motion.div
@@ -160,23 +165,21 @@ export const ProgressChart = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.8 + i * 0.15, type: 'spring' }}
                 className="flex flex-col items-center"
-                style={{ position: 'absolute', left: `${position}%`, transform: 'translateX(-50%)' }}
               >
                 <motion.div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-lg shadow-lg ${
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-sm shadow-md border-2 ${
                     isReached 
-                      ? 'bg-gradient-to-br from-primary to-accent' 
-                      : 'bg-muted'
+                      ? 'bg-gradient-to-br from-primary to-accent border-primary/30' 
+                      : 'bg-muted border-muted-foreground/20'
                   }`}
                   animate={isReached ? { 
-                    scale: [1, 1.2, 1],
-                    boxShadow: ['0 0 0 0 rgba(139, 92, 246, 0)', '0 0 0 8px rgba(139, 92, 246, 0.3)', '0 0 0 0 rgba(139, 92, 246, 0)']
+                    scale: [1, 1.1, 1],
                   } : {}}
                   transition={{ duration: 2, repeat: isReached ? Infinity : 0 }}
                 >
                   {milestone.icon}
                 </motion.div>
-                <p className={`text-xs mt-1 ${isReached ? 'font-bold text-primary' : 'text-muted-foreground'}`}>
+                <p className={`text-[10px] mt-1 ${isReached ? 'font-bold text-primary' : 'text-muted-foreground'}`}>
                   {milestone.points}
                 </p>
               </motion.div>
