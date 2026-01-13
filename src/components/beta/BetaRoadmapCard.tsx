@@ -188,6 +188,7 @@ export const BetaRoadmapCard = () => {
   return (
     <TooltipProvider>
       <motion.div
+        id="beta-roadmap-card"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
