@@ -2,6 +2,7 @@
 export { AdminBetaControls } from './AdminBetaControls';
 export { AchievementUnlock } from './AchievementUnlock';
 export { BetaExpirationBadge } from './BetaExpirationBadge';
+export { BetaFeedbackTutorial, resetBetaFeedbackTutorial } from './BetaFeedbackTutorial';
 export { BetaGamificationCard } from './BetaGamificationCard';
 export { BetaReminderBanner } from './BetaReminderBanner';
 export { BetaRoadmapCard } from './BetaRoadmapCard';
