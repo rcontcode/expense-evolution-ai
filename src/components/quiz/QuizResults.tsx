@@ -1,17 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Flame, ArrowRight, RotateCcw, CheckCircle2, Sparkles, Rocket, Zap, Star, Target, Shield, Clock, Crown, TrendingUp, Gift, ChevronRight } from "lucide-react";
+import { Flame, ArrowRight, RotateCcw, CheckCircle2, Sparkles, Rocket, Zap, Star, Target, Shield, Clock, Crown, TrendingUp, Gift, ChevronRight, Users } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { PhoenixScoreAnimation } from "./PhoenixScoreAnimation";
 import { QuizRecommendations } from "./QuizRecommendations";
-import type { QuizResult } from "@/pages/FinancialQuiz";
+import type { QuizResult, ReferralInfo } from "@/pages/FinancialQuiz";
 import confetti from "canvas-confetti";
 
 interface QuizResultsProps {
   result: QuizResult;
   onRetake: () => void;
+  referralInfo?: ReferralInfo | null;
+  onNavigateToAuth?: () => void;
 }
 
 const getLevelInfo = (level: QuizResult["level"], language: string) => {
@@ -309,7 +311,7 @@ const ScoreRing = ({ score, color }: { score: number; color: string }) => {
   );
 };
 
-export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
+export const QuizResults = ({ result, onRetake, referralInfo, onNavigateToAuth }: QuizResultsProps) => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [animatedScore, setAnimatedScore] = useState(0);
@@ -335,6 +337,8 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
     result.data.obstacle,
     language
   );
+
+  const hasVipReferral = referralInfo?.isValid && referralInfo?.referrerName;
 
   useEffect(() => {
     const duration = 2000;
@@ -373,7 +377,13 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
   }, [result.score]);
 
   const handleAccessApp = () => {
-    navigate("/landing");
+    if (onNavigateToAuth) {
+      onNavigateToAuth();
+    } else if (hasVipReferral && referralInfo?.code) {
+      navigate(`/auth?ref=${referralInfo.code}`);
+    } else {
+      navigate("/landing");
+    }
   };
 
   const content = {
@@ -645,7 +655,7 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
         </motion.div>
       )}
 
-      {/* EPIC CTA Section */}
+      {/* EPIC CTA Section - VIP Enhanced */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -653,9 +663,13 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
         className="w-full max-w-md"
       >
         <div className="relative overflow-hidden">
-          {/* Animated glow background */}
+          {/* Animated glow background - Gold for VIP */}
           <motion.div 
-            className="absolute inset-0 bg-gradient-to-r from-amber-500/20 via-orange-500/30 to-amber-500/20 rounded-3xl blur-xl"
+            className={`absolute inset-0 rounded-3xl blur-xl ${
+              hasVipReferral 
+                ? "bg-gradient-to-r from-yellow-500/30 via-amber-400/40 to-yellow-500/30"
+                : "bg-gradient-to-r from-amber-500/20 via-orange-500/30 to-amber-500/20"
+            }`}
             animate={{ 
               scale: [1, 1.05, 1],
               opacity: [0.5, 0.8, 0.5]
@@ -663,13 +677,31 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
             transition={{ duration: 3, repeat: Infinity }}
           />
           
-          <div className="relative bg-gradient-to-b from-slate-800/95 to-slate-900/95 border-2 border-amber-500/40 backdrop-blur-xl rounded-3xl p-6 text-center shadow-2xl shadow-amber-500/20">
+          <div className={`relative backdrop-blur-xl rounded-3xl p-6 text-center shadow-2xl ${
+            hasVipReferral
+              ? "bg-gradient-to-b from-amber-900/40 to-slate-900/95 border-2 border-yellow-400/50 shadow-yellow-500/30"
+              : "bg-gradient-to-b from-slate-800/95 to-slate-900/95 border-2 border-amber-500/40 shadow-amber-500/20"
+          }`}>
+            {/* VIP Badge inside CTA */}
+            {hasVipReferral && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.8, type: "spring", bounce: 0.5 }}
+                className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 font-bold text-xs shadow-lg shadow-yellow-500/40"
+              >
+                <Crown className="w-3.5 h-3.5" />
+                {language === "es" ? "INVITACIÓN VIP" : "VIP INVITATION"}
+                <Crown className="w-3.5 h-3.5" />
+              </motion.div>
+            )}
+
             {/* Floating particles */}
             <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
               {[...Array(8)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="absolute w-1 h-1 bg-amber-400 rounded-full"
+                  className={`absolute w-1 h-1 rounded-full ${hasVipReferral ? "bg-yellow-400" : "bg-amber-400"}`}
                   style={{ left: `${10 + i * 12}%`, top: "80%" }}
                   animate={{
                     y: [-20, -80],
@@ -692,16 +724,34 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
               transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
             />
             
-            <div className="relative z-10">
+            <div className={`relative z-10 ${hasVipReferral ? "pt-4" : ""}`}>
               <motion.div
                 animate={{ y: [0, -5, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                <Rocket className="w-10 h-10 text-amber-400 mx-auto mb-3 drop-shadow-lg" />
+                {hasVipReferral ? (
+                  <Users className="w-10 h-10 text-yellow-400 mx-auto mb-3 drop-shadow-lg" />
+                ) : (
+                  <Rocket className="w-10 h-10 text-amber-400 mx-auto mb-3 drop-shadow-lg" />
+                )}
               </motion.div>
               
-              <h3 className="text-2xl md:text-3xl font-black text-white mb-2">{t.ctaTitle}</h3>
-              <p className="text-white/70 text-sm mb-5">{t.ctaSubtitle}</p>
+              <h3 className="text-2xl md:text-3xl font-black text-white mb-2">
+                {hasVipReferral 
+                  ? (language === "es" 
+                    ? `¡${referralInfo?.referrerName} Te Espera!`
+                    : `${referralInfo?.referrerName} Is Waiting!`)
+                  : t.ctaTitle
+                }
+              </h3>
+              <p className="text-white/70 text-sm mb-5">
+                {hasVipReferral
+                  ? (language === "es"
+                    ? "Únete ahora y activa tu acceso VIP de 90 días"
+                    : "Join now and activate your 90-day VIP access")
+                  : t.ctaSubtitle
+                }
+              </p>
               
               {/* Features list with icons */}
               <ul className="text-left space-y-3 mb-6">
@@ -713,15 +763,17 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
                     transition={{ delay: 0.9 + index * 0.1 }}
                     className="flex items-center gap-3 text-white"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0">
-                      <feature.icon className="w-4 h-4 text-amber-400" />
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                      hasVipReferral ? "bg-yellow-500/20" : "bg-amber-500/20"
+                    }`}>
+                      <feature.icon className={`w-4 h-4 ${hasVipReferral ? "text-yellow-400" : "text-amber-400"}`} />
                     </div>
                     <span className="text-sm font-medium">{feature.text}</span>
                   </motion.li>
                 ))}
               </ul>
 
-              {/* Main CTA Button - EPIC */}
+              {/* Main CTA Button - VIP Enhanced */}
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -729,7 +781,11 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
                 <Button
                   onClick={handleAccessApp}
                   size="lg"
-                  className="w-full relative overflow-hidden bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-600 hover:via-orange-600 hover:to-amber-600 text-white font-black text-lg py-7 rounded-2xl shadow-xl shadow-amber-500/40 transition-all duration-300 group border-0"
+                  className={`w-full relative overflow-hidden text-white font-black text-lg py-7 rounded-2xl transition-all duration-300 group border-0 ${
+                    hasVipReferral
+                      ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 shadow-xl shadow-yellow-500/40 text-slate-900"
+                      : "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-600 hover:via-orange-600 hover:to-amber-600 shadow-xl shadow-amber-500/40"
+                  }`}
                 >
                   {/* Button shine */}
                   <motion.div
@@ -738,14 +794,23 @@ export const QuizResults = ({ result, onRetake }: QuizResultsProps) => {
                     transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
                   />
                   <span className="relative flex items-center justify-center gap-2">
-                    <Star className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                    {t.cta}
+                    {hasVipReferral ? (
+                      <>
+                        <Crown className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                        {language === "es" ? "¡Activar Mi Acceso VIP!" : "Activate My VIP Access!"}
+                      </>
+                    ) : (
+                      <>
+                        <Star className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                        {t.cta}
+                      </>
+                    )}
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Button>
               </motion.div>
 
-              {/* Trust badges - More prominent */}
+              {/* Trust badges */}
               <div className="flex items-center justify-center gap-4 mt-5 flex-wrap">
                 {t.benefits.map((benefit, index) => (
                   <motion.span 

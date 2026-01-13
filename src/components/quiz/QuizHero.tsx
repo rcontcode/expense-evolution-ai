@@ -1,17 +1,20 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Flame, Shield, Clock, Users, Sparkles, TrendingUp, Lock } from "lucide-react";
+import { Flame, Shield, Clock, Users, Sparkles, TrendingUp, Lock, Crown, Star, Gift } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { PhoenixLogo } from "@/components/ui/phoenix-logo";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { Link } from "react-router-dom";
+import type { ReferralInfo } from "@/pages/FinancialQuiz";
 
 interface QuizHeroProps {
   onStartQuiz: () => void;
+  referralInfo?: ReferralInfo | null;
+  isLoadingReferral?: boolean;
 }
 
-export const QuizHero = ({ onStartQuiz }: QuizHeroProps) => {
+export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizHeroProps) => {
   const { language } = useLanguage();
   
   // Animated today counter (starts at base and increments randomly)
@@ -100,12 +103,138 @@ export const QuizHero = ({ onStartQuiz }: QuizHeroProps) => {
 
   const t = content[language as keyof typeof content] || content.es;
 
+  const vipContent = {
+    es: {
+      vipBadge: "🌟 Invitación VIP",
+      invitedBy: "invitado por",
+      exclusiveAccess: "Acceso Exclusivo a Beta Privada",
+      vipBenefits: [
+        "90 días de acceso Premium gratis",
+        "Soporte prioritario de fundadores",
+        "Acceso anticipado a nuevas funciones",
+      ],
+    },
+    en: {
+      vipBadge: "🌟 VIP Invitation",
+      invitedBy: "invited by",
+      exclusiveAccess: "Exclusive Private Beta Access",
+      vipBenefits: [
+        "90 days of free Premium access",
+        "Priority support from founders",
+        "Early access to new features",
+      ],
+    },
+  };
+
+  const vipT = vipContent[language as keyof typeof vipContent] || vipContent.es;
+  const hasValidReferral = referralInfo?.isValid && referralInfo?.referrerName;
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative z-10">
       {/* Language Selector */}
       <div className="absolute top-4 right-4 z-30">
         <LanguageSelector />
       </div>
+
+      {/* VIP Referral Banner - Stunning golden design */}
+      <AnimatePresence>
+        {hasValidReferral && !isLoadingReferral && (
+          <motion.div
+            initial={{ opacity: 0, y: -30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.6, type: "spring", bounce: 0.4 }}
+            className="mb-8 w-full max-w-xl"
+          >
+            <div className="relative overflow-hidden rounded-2xl border-2 border-amber-400/50 bg-gradient-to-r from-amber-500/20 via-yellow-500/15 to-amber-500/20 backdrop-blur-xl shadow-2xl shadow-amber-500/20">
+              {/* Animated shimmer effect */}
+              <div className="absolute inset-0 overflow-hidden">
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300/20 to-transparent -skew-x-12"
+                  animate={{ x: ["-200%", "200%"] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                />
+              </div>
+              
+              {/* Floating stars */}
+              <div className="absolute top-2 right-4">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                >
+                  <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+                </motion.div>
+              </div>
+              <div className="absolute bottom-2 left-6">
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Sparkles className="w-4 h-4 text-yellow-400" />
+                </motion.div>
+              </div>
+
+              <div className="relative p-5 text-center">
+                {/* VIP Badge */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", bounce: 0.5 }}
+                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-900 font-bold text-sm mb-3 shadow-lg shadow-amber-500/30"
+                >
+                  <Crown className="w-4 h-4" />
+                  {vipT.vipBadge}
+                  <Crown className="w-4 h-4" />
+                </motion.div>
+
+                {/* Invited by message */}
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-lg text-white/90 mb-2"
+                >
+                  {vipT.invitedBy}{" "}
+                  <span className="font-bold text-amber-400 text-xl">
+                    {referralInfo?.referrerName}
+                  </span>
+                </motion.p>
+
+                {/* Exclusive access message */}
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-amber-200/80 text-sm mb-4"
+                >
+                  {vipT.exclusiveAccess}
+                </motion.p>
+
+                {/* VIP Benefits pills */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="flex flex-wrap justify-center gap-2"
+                >
+                  {vipT.vipBenefits.map((benefit, i) => (
+                    <motion.span
+                      key={i}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.6 + i * 0.1 }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/60 border border-amber-500/30 text-xs text-amber-100"
+                    >
+                      <Gift className="w-3 h-3 text-amber-400" />
+                      {benefit}
+                    </motion.span>
+                  ))}
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Badge */}
       <motion.div
