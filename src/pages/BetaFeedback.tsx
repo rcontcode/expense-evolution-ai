@@ -364,7 +364,7 @@ const BetaFeedback = () => {
       {/* Beta Feedback Tutorial */}
       <BetaFeedbackTutorial />
       
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* System Alerts Banner */}
         <SystemAlertsBanner />
         
@@ -736,39 +736,38 @@ const BetaFeedback = () => {
           </p>
         </motion.div>
 
-        {/* Visual Progress Chart */}
-        <div className="mt-8">
-          <Card className="overflow-hidden border-2 border-primary/20 relative">
-            <FloatingParticles count={10} className="opacity-30" />
-            <CardHeader className="relative z-10">
-              <CardTitle className="flex items-center gap-2">
+        {/* Two Column Layout for Progress and Stats */}
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Visual Progress Chart */}
+          <Card className="overflow-hidden border-2 border-primary/20 relative bg-gradient-to-br from-background to-muted/30">
+            <FloatingParticles count={8} className="opacity-20" />
+            <CardHeader className="relative z-10 pb-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
                 📊 {language === 'es' ? 'Tu Progreso Visual' : 'Your Visual Progress'}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 {language === 'es' 
                   ? 'Visualiza tu camino hacia las recompensas' 
                   : 'Visualize your path to rewards'}
               </CardDescription>
             </CardHeader>
-            <CardContent className="relative z-10">
+            <CardContent className="relative z-10 pt-0">
               <ProgressChart />
             </CardContent>
           </Card>
+
+          {/* Referral Card */}
+          <ReferralCard />
         </div>
 
-        {/* Gamification Quick Stats */}
-        <div className="mt-8">
+        {/* Gamification Stats - Full Width */}
+        <div className="mt-6">
           <BetaGamificationCard />
         </div>
 
-        {/* Complete Roadmap Guide */}
-        <div className="mt-8">
+        {/* Complete Roadmap Guide - Full Width */}
+        <div className="mt-6">
           <BetaRoadmapCard />
-        </div>
-
-        {/* Referral Card */}
-        <div className="mt-8">
-          <ReferralCard />
         </div>
       </div>
     </Layout>
