@@ -2252,6 +2252,54 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_leads: {
+        Row: {
+          converted_at: string | null
+          converted_user_id: string | null
+          created_at: string
+          email: string
+          id: string
+          marketing_consent: boolean
+          name: string | null
+          referral_code: string
+          referrer_id: string | null
+          reminder_count: number | null
+          reminder_sent_at: string | null
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          converted_at?: string | null
+          converted_user_id?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          marketing_consent?: boolean
+          name?: string | null
+          referral_code: string
+          referrer_id?: string | null
+          reminder_count?: number | null
+          reminder_sent_at?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          converted_at?: string | null
+          converted_user_id?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          marketing_consent?: boolean
+          name?: string | null
+          referral_code?: string
+          referrer_id?: string | null
+          reminder_count?: number | null
+          reminder_sent_at?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       savings_goals: {
         Row: {
           color: string | null
@@ -2768,6 +2816,15 @@ export type Database = {
         Args: { credit_limit?: number; user_uuid: string }
         Returns: boolean
       }
+      capture_referral_lead: {
+        Args: {
+          p_email: string
+          p_marketing_consent: boolean
+          p_name: string
+          p_referral_code: string
+        }
+        Returns: Json
+      }
       claim_beta_reward: {
         Args: { p_reward_type: string; p_user_id: string }
         Returns: {
@@ -2869,6 +2926,7 @@ export type Database = {
         Args: { p_code: string; p_user_id: string }
         Returns: Json
       }
+      validate_any_beta_code: { Args: { p_code: string }; Returns: Json }
       validate_beta_invitation_code: { Args: { p_code: string }; Returns: Json }
     }
     Enums: {
