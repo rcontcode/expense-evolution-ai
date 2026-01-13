@@ -250,13 +250,26 @@ export const useBetaFeedback = () => {
         .single();
 
       if (error) throw error;
+
+      // Award points for feedback
+      const hasDetailedComment = (params.comment?.length || 0) > 100 || (params.suggestions?.length || 0) > 100;
+      const basePoints = 25;
+      const bonusPoints = hasDetailedComment ? 25 : 0;
+      
+      await supabase.rpc('award_beta_points', {
+        p_user_id: user.id,
+        p_points: basePoints + bonusPoints,
+        p_category: 'feedback',
+      });
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['beta-feedback-all'] });
+      queryClient.invalidateQueries({ queryKey: ['beta-points'] });
       toast({
         title: '¡Gracias por tu feedback!',
-        description: 'Tu opinión nos ayuda a mejorar.',
+        description: 'Tu opinión nos ayuda a mejorar. +25 puntos 🎉',
       });
     },
     onError: (error: Error) => {
@@ -283,13 +296,32 @@ export const useBetaFeedback = () => {
         .single();
 
       if (error) throw error;
+
+      // Award points for bug report based on severity
+      const severityPoints: Record<string, number> = {
+        low: 25,
+        medium: 50,
+        high: 75,
+        critical: 150,
+      };
+      const points = severityPoints[params.severity || 'medium'] || 50;
+      const screenshotBonus = params.screenshot_url ? 25 : 0;
+      
+      await supabase.rpc('award_beta_points', {
+        p_user_id: user.id,
+        p_points: points + screenshotBonus,
+        p_category: 'bug_report',
+      });
+
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['beta-bug-reports-all'] });
+      queryClient.invalidateQueries({ queryKey: ['beta-points'] });
+      const points = { low: 25, medium: 50, high: 75, critical: 150 }[variables.severity || 'medium'] || 50;
       toast({
         title: '¡Reporte enviado!',
-        description: 'Revisaremos tu reporte pronto.',
+        description: `Revisaremos tu reporte pronto. +${points} puntos 🎉`,
       });
     },
     onError: (error: Error) => {

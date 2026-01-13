@@ -292,6 +292,95 @@ export type Database = {
         }
         Relationships: []
       }
+      beta_goal_completions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_progress: number
+          goal_id: string
+          id: string
+          points_awarded: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_progress?: number
+          goal_id: string
+          id?: string
+          points_awarded?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_progress?: number
+          goal_id?: string
+          id?: string
+          points_awarded?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beta_goal_completions_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "beta_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      beta_goals: {
+        Row: {
+          created_at: string
+          description_en: string
+          description_es: string
+          goal_key: string
+          goal_type: string
+          icon: string
+          id: string
+          is_active: boolean
+          name_en: string
+          name_es: string
+          points_reward: number
+          sort_order: number
+          target_value: number
+        }
+        Insert: {
+          created_at?: string
+          description_en: string
+          description_es: string
+          goal_key: string
+          goal_type: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name_en: string
+          name_es: string
+          points_reward?: number
+          sort_order?: number
+          target_value?: number
+        }
+        Update: {
+          created_at?: string
+          description_en?: string
+          description_es?: string
+          goal_key?: string
+          goal_type?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name_en?: string
+          name_es?: string
+          points_reward?: number
+          sort_order?: number
+          target_value?: number
+        }
+        Relationships: []
+      }
       beta_invitation_codes: {
         Row: {
           code: string
@@ -392,6 +481,99 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      beta_reward_redemptions: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          points_spent: number
+          reward_type: string
+          status: string
+          subscription_end_date: string | null
+          tier_at_redemption: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          points_spent?: number
+          reward_type: string
+          status?: string
+          subscription_end_date?: string | null
+          tier_at_redemption: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          points_spent?: number
+          reward_type?: string
+          status?: string
+          subscription_end_date?: string | null
+          tier_at_redemption?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      beta_tester_points: {
+        Row: {
+          best_streak: number
+          bug_report_points: number
+          created_at: string
+          feature_usage_points: number
+          feedback_points: number
+          id: string
+          last_activity_date: string | null
+          referral_points: number
+          reward_claimed: boolean
+          reward_claimed_at: string | null
+          streak_days: number
+          tier: string
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          best_streak?: number
+          bug_report_points?: number
+          created_at?: string
+          feature_usage_points?: number
+          feedback_points?: number
+          id?: string
+          last_activity_date?: string | null
+          referral_points?: number
+          reward_claimed?: boolean
+          reward_claimed_at?: string | null
+          streak_days?: number
+          tier?: string
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          best_streak?: number
+          bug_report_points?: number
+          created_at?: string
+          feature_usage_points?: number
+          feedback_points?: number
+          id?: string
+          last_activity_date?: string | null
+          referral_points?: number
+          reward_claimed?: boolean
+          reward_claimed_at?: string | null
+          streak_days?: number
+          tier?: string
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       category_budgets: {
         Row: {
@@ -2543,9 +2725,56 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_beta_points: {
+        Args: { p_category?: string; p_points: number; p_user_id: string }
+        Returns: {
+          best_streak: number
+          bug_report_points: number
+          created_at: string
+          feature_usage_points: number
+          feedback_points: number
+          id: string
+          last_activity_date: string | null
+          referral_points: number
+          reward_claimed: boolean
+          reward_claimed_at: string | null
+          streak_days: number
+          tier: string
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "beta_tester_points"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       can_use_ai: {
         Args: { credit_limit?: number; user_uuid: string }
         Returns: boolean
+      }
+      claim_beta_reward: {
+        Args: { p_reward_type: string; p_user_id: string }
+        Returns: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          points_spent: number
+          reward_type: string
+          status: string
+          subscription_end_date: string | null
+          tier_at_redemption: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "beta_reward_redemptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       claim_first_admin: { Args: never; Returns: boolean }
       get_monthly_ai_credits_used: {
@@ -2584,6 +2813,32 @@ export type Database = {
       increment_usage: {
         Args: { p_usage_type: string; p_user_id: string }
         Returns: boolean
+      }
+      update_beta_streak: {
+        Args: { p_user_id: string }
+        Returns: {
+          best_streak: number
+          bug_report_points: number
+          created_at: string
+          feature_usage_points: number
+          feedback_points: number
+          id: string
+          last_activity_date: string | null
+          referral_points: number
+          reward_claimed: boolean
+          reward_claimed_at: string | null
+          streak_days: number
+          tier: string
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "beta_tester_points"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       use_beta_invitation_code: {
         Args: { p_code: string; p_user_id: string }
