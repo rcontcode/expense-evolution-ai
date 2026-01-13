@@ -26,7 +26,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useBetaFeedback } from '@/hooks/data/useBetaFeedback';
@@ -38,11 +37,7 @@ import { SystemAlertsBanner } from '@/components/beta/SystemAlertsBanner';
 import { ReferralCard } from '@/components/beta/ReferralCard';
 import { ScreenshotUpload } from '@/components/beta/ScreenshotUpload';
 import { BetaGamificationCard } from '@/components/beta/BetaGamificationCard';
-import { MissionsCard } from '@/components/beta/MissionsCard';
 import { BetaRoadmapCard } from '@/components/beta/BetaRoadmapCard';
-import { FloatingParticles } from '@/components/beta/FloatingParticles';
-import { ProgressChart } from '@/components/beta/ProgressChart';
-import { StreakFlame } from '@/components/beta/StreakFlame';
 import { BetaFeedbackTutorial } from '@/components/beta/BetaFeedbackTutorial';
 
 const APP_SECTIONS = [
@@ -63,18 +58,33 @@ const APP_SECTIONS = [
   { id: 'general', label: { es: 'General / Otro', en: 'General / Other' }, emoji: '🌟', color: 'from-yellow-500 to-orange-600' },
 ];
 
-const StarRating = ({ 
-  value, 
-  onChange, 
-  label,
-  emoji
-}: { 
-  value: number; 
-  onChange: (v: number) => void; 
+interface StarRatingProps {
+  value: number;
+  onChange: (v: number) => void;
   label: string;
   emoji?: string;
-}) => {
+  language: 'es' | 'en';
+}
+
+const StarRating = ({ value, onChange, label, emoji, language }: StarRatingProps) => {
   const [hovered, setHovered] = useState(0);
+  
+  const ratingTexts = {
+    es: {
+      5: '🔥 ¡Increíble!',
+      4: '✨ ¡Muy bien!',
+      3: '👍 Bien',
+      2: '🤔 Puede mejorar',
+      1: '😕 Necesita trabajo',
+    },
+    en: {
+      5: '🔥 Amazing!',
+      4: '✨ Very good!',
+      3: '👍 Good',
+      2: '🤔 Could be better',
+      1: '😕 Needs work',
+    },
+  };
   
   return (
     <div className="space-y-2">
@@ -110,11 +120,15 @@ const StarRating = ({
           animate={{ opacity: 1, y: 0 }}
           className="text-xs font-medium"
         >
-          {value === 5 && <span className="text-amber-500">🔥 ¡Increíble!</span>}
-          {value === 4 && <span className="text-emerald-500">✨ ¡Muy bien!</span>}
-          {value === 3 && <span className="text-blue-500">👍 Bien</span>}
-          {value === 2 && <span className="text-orange-500">🤔 Puede mejorar</span>}
-          {value === 1 && <span className="text-rose-500">😕 Necesita trabajo</span>}
+          <span className={
+            value === 5 ? 'text-amber-500' :
+            value === 4 ? 'text-emerald-500' :
+            value === 3 ? 'text-blue-500' :
+            value === 2 ? 'text-orange-500' :
+            'text-rose-500'
+          }>
+            {ratingTexts[language][value as keyof typeof ratingTexts.es]}
+          </span>
         </motion.div>
       )}
     </div>
@@ -154,7 +168,7 @@ const BetaFeedback = () => {
 
   const t = {
     es: {
-      title: '🚀 Centro de Feedback VIP',
+      title: 'Centro de Feedback VIP',
       subtitle: 'Tu voz construye el futuro de EvoFinz',
       betaBadge: '⭐ FOUNDING MEMBER',
       feedbackTab: '⭐ Evaluar',
@@ -190,9 +204,15 @@ const BetaFeedback = () => {
       thankYouMessage: 'Tu feedback es oro puro. Cada opinión nos acerca a construir algo extraordinario JUNTOS.',
       sendAnother: '✨ Enviar otro feedback',
       impactMessage: '💪 Tu voz tiene impacto real',
+      encouragement: '🔍 ¡Eres un detective del código! Cada bug que reportas hace a EvoFinz más fuerte 💪',
+      priorityNote: 'Como Founding Member, tu feedback tiene prioridad especial',
+      progressTitle: 'Tu Progreso',
+      progressDesc: 'Gana puntos y desbloquea recompensas exclusivas',
+      roadmapTitle: 'Guía Completa',
+      roadmapDesc: 'Todo lo que necesitas saber para ganar tu membresía gratis',
     },
     en: {
-      title: '🚀 VIP Feedback Center',
+      title: 'VIP Feedback Center',
       subtitle: 'Your voice builds the future of EvoFinz',
       betaBadge: '⭐ FOUNDING MEMBER',
       feedbackTab: '⭐ Rate',
@@ -228,6 +248,12 @@ const BetaFeedback = () => {
       thankYouMessage: 'Your feedback is pure gold. Every opinion brings us closer to building something extraordinary TOGETHER.',
       sendAnother: '✨ Send another feedback',
       impactMessage: '💪 Your voice has real impact',
+      encouragement: '🔍 You\'re a code detective! Every bug you report makes EvoFinz stronger 💪',
+      priorityNote: 'As a Founding Member, your feedback has special priority',
+      progressTitle: 'Your Progress',
+      progressDesc: 'Earn points and unlock exclusive rewards',
+      roadmapTitle: 'Complete Guide',
+      roadmapDesc: 'Everything you need to know to earn your free membership',
     },
   };
 
@@ -361,27 +387,21 @@ const BetaFeedback = () => {
 
   return (
     <Layout>
-      {/* Beta Feedback Tutorial */}
       <BetaFeedbackTutorial />
       
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* System Alerts Banner */}
+      <div className="container mx-auto px-4 py-6 max-w-5xl space-y-6">
+        {/* System Alerts */}
         <SystemAlertsBanner />
         
-        {/* Missions Quick Actions Card */}
-        <div className="mb-6">
-          <MissionsCard />
-        </div>
-        
-        {/* Hero Header */}
+        {/* Hero Header - NOW FIRST! */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-10"
+          className="text-center"
         >
-          {/* Logo with Effects */}
+          {/* Logo */}
           <motion.div 
-            className="flex justify-center mb-6"
+            className="flex justify-center mb-4"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200 }}
@@ -400,36 +420,38 @@ const BetaFeedback = () => {
             </Badge>
           </motion.div>
 
+          {/* Title */}
           <motion.div 
-            className="flex items-center justify-center gap-3 mb-3"
+            className="flex items-center justify-center gap-3 mb-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <Rocket className="h-8 w-8 text-primary animate-bounce" />
-            <h1 className="text-4xl font-black bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+            <Rocket className="h-7 w-7 text-primary animate-bounce" />
+            <h1 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               {text.title}
             </h1>
-            <Crown className="h-8 w-8 text-amber-500" />
+            <Crown className="h-7 w-7 text-amber-500" />
           </motion.div>
           
+          {/* Subtitle */}
           <motion.p 
-            className="text-lg text-muted-foreground flex items-center justify-center gap-2"
+            className="text-muted-foreground flex items-center justify-center gap-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
             {userName && <span className="font-semibold text-foreground">{userName},</span>}
             {text.subtitle}
-            <Sparkles className="h-5 w-5 text-amber-500" />
+            <Sparkles className="h-4 w-4 text-amber-500" />
           </motion.p>
         </motion.div>
 
-        {/* Main Card */}
+        {/* Main Feedback Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.3 }}
         >
           <Card className="overflow-hidden border-2 border-primary/20 shadow-xl">
             <Tabs defaultValue="feedback" className="w-full">
@@ -450,6 +472,7 @@ const BetaFeedback = () => {
                 </TabsTrigger>
               </TabsList>
 
+              {/* Feedback Tab */}
               <TabsContent value="feedback" className="p-6">
                 <AnimatePresence mode="wait">
                   {feedbackSent ? (
@@ -460,7 +483,7 @@ const BetaFeedback = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="space-y-8"
+                      className="space-y-6"
                     >
                       {/* Section selector */}
                       <div className="space-y-3">
@@ -473,18 +496,18 @@ const BetaFeedback = () => {
                               key={s.id}
                               initial={{ opacity: 0, scale: 0.8 }}
                               animate={{ opacity: 1, scale: 1 }}
-                              transition={{ delay: index * 0.03 }}
+                              transition={{ delay: index * 0.02 }}
                               onClick={() => setSection(s.id)}
                               whileHover={{ scale: 1.05, y: -2 }}
                               whileTap={{ scale: 0.95 }}
-                              className={`p-3 rounded-xl border-2 text-center transition-all ${
+                              className={`p-2.5 rounded-xl border-2 text-center transition-all ${
                                 section === s.id
                                   ? `border-transparent bg-gradient-to-br ${s.color} text-white shadow-lg`
                                   : 'border-border hover:border-primary/50 hover:bg-muted/50'
                               }`}
                             >
-                              <div className="text-2xl mb-1">{s.emoji}</div>
-                              <div className="text-xs font-medium truncate">
+                              <div className="text-xl mb-0.5">{s.emoji}</div>
+                              <div className="text-[10px] font-medium truncate leading-tight">
                                 {s.label[language]}
                               </div>
                             </motion.button>
@@ -498,39 +521,43 @@ const BetaFeedback = () => {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="space-y-8"
+                            className="space-y-6"
                           >
                             {/* Star ratings */}
-                            <div className="grid gap-6 sm:grid-cols-2">
+                            <div className="grid gap-5 sm:grid-cols-2">
                               <StarRating
                                 value={rating}
                                 onChange={setRating}
                                 label={text.overallRating}
                                 emoji="🌟"
+                                language={language}
                               />
                               <StarRating
                                 value={easeOfUse}
                                 onChange={setEaseOfUse}
                                 label={text.easeOfUse}
                                 emoji="🎮"
+                                language={language}
                               />
                               <StarRating
                                 value={usefulness}
                                 onChange={setUsefulness}
                                 label={text.usefulness}
                                 emoji="🎯"
+                                language={language}
                               />
                               <StarRating
                                 value={designRating}
                                 onChange={setDesignRating}
                                 label={text.design}
                                 emoji="🎨"
+                                language={language}
                               />
                             </div>
 
                             {/* Comments */}
                             <div className="space-y-2">
-                              <Label className="text-base font-semibold">{text.comments}</Label>
+                              <Label className="text-sm font-semibold">{text.comments}</Label>
                               <Textarea
                                 value={comment}
                                 onChange={(e) => setComment(e.target.value)}
@@ -542,7 +569,7 @@ const BetaFeedback = () => {
 
                             {/* Suggestions */}
                             <div className="space-y-2">
-                              <Label className="text-base font-semibold">{text.suggestions}</Label>
+                              <Label className="text-sm font-semibold">{text.suggestions}</Label>
                               <Textarea
                                 value={suggestions}
                                 onChange={(e) => setSuggestions(e.target.value)}
@@ -554,33 +581,33 @@ const BetaFeedback = () => {
 
                             {/* Would recommend */}
                             <div className="space-y-3">
-                              <Label className="text-base font-semibold">❤️ {text.recommend}</Label>
+                              <Label className="text-sm font-semibold">❤️ {text.recommend}</Label>
                               <div className="flex gap-4">
                                 <motion.button
                                   whileHover={{ scale: 1.05 }}
                                   whileTap={{ scale: 0.95 }}
                                   onClick={() => setWouldRecommend(true)}
-                                  className={`flex-1 p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
+                                  className={`flex-1 p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1.5 ${
                                     wouldRecommend === true
                                       ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600'
                                       : 'border-border hover:border-emerald-300'
                                   }`}
                                 >
-                                  <ThumbsUp className={`h-8 w-8 ${wouldRecommend === true ? 'fill-current' : ''}`} />
-                                  <span className="font-semibold">{text.yes}</span>
+                                  <ThumbsUp className={`h-7 w-7 ${wouldRecommend === true ? 'fill-current' : ''}`} />
+                                  <span className="font-semibold text-sm">{text.yes}</span>
                                 </motion.button>
                                 <motion.button
                                   whileHover={{ scale: 1.05 }}
                                   whileTap={{ scale: 0.95 }}
                                   onClick={() => setWouldRecommend(false)}
-                                  className={`flex-1 p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
+                                  className={`flex-1 p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1.5 ${
                                     wouldRecommend === false
                                       ? 'border-rose-500 bg-rose-500/10 text-rose-600'
                                       : 'border-border hover:border-rose-300'
                                   }`}
                                 >
-                                  <ThumbsDown className={`h-8 w-8 ${wouldRecommend === false ? 'fill-current' : ''}`} />
-                                  <span className="font-semibold">{text.no}</span>
+                                  <ThumbsDown className={`h-7 w-7 ${wouldRecommend === false ? 'fill-current' : ''}`} />
+                                  <span className="font-semibold text-sm">{text.no}</span>
                                 </motion.button>
                               </div>
                             </div>
@@ -593,7 +620,7 @@ const BetaFeedback = () => {
                               <Button
                                 onClick={handleSubmitFeedback}
                                 disabled={rating === 0 || submitFeedback.isPending}
-                                className="w-full h-14 text-lg font-bold bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 shadow-lg"
+                                className="w-full h-12 text-base font-bold bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:via-orange-600 hover:to-rose-600 shadow-lg"
                                 size="lg"
                               >
                                 <Rocket className="h-5 w-5 mr-2" />
@@ -609,6 +636,7 @@ const BetaFeedback = () => {
                 </AnimatePresence>
               </TabsContent>
 
+              {/* Bug Report Tab */}
               <TabsContent value="bug" className="p-6">
                 <AnimatePresence mode="wait">
                   {bugSent ? (
@@ -619,46 +647,34 @@ const BetaFeedback = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="space-y-6"
+                      className="space-y-5"
                     >
                       {/* Encouragement message */}
-                      <div className="p-4 rounded-xl bg-gradient-to-r from-rose-500/10 via-pink-500/10 to-rose-500/10 border border-rose-200 dark:border-rose-800">
+                      <div className="p-3 rounded-xl bg-gradient-to-r from-rose-500/10 via-pink-500/10 to-rose-500/10 border border-rose-200 dark:border-rose-800">
                         <p className="text-sm text-center">
-                          🔍 ¡Eres un detective del código! Cada bug que reportas hace a EvoFinz más fuerte 💪
+                          {text.encouragement}
                         </p>
                       </div>
 
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                          <Label className="font-semibold">{text.reportType}</Label>
+                          <Label className="font-semibold text-sm">{text.reportType}</Label>
                           <Select value={reportType} onValueChange={setReportType}>
-                            <SelectTrigger className="h-12">
+                            <SelectTrigger className="h-11">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="bug">
-                                <span className="flex items-center gap-2">
-                                  🐛 {language === 'es' ? 'Bug / Error' : 'Bug / Error'}
-                                </span>
-                              </SelectItem>
-                              <SelectItem value="suggestion">
-                                <span className="flex items-center gap-2">
-                                  💡 {language === 'es' ? 'Sugerencia' : 'Suggestion'}
-                                </span>
-                              </SelectItem>
-                              <SelectItem value="question">
-                                <span className="flex items-center gap-2">
-                                  ❓ {language === 'es' ? 'Pregunta' : 'Question'}
-                                </span>
-                              </SelectItem>
+                              <SelectItem value="bug">{text.bug}</SelectItem>
+                              <SelectItem value="suggestion">{text.suggestion}</SelectItem>
+                              <SelectItem value="question">{text.question}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
 
                         <div className="space-y-2">
-                          <Label className="font-semibold">{text.severity}</Label>
+                          <Label className="font-semibold text-sm">{text.severity}</Label>
                           <Select value={severity} onValueChange={setSeverity}>
-                            <SelectTrigger className="h-12">
+                            <SelectTrigger className="h-11">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -672,22 +688,22 @@ const BetaFeedback = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label className="font-semibold">{text.bugTitle}</Label>
+                        <Label className="font-semibold text-sm">{text.bugTitle}</Label>
                         <Input
                           value={bugTitle}
                           onChange={(e) => setBugTitle(e.target.value)}
                           placeholder={text.bugTitlePlaceholder}
-                          className="h-12"
+                          className="h-11"
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label className="font-semibold">{text.bugDescription}</Label>
+                        <Label className="font-semibold text-sm">{text.bugDescription}</Label>
                         <Textarea
                           value={bugDescription}
                           onChange={(e) => setBugDescription(e.target.value)}
                           placeholder={text.bugDescriptionPlaceholder}
-                          rows={5}
+                          rows={4}
                           className="resize-none"
                         />
                       </div>
@@ -705,7 +721,7 @@ const BetaFeedback = () => {
                         <Button
                           onClick={handleSubmitBugReport}
                           disabled={!bugTitle || !bugDescription || submitBugReport.isPending}
-                          className="w-full h-14 text-lg font-bold bg-gradient-to-r from-rose-500 via-pink-500 to-rose-500 hover:from-rose-600 hover:via-pink-600 hover:to-rose-600 shadow-lg"
+                          className="w-full h-12 text-base font-bold bg-gradient-to-r from-rose-500 via-pink-500 to-rose-500 hover:from-rose-600 hover:via-pink-600 hover:to-rose-600 shadow-lg"
                           size="lg"
                         >
                           <Zap className="h-5 w-5 mr-2" />
@@ -720,55 +736,47 @@ const BetaFeedback = () => {
           </Card>
         </motion.div>
 
-        {/* Bottom motivation */}
-        <motion.div
+        {/* Priority Note */}
+        <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
-          className="text-center mt-8 p-4"
+          transition={{ delay: 0.5 }}
+          className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2"
         >
-          <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
-            <Gift className="h-4 w-4 text-amber-500" />
-            {language === 'es' 
-              ? 'Como Founding Member, tu feedback tiene prioridad especial' 
-              : 'As a Founding Member, your feedback has special priority'}
-            <Crown className="h-4 w-4 text-amber-500" />
-          </p>
-        </motion.div>
+          <Gift className="h-4 w-4 text-amber-500" />
+          {text.priorityNote}
+          <Crown className="h-4 w-4 text-amber-500" />
+        </motion.p>
 
-        {/* Two Column Layout for Progress and Stats */}
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Visual Progress Chart */}
-          <Card className="overflow-hidden border-2 border-primary/20 relative bg-gradient-to-br from-background to-muted/30">
-            <FloatingParticles count={8} className="opacity-20" />
-            <CardHeader className="relative z-10 pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                📊 {language === 'es' ? 'Tu Progreso Visual' : 'Your Visual Progress'}
-              </CardTitle>
-              <CardDescription className="text-sm">
-                {language === 'es' 
-                  ? 'Visualiza tu camino hacia las recompensas' 
-                  : 'Visualize your path to rewards'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="relative z-10 pt-0">
-              <ProgressChart />
-            </CardContent>
-          </Card>
+        {/* Two Column: Progress & Referrals */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Progress Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <BetaGamificationCard />
+          </motion.div>
 
           {/* Referral Card */}
-          <ReferralCard />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <ReferralCard />
+          </motion.div>
         </div>
 
-        {/* Gamification Stats - Full Width */}
-        <div className="mt-6">
-          <BetaGamificationCard />
-        </div>
-
-        {/* Complete Roadmap Guide - Full Width */}
-        <div className="mt-6">
+        {/* Complete Roadmap Guide - Collapsible */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+        >
           <BetaRoadmapCard />
-        </div>
+        </motion.div>
       </div>
     </Layout>
   );
