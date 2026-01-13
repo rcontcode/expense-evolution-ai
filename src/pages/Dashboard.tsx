@@ -29,6 +29,7 @@ import { MonthDetailPanel } from '@/components/dashboard/MonthDetailPanel';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
 
 // Lazy load chart components for better performance
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
@@ -204,6 +205,9 @@ export default function Dashboard() {
     <Layout>
       <TooltipProvider delayDuration={200}>
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+          
+          {/* Beta Reminder Banner - Gentle motivational prompts */}
+          <BetaReminderBanner />
           
           {/* Interactive Guide - Shown on first visit or on demand */}
           {showGuide && (
