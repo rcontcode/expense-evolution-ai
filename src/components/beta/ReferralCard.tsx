@@ -9,10 +9,13 @@ import {
   Sparkles,
   Crown,
   Trophy,
-  Heart
+  Heart,
+  Link2,
+  MessageCircle,
+  Mail
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useBetaSystem } from '@/hooks/data/useBetaSystem';
@@ -97,11 +100,22 @@ export const ReferralCard = () => {
 
   if (!myReferralCode) {
     return (
-      <Card className="border-dashed border-2 opacity-70">
-        <CardContent className="p-6 text-center">
-          <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-          <p className="font-medium text-muted-foreground">{text.noCode}</p>
-          <p className="text-sm text-muted-foreground/70">{text.noCodeHint}</p>
+      <Card className="border-2 border-dashed border-primary/30 bg-gradient-to-br from-violet-500/5 via-purple-500/5 to-fuchsia-500/5">
+        <CardContent className="p-8 text-center space-y-4">
+          <motion.div
+            animate={{ rotate: [0, 10, -10, 0] }}
+            transition={{ repeat: Infinity, duration: 3 }}
+          >
+            <Gift className="h-16 w-16 mx-auto text-violet-500" />
+          </motion.div>
+          <div>
+            <p className="font-bold text-lg text-foreground">{text.noCode}</p>
+            <p className="text-sm text-muted-foreground mt-1">{text.noCodeHint}</p>
+          </div>
+          <Badge variant="outline" className="bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/50 dark:text-violet-300 dark:border-violet-800">
+            <Sparkles className="h-3 w-3 mr-1" />
+            {language === 'es' ? 'Se genera al activar beta' : 'Generated when beta is activated'}
+          </Badge>
         </CardContent>
       </Card>
     );
@@ -110,121 +124,162 @@ export const ReferralCard = () => {
   const progress = (myReferralCode.current_referrals / myReferralCode.max_referrals) * 100;
   const remaining = myReferralCode.max_referrals - myReferralCode.current_referrals;
 
+  const handleShareEmail = () => {
+    const subject = encodeURIComponent(language === 'es' 
+      ? '🔥 Invitación a EvoFinz - Tu asistente financiero personal'
+      : '🔥 EvoFinz Invitation - Your personal finance assistant');
+    const body = encodeURIComponent(language === 'es'
+      ? `¡Hola!\n\nTe invito a probar EvoFinz, una app increíble para manejar tus finanzas personales y de negocio.\n\nUsa mi código de referido: ${myReferralCode.code}\n\nRegistrarte aquí: ${window.location.origin}/auth?ref=${myReferralCode.code}\n\n¡Nos vemos adentro! 🚀`
+      : `Hi!\n\nI invite you to try EvoFinz, an amazing app for managing your personal and business finances.\n\nUse my referral code: ${myReferralCode.code}\n\nSign up here: ${window.location.origin}/auth?ref=${myReferralCode.code}\n\nSee you inside! 🚀`);
+    window.open(`mailto:?subject=${subject}&body=${body}`);
+  };
+
+  const handleCopyLink = async () => {
+    const link = `${window.location.origin}/auth?ref=${myReferralCode.code}`;
+    await navigator.clipboard.writeText(link);
+    toast({
+      title: '🔗 ' + (language === 'es' ? '¡Link copiado!' : 'Link copied!'),
+      description: link,
+    });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      className="h-full"
     >
-      <Card className="overflow-hidden border-2 border-primary/20 shadow-xl">
+      <Card className="overflow-hidden border-2 border-violet-500/30 shadow-xl h-full bg-gradient-to-br from-violet-500/5 via-background to-fuchsia-500/5">
         {/* Header with gradient */}
-        <div className="bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 p-6 text-white">
-          <div className="flex items-center gap-3 mb-2">
+        <div className="bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 p-4 text-white relative overflow-hidden">
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute -top-4 -right-4 w-24 h-24 bg-white rounded-full blur-2xl" />
+            <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-white rounded-full blur-2xl" />
+          </div>
+          <div className="flex items-center gap-3 relative z-10">
             <motion.div
-              animate={{ rotate: [0, 15, -15, 0] }}
+              animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.1, 1] }}
               transition={{ repeat: Infinity, duration: 3 }}
+              className="p-2 bg-white/20 rounded-xl backdrop-blur-sm"
             >
-              <Gift className="h-8 w-8" />
+              <Gift className="h-6 w-6" />
             </motion.div>
-            <div>
-              <h3 className="text-2xl font-black">{text.title}</h3>
-              <p className="text-white/80 text-sm">{text.subtitle}</p>
+            <div className="flex-1">
+              <h3 className="text-xl font-black flex items-center gap-2">
+                {text.title}
+                <Badge className="bg-white/20 text-white text-xs border-0">
+                  +100 pts
+                </Badge>
+              </h3>
+              <p className="text-white/80 text-xs">{text.subtitle}</p>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-black">{remaining}</div>
+              <div className="text-xs text-white/70">{language === 'es' ? 'slots' : 'slots'}</div>
             </div>
           </div>
         </div>
 
-        <CardContent className="p-6 space-y-6">
-          {/* Code display */}
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-muted-foreground">{text.yourCode}</p>
-            <div className="flex items-center gap-3">
+        <CardContent className="p-4 space-y-4">
+          {/* Code display - Compact */}
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">{text.yourCode}</p>
+            <div className="flex items-center gap-2">
               <motion.div
                 whileHover={{ scale: 1.02 }}
-                className="flex-1 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-xl p-4 border-2 border-dashed border-primary/30"
+                className="flex-1 bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-fuchsia-500/10 rounded-lg p-3 border-2 border-dashed border-violet-500/30"
               >
-                <p className="text-2xl font-black text-center tracking-wider bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <p className="text-lg font-black text-center tracking-widest bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
                   {myReferralCode.code}
                 </p>
               </motion.div>
               <Button
                 variant="outline"
-                size="lg"
+                size="icon"
                 onClick={handleCopy}
-                className="shrink-0"
+                className="shrink-0 h-10 w-10"
               >
                 {copied ? (
-                  <Check className="h-5 w-5 text-emerald-500" />
+                  <Check className="h-4 w-4 text-emerald-500" />
                 ) : (
-                  <Copy className="h-5 w-5" />
+                  <Copy className="h-4 w-4" />
                 )}
               </Button>
             </div>
           </div>
 
-          {/* Progress */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
+          {/* Progress - Compact */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">{text.referralsUsed}</span>
-              <span className="font-bold">
+              <span className="font-semibold">
                 {myReferralCode.current_referrals} / {myReferralCode.max_referrals}
-                <span className="text-muted-foreground font-normal ml-1">
-                  ({remaining} {text.referralsRemaining})
-                </span>
               </span>
             </div>
-            <Progress value={progress} className="h-3" />
+            <Progress value={progress} className="h-2" />
           </div>
 
-          {/* Bonus info */}
-          <div className="flex items-center gap-2 text-sm bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 p-3 rounded-lg">
-            <Sparkles className="h-5 w-5 shrink-0" />
+          {/* Bonus info - Compact */}
+          <div className="flex items-start gap-2 text-xs bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 p-2.5 rounded-lg">
+            <Sparkles className="h-4 w-4 shrink-0 mt-0.5" />
             <p>{text.bonusInfo}</p>
           </div>
 
-          {/* Share buttons */}
-          <div className="flex gap-3">
-            <Button 
-              onClick={handleCopy} 
-              variant="outline" 
-              className="flex-1 gap-2"
-            >
-              <Copy className="h-4 w-4" />
-              {copied ? text.copied : text.copyCode}
-            </Button>
+          {/* Share buttons - Grid layout */}
+          <div className="grid grid-cols-2 gap-2">
             <Button 
               onClick={handleShareWhatsApp}
-              className="flex-1 gap-2 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white"
+              size="sm"
+              className="gap-1.5 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white text-xs"
             >
-              <Share2 className="h-4 w-4" />
-              {text.shareMessage}
+              <MessageCircle className="h-3.5 w-3.5" />
+              WhatsApp
+            </Button>
+            <Button 
+              onClick={handleShareEmail}
+              size="sm"
+              variant="outline"
+              className="gap-1.5 text-xs"
+            >
+              <Mail className="h-3.5 w-3.5" />
+              Email
+            </Button>
+            <Button 
+              onClick={handleCopyLink}
+              size="sm"
+              variant="outline"
+              className="gap-1.5 text-xs col-span-2"
+            >
+              <Link2 className="h-3.5 w-3.5" />
+              {language === 'es' ? 'Copiar link de invitación' : 'Copy invitation link'}
             </Button>
           </div>
 
-          {/* Referrals list */}
+          {/* Referrals list - Compact */}
           {myReferrals && myReferrals.length > 0 && (
-            <div className="pt-4 border-t space-y-3">
-              <h4 className="font-bold flex items-center gap-2">
-                <Users className="h-5 w-5" />
+            <div className="pt-3 border-t space-y-2">
+              <h4 className="font-semibold text-sm flex items-center gap-2">
+                <Users className="h-4 w-4" />
                 {text.yourReferrals}
               </h4>
-              <div className="space-y-2">
+              <div className="space-y-1.5 max-h-32 overflow-y-auto">
                 {myReferrals.map((referral, i) => (
                   <motion.div
                     key={referral.id}
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-muted/50"
+                    transition={{ delay: i * 0.05 }}
+                    className="flex items-center gap-2 p-2 rounded-lg bg-gradient-to-r from-emerald-500/10 to-green-500/10"
                   >
-                    <div className="p-2 rounded-full bg-gradient-to-br from-emerald-400 to-green-500">
-                      <Heart className="h-4 w-4 text-white" />
+                    <div className="p-1.5 rounded-full bg-gradient-to-br from-emerald-400 to-green-500">
+                      <Heart className="h-3 w-3 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{referral.referred_name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{referral.referred_email}</p>
+                      <p className="font-medium text-sm truncate">{referral.referred_name}</p>
                     </div>
-                    <Badge variant="outline" className="shrink-0 bg-emerald-50 text-emerald-700 border-emerald-200">
-                      <Trophy className="h-3 w-3 mr-1" />
-                      +1
+                    <Badge variant="outline" className="shrink-0 bg-emerald-50 text-emerald-700 border-emerald-200 text-xs dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800">
+                      <Trophy className="h-2.5 w-2.5 mr-0.5" />
+                      +100
                     </Badge>
                   </motion.div>
                 ))}
@@ -233,10 +288,10 @@ export const ReferralCard = () => {
           )}
 
           {myReferrals && myReferrals.length === 0 && (
-            <div className="text-center py-4 text-muted-foreground">
-              <Users className="h-10 w-10 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">{text.noReferrals}</p>
-              <p className="text-xs opacity-70">{text.noReferralsHint}</p>
+            <div className="text-center py-3 text-muted-foreground bg-muted/30 rounded-lg">
+              <Users className="h-8 w-8 mx-auto mb-1.5 opacity-40" />
+              <p className="text-xs font-medium">{text.noReferrals}</p>
+              <p className="text-xs opacity-60">{text.noReferralsHint}</p>
             </div>
           )}
         </CardContent>

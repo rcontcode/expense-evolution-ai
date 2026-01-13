@@ -67,14 +67,23 @@ export default function Auth() {
     return Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000));
   }, [cooldownUntil]);
 
-  // Pre-fill beta code from URL
+  // Pre-fill beta code or referral code from URL
   useEffect(() => {
     const urlBetaCode = searchParams.get('beta');
+    const urlRefCode = searchParams.get('ref');
+    
     if (urlBetaCode) {
       setBetaCode(urlBetaCode.toUpperCase());
       setShowBetaSection(true);
       setIsLogin(false); // Switch to signup mode
       validateBetaCode(urlBetaCode);
+    } else if (urlRefCode) {
+      // Referral code from a friend
+      setBetaCode(urlRefCode.toUpperCase());
+      setShowBetaSection(true);
+      setIsLogin(false); // Switch to signup mode
+      // Referral codes have a different format, validate them differently
+      validateReferralCode(urlRefCode);
     }
   }, [searchParams]);
 
@@ -154,6 +163,40 @@ export default function Auth() {
 
       const result = data as { valid: boolean; reason: string } | null;
       setCodeStatus(result?.valid ? 'valid' : 'invalid');
+    } catch {
+      setCodeStatus('invalid');
+    }
+  };
+
+  const validateReferralCode = async (code: string) => {
+    if (!code.trim()) {
+      setCodeStatus('idle');
+      return;
+    }
+
+    setCodeStatus('checking');
+    
+    try {
+      // Check if referral code exists and is active
+      const { data, error } = await supabase
+        .from('beta_referral_codes')
+        .select('id, is_active, current_referrals, max_referrals')
+        .eq('code', code.trim().toUpperCase())
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error || !data) {
+        setCodeStatus('invalid');
+        return;
+      }
+
+      // Check if code has available slots
+      if (data.current_referrals >= data.max_referrals) {
+        setCodeStatus('invalid');
+        return;
+      }
+
+      setCodeStatus('valid');
     } catch {
       setCodeStatus('invalid');
     }
