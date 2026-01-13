@@ -37,6 +37,7 @@ import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { SystemAlertsBanner } from '@/components/beta/SystemAlertsBanner';
 import { ReferralCard } from '@/components/beta/ReferralCard';
 import { ScreenshotUpload } from '@/components/beta/ScreenshotUpload';
+import { BetaGamificationCard } from '@/components/beta/BetaGamificationCard';
 
 const APP_SECTIONS = [
   { id: 'dashboard', label: { es: 'Dashboard', en: 'Dashboard' }, emoji: '📊', color: 'from-violet-500 to-purple-600' },
@@ -719,6 +720,11 @@ const BetaFeedback = () => {
             <Crown className="h-4 w-4 text-amber-500" />
           </p>
         </motion.div>
+
+        {/* Gamification Card */}
+        <div className="mt-8">
+          <BetaGamificationCard />
+        </div>
 
         {/* Referral Card */}
         <div className="mt-8">
