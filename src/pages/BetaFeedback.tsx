@@ -43,6 +43,7 @@ import { BetaRoadmapCard } from '@/components/beta/BetaRoadmapCard';
 import { FloatingParticles } from '@/components/beta/FloatingParticles';
 import { ProgressChart } from '@/components/beta/ProgressChart';
 import { StreakFlame } from '@/components/beta/StreakFlame';
+import { BetaFeedbackTutorial } from '@/components/beta/BetaFeedbackTutorial';
 
 const APP_SECTIONS = [
   { id: 'dashboard', label: { es: 'Dashboard', en: 'Dashboard' }, emoji: '📊', color: 'from-violet-500 to-purple-600' },
@@ -360,6 +361,9 @@ const BetaFeedback = () => {
 
   return (
     <Layout>
+      {/* Beta Feedback Tutorial */}
+      <BetaFeedbackTutorial />
+      
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* System Alerts Banner */}
         <SystemAlertsBanner />

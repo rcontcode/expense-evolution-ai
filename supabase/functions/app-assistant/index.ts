@@ -25,6 +25,7 @@ const AVAILABLE_ROUTES = {
   mentorship: { route: '/mentorship', names: { es: 'Mentoría', en: 'Mentorship' } },
   taxes: { route: '/tax-calendar', names: { es: 'Calendario Fiscal', en: 'Tax Calendar' } },
   tags: { route: '/tags', names: { es: 'Etiquetas', en: 'Tags' } },
+  betafeedback: { route: '/beta-feedback', names: { es: 'Centro Beta', en: 'Beta Center' } },
 };
 
 const APP_KNOWLEDGE = `
@@ -120,6 +121,52 @@ Si el usuario pregunta "qué puedo hacer aquí" / "help here", responde SOLO con
 
 🌍 PAÍSES: 🇨🇦 Canadá (CRA, RRSP, TFSA) | 🇨🇱 Chile (SII, RUT, APV)
 
+🎮 PROGRAMA BETA TESTER (explica con ENTUSIASMO cuando pregunten):
+¡El programa Beta de EvoFinz es una OPORTUNIDAD EXCLUSIVA para ser parte del equipo fundador!
+
+¿QUIÉN SE BENEFICIA?
+- Cualquier usuario activo que quiera INFLUIR en el desarrollo de la app
+- Personas que quieran GANAR acceso Premium o Pro GRATIS
+- Entusiastas financieros que aman probar nuevas funcionalidades primero
+
+¿CÓMO FUNCIONA?
+1. GANAS PUNTOS por cada contribución:
+   - ⭐ Feedback detallado: 25 puntos
+   - 🐛 Reportar bugs: 25-150 puntos según severidad
+   - 👥 Invitar amigos: 100 puntos por referido
+   - 🔥 Racha diaria: bonus por uso consecutivo
+
+2. SUBES DE NIVEL (5 niveles):
+   - 🥉 Bronze (0 pts) - Empiezas aquí
+   - 🥈 Silver (250 pts) - Acceso a funciones beta
+   - 🥇 Gold (500 pts) - Prioridad en nuevas features
+   - 💎 Platinum (1000 pts) - Badge permanente
+   - 👑 Diamond (2000 pts) - Founding Member para siempre
+
+3. CANJEAS RECOMPENSAS:
+   - 🎁 1000 pts = 1 AÑO de Premium GRATIS
+   - 🎁 1500 pts = 6 MESES de Pro GRATIS
+   - 🎁 2000 pts = 1 AÑO de Pro GRATIS
+
+¿QUÉ DEBE HACER EL USUARIO?
+1. Ir a Centro Beta (/beta-feedback) 
+2. Evaluar las secciones que usa (5 estrellas + comentarios)
+3. Reportar cualquier bug que encuentre (con capturas de pantalla)
+4. Compartir su código de referido con amigos
+5. ¡Usar la app todos los días para mantener la racha!
+
+MISIONES DISPONIBLES:
+- Bug Hunter: Reportar 5 bugs = 250 pts
+- Feedback Master: Enviar 10 evaluaciones = 200 pts
+- Ambassador: Referir 3 amigos = 300 pts
+- Streak Champion: 7 días consecutivos = 150 pts
+- Explorer: Probar 8 secciones diferentes = 100 pts
+
+Cuando te pregunten del beta, responde con ENTUSIASMO y MOTIVACIÓN.
+Ejemplo: "¡El programa beta es TU OPORTUNIDAD de ganar acceso Premium GRATIS! 
+Solo necesitas usar la app, dar tu opinión honesta, y reportar cualquier cosa rara que veas.
+¡Ya tienes 0 puntos! Con solo 5 feedbacks llegas a 125 pts. ¿Te llevo al Centro Beta para empezar?"
+
 📚 RECOMENDACIONES EDUCATIVAS:
 Cuando el usuario haga preguntas conceptuales o necesite aprender algo, incluye recomendaciones de:
 
@@ -137,6 +184,7 @@ Cuando el usuario haga preguntas conceptuales o necesite aprender algo, incluye 
    - Análisis de contratos → "tutorial contratos"
    - Alertas de gasto → "configurar alertas"
    - Recordatorios por voz → "configurar recordatorios"
+   - Programa Beta → "tutorial beta" / "cómo funciona el beta"
 
 2. BIBLIOTECA FINANCIERA (en sección Mentoría):
    - "Padre Rico, Padre Pobre" - Robert Kiyosaki (activos vs pasivos)
