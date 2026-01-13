@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ArrowRight, Sparkles, Receipt, TrendingUp, ChevronDown, Gift, Loader2, CheckCircle2, XCircle, AlertCircle, Flame } from 'lucide-react';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
+import { VipReferralLanding } from '@/components/auth/VipReferralLanding';
 import { 
   emailSchema, 
   passwordSchema, 
@@ -43,6 +44,11 @@ export default function Auth() {
   const [showBetaSection, setShowBetaSection] = useState(false);
   const [betaCode, setBetaCode] = useState('');
   const [codeStatus, setCodeStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
+  const [codeType, setCodeType] = useState<'referral' | 'invitation' | null>(null);
+  
+  // VIP Landing state
+  const [showVipLanding, setShowVipLanding] = useState(false);
+  const [referralCodeFromUrl, setReferralCodeFromUrl] = useState<string | null>(null);
   
   const navigate = useNavigate();
   const { t, language } = useLanguage();
@@ -75,15 +81,15 @@ export default function Auth() {
     if (urlBetaCode) {
       setBetaCode(urlBetaCode.toUpperCase());
       setShowBetaSection(true);
-      setIsLogin(false); // Switch to signup mode
-      validateBetaCode(urlBetaCode);
+      setIsLogin(false);
+      validateUnifiedCode(urlBetaCode);
     } else if (urlRefCode) {
-      // Referral code from a friend
+      // Referral code from a friend - show VIP landing first
+      setReferralCodeFromUrl(urlRefCode.toUpperCase());
       setBetaCode(urlRefCode.toUpperCase());
-      setShowBetaSection(true);
-      setIsLogin(false); // Switch to signup mode
-      // Referral codes have a different format, validate them differently
-      validateReferralCode(urlRefCode);
+      setShowVipLanding(true);
+      setIsLogin(false);
+      validateUnifiedCode(urlRefCode);
     }
   }, [searchParams]);
 
@@ -143,62 +149,40 @@ export default function Auth() {
     validateName(value);
   };
 
-  const validateBetaCode = async (code: string) => {
+  // Unified code validation - accepts both admin and referral codes
+  const validateUnifiedCode = async (code: string) => {
     if (!code.trim()) {
       setCodeStatus('idle');
+      setCodeType(null);
       return;
     }
 
     setCodeStatus('checking');
     
     try {
-      const { data, error } = await supabase.rpc('validate_beta_invitation_code', {
+      const { data, error } = await supabase.rpc('validate_any_beta_code', {
         p_code: code.trim()
       });
 
       if (error) {
+        console.error('Code validation error:', error);
         setCodeStatus('invalid');
+        setCodeType(null);
         return;
       }
 
-      const result = data as { valid: boolean; reason: string } | null;
-      setCodeStatus(result?.valid ? 'valid' : 'invalid');
+      const result = data as { valid: boolean; type: string; message: string } | null;
+      
+      if (result?.valid) {
+        setCodeStatus('valid');
+        setCodeType(result.type === 'referral' ? 'referral' : 'invitation');
+      } else {
+        setCodeStatus('invalid');
+        setCodeType(null);
+      }
     } catch {
       setCodeStatus('invalid');
-    }
-  };
-
-  const validateReferralCode = async (code: string) => {
-    if (!code.trim()) {
-      setCodeStatus('idle');
-      return;
-    }
-
-    setCodeStatus('checking');
-    
-    try {
-      // Check if referral code exists and is active
-      const { data, error } = await supabase
-        .from('beta_referral_codes')
-        .select('id, is_active, current_referrals, max_referrals')
-        .eq('code', code.trim().toUpperCase())
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (error || !data) {
-        setCodeStatus('invalid');
-        return;
-      }
-
-      // Check if code has available slots
-      if (data.current_referrals >= data.max_referrals) {
-        setCodeStatus('invalid');
-        return;
-      }
-
-      setCodeStatus('valid');
-    } catch {
-      setCodeStatus('invalid');
+      setCodeType(null);
     }
   };
 
@@ -207,14 +191,28 @@ export default function Auth() {
     setBetaCode(upperValue);
     
     // Debounce validation
-    if (upperValue.length > 5) {
+    if (upperValue.length > 3) {
       const timeoutId = setTimeout(() => {
-        validateBetaCode(upperValue);
+        validateUnifiedCode(upperValue);
       }, 500);
       return () => clearTimeout(timeoutId);
     } else {
       setCodeStatus('idle');
+      setCodeType(null);
     }
+  };
+  
+  // Handle VIP landing completion
+  const handleVipContinue = (capturedEmail: string, capturedName: string) => {
+    setEmail(capturedEmail);
+    setFullName(capturedName);
+    setShowVipLanding(false);
+    setShowBetaSection(true);
+  };
+  
+  const handleVipSkip = () => {
+    setShowVipLanding(false);
+    setShowBetaSection(true);
   };
 
   const handleGoogleSignIn = async () => {
@@ -340,23 +338,22 @@ export default function Auth() {
         } else {
           // Check if beta code was provided and is valid
           if (betaCode.trim() && codeStatus === 'valid') {
-            // Wait a moment for the user to be created
             const { data: { user: newUser } } = await supabase.auth.getUser();
             
             if (newUser) {
-              // Use the beta code
-              const { data: useResult, error: useError } = await supabase.rpc('use_beta_invitation_code', {
+              // Use correct function based on code type
+              const rpcName = codeType === 'referral' ? 'use_beta_referral_code' : 'use_beta_invitation_code';
+              const { data: useResult, error: useError } = await supabase.rpc(rpcName, {
                 p_code: betaCode.trim(),
                 p_user_id: newUser.id
               });
 
               if (useError) {
                 console.error('Error using beta code:', useError);
-                toast.error('Error al activar código beta');
               } else {
                 const result = useResult as { success: boolean; message?: string } | null;
                 if (result?.success) {
-                  toast.success('¡Acceso beta activado!');
+                  toast.success(language === 'es' ? '¡Acceso beta activado!' : 'Beta access activated!');
                   navigate('/beta-welcome');
                   return;
                 }
@@ -391,6 +388,17 @@ export default function Auth() {
     if (password.length < 12) return { label: t('auth.good'), color: 'bg-green-500', width: '80%' };
     return { label: t('auth.excellent'), color: 'bg-green-600', width: '100%' };
   }, [password, t]);
+
+  // Show VIP Landing for referral links
+  if (showVipLanding && referralCodeFromUrl) {
+    return (
+      <VipReferralLanding
+        referralCode={referralCodeFromUrl}
+        onContinueToSignup={handleVipContinue}
+        onSkip={handleVipSkip}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex">
