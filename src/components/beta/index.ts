@@ -3,6 +3,7 @@ export { AdminBetaControls } from './AdminBetaControls';
 export { BetaExpirationBadge } from './BetaExpirationBadge';
 export { BetaGamificationCard } from './BetaGamificationCard';
 export { BetaReminderBanner } from './BetaReminderBanner';
+export { BetaRoadmapCard } from './BetaRoadmapCard';
 export { MissionsCard } from './MissionsCard';
 export { ReferralCard } from './ReferralCard';
 export { ScreenshotUpload } from './ScreenshotUpload';

@@ -39,6 +39,7 @@ import { ReferralCard } from '@/components/beta/ReferralCard';
 import { ScreenshotUpload } from '@/components/beta/ScreenshotUpload';
 import { BetaGamificationCard } from '@/components/beta/BetaGamificationCard';
 import { MissionsCard } from '@/components/beta/MissionsCard';
+import { BetaRoadmapCard } from '@/components/beta/BetaRoadmapCard';
 
 const APP_SECTIONS = [
   { id: 'dashboard', label: { es: 'Dashboard', en: 'Dashboard' }, emoji: '📊', color: 'from-violet-500 to-purple-600' },
@@ -728,9 +729,14 @@ const BetaFeedback = () => {
           </p>
         </motion.div>
 
-        {/* Gamification Card */}
+        {/* Gamification Quick Stats */}
         <div className="mt-8">
           <BetaGamificationCard />
+        </div>
+
+        {/* Complete Roadmap Guide */}
+        <div className="mt-8">
+          <BetaRoadmapCard />
         </div>
 
         {/* Referral Card */}
