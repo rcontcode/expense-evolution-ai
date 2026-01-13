@@ -409,16 +409,16 @@ export const MissionsCard = ({ showCompact = false, onDismiss }: MissionsCardPro
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.05 }}
                       onClick={() => navigate(action.route)}
-                      className={`p-3 rounded-lg text-left transition-all hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-br ${action.color} text-white shadow-md`}
+                      className={`p-3 rounded-lg text-left transition-all hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-br ${action.color} shadow-md`}
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-lg">{action.emoji}</span>
-                        <Badge variant="secondary" className="text-xs bg-white/20 text-white border-0 font-bold">
+                        <Badge className="text-xs bg-white/30 text-white border-0 font-bold shadow-sm">
                           {action.points}
                         </Badge>
                       </div>
-                      <p className="text-sm font-semibold">{action.label}</p>
-                      <p className="text-xs text-white/80">{action.description}</p>
+                      <p className="text-sm font-bold text-white drop-shadow-sm">{action.label}</p>
+                      <p className="text-xs text-white/90 drop-shadow-sm">{action.description}</p>
                     </motion.button>
                   ))}
                 </motion.div>
@@ -441,7 +441,15 @@ export const MissionsCard = ({ showCompact = false, onDismiss }: MissionsCardPro
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('/beta-feedback')}
+                onClick={() => {
+                  // Scroll to BetaRoadmapCard if on feedback page, otherwise navigate
+                  const roadmapEl = document.getElementById('beta-roadmap-card');
+                  if (roadmapEl) {
+                    roadmapEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  } else {
+                    navigate('/beta-feedback#roadmap');
+                  }
+                }}
                 className="text-xs h-7 gap-1"
               >
                 {text.seeAll}
