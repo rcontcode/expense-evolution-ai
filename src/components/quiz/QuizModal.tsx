@@ -4,18 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Check, X, Flame, Loader2, Sparkles, PartyPopper, Rocket, Trophy } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, X, Flame, Loader2, Sparkles, PartyPopper, Rocket, Trophy, Crown, Gift, Mail } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { QuizProgress } from "./QuizProgress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import type { QuizData, QuizResult } from "@/pages/FinancialQuiz";
+import type { QuizData, QuizResult, ReferralInfo } from "@/pages/FinancialQuiz";
 
 interface QuizModalProps {
   isOpen: boolean;
   onClose: () => void;
   onComplete: (result: QuizResult) => void;
+  referralInfo?: ReferralInfo | null;
 }
 
 const TOTAL_STEPS = 17;
@@ -117,7 +119,7 @@ const getQuestions = (language: string) => ({
   },
 });
 
-export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
+export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizModalProps) => {
   const { language } = useLanguage();
   const questions = getQuestions(language);
 
@@ -133,10 +135,13 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
     obstacle: "",
     timeSpent: "",
     answers: Array(10).fill(false),
+    marketingConsent: false,
   });
   const [comments, setComments] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showEncouragement, setShowEncouragement] = useState<number | null>(null);
+  
+  const hasVipReferral = referralInfo?.isValid && referralInfo?.referrerName;
 
   // Keyboard navigation - Enter to continue
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -434,6 +439,20 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
 
     // Step 16: Contact info (NOW AT THE END!)
     if (step === 16) {
+      const consentContent = {
+        es: {
+          consentLabel: "Acepto recibir consejos financieros y novedades de EvoFinz",
+          consentDesc: "Puedes darte de baja en cualquier momento",
+          vipReminder: `Tu amigo ${referralInfo?.referrerName} te espera en EvoFinz`,
+        },
+        en: {
+          consentLabel: "I agree to receive financial tips and updates from EvoFinz",
+          consentDesc: "You can unsubscribe anytime",
+          vipReminder: `Your friend ${referralInfo?.referrerName} is waiting for you on EvoFinz`,
+        },
+      };
+      const consentT = consentContent[language as keyof typeof consentContent] || consentContent.es;
+
       return (
         <div className="space-y-6">
           <div className="text-center mb-8">
@@ -441,12 +460,36 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", bounce: 0.5 }}
-              className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 mb-4"
+              className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${
+                hasVipReferral 
+                  ? "bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400 shadow-lg shadow-amber-500/30" 
+                  : "bg-gradient-to-r from-amber-500 to-orange-500"
+              }`}
             >
-              <Trophy className="w-8 h-8 text-white" />
+              {hasVipReferral ? (
+                <Crown className="w-8 h-8 text-slate-900" />
+              ) : (
+                <Trophy className="w-8 h-8 text-white" />
+              )}
             </motion.div>
             <h2 className="text-2xl font-bold text-white mb-2">{questions.contact.title}</h2>
             <p className="text-slate-400">{questions.contact.subtitle}</p>
+            
+            {/* VIP Reminder Banner */}
+            {hasVipReferral && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="mt-4 p-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/40"
+              >
+                <p className="text-amber-200 text-sm flex items-center justify-center gap-2">
+                  <Gift className="w-4 h-4 text-amber-400" />
+                  {consentT.vipReminder}
+                  <Sparkles className="w-4 h-4 text-yellow-400" />
+                </p>
+              </motion.div>
+            )}
           </div>
           <div className="space-y-4">
             <div>
@@ -489,6 +532,33 @@ export const QuizModal = ({ isOpen, onClose, onComplete }: QuizModalProps) => {
                 className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
               />
             </div>
+            
+            {/* Marketing Consent Checkbox */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex items-start gap-3 p-4 rounded-xl bg-slate-800/30 border border-slate-700/50 hover:border-amber-500/30 transition-colors"
+            >
+              <Checkbox
+                id="marketingConsent"
+                checked={formData.marketingConsent}
+                onCheckedChange={(checked) => 
+                  setFormData({ ...formData, marketingConsent: checked === true })
+                }
+                className="mt-0.5 border-slate-500 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+              />
+              <div className="flex-1">
+                <Label 
+                  htmlFor="marketingConsent" 
+                  className="text-slate-200 cursor-pointer flex items-center gap-2"
+                >
+                  <Mail className="w-4 h-4 text-amber-400" />
+                  {consentT.consentLabel}
+                </Label>
+                <p className="text-xs text-slate-500 mt-1">{consentT.consentDesc}</p>
+              </div>
+            </motion.div>
           </div>
         </div>
       );

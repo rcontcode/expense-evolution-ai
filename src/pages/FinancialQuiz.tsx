@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { QuizHero } from "@/components/quiz/QuizHero";
 import { QuizModal } from "@/components/quiz/QuizModal";
 import { QuizResults } from "@/components/quiz/QuizResults";
 import { ThemeBackground } from "@/components/ThemeBackground";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface QuizData {
   name: string;
@@ -14,6 +16,7 @@ export interface QuizData {
   obstacle: string;
   timeSpent: string;
   answers: boolean[];
+  marketingConsent?: boolean;
 }
 
 export interface QuizResult {
@@ -23,9 +26,66 @@ export interface QuizResult {
   data: QuizData;
 }
 
+export interface ReferralInfo {
+  code: string;
+  referrerName: string | null;
+  isValid: boolean;
+}
+
 const FinancialQuiz = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [result, setResult] = useState<QuizResult | null>(null);
+  const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
+  const [isLoadingReferral, setIsLoadingReferral] = useState(false);
+
+  // Check for referral code in URL
+  useEffect(() => {
+    const refCode = searchParams.get("ref");
+    if (refCode) {
+      validateReferralCode(refCode);
+    }
+  }, [searchParams]);
+
+  const validateReferralCode = async (code: string) => {
+    setIsLoadingReferral(true);
+    try {
+      // Try to validate the code and get referrer info
+      const { data, error } = await supabase.rpc("validate_any_beta_code", {
+        p_code: code.toUpperCase(),
+      });
+
+      if (!error && data) {
+        // Try to get referrer name from the code (format: NAME-XXXXXX)
+        const namePart = code.split("-")[0];
+        const referrerName = namePart && namePart.length > 2 
+          ? namePart.charAt(0).toUpperCase() + namePart.slice(1).toLowerCase()
+          : null;
+
+        setReferralInfo({
+          code: code.toUpperCase(),
+          referrerName,
+          isValid: true,
+        });
+      } else {
+        setReferralInfo({
+          code: code.toUpperCase(),
+          referrerName: null,
+          isValid: false,
+        });
+      }
+    } catch (err) {
+      console.error("Error validating referral code:", err);
+      setReferralInfo({
+        code: code.toUpperCase(),
+        referrerName: null,
+        isValid: false,
+      });
+    } finally {
+      setIsLoadingReferral(false);
+    }
+  };
 
   const handleQuizComplete = (quizResult: QuizResult) => {
     setResult(quizResult);
@@ -39,6 +99,15 @@ const FinancialQuiz = () => {
   const handleRetakeQuiz = () => {
     setResult(null);
     setIsQuizOpen(true);
+  };
+
+  // Navigate to auth with referral code
+  const handleNavigateToAuth = () => {
+    if (referralInfo?.isValid) {
+      navigate(`/auth?ref=${referralInfo.code}`);
+    } else {
+      navigate("/auth");
+    }
   };
 
   return (
@@ -62,15 +131,25 @@ const FinancialQuiz = () => {
       </div>
 
       {result ? (
-        <QuizResults result={result} onRetake={handleRetakeQuiz} />
+        <QuizResults 
+          result={result} 
+          onRetake={handleRetakeQuiz}
+          referralInfo={referralInfo}
+          onNavigateToAuth={handleNavigateToAuth}
+        />
       ) : (
-        <QuizHero onStartQuiz={handleStartQuiz} />
+        <QuizHero 
+          onStartQuiz={handleStartQuiz} 
+          referralInfo={referralInfo}
+          isLoadingReferral={isLoadingReferral}
+        />
       )}
 
       <QuizModal
         isOpen={isQuizOpen}
         onClose={() => setIsQuizOpen(false)}
         onComplete={handleQuizComplete}
+        referralInfo={referralInfo}
       />
     </div>
   );
