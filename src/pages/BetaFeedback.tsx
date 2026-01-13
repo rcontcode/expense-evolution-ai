@@ -40,6 +40,9 @@ import { ScreenshotUpload } from '@/components/beta/ScreenshotUpload';
 import { BetaGamificationCard } from '@/components/beta/BetaGamificationCard';
 import { MissionsCard } from '@/components/beta/MissionsCard';
 import { BetaRoadmapCard } from '@/components/beta/BetaRoadmapCard';
+import { FloatingParticles } from '@/components/beta/FloatingParticles';
+import { ProgressChart } from '@/components/beta/ProgressChart';
+import { StreakFlame } from '@/components/beta/StreakFlame';
 
 const APP_SECTIONS = [
   { id: 'dashboard', label: { es: 'Dashboard', en: 'Dashboard' }, emoji: '📊', color: 'from-violet-500 to-purple-600' },
@@ -728,6 +731,26 @@ const BetaFeedback = () => {
             <Crown className="h-4 w-4 text-amber-500" />
           </p>
         </motion.div>
+
+        {/* Visual Progress Chart */}
+        <div className="mt-8">
+          <Card className="overflow-hidden border-2 border-primary/20 relative">
+            <FloatingParticles count={10} className="opacity-30" />
+            <CardHeader className="relative z-10">
+              <CardTitle className="flex items-center gap-2">
+                📊 {language === 'es' ? 'Tu Progreso Visual' : 'Your Visual Progress'}
+              </CardTitle>
+              <CardDescription>
+                {language === 'es' 
+                  ? 'Visualiza tu camino hacia las recompensas' 
+                  : 'Visualize your path to rewards'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="relative z-10">
+              <ProgressChart />
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Gamification Quick Stats */}
         <div className="mt-8">
