@@ -10,7 +10,7 @@ import {
   Camera, Receipt, FileText, Calculator, Trophy, GraduationCap,
   BarChart3, BookOpen, Building2, CreditCard, Mic, TrendingUp,
   ArrowRight, Check, Sparkles, Shield, Zap, Gift, Loader2, CheckCircle2, XCircle,
-  Star, Flame, Target, Crown, Heart, AlertTriangle, Clock, Lightbulb, ChevronRight, Quote, Globe
+  Star, Flame, Target, Crown, Heart, AlertTriangle, Clock, Lightbulb, ChevronRight, Quote, Globe, MessageSquare
 } from 'lucide-react';
 import phoenixLogo from '@/assets/phoenix-clean-logo.png';
 import { FloatingStars } from '@/components/landing/FloatingStars';
@@ -18,6 +18,8 @@ import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { SocialLinks } from '@/components/SocialLinks';
+import { ContactForm } from '@/components/ContactForm';
 
 // Lazy loader with retry for transient network errors
 function lazyWithRetry<T extends ComponentType<unknown>>(
@@ -1630,7 +1632,11 @@ export default function Landing() {
                 {/* Use PhoenixLogo component for consistency */}
                 <PhoenixLogo variant="mini" showText={true} />
               </div>
-              <div className="flex items-center gap-6 text-sm pr-16">
+              
+              {/* Social Links */}
+              <SocialLinks className="order-3 md:order-2" iconSize="md" />
+              
+              <div className="flex items-center gap-6 text-sm pr-16 order-2 md:order-3">
                 <Link to="/legal" className="text-slate-400 hover:text-cyan-400 transition-colors">
                   {language === 'es' ? 'Términos de Uso' : 'Terms of Use'}
                 </Link>
@@ -1640,6 +1646,14 @@ export default function Landing() {
                 <Link to="/legal#disclaimer" className="text-slate-400 hover:text-cyan-400 transition-colors">
                   {language === 'es' ? 'Descargo Legal' : 'Disclaimer'}
                 </Link>
+                <ContactForm 
+                  trigger={
+                    <button className="text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1">
+                      <MessageSquare className="h-3 w-3" />
+                      {language === 'es' ? 'Contacto' : 'Contact'}
+                    </button>
+                  }
+                />
                 <Link to="/auth" className="text-slate-400 hover:text-orange-400 transition-colors font-medium">
                   {language === 'es' ? 'Iniciar Sesión' : 'Sign In'}
                 </Link>
