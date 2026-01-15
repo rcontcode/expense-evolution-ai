@@ -12,3 +12,10 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+# Sitemap
+Sitemap: https://expense-evolution-ai.lovable.app/sitemap.xml
+
+# Disallow admin routes
+Disallow: /admin/
+Allow: /
