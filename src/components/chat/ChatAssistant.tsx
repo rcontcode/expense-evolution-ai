@@ -23,7 +23,7 @@ import { useMicrophonePermission, MicrophonePermissionAlert } from './voice/Micr
 import { ContinuousModeIndicator, FloatingVoiceIndicator } from './voice/ContinuousModeIndicator';
 import { useVoiceKeyboardShortcuts } from '@/hooks/utils/useKeyboardShortcuts';
 // Import centralized voice modules
-import { processVoiceCommand } from './voice/VoiceCommandProcessor';
+import { processVoiceCommand, ClarificationOption } from './voice/VoiceCommandProcessor';
 import { parseOpenClientCommand } from './voice/VoiceActionParsers';
 import { VoiceCommandsCheatsheet } from './voice/VoiceCommandsCheatsheet';
 import { AudioLevelIndicator } from './voice/AudioLevelIndicator';
@@ -37,6 +37,8 @@ import { useAudioPlayback } from '@/hooks/utils/useAudioPlayback';
 import { useSmartGuidance } from '@/hooks/utils/useSmartGuidance';
 import { useVoicePreferences } from '@/hooks/utils/useVoicePreferences';
 import { useVoiceConfirmation } from '@/hooks/utils/useVoiceConfirmation';
+import { useConversationState } from '@/hooks/utils/useConversationState';
+import { useVoiceSynthesis } from '@/hooks/utils/useVoiceSynthesis';
 import { useLanguageDetection } from '@/hooks/utils/useLanguageDetection';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -149,6 +151,9 @@ export const ChatAssistant: React.FC = () => {
 
   // Voice confirmation system
   const voiceConfirmation = useVoiceConfirmation();
+
+  // Conversation state for clarification flows
+  const conversationState = useConversationState();
 
   // Language detection
   const langDetection = useLanguageDetection();
@@ -385,11 +390,15 @@ export const ChatAssistant: React.FC = () => {
         language: language as 'es' | 'en',
         isOnboardingMicTest,
         isWaitingForConfirmation: voiceConfirmation.isWaitingForConfirmation,
+        isAwaitingClarification: conversationState.isAwaitingClarification,
+        pendingClarificationOptions: conversationState.context?.options,
         currentPath: location.pathname,
         clients: clients?.map(c => ({ id: c.id, name: c.name })),
         checkCustomShortcut: voicePrefs.checkCustomShortcut,
         checkLanguageCommand: langDetection.checkLanguageCommand,
         processConfirmation: voiceConfirmation.processConfirmationVoice,
+        processClarificationResponse: (userText: string) => 
+          conversationState.processClarificationResponse(userText, language as 'es' | 'en'),
         findTutorial,
         getPageContext: getCurrentPageContext,
         financialData: {
@@ -451,6 +460,46 @@ export const ChatAssistant: React.FC = () => {
             speak(result.response);
             voicePrefs.playSound(result.confirmed ? 'success' : 'notification');
           }
+          return;
+
+        case 'clarification-response':
+          setInput('');
+          // User answered a clarification - execute their choice
+          if (result.option) {
+            const option = result.option;
+            const assistantMsg: Message = { role: 'assistant', content: result.response };
+            setMessages(prev => [...prev, assistantMsg]);
+            speak(result.response);
+            
+            // Execute the action based on user's choice
+            if (option.action === 'navigate' || option.action === 'both') {
+              if (option.route) {
+                triggerHapticFeedback('medium');
+                navigate(option.route);
+                setTimeout(() => autoMinimizeToBubble(), 800);
+              }
+            }
+            if (option.action === 'explain' || option.action === 'both') {
+              // Trigger a tutorial or explanation for the target
+              if (option.target) {
+                const tutorial = findTutorial(option.target);
+                if (tutorial) {
+                  setActiveTutorial(tutorial.id);
+                  setCurrentTutorialStep(0);
+                }
+              }
+            }
+            voicePrefs.playSound('success');
+          }
+          return;
+
+        case 'clarification-unclear':
+          setInput('');
+          // User's response to clarification wasn't understood - ask again
+          const unclearMsg: Message = { role: 'assistant', content: result.response };
+          setMessages(prev => [...prev, unclearMsg]);
+          speak(result.response);
+          voicePrefs.playSound('notification');
           return;
 
         case 'custom-shortcut':
@@ -1033,8 +1082,25 @@ export const ChatAssistant: React.FC = () => {
         // AI returned a structured action
         responseText = aiAction.message;
         
-        // Execute the action
-        executeAIAction(aiAction);
+        // Handle clarification action specially - store state for follow-up
+        if (aiAction.action === 'clarify' && aiAction.options && Array.isArray(aiAction.options)) {
+          // Start clarification flow
+          conversationState.startClarification(
+            trimmedText,
+            aiAction.intent || 'unknown',
+            aiAction.options.map((opt: { id: string; label: string; action: string; target?: string; route?: string }) => ({
+              id: opt.id,
+              label: opt.label,
+              action: opt.action as 'navigate' | 'explain' | 'both' | 'cancel',
+              target: opt.target,
+              route: opt.route || (opt.target ? ROUTE_MAP[opt.target] : undefined),
+            }))
+          );
+          console.log('[AI] Started clarification flow with options:', aiAction.options);
+        } else {
+          // Execute the action (navigate, query, highlight)
+          executeAIAction(aiAction);
+        }
       } else {
         // Regular text response
         responseText = data.message || (language === 'es' 

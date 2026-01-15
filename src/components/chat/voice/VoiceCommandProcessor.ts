@@ -26,11 +26,22 @@ import { parseOpenClientCommand } from './VoiceActionParsers';
 import { parseVoiceExpense, parseVoiceIncome } from './VoiceParsers';
 import { parseAdvancedAction, AdvancedAction } from './VoiceAdvancedActions';
 
+// Clarification option type (matches useConversationState)
+export interface ClarificationOption {
+  id: string;
+  label: string;
+  action: 'navigate' | 'explain' | 'both' | 'cancel';
+  target?: string;
+  route?: string;
+}
+
 export type ProcessingResult = 
   | { handled: false }
   | { handled: true; type: 'onboarding-mic-test'; response: string }
   | { handled: true; type: 'language-switch'; targetLanguage: 'es' | 'en'; response: string }
   | { handled: true; type: 'confirmation'; confirmed: boolean; response: string }
+  | { handled: true; type: 'clarification-response'; option: ClarificationOption; response: string }
+  | { handled: true; type: 'clarification-unclear'; response: string }
   | { handled: true; type: 'custom-shortcut'; route: string; name: string; action?: string }
   | { handled: true; type: 'tutorial'; tutorialId: string; response: string }
   | { handled: true; type: 'expense-creation'; data: ReturnType<typeof parseVoiceExpense> }
@@ -46,6 +57,8 @@ interface ProcessorContext {
   language: 'es' | 'en';
   isOnboardingMicTest: boolean;
   isWaitingForConfirmation: boolean;
+  isAwaitingClarification: boolean;
+  pendingClarificationOptions?: ClarificationOption[];
   currentPath: string;
   clients: Array<{ id: string; name: string }> | null | undefined;
   
@@ -53,6 +66,7 @@ interface ProcessorContext {
   checkCustomShortcut: (text: string) => { route?: string; name: { es: string; en: string }; action?: string } | null;
   checkLanguageCommand: (text: string) => { isCommand: boolean; targetLanguage?: 'es' | 'en' };
   processConfirmation: (text: string) => { handled: boolean; confirmed?: boolean; message?: string };
+  processClarificationResponse?: (text: string) => { matched: boolean; option?: ClarificationOption; fallbackMessage?: string };
   findTutorial: (text: string) => { id: string } | null;
   getPageContext: () => { pageName: string; description: string };
   
@@ -401,11 +415,50 @@ export function processVoiceCommand(
   text: string,
   context: ProcessorContext
 ): ProcessingResult {
-  const { language, isOnboardingMicTest, isWaitingForConfirmation, currentPath, clients } = context;
+  const { language, isOnboardingMicTest, isWaitingForConfirmation, isAwaitingClarification, currentPath, clients } = context;
   const trimmed = text.trim();
   
   if (!trimmed) {
     return { handled: false };
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // PRIORITY 0: PENDING CLARIFICATION RESPONSE (NEW!)
+  // If AI asked for clarification and user is responding
+  // ─────────────────────────────────────────────────────────────
+  if (isAwaitingClarification && context.processClarificationResponse) {
+    const result = context.processClarificationResponse(trimmed);
+    if (result.matched && result.option) {
+      // User chose an option - format response based on action
+      let response = '';
+      switch (result.option.action) {
+        case 'navigate':
+          response = language === 'es' 
+            ? `Perfecto, te llevo.` 
+            : `Perfect, taking you there.`;
+          break;
+        case 'explain':
+          response = language === 'es' 
+            ? `Te explico desde aquí.` 
+            : `I'll explain from here.`;
+          break;
+        case 'both':
+          response = language === 'es' 
+            ? `Te llevo y te explico allí.` 
+            : `Taking you there and explaining.`;
+          break;
+        case 'cancel':
+          response = language === 'es' 
+            ? `Entendido, cancelado.` 
+            : `Got it, cancelled.`;
+          break;
+      }
+      return { handled: true, type: 'clarification-response', option: result.option, response };
+    } else if (!result.matched && result.fallbackMessage) {
+      // User's response wasn't clear - ask again
+      return { handled: true, type: 'clarification-unclear', response: result.fallbackMessage };
+    }
+    // If no match at all, fall through to AI
   }
 
   // ─────────────────────────────────────────────────────────────
