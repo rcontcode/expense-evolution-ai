@@ -27,6 +27,8 @@ import { processVoiceCommand, ClarificationOption } from './voice/VoiceCommandPr
 import { parseOpenClientCommand } from './voice/VoiceActionParsers';
 import { VoiceCommandsCheatsheet } from './voice/VoiceCommandsCheatsheet';
 import { ClarificationIndicator } from './ClarificationIndicator';
+import { IntentFeedback } from './IntentFeedback';
+import { QuickResponseChips, getQuickResponsesForContext } from './QuickResponseChips';
 import { AudioLevelIndicator } from './voice/AudioLevelIndicator';
 
 import { supabase } from '@/integrations/supabase/client';
@@ -39,7 +41,9 @@ import { useSmartGuidance } from '@/hooks/utils/useSmartGuidance';
 import { useVoicePreferences } from '@/hooks/utils/useVoicePreferences';
 import { useVoiceConfirmation } from '@/hooks/utils/useVoiceConfirmation';
 import { useConversationState } from '@/hooks/utils/useConversationState';
+import { useConversationMemory } from '@/hooks/utils/useConversationMemory';
 import { useVoiceSynthesis } from '@/hooks/utils/useVoiceSynthesis';
+import { voiceSynthesisManager } from '@/lib/voiceSynthesisManager';
 import { useLanguageDetection } from '@/hooks/utils/useLanguageDetection';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -156,8 +160,19 @@ export const ChatAssistant: React.FC = () => {
   // Conversation state for clarification flows
   const conversationState = useConversationState();
 
+  // Conversation memory for context
+  const conversationMemory = useConversationMemory();
+
   // Language detection
   const langDetection = useLanguageDetection();
+
+  // Current detected intent for visual feedback
+  const [currentIntent, setCurrentIntent] = useState<{
+    intent: string | null;
+    action: string | null;
+    target: string | null;
+    showUntil: number;
+  }>({ intent: null, action: null, target: null, showUntil: 0 });
 
   // Calculate financial data for queries
   const now = new Date();
@@ -1083,6 +1098,14 @@ export const ChatAssistant: React.FC = () => {
         // AI returned a structured action
         responseText = aiAction.message;
         
+        // Set current intent for visual feedback (shows for 3 seconds)
+        setCurrentIntent({
+          intent: aiAction.intent || null,
+          action: aiAction.action || null,
+          target: aiAction.target || null,
+          showUntil: Date.now() + 3000,
+        });
+        
         // Handle clarification action specially - store state for follow-up
         if (aiAction.action === 'clarify' && aiAction.options && Array.isArray(aiAction.options)) {
           // Start clarification flow
@@ -1103,10 +1126,18 @@ export const ChatAssistant: React.FC = () => {
           executeAIAction(aiAction);
         }
       } else {
-        // Regular text response
+        // Regular text response (conversational)
         responseText = data.message || (language === 'es' 
           ? 'Lo siento, no pude procesar tu pregunta.' 
           : 'Sorry, I could not process your question.');
+        
+        // Set conversational intent
+        setCurrentIntent({
+          intent: 'conversational',
+          action: null,
+          target: null,
+          showUntil: Date.now() + 2000,
+        });
       }
 
       const assistantMessage: Message = {
@@ -1117,6 +1148,14 @@ export const ChatAssistant: React.FC = () => {
       
       // Save assistant response to history
       voicePrefs.addToHistory({ role: 'assistant', content: responseText, page: location.pathname });
+      
+      // Add to conversation memory for context
+      conversationMemory.addExchange(
+        trimmedText,
+        responseText,
+        aiAction?.intent,
+        aiAction?.action
+      );
 
       // Detect and trigger highlights based on response content (for text responses)
       if (!aiAction && isHighlightEnabled) {
@@ -1898,6 +1937,17 @@ export const ChatAssistant: React.FC = () => {
             </div>
           )}
 
+          {/* Intent Feedback - visual indicator of what AI detected */}
+          <div className="px-3">
+            <IntentFeedback
+              intent={currentIntent.intent}
+              action={currentIntent.action}
+              target={currentIntent.target}
+              isVisible={Date.now() < currentIntent.showUntil}
+              language={language as 'es' | 'en'}
+            />
+          </div>
+
           {/* Clarification Indicator - shows when AI asked for options */}
           <ClarificationIndicator
             isVisible={conversationState.isAwaitingClarification}
@@ -1909,6 +1959,7 @@ export const ChatAssistant: React.FC = () => {
               const response = language === 'es' ? 'Entendido' : 'Got it';
               const msg: Message = { role: 'assistant', content: response };
               setMessages(prev => [...prev, msg]);
+              speak(response);
               
               // Execute the action
               if (option.action === 'navigate' || option.action === 'both') {
@@ -1916,6 +1967,7 @@ export const ChatAssistant: React.FC = () => {
                   triggerHapticFeedback('medium');
                   navigate(option.route);
                   toast.success(language === 'es' ? 'Navegando...' : 'Navigating...');
+                  setTimeout(() => autoMinimizeToBubble(), 800);
                 }
               }
               if (option.action === 'explain' || option.action === 'both') {
@@ -1924,6 +1976,10 @@ export const ChatAssistant: React.FC = () => {
                   if (tutorial) {
                     setActiveTutorial(tutorial.id);
                     setCurrentTutorialStep(0);
+                    const tutorialResponse = formatTutorialForSpeech(tutorial);
+                    const tutorialMsg: Message = { role: 'assistant', content: tutorialResponse };
+                    setMessages(prev => [...prev, tutorialMsg]);
+                    speak(tutorialResponse);
                   }
                 }
               }
@@ -1934,9 +1990,48 @@ export const ChatAssistant: React.FC = () => {
               conversationState.reset();
               const cancelMsg: Message = { 
                 role: 'assistant', 
-                content: language === 'es' ? 'Cancelado.' : 'Cancelled.' 
+                content: language === 'es' ? 'Cancelado. ¿En qué más puedo ayudarte?' : 'Cancelled. How else can I help?' 
               };
               setMessages(prev => [...prev, cancelMsg]);
+              speak(cancelMsg.content);
+            }}
+            onQuickResponse={(value) => {
+              // Process quick response chip click as if user spoke it
+              const result = conversationState.processClarificationResponse(value, language as 'es' | 'en');
+              if (result.matched && result.option) {
+                const option = result.option;
+                if (option.action === 'cancel') {
+                  const cancelMsg: Message = { 
+                    role: 'assistant', 
+                    content: language === 'es' ? 'Cancelado.' : 'Cancelled.' 
+                  };
+                  setMessages(prev => [...prev, cancelMsg]);
+                } else {
+                  // Execute the action
+                  if (option.action === 'navigate' || option.action === 'both') {
+                    if (option.route) {
+                      triggerHapticFeedback('medium');
+                      navigate(option.route);
+                      toast.success(language === 'es' ? 'Navegando...' : 'Navigating...');
+                      setTimeout(() => autoMinimizeToBubble(), 800);
+                    }
+                  }
+                  if (option.action === 'explain' || option.action === 'both') {
+                    if (option.target) {
+                      const tutorial = findTutorial(option.target);
+                      if (tutorial) {
+                        setActiveTutorial(tutorial.id);
+                        setCurrentTutorialStep(0);
+                      }
+                    }
+                  }
+                  voicePrefs.playSound('success');
+                }
+              } else if (result.fallbackMessage) {
+                const fallbackMsg: Message = { role: 'assistant', content: result.fallbackMessage };
+                setMessages(prev => [...prev, fallbackMsg]);
+                speak(result.fallbackMessage);
+              }
             }}
           />
 
