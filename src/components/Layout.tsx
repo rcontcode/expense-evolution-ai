@@ -55,6 +55,8 @@ import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Link } from 'react-router-dom';
 import { EntitySelector } from '@/components/EntitySelector';
 import { useGlobalReminders } from '@/hooks/utils/useGlobalReminders';
+import { ContactForm } from '@/components/ContactForm';
+import { SocialLinks } from '@/components/SocialLinks';
 // FloatingVoiceIndicator is managed by ChatAssistant, not needed here
 
 interface LayoutProps {
@@ -726,17 +728,25 @@ export const Layout = ({ children }: LayoutProps) => {
           
           {/* Global Footer */}
           <footer className="border-t bg-muted/30 py-4 px-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <p>
-                  {language === 'es' 
-                    ? 'Esta aplicación es solo para fines educativos e informativos. No constituye asesoría profesional.'
-                    : 'This application is for educational and informational purposes only. It does not constitute professional advice.'}
-                </p>
-                <span className="hidden md:inline text-muted-foreground/50">•</span>
-                <span className="hidden md:inline text-muted-foreground/70">v1.0.0</span>
+            <div className="flex flex-col gap-3">
+              {/* Top row: Disclaimer and version */}
+              <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 flex-wrap justify-center md:justify-start">
+                  <p className="text-center md:text-left">
+                    {language === 'es' 
+                      ? 'Esta aplicación es solo para fines educativos e informativos. No constituye asesoría profesional.'
+                      : 'This application is for educational and informational purposes only. It does not constitute professional advice.'}
+                  </p>
+                  <span className="hidden md:inline text-muted-foreground/50">•</span>
+                  <span className="hidden md:inline text-muted-foreground/70">v1.0.0</span>
+                </div>
+                
+                {/* Social Links */}
+                <SocialLinks iconSize="sm" />
               </div>
-              <div className="flex items-center gap-4">
+              
+              {/* Bottom row: Links */}
+              <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
                 <Link to="/legal" className="hover:text-foreground transition-colors">
                   {language === 'es' ? 'Términos de Uso' : 'Terms of Use'}
                 </Link>
@@ -746,6 +756,13 @@ export const Layout = ({ children }: LayoutProps) => {
                 <Link to="/legal#disclaimer" className="hover:text-foreground transition-colors">
                   {language === 'es' ? 'Aviso Legal' : 'Legal Notice'}
                 </Link>
+                <ContactForm 
+                  trigger={
+                    <button className="hover:text-foreground transition-colors text-xs">
+                      {language === 'es' ? 'Contacto' : 'Contact'}
+                    </button>
+                  }
+                />
                 <a href="mailto:support@evofinz.com" className="hover:text-foreground transition-colors">
                   {language === 'es' ? 'Soporte' : 'Support'}
                 </a>
