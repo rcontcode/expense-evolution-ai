@@ -30,6 +30,10 @@ import { ClarificationIndicator } from './ClarificationIndicator';
 import { IntentFeedback } from './IntentFeedback';
 import { QuickResponseChips, getQuickResponsesForContext } from './QuickResponseChips';
 import { AudioLevelIndicator } from './voice/AudioLevelIndicator';
+import { SmartSuggestions } from './SmartSuggestions';
+import { ConversationContext } from './ConversationContext';
+import { TypingIndicator, ThinkingStatus } from './TypingIndicator';
+import { useSmartContext } from '@/hooks/utils/useSmartContext';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -1673,6 +1677,16 @@ export const ChatAssistant: React.FC = () => {
             </div>
           )}
 
+          {/* Conversation Context (if there's memory) */}
+          <ConversationContext
+            exchanges={conversationMemory.memory.exchanges}
+            lastTopic={conversationMemory.memory.lastTopic}
+            onClearMemory={conversationMemory.clearMemory}
+            language={language as 'es' | 'en'}
+            isExpanded={false}
+            onToggleExpand={() => {}}
+          />
+
           {/* Messages */}
           <ScrollArea className="flex-1 p-4" ref={scrollRef}>
             {messages.length === 0 ? (
@@ -1682,6 +1696,25 @@ export const ChatAssistant: React.FC = () => {
                     ? 'Pregúntame sobre cómo usar la app, gestionar tus finanzas, o cualquier duda que tengas.'
                     : 'Ask me about how to use the app, manage your finances, or any questions you have.'}
                 </p>
+                
+                {/* Smart Suggestions */}
+                <SmartSuggestions
+                  financialData={{
+                    monthlyExpenses,
+                    monthlyIncome,
+                    balance,
+                    pendingReceipts,
+                    yearlyExpenses,
+                    yearlyIncome,
+                    deductibleTotal,
+                  }}
+                  currentRoute={location.pathname}
+                  language={language as 'es' | 'en'}
+                  onSuggestionClick={(command) => sendMessage(command)}
+                  isVisible={messages.length === 0}
+                  recentQueries={[]}
+                />
+                
                 <div className="space-y-2">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {language === 'es' ? 'Preguntas frecuentes' : 'Common questions'}
@@ -1798,7 +1831,7 @@ export const ChatAssistant: React.FC = () => {
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
-                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      <TypingIndicator isVisible variant="wave" />
                     </div>
                   </div>
                 )}
