@@ -2888,6 +2888,7 @@ export type Database = {
         Args: { p_usage_type: string; p_user_id: string }
         Returns: boolean
       }
+      is_admin: { Args: { p_user_id: string }; Returns: boolean }
       revoke_beta_access: {
         Args: { p_reason?: string; p_user_id: string }
         Returns: undefined

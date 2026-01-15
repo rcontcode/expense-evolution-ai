@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { EntityProvider } from "@/contexts/EntityContext";
 import { HighlightProvider } from "@/contexts/HighlightContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
 import { useLoginMissionListener } from "@/hooks/data/useMissions";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -202,8 +203,8 @@ const App = () => (
                         <Route path="/tax-calendar" element={<ProtectedRoute><TaxCalendar /></ProtectedRoute>} />
                         <Route path="/install" element={<Install />} />
                         <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
-                        <Route path="/admin/beta-codes" element={<ProtectedRoute><BetaCodesAdmin /></ProtectedRoute>} />
-                        <Route path="/admin/beta-dashboard" element={<ProtectedRoute><BetaDashboardAdmin /></ProtectedRoute>} />
+                        <Route path="/admin/beta-codes" element={<AdminRoute><BetaCodesAdmin /></AdminRoute>} />
+                        <Route path="/admin/beta-dashboard" element={<AdminRoute><BetaDashboardAdmin /></AdminRoute>} />
                         <Route path="/beta-feedback" element={<ProtectedRoute><BetaFeedback /></ProtectedRoute>} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
