@@ -329,6 +329,21 @@ CONTEXTO DEL USUARIO:
       }
     }
 
+    // Enrich clarification options with routes
+    if (parsedAction?.action === 'clarify' && parsedAction.options && Array.isArray(parsedAction.options)) {
+      // deno-lint-ignore no-explicit-any
+      parsedAction.options = parsedAction.options.map((opt: any) => {
+        if (opt.target) {
+          const routeInfo = AVAILABLE_ROUTES[opt.target as keyof typeof AVAILABLE_ROUTES];
+          if (routeInfo) {
+            return { ...opt, route: routeInfo.route };
+          }
+        }
+        return opt;
+      });
+      console.log('[AI] Enriched clarification options:', parsedAction.options);
+    }
+
     // If action was parsed, use the action's message
     const finalMessage = parsedAction?.message || assistantMessage;
 
