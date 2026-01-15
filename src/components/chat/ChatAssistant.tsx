@@ -26,6 +26,7 @@ import { useVoiceKeyboardShortcuts } from '@/hooks/utils/useKeyboardShortcuts';
 import { processVoiceCommand, ClarificationOption } from './voice/VoiceCommandProcessor';
 import { parseOpenClientCommand } from './voice/VoiceActionParsers';
 import { VoiceCommandsCheatsheet } from './voice/VoiceCommandsCheatsheet';
+import { ClarificationIndicator } from './ClarificationIndicator';
 import { AudioLevelIndicator } from './voice/AudioLevelIndicator';
 
 import { supabase } from '@/integrations/supabase/client';
@@ -1309,13 +1310,15 @@ export const ChatAssistant: React.FC = () => {
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {isContinuousMode
-                    ? (language === 'es' ? '🎙️ Modo continuo activo - di "detener" para parar' : '🎙️ Continuous mode - say "stop" to end')
-                    : isListening 
-                      ? (language === 'es' ? '🎤 Escuchando...' : '🎤 Listening...')
-                      : isSpeaking 
-                        ? (language === 'es' ? '🔊 Hablando...' : '🔊 Speaking...')
-                        : (language === 'es' ? `Hola ${userName}, ¿en qué te ayudo?` : `Hi ${userName}, how can I help?`)
+                  {conversationState.isAwaitingClarification
+                    ? (language === 'es' ? '🤔 Esperando tu elección...' : '🤔 Waiting for your choice...')
+                    : isContinuousMode
+                      ? (language === 'es' ? '🎙️ Modo continuo activo - di "detener" para parar' : '🎙️ Continuous mode - say "stop" to end')
+                      : isListening 
+                        ? (language === 'es' ? '🎤 Escuchando...' : '🎤 Listening...')
+                        : isSpeaking 
+                          ? (language === 'es' ? '🔊 Hablando...' : '🔊 Speaking...')
+                          : (language === 'es' ? `Hola ${userName}, ¿en qué te ayudo?` : `Hi ${userName}, how can I help?`)
                   }
                 </p>
               </div>
@@ -1894,6 +1897,48 @@ export const ChatAssistant: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Clarification Indicator - shows when AI asked for options */}
+          <ClarificationIndicator
+            isVisible={conversationState.isAwaitingClarification}
+            options={conversationState.context?.options || []}
+            remainingSeconds={conversationState.remainingSeconds}
+            language={language as 'es' | 'en'}
+            onOptionClick={(option) => {
+              // Handle option click as if user spoke it
+              const response = language === 'es' ? 'Entendido' : 'Got it';
+              const msg: Message = { role: 'assistant', content: response };
+              setMessages(prev => [...prev, msg]);
+              
+              // Execute the action
+              if (option.action === 'navigate' || option.action === 'both') {
+                if (option.route) {
+                  triggerHapticFeedback('medium');
+                  navigate(option.route);
+                  toast.success(language === 'es' ? 'Navegando...' : 'Navigating...');
+                }
+              }
+              if (option.action === 'explain' || option.action === 'both') {
+                if (option.target) {
+                  const tutorial = findTutorial(option.target);
+                  if (tutorial) {
+                    setActiveTutorial(tutorial.id);
+                    setCurrentTutorialStep(0);
+                  }
+                }
+              }
+              conversationState.reset();
+              voicePrefs.playSound('success');
+            }}
+            onCancel={() => {
+              conversationState.reset();
+              const cancelMsg: Message = { 
+                role: 'assistant', 
+                content: language === 'es' ? 'Cancelado.' : 'Cancelled.' 
+              };
+              setMessages(prev => [...prev, cancelMsg]);
+            }}
+          />
 
           {/* Input */}
           <form onSubmit={handleSubmit} className="p-4 border-t bg-background/50">
