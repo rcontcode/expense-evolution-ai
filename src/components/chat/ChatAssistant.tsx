@@ -874,6 +874,9 @@ export const ChatAssistant: React.FC = () => {
   }, [location.pathname, isOpen, hasShownWelcome, getCurrentPageContext, language]);
 
   // Route mapping for navigation actions (fallback if edge function doesn't provide route)
+  // MUST be synchronized with:
+  //   - supabase/functions/app-assistant/index.ts (AVAILABLE_ROUTES)
+  //   - src/hooks/utils/useAssistantActions.ts (ROUTE_MAP)
   const ROUTE_MAP: Record<string, string> = {
     expenses: '/expenses',
     income: '/income',
@@ -885,14 +888,15 @@ export const ChatAssistant: React.FC = () => {
     networth: '/net-worth',
     banking: '/banking',
     settings: '/settings',
-    capture: '/mobile-capture',
-    chaos: '/chaos-inbox',
+    capture: '/capture',
+    chaos: '/chaos',
     reconciliation: '/reconciliation',
     business: '/business-profile',
     notifications: '/notifications',
     mentorship: '/mentorship',
     taxes: '/tax-calendar',
     tags: '/tags',
+    betafeedback: '/beta-feedback',
   };
 
   // Execute action returned by AI
