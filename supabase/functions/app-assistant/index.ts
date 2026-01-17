@@ -18,7 +18,7 @@ const AVAILABLE_ROUTES = {
   banking: { route: '/banking', names: { es: 'Banca', en: 'Banking' } },
   settings: { route: '/settings', names: { es: 'Configuración', en: 'Settings' } },
   capture: { route: '/capture', names: { es: 'Captura Rápida', en: 'Quick Capture' } },
-  chaos: { route: '/chaos-inbox', names: { es: 'Centro de Revisión', en: 'Review Center' } },
+  chaos: { route: '/chaos', names: { es: 'Centro de Revisión', en: 'Review Center' } },
   reconciliation: { route: '/reconciliation', names: { es: 'Reconciliación', en: 'Reconciliation' } },
   business: { route: '/business-profile', names: { es: 'Perfil de Negocio', en: 'Business Profile' } },
   notifications: { route: '/notifications', names: { es: 'Notificaciones', en: 'Notifications' } },
