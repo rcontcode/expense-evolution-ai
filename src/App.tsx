@@ -186,6 +186,8 @@ const App = () => (
                         <Route path="/beta-features" element={<ProtectedRoute><BetaFeatures /></ProtectedRoute>} />
                         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                         <Route path="/chaos" element={<ProtectedRoute><ChaosInbox /></ProtectedRoute>} />
+                        {/* Backwards-compatible alias (used by assistant + older deep links) */}
+                        <Route path="/chaos-inbox" element={<ProtectedRoute><ChaosInbox /></ProtectedRoute>} />
                         <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
                         <Route path="/income" element={<ProtectedRoute><Income /></ProtectedRoute>} />
                         <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
@@ -203,6 +205,8 @@ const App = () => (
                         <Route path="/tax-calendar" element={<ProtectedRoute><TaxCalendar /></ProtectedRoute>} />
                         <Route path="/install" element={<Install />} />
                         <Route path="/capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
+                        {/* Backwards-compatible alias (some UI + assistant maps use this) */}
+                        <Route path="/mobile-capture" element={<ProtectedRoute><MobileCapture /></ProtectedRoute>} />
                         <Route path="/admin/beta-codes" element={<AdminRoute><BetaCodesAdmin /></AdminRoute>} />
                         <Route path="/admin/beta-dashboard" element={<AdminRoute><BetaDashboardAdmin /></AdminRoute>} />
                         <Route path="/beta-feedback" element={<ProtectedRoute><BetaFeedback /></ProtectedRoute>} />
