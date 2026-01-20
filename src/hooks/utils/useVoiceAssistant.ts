@@ -393,6 +393,13 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
 
   // Speak the next sentence in queue
   const speakNextSentence = useCallback(() => {
+    // NEW: Verify synthesis is ready before speaking
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      console.log('[Voice] Waiting for synthesis to be ready...');
+      setTimeout(speakNextSentence, 100);
+      return;
+    }
+
     if (currentSentenceIndexRef.current >= sentenceQueueRef.current.length) {
       // All done
       console.log('[Voice] All sentences spoken');
@@ -571,6 +578,17 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   const speak = useCallback((text: string) => {
     if (!isSupported || !text) return;
 
+    // NEW: Log and cancel any existing speech FIRST
+    console.log('[Voice] Cancelling any existing speech before speaking');
+    window.speechSynthesis.cancel();
+    
+    // NEW: Wait for cancel to take effect before proceeding
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      console.log('[Voice] Waiting for previous speech to clear...');
+      setTimeout(() => speak(text), 100);
+      return;
+    }
+
     console.log('[Voice] Starting speech - BLOCKING MIC');
     
     // CRITICAL: Block recognition IMMEDIATELY
@@ -590,9 +608,6 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     // Clear any accumulated text and pause timer
     accumulatedTextRef.current = '';
     clearPauseTimeout();
-
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
 
     const cleanedText = cleanTextForSpeech(text);
     if (!cleanedText) {
