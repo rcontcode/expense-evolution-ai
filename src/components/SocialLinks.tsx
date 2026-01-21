@@ -46,9 +46,9 @@ const SOCIAL_LINKS = [
 ];
 
 const sizeClasses = {
-  sm: 'w-4 h-4',
-  md: 'w-5 h-5',
-  lg: 'w-6 h-6',
+  sm: 'w-4 h-4 min-w-4 max-w-4 min-h-4 max-h-4',
+  md: 'w-5 h-5 min-w-5 max-w-5 min-h-5 max-h-5',
+  lg: 'w-6 h-6 min-w-6 max-w-6 min-h-6 max-h-6',
 };
 
 export function SocialLinks({ className, iconSize = 'md', showLabels = false }: SocialLinksProps) {
@@ -66,7 +66,7 @@ export function SocialLinks({ className, iconSize = 'md', showLabels = false }: 
           )}
           aria-label={social.name}
         >
-          <span className={sizeClasses[iconSize]}>{social.icon}</span>
+          <span className={`${sizeClasses[iconSize]} inline-flex items-center justify-center flex-shrink-0`}>{social.icon}</span>
           {showLabels && <span className="text-sm">{social.name}</span>}
         </a>
       ))}
