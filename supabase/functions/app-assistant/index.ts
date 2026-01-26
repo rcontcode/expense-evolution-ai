@@ -1,9 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Initialize Supabase client for usage tracking
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 // ============================================================================
 // ROUTE DEFINITIONS - All available navigation targets
@@ -416,6 +421,23 @@ Para CONVERSACIÓN PURA (sin acción): responde en texto plano, breve y útil.
 `;
 
 // ============================================================================
+// VOICE USAGE TRACKING
+// ============================================================================
+
+async function incrementVoiceUsage(userId: string): Promise<void> {
+  try {
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    await supabase.rpc('increment_usage', {
+      p_user_id: userId,
+      p_usage_type: 'voice',
+    });
+    console.log('[Voice] Incremented usage for user:', userId);
+  } catch (error) {
+    console.error('[Voice] Failed to increment usage:', error);
+  }
+}
+
+// ============================================================================
 // MAIN SERVER HANDLER
 // ============================================================================
 
@@ -425,6 +447,21 @@ serve(async (req) => {
   }
 
   try {
+    // Extract user ID from authorization header
+    const authHeader = req.headers.get('authorization');
+    let userId: string | null = null;
+    
+    if (authHeader) {
+      try {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user } } = await supabase.auth.getUser(token);
+        userId = user?.id || null;
+      } catch (e) {
+        console.log('[Auth] Could not extract user ID:', e);
+      }
+    }
+
     const { messages, userContext, language = 'es' } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
@@ -478,6 +515,11 @@ serve(async (req) => {
 
     // If we have a deterministic response, return it immediately
     if (actionResponse) {
+      // Increment voice usage for successful request
+      if (userId) {
+        await incrementVoiceUsage(userId);
+      }
+      
       return new Response(
         JSON.stringify({ 
           message: actionResponse.message,
@@ -580,6 +622,11 @@ Ruta actual: ${userContext.currentRoute || 'desconocida'}
           // Not valid JSON
         }
       }
+    }
+
+    // Increment voice usage for successful AI response
+    if (userId) {
+      await incrementVoiceUsage(userId);
     }
 
     return new Response(

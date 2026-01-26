@@ -34,6 +34,7 @@ import { SmartSuggestions } from './SmartSuggestions';
 import { ConversationContext } from './ConversationContext';
 import { TypingIndicator, ThinkingStatus } from './TypingIndicator';
 import { useSmartContext } from '@/hooks/utils/useSmartContext';
+import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -142,6 +143,9 @@ export const ChatAssistant: React.FC = () => {
   const { language } = useLanguage();
   const createExpense = useCreateExpense();
   const createIncome = useCreateIncome();
+  
+  // Plan limits for voice assistant
+  const { canUseVoice, planType, hasFeature } = usePlanLimits();
 
   // Smart guidance system
   const { 
@@ -974,6 +978,29 @@ export const ChatAssistant: React.FC = () => {
   const sendMessage = useCallback(async (text: string, skipAddingUserMessage = false) => {
     const trimmedText = text.trim();
     if (!trimmedText || isLoading) return;
+
+    // Check voice assistant limit before processing
+    if (!canUseVoice()) {
+      const limitMessage = language === 'es'
+        ? '🚀 El asistente de voz es una función Pro. Actualiza tu plan para acceder a comandos de voz ilimitados.'
+        : '🚀 Voice assistant is a Pro feature. Upgrade your plan for unlimited voice commands.';
+      
+      setMessages(prev => [...prev, 
+        { role: 'user', content: trimmedText },
+        { role: 'assistant', content: limitMessage }
+      ]);
+      
+      toast.info(language === 'es' ? 'Función Pro' : 'Pro Feature', {
+        description: language === 'es' 
+          ? 'Actualiza a Pro para usar el asistente de voz' 
+          : 'Upgrade to Pro to use the voice assistant',
+        action: {
+          label: language === 'es' ? 'Ver planes' : 'View plans',
+          onClick: () => navigate('/settings?tab=subscription'),
+        },
+      });
+      return;
+    }
 
     const userMessage: Message = { role: 'user', content: trimmedText };
     if (!skipAddingUserMessage) {
