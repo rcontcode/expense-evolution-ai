@@ -12,6 +12,7 @@ export const PLAN_LIMITS = {
     projects: 2,
     contract_analyses_per_month: 0,
     bank_analyses_per_month: 0,
+    voice_requests_per_month: 0,
     // Features
     mileage: false,
     gamification: false,
@@ -34,6 +35,7 @@ export const PLAN_LIMITS = {
     projects: Infinity,
     contract_analyses_per_month: 0,
     bank_analyses_per_month: 0,
+    voice_requests_per_month: 0,
     // Features
     mileage: true,
     gamification: true,
@@ -56,6 +58,7 @@ export const PLAN_LIMITS = {
     projects: Infinity,
     contract_analyses_per_month: Infinity,
     bank_analyses_per_month: Infinity,
+    voice_requests_per_month: Infinity,
     // Features
     mileage: true,
     gamification: true,
@@ -81,6 +84,7 @@ interface UsageData {
   ocr_scans_count: number;
   contract_analyses_count: number;
   bank_analyses_count: number;
+  voice_requests_count: number;
 }
 
 interface SubscriptionData {
@@ -142,7 +146,7 @@ export function usePlanLimits() {
       
       const { data, error } = await supabase
         .from('usage_tracking')
-        .select('expenses_count, incomes_count, ocr_scans_count, contract_analyses_count, bank_analyses_count')
+        .select('*')
         .eq('user_id', user.id)
         .eq('period_start', currentPeriod)
         .maybeSingle();
@@ -152,7 +156,18 @@ export function usePlanLimits() {
         return null;
       }
       
-      return data as UsageData | null;
+      // Map to UsageData interface (voice_requests_count may not exist in old types)
+      if (data) {
+        return {
+          expenses_count: data.expenses_count ?? 0,
+          incomes_count: data.incomes_count ?? 0,
+          ocr_scans_count: data.ocr_scans_count ?? 0,
+          contract_analyses_count: data.contract_analyses_count ?? 0,
+          bank_analyses_count: data.bank_analyses_count ?? 0,
+          voice_requests_count: (data as Record<string, unknown>).voice_requests_count as number ?? 0,
+        } as UsageData;
+      }
+      return null;
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60, // 1 minute
@@ -188,7 +203,7 @@ export function usePlanLimits() {
 
   // Increment usage mutation
   const incrementUsage = useMutation({
-    mutationFn: async (usageType: 'expense' | 'income' | 'ocr' | 'contract' | 'bank') => {
+    mutationFn: async (usageType: 'expense' | 'income' | 'ocr' | 'contract' | 'bank' | 'voice') => {
       if (!user?.id) throw new Error('No user');
       
       const { error } = await supabase.rpc('increment_usage', {
@@ -212,6 +227,7 @@ export function usePlanLimits() {
     ocr_scans_count: 0,
     contract_analyses_count: 0,
     bank_analyses_count: 0,
+    voice_requests_count: 0,
   };
 
   // Check functions
@@ -252,6 +268,12 @@ export function usePlanLimits() {
     return currentUsage.bank_analyses_count < limits.bank_analyses_per_month;
   };
 
+  const canUseVoice = () => {
+    if (limits.voice_requests_per_month === Infinity) return true;
+    if (limits.voice_requests_per_month === 0) return false;
+    return currentUsage.voice_requests_count < limits.voice_requests_per_month;
+  };
+
   const hasFeature = (feature: FeatureKey): boolean => {
     const value = limits[feature];
     if (typeof value === 'boolean') return value;
@@ -259,7 +281,7 @@ export function usePlanLimits() {
     return true;
   };
 
-  const getUsagePercentage = (type: 'expenses' | 'incomes' | 'ocr' | 'clients' | 'projects'): number => {
+  const getUsagePercentage = (type: 'expenses' | 'incomes' | 'ocr' | 'clients' | 'projects' | 'voice'): number => {
     switch (type) {
       case 'expenses':
         if (limits.expenses_per_month === Infinity) return 0;
@@ -276,12 +298,15 @@ export function usePlanLimits() {
       case 'projects':
         if (limits.projects === Infinity) return 0;
         return (projectCount / limits.projects) * 100;
+      case 'voice':
+        if (limits.voice_requests_per_month === Infinity) return 0;
+        return (currentUsage.voice_requests_count / limits.voice_requests_per_month) * 100;
       default:
         return 0;
     }
   };
 
-  const getRemainingUsage = (type: 'expenses' | 'incomes' | 'ocr' | 'clients' | 'projects'): number | 'unlimited' => {
+  const getRemainingUsage = (type: 'expenses' | 'incomes' | 'ocr' | 'clients' | 'projects' | 'voice'): number | 'unlimited' => {
     switch (type) {
       case 'expenses':
         if (limits.expenses_per_month === Infinity) return 'unlimited';
@@ -298,6 +323,9 @@ export function usePlanLimits() {
       case 'projects':
         if (limits.projects === Infinity) return 'unlimited';
         return Math.max(0, limits.projects - projectCount);
+      case 'voice':
+        if (limits.voice_requests_per_month === Infinity) return 'unlimited';
+        return Math.max(0, limits.voice_requests_per_month - currentUsage.voice_requests_count);
       default:
         return 0;
     }
@@ -327,6 +355,7 @@ export function usePlanLimits() {
     canAddProject,
     canAnalyzeContract,
     canAnalyzeBank,
+    canUseVoice,
     hasFeature,
     
     // Usage info
