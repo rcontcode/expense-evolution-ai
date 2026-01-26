@@ -56,6 +56,18 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   const sentenceQueueRef = useRef<string[]>([]);
   const currentSentenceIndexRef = useRef(0);
 
+  // SAFETY: prevent the mic from staying blocked forever if speech synthesis hangs.
+  const speakWatchdogRef = useRef<NodeJS.Timeout | null>(null);
+  const synthStuckSinceRef = useRef<number | null>(null);
+
+  const clearSpeakWatchdog = useCallback(() => {
+    if (speakWatchdogRef.current) {
+      clearTimeout(speakWatchdogRef.current);
+      speakWatchdogRef.current = null;
+    }
+    synthStuckSinceRef.current = null;
+  }, []);
+
   // Check browser support
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -282,6 +294,36 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     }
   }, [language, options, isStopCommand, stopRecognition, startPauseTimer, flushAccumulatedText]);
 
+  const forceStopSpeechAndUnblock = useCallback((reason: string) => {
+    console.warn('[Voice] Forcing speech stop/unblock:', reason);
+    clearSpeakWatchdog();
+
+    try {
+      window.speechSynthesis.cancel();
+    } catch {
+      // ignore
+    }
+
+    sentenceQueueRef.current = [];
+    currentSentenceIndexRef.current = 0;
+    setIsSpeaking(false);
+    setIsSpeechPaused(false);
+    setCurrentSpeakingText('');
+    setCurrentSentenceIndex(0);
+
+    // Always unblock mic
+    isPausedForSpeakingRef.current = false;
+
+    // If user is in continuous mode, resume recognition quickly
+    if (continuousModeRef.current) {
+      setTimeout(() => {
+        if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
+          createAndStartRecognition(true);
+        }
+      }, 200);
+    }
+  }, [clearSpeakWatchdog, createAndStartRecognition]);
+
   // Start single-phrase listening
   const startListening = useCallback(() => {
     if (!isSupported) return;
@@ -396,13 +438,24 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     // NEW: Verify synthesis is ready before speaking
     if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
       console.log('[Voice] Waiting for synthesis to be ready...');
+      // SAFETY: Some browsers get stuck in "speaking/pending" forever.
+      if (!synthStuckSinceRef.current) {
+        synthStuckSinceRef.current = Date.now();
+      } else if (Date.now() - synthStuckSinceRef.current > 3000) {
+        forceStopSpeechAndUnblock('speechSynthesis stuck (speaking/pending > 3s)');
+        return;
+      }
       setTimeout(speakNextSentence, 100);
       return;
     }
 
+    // reset stuck timer once synthesis is ready
+    synthStuckSinceRef.current = null;
+
     if (currentSentenceIndexRef.current >= sentenceQueueRef.current.length) {
       // All done
       console.log('[Voice] All sentences spoken');
+      clearSpeakWatchdog();
       setIsSpeaking(false);
       setIsSpeechPaused(false);
       setCurrentSpeakingText('');
@@ -533,6 +586,8 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     };
 
     utterance.onend = () => {
+      // speech advanced successfully; ensure stuck timer doesn't falsely trigger
+      synthStuckSinceRef.current = null;
       currentSentenceIndexRef.current++;
       
       // Add a natural pause between sentences (400ms)
@@ -545,6 +600,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
 
     utterance.onerror = (event) => {
       console.error('[Voice] Speech synthesis error:', event);
+      clearSpeakWatchdog();
       
       // Try next sentence or finish
       currentSentenceIndexRef.current++;
@@ -593,6 +649,12 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     
     // CRITICAL: Block recognition IMMEDIATELY
     isPausedForSpeakingRef.current = true;
+
+    // SAFETY watchdog: never keep the mic blocked indefinitely
+    clearSpeakWatchdog();
+    speakWatchdogRef.current = setTimeout(() => {
+      forceStopSpeechAndUnblock('watchdog timeout (15s)');
+    }, 15000);
     
     // Stop recognition completely
     if (recognitionRef.current) {
@@ -635,7 +697,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     setTimeout(() => {
       speakNextSentence();
     }, 150);
-  }, [isSupported, cleanTextForSpeech, splitIntoSentences, clearPauseTimeout, speakNextSentence, createAndStartRecognition]);
+  }, [isSupported, cleanTextForSpeech, splitIntoSentences, clearPauseTimeout, speakNextSentence, createAndStartRecognition, clearSpeakWatchdog, forceStopSpeechAndUnblock]);
 
   // Pause speech
   const pauseSpeech = useCallback(() => {
@@ -658,6 +720,8 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   // Stop speaking completely (user can call this to interrupt)
   const stopSpeaking = useCallback((wasInterrupted = false) => {
     const wasActuallySpeaking = isSpeaking;
+
+    clearSpeakWatchdog();
     
     window.speechSynthesis.cancel();
     sentenceQueueRef.current = [];
