@@ -979,8 +979,37 @@ export const ChatAssistant: React.FC = () => {
     const trimmedText = text.trim();
     if (!trimmedText || isLoading) return;
 
+    // DEV OVERRIDE: "modo dios" to bypass plan gates (for testing)
+    const isGodMode = (() => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('god') === '1') {
+          localStorage.setItem('god_mode', 'true');
+          return true;
+        }
+        return localStorage.getItem('god_mode') === 'true';
+      } catch {
+        return false;
+      }
+    })();
+
+    // Allow toggling God Mode by chat command
+    if (/^(modo dios|god mode)(\s+(on|off))?$/i.test(trimmedText)) {
+      const turnOff = /\s+off$/i.test(trimmedText);
+      try {
+        localStorage.setItem('god_mode', turnOff ? 'false' : 'true');
+      } catch {
+        // ignore
+      }
+      const msg = language === 'es'
+        ? `Modo dios ${turnOff ? 'desactivado' : 'activado'}.`
+        : `God mode ${turnOff ? 'disabled' : 'enabled'}.`;
+      setMessages(prev => [...prev, { role: 'user', content: trimmedText }, { role: 'assistant', content: msg }]);
+      return;
+    }
+
     // Check voice assistant limit before processing
-    if (!canUseVoice()) {
+    if (!isGodMode && !canUseVoice()) {
       const limitMessage = language === 'es'
         ? '🚀 El asistente de voz es una función Pro. Actualiza tu plan para acceder a comandos de voz ilimitados.'
         : '🚀 Voice assistant is a Pro feature. Upgrade your plan for unlimited voice commands.';
