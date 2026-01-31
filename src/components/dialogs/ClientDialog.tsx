@@ -42,15 +42,16 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
   const [showDeleteTestData, setShowDeleteTestData] = useState(false);
   const [deleteStep, setDeleteStep] = useState<DeleteStep>('idle');
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
-  const { canAddClient, planType, clientCount, limits, getUpgradePlan } = usePlanLimits();
+  const { canAddClient, planType, clientCount, limits, getUpgradePlan, isLoading: isPlanLoading, isGodMode } = usePlanLimits();
   const isEditing = !!client;
 
   // Check limit on open
   useEffect(() => {
-    if (open && !isEditing && !canAddClient()) {
+    // Avoid showing paywall while plan/admin status is still loading.
+    if (open && !isEditing && !isPlanLoading && !isGodMode && !canAddClient()) {
       setShowUpgradePrompt(true);
     }
-  }, [open, isEditing, canAddClient]);
+  }, [open, isEditing, isPlanLoading, isGodMode, canAddClient]);
 
   const triggerSuccessConfetti = () => {
     confetti({
@@ -74,7 +75,8 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
   ) : false;
 
   const handleSubmit = (data: ClientFormValues) => {
-    if (!isEditing && !canAddClient()) {
+    // Don't gate while loading (prevents false Premium prompts for admin/owner)
+    if (!isEditing && !isPlanLoading && !isGodMode && !canAddClient()) {
       setShowUpgradePrompt(true);
       return;
     }

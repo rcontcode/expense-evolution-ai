@@ -22,6 +22,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  // Ensure the first authenticated user can bootstrap admin privileges (server-side safe)
+  const maybeClaimFirstAdmin = useCallback(async (userId?: string) => {
+    if (!userId) return;
+    try {
+      await supabase.rpc('claim_first_admin');
+      // Refresh admin checks immediately
+      queryClient.invalidateQueries({ queryKey: ['is-admin', userId] });
+    } catch (err) {
+      // Expected to fail for non-first users or if already claimed
+      // Keep silent to avoid confusing normal users
+      console.debug('[Auth] claim_first_admin skipped/failed');
+    }
+  }, [queryClient]);
+
   // Track login for missions
   const trackLoginAction = useCallback(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -67,6 +81,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Use setTimeout to avoid blocking the auth flow
           setTimeout(() => checkSubscription(session.access_token), 100);
         }
+        // Bootstrap admin for the very first user (no-op otherwise)
+        setTimeout(() => maybeClaimFirstAdmin(session?.user?.id), 200);
       }
       
       // Clean up URL hash after OAuth callback.
@@ -95,11 +111,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.access_token) {
           setTimeout(() => checkSubscription(session.access_token), 100);
         }
+        // Bootstrap admin for the very first user (no-op otherwise)
+        setTimeout(() => maybeClaimFirstAdmin(session.user.id), 200);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [trackLoginAction, checkSubscription]);
+  }, [trackLoginAction, checkSubscription, maybeClaimFirstAdmin]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({

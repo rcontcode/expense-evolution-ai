@@ -9,6 +9,7 @@ export interface TutorialStep {
   narration: string;     // Text the assistant says
   waitForClick?: boolean; // Wait for user to click before advancing
   delay?: number;        // Custom delay before next step (ms)
+  autoClick?: boolean;   // If true, auto-click the highlighted element (simulate the user)
 }
 
 export interface Tutorial {
@@ -89,6 +90,17 @@ export function useTutorialRunner(options: UseTutorialRunnerOptions = {}) {
     // Activate highlight on target element
     setTimeout(() => {
       highlight([{ selector: step.highlight, label: step.narration }]);
+
+      if (step.autoClick) {
+        // Try clicking the highlighted element (by data-highlight)
+        const el = document.querySelector(`[data-highlight="${step.highlight}"]`) as HTMLElement | null;
+        if (el) {
+          el.click();
+          console.log('[Tutorial] autoClick:', step.highlight);
+        } else {
+          console.warn('[Tutorial] autoClick target not found:', step.highlight);
+        }
+      }
     }, 200);
     
     // Speak narration
@@ -97,7 +109,8 @@ export function useTutorialRunner(options: UseTutorialRunnerOptions = {}) {
     }
     
     // Calculate delay based on narration length
-    const baseDelay = step.delay || Math.max(4000, step.narration.length * 60);
+    // Some browsers cut long utterances; keep delays a bit more conservative
+    const baseDelay = step.delay || Math.max(4500, step.narration.length * 85);
     
     // If waitForClick, don't auto-advance
     if (!step.waitForClick) {

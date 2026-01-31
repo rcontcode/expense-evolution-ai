@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsAdmin } from '@/hooks/data/useIsAdmin';
 
 // Plan limits configuration
 export const PLAN_LIMITS = {
@@ -97,6 +98,9 @@ interface SubscriptionData {
 export function usePlanLimits() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+
+  // Admins (server-validated via roles table) should always bypass plan limits ("modo dios")
+  const { data: isAdmin, isLoading: isLoadingAdmin } = useIsAdmin();
 
   // Fetch subscription
   const { data: subscription, isLoading: isLoadingSubscription } = useQuery({
@@ -219,7 +223,9 @@ export function usePlanLimits() {
     },
   });
 
-  const planType = subscription?.plan_type || 'free';
+  const subscriptionPlanType = subscription?.plan_type || 'free';
+  const isGodMode = !!isAdmin;
+  const planType: PlanType = isGodMode ? 'pro' : subscriptionPlanType;
   const limits = PLAN_LIMITS[planType];
   const currentUsage = usage || {
     expenses_count: 0,
@@ -344,8 +350,9 @@ export function usePlanLimits() {
     usage: currentUsage,
     clientCount,
     projectCount,
-    isLoading: isLoadingSubscription || isLoadingUsage,
+    isLoading: isLoadingSubscription || isLoadingUsage || isLoadingAdmin,
     subscription,
+    isGodMode,
     
     // Check functions
     canAddExpense,
