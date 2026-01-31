@@ -1,5 +1,6 @@
 import { createContext, useContext, ReactNode, useMemo, useState, useCallback } from 'react';
 import { useFiscalEntities, usePrimaryFiscalEntity, type FiscalEntity } from '@/hooks/data/useFiscalEntities';
+import type { CountryCode } from '@/lib/constants/country-tax-config';
 
 interface EntityContextType {
   // Current active entity (selected or primary)
@@ -17,13 +18,22 @@ interface EntityContextType {
   // Current entity's currency
   currentCurrency: string;
   // Current entity's country
-  currentCountry: string;
+  currentCountry: CountryCode;
   // View mode: show all entities or just current
   showAllEntities: boolean;
   // Toggle view mode
   setShowAllEntities: (showAll: boolean) => void;
   // Select a specific entity
   selectEntity: (entityId: string) => void;
+  // === NEW: Country-aware helpers ===
+  // All unique countries user has entities for
+  activeCountries: CountryCode[];
+  // Whether user operates in multiple countries
+  isMultiCountry: boolean;
+  // Get entities for a specific country
+  getEntitiesForCountry: (country: CountryCode) => FiscalEntity[];
+  // Check if user has entity in a specific country
+  hasCountry: (country: CountryCode) => boolean;
 }
 
 const EntityContext = createContext<EntityContextType | undefined>(undefined);
@@ -53,6 +63,18 @@ export function EntityProvider({ children }: { children: ReactNode }) {
       currentEntity = primaryEntity || activeEntities[0] || null;
     }
     
+    // Extract unique countries from active entities
+    const activeCountries = [...new Set(
+      activeEntities.map(e => e.country as CountryCode)
+    )].filter(Boolean);
+    
+    // Helper functions
+    const getEntitiesForCountry = (country: CountryCode) => 
+      activeEntities.filter(e => e.country === country);
+    
+    const hasCountry = (country: CountryCode) => 
+      activeCountries.includes(country);
+    
     return {
       currentEntity,
       entities,
@@ -61,10 +83,15 @@ export function EntityProvider({ children }: { children: ReactNode }) {
       getEntityById: (id: string) => entities.find(e => e.id === id),
       isMultiEntity: activeEntities.length > 1,
       currentCurrency: currentEntity?.default_currency || 'CAD',
-      currentCountry: currentEntity?.country || 'CA',
+      currentCountry: (currentEntity?.country as CountryCode) || 'CA',
       showAllEntities,
       setShowAllEntities,
       selectEntity,
+      // Country-aware properties
+      activeCountries: activeCountries.length > 0 ? activeCountries : ['CA' as CountryCode],
+      isMultiCountry: activeCountries.length > 1,
+      getEntitiesForCountry,
+      hasCountry,
     };
   }, [entities, primaryEntity, entitiesLoading, primaryLoading, showAllEntities, selectedEntityId, selectEntity]);
 

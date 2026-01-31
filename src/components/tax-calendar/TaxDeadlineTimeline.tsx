@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useProfile } from "@/hooks/data/useProfile";
+import { useCountryContext } from "@/hooks/utils/useCountryContext";
 import { format, addMonths, differenceInDays, isAfter, isBefore, startOfMonth, endOfMonth } from "date-fns";
 import { es, enCA } from "date-fns/locale";
 import { Calendar, AlertTriangle, CheckCircle2, Clock, Building2, User, Briefcase, Calculator, FileText } from "lucide-react";
@@ -11,6 +11,8 @@ interface TimelineProps {
   year: number;
   workTypes: string[];
   fiscalYearEnd?: string | null;
+  /** Optional country override - defaults to current entity's country */
+  country?: 'CA' | 'CL';
 }
 
 interface Deadline {
@@ -24,13 +26,15 @@ interface Deadline {
   color: string;
 }
 
-export function TaxDeadlineTimeline({ year, workTypes, fiscalYearEnd }: TimelineProps) {
+export function TaxDeadlineTimeline({ year, workTypes, fiscalYearEnd, country: countryProp }: TimelineProps) {
   const { language } = useLanguage();
-  const { data: profile } = useProfile();
+  const { currentCountry } = useCountryContext();
   const locale = language === 'es' ? es : enCA;
   const isEs = language === 'es';
   const today = new Date();
-  const isChile = profile?.country === 'CL';
+  
+  // Use prop if provided, otherwise use context
+  const isChile = (countryProp || currentCountry) === 'CL';
 
   const deadlines = useMemo(() => {
     const items: Deadline[] = [];
