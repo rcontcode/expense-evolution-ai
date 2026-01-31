@@ -20,12 +20,30 @@ import { TaxSituationWizard } from "@/components/tax-calendar/TaxSituationWizard
 import { TaxResources } from "@/components/tax-calendar/TaxResources";
 import { TaxEstimator } from "@/components/tax-calendar/TaxEstimator";
 import { TaxInfoVersionBadge } from "@/components/tax-calendar/TaxInfoVersionBadge";
+import { useCountryContext } from "@/hooks/utils/useCountryContext";
+import { CountrySelector } from "@/components/country";
+import { CountryFlag } from "@/components/ui/country-flag";
 import type { CountryCode } from "@/lib/constants/country-tax-config";
 
 export default function TaxCalendar() {
   const { data: profile } = useProfile();
   const { language } = useLanguage();
   const locale = language === 'es' ? es : enCA;
+  
+  // Use country context for multi-country support
+  const { 
+    currentCountry, 
+    isMultiCountry, 
+    activeCountries,
+    countryConfig 
+  } = useCountryContext();
+  
+  // Allow override when user has multiple countries
+  const [selectedCountry, setSelectedCountry] = useState<CountryCode | null>(null);
+  const effectiveCountry = selectedCountry || currentCountry;
+  const effectiveConfig = selectedCountry 
+    ? (effectiveCountry === 'CL' ? countryConfig : countryConfig) 
+    : countryConfig;
   
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showWizard, setShowWizard] = useState(false);
@@ -45,20 +63,34 @@ export default function TaxCalendar() {
   const isFirstTaxYear = businessStartDate && 
     new Date(businessStartDate).getFullYear() >= new Date().getFullYear() - 1;
 
-  const countryCode = (profile?.country || 'CA') as CountryCode;
+  // Title and description based on country
+  const pageTitle = effectiveCountry === 'CL' 
+    ? "Centro Fiscal SII" 
+    : (language === 'es' ? "Centro Fiscal CRA" : "CRA Tax Center");
+    
+  const pageDescription = effectiveCountry === 'CL' 
+    ? "Gestiona tus obligaciones tributarias con el Servicio de Impuestos Internos"
+    : (language === 'es'
+      ? "Calendario, estimador, recordatorios y guía completa para tus obligaciones fiscales"
+      : "Calendar, estimator, reminders and complete guide for your tax obligations");
 
   return (
     <Layout>
       <PageHeader
-        title={profile?.country === 'CL' ? "Centro Fiscal SII" : (language === 'es' ? "Centro Fiscal CRA" : "CRA Tax Center")}
-        description={profile?.country === 'CL' 
-          ? "Gestiona tus obligaciones tributarias con el Servicio de Impuestos Internos"
-          : (language === 'es'
-            ? "Calendario, estimador, recordatorios y guía completa para tus obligaciones fiscales"
-            : "Calendar, estimator, reminders and complete guide for your tax obligations")
-        }
+        title={pageTitle}
+        description={pageDescription}
       >
-        <TaxInfoVersionBadge country={countryCode} />
+        <div className="flex items-center gap-3">
+          {/* Multi-country selector */}
+          {isMultiCountry && (
+            <CountrySelector
+              value={effectiveCountry}
+              onChange={(c) => setSelectedCountry(c)}
+              variant="badge"
+            />
+          )}
+          <TaxInfoVersionBadge country={effectiveCountry} />
+        </div>
       </PageHeader>
 
       <div className="container mx-auto px-4 py-6 space-y-6">
@@ -160,7 +192,7 @@ export default function TaxCalendar() {
                 workTypes={workTypes} 
                 fiscalYearEnd={fiscalYearEnd}
                 language={language}
-                country={profile?.country || 'CA'}
+                country={effectiveCountry}
               />
             </CardContent>
           </Card>
@@ -169,12 +201,12 @@ export default function TaxCalendar() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Calculator className="h-4 w-4 text-purple-500" />
-                {profile?.country === 'CL' ? "IVA" : (language === 'es' ? "GST/HST" : "GST/HST Status")}
+                {effectiveCountry === 'CL' ? "IVA" : (language === 'es' ? "GST/HST" : "GST/HST Status")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-lg font-semibold">
-                {profile?.country === 'CL'
+                {effectiveCountry === 'CL'
                   ? (profile?.tax_regime 
                       ? (profile.tax_regime === 'general' ? 'Régimen General' : 
                          profile.tax_regime === 'pyme' ? 'PyME' : 'Pro PyME')
@@ -256,6 +288,7 @@ export default function TaxCalendar() {
               year={selectedYear}
               workTypes={workTypes}
               fiscalYearEnd={fiscalYearEnd}
+              country={effectiveCountry}
             />
           </TabsContent>
 
@@ -264,7 +297,7 @@ export default function TaxCalendar() {
               year={selectedYear}
               workTypes={workTypes}
               fiscalYearEnd={fiscalYearEnd}
-              country={profile?.country || 'CA'}
+              country={effectiveCountry}
             />
           </TabsContent>
 
@@ -275,11 +308,11 @@ export default function TaxCalendar() {
           </TabsContent>
 
           <TabsContent value="guide" className="space-y-4">
-            <TaxGuideContent language={language} country={profile?.country || 'CA'} />
+            <TaxGuideContent language={language} country={effectiveCountry} />
           </TabsContent>
 
           <TabsContent value="resources" className="space-y-4">
-            <TaxResources language={language} country={profile?.country || 'CA'} />
+            <TaxResources language={language} country={effectiveCountry} />
           </TabsContent>
         </Tabs>
       </div>
