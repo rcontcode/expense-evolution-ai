@@ -570,7 +570,7 @@ export const ChatAssistant: React.FC = () => {
               date: new Date().toISOString().split('T')[0],
               status: 'pending',
               reimbursement_type: 'pending_classification',
-              user_id: '',
+              // user_id is automatically added by useCreateExpense hook
             }, {
               onSuccess: () => {
                 const confirmMsg = language === 'es'
@@ -958,10 +958,57 @@ export const ChatAssistant: React.FC = () => {
         }
         break;
         
+      case 'open':
+        // Navigate to section and then open specific item
+        const openRoute = action.route || (action.target ? ROUTE_MAP[action.target] : null);
+        if (openRoute) {
+          triggerHapticFeedback('medium');
+          voicePrefs.trackAction('navigation');
+          
+          console.log('[AI Action] Opening item at:', openRoute, 'item:', action.data?.itemName);
+          navigate(openRoute);
+          
+          toast.success(action.message || (language === 'es' ? 'Abriendo...' : 'Opening...'));
+          
+          // Dispatch event to open specific item after navigation completes
+          if (action.data?.itemName) {
+            setTimeout(() => {
+              window.dispatchEvent(
+                new CustomEvent('voice-command-action', {
+                  detail: { 
+                    action: 'open-item', 
+                    itemName: action.data?.itemName,
+                    section: action.target 
+                  },
+                })
+              );
+              console.log('[AI Action] Dispatched open-item event for:', action.data?.itemName);
+            }, 700);
+          }
+          
+          // Also trigger highlights if enabled
+          if (isHighlightEnabled) {
+            setTimeout(() => {
+              const navHighlights = getNavigationHighlights(openRoute, language as 'es' | 'en');
+              if (navHighlights.length > 0) {
+                highlight(navHighlights);
+              }
+            }, 1200);
+          }
+        }
+        break;
+        
       case 'query':
         triggerHapticFeedback('light');
         voicePrefs.trackAction('query');
-        // Query responses are already in the message, no additional action needed
+        // Query responses are already in the message
+        // But also trigger highlights if the message mentions UI elements
+        if (isHighlightEnabled && action.message) {
+          const queryHighlights = detectHighlightTargets(action.message, language as 'es' | 'en');
+          if (queryHighlights.length > 0) {
+            setTimeout(() => highlight(queryHighlights), 1500);
+          }
+        }
         break;
         
       case 'highlight':
@@ -970,10 +1017,30 @@ export const ChatAssistant: React.FC = () => {
         }
         break;
         
+      case 'both':
+        // Navigate + explain (for tutorial-like requests)
+        const bothRoute = action.route || (action.target ? ROUTE_MAP[action.target] : null);
+        if (bothRoute) {
+          triggerHapticFeedback('medium');
+          voicePrefs.trackAction('navigation');
+          navigate(bothRoute);
+          toast.success(action.message);
+          
+          if (isHighlightEnabled) {
+            setTimeout(() => {
+              const navHighlights = getNavigationHighlights(bothRoute, language as 'es' | 'en');
+              if (navHighlights.length > 0) {
+                highlight(navHighlights);
+              }
+            }, 1200);
+          }
+        }
+        break;
+        
       default:
         console.log('[AI Action] Unknown action type:', action.action);
     }
-  }, [navigate, triggerHapticFeedback, voicePrefs, isHighlightEnabled, highlight, language]);
+  }, [navigate, triggerHapticFeedback, voicePrefs, isHighlightEnabled, highlight, language, detectHighlightTargets]);
 
   const sendMessage = useCallback(async (text: string, skipAddingUserMessage = false) => {
     const trimmedText = text.trim();
@@ -1221,13 +1288,16 @@ export const ChatAssistant: React.FC = () => {
         aiAction?.action
       );
 
-      // Detect and trigger highlights based on response content (for text responses)
-      if (!aiAction && isHighlightEnabled) {
+      // Detect and trigger highlights based on response content
+      // Now works for BOTH action responses AND text responses
+      if (isHighlightEnabled) {
         const detectedHighlights = detectHighlightTargets(responseText, language as 'es' | 'en');
         if (detectedHighlights.length > 0) {
+          // Delay more for navigation actions to let page render
+          const highlightDelay = aiAction?.action === 'navigate' || aiAction?.action === 'open' ? 2000 : 1500;
           setTimeout(() => {
             highlight(detectedHighlights);
-          }, 1500);
+          }, highlightDelay);
         }
       }
 

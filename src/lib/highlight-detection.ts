@@ -28,20 +28,20 @@ const HIGHLIGHT_KEYWORDS: Record<string, { es: string[]; en: string[] }> = {
     en: ['import', 'bulk import', 'upload trips', 'upload file'],
   },
   'add-expense-button': {
-    es: ['agregar gasto', 'nuevo gasto', 'registrar gasto', 'añadir gasto', 'crear gasto', 'botón de gasto'],
-    en: ['add expense', 'new expense', 'register expense', 'create expense', 'expense button'],
+    es: ['agregar gasto', 'nuevo gasto', 'registrar gasto', 'añadir gasto', 'crear gasto', 'botón de gasto', 'botón agregar', 'haz clic en agregar', 'presiona agregar', 'clic en el botón agregar gasto', 'usa el botón'],
+    en: ['add expense', 'new expense', 'register expense', 'create expense', 'expense button', 'add button', 'click add', 'press add', 'click the add expense button', 'use the button'],
   },
   'expenses-table': {
-    es: ['tabla de gastos', 'lista de gastos', 'historial de gastos', 'gastos registrados', 'tus gastos'],
-    en: ['expense table', 'expense list', 'expense history', 'registered expenses', 'your expenses'],
+    es: ['tabla de gastos', 'lista de gastos', 'historial de gastos', 'gastos registrados', 'tus gastos', 'todos tus gastos', 'ver tus gastos'],
+    en: ['expense table', 'expense list', 'expense history', 'registered expenses', 'your expenses', 'all your expenses', 'view your expenses'],
   },
   'expense-filters': {
-    es: ['filtros', 'filtrar gastos', 'buscar gastos', 'filtros de gastos'],
-    en: ['filters', 'filter expenses', 'search expenses', 'expense filters'],
+    es: ['filtros', 'filtrar gastos', 'buscar gastos', 'filtros de gastos', 'puedes filtrar', 'usa los filtros'],
+    en: ['filters', 'filter expenses', 'search expenses', 'expense filters', 'you can filter', 'use the filters'],
   },
   'quick-capture': {
-    es: ['captura rápida', 'escanear recibo', 'fotografiar recibo', 'cámara', 'capturar con cámara'],
-    en: ['quick capture', 'scan receipt', 'photograph receipt', 'camera', 'capture with camera'],
+    es: ['captura rápida', 'escanear recibo', 'fotografiar recibo', 'cámara', 'capturar con cámara', 'escanea un recibo', 'toma una foto'],
+    en: ['quick capture', 'scan receipt', 'photograph receipt', 'camera', 'capture with camera', 'scan a receipt', 'take a photo'],
   },
   'add-income-button': {
     es: ['agregar ingreso', 'nuevo ingreso', 'registrar ingreso', 'añadir ingreso'],
