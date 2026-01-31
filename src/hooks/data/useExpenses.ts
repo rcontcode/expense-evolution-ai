@@ -131,7 +131,8 @@ export function useCreateExpense() {
   const { trackAction } = useMissionTracker();
 
   return useMutation({
-    mutationFn: async (expense: ExpenseInsert) => {
+    // user_id is added automatically, so we don't require it from the caller
+    mutationFn: async (expense: Omit<ExpenseInsert, 'user_id'>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
