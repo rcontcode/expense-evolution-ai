@@ -55,8 +55,34 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
 
   // Split into sentences for natural pauses
   const splitIntoSentences = useCallback((text: string): string[] => {
-    const sentences = text.split(/(?<=[.!?。])\s+/);
-    return sentences.filter(s => s.trim().length > 0);
+    const rough = text.split(/(?<=[.!?。])\s+/).filter(s => s.trim().length > 0);
+
+    // Some browsers cut very long utterances; chunk long "sentences" by words.
+    const MAX_CHUNK_LEN = 180;
+    const out: string[] = [];
+
+    for (const s of rough) {
+      const trimmed = s.trim();
+      if (trimmed.length <= MAX_CHUNK_LEN) {
+        out.push(trimmed);
+        continue;
+      }
+
+      const words = trimmed.split(/\s+/);
+      let buf = '';
+      for (const w of words) {
+        const next = buf ? `${buf} ${w}` : w;
+        if (next.length > MAX_CHUNK_LEN) {
+          if (buf) out.push(buf);
+          buf = w;
+        } else {
+          buf = next;
+        }
+      }
+      if (buf) out.push(buf);
+    }
+
+    return out;
   }, []);
 
   // Get best voice for current language and preferences
