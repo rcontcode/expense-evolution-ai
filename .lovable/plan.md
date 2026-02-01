@@ -1,304 +1,408 @@
 
-# Plan: Arreglar el Asistente de Voz Completamente
+# Plan: Mejoras Integrales de UX - Onboarding, Busqueda Global, Dashboard Movil y Nudges
 
 ## Resumen Ejecutivo
 
-Después de revisar todo el código, identifiqué 5 problemas críticos que causan que el asistente no navegue, no cree gastos, no abra clientes, y no haga tutorials con highlights:
+Implementaremos 4 sistemas complementarios que transformaran la experiencia de usuario:
 
-| Problema | Causa Raíz | Impacto |
-|----------|-----------|---------|
-| Navegación falla | `executeAIAction` no maneja action `'open'` | Alto |
-| Crear gasto falla | Se envía `user_id: ''` vacío a la BD | Alto |
-| Abrir cliente falla | Conflicto entre procesamiento local y backend | Medio |
-| Highlights no aparecen | No se activan con respuestas de acción | Medio |
-| Tutorial no es interactivo | No hay "runner" que avance paso a paso | Bajo |
-
-## Fase 1: Arreglar Navegación y Ejecución de Acciones
-
-**Archivo:** `src/components/chat/ChatAssistant.tsx`
-
-**Problema:** El switch de `executeAIAction` (líneas 917-975) solo maneja `navigate`, `query`, `highlight`. Falta manejar `open` para abrir items específicos (clientes, proyectos, etc.).
-
-**Cambios:**
-```typescript
-// Agregar case 'open' después de case 'navigate'
-case 'open':
-  // Navegar primero a la sección
-  const openRoute = action.route || (action.target ? ROUTE_MAP[action.target] : null);
-  if (openRoute) {
-    navigate(openRoute);
-    toast.success(action.message);
-    
-    // Si hay un item específico, disparar evento para abrirlo
-    if (action.data?.itemName) {
-      setTimeout(() => {
-        window.dispatchEvent(
-          new CustomEvent('voice-command-action', {
-            detail: { 
-              action: 'open-item', 
-              itemName: action.data.itemName,
-              section: action.target 
-            },
-          })
-        );
-      }, 700);
-    }
-  }
-  break;
-```
-
-## Fase 2: Arreglar Creación de Gastos por Voz
-
-**Archivo:** `src/components/chat/ChatAssistant.tsx`
-
-**Problema:** Línea 573 pasa `user_id: ''` que causa error en BD porque es requerido.
-
-**Cambios:**
-```typescript
-// ANTES (línea 566-574)
-createExpense.mutate({
-  amount: result.data.amount,
-  vendor: result.data.vendor,
-  category: result.data.category,
-  date: new Date().toISOString().split('T')[0],
-  status: 'pending',
-  reimbursement_type: 'pending_classification',
-  user_id: '',  // ← ESTO CAUSA EL ERROR
-}, { ... })
-
-// DESPUÉS - Quitar user_id (el hook ya lo agrega automáticamente)
-createExpense.mutate({
-  amount: result.data.amount,
-  vendor: result.data.vendor,
-  category: result.data.category,
-  date: new Date().toISOString().split('T')[0],
-  status: 'pending',
-  reimbursement_type: 'pending_classification',
-  // user_id se agrega automáticamente en useCreateExpense
-}, { ... })
-```
-
-## Fase 3: Mejorar Highlights Automáticos
-
-**Archivo:** `src/components/chat/ChatAssistant.tsx`
-
-**Problema:** Los highlights solo se activan cuando NO hay acción (`!aiAction`). Deben activarse también CON acciones de navegación.
-
-**Cambios en `executeAIAction`:**
-```typescript
-case 'navigate':
-  // ...código existente de navegación...
-  
-  // NUEVO: Detectar highlights en el mensaje de respuesta
-  const messageHighlights = detectHighlightTargets(
-    action.message, 
-    language as 'es' | 'en'
-  );
-  if (messageHighlights.length > 0) {
-    setTimeout(() => highlight(messageHighlights), 1200);
-  }
-  break;
-```
-
-**Archivo:** `src/lib/highlight-detection.ts`
-
-**Agregar más keywords para mejor detección:**
-```typescript
-// Agregar patrones más específicos que el asistente usa
-'add-expense-button': {
-  es: [...existentes, 'botón agregar', 'haz clic en agregar', 'presiona agregar'],
-  en: [...existentes, 'add button', 'click add', 'press add'],
-},
-```
-
-## Fase 4: Mejorar Backend para Respuestas más Inteligentes
-
-**Archivo:** `supabase/functions/app-assistant/index.ts`
-
-**Problema:** El backend a veces no devuelve acciones estructuradas correctamente.
-
-**Cambios en el prompt del AI:**
-```typescript
-// Agregar al prompt instrucciones más claras sobre cuándo usar cada acción
-const enhancedPrompt = `
-...prompt existente...
-
-CUANDO EL USUARIO PIDE NAVEGAR:
-- SIEMPRE devuelve action:"navigate" con target y route
-- Ejemplo: "llévame a gastos" → {"action":"navigate","target":"expenses","route":"/expenses","message":"Te llevo a Gastos"}
-
-CUANDO EL USUARIO PIDE ABRIR UN ITEM ESPECÍFICO:
-- SIEMPRE devuelve action:"open" con target, route y data.itemName
-- Ejemplo: "abre el cliente ACME" → {"action":"open","target":"clients","route":"/clients","message":"Abriendo cliente ACME","data":{"itemName":"ACME"}}
-
-CUANDO EXPLICAS ALGO, MENCIONA LOS BOTONES ESPECÍFICOS:
-- Incluye frases como "haz clic en el botón Agregar Gasto" para que el frontend active highlights
-`;
-```
-
-## Fase 5: Crear Tutorial Interactivo con Highlights Progresivos
-
-**Archivo nuevo:** `src/hooks/utils/useTutorialRunner.ts`
-
-**Propósito:** Un hook que ejecuta tutoriales paso a paso, avanzando automáticamente por páginas y activando highlights en secuencia.
-
-```typescript
-interface TutorialStep {
-  route?: string;        // Navegar a esta ruta primero
-  highlight: string;     // Selector del elemento a resaltar
-  narration: string;     // Texto que el asistente dice
-  waitForClick?: boolean; // Esperar a que el usuario haga clic
-  delay?: number;        // Delay antes del siguiente paso
-}
-
-export function useTutorialRunner() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  
-  const runTutorial = (steps: TutorialStep[]) => {
-    setIsRunning(true);
-    executeStep(0, steps);
-  };
-  
-  const executeStep = (index: number, steps: TutorialStep[]) => {
-    if (index >= steps.length) {
-      setIsRunning(false);
-      return;
-    }
-    
-    const step = steps[index];
-    
-    // Navegar si es necesario
-    if (step.route) {
-      navigate(step.route);
-    }
-    
-    // Esperar a que la página cargue, luego highlight
-    setTimeout(() => {
-      highlight([{ selector: step.highlight, label: step.narration }]);
-      speak(step.narration);
-      
-      // Avanzar al siguiente paso
-      setTimeout(() => {
-        executeStep(index + 1, steps);
-      }, step.delay || 4000);
-    }, step.route ? 800 : 200);
-  };
-  
-  return { runTutorial, currentStep, isRunning };
-}
-```
-
-**Integración en ChatAssistant:**
-```typescript
-// Cuando el usuario pide un tutorial como "enséñame a agregar un gasto"
-case 'tutorial':
-  const expenseTutorialSteps: TutorialStep[] = [
-    { 
-      route: '/expenses', 
-      highlight: 'add-expense-button', 
-      narration: 'Primero, ve a la sección de Gastos y haz clic en el botón Agregar Gasto.' 
-    },
-    { 
-      highlight: 'expense-form-vendor', 
-      narration: 'Aquí escribes el nombre del comercio o proveedor.' 
-    },
-    { 
-      highlight: 'expense-form-amount', 
-      narration: 'Ingresa el monto del gasto.' 
-    },
-    // ...más pasos
-  ];
-  tutorialRunner.runTutorial(expenseTutorialSteps);
-  break;
-```
+| Sistema | Descripcion | Impacto |
+|---------|------------|---------|
+| Onboarding Progresivo | Guia paso a paso hasta completar primera tarea real | Alto |
+| Busqueda Global (Cmd+K) | Encontrar gastos, clientes, proyectos desde cualquier lugar | Alto |
+| Dashboard Movil Optimizado | Simplificar interfaz y priorizar acciones en pantallas pequenas | Medio |
+| Sistema de Nudges | Recordatorios inteligentes para tareas pendientes | Medio |
 
 ---
 
-## Archivos a Modificar
+## Sistema 1: Onboarding Progresivo
+
+### Concepto
+Transformar el tutorial actual (pasivo, solo informativo) en un flujo activo que guia al usuario hasta completar su primera tarea real.
+
+### Arquitectura
+
+```text
+Flujo Actual (Pasivo)
+---------------------
+Tutorial -> Ver info -> Ver info -> ... -> Cerrar -> Usuario solo
+
+Flujo Nuevo (Activo)
+--------------------
+Tutorial Interactivo -> Navegacion real -> Highlight botones -> 
+Guiar llenado -> Celebrar logro -> Siguiente tarea
+```
+
+### Componentes
+
+**1. ProgressiveOnboarding.tsx (Nuevo)**
+- Detecta si usuario es nuevo (sin gastos, sin clientes, sin ingresos)
+- Presenta 3 objetivos iniciales con progreso visual
+- Cada objetivo usa el TutorialRunner existente
+- Celebra cada logro con confetti
+
+**2. Objetivos del Onboarding**
+```typescript
+const ONBOARDING_GOALS = [
+  {
+    id: 'first-expense',
+    title: { es: 'Registra tu primer gasto', en: 'Record your first expense' },
+    description: { es: 'Te guio paso a paso', en: "I'll guide you step by step" },
+    checkComplete: async () => expenseCount > 0,
+    tutorial: [
+      { route: '/expenses', highlight: 'add-expense-button', narration: '...', autoClick: true },
+      { highlight: 'expense-form-vendor', narration: '...' },
+      { highlight: 'expense-form-amount', narration: '...' },
+      { highlight: 'expense-submit', narration: '...' },
+    ]
+  },
+  {
+    id: 'first-client',
+    title: { es: 'Agrega un cliente', en: 'Add a client' },
+    // ...similar
+  },
+  {
+    id: 'first-income',
+    title: { es: 'Registra un ingreso', en: 'Record income' },
+    // ...similar
+  }
+];
+```
+
+**3. Integracion con Dashboard**
+- Mostrar widget de progreso en Dashboard si onboarding no completo
+- Reemplazar InteractiveWelcome con ProgressiveOnboarding para usuarios nuevos
+
+### Archivos a Crear/Modificar
 
 | Archivo | Cambios |
 |---------|---------|
-| `src/components/chat/ChatAssistant.tsx` | Agregar case `'open'`, quitar `user_id: ''`, mejorar highlights |
-| `src/lib/highlight-detection.ts` | Agregar más keywords de detección |
-| `supabase/functions/app-assistant/index.ts` | Mejorar prompt para respuestas estructuradas |
-| `src/hooks/utils/useTutorialRunner.ts` | **NUEVO** - Hook para tutoriales interactivos |
-
-## Archivos a Crear
-
-| Archivo | Propósito |
-|---------|-----------|
-| `src/hooks/utils/useTutorialRunner.ts` | Runner de tutoriales paso a paso |
-| `src/data/tutorials.ts` | Definiciones de tutoriales con pasos |
-
-## Orden de Implementación
-
-1. **Fase 1 + 2** (Crítico): Arreglar navegación y creación de gastos
-2. **Fase 3** (Alto): Mejorar highlights automáticos
-3. **Fase 4** (Medio): Mejorar backend
-4. **Fase 5** (Mejora): Tutorial interactivo
-
-## Tiempo Estimado
-- Fases 1-3: 1 sesión
-- Fase 4: 1 sesión
-- Fase 5: 1-2 sesiones
+| `src/components/onboarding/ProgressiveOnboarding.tsx` | NUEVO - Widget de onboarding activo |
+| `src/hooks/utils/useOnboardingProgress.ts` | NUEVO - Estado de progreso |
+| `src/data/tutorials.ts` | Agregar tutoriales de onboarding |
+| `src/pages/Dashboard.tsx` | Integrar ProgressiveOnboarding |
 
 ---
 
-## Sección Técnica Detallada
+## Sistema 2: Busqueda Global (Cmd+K)
 
-### Problema 1: user_id vacío
+### Concepto
+Barra de busqueda universal accesible desde cualquier lugar con Cmd+K (Mac) o Ctrl+K (Windows).
 
-El hook `useCreateExpense` en `src/hooks/data/useExpenses.ts` probablemente ya agrega el `user_id` automáticamente desde el contexto de autenticación. Verificar este hook para confirmar y eliminar el campo `user_id: ''` del mutate call.
-
-### Problema 2: Flujo de acciones
-
-```text
-┌───────────────────────────────────────────────────────────────────────────┐
-│                        FLUJO ACTUAL (ROTO)                                │
-├───────────────────────────────────────────────────────────────────────────┤
-│  Usuario dice: "abre el cliente ACME"                                     │
-│       ↓                                                                   │
-│  VoiceCommandProcessor: Intenta match local                              │
-│       ↓                                                                   │
-│  Si NO match local → ai-fallback → Backend                               │
-│       ↓                                                                   │
-│  Backend responde: {action: "open", target: "clients", ...}              │
-│       ↓                                                                   │
-│  executeAIAction: switch(action.action)                                   │
-│       ↓                                                                   │
-│  case 'open': ← NO EXISTE! → No hace nada                                │
-└───────────────────────────────────────────────────────────────────────────┘
-```
+### Arquitectura
 
 ```text
-┌───────────────────────────────────────────────────────────────────────────┐
-│                        FLUJO CORREGIDO                                    │
-├───────────────────────────────────────────────────────────────────────────┤
-│  Usuario dice: "abre el cliente ACME"                                     │
-│       ↓                                                                   │
-│  VoiceCommandProcessor: Match local con parseOpenClientCommand           │
-│       ↓                                                                   │
-│  Resultado: {type: 'open-client', clientId, clientName}                  │
-│       ↓                                                                   │
-│  ChatAssistant: navigate('/clients') + dispatch event                    │
-│       ↓                                                                   │
-│  Clients.tsx: Escucha evento → Abre modal del cliente                    │
-│       ↓                                                                   │
-│  ✓ FUNCIONA                                                              │
-└───────────────────────────────────────────────────────────────────────────┘
+Usuario presiona Cmd+K
+        |
+        v
++-------------------+
+|  Global Search    |
+|  Dialog (cmdk)    |
++-------------------+
+        |
+        v
++-------+-------+-------+
+|       |       |       |
+v       v       v       v
+Gastos  Clientes  Proyectos  Navegacion
 ```
 
-### Problema 3: Highlights no se activan
+### Categorias de Busqueda
 
-El código actual (línea 1225-1232) solo detecta highlights cuando `!aiAction`:
+1. **Navegacion Rapida**: Dashboard, Gastos, Clientes, etc.
+2. **Busqueda de Gastos**: Por vendor, monto, categoria
+3. **Busqueda de Clientes**: Por nombre
+4. **Busqueda de Proyectos**: Por nombre
+5. **Acciones Rapidas**: Agregar gasto, Agregar cliente, Capturar recibo
+
+### Componente Principal
 
 ```typescript
-// Detect and trigger highlights based on response content (for text responses)
-if (!aiAction && isHighlightEnabled) {
-  const detectedHighlights = detectHighlightTargets(responseText, language as 'es' | 'en');
-  ...
+// GlobalSearch.tsx
+const QUICK_ACTIONS = [
+  { icon: Receipt, label: 'Agregar Gasto', action: () => navigate('/expenses'), shortcut: 'E' },
+  { icon: Camera, label: 'Capturar Recibo', action: () => setQuickCaptureOpen(true), shortcut: 'C' },
+  { icon: Users, label: 'Agregar Cliente', action: () => navigate('/clients'), shortcut: 'K' },
+];
+
+const NAVIGATION_ITEMS = [
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+  { icon: Receipt, label: 'Gastos', path: '/expenses' },
+  // ...
+];
+```
+
+### Busqueda en Tiempo Real
+- Debounce de 300ms
+- Buscar en Supabase con queries optimizadas
+- Mostrar resultados agrupados por tipo
+- Preview del item seleccionado
+
+### Archivos a Crear/Modificar
+
+| Archivo | Cambios |
+|---------|---------|
+| `src/components/search/GlobalSearch.tsx` | NUEVO - Dialogo de busqueda |
+| `src/components/search/SearchResults.tsx` | NUEVO - Resultados agrupados |
+| `src/hooks/utils/useGlobalSearch.ts` | NUEVO - Logica de busqueda |
+| `src/components/Layout.tsx` | Agregar keyboard listener y trigger |
+| `src/App.tsx` | Agregar GlobalSearch al nivel de app |
+
+### Integracion con Voz
+- El asistente de voz puede abrir la busqueda con "buscar" o "search"
+- Los resultados de busqueda pueden ser leidos en voz alta
+
+---
+
+## Sistema 3: Dashboard Movil Optimizado
+
+### Problemas Actuales
+1. Control Center con 10+ tabs es abrumador en movil
+2. InteractiveWelcome ocupa mucho espacio
+3. Navegacion inferior tiene items fijos, no adaptativos
+
+### Solucion: Dashboard Movil Simplificado
+
+**1. Header Compacto con Stats Clave**
+```typescript
+// MobileDashboardHeader.tsx
+<div className="flex items-center justify-between p-3">
+  <div className="text-center">
+    <span className="text-2xl font-bold">${monthlyTotal}</span>
+    <span className="text-xs text-muted-foreground">Este mes</span>
+  </div>
+  <Separator orientation="vertical" />
+  <div className="text-center">
+    <span className="text-2xl font-bold text-green-600">+${income}</span>
+    <span className="text-xs text-muted-foreground">Ingresos</span>
+  </div>
+  <Separator orientation="vertical" />
+  <div className="text-center">
+    <span className="text-2xl font-bold text-red-600">-${expenses}</span>
+    <span className="text-xs text-muted-foreground">Gastos</span>
+  </div>
+</div>
+```
+
+**2. Acciones Rapidas Flotantes**
+- FAB (Floating Action Button) con acciones mas frecuentes
+- Se expande con opciones: Agregar Gasto, Capturar, Agregar Ingreso
+
+**3. Timeline Simplificado**
+- Mostrar solo ultimos 3 meses en grafico simplificado
+- Swipe horizontal para ver mas meses
+
+**4. Control Center Colapsado por Defecto**
+- Solo mostrar 3 herramientas principales
+- "Ver mas" para acceder al resto
+
+### Archivos a Modificar
+
+| Archivo | Cambios |
+|---------|---------|
+| `src/pages/Dashboard.tsx` | Condicional para vista movil |
+| `src/components/dashboard/MobileDashboard.tsx` | NUEVO - Vista optimizada |
+| `src/components/dashboard/MobileQuickActions.tsx` | NUEVO - FAB con acciones |
+| `src/components/dashboard/MobileTimeline.tsx` | NUEVO - Timeline simplificado |
+
+---
+
+## Sistema 4: Sistema de Nudges Inteligentes
+
+### Concepto
+Recordatorios contextuales y no intrusivos que guian al usuario a completar tareas pendientes.
+
+### Tipos de Nudges
+
+1. **Tareas Pendientes**
+   - Documentos sin clasificar
+   - Gastos incompletos
+   - Gastos sin asignar a cliente
+
+2. **Habitos Financieros**
+   - "Hace 3 dias que no registras gastos"
+   - "Tienes ingresos sin categorizar"
+
+3. **Oportunidades**
+   - "Detectamos suscripciones que podrias revisar"
+   - "Tienes gastos deducibles sin clasificar"
+
+4. **Celebraciones**
+   - "Registraste todos tus gastos esta semana"
+   - "Tu balance es positivo este mes"
+
+### Arquitectura
+
+```typescript
+// useNudgeSystem.ts
+interface Nudge {
+  id: string;
+  type: 'task' | 'habit' | 'opportunity' | 'celebration';
+  priority: 'high' | 'medium' | 'low';
+  title: { es: string; en: string };
+  message: { es: string; en: string };
+  action?: { label: { es: string; en: string }; path: string };
+  condition: () => Promise<boolean>;
+  cooldown: number; // horas antes de mostrar de nuevo
 }
 ```
 
-Esto significa que cuando el backend devuelve una acción estructurada (navigate, query, etc.), los highlights nunca se activan, aunque el mensaje podría mencionar botones específicos.
+### Componente NudgeBanner
+
+```typescript
+// NudgeBanner.tsx
+- Muestra el nudge de mayor prioridad
+- Animacion sutil de entrada
+- Boton de accion y dismiss
+- Cooldown de 24h por nudge
+- Maximo 1 nudge visible a la vez
+```
+
+### Integracion con NextActionBanner Existente
+- Expandir `NextActionBanner.tsx` para incluir nudges
+- Priorizar: Tareas pendientes > Habitos > Oportunidades > Celebraciones
+
+### Archivos a Crear/Modificar
+
+| Archivo | Cambios |
+|---------|---------|
+| `src/hooks/utils/useNudgeSystem.ts` | NUEVO - Logica de nudges |
+| `src/components/nudges/NudgeBanner.tsx` | NUEVO - Componente de nudge |
+| `src/components/nudges/nudge-definitions.ts` | NUEVO - Definiciones de nudges |
+| `src/pages/Dashboard.tsx` | Integrar NudgeBanner |
+
+---
+
+## Seccion Tecnica Detallada
+
+### Global Search - Queries Optimizadas
+
+```typescript
+// useGlobalSearch.ts
+const searchExpenses = async (query: string) => {
+  const { data } = await supabase
+    .from('expenses')
+    .select('id, vendor, amount, date, category')
+    .eq('user_id', user.id)
+    .or(`vendor.ilike.%${query}%, notes.ilike.%${query}%`)
+    .order('date', { ascending: false })
+    .limit(5);
+  return data;
+};
+
+const searchClients = async (query: string) => {
+  const { data } = await supabase
+    .from('clients')
+    .select('id, name, email')
+    .eq('user_id', user.id)
+    .ilike('name', `%${query}%`)
+    .limit(5);
+  return data;
+};
+```
+
+### Keyboard Listener para Cmd+K
+
+```typescript
+// useGlobalSearchShortcut.ts
+useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      setSearchOpen(true);
+    }
+  };
+  document.addEventListener('keydown', handleKeyDown);
+  return () => document.removeEventListener('keydown', handleKeyDown);
+}, []);
+```
+
+### Onboarding Progress Tracking
+
+```typescript
+// useOnboardingProgress.ts
+const STORAGE_KEY = 'evofinz_onboarding_progress';
+
+interface OnboardingProgress {
+  firstExpenseCompleted: boolean;
+  firstClientCompleted: boolean;
+  firstIncomeCompleted: boolean;
+  completedAt?: string;
+}
+
+// Verificar en Supabase, no solo localStorage
+const checkProgress = async () => {
+  const [expenses, clients, income] = await Promise.all([
+    supabase.from('expenses').select('id').eq('user_id', user.id).limit(1),
+    supabase.from('clients').select('id').eq('user_id', user.id).limit(1),
+    supabase.from('income').select('id').eq('user_id', user.id).limit(1),
+  ]);
+  
+  return {
+    firstExpenseCompleted: (expenses.data?.length || 0) > 0,
+    firstClientCompleted: (clients.data?.length || 0) > 0,
+    firstIncomeCompleted: (income.data?.length || 0) > 0,
+  };
+};
+```
+
+---
+
+## Orden de Implementacion
+
+### Fase 1: Busqueda Global (Alta Prioridad)
+1. Crear `GlobalSearch.tsx` usando cmdk existente
+2. Implementar `useGlobalSearch.ts`
+3. Agregar keyboard listener en Layout
+4. Integrar con sistema de voz
+
+### Fase 2: Onboarding Progresivo
+1. Crear `useOnboardingProgress.ts`
+2. Crear `ProgressiveOnboarding.tsx`
+3. Agregar tutoriales de onboarding
+4. Integrar en Dashboard
+
+### Fase 3: Dashboard Movil
+1. Crear `MobileDashboard.tsx`
+2. Crear `MobileQuickActions.tsx`
+3. Simplificar Timeline para movil
+4. Modificar Dashboard.tsx para usar version movil
+
+### Fase 4: Sistema de Nudges
+1. Crear `useNudgeSystem.ts`
+2. Definir nudges en `nudge-definitions.ts`
+3. Crear `NudgeBanner.tsx`
+4. Integrar en Dashboard
+
+---
+
+## Resumen de Archivos
+
+### Nuevos (12 archivos)
+- `src/components/search/GlobalSearch.tsx`
+- `src/components/search/SearchResults.tsx`
+- `src/hooks/utils/useGlobalSearch.ts`
+- `src/hooks/utils/useGlobalSearchShortcut.ts`
+- `src/components/onboarding/ProgressiveOnboarding.tsx`
+- `src/hooks/utils/useOnboardingProgress.ts`
+- `src/components/dashboard/MobileDashboard.tsx`
+- `src/components/dashboard/MobileQuickActions.tsx`
+- `src/components/dashboard/MobileTimeline.tsx`
+- `src/hooks/utils/useNudgeSystem.ts`
+- `src/components/nudges/NudgeBanner.tsx`
+- `src/components/nudges/nudge-definitions.ts`
+
+### Modificados (4 archivos)
+- `src/components/Layout.tsx`
+- `src/pages/Dashboard.tsx`
+- `src/data/tutorials.ts`
+- `src/App.tsx`
+
+---
+
+## Tiempo Estimado
+- Fase 1 (Busqueda Global): 1 sesion
+- Fase 2 (Onboarding): 1 sesion
+- Fase 3 (Dashboard Movil): 1 sesion
+- Fase 4 (Nudges): 1 sesion
+
+Total: 4 sesiones para implementacion completa
