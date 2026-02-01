@@ -18,6 +18,8 @@ interface NextActionBannerProps {
   pendingDocuments: number;
   incompleteExpenses: number;
   totalClients: number;
+  totalIncomes: number;
+  totalExpenses: number;
   className?: string;
 }
 
@@ -36,6 +38,8 @@ export function NextActionBanner({
   pendingDocuments, 
   incompleteExpenses, 
   totalClients,
+  totalIncomes,
+  totalExpenses,
   className 
 }: NextActionBannerProps) {
   const { language } = useLanguage();
@@ -88,8 +92,23 @@ export function NextActionBanner({
       };
     }
 
+    // Priority 4: No income recorded (but has expenses)
+    if (totalIncomes === 0 && totalExpenses > 0) {
+      return {
+        id: 'add-income',
+        priority: 'low',
+        icon: Sparkles,
+        message: {
+          es: 'Registra tu primer ingreso',
+          en: 'Record your first income'
+        },
+        actionLabel: { es: 'Registrar', en: 'Record' },
+        path: '/income'
+      };
+    }
+
     return null;
-  }, [pendingDocuments, incompleteExpenses, totalClients]);
+  }, [pendingDocuments, incompleteExpenses, totalClients, totalIncomes, totalExpenses]);
 
   // All good - show compact success state
   if (!nextAction) {
