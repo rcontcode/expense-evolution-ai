@@ -33,6 +33,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileDashboard } from '@/components/dashboard/MobileDashboard';
+import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
 
 // Lazy load chart components for better performance
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
@@ -205,18 +206,25 @@ export default function Dashboard() {
   }, [user]);
 
   const isMobile = useIsMobile();
+  
+  // Quick capture dialog state for mobile
+  const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
 
   // Mobile-optimized dashboard
   if (isMobile) {
     return (
       <Layout>
         <div className="p-4">
-          <MobileDashboard />
+          <MobileDashboard onQuickCapture={() => setQuickCaptureOpen(true)} />
         </div>
         <ExportDialog 
           open={exportDialogOpen} 
           onClose={() => setExportDialogOpen(false)} 
           expenses={allExpenses || []} 
+        />
+        <QuickCaptureDialog 
+          open={quickCaptureOpen} 
+          onClose={() => setQuickCaptureOpen(false)} 
         />
       </Layout>
     );

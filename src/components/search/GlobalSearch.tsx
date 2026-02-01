@@ -28,9 +28,10 @@ import {
   Inbox,
   Camera,
   Plus,
-  Search,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useGlobalSearch } from '@/hooks/utils/useGlobalSearch';
 
 interface GlobalSearchProps {
   open: boolean;
@@ -149,6 +150,9 @@ export function GlobalSearch({ open, onOpenChange, onQuickCapture }: GlobalSearc
   const navigate = useNavigate();
   const { language } = useLanguage();
   const [search, setSearch] = useState('');
+  
+  // Real-time search across expenses, clients, projects
+  const searchResults = useGlobalSearch(search, 5);
 
   // Reset search when dialog closes
   useEffect(() => {
@@ -193,18 +197,112 @@ export function GlobalSearch({ open, onOpenChange, onQuickCapture }: GlobalSearc
       keywords: ['add', 'agregar', 'nuevo', 'new', 'cliente', 'client']
     },
   ];
+  
+  const showDataResults = search.length >= 2;
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <CommandInput 
-        placeholder={language === 'es' ? 'Buscar páginas, acciones...' : 'Search pages, actions...'} 
+        placeholder={language === 'es' ? 'Buscar gastos, clientes, proyectos...' : 'Search expenses, clients, projects...'} 
         value={search}
         onValueChange={setSearch}
       />
       <CommandList>
         <CommandEmpty>
-          {language === 'es' ? 'No se encontraron resultados.' : 'No results found.'}
+          {searchResults.isLoading ? (
+            <div className="flex items-center justify-center gap-2 py-4">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>{language === 'es' ? 'Buscando...' : 'Searching...'}</span>
+            </div>
+          ) : (
+            language === 'es' ? 'No se encontraron resultados.' : 'No results found.'
+          )}
         </CommandEmpty>
+        
+        {/* Real Data Results - Show when searching */}
+        {showDataResults && searchResults.hasResults && (
+          <>
+            {/* Expenses Results */}
+            {searchResults.expenses.length > 0 && (
+              <CommandGroup heading={language === 'es' ? '💳 Gastos' : '💳 Expenses'}>
+                {searchResults.expenses.map((result) => (
+                  <CommandItem
+                    key={result.id}
+                    value={`expense-${result.id}`}
+                    onSelect={() => handleSelect(result.path)}
+                    className="cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-400 to-red-500 flex items-center justify-center shadow-sm">
+                        <Receipt className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{result.title}</p>
+                        {result.subtitle && (
+                          <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
+                        )}
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+            
+            {/* Clients Results */}
+            {searchResults.clients.length > 0 && (
+              <CommandGroup heading={language === 'es' ? '👥 Clientes' : '👥 Clients'}>
+                {searchResults.clients.map((result) => (
+                  <CommandItem
+                    key={result.id}
+                    value={`client-${result.id}`}
+                    onSelect={() => handleSelect(result.path)}
+                    className="cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-sm">
+                        <Users className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{result.title}</p>
+                        {result.subtitle && (
+                          <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
+                        )}
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+            
+            {/* Projects Results */}
+            {searchResults.projects.length > 0 && (
+              <CommandGroup heading={language === 'es' ? '📁 Proyectos' : '📁 Projects'}>
+                {searchResults.projects.map((result) => (
+                  <CommandItem
+                    key={result.id}
+                    value={`project-${result.id}`}
+                    onSelect={() => handleSelect(result.path)}
+                    className="cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-sm">
+                        <FolderKanban className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{result.title}</p>
+                        {result.subtitle && (
+                          <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
+                        )}
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+            
+            <CommandSeparator />
+          </>
+        )}
         
         {/* Quick Actions */}
         <CommandGroup heading={language === 'es' ? '⚡ Acciones Rápidas' : '⚡ Quick Actions'}>

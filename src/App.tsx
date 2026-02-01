@@ -11,6 +11,7 @@ import { EntityProvider } from "@/contexts/EntityContext";
 import { HighlightProvider } from "@/contexts/HighlightContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+import { AuthenticatedRedirect } from "@/components/AuthenticatedRedirect";
 import { useLoginMissionListener } from "@/hooks/data/useMissions";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -176,7 +177,7 @@ const App = () => (
                   <LazyErrorBoundary name="Routes" fallback={<PageErrorFallback />}>
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
-                        <Route path="/" element={<FinancialQuiz />} />
+                        <Route path="/" element={<AuthenticatedRedirect><FinancialQuiz /></AuthenticatedRedirect>} />
                         <Route path="/quiz" element={<FinancialQuiz />} />
                         <Route path="/landing" element={<Landing />} />
                         <Route path="/legal" element={<Legal />} />
