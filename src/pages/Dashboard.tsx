@@ -31,6 +31,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
+import { NextActionBanner } from '@/components/dashboard/NextActionBanner';
+import { useNudgeSystem } from '@/hooks/utils/useNudgeSystem';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileDashboard } from '@/components/dashboard/MobileDashboard';
 import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
@@ -187,6 +189,7 @@ export default function Dashboard() {
   const { taxSummary } = useTaxCalculations(allExpenses || []);
   const { data: mileageSummary, isLoading: mileageLoading } = useMileageSummary();
   const { data: profile } = useProfile();
+  const { pendingDocuments, incompleteExpenses, totalClients, totalIncomes } = useNudgeSystem();
 
   const handleAddIncome = useCallback(() => {
     navigate('/income');
@@ -237,6 +240,15 @@ export default function Dashboard() {
           
           {/* Beta Reminder Banner - Gentle motivational prompts */}
           <BetaReminderBanner />
+          
+          {/* Next Action Nudge Banner */}
+          <NextActionBanner 
+            pendingDocuments={pendingDocuments}
+            incompleteExpenses={incompleteExpenses}
+            totalClients={totalClients}
+            totalIncomes={totalIncomes}
+            totalExpenses={stats?.totalExpenses || 0}
+          />
           
           {/* Progressive Onboarding - Mission-based for new users */}
           <ProgressiveOnboarding />
