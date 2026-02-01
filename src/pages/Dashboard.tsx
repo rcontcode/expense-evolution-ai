@@ -31,6 +31,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileDashboard } from '@/components/dashboard/MobileDashboard';
 
 // Lazy load chart components for better performance
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
@@ -201,6 +203,24 @@ export default function Dashboard() {
       localStorage.setItem('dashboard-timeline-guide-seen', 'true');
     }
   }, [user]);
+
+  const isMobile = useIsMobile();
+
+  // Mobile-optimized dashboard
+  if (isMobile) {
+    return (
+      <Layout>
+        <div className="p-4">
+          <MobileDashboard />
+        </div>
+        <ExportDialog 
+          open={exportDialogOpen} 
+          onClose={() => setExportDialogOpen(false)} 
+          expenses={allExpenses || []} 
+        />
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
