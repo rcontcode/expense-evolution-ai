@@ -21,6 +21,7 @@ import { ExportDialog } from '@/components/export/ExportDialog';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { usePageVisitTracker } from '@/hooks/data/useMissionAutoTracker';
 import { InteractiveWelcome } from '@/components/guidance/InteractiveWelcome';
+import { ProgressiveOnboarding } from '@/components/onboarding/ProgressiveOnboarding';
 import { useAuth } from '@/contexts/AuthContext';
 import { ViewModeToggle, OrganizedDashboard } from '@/components/focus';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
@@ -208,6 +209,9 @@ export default function Dashboard() {
           
           {/* Beta Reminder Banner - Gentle motivational prompts */}
           <BetaReminderBanner />
+          
+          {/* Progressive Onboarding - Mission-based for new users */}
+          <ProgressiveOnboarding />
           
           {/* Interactive Guide - Shown on first visit or on demand */}
           {showGuide && (
