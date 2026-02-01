@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Plus, Receipt, Download, Sparkles, FileText, Users, Camera, Filter, Upload, BarChart } from 'lucide-react';
@@ -26,6 +27,7 @@ import { PageHeader } from '@/components/PageHeader';
 
 export default function Expenses() {
   const { t } = useLanguage();
+  const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState<Filters>({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
@@ -39,6 +41,15 @@ export default function Expenses() {
 
   // Enable real-time sync for expenses
   useExpensesRealtime();
+
+  // Support nudges/deep links: /expenses?incomplete=true
+  useEffect(() => {
+    const incomplete = searchParams.get('incomplete');
+    const shouldEnable = incomplete === 'true' || incomplete === '1';
+    if (!shouldEnable) return;
+
+    setFilters((current) => (current.onlyIncomplete ? current : { ...current, onlyIncomplete: true }));
+  }, [searchParams]);
 
   const { data: expenses, isLoading } = useExpenses(filters);
   const { data: allExpenses } = useExpenses({});
