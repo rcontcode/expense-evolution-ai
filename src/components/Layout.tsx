@@ -1,6 +1,7 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
+import { GlobalSearch } from '@/components/search/GlobalSearch';
 import { 
   LayoutDashboard, 
   Inbox, 
@@ -28,7 +29,8 @@ import {
   Upload,
   ScanLine,
   Sun,
-  Moon
+  Moon,
+  Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -180,6 +182,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
+  const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
   const isMobile = useIsMobile();
   const NAV_SECTIONS = getNavSections(language);
   const MOBILE_NAV_ITEMS = getMobileNavItems(language);
@@ -187,6 +190,25 @@ export const Layout = ({ children }: LayoutProps) => {
   
   // Global reminders - works even when chat is closed
   useGlobalReminders();
+  
+  // Keyboard shortcut for global search (Cmd/Ctrl + K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger when typing in inputs
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+      
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setGlobalSearchOpen(true);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
   
   // Toggle theme between light/dark with optimized themes
   const toggleTheme = () => {
@@ -217,6 +239,15 @@ export const Layout = ({ children }: LayoutProps) => {
                 <SyncStatusIndicator />
                 <AuthStatusIndicator compact />
               </TooltipProvider>
+              
+              {/* Global Search Button - Mobile */}
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setGlobalSearchOpen(true)}
+              >
+                <Search className="h-5 w-5" />
+              </Button>
               
               {/* Notification Bell - Mobile */}
               <Button 
@@ -384,6 +415,13 @@ export const Layout = ({ children }: LayoutProps) => {
             })}
           </div>
         </nav>
+        
+        {/* Global Search Dialog - Mobile */}
+        <GlobalSearch 
+          open={globalSearchOpen} 
+          onOpenChange={setGlobalSearchOpen}
+          onQuickCapture={() => setQuickCaptureOpen(true)}
+        />
       </div>
     );
   }
@@ -668,6 +706,27 @@ export const Layout = ({ children }: LayoutProps) => {
             )}>
               {!collapsed && <LanguageSelector />}
               
+              {/* Global Search */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-7 w-7"
+                    onClick={() => setGlobalSearchOpen(true)}
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side={collapsed ? "right" : "top"}>
+                  <div className="flex items-center gap-2">
+                    <span>{language === 'es' ? 'Buscar' : 'Search'}</span>
+                    <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+                      <span className="text-xs">⌘</span>K
+                    </kbd>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
               {/* Theme Toggle */}
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -770,6 +829,13 @@ export const Layout = ({ children }: LayoutProps) => {
             </div>
           </footer>
         </main>
+        
+        {/* Global Search Dialog */}
+        <GlobalSearch 
+          open={globalSearchOpen} 
+          onOpenChange={setGlobalSearchOpen}
+          onQuickCapture={() => setQuickCaptureOpen(true)}
+        />
       </div>
     </TooltipProvider>
   );
