@@ -35,7 +35,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const { data: stats, isLoading } = useDashboardStats();
-  const { pendingDocuments, incompleteExpenses, totalClients } = useNudgeSystem();
+  const { pendingDocuments, incompleteExpenses, totalClients, totalIncomes } = useNudgeSystem();
   
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -135,6 +135,8 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
         pendingDocuments={pendingDocuments}
         incompleteExpenses={incompleteExpenses}
         totalClients={totalClients}
+        totalIncomes={totalIncomes}
+        totalExpenses={stats?.totalExpenses || 0}
       />
       
       {/* Timeline Chart (scrollable) */}
