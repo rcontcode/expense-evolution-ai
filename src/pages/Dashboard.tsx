@@ -42,7 +42,7 @@ const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardChart
 const MileageTabContent = lazy(() => import('@/components/dashboard/MileageTabContent').then(m => ({ default: m.MileageTabContent })));
 const SubscriptionTracker = lazy(() => import('@/components/subscriptions/SubscriptionTracker').then(m => ({ default: m.SubscriptionTracker })));
 const TaxOptimizerCard = lazy(() => import('@/components/dashboard/TaxOptimizerCard').then(m => ({ default: m.TaxOptimizerCard })));
-const RrspTfsaOptimizerCard = lazy(() => import('@/components/dashboard/RrspTfsaOptimizerCard').then(m => ({ default: m.RrspTfsaOptimizerCard })));
+const SavingsOptimizerSection = lazy(() => import('@/components/tax/SavingsOptimizerSection').then(m => ({ default: m.SavingsOptimizerSection })));
 const FIRECalculatorCard = lazy(() => import('@/components/dashboard/FIRECalculatorCard').then(m => ({ default: m.FIRECalculatorCard })));
 const DebtManagerCard = lazy(() => import('@/components/dashboard/DebtManagerCard').then(m => ({ default: m.DebtManagerCard })));
 const PortfolioTrackerCard = lazy(() => import('@/components/dashboard/PortfolioTrackerCard').then(m => ({ default: m.PortfolioTrackerCard })));
@@ -485,7 +485,7 @@ export default function Dashboard() {
                                   <TaxOptimizerCard />
                                 </Suspense>
                                 <Suspense fallback={<Skeleton className="h-[500px]" />}>
-                                  <RrspTfsaOptimizerCard />
+                                  <SavingsOptimizerSection />
                                 </Suspense>
                               </div>
                               <TaxSummaryCards taxSummary={taxSummary} />
