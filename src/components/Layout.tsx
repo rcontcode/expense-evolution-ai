@@ -505,7 +505,40 @@ export const Layout = ({ children }: LayoutProps) => {
                   <p className="text-xs text-muted-foreground">{TOOLTIP_CONTENT.quickCapture[language].description}</p>
                 </div>
               </TooltipContent>
-            </Tooltip>
+          </Tooltip>
+          
+          {/* Global Search Button - Prominent and Visible */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setGlobalSearchOpen(true)}
+                className={cn(
+                  "rounded-xl bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white flex items-center gap-3 hover:opacity-90 transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-[1.02]",
+                  collapsed ? "w-10 h-10 justify-center p-0" : "w-full p-3"
+                )}
+              >
+                {collapsed ? (
+                  <Search className="h-5 w-5" />
+                ) : (
+                  <>
+                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                      <Search className="h-5 w-5" />
+                    </div>
+                    <div className="text-left flex-1">
+                      <p className="font-bold text-sm">{language === 'es' ? 'Buscar' : 'Search'}</p>
+                      <p className="text-[10px] opacity-90 font-medium">{language === 'es' ? 'Gastos, clientes, proyectos...' : 'Expenses, clients, projects...'}</p>
+                    </div>
+                  </>
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8} className="z-[100] max-w-xs p-3 bg-popover border shadow-lg">
+              <div className="space-y-2">
+                <span className="font-semibold">{language === 'es' ? 'Búsqueda Global' : 'Global Search'}</span>
+                <p className="text-xs text-muted-foreground">{language === 'es' ? 'Busca gastos, clientes y proyectos en tiempo real' : 'Search expenses, clients and projects in real time'}</p>
+              </div>
+            </TooltipContent>
+          </Tooltip>
           </div>
 
           {/* Entity/Jurisdiction Selector */}
