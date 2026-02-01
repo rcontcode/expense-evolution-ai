@@ -14,6 +14,7 @@ export const PLAN_LIMITS = {
     contract_analyses_per_month: 0,
     bank_analyses_per_month: 0,
     voice_requests_per_month: Infinity,
+    voice_minutes_per_month: 3, // Premium voice (ElevenLabs) - demo
     // Features
     mileage: false,
     gamification: false,
@@ -37,6 +38,7 @@ export const PLAN_LIMITS = {
     contract_analyses_per_month: 0,
     bank_analyses_per_month: 0,
     voice_requests_per_month: Infinity,
+    voice_minutes_per_month: 30, // Premium voice (ElevenLabs)
     // Features
     mileage: true,
     gamification: true,
@@ -60,6 +62,7 @@ export const PLAN_LIMITS = {
     contract_analyses_per_month: Infinity,
     bank_analyses_per_month: Infinity,
     voice_requests_per_month: Infinity,
+    voice_minutes_per_month: 120, // Premium voice (ElevenLabs)
     // Features
     mileage: true,
     gamification: true,
@@ -86,6 +89,7 @@ interface UsageData {
   contract_analyses_count: number;
   bank_analyses_count: number;
   voice_requests_count: number;
+  voice_minutes_used: number;
 }
 
 interface SubscriptionData {
@@ -160,15 +164,17 @@ export function usePlanLimits() {
         return null;
       }
       
-      // Map to UsageData interface (voice_requests_count may not exist in old types)
+      // Map to UsageData interface (voice_requests_count and voice_minutes_used may not exist in old types)
       if (data) {
+        const rawData = data as Record<string, unknown>;
         return {
           expenses_count: data.expenses_count ?? 0,
           incomes_count: data.incomes_count ?? 0,
           ocr_scans_count: data.ocr_scans_count ?? 0,
           contract_analyses_count: data.contract_analyses_count ?? 0,
           bank_analyses_count: data.bank_analyses_count ?? 0,
-          voice_requests_count: (data as Record<string, unknown>).voice_requests_count as number ?? 0,
+          voice_requests_count: rawData.voice_requests_count as number ?? 0,
+          voice_minutes_used: Number(rawData.voice_minutes_used ?? 0),
         } as UsageData;
       }
       return null;
@@ -234,6 +240,7 @@ export function usePlanLimits() {
     contract_analyses_count: 0,
     bank_analyses_count: 0,
     voice_requests_count: 0,
+    voice_minutes_used: 0,
   };
 
   // Check functions
@@ -278,6 +285,24 @@ export function usePlanLimits() {
     if (limits.voice_requests_per_month === Infinity) return true;
     if (limits.voice_requests_per_month === 0) return false;
     return currentUsage.voice_requests_count < limits.voice_requests_per_month;
+  };
+
+  const canUsePremiumVoice = () => {
+    const limit = limits.voice_minutes_per_month;
+    if (limit === Infinity) return true;
+    return currentUsage.voice_minutes_used < limit;
+  };
+
+  const getRemainingVoiceMinutes = (): number => {
+    const limit = limits.voice_minutes_per_month;
+    if (limit === Infinity) return Infinity;
+    return Math.max(0, limit - currentUsage.voice_minutes_used);
+  };
+
+  const getVoiceMinutesPercentage = (): number => {
+    const limit = limits.voice_minutes_per_month;
+    if (limit === Infinity) return 0;
+    return (currentUsage.voice_minutes_used / limit) * 100;
   };
 
   const hasFeature = (feature: FeatureKey): boolean => {
@@ -363,12 +388,15 @@ export function usePlanLimits() {
     canAnalyzeContract,
     canAnalyzeBank,
     canUseVoice,
+    canUsePremiumVoice,
     hasFeature,
     
     // Usage info
     getUsagePercentage,
     getRemainingUsage,
     getUpgradePlan,
+    getRemainingVoiceMinutes,
+    getVoiceMinutesPercentage,
     
     // Mutations
     incrementUsage: incrementUsage.mutate,

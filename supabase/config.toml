@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.optimize-apv-chile]
 verify_jwt = true
+
+[functions.elevenlabs-tts]
+verify_jwt = false
