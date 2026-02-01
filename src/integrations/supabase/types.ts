@@ -2532,6 +2532,7 @@ export type Database = {
           period_start: string
           updated_at: string
           user_id: string
+          voice_minutes_used: number | null
         }
         Insert: {
           bank_analyses_count?: number
@@ -2544,6 +2545,7 @@ export type Database = {
           period_start?: string
           updated_at?: string
           user_id: string
+          voice_minutes_used?: number | null
         }
         Update: {
           bank_analyses_count?: number
@@ -2556,6 +2558,7 @@ export type Database = {
           period_start?: string
           updated_at?: string
           user_id?: string
+          voice_minutes_used?: number | null
         }
         Relationships: []
       }
@@ -2868,6 +2871,7 @@ export type Database = {
           period_start: string
           updated_at: string
           user_id: string
+          voice_minutes_used: number | null
         }
         SetofOptions: {
           from: "*"
@@ -2886,6 +2890,10 @@ export type Database = {
       }
       increment_usage: {
         Args: { p_usage_type: string; p_user_id: string }
+        Returns: undefined
+      }
+      increment_voice_usage: {
+        Args: { p_minutes: number; p_user_id: string }
         Returns: undefined
       }
       is_admin: { Args: { p_user_id: string }; Returns: boolean }
