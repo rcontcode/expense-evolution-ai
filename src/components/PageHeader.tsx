@@ -143,15 +143,15 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
       </div>
       
       {/* Title and Description */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">{title}</h1>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">{title}</h1>
           {description && (
-            <p className="text-muted-foreground mt-1">{description}</p>
+            <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{description}</p>
           )}
         </div>
         {children && (
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap justify-start sm:justify-end">
             {children}
           </div>
         )}

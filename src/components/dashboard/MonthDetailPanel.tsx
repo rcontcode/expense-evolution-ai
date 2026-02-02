@@ -287,82 +287,70 @@ export function MonthDetailPanel({
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-6">
-        {/* Balance cards row */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <CardContent className="space-y-4">
+        {/* Balance cards row - More compact */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {/* Income */}
-          <div className="p-4 rounded-xl bg-success/5 border border-success/20">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-success" />
-                <span className="text-sm font-medium text-success/80">
+          <div className="p-3 rounded-xl bg-success/5 border border-success/20">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="h-3.5 w-3.5 text-success" />
+                <span className="text-xs font-medium text-success/80">
                   {language === 'es' ? 'Ingresos' : 'Income'}
                 </span>
               </div>
               {totals.incomeChange !== 0 && (
                 <Badge variant="outline" className={cn(
-                  "text-[10px]",
+                  "text-[9px] px-1 py-0",
                   totals.incomeChange > 0 ? "text-success border-success/30" : "text-destructive border-destructive/30"
                 )}>
                   {totals.incomeChange > 0 ? '+' : ''}{totals.incomeChange.toFixed(0)}%
                 </Badge>
               )}
             </div>
-            <p className="text-2xl font-bold text-success">
+            <p className="text-xl font-bold text-success">
               {isLoading ? '...' : formatCurrency(totals.totalIncome)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {language === 'es' ? 'vs mes anterior' : 'vs prev month'}: {formatCurrency(totals.prevTotalIncome)}
             </p>
           </div>
           
           {/* Expenses */}
-          <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <TrendingDown className="h-4 w-4 text-destructive" />
-                <span className="text-sm font-medium text-destructive/80">
+          <div className="p-3 rounded-xl bg-destructive/5 border border-destructive/20">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-1.5">
+                <TrendingDown className="h-3.5 w-3.5 text-destructive" />
+                <span className="text-xs font-medium text-destructive/80">
                   {language === 'es' ? 'Gastos' : 'Expenses'}
                 </span>
               </div>
               {totals.expenseChange !== 0 && (
                 <Badge variant="outline" className={cn(
-                  "text-[10px]",
+                  "text-[9px] px-1 py-0",
                   totals.expenseChange > 0 ? "text-destructive border-destructive/30" : "text-success border-success/30"
                 )}>
                   {totals.expenseChange > 0 ? '+' : ''}{totals.expenseChange.toFixed(0)}%
                 </Badge>
               )}
             </div>
-            <p className="text-2xl font-bold text-destructive">
+            <p className="text-xl font-bold text-destructive">
               {isLoading ? '...' : formatCurrency(totals.totalExpenses)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {language === 'es' ? 'vs mes anterior' : 'vs prev month'}: {formatCurrency(totals.prevTotalExpenses)}
             </p>
           </div>
           
           {/* Balance */}
           <div className={cn(
-            "p-4 rounded-xl border-2",
+            "p-3 rounded-xl border-2",
             isPositive 
               ? "bg-gradient-to-br from-success/10 to-success/5 border-success/40" 
               : "bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/40"
           )}>
-            <div className="flex items-center gap-2 mb-2">
-              <Scale className={cn("h-4 w-4", isPositive ? "text-success" : "text-destructive")} />
-              <span className={cn("text-sm font-semibold", isPositive ? "text-success" : "text-destructive")}>
+            <div className="flex items-center gap-1.5 mb-1">
+              <Scale className={cn("h-3.5 w-3.5", isPositive ? "text-success" : "text-destructive")} />
+              <span className={cn("text-xs font-semibold", isPositive ? "text-success" : "text-destructive")}>
                 Balance
               </span>
             </div>
-            <p className={cn("text-2xl font-bold", isPositive ? "text-success" : "text-destructive")}>
+            <p className={cn("text-xl font-bold", isPositive ? "text-success" : "text-destructive")}>
               {isLoading ? '...' : formatCurrency(totals.balance)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {isPositive 
-                ? (language === 'es' ? '✓ Mes positivo' : '✓ Positive month')
-                : (language === 'es' ? '⚠ Déficit' : '⚠ Deficit')
-              }
             </p>
           </div>
         </div>

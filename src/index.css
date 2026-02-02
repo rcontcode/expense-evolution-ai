@@ -2302,3 +2302,144 @@
     min-height: -webkit-fill-available;
   }
 }
+
+/* ================================================================
+   RESPONSIVE SPACING UTILITIES - Professional Compact Layout
+   ================================================================ */
+
+/* Page container with adaptive padding */
+.page-container {
+  @apply px-4 py-3;
+}
+
+@media (min-width: 640px) {
+  .page-container {
+    @apply px-6 py-4;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page-container {
+    @apply px-8 py-6;
+  }
+}
+
+/* Section gap with adaptive spacing */
+.section-gap {
+  @apply space-y-3;
+}
+
+@media (min-width: 640px) {
+  .section-gap {
+    @apply space-y-4;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section-gap {
+    @apply space-y-5;
+  }
+}
+
+/* Compact section gap for dense UIs */
+.section-gap-compact {
+  @apply space-y-2;
+}
+
+@media (min-width: 640px) {
+  .section-gap-compact {
+    @apply space-y-3;
+  }
+}
+
+/* Responsive table container */
+.table-responsive {
+  @apply overflow-x-auto -mx-4 px-4;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 640px) {
+  .table-responsive {
+    @apply mx-0 px-0;
+  }
+}
+
+.table-responsive::-webkit-scrollbar {
+  height: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: hsl(var(--muted) / 0.3);
+  border-radius: 2px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 2px;
+}
+
+/* Touch-friendly targets */
+.touch-target {
+  @apply min-h-[44px] min-w-[44px];
+}
+
+/* Density modifiers */
+.density-compact {
+  --card-padding: 0.75rem;
+  --section-gap: 0.5rem;
+}
+
+.density-normal {
+  --card-padding: 1rem;
+  --section-gap: 0.75rem;
+}
+
+.density-comfortable {
+  --card-padding: 1.5rem;
+  --section-gap: 1rem;
+}
+
+/* Card with density support */
+.card-dense {
+  @apply p-3;
+}
+
+@media (min-width: 640px) {
+  .card-dense {
+    @apply p-4;
+  }
+}
+
+/* Sticky header for tables */
+.sticky-header {
+  @apply sticky top-0 z-10 bg-background/95 backdrop-blur-sm;
+}
+
+/* Hide on mobile, show on tablet+ */
+.hide-mobile {
+  @apply hidden sm:block;
+}
+
+/* Show on mobile, hide on tablet+ */
+.show-mobile-only {
+  @apply block sm:hidden;
+}
+
+/* Side-by-side layout for desktop */
+.side-by-side {
+  @apply flex flex-col gap-4;
+}
+
+@media (min-width: 1024px) {
+  .side-by-side {
+    @apply flex-row;
+  }
+  
+  .side-by-side > :first-child {
+    @apply flex-[3];
+  }
+  
+  .side-by-side > :last-child {
+    @apply flex-[2];
+  }
+}

@@ -61,7 +61,19 @@ export function PageContextGuide({
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const { user } = useAuth();
-  const [isExpanded, setIsExpanded] = React.useState(true);
+  
+  // Collapse by default on mobile for compact UI
+  const [isMobile, setIsMobile] = React.useState(() => 
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
+  
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  const [isExpanded, setIsExpanded] = React.useState(!isMobile);
   const [dismissed, setDismissed] = React.useState(() => {
     return localStorage.getItem(`page-guide-${pageKey}-dismissed`) === 'true';
   });
