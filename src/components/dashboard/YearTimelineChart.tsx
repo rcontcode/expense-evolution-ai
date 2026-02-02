@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,9 +14,29 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
+// Hook to detect touch devices
+const useIsTouchDevice = () => {
+  const [isTouch, setIsTouch] = useState(false);
+  
+  useEffect(() => {
+    const check = () => {
+      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isMobile = window.innerWidth < 768;
+      setIsTouch(hasTouch && isMobile);
+    };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  
+  return isTouch;
+};
 
 interface YearTimelineChartProps {
   selectedMonth: number;
@@ -33,6 +53,8 @@ export function YearTimelineChart({
 }: YearTimelineChartProps) {
   const { language } = useLanguage();
   const { data: profile } = useProfile();
+  const isTouchDevice = useIsTouchDevice();
+  const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
   
   // Fetch data for the selected year
   const { data: expenses, isLoading: expensesLoading } = useExpenses({
@@ -204,7 +226,58 @@ export function YearTimelineChart({
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
+        {/* Mobile: Selected Month Info Banner */}
+        {isTouchDevice && (
+          <div className="sm:hidden p-3 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-primary">
+                {fullMonthNames[selectedMonth]} {selectedYear}
+              </span>
+              <Badge variant="outline" className={cn(
+                "text-[10px]",
+                monthlyData[selectedMonth]?.balance >= 0 
+                  ? "border-success/30 text-success" 
+                  : "border-destructive/30 text-destructive"
+              )}>
+                {monthlyData[selectedMonth]?.balance >= 0 ? '+' : ''}
+                {formatCurrency(monthlyData[selectedMonth]?.balance || 0, true)}
+              </Badge>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="p-1.5 rounded-lg bg-success/10">
+                <ArrowUpRight className="h-3 w-3 text-success mx-auto mb-0.5" />
+                <p className="text-[10px] text-muted-foreground">{language === 'es' ? 'Ingreso' : 'Income'}</p>
+                <p className="text-xs font-bold text-success">{formatCurrency(monthlyData[selectedMonth]?.income || 0, true)}</p>
+              </div>
+              <div className="p-1.5 rounded-lg bg-destructive/10">
+                <ArrowDownRight className="h-3 w-3 text-destructive mx-auto mb-0.5" />
+                <p className="text-[10px] text-muted-foreground">{language === 'es' ? 'Gasto' : 'Expense'}</p>
+                <p className="text-xs font-bold text-destructive">{formatCurrency(monthlyData[selectedMonth]?.expenses || 0, true)}</p>
+              </div>
+              <div className={cn(
+                "p-1.5 rounded-lg",
+                monthlyData[selectedMonth]?.balance >= 0 ? "bg-success/10" : "bg-destructive/10"
+              )}>
+                <TrendingUp className={cn(
+                  "h-3 w-3 mx-auto mb-0.5",
+                  monthlyData[selectedMonth]?.balance >= 0 ? "text-success" : "text-destructive rotate-180"
+                )} />
+                <p className="text-[10px] text-muted-foreground">Balance</p>
+                <p className={cn(
+                  "text-xs font-bold",
+                  monthlyData[selectedMonth]?.balance >= 0 ? "text-success" : "text-destructive"
+                )}>
+                  {formatCurrency(monthlyData[selectedMonth]?.balance || 0, true)}
+                </p>
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground text-center mt-2">
+              👆 {language === 'es' ? 'Toca un mes para ver sus detalles' : 'Tap a month to see details'}
+            </p>
+          </div>
+        )}
+
         {/* Timeline bars - proper grid with overflow handling */}
         <div className="grid grid-cols-12 gap-0.5 sm:gap-1.5 overflow-hidden">
           {monthlyData.map((data, index) => {
@@ -215,65 +288,76 @@ export function YearTimelineChart({
             const expenseHeight = maxValue > 0 ? (data.expenses / maxValue) * 100 : 0;
             const isFuture = selectedYear === currentYear && index > currentMonth;
             
+            // On touch devices, just use a button without tooltip
+            const monthButton = (
+              <button
+                onClick={() => !isFuture && onMonthSelect(index)}
+                onMouseEnter={() => !isTouchDevice && setHoveredMonth(index)}
+                onMouseLeave={() => !isTouchDevice && setHoveredMonth(null)}
+                disabled={isFuture}
+                className={cn(
+                  "relative flex flex-col items-center p-1 sm:p-1.5 rounded-lg transition-all duration-200 min-w-0",
+                  "hover:bg-accent/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                  isSelected && "bg-primary/15 border-2 border-primary shadow-md",
+                  isCurrent && !isSelected && "border border-primary/40",
+                  !isSelected && !isCurrent && "border border-transparent",
+                  isFuture && "opacity-40 cursor-not-allowed"
+                )}
+              >
+                {/* Bars container */}
+                <div className="relative w-full h-12 sm:h-16 lg:h-20 flex items-end justify-center gap-0.5">
+                  <div
+                    className={cn(
+                      "w-1.5 sm:w-2.5 rounded-t transition-all duration-300",
+                      "bg-gradient-to-t from-success/80 to-success/50"
+                    )}
+                    style={{ height: `${Math.max(incomeHeight, 4)}%` }}
+                  />
+                  <div
+                    className={cn(
+                      "w-1.5 sm:w-2.5 rounded-t transition-all duration-300",
+                      "bg-gradient-to-t from-destructive/80 to-destructive/50"
+                    )}
+                    style={{ height: `${Math.max(expenseHeight, 4)}%` }}
+                  />
+                </div>
+                
+                {/* Month label */}
+                <span className={cn(
+                  "text-[9px] sm:text-[11px] font-medium mt-1 truncate w-full text-center",
+                  isSelected ? "text-primary font-semibold" : "text-muted-foreground",
+                  isCurrent && !isSelected && "text-primary/70"
+                )}>
+                  {monthNames[index]}
+                </span>
+                
+                {/* Balance indicator */}
+                <div className={cn(
+                  "w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mt-0.5 shrink-0",
+                  data.income === 0 && data.expenses === 0
+                    ? "bg-muted"
+                    : isPositive ? "bg-success" : "bg-destructive"
+                )} />
+                
+                {/* Current month sparkle */}
+                {isCurrent && (
+                  <div className="absolute -top-0.5 left-1/2 -translate-x-1/2">
+                    <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary animate-pulse" />
+                  </div>
+                )}
+              </button>
+            );
+            
+            // On touch devices, render without tooltip wrapper
+            if (isTouchDevice) {
+              return <div key={index}>{monthButton}</div>;
+            }
+            
+            // On desktop, wrap with tooltip
             return (
               <Tooltip key={index}>
                 <TooltipTrigger asChild>
-                  <button
-                    onClick={() => !isFuture && onMonthSelect(index)}
-                    disabled={isFuture}
-                    className={cn(
-                      "relative flex flex-col items-center p-1 sm:p-1.5 rounded-lg transition-all duration-200 min-w-0",
-                      "hover:bg-accent/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
-                      isSelected && "bg-primary/15 border-2 border-primary shadow-md",
-                      isCurrent && !isSelected && "border border-primary/40",
-                      !isSelected && !isCurrent && "border border-transparent",
-                      isFuture && "opacity-40 cursor-not-allowed"
-                    )}
-                  >
-                    {/* Bars container - More compact on mobile */}
-                    <div className="relative w-full h-12 sm:h-16 lg:h-20 flex items-end justify-center gap-0.5">
-                      {/* Income bar */}
-                      <div
-                        className={cn(
-                          "w-1.5 sm:w-2.5 rounded-t transition-all duration-300",
-                          "bg-gradient-to-t from-success/80 to-success/50"
-                        )}
-                        style={{ height: `${Math.max(incomeHeight, 4)}%` }}
-                      />
-                      {/* Expense bar */}
-                      <div
-                        className={cn(
-                          "w-1.5 sm:w-2.5 rounded-t transition-all duration-300",
-                          "bg-gradient-to-t from-destructive/80 to-destructive/50"
-                        )}
-                        style={{ height: `${Math.max(expenseHeight, 4)}%` }}
-                      />
-                    </div>
-                    
-                    {/* Month label - fixed width to prevent overflow */}
-                    <span className={cn(
-                      "text-[9px] sm:text-[11px] font-medium mt-1 truncate w-full text-center",
-                      isSelected ? "text-primary font-semibold" : "text-muted-foreground",
-                      isCurrent && !isSelected && "text-primary/70"
-                    )}>
-                      {monthNames[index]}
-                    </span>
-                    
-                    {/* Balance indicator */}
-                    <div className={cn(
-                      "w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mt-0.5 shrink-0",
-                      data.income === 0 && data.expenses === 0
-                        ? "bg-muted"
-                        : isPositive ? "bg-success" : "bg-destructive"
-                    )} />
-                    
-                    {/* Current month indicator */}
-                    {isCurrent && (
-                      <div className="absolute -top-0.5 left-1/2 -translate-x-1/2">
-                        <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary animate-pulse" />
-                      </div>
-                    )}
-                  </button>
+                  {monthButton}
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-xs z-50">
                   <div className="space-y-1">
@@ -294,7 +378,7 @@ export function YearTimelineChart({
           })}
         </div>
         
-        {/* Legend - Hidden on mobile for compact view */}
+        {/* Legend - Desktop only */}
         <div className="hidden sm:flex items-center justify-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded bg-gradient-to-t from-success/80 to-success/50" />
@@ -311,6 +395,26 @@ export function YearTimelineChart({
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-destructive" />
             <span>{language === 'es' ? 'Negativo' : 'Negative'}</span>
+          </div>
+        </div>
+        
+        {/* Mobile: Compact legend */}
+        <div className="flex sm:hidden items-center justify-center gap-3 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded bg-gradient-to-t from-success/80 to-success/50" />
+            <span>{language === 'es' ? 'Ingr.' : 'Inc.'}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded bg-gradient-to-t from-destructive/80 to-destructive/50" />
+            <span>{language === 'es' ? 'Gast.' : 'Exp.'}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-success" />
+            <span>+</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-destructive" />
+            <span>-</span>
           </div>
         </div>
         

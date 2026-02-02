@@ -92,6 +92,7 @@ import {
   Layer
 } from 'recharts';
 import { getCategoryLabelByLanguage, ExpenseCategory } from '@/lib/constants/expense-categories';
+import { MobileChartHint } from '@/components/ui/mobile-chart-hint';
 
 // Category color palette - vibrant 3D-like colors
 const CATEGORY_COLORS: Record<string, string> = {
