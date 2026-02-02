@@ -24,6 +24,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Lightbulb, Sparkles, Plus, Wallet, TrendingUp, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function NetWorth() {
   const { t, language } = useLanguage();
@@ -129,46 +130,53 @@ export default function NetWorth() {
     );
   }
 
+  const isMobile = useIsMobile();
+
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
         {/* Header */}
         <PageHeader
           title={language === 'es' ? 'Patrimonio Neto' : 'Net Worth'}
-          description={language === 'es' 
+          description={!isMobile ? (language === 'es' 
             ? 'Visualiza y administra tus activos y pasivos'
-            : 'View and manage your assets and liabilities'}
+            : 'View and manage your assets and liabilities') : undefined}
         >
-          {!hasInvestmentAssets && !hasCompletedOnboarding && (
-            <Button 
-              onClick={handleStartOnboarding}
-              className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
-            >
-              <Sparkles className="h-4 w-4 mr-2" />
-              {language === 'es' ? 'Configurar Inversiones' : 'Setup Investments'}
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {!hasInvestmentAssets && !hasCompletedOnboarding && (
+              <Button 
+                onClick={handleStartOnboarding}
+                size={isMobile ? 'sm' : 'default'}
+                className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+              >
+                <Sparkles className="h-4 w-4 mr-1 sm:mr-2" />
+                {isMobile ? (language === 'es' ? 'Setup' : 'Setup') : (language === 'es' ? 'Configurar Inversiones' : 'Setup Investments')}
+              </Button>
+            )}
+          </div>
         </PageHeader>
 
-        {/* Contextual Page Guide */}
-        <PageContextGuide
-          {...PAGE_GUIDES['net-worth']}
-          actions={[
-            { icon: Plus, title: { es: 'Agregar Activo', en: 'Add Asset' }, description: { es: 'Inversiones, propiedades', en: 'Investments, properties' }, action: handleAddAsset },
-            { icon: Wallet, title: { es: 'Agregar Pasivo', en: 'Add Liability' }, description: { es: 'Deudas, hipotecas', en: 'Debts, mortgages' }, action: handleAddLiability },
-            { icon: TrendingUp, title: { es: 'Ver Proyección', en: 'View Projection' }, description: { es: '6 meses adelante', en: '6 months ahead' }, action: () => {} },
-            { icon: RefreshCw, title: { es: 'Conversiones', en: 'Conversions' }, description: { es: 'Activos no productivos', en: 'Non-productive assets' }, action: () => {} }
-          ]}
-        />
+        {/* Contextual Page Guide - hidden on mobile */}
+        {!isMobile && (
+          <PageContextGuide
+            {...PAGE_GUIDES['net-worth']}
+            actions={[
+              { icon: Plus, title: { es: 'Agregar Activo', en: 'Add Asset' }, description: { es: 'Inversiones, propiedades', en: 'Investments, properties' }, action: handleAddAsset },
+              { icon: Wallet, title: { es: 'Agregar Pasivo', en: 'Add Liability' }, description: { es: 'Deudas, hipotecas', en: 'Debts, mortgages' }, action: handleAddLiability },
+              { icon: TrendingUp, title: { es: 'Ver Proyección', en: 'View Projection' }, description: { es: '6 meses adelante', en: '6 months ahead' }, action: () => {} },
+              { icon: RefreshCw, title: { es: 'Conversiones', en: 'Conversions' }, description: { es: 'Activos no productivos', en: 'Non-productive assets' }, action: () => {} }
+            ]}
+          />
+        )}
 
         {isLoading ? (
           <div className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-4">
               {[1, 2, 3, 4].map(i => (
-                <Skeleton key={i} className="h-32" />
+                <Skeleton key={i} className="h-24 sm:h-32" />
               ))}
             </div>
-            <Skeleton className="h-[350px]" />
+            <Skeleton className="h-[250px] sm:h-[350px]" />
           </div>
         ) : (
           <>
@@ -179,8 +187,8 @@ export default function NetWorth() {
               snapshots={snapshots}
             />
 
-            {/* Tip */}
-            {assets.length > 0 && liabilities.length > 0 && (
+            {/* Tip - hidden on mobile */}
+            {!isMobile && assets.length > 0 && liabilities.length > 0 && (
               <Alert className="border-primary/20 bg-primary/5">
                 <Lightbulb className="h-4 w-4 text-primary" />
                 <AlertDescription>
@@ -201,7 +209,7 @@ export default function NetWorth() {
             </div>
 
             {/* Assets and Liabilities Lists */}
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
               <div data-highlight="assets-section">
                 <AssetsList 
                   assets={assets}

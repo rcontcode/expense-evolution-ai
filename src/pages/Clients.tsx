@@ -137,53 +137,55 @@ export default function Clients() {
   return (
     <Layout>
       <TooltipProvider>
-        <div className="page-container section-gap">
+        <div className="page-container section-gap p-4 sm:p-0">
           <PageHeader
             title={t('clients.title')}
-            description={t('clients.description')}
+            description={!isMobile ? t('clients.description') : undefined}
           >
-            <InfoTooltip content={TOOLTIP_CONTENT.addClient} variant="wrapper">
-              <Button onClick={handleCreate} data-highlight="add-client-button">
-                <Plus className="mr-2 h-4 w-4" />
-                {t('clients.addClient')}
-              </Button>
-            </InfoTooltip>
+            <Button onClick={handleCreate} size={isMobile ? 'sm' : 'default'} data-highlight="add-client-button">
+              <Plus className="mr-1 sm:mr-2 h-4 w-4" />
+              {isMobile ? t('common.add') : t('clients.addClient')}
+            </Button>
           </PageHeader>
 
-          {/* Mentor Quote Banner */}
-          <MentorQuoteBanner context="clients" className="mb-2" />
-
-          {/* Contextual Page Guide */}
-          <PageContextGuide
-            {...PAGE_GUIDES.clients}
-            actions={[
-              { icon: Plus, title: { es: 'Nuevo Cliente', en: 'New Client' }, description: { es: 'Agregar cliente', en: 'Add client' }, action: handleCreate },
-              { icon: FileText, title: { es: 'Ver Contratos', en: 'View Contracts' }, description: { es: 'Términos y acuerdos', en: 'Terms and agreements' }, path: '/contracts' },
-              { icon: PieChart, title: { es: 'Panorama', en: 'Overview' }, description: { es: 'Financiero por cliente', en: 'Financial by client' }, action: () => clients?.[0] && setFinancialClient(clients[0]) },
-              { icon: Users, title: { es: 'Ver Proyectos', en: 'View Projects' }, description: { es: 'Por cliente', en: 'By client' }, path: '/projects' }
-            ]}
-          />
+          {/* Mentor Quote Banner and Page Guide - hidden on mobile */}
+          {!isMobile && (
+            <>
+              <MentorQuoteBanner context="clients" className="mb-2" />
+              <PageContextGuide
+                {...PAGE_GUIDES.clients}
+                actions={[
+                  { icon: Plus, title: { es: 'Nuevo Cliente', en: 'New Client' }, description: { es: 'Agregar cliente', en: 'Add client' }, action: handleCreate },
+                  { icon: FileText, title: { es: 'Ver Contratos', en: 'View Contracts' }, description: { es: 'Términos y acuerdos', en: 'Terms and agreements' }, path: '/contracts' },
+                  { icon: PieChart, title: { es: 'Panorama', en: 'Overview' }, description: { es: 'Financiero por cliente', en: 'Financial by client' }, action: () => clients?.[0] && setFinancialClient(clients[0]) },
+                  { icon: Users, title: { es: 'Ver Proyectos', en: 'View Projects' }, description: { es: 'Por cliente', en: 'By client' }, path: '/projects' }
+                ]}
+              />
+            </>
+          )}
 
           {/* Legend - compact on mobile */}
-          <Card className="bg-muted/30">
-            <CardContent className="py-2 px-3">
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
-                <span className="font-medium text-muted-foreground hidden sm:inline">{t('clients.legendTitle')}:</span>
-                {(Object.keys(CLIENT_STATUS_CONFIG) as ClientStatus[]).map((status) => {
-                  const config = CLIENT_STATUS_CONFIG[status];
-                  const StatusIcon = STATUS_ICONS[status];
-                  return (
-                    <div key={status} className="flex items-center gap-1">
-                      <StatusIcon className={`h-3 w-3 sm:h-4 sm:w-4 ${config.color}`} />
-                      <span className="text-muted-foreground text-xs sm:text-sm">
-                        {language === 'es' ? config.label : config.labelEn}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+          {!isMobile && (
+            <Card className="bg-muted/30">
+              <CardContent className="py-2 px-3">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
+                  <span className="font-medium text-muted-foreground hidden sm:inline">{t('clients.legendTitle')}:</span>
+                  {(Object.keys(CLIENT_STATUS_CONFIG) as ClientStatus[]).map((status) => {
+                    const config = CLIENT_STATUS_CONFIG[status];
+                    const StatusIcon = STATUS_ICONS[status];
+                    return (
+                      <div key={status} className="flex items-center gap-1">
+                        <StatusIcon className={`h-3 w-3 sm:h-4 sm:w-4 ${config.color}`} />
+                        <span className="text-muted-foreground text-xs sm:text-sm">
+                          {language === 'es' ? config.label : config.labelEn}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {isLoading ? (
             <Card className="border-dashed">

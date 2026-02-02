@@ -220,28 +220,6 @@ export default function Expenses() {
           />
         )}
 
-        {isLoading ? (
-          <Card className="border-dashed">
-            <CardContent className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">{t('expenses.loadingExpenses')}</p>
-            </CardContent>
-          </Card>
-        ) : expenses && expenses.length > 0 ? (
-          <div data-highlight="expenses-table">
-            <ExpensesTable expenses={expenses} onEdit={handleEdit} />
-          </div>
-        ) : (
-          <SectionEmptyState 
-            section="expenses" 
-            onAction={handleCreate}
-            secondaryAction={{
-              label: { es: 'Captura Rápida', en: 'Quick Capture' },
-              onClick: () => setQuickCaptureOpen(true)
-            }}
-            showSampleDataButton={true}
-          />
-        )}
-
         <ExpenseDialog open={dialogOpen} onClose={handleClose} expense={selectedExpense} />
         <ExportDialog 
           open={exportDialogOpen} 
