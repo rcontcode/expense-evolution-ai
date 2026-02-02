@@ -176,10 +176,18 @@ export const ChatAssistant: React.FC = () => {
   const langDetection = useLanguageDetection();
 
   // Premium voice synthesis (ElevenLabs)
+  // Get voice ID reactively - must use the actual stored value, not the function
+  const currentVoiceId = useMemo(() => {
+    const lang = language as 'es' | 'en';
+    const id = voicePrefs.premiumVoiceIdByLang?.[lang] || voicePrefs.premiumVoiceId || undefined;
+    console.log('[Voice] Current voice ID for', lang, ':', id);
+    return id;
+  }, [language, voicePrefs.premiumVoiceIdByLang, voicePrefs.premiumVoiceId]);
+  
   const elevenLabsTTS = useElevenLabsTTS({
     lang: language as 'es' | 'en',
     voiceGender: voicePrefs.voiceGender === 'auto' ? 'female' : voicePrefs.voiceGender as 'female' | 'male',
-    voiceId: voicePrefs.getPremiumVoiceId(language as 'es' | 'en') || undefined,
+    voiceId: currentVoiceId,
   });
 
   // Current detected intent for visual feedback
