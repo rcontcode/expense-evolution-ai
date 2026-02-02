@@ -570,13 +570,13 @@ export const ChatAssistant: React.FC = () => {
     };
   }, [isListening, isContinuousMode, recordingStartTime]);
 
-  // Update input with live transcript - now handled by onInterimTranscript callback
-  // Also update from transcript state for final results
+  // Update input with live transcript - only when actually listening and NOT speaking
+  // This prevents the AI's speech from being captured as user input
   useEffect(() => {
-    if (transcript && isListening) {
+    if (transcript && isListening && !isSpeaking) {
       setInput(transcript);
     }
-  }, [transcript, isListening]);
+  }, [transcript, isListening, isSpeaking]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -1280,12 +1280,12 @@ export const ChatAssistant: React.FC = () => {
       {/* Chat Window */}
       {isOpen && !isMinimized && (
         <div className={cn(
-          "fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-48px)]",
+          "fixed bottom-6 right-6 z-50 w-[420px] max-w-[calc(100vw-48px)]",
           "bg-background border border-border rounded-2xl shadow-2xl",
           "flex flex-col overflow-hidden",
           "animate-in slide-in-from-bottom-4 fade-in duration-300"
         )}
-        style={{ height: 'min(600px, calc(100vh - 100px))' }}
+        style={{ height: 'min(650px, calc(100vh - 100px))' }}
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b bg-primary/5">
@@ -1320,51 +1320,36 @@ export const ChatAssistant: React.FC = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1">
+            
+            {/* Header Actions - Reorganized */}
+            <div className="flex items-center gap-0.5 flex-shrink-0">
               {/* Voice Commands Cheatsheet */}
               {isVoiceSupported && (
                 <VoiceCommandsCheatsheet 
                   trigger={
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <HelpCircle className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" className="h-7 w-7">
+                      <HelpCircle className="h-3.5 w-3.5" />
                     </Button>
                   }
                 />
               )}
               
-              {/* History button - quick access */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => navigate('/settings')}
-                    className="h-8 w-8"
-                  >
-                    <History className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {language === 'es' ? 'Ver historial en Configuración' : 'View history in Settings'}
-                </TooltipContent>
-              </Tooltip>
-              
               {/* Voice Settings Popover */}
               {isVoiceSupported && (
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Settings className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" className="h-7 w-7">
+                      <Settings className="h-3.5 w-3.5" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-64" align="end">
+                  <PopoverContent className="w-72" align="end" sideOffset={8}>
                     <div className="space-y-4">
                       <h4 className="font-medium text-sm">{language === 'es' ? 'Configuración de Voz' : 'Voice Settings'}</h4>
                       
                       <p className="text-[10px] text-muted-foreground">
                         {language === 'es' 
-                          ? '💡 Gestiona atajos, recordatorios e historial en Configuración → Preferencias de Voz'
-                          : '💡 Manage shortcuts, reminders & history in Settings → Voice Preferences'}
+                          ? '💡 Más opciones en Configuración → Preferencias de Voz'
+                          : '💡 More options in Settings → Voice Preferences'}
                       </p>
                       
                       <div className="space-y-2">
@@ -1399,22 +1384,16 @@ export const ChatAssistant: React.FC = () => {
                         />
                       </div>
                       
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span>{language === 'es' ? 'Tono' : 'Pitch'}</span>
-                          <Badge variant="secondary" className="text-[10px] h-5">{voicePrefs.pitch.toFixed(1)}</Badge>
-                        </div>
-                        <Slider
-                          value={[voicePrefs.pitch]}
-                          min={0.5}
-                          max={2}
-                          step={0.1}
-                          onValueChange={([v]) => voicePrefs.setPitch(v)}
-                        />
-                        <div className="flex justify-between text-[9px] text-muted-foreground">
-                          <span>{language === 'es' ? 'Grave' : 'Low'}</span>
-                          <span>{language === 'es' ? 'Agudo' : 'High'}</span>
-                        </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs">{language === 'es' ? 'Leer respuestas' : 'Read responses'}</span>
+                        <Button
+                          variant={autoSpeak ? "default" : "outline"}
+                          size="sm"
+                          className="h-6 text-xs"
+                          onClick={() => setAutoSpeak(!autoSpeak)}
+                        >
+                          {autoSpeak ? 'On' : 'Off'}
+                        </Button>
                       </div>
                       
                       <div className="flex items-center justify-between">
@@ -1428,36 +1407,25 @@ export const ChatAssistant: React.FC = () => {
                           {voicePrefs.enableSoundEffects ? 'On' : 'Off'}
                         </Button>
                       </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs">{language === 'es' ? 'Confirmar acciones' : 'Confirm actions'}</span>
-                        <Button
-                          variant={voicePrefs.confirmDestructiveActions ? "default" : "outline"}
-                          size="sm"
-                          className="h-6 text-xs"
-                          onClick={() => voicePrefs.toggleConfirmDestructive()}
-                        >
-                          {voicePrefs.confirmDestructiveActions ? 'On' : 'Off'}
-                        </Button>
-                      </div>
                     </div>
                   </PopoverContent>
                 </Popover>
               )}
-              {/* Continuous mode toggle */}
+              
+              {/* Continuous mode toggle - Main toggle */}
               {isVoiceSupported && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button 
-                      variant="ghost" 
+                      variant={isContinuousMode ? "default" : "ghost"}
                       size="icon" 
                       onClick={handleContinuousModeToggle}
                       className={cn(
-                        "h-8 w-8",
-                        isContinuousMode && "text-green-500 bg-green-500/10"
+                        "h-7 w-7",
+                        isContinuousMode && "bg-green-500 hover:bg-green-600 text-white"
                       )}
                     >
-                      <Radio className={cn("h-4 w-4", isContinuousMode && "animate-pulse")} />
+                      <Radio className={cn("h-3.5 w-3.5", isContinuousMode && "animate-pulse")} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -1468,53 +1436,26 @@ export const ChatAssistant: React.FC = () => {
                   </TooltipContent>
                 </Tooltip>
               )}
-              {/* Stop speaking button - only show when speaking */}
-              {isVoiceSupported && isSpeaking && (
+              
+              {/* Stop button - Only show when speaking or in continuous mode */}
+              {isVoiceSupported && (isSpeaking || isContinuousMode) && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      onClick={() => {
-                        stopSpeaking();
-                        voicePrefs.playSound('notification');
-                      }}
-                      className="h-8 w-8 text-red-500 hover:text-red-600 animate-pulse"
+                      onClick={stopAllVoiceActivity}
+                      className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-500/10"
                     >
-                      <Square className="h-4 w-4" />
+                      <Square className={cn("h-3.5 w-3.5", isSpeaking && "animate-pulse")} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {language === 'es' ? 'Detener habla' : 'Stop speaking'}
+                    {language === 'es' ? 'Detener todo' : 'Stop all'}
                   </TooltipContent>
                 </Tooltip>
               )}
-              {/* Auto-speak toggle */}
-              {isVoiceSupported && !isSpeaking && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => {
-                        setAutoSpeak(!autoSpeak);
-                      }}
-                      className={cn(
-                        "h-8 w-8",
-                        autoSpeak && "text-primary"
-                      )}
-                    >
-                      {autoSpeak ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {autoSpeak 
-                      ? (language === 'es' ? 'Desactivar voz' : 'Disable voice')
-                      : (language === 'es' ? 'Activar voz' : 'Enable voice')
-                    }
-                  </TooltipContent>
-                </Tooltip>
-              )}
+              
               {/* Minimize button */}
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -1522,17 +1463,19 @@ export const ChatAssistant: React.FC = () => {
                     variant="ghost" 
                     size="icon" 
                     onClick={() => setIsMinimized(true)}
-                    className="h-8 w-8"
+                    className="h-7 w-7"
                   >
-                    <Minimize2 className="h-4 w-4" />
+                    <Minimize2 className="h-3.5 w-3.5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
                   {language === 'es' ? 'Minimizar' : 'Minimize'}
                 </TooltipContent>
               </Tooltip>
-              <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="h-8 w-8">
-                <X className="h-5 w-5" />
+              
+              {/* Close button */}
+              <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="h-7 w-7">
+                <X className="h-4 w-4" />
               </Button>
             </div>
           </div>

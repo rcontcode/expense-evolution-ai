@@ -73,6 +73,12 @@ export function VoicePreferencesCard() {
   const PREVIEW_THROTTLE_MS = 2000; // Prevent rapid-fire clicks
   const premiumAudioRef = React.useRef<HTMLAudioElement | null>(null);
   
+  // Voice filter state
+  const [voiceFilter, setVoiceFilter] = useState<{
+    gender: 'all' | 'female' | 'male';
+    lang: 'all' | 'es' | 'en';
+  }>({ gender: 'all', lang: currentLang });
+  
   const [showShortcutDialog, setShowShortcutDialog] = useState(false);
   const [showReminderDialog, setShowReminderDialog] = useState(false);
   const [showHistoryDialog, setShowHistoryDialog] = useState(false);
@@ -499,8 +505,8 @@ export function VoicePreferencesCard() {
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted-foreground">
                     {language === 'es'
-                      ? '✨ Solo voces ES con acento MX/CL/LatAm neutro (sin “gringo”)'
-                      : '✨ Curated voices (no accent mismatch)'}
+                      ? '✨ Voces premium con acento nativo'
+                      : '✨ Premium voices with native accent'}
                   </p>
                   <Badge variant="outline" className="text-[10px]">
                     {isGodMode 
@@ -510,157 +516,199 @@ export function VoicePreferencesCard() {
                   </Badge>
                 </div>
                 
-                {/* Spanish Voices */}
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium flex items-center gap-1">
-                    🌎 {language === 'es' ? 'Español (Latinoamérica)' : 'Spanish (Latin America)'}
-                  </Label>
-                  <div className="grid grid-cols-1 gap-2">
+                {/* Filter Controls */}
+                <div className="flex flex-wrap gap-2 pb-2 border-b border-amber-500/20">
+                  {/* Language Filter */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-muted-foreground">{language === 'es' ? 'Idioma:' : 'Lang:'}</span>
+                    <div className="flex rounded-md border overflow-hidden">
+                      {(['all', 'es', 'en'] as const).map((lang) => (
+                        <button
+                          key={lang}
+                          onClick={() => setVoiceFilter(prev => ({ ...prev, lang }))}
+                          className={`px-2 py-1 text-[10px] transition-colors ${
+                            voiceFilter.lang === lang 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'bg-background hover:bg-muted'
+                          }`}
+                        >
+                          {lang === 'all' ? (language === 'es' ? 'Todos' : 'All') 
+                            : lang === 'es' ? '🌎 ES' : '🌍 EN'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Gender Filter */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-muted-foreground">{language === 'es' ? 'Voz:' : 'Voice:'}</span>
+                    <div className="flex rounded-md border overflow-hidden">
+                      {(['all', 'female', 'male'] as const).map((gender) => (
+                        <button
+                          key={gender}
+                          onClick={() => setVoiceFilter(prev => ({ ...prev, gender }))}
+                          className={`px-2 py-1 text-[10px] transition-colors ${
+                            voiceFilter.gender === gender 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'bg-background hover:bg-muted'
+                          }`}
+                        >
+                          {gender === 'all' ? (language === 'es' ? 'Todas' : 'All') 
+                            : gender === 'female' ? '👩' : '👨'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Filtered Voice List */}
+                <ScrollArea className="h-[280px]">
+                  <div className="space-y-3">
                     {(() => {
-                      const all = [...premiumOptionsEs.female, ...premiumOptionsEs.male];
-                      const femaleIds = new Set(premiumOptionsEs.female.map(v => v.id));
+                      // Combine voices based on language filter
+                      const getVoicesForLang = (targetLang: 'es' | 'en') => {
+                        const opts = targetLang === 'es' ? premiumOptionsEs : premiumOptionsEn;
+                        const femaleIds = new Set(opts.female.map(v => v.id));
+                        return [...opts.female, ...opts.male].map(v => ({
+                          ...v,
+                          isFemale: femaleIds.has(v.id),
+                          voiceLang: targetLang,
+                        }));
+                      };
+
+                      let allVoices: Array<ElevenLabsVoice & { isFemale: boolean; voiceLang: 'es' | 'en' }> = [];
+                      
+                      if (voiceFilter.lang === 'all' || voiceFilter.lang === 'es') {
+                        allVoices = [...allVoices, ...getVoicesForLang('es')];
+                      }
+                      if (voiceFilter.lang === 'all' || voiceFilter.lang === 'en') {
+                        allVoices = [...allVoices, ...getVoicesForLang('en')];
+                      }
+
+                      // Filter by gender
+                      if (voiceFilter.gender !== 'all') {
+                        allVoices = allVoices.filter(v => 
+                          voiceFilter.gender === 'female' ? v.isFemale : !v.isFemale
+                        );
+                      }
+
                       const getSubtitle = (v: ElevenLabsVoice) =>
                         v.labels?.accent || v.labels?.description || v.description || '';
 
-                      // Loading/empty state
+                      // Loading state
                       if (elevenLabsVoicesQuery.isLoading) {
                         return (
-                          <div className="text-xs text-muted-foreground flex items-center gap-2">
-                            <Loader2 className="h-3 w-3 animate-spin" />
+                          <div className="text-xs text-muted-foreground flex items-center gap-2 justify-center py-8">
+                            <Loader2 className="h-4 w-4 animate-spin" />
                             {language === 'es' ? 'Cargando voces…' : 'Loading voices…'}
                           </div>
                         );
                       }
-                      if (elevenLabsVoicesQuery.isError || all.length === 0) {
+                      
+                      if (elevenLabsVoicesQuery.isError || allVoices.length === 0) {
                         return (
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-muted-foreground text-center py-8">
                             {language === 'es'
-                              ? 'No pude cargar voces premium. Usando lista local (limitada).'
-                              : 'Could not load premium voices. Falling back to local list.'}
+                              ? 'No hay voces con estos filtros.'
+                              : 'No voices match these filters.'}
                           </div>
                         );
                       }
 
-                      return all.map((voice) => {
-                        const isSelected = selectedPremiumEs === voice.id;
-                        const isFemale = femaleIds.has(voice.id);
+                      // Group by language for display
+                      const esVoices = allVoices.filter(v => v.voiceLang === 'es');
+                      const enVoices = allVoices.filter(v => v.voiceLang === 'en');
+
+                      const renderVoiceItem = (voice: typeof allVoices[0]) => {
+                        const isSelected = voice.voiceLang === 'es' 
+                          ? selectedPremiumEs === voice.id 
+                          : selectedPremiumEn === voice.id;
                         const isTesting = isTestingPremiumVoice === voice.id;
+                        
+                        return (
+                          <div key={`${voice.voiceLang}-${voice.id}`} className="flex items-center gap-2">
+                            <button
+                              onClick={() => voicePrefs.setPremiumVoiceIdForLang(voice.voiceLang, isSelected ? null : voice.id)}
+                              className={`flex-1 flex items-center gap-2 p-2 rounded-lg border text-left transition-all ${
+                                isSelected 
+                                  ? 'bg-primary text-primary-foreground border-primary' 
+                                  : 'bg-background hover:bg-muted border-border'
+                              }`}
+                            >
+                              <span>{voice.isFemale ? '👩' : '👨'}</span>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium truncate">{voice.name}</p>
+                                <p className={`text-[10px] ${isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                                  {getSubtitle(voice) || (voice.voiceLang === 'es' ? 'Acento LATAM' : 'English')}
+                                </p>
+                              </div>
+                              {isSelected && <span className="text-xs">✓</span>}
+                            </button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-9 w-9 shrink-0"
+                              disabled={isTesting}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                testPremiumVoice(voice.id, voice.voiceLang);
+                              }}
+                            >
+                              {isTesting ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Play className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        );
+                      };
+
                       return (
-                        <div key={voice.id} className="flex items-center gap-2">
-                          <button
-                            onClick={() => voicePrefs.setPremiumVoiceIdForLang('es', isSelected ? null : voice.id)}
-                            className={`flex-1 flex items-center gap-2 p-2 rounded-lg border text-left transition-all ${
-                              isSelected 
-                                ? 'bg-primary text-primary-foreground border-primary' 
-                                : 'bg-background hover:bg-muted border-border'
-                            }`}
-                          >
-                            <span>{isFemale ? '👩' : '👨'}</span>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium truncate">{voice.name}</p>
-                              <p className={`text-[10px] ${isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                                {getSubtitle(voice) || (language === 'es' ? 'Acento LATAM' : 'Voice')}
-                              </p>
+                        <>
+                          {esVoices.length > 0 && (
+                            <div className="space-y-2">
+                              <Label className="text-xs font-medium flex items-center gap-1 sticky top-0 bg-amber-500/5 py-1">
+                                🌎 {language === 'es' ? 'Español (Latinoamérica)' : 'Spanish (Latin America)'}
+                                <Badge variant="outline" className="text-[9px] ml-auto">{esVoices.length}</Badge>
+                              </Label>
+                              <div className="grid grid-cols-1 gap-2">
+                                {esVoices.map(renderVoiceItem)}
+                              </div>
                             </div>
-                            {isSelected && <span className="text-xs">✓</span>}
-                          </button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-9 w-9 shrink-0"
-                            disabled={isTesting}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              testPremiumVoice(voice.id, 'es');
-                            }}
-                          >
-                            {isTesting ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Play className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
+                          )}
+                          
+                          {enVoices.length > 0 && (
+                            <div className="space-y-2">
+                              <Label className="text-xs font-medium flex items-center gap-1 sticky top-0 bg-amber-500/5 py-1">
+                                🌍 {language === 'es' ? 'Inglés (Norteamérica)' : 'English (North America)'}
+                                <Badge variant="outline" className="text-[9px] ml-auto">{enVoices.length}</Badge>
+                              </Label>
+                              <div className="grid grid-cols-1 gap-2">
+                                {enVoices.map(renderVoiceItem)}
+                              </div>
+                            </div>
+                          )}
+                        </>
                       );
-                      });
                     })()}
                   </div>
-                </div>
+                </ScrollArea>
 
-                {/* English Voices */}
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium flex items-center gap-1">
-                    🌍 {language === 'es' ? 'Inglés (Norteamérica)' : 'English (North America)'}
-                  </Label>
-                  <div className="grid grid-cols-1 gap-2">
-                    {(() => {
-                      const all = [...premiumOptionsEn.female, ...premiumOptionsEn.male];
-                      const femaleIds = new Set(premiumOptionsEn.female.map(v => v.id));
-                      const getSubtitle = (v: ElevenLabsVoice) =>
-                        v.labels?.accent || v.labels?.description || v.description || '';
-
-                      if (elevenLabsVoicesQuery.isLoading) {
-                        return null;
-                      }
-                      if (elevenLabsVoicesQuery.isError || all.length === 0) {
-                        return null;
-                      }
-
-                      return all.map((voice) => {
-                        const isSelected = selectedPremiumEn === voice.id;
-                        const isFemale = femaleIds.has(voice.id);
-                        const isTesting = isTestingPremiumVoice === voice.id;
-                      return (
-                        <div key={voice.id} className="flex items-center gap-2">
-                          <button
-                            onClick={() => voicePrefs.setPremiumVoiceIdForLang('en', isSelected ? null : voice.id)}
-                            className={`flex-1 flex items-center gap-2 p-2 rounded-lg border text-left transition-all ${
-                              isSelected 
-                                ? 'bg-primary text-primary-foreground border-primary' 
-                                : 'bg-background hover:bg-muted border-border'
-                            }`}
-                          >
-                            <span>{isFemale ? '👩' : '👨'}</span>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium truncate">{voice.name}</p>
-                              <p className={`text-[10px] ${isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                                {getSubtitle(voice) || (language === 'es' ? 'Inglés' : 'English')}
-                              </p>
-                            </div>
-                            {isSelected && <span className="text-xs">✓</span>}
-                          </button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-9 w-9 shrink-0"
-                            disabled={isTesting}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              testPremiumVoice(voice.id, 'en');
-                            }}
-                          >
-                            {isTesting ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Play className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                      );
-                      });
-                    })()}
+                {(selectedPremiumEs || selectedPremiumEn) && (
+                  <div className="pt-2 border-t border-amber-500/20">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => {
+                        voicePrefs.setPremiumVoiceIdForLang('es', null);
+                        voicePrefs.setPremiumVoiceIdForLang('en', null);
+                      }}
+                    >
+                      {language === 'es' ? '✕ Usar voz automática' : '✕ Use automatic voice'}
+                    </Button>
                   </div>
-                </div>
-
-                {selectedForCurrentLang && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full"
-                    onClick={() => voicePrefs.setPremiumVoiceIdForLang(currentLang, null)}
-                  >
-                    {language === 'es' ? '✕ Usar voz automática' : '✕ Use automatic voice'}
-                  </Button>
                 )}
               </div>
             </CollapsibleContent>
