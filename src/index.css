@@ -2763,3 +2763,52 @@
   @apply hover:bg-muted transition-colors;
   min-height: var(--mobile-touch-target);
 }
+
+/* ================================================================
+   MOBILE MENU - Professional Native-Level Styling
+   ================================================================ */
+
+/* Clean section cards with subtle background */
+.mobile-menu-section {
+  @apply rounded-xl p-3;
+  @apply bg-card border border-border/50;
+  @apply shadow-sm;
+}
+
+/* Section title - clean and minimal */
+.mobile-menu-section-title {
+  @apply flex items-center gap-2 px-1 mb-2;
+  @apply text-xs font-semibold uppercase tracking-wider;
+  @apply text-muted-foreground;
+}
+
+.mobile-menu-section-title span:first-child {
+  @apply text-sm;
+}
+
+/* Clean navigation items */
+.mobile-menu-item {
+  @apply flex items-center gap-3 w-full px-3 py-2.5;
+  @apply rounded-lg;
+  @apply text-sm font-medium;
+  @apply text-foreground;
+  @apply transition-all duration-150;
+  min-height: var(--mobile-touch-target);
+}
+
+.mobile-menu-item:hover {
+  @apply bg-muted;
+}
+
+.mobile-menu-item:active {
+  @apply scale-[0.98];
+}
+
+/* Active state for menu items */
+.mobile-menu-item-active {
+  @apply bg-primary/10 text-primary;
+}
+
+.mobile-menu-item-active:hover {
+  @apply bg-primary/15;
+}

@@ -55,6 +55,7 @@ import { useUnreadNotifications } from '@/hooks/data/useUnreadNotifications';
 import { ThemeBackground } from '@/components/ThemeBackground';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Link } from 'react-router-dom';
+import { MobileMenuEntitySelector, MobileMenuLanguageSelector } from '@/components/mobile';
 import { EntitySelector } from '@/components/EntitySelector';
 import { useGlobalReminders } from '@/hooks/utils/useGlobalReminders';
 import { ContactForm } from '@/components/ContactForm';
@@ -296,101 +297,100 @@ export const Layout = ({ children }: LayoutProps) => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[280px] p-0">
-                <div className="flex flex-col h-full">
-                  <div className="p-4 border-b flex items-center justify-between">
-                    <span className="font-semibold">{t('nav.menu') || 'Menú'}</span>
-                    <SheetClose asChild>
-                      <Button variant="ghost" size="icon">
-                        <X className="h-5 w-5" />
-                      </Button>
-                    </SheetClose>
+              <SheetContent side="right" className="w-[300px] p-0 flex flex-col">
+                {/* Header - Clean and Professional */}
+                <div className="sticky top-0 z-10 bg-background border-b px-4 py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <PhoenixLogo variant="mini" />
+                    <span className="font-semibold text-lg">{t('nav.menu') || 'Menú'}</span>
                   </div>
-                  
-                  <nav className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {/* Entity Selector for Mobile */}
-                    <div className="pb-2">
-                      <EntitySelector collapsed={false} />
-                    </div>
-                    
-                    {NAV_SECTIONS.map((section) => {
-                      const theme = sectionThemes[section.themeKey];
-                      return (
-                        <div key={section.titleKey} className={cn(
-                          "rounded-xl p-3 transition-all duration-300",
-                          `bg-gradient-to-br ${theme.gradient}`,
-                          `border ${theme.border}`
-                        )}>
-                          <h3 className={cn(
-                            "px-2 mb-2 text-sm font-bold flex items-center gap-2",
-                            theme.text
-                          )}>
-                            <span className="text-base">{section.emoji}</span>
-                            <span className="uppercase tracking-wider text-xs">{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
-                          </h3>
-                          <div className="space-y-1">
-                            {section.items.map((item) => {
-                              const Icon = item.icon;
-                              const isActive = location.pathname === item.path;
-                              // Determine badge for mobile menu
-                              let badgeText: string | null = null;
-                              if ('badgeType' in item && item.badgeType === 'tax') {
-                                badgeText = taxBadge;
-                              } else if ('badgeKey' in item && item.badgeKey) {
-                                badgeText = t(item.badgeKey);
-                              } else if ('badge' in item) {
-                                badgeText = item.badge;
-                              }
-                              return (
-                                <button
-                                  key={item.path}
-                                  onClick={() => {
-                                    navigate(item.path);
-                                    setMobileMenuOpen(false);
-                                  }}
-                                  className={cn(
-                                    'nav-item w-full',
-                                    isActive && 'active'
-                                  )}
-                                >
-                                  <span className={cn(
-                                    "flex items-center justify-center w-7 h-7 rounded-lg transition-transform duration-200 hover:scale-110",
-                                    isActive ? "bg-primary-foreground/20" : theme.iconWrapper
-                                  )}>
-                                    <Icon className={cn("h-4 w-4", isActive ? "text-primary-foreground" : theme.iconColor)} />
-                                  </span>
-                                  <span className="flex-1 text-left">{t(item.label)}</span>
-                                  {badgeText && (
-                                    <Badge 
-                                      variant="secondary" 
-                                      className="text-[10px] px-1.5 py-0"
-                                    >
-                                      {badgeText}
-                                    </Badge>
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </nav>
-
-                  <div className="border-t p-4 space-y-3">
-                    <LanguageSelector />
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start text-destructive hover:text-destructive" 
-                      onClick={() => {
-                        signOut();
-                        setMobileMenuOpen(false);
-                      }}
-                    >
-                      <LogOut className="h-5 w-5 mr-2" />
-                      {t('layout.logout')}
+                  <SheetClose asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <X className="h-5 w-5" />
                     </Button>
-                  </div>
+                  </SheetClose>
+                </div>
+                
+                {/* Scrollable Content */}
+                <nav className="flex-1 overflow-y-auto p-4 space-y-4">
+                  {/* Simplified Entity Selector */}
+                  <MobileMenuEntitySelector onNavigate={() => setMobileMenuOpen(false)} />
+                  
+                  {/* Navigation Sections - Clean Cards */}
+                  {NAV_SECTIONS.map((section) => (
+                    <div key={section.titleKey} className="mobile-menu-section">
+                      {/* Section Title */}
+                      <h3 className="mobile-menu-section-title">
+                        <span>{section.emoji}</span>
+                        <span>{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
+                      </h3>
+                      
+                      {/* Navigation Items */}
+                      <div className="space-y-0.5">
+                        {section.items.map((item) => {
+                          const Icon = item.icon;
+                          const isActive = location.pathname === item.path;
+                          
+                          // Determine badge for mobile menu
+                          let badgeText: string | null = null;
+                          if ('badgeType' in item && item.badgeType === 'tax') {
+                            badgeText = taxBadge;
+                          } else if ('badgeKey' in item && item.badgeKey) {
+                            badgeText = t(item.badgeKey);
+                          } else if ('badge' in item) {
+                            badgeText = item.badge;
+                          }
+                          
+                          return (
+                            <button
+                              key={item.path}
+                              onClick={() => {
+                                navigate(item.path);
+                                setMobileMenuOpen(false);
+                              }}
+                              className={cn(
+                                'mobile-menu-item',
+                                isActive && 'mobile-menu-item-active'
+                              )}
+                            >
+                              <Icon className={cn(
+                                "h-5 w-5 shrink-0",
+                                isActive ? "text-primary" : "text-muted-foreground"
+                              )} />
+                              <span className="flex-1 text-left truncate">{t(item.label)}</span>
+                              {badgeText && (
+                                <Badge 
+                                  variant="secondary" 
+                                  className="text-[10px] px-1.5 py-0 shrink-0"
+                                >
+                                  {badgeText}
+                                </Badge>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </nav>
+
+                {/* Footer - Fixed at Bottom */}
+                <div className="border-t bg-background p-4 space-y-3 safe-area-bottom">
+                  {/* Language Selector - Full Width with Flag */}
+                  <MobileMenuLanguageSelector />
+                  
+                  {/* Logout Button - Clean and Professional */}
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start h-12 text-destructive hover:text-destructive hover:bg-destructive/10" 
+                    onClick={() => {
+                      signOut();
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <LogOut className="h-5 w-5 mr-3" />
+                    {t('layout.logout')}
+                  </Button>
                 </div>
               </SheetContent>
             </Sheet>
