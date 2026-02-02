@@ -419,7 +419,7 @@ export const ChatAssistant: React.FC = () => {
         toast.info(notifyMsg);
       }
 
-      // Build context for the centralized processor
+      // Build context for the simplified IA-First processor
       const processorContext = {
         language: language as 'es' | 'en',
         isOnboardingMicTest,
@@ -427,29 +427,10 @@ export const ChatAssistant: React.FC = () => {
         isAwaitingClarification: conversationState.isAwaitingClarification,
         pendingClarificationOptions: conversationState.context?.options,
         currentPath: location.pathname,
-        clients: clients?.map(c => ({ id: c.id, name: c.name })),
-        checkCustomShortcut: voicePrefs.checkCustomShortcut,
         checkLanguageCommand: langDetection.checkLanguageCommand,
         processConfirmation: voiceConfirmation.processConfirmationVoice,
         processClarificationResponse: (userText: string) => 
           conversationState.processClarificationResponse(userText, language as 'es' | 'en'),
-        findTutorial,
-        getPageContext: getCurrentPageContext,
-        financialData: {
-          monthlyExpenses,
-          yearlyExpenses,
-          monthlyIncome,
-          yearlyIncome,
-          balance,
-          clientCount: clients?.length || 0,
-          projectCount: projects?.length || 0,
-          pendingReceipts,
-          biggestExpense: biggestExpense ? { amount: Number(biggestExpense.amount), vendor: biggestExpense.vendor } : null,
-          topCategory: topCategory ? { category: topCategory[0], amount: topCategory[1] } : null,
-          deductibleTotal,
-          billableTotal,
-          estimatedTaxOwed,
-        },
       };
 
       // Use centralized processor (clear priority chain, no conflicts)
@@ -527,183 +508,13 @@ export const ChatAssistant: React.FC = () => {
           }
           return;
 
-        case 'clarification-unclear':
+        case 'stop-command':
+          // Stop all voice activity
           setInput('');
-          // User's response to clarification wasn't understood - ask again
-          const unclearMsg: Message = { role: 'assistant', content: result.response };
-          setMessages(prev => [...prev, unclearMsg]);
-          speak(result.response);
+          window.speechSynthesis.cancel();
+          audioPlayback.stop();
+          elevenLabsTTS.stop();
           voicePrefs.playSound('notification');
-          return;
-
-        case 'custom-shortcut':
-          setInput('');
-          voicePrefs.trackAction(`shortcut_${result.name}`);
-          respondWithMessage(text, result.name, 'success');
-          navigate(result.route);
-          if (result.action) {
-            setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('voice-command-action', { detail: { action: result.action } }));
-            }, 500);
-          }
-          return;
-
-        case 'tutorial':
-          setInput('');
-          triggerHapticFeedback('light');
-          // Find tutorial by the ID returned from processor, then by text, then by current page
-          const tutorialMatch = findTutorial(result.tutorialId) || findTutorial(text) || getTutorialForCurrentPage();
-          if (tutorialMatch) {
-            setActiveTutorial(tutorialMatch.id);
-            setCurrentTutorialStep(0);
-            const tutorialResponse = formatTutorialForSpeech(tutorialMatch);
-            respondWithMessage(text, tutorialResponse);
-            // Auto-minimize to bubble mode so user can see the app while following tutorial
-            setTimeout(() => autoMinimizeToBubble(), 1500);
-          } else {
-            // Fallback: if no tutorial found even for current page, give page context instead
-            const pageCtx = getCurrentPageContext();
-            const fallbackResponse = language === 'es'
-              ? `${pageCtx.description} ¿Hay algo específico que quieras saber?`
-              : `${pageCtx.description} Is there something specific you'd like to know?`;
-            respondWithMessage(text, fallbackResponse);
-          }
-          return;
-
-        case 'expense-creation':
-          setInput('');
-          if (result.data) {
-            createExpense.mutate({
-              amount: result.data.amount,
-              vendor: result.data.vendor,
-              category: result.data.category,
-              date: new Date().toISOString().split('T')[0],
-              status: 'pending',
-              reimbursement_type: 'pending_classification',
-              // user_id is automatically added by useCreateExpense hook
-            }, {
-              onSuccess: () => {
-                const confirmMsg = language === 'es'
-                  ? `Gasto creado: $${result.data!.amount} en ${result.data!.vendor}, categoría ${result.data!.category}.`
-                  : `Expense created: $${result.data!.amount} at ${result.data!.vendor}, category ${result.data!.category}.`;
-                respondWithMessage(text, confirmMsg, 'success');
-                toast.success(language === 'es' ? 'Gasto creado por voz' : 'Expense created by voice');
-                setTimeout(() => {
-                  const suggestion = getPostActionSuggestion('expense_created');
-                  if (suggestion) {
-                    const suggestionMsg: Message = { role: 'assistant', content: `💡 ${suggestion}` };
-                    setMessages(prev => [...prev, suggestionMsg]);
-                  }
-                }, 1500);
-              },
-              onError: () => {
-                const errorMsg = language === 'es'
-                  ? 'No pude crear el gasto. Intenta de nuevo.'
-                  : 'Could not create the expense. Please try again.';
-                speak(errorMsg);
-                voicePrefs.playSound('error');
-              }
-            });
-          }
-          return;
-
-        case 'income-creation':
-          setInput('');
-          if (result.data) {
-            createIncome.mutate({
-              amount: result.data.amount,
-              currency: 'CAD',
-              date: new Date(),
-              income_type: result.data.incomeType,
-              source: result.data.source || undefined,
-              description: result.data.source || undefined,
-              recurrence: 'one_time',
-              is_taxable: true,
-            }, {
-              onSuccess: () => {
-                const incomeTypeLabel = result.data!.incomeType === 'client_payment' 
-                  ? (language === 'es' ? 'pago de cliente' : 'client payment')
-                  : result.data!.incomeType === 'salary' 
-                    ? (language === 'es' ? 'salario' : 'salary')
-                    : result.data!.incomeType === 'freelance' 
-                      ? 'freelance' 
-                      : result.data!.incomeType;
-                const confirmMsg = language === 'es'
-                  ? `Ingreso registrado: $${result.data!.amount}${result.data!.source ? ` de ${result.data!.source}` : ''}, tipo: ${incomeTypeLabel}.`
-                  : `Income recorded: $${result.data!.amount}${result.data!.source ? ` from ${result.data!.source}` : ''}, type: ${incomeTypeLabel}.`;
-                respondWithMessage(text, confirmMsg, 'success');
-                toast.success(language === 'es' ? 'Ingreso creado por voz' : 'Income created by voice');
-                setTimeout(() => {
-                  const suggestion = getPostActionSuggestion('income_created');
-                  if (suggestion) {
-                    const suggestionMsg: Message = { role: 'assistant', content: `💡 ${suggestion}` };
-                    setMessages(prev => [...prev, suggestionMsg]);
-                  }
-                }, 1500);
-              },
-              onError: () => {
-                const errorMsg = language === 'es'
-                  ? 'No pude registrar el ingreso. Intenta de nuevo.'
-                  : 'Could not create the income. Please try again.';
-                speak(errorMsg);
-                voicePrefs.playSound('error');
-              }
-            });
-          }
-          return;
-
-        case 'page-context':
-          // Use REAL current path from location, not from result (which may be stale after navigation)
-          const actualCurrentPath = location.pathname;
-          const actualPageContext = getCurrentPageContext();
-          const contextResponse = language === 'es'
-            ? `${actualPageContext.description} Dime "agregar" para crear algo, "muéstrame" para navegar, o "abre el cliente NOMBRE" para acceder a un cliente específico.`
-            : `${actualPageContext.description} Say "add" to create something, "show me" to navigate, or "open client NAME" to access a specific client.`;
-          respondWithMessage(text, contextResponse);
-          if (isHighlightEnabled) {
-            const highlights = getNavigationHighlights(actualCurrentPath, language as 'es' | 'en');
-            if (highlights.length > 0) {
-              setTimeout(() => highlight(highlights), 500);
-            }
-          }
-          return;
-
-        case 'open-client':
-          respondWithMessage(text, result.response, 'success');
-          navigate('/clients');
-          setTimeout(() => {
-            window.dispatchEvent(
-              new CustomEvent('voice-command-action', {
-                detail: { action: 'open-client', clientId: result.clientId },
-              })
-            );
-          }, 650);
-          return;
-
-        case 'navigation':
-          triggerHapticFeedback('medium');
-          voicePrefs.trackAction('navigation');
-          respondWithMessage(text, result.response, 'success');
-          navigate(result.route);
-          // Auto-minimize to bubble mode when navigating so user can see the destination
-          setTimeout(() => autoMinimizeToBubble(), 800);
-          if (result.action) {
-            setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('voice-command-action', { detail: { action: result.action } }));
-            }, 500);
-          }
-          if (isHighlightEnabled) {
-            setTimeout(() => {
-              const navHighlights = getNavigationHighlights(result.route, language as 'es' | 'en');
-              if (navHighlights.length > 0) highlight(navHighlights);
-            }, 800);
-          }
-          return;
-
-        case 'data-query':
-          triggerHapticFeedback('light');
-          voicePrefs.trackAction('query');
-          respondWithMessage(text, result.response);
           return;
 
         case 'ai-fallback':
