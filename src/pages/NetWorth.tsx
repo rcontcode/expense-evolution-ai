@@ -134,7 +134,7 @@ export default function NetWorth() {
 
   return (
     <Layout>
-      <div className="page-container section-gap">
+      <div className="page-container section-gap overflow-x-hidden">
         {/* Header */}
         <PageHeader
           title={language === 'es' ? 'Patrimonio Neto' : 'Net Worth'}

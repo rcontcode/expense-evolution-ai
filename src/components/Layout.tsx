@@ -316,14 +316,14 @@ export const Layout = ({ children }: LayoutProps) => {
                   <MobileMenuEntitySelector onNavigate={() => setMobileMenuOpen(false)} />
                 </div>
                 
-                {/* Quick Access Grid - 4 columns */}
-                <div className="px-3 py-2.5 bg-muted/30">
+                {/* Quick Access Grid - 4 columns with vibrant 3D icons */}
+                <div className="px-3 py-2.5 bg-gradient-to-r from-muted/50 via-muted/30 to-muted/50">
                   <div className="grid grid-cols-4 gap-1.5">
                     {[
-                      { icon: LayoutDashboard, label: language === 'es' ? 'Panel' : 'Home', path: '/dashboard', color: 'text-amber-500' },
-                      { icon: Receipt, label: language === 'es' ? 'Gastos' : 'Expenses', path: '/expenses', color: 'text-red-500' },
-                      { icon: TrendingUp, label: language === 'es' ? 'Ingresos' : 'Income', path: '/income', color: 'text-emerald-500' },
-                      { icon: Inbox, label: language === 'es' ? 'Inbox' : 'Inbox', path: '/chaos', color: 'text-blue-500' },
+                      { icon: LayoutDashboard, label: language === 'es' ? 'Panel' : 'Home', path: '/dashboard', gradient: 'from-amber-400 via-orange-500 to-red-500', shadow: 'shadow-amber-500/40' },
+                      { icon: Receipt, label: language === 'es' ? 'Gastos' : 'Expenses', path: '/expenses', gradient: 'from-red-400 via-rose-500 to-pink-500', shadow: 'shadow-red-500/40' },
+                      { icon: TrendingUp, label: language === 'es' ? 'Ingresos' : 'Income', path: '/income', gradient: 'from-emerald-400 via-green-500 to-teal-500', shadow: 'shadow-emerald-500/40' },
+                      { icon: Inbox, label: language === 'es' ? 'Inbox' : 'Inbox', path: '/chaos', gradient: 'from-blue-400 via-cyan-500 to-sky-500', shadow: 'shadow-blue-500/40' },
                     ].map((item) => {
                       const Icon = item.icon;
                       const isActive = location.pathname === item.path;
@@ -332,14 +332,23 @@ export const Layout = ({ children }: LayoutProps) => {
                           key={item.path}
                           onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                           className={cn(
-                            "flex flex-col items-center gap-1 py-2 px-1 rounded-lg transition-all",
+                            "flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl transition-all",
                             isActive 
-                              ? "bg-primary text-primary-foreground shadow-md" 
-                              : "bg-background hover:bg-muted border border-border/50"
+                              ? "bg-background shadow-lg border border-primary/30 scale-[1.02]" 
+                              : "bg-background/70 hover:bg-background border border-border/40 hover:scale-[1.02]"
                           )}
                         >
-                          <Icon className={cn("h-5 w-5", isActive ? "text-primary-foreground" : item.color)} />
-                          <span className={cn("text-[10px] font-semibold leading-tight", isActive ? "text-primary-foreground" : "text-foreground")}>
+                          <div className={cn(
+                            "w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br shadow-md",
+                            item.gradient,
+                            item.shadow
+                          )}>
+                            <Icon className="h-4 w-4 text-white drop-shadow-sm" />
+                          </div>
+                          <span className={cn(
+                            "text-[10px] font-semibold leading-tight",
+                            isActive ? "text-primary" : "text-foreground"
+                          )}>
                             {item.label}
                           </span>
                         </button>
@@ -348,43 +357,69 @@ export const Layout = ({ children }: LayoutProps) => {
                   </div>
                 </div>
                 
-                {/* All Menu Items - Grouped & Compact */}
-                <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
-                  {NAV_SECTIONS.slice(1).map((section) => (
-                    <div key={section.titleKey}>
-                      {/* Section Header */}
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <span className="text-sm">{section.emoji}</span>
-                        <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-                          {t(section.titleKey).replace(/^[^\s]+\s/, '')}
-                        </span>
+                {/* All Menu Items - Grouped & Compact with Visual Warmth */}
+                <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
+                  {NAV_SECTIONS.slice(1).map((section) => {
+                    const theme = sectionThemes[section.themeKey];
+                    return (
+                      <div 
+                        key={section.titleKey}
+                        className={cn(
+                          "rounded-lg p-2 border transition-all",
+                          theme.gradient,
+                          theme.border,
+                          "bg-gradient-to-r backdrop-blur-sm"
+                        )}
+                      >
+                        {/* Section Header with icon accent */}
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={cn(
+                            "w-5 h-5 rounded-md flex items-center justify-center text-[10px]",
+                            theme.iconWrapper
+                          )}>
+                            <span className="drop-shadow-sm">{section.emoji}</span>
+                          </div>
+                          <span className={cn("text-[11px] font-bold uppercase tracking-wider", theme.text)}>
+                            {t(section.titleKey).replace(/^[^\s]+\s/, '')}
+                          </span>
+                        </div>
+                        
+                        {/* Items Grid - 2 columns with better styling */}
+                        <div className="grid grid-cols-2 gap-1">
+                          {section.items.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = location.pathname === item.path;
+                            
+                            return (
+                              <button
+                                key={item.path}
+                                onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
+                                className={cn(
+                                  "flex items-center gap-1.5 px-2 py-1.5 rounded-md transition-all text-left",
+                                  isActive 
+                                    ? cn("bg-background/90 shadow-sm border", theme.border, theme.text)
+                                    : "hover:bg-background/60 text-foreground"
+                                )}
+                              >
+                                <div className={cn(
+                                  "w-5 h-5 rounded flex items-center justify-center shrink-0",
+                                  isActive ? theme.iconWrapper : "bg-muted"
+                                )}>
+                                  <Icon className={cn("h-3 w-3", isActive ? "text-white" : "text-muted-foreground")} />
+                                </div>
+                                <span className={cn(
+                                  "text-[11px] font-medium truncate",
+                                  isActive && theme.text
+                                )}>
+                                  {t(item.label)}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                      
-                      {/* Items Grid - 2 columns for better density */}
-                      <div className="grid grid-cols-2 gap-1">
-                        {section.items.map((item) => {
-                          const Icon = item.icon;
-                          const isActive = location.pathname === item.path;
-                          
-                          return (
-                            <button
-                              key={item.path}
-                              onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
-                              className={cn(
-                                "flex items-center gap-1.5 px-2 py-1.5 rounded-md transition-all text-left",
-                                isActive 
-                                  ? "bg-primary/15 text-primary border border-primary/30" 
-                                  : "hover:bg-muted text-foreground"
-                              )}
-                            >
-                              <Icon className={cn("h-3.5 w-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
-                              <span className="text-[11px] font-medium truncate">{t(item.label)}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </nav>
 
                 {/* Footer - Language + Logout */}
