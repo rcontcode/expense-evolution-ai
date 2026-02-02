@@ -30,41 +30,37 @@ export function MobileMenuLanguageSelector() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
+          size="sm"
           className={cn(
-            "w-full justify-between h-12",
-            "bg-muted/50 hover:bg-muted",
-            "border-border/50"
+            "w-full justify-between h-10 px-3",
+            "bg-background hover:bg-muted",
+            "border border-border/50 rounded-lg"
           )}
         >
-          <div className="flex items-center gap-3">
-            <span className="text-xl">{currentLang.flag}</span>
-            <span className="font-medium">{currentLang.name}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-base">{currentLang.flag}</span>
+            <span className="text-xs font-medium">{currentLang.shortCode}</span>
           </div>
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          <ChevronDown className="h-3 w-3 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[200px]">
+      <DropdownMenuContent align="start" className="w-[160px]">
         {Object.entries(languageConfig).map(([code, config]) => (
           <DropdownMenuItem
             key={code}
             onClick={() => setLanguage(code as 'es' | 'en')}
             className={cn(
-              "flex items-center justify-between py-3 cursor-pointer",
-              language === code && "bg-muted"
+              "flex items-center justify-between py-2 cursor-pointer",
+              language === code && "bg-primary/10"
             )}
           >
-            <div className="flex items-center gap-3">
-              <span className="text-xl">{config.flag}</span>
-              <span className={cn(
-                "font-medium",
-                language === code && "font-bold"
-              )}>
-                {config.name}
-              </span>
+            <div className="flex items-center gap-2">
+              <span className="text-base">{config.flag}</span>
+              <span className="text-sm">{config.name}</span>
             </div>
             {language === code && (
-              <Check className="h-4 w-4 text-primary" />
+              <Check className="h-3 w-3 text-primary" />
             )}
           </DropdownMenuItem>
         ))}
