@@ -41,7 +41,7 @@ export function MobileMenuEntitySelector({ onNavigate }: MobileMenuEntitySelecto
   };
 
   if (isLoading) {
-    return <Skeleton className="h-14 w-full rounded-xl" />;
+    return <Skeleton className="h-10 w-full rounded-lg" />;
   }
 
   // No entities - show setup prompt
@@ -50,51 +50,42 @@ export function MobileMenuEntitySelector({ onNavigate }: MobileMenuEntitySelecto
       <button
         onClick={handleClick}
         className={cn(
-          "w-full flex items-center gap-3 px-4 py-3",
-          "bg-muted/50 hover:bg-muted rounded-xl",
-          "border-2 border-dashed border-primary/30 hover:border-primary/50",
-          "transition-all duration-200 min-h-[52px]",
+          "w-full flex items-center gap-2 px-3 py-2",
+          "bg-primary/10 hover:bg-primary/20 rounded-lg",
+          "border border-dashed border-primary/40",
+          "transition-all duration-200",
           "active:scale-[0.98]"
         )}
       >
-        <span className="text-2xl">🌍</span>
-        <div className="flex-1 text-left">
-          <p className="text-sm font-medium text-muted-foreground">
-            {language === 'es' ? 'Configurar Jurisdicción' : 'Set Up Jurisdiction'}
-          </p>
-        </div>
-        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        <span className="text-lg">🌍</span>
+        <span className="flex-1 text-left text-xs font-medium text-primary">
+          {language === 'es' ? 'Configurar' : 'Set Up'}
+        </span>
+        <ChevronRight className="h-4 w-4 text-primary" />
       </button>
     );
   }
-
-  const entityTypeLabel = primaryEntity 
-    ? entityTypeLabels[primaryEntity.entity_type]?.[language] || primaryEntity.entity_type
-    : '';
 
   return (
     <button
       onClick={handleClick}
       className={cn(
-        "w-full flex items-center gap-3 px-4 py-3",
-        "bg-muted/50 hover:bg-muted rounded-xl",
-        "border border-border/50",
-        "transition-all duration-200 min-h-[52px]",
+        "w-full flex items-center gap-2 px-3 py-2",
+        "bg-gradient-to-r from-primary/5 to-cyan-500/5 hover:from-primary/10 hover:to-cyan-500/10",
+        "rounded-lg border border-primary/20",
+        "transition-all duration-200",
         "active:scale-[0.98]"
       )}
     >
-      <span className="text-2xl">
+      <span className="text-lg">
         {primaryEntity ? countryFlags[primaryEntity.country] || '🌍' : '🌍'}
       </span>
       <div className="flex-1 text-left min-w-0">
-        <p className="text-sm font-semibold truncate">
+        <p className="text-xs font-semibold truncate">
           {primaryEntity?.name || (language === 'es' ? 'Sin configurar' : 'Not configured')}
         </p>
-        <p className="text-xs text-muted-foreground truncate">
-          {entityTypeLabel}
-        </p>
       </div>
-      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
     </button>
   );
 }

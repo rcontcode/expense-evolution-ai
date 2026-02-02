@@ -297,99 +297,103 @@ export const Layout = ({ children }: LayoutProps) => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] p-0 flex flex-col">
-                {/* Header - Clean and Professional */}
-                <div className="sticky top-0 z-10 bg-background border-b px-4 py-4 flex items-center justify-between">
+              <SheetContent side="right" className="w-[280px] p-0 flex flex-col border-l-0">
+                {/* Header - Compact with Gradient */}
+                <div className="bg-gradient-to-r from-primary/10 via-cyan-500/10 to-purple-500/10 px-3 py-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <PhoenixLogo variant="mini" />
-                    <span className="font-semibold text-lg">{t('nav.menu') || 'Menú'}</span>
+                    <span className="font-bold text-base bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">EvoFinz</span>
                   </div>
                   <SheetClose asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <X className="h-5 w-5" />
+                    <Button variant="ghost" size="icon" className="h-7 w-7">
+                      <X className="h-4 w-4" />
                     </Button>
                   </SheetClose>
                 </div>
                 
-                {/* Scrollable Content */}
-                <nav className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {/* Simplified Entity Selector */}
+                {/* Entity Selector - Compact */}
+                <div className="px-3 py-2 border-b bg-muted/30">
                   <MobileMenuEntitySelector onNavigate={() => setMobileMenuOpen(false)} />
-                  
-                  {/* Navigation Sections - Clean Cards */}
-                  {NAV_SECTIONS.map((section) => (
-                    <div key={section.titleKey} className="mobile-menu-section">
-                      {/* Section Title */}
-                      <h3 className="mobile-menu-section-title">
-                        <span>{section.emoji}</span>
-                        <span>{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
-                      </h3>
-                      
-                      {/* Navigation Items */}
-                      <div className="space-y-0.5">
-                        {section.items.map((item) => {
-                          const Icon = item.icon;
-                          const isActive = location.pathname === item.path;
-                          
-                          // Determine badge for mobile menu
-                          let badgeText: string | null = null;
-                          if ('badgeType' in item && item.badgeType === 'tax') {
-                            badgeText = taxBadge;
-                          } else if ('badgeKey' in item && item.badgeKey) {
-                            badgeText = t(item.badgeKey);
-                          } else if ('badge' in item) {
-                            badgeText = item.badge;
-                          }
-                          
-                          return (
-                            <button
-                              key={item.path}
-                              onClick={() => {
-                                navigate(item.path);
-                                setMobileMenuOpen(false);
-                              }}
-                              className={cn(
-                                'mobile-menu-item',
-                                isActive && 'mobile-menu-item-active'
-                              )}
-                            >
-                              <Icon className={cn(
-                                "h-5 w-5 shrink-0",
-                                isActive ? "text-primary" : "text-muted-foreground"
-                              )} />
-                              <span className="flex-1 text-left truncate">{t(item.label)}</span>
-                              {badgeText && (
-                                <Badge 
-                                  variant="secondary" 
-                                  className="text-[10px] px-1.5 py-0 shrink-0"
-                                >
-                                  {badgeText}
-                                </Badge>
-                              )}
-                            </button>
-                          );
-                        })}
+                </div>
+                
+                {/* Scrollable Content - Ultra Compact */}
+                <nav className="flex-1 overflow-y-auto px-2 py-2">
+                  {NAV_SECTIONS.map((section, sectionIndex) => {
+                    const theme = sectionThemes[section.themeKey];
+                    return (
+                      <div key={section.titleKey} className={cn("mb-2", sectionIndex > 0 && "pt-1")}>
+                        {/* Section Title - Colored & Compact */}
+                        <div className={cn(
+                          "flex items-center gap-1.5 px-2 py-1 text-[11px] font-bold uppercase tracking-wider",
+                          theme.text
+                        )}>
+                          <span className="text-sm">{section.emoji}</span>
+                          <span>{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
+                        </div>
+                        
+                        {/* Items Grid - 2 columns for compactness */}
+                        <div className="grid grid-cols-2 gap-1">
+                          {section.items.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = location.pathname === item.path;
+                            
+                            return (
+                              <button
+                                key={item.path}
+                                onClick={() => {
+                                  navigate(item.path);
+                                  setMobileMenuOpen(false);
+                                }}
+                                className={cn(
+                                  "flex flex-col items-center justify-center gap-0.5 p-2 rounded-lg transition-all",
+                                  "hover:bg-muted active:scale-95",
+                                  isActive && cn(
+                                    "bg-gradient-to-br",
+                                    theme.gradient,
+                                    "ring-1",
+                                    theme.border
+                                  )
+                                )}
+                              >
+                                <div className={cn(
+                                  "p-1.5 rounded-lg",
+                                  isActive ? theme.iconWrapper : "bg-muted"
+                                )}>
+                                  <Icon className={cn(
+                                    "h-4 w-4",
+                                    isActive ? "text-white" : "text-muted-foreground"
+                                  )} />
+                                </div>
+                                <span className={cn(
+                                  "text-[10px] font-medium text-center leading-tight line-clamp-1",
+                                  isActive ? theme.text : "text-muted-foreground"
+                                )}>
+                                  {t(item.label).split(' ')[0]}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </nav>
 
-                {/* Footer - Fixed at Bottom */}
-                <div className="border-t bg-background p-4 space-y-3 safe-area-bottom">
-                  {/* Language Selector - Full Width with Flag */}
-                  <MobileMenuLanguageSelector />
-                  
-                  {/* Logout Button - Clean and Professional */}
+                {/* Footer - Compact Row */}
+                <div className="border-t bg-muted/30 px-3 py-2 flex items-center gap-2 safe-area-bottom">
+                  <div className="flex-1">
+                    <MobileMenuLanguageSelector />
+                  </div>
                   <Button 
                     variant="ghost" 
-                    className="w-full justify-start h-12 text-destructive hover:text-destructive hover:bg-destructive/10" 
+                    size="icon"
+                    className="h-10 w-10 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg" 
                     onClick={() => {
                       signOut();
                       setMobileMenuOpen(false);
                     }}
                   >
-                    <LogOut className="h-5 w-5 mr-3" />
-                    {t('layout.logout')}
+                    <LogOut className="h-4 w-4" />
                   </Button>
                 </div>
               </SheetContent>
