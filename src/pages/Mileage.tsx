@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Car, Plus, Download, MapPin, DollarSign, Upload, BarChart3 } from 'lucide-react';
+import { Car, Plus, Download, MapPin, DollarSign, Upload, BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMileage, useMileageSummary, MileageWithClient } from '@/hooks/data/useMileage';
 import { MileageDialog } from '@/components/dialogs/MileageDialog';
 import { MileageTable } from '@/components/tables/MileageTable';
@@ -62,25 +62,42 @@ export default function Mileage() {
             description={t('mileage.description')}
           >
             <div className="flex items-center gap-2">
-              <InfoTooltip content={TOOLTIP_CONTENT.yearSelector} variant="wrapper">
-                <div data-highlight="year-selector">
-                  <Select
-                    value={selectedYear.toString()}
-                    onValueChange={(value) => setSelectedYear(parseInt(value))}
-                  >
-                    <SelectTrigger className="w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {years.map((year) => (
-                        <SelectItem key={year} value={year.toString()}>
-                          {year}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </InfoTooltip>
+              {/* Year navigation with buttons */}
+              <div className="flex items-center gap-1" data-highlight="year-selector">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => setSelectedYear(selectedYear - 1)}
+                  disabled={selectedYear <= currentYear - 4}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Select
+                  value={selectedYear.toString()}
+                  onValueChange={(value) => setSelectedYear(parseInt(value))}
+                >
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => setSelectedYear(selectedYear + 1)}
+                  disabled={selectedYear >= currentYear}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
               <Button variant="outline" onClick={() => setImportDialogOpen(true)} data-highlight="import-button">
                 <Upload className="mr-2 h-4 w-4" />
                 {t('mileage.import')}
