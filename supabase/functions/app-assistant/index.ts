@@ -11,6 +11,57 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 // ============================================================================
+// MESSAGE NORMALIZATION - Keep prompts within model limits
+// ============================================================================
+
+type ChatMessage = { role: "system" | "user" | "assistant" | "tool"; content: string };
+
+function normalizeMessages(
+  rawMessages: unknown,
+  opts: { maxMessages: number; dropKnownErrorReplies: boolean } = {
+    maxMessages: 24,
+    dropKnownErrorReplies: true,
+  },
+): ChatMessage[] {
+  const arr = Array.isArray(rawMessages) ? rawMessages : [];
+
+  const cleaned: ChatMessage[] = arr
+    .filter((m: any) => m && typeof m === "object")
+    .map((m: any) => ({ role: m.role, content: m.content }))
+    .filter(
+      (m: any): m is ChatMessage =>
+        (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && m.content.trim().length > 0,
+    );
+
+  const filtered = opts.dropKnownErrorReplies
+    ? cleaned.filter((m) => {
+        if (m.role !== "assistant") return true;
+        const c = m.content.toLowerCase();
+        // Avoid feeding back our own fallback/error boilerplate which bloats context.
+        return !(
+          c.includes("ocurrió un error") ||
+          c.includes("no pude procesar tu pregunta") ||
+          c.includes("sorry, i couldn't process")
+        );
+      })
+    : cleaned;
+
+  // Keep only the last N messages (prevents oversized prompts).
+  return filtered.slice(-opts.maxMessages);
+}
+
+function isOutputLimitError(payloadText: string): boolean {
+  // Gateway sometimes returns this as a 400 invalid_request_error.
+  const t = payloadText.toLowerCase();
+  return (
+    t.includes("model output limit") ||
+    t.includes("max_tokens") ||
+    t.includes("max tokens") ||
+    t.includes("please try again with higher")
+  );
+}
+
+// ============================================================================
 // ROUTE DEFINITIONS - All available navigation targets
 // ============================================================================
 const AVAILABLE_ROUTES = {
@@ -443,9 +494,9 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
     }
 
     // Prepare messages for AI
-    const aiMessages = [
+    const aiMessages: ChatMessage[] = [
       { role: "system", content: SYSTEM_PROMPT + contextSection },
-      ...messages,
+      ...normalizeMessages(messages),
     ];
 
     console.log('[Assistant] Calling AI with tools...');
@@ -481,6 +532,19 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
       }
       const errorText = await response.text();
       console.error('[Assistant] AI error:', response.status, errorText);
+
+      // Prevent client blank-screens: return a friendly message instead of 500
+      // when the model hits output limits / token caps.
+      if (response.status === 400 && isOutputLimitError(errorText)) {
+        const friendly = language === 'es'
+          ? "Me quedé sin espacio para responder (el contexto ya está muy largo). ¿Puedes repetir tu pregunta en 1 frase, o dime solo lo que quieres lograr ahora mismo?"
+          : "I ran out of room to respond (the context got too long). Can you repeat your question in one sentence, or tell me what you want to do right now?";
+
+        return new Response(
+          JSON.stringify({ message: friendly, error_code: "AI_OUTPUT_LIMIT" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       throw new Error("Error al procesar la solicitud");
     }
 
