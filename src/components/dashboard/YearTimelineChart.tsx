@@ -205,8 +205,8 @@ export function YearTimelineChart({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {/* Timeline bars */}
-        <div className="grid grid-cols-12 gap-1 sm:gap-2">
+        {/* Timeline bars - proper grid with overflow handling */}
+        <div className="grid grid-cols-12 gap-0.5 sm:gap-1.5 overflow-hidden">
           {monthlyData.map((data, index) => {
             const isSelected = index === selectedMonth;
             const isCurrent = index === currentMonth && selectedYear === currentYear;
@@ -222,10 +222,11 @@ export function YearTimelineChart({
                     onClick={() => !isFuture && onMonthSelect(index)}
                     disabled={isFuture}
                     className={cn(
-                      "relative flex flex-col items-center p-1 rounded-lg transition-all duration-200",
-                      "hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-primary/50",
-                      isSelected && "bg-primary/10 ring-2 ring-primary shadow-lg shadow-primary/20",
-                      isCurrent && !isSelected && "ring-1 ring-primary/50",
+                      "relative flex flex-col items-center p-1 sm:p-1.5 rounded-lg transition-all duration-200 min-w-0",
+                      "hover:bg-accent/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                      isSelected && "bg-primary/15 border-2 border-primary shadow-md",
+                      isCurrent && !isSelected && "border border-primary/40",
+                      !isSelected && !isCurrent && "border border-transparent",
                       isFuture && "opacity-40 cursor-not-allowed"
                     )}
                   >
@@ -234,7 +235,7 @@ export function YearTimelineChart({
                       {/* Income bar */}
                       <div
                         className={cn(
-                          "w-2 sm:w-3 rounded-t transition-all duration-300",
+                          "w-1.5 sm:w-2.5 rounded-t transition-all duration-300",
                           "bg-gradient-to-t from-success/80 to-success/50"
                         )}
                         style={{ height: `${Math.max(incomeHeight, 4)}%` }}
@@ -242,17 +243,17 @@ export function YearTimelineChart({
                       {/* Expense bar */}
                       <div
                         className={cn(
-                          "w-2 sm:w-3 rounded-t transition-all duration-300",
+                          "w-1.5 sm:w-2.5 rounded-t transition-all duration-300",
                           "bg-gradient-to-t from-destructive/80 to-destructive/50"
                         )}
                         style={{ height: `${Math.max(expenseHeight, 4)}%` }}
                       />
                     </div>
                     
-                    {/* Month label */}
+                    {/* Month label - fixed width to prevent overflow */}
                     <span className={cn(
-                      "text-[10px] sm:text-xs font-medium mt-1",
-                      isSelected ? "text-primary" : "text-muted-foreground",
+                      "text-[9px] sm:text-[11px] font-medium mt-1 truncate w-full text-center",
+                      isSelected ? "text-primary font-semibold" : "text-muted-foreground",
                       isCurrent && !isSelected && "text-primary/70"
                     )}>
                       {monthNames[index]}
@@ -260,7 +261,7 @@ export function YearTimelineChart({
                     
                     {/* Balance indicator */}
                     <div className={cn(
-                      "w-2 h-2 rounded-full mt-0.5",
+                      "w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mt-0.5 shrink-0",
                       data.income === 0 && data.expenses === 0
                         ? "bg-muted"
                         : isPositive ? "bg-success" : "bg-destructive"
@@ -268,13 +269,13 @@ export function YearTimelineChart({
                     
                     {/* Current month indicator */}
                     {isCurrent && (
-                      <div className="absolute -top-1 left-1/2 -translate-x-1/2">
-                        <Sparkles className="h-3 w-3 text-primary animate-pulse" />
+                      <div className="absolute -top-0.5 left-1/2 -translate-x-1/2">
+                        <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary animate-pulse" />
                       </div>
                     )}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs">
+                <TooltipContent side="top" className="text-xs z-50">
                   <div className="space-y-1">
                     <p className="font-semibold">{fullMonthNames[index]} {selectedYear}</p>
                     <p className="text-success">
