@@ -18,6 +18,8 @@ import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { PageHeader } from '@/components/PageHeader';
 import { SectionEmptyState } from '@/components/guidance/SectionEmptyState';
+import { IncomeCard } from '@/components/tables/IncomeCard';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Plus,
   TrendingUp,
@@ -67,6 +69,7 @@ import {
 
 export default function Income() {
   const { t, language } = useLanguage();
+  const isMobile = useIsMobile();
   const dateLocale = language === 'es' ? es : enUS;
   const currentYear = new Date().getFullYear();
   
@@ -144,31 +147,45 @@ export default function Income() {
           title={t('income.title')}
           description={t('income.description')}
         >
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => setProjectDialogOpen(true)}>
-              <FolderKanban className="mr-2 h-4 w-4" />
-              {t('income.newProject')}
-            </Button>
-            <Button onClick={() => setIncomeDialogOpen(true)} data-highlight="add-income-button">
-              <Plus className="mr-2 h-4 w-4" />
-              {t('income.addIncome')}
-            </Button>
-          </div>
+          {/* Mobile: Compact buttons */}
+          {isMobile ? (
+            <div className="flex items-center gap-2">
+              <Button size="sm" onClick={() => setIncomeDialogOpen(true)} data-highlight="add-income-button">
+                <Plus className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setProjectDialogOpen(true)}>
+                <FolderKanban className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => setProjectDialogOpen(true)}>
+                <FolderKanban className="mr-2 h-4 w-4" />
+                {t('income.newProject')}
+              </Button>
+              <Button onClick={() => setIncomeDialogOpen(true)} data-highlight="add-income-button">
+                <Plus className="mr-2 h-4 w-4" />
+                {t('income.addIncome')}
+              </Button>
+            </div>
+          )}
         </PageHeader>
 
-        {/* Mentor Quote Banner */}
-        <MentorQuoteBanner context="income" className="mb-2" />
+        {/* Mentor Quote Banner - Desktop only */}
+        {!isMobile && <MentorQuoteBanner context="income" className="mb-2" />}
 
-        {/* Contextual Page Guide */}
-        <PageContextGuide
-          {...PAGE_GUIDES.income}
-          actions={[
-            { icon: Plus, title: { es: 'Agregar Ingreso', en: 'Add Income' }, description: { es: 'Nuevo registro', en: 'New entry' }, action: () => setIncomeDialogOpen(true) },
-            { icon: FolderKanban, title: { es: 'Nuevo Proyecto', en: 'New Project' }, description: { es: 'Organizar trabajo', en: 'Organize work' }, action: () => setProjectDialogOpen(true) },
-            { icon: TrendingUp, title: { es: 'Ver Resumen', en: 'View Summary' }, description: { es: 'Por categoría', en: 'By category' }, path: '/dashboard' },
-            { icon: DollarSign, title: { es: 'Balance', en: 'Balance' }, description: { es: 'Ingresos vs gastos', en: 'Income vs expenses' }, path: '/dashboard' }
-          ]}
-        />
+        {/* Contextual Page Guide - Desktop only */}
+        {!isMobile && (
+          <PageContextGuide
+            {...PAGE_GUIDES.income}
+            actions={[
+              { icon: Plus, title: { es: 'Agregar Ingreso', en: 'Add Income' }, description: { es: 'Nuevo registro', en: 'New entry' }, action: () => setIncomeDialogOpen(true) },
+              { icon: FolderKanban, title: { es: 'Nuevo Proyecto', en: 'New Project' }, description: { es: 'Organizar trabajo', en: 'Organize work' }, action: () => setProjectDialogOpen(true) },
+              { icon: TrendingUp, title: { es: 'Ver Resumen', en: 'View Summary' }, description: { es: 'Por categoría', en: 'By category' }, path: '/dashboard' },
+              { icon: DollarSign, title: { es: 'Balance', en: 'Balance' }, description: { es: 'Ingresos vs gastos', en: 'Income vs expenses' }, path: '/dashboard' }
+            ]}
+          />
+        )}
 
         {/* Year Selector - positioned above summary cards */}
         <div className="flex items-center justify-between">
@@ -304,107 +321,125 @@ export default function Income() {
           <TabsContent value="income">
             {incomeLoading ? (
               <Card>
-                <CardContent className="py-12 text-center text-muted-foreground">
+                <CardContent className="py-8 sm:py-12 text-center text-muted-foreground">
                   {t('common.loading')}
                 </CardContent>
               </Card>
             ) : incomeList && incomeList.length > 0 ? (
-              <Card data-highlight="income-table">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t('income.date')}</TableHead>
-                      <TableHead>{t('income.type')}</TableHead>
-                      <TableHead>{t('income.source')}</TableHead>
-                      <TableHead>{t('income.project')}</TableHead>
-                      <TableHead className="text-right">{t('income.amount')}</TableHead>
-                      <TableHead>{t('income.recurrence')}</TableHead>
-                      <TableHead className="w-[50px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {incomeList.map((income) => {
-                      const category = getIncomeCategory(income.income_type);
-                      return (
-                        <TableRow key={income.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              {format(new Date(income.date), 'PP', { locale: dateLocale })}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              style={{ backgroundColor: category?.color }} 
-                              className="text-white"
-                            >
-                              {category?.icon} {language === 'es' ? category?.label : category?.labelEn}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{income.source || income.description || '-'}</div>
-                              {income.client && (
-                                <div className="text-xs text-muted-foreground">
-                                  {income.client.name}
+              isMobile ? (
+                /* Mobile: Card view */
+                <div className="space-y-2" data-highlight="income-list">
+                  {incomeList.map((income) => (
+                    <IncomeCard
+                      key={income.id}
+                      income={income}
+                      onEdit={handleEditIncome}
+                      onDelete={(id) => {
+                        setDeleteId(id);
+                        setDeleteType('income');
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : (
+                /* Desktop: Table view */
+                <Card data-highlight="income-table">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t('income.date')}</TableHead>
+                        <TableHead>{t('income.type')}</TableHead>
+                        <TableHead>{t('income.source')}</TableHead>
+                        <TableHead>{t('income.project')}</TableHead>
+                        <TableHead className="text-right">{t('income.amount')}</TableHead>
+                        <TableHead>{t('income.recurrence')}</TableHead>
+                        <TableHead className="w-[50px]"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {incomeList.map((income) => {
+                        const category = getIncomeCategory(income.income_type);
+                        return (
+                          <TableRow key={income.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-muted-foreground" />
+                                {format(new Date(income.date), 'PP', { locale: dateLocale })}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                style={{ backgroundColor: category?.color }} 
+                                className="text-white"
+                              >
+                                {category?.icon} {language === 'es' ? category?.label : category?.labelEn}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <div className="font-medium">{income.source || income.description || '-'}</div>
+                                {income.client && (
+                                  <div className="text-xs text-muted-foreground">
+                                    {income.client.name}
+                                  </div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {income.project ? (
+                                <Badge 
+                                  variant="outline" 
+                                  style={{ borderColor: income.project.color, color: income.project.color }}
+                                >
+                                  {income.project.name}
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right font-bold text-chart-1">
+                              ${Number(income.amount).toFixed(2)}
+                            </TableCell>
+                            <TableCell>
+                              {income.recurrence !== 'one_time' && (
+                                <div className="flex items-center gap-1 text-muted-foreground">
+                                  <Repeat className="h-3 w-3" />
+                                  <span className="text-xs capitalize">{income.recurrence}</span>
                                 </div>
                               )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {income.project ? (
-                              <Badge 
-                                variant="outline" 
-                                style={{ borderColor: income.project.color, color: income.project.color }}
-                              >
-                                {income.project.name}
-                              </Badge>
-                            ) : (
-                              <span className="text-muted-foreground">-</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right font-bold text-chart-1">
-                            ${Number(income.amount).toFixed(2)}
-                          </TableCell>
-                          <TableCell>
-                            {income.recurrence !== 'one_time' && (
-                              <div className="flex items-center gap-1 text-muted-foreground">
-                                <Repeat className="h-3 w-3" />
-                                <span className="text-xs capitalize">{income.recurrence}</span>
-                              </div>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEditIncome(income)}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  {t('common.edit')}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setDeleteId(income.id);
-                                    setDeleteType('income');
-                                  }}
-                                  className="text-destructive"
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  {t('common.delete')}
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </Card>
+                            </TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleEditIncome(income)}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    {t('common.edit')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setDeleteId(income.id);
+                                      setDeleteType('income');
+                                    }}
+                                    className="text-destructive"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {t('common.delete')}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </Card>
+              )
             ) : (
               <SectionEmptyState 
                 section="income" 

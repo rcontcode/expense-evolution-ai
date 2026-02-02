@@ -114,23 +114,24 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
   const tagFilterMode = filters.tagFilterMode || 'OR';
 
   return (
-    <div className="flex flex-col gap-4 mb-6">
-      {/* Incomplete Filter - Prominent */}
-      <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-3 mb-4">
+      {/* Row 1: Incomplete Filter + Reimbursement Types - Horizontal scroll on mobile */}
+      <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
         <button
           onClick={handleIncompleteFilterToggle}
           className={cn(
-            'inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all border-2',
+            'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border-2 whitespace-nowrap shrink-0',
             filters.onlyIncomplete 
-              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-700 ring-2 ring-offset-2 ring-offset-background ring-red-500/50' 
+              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-700 ring-2 ring-offset-1 ring-offset-background ring-red-500/50' 
               : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30'
           )}
         >
-          <AlertTriangle className="h-4 w-4" />
-          <span>{language === 'es' ? 'Incompletos para Reportes' : 'Incomplete for Reports'}</span>
+          <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4" />
+          <span className="hidden sm:inline">{language === 'es' ? 'Incompletos para Reportes' : 'Incomplete for Reports'}</span>
+          <span className="sm:hidden">{language === 'es' ? 'Incompletos' : 'Incomplete'}</span>
         </button>
 
-        {/* Reimbursement Type Filter - Including "All" */}
+        {/* Reimbursement Type Filter - Horizontal scroll on mobile */}
         {REIMBURSEMENT_FILTERS.map((type) => {
           const Icon = type.icon;
           const isActive = (filters.reimbursementType || 'all') === type.value;
@@ -139,21 +140,21 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
               key={type.value}
               onClick={() => handleReimbursementTypeChange(type.value)}
               className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all',
+                'inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap shrink-0',
                 isActive 
-                  ? `${type.color} ring-2 ring-offset-2 ring-offset-background ring-primary/50` 
+                  ? `${type.color} ring-2 ring-offset-1 ring-offset-background ring-primary/50` 
                   : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               )}
             >
-              <Icon className="h-3.5 w-3.5" />
+              <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span>{language === 'es' ? type.label : type.labelEn}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Status Quick Filters */}
-      <div className="flex flex-wrap gap-2">
+      {/* Row 2: Status Quick Filters - Horizontal scroll on mobile */}
+      <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
         {QUICK_STATUS_FILTERS.map((status) => {
           const Icon = status.icon;
           const isActive = activeStatus === status.value;
@@ -162,13 +163,13 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
               key={status.value}
               onClick={() => handleQuickStatusFilter(status.value)}
               className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all',
+                'inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap shrink-0',
                 isActive 
-                  ? `${status.color} ring-2 ring-offset-2 ring-offset-background ring-primary/50` 
+                  ? `${status.color} ring-2 ring-offset-1 ring-offset-background ring-primary/50` 
                   : 'bg-muted/50 text-muted-foreground hover:bg-muted'
               )}
             >
-              <Icon className="h-3.5 w-3.5" />
+              <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span>{language === 'es' ? status.label : status.labelEn}</span>
             </button>
           );
@@ -178,141 +179,145 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
         <button
           onClick={handleReceiptFilterToggle}
           className={cn(
-            'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all',
+            'inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap shrink-0',
             filters.hasReceipt 
-              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 ring-2 ring-offset-2 ring-offset-background ring-primary/50' 
+              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 ring-2 ring-offset-1 ring-offset-background ring-primary/50' 
               : 'bg-muted/50 text-muted-foreground hover:bg-muted'
           )}
         >
-          <Receipt className="h-3.5 w-3.5" />
+          <Receipt className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           <span>{language === 'es' ? 'Con Recibo' : 'With Receipt'}</span>
         </button>
       </div>
 
-      {/* Other Filters */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px]">
+      {/* Row 3: Search + Dropdown Filters - Responsive layout */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        {/* Search - Full width on mobile */}
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar vendedor, descripción..."
+            placeholder={language === 'es' ? 'Buscar vendedor...' : 'Search vendor...'}
             value={filters.searchQuery || ''}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-9"
+            className="pl-9 h-9"
           />
         </div>
 
-        <Select value={filters.category || 'all'} onValueChange={handleCategoryChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Categoría" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas las Categorías</SelectItem>
-            {EXPENSE_CATEGORIES.map((cat) => (
-              <SelectItem key={cat.value} value={cat.value}>
-                {cat.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Dropdown filters - Row on mobile, inline on desktop */}
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+          <Select value={filters.category || 'all'} onValueChange={handleCategoryChange}>
+            <SelectTrigger className="w-[130px] sm:w-[160px] h-9 shrink-0">
+              <SelectValue placeholder={language === 'es' ? 'Categoría' : 'Category'} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{language === 'es' ? 'Todas' : 'All'}</SelectItem>
+              {EXPENSE_CATEGORIES.map((cat) => (
+                <SelectItem key={cat.value} value={cat.value}>
+                  {cat.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select 
-          value={filters.clientIds?.[0] || 'all'} 
-          onValueChange={handleClientChange}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Cliente" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos los Clientes</SelectItem>
-            {clients?.map((client) => (
-              <SelectItem key={client.id} value={client.id}>
-                {client.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Select 
+            value={filters.clientIds?.[0] || 'all'} 
+            onValueChange={handleClientChange}
+          >
+            <SelectTrigger className="w-[130px] sm:w-[160px] h-9 shrink-0">
+              <SelectValue placeholder={language === 'es' ? 'Cliente' : 'Client'} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{language === 'es' ? 'Todos' : 'All'}</SelectItem>
+              {clients?.map((client) => (
+                <SelectItem key={client.id} value={client.id}>
+                  {client.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Popover open={tagPopoverOpen} onOpenChange={setTagPopoverOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-[200px] justify-between">
-              <div className="flex items-center gap-2">
-                <Tag className="h-4 w-4 text-muted-foreground" />
-                <span>
-                  {filters.tagIds?.length 
-                    ? `${filters.tagIds.length} ${language === 'es' ? 'etiquetas' : 'tags'}` 
-                    : language === 'es' ? 'Etiquetas' : 'Tags'}
-                </span>
-              </div>
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[280px] p-0" align="start">
-            <Command>
-              <CommandInput placeholder={language === 'es' ? 'Buscar etiquetas...' : 'Search tags...'} />
-              <CommandEmpty>{language === 'es' ? 'No se encontraron etiquetas.' : 'No tags found.'}</CommandEmpty>
-              
-              {/* AND/OR Toggle */}
-              {(filters.tagIds?.length || 0) > 0 && (
-                <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50">
-                  <div className="flex items-center gap-2">
-                    <Label className="text-xs text-muted-foreground">
-                      {language === 'es' ? 'Modo de filtro:' : 'Filter mode:'}
-                    </Label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={cn("text-xs font-medium", tagFilterMode === 'OR' && "text-primary")}>OR</span>
-                    <Switch 
-                      checked={tagFilterMode === 'AND'}
-                      onCheckedChange={handleTagFilterModeToggle}
-                      className="data-[state=checked]:bg-primary"
-                    />
-                    <span className={cn("text-xs font-medium", tagFilterMode === 'AND' && "text-primary")}>AND</span>
-                  </div>
+          <Popover open={tagPopoverOpen} onOpenChange={setTagPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-[130px] sm:w-[160px] h-9 justify-between shrink-0">
+                <div className="flex items-center gap-1.5">
+                  <Tag className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-sm truncate">
+                    {filters.tagIds?.length 
+                      ? `${filters.tagIds.length} ${language === 'es' ? 'tags' : 'tags'}` 
+                      : language === 'es' ? 'Etiquetas' : 'Tags'}
+                  </span>
                 </div>
-              )}
+                <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[280px] p-0" align="start">
+              <Command>
+                <CommandInput placeholder={language === 'es' ? 'Buscar etiquetas...' : 'Search tags...'} />
+                <CommandEmpty>{language === 'es' ? 'No se encontraron etiquetas.' : 'No tags found.'}</CommandEmpty>
+                
+                {/* AND/OR Toggle */}
+                {(filters.tagIds?.length || 0) > 0 && (
+                  <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-xs text-muted-foreground">
+                        {language === 'es' ? 'Modo de filtro:' : 'Filter mode:'}
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={cn("text-xs font-medium", tagFilterMode === 'OR' && "text-primary")}>OR</span>
+                      <Switch 
+                        checked={tagFilterMode === 'AND'}
+                        onCheckedChange={handleTagFilterModeToggle}
+                        className="data-[state=checked]:bg-primary"
+                      />
+                      <span className={cn("text-xs font-medium", tagFilterMode === 'AND' && "text-primary")}>AND</span>
+                    </div>
+                  </div>
+                )}
 
-              {/* Help Text */}
-              {(filters.tagIds?.length || 0) > 1 && (
-                <div className="px-3 py-1.5 text-[10px] text-muted-foreground bg-muted/30 border-b">
-                  {tagFilterMode === 'AND' 
-                    ? (language === 'es' ? '✓ Muestra gastos con TODAS las etiquetas seleccionadas' : '✓ Shows expenses with ALL selected tags')
-                    : (language === 'es' ? '✓ Muestra gastos con CUALQUIERA de las etiquetas' : '✓ Shows expenses with ANY of the selected tags')
-                  }
-                </div>
-              )}
+                {/* Help Text */}
+                {(filters.tagIds?.length || 0) > 1 && (
+                  <div className="px-3 py-1.5 text-[10px] text-muted-foreground bg-muted/30 border-b">
+                    {tagFilterMode === 'AND' 
+                      ? (language === 'es' ? '✓ Muestra gastos con TODAS las etiquetas seleccionadas' : '✓ Shows expenses with ALL selected tags')
+                      : (language === 'es' ? '✓ Muestra gastos con CUALQUIERA de las etiquetas' : '✓ Shows expenses with ANY of the selected tags')
+                    }
+                  </div>
+                )}
 
-              <CommandGroup>
-                {tags?.map((tag) => (
-                  <CommandItem
-                    key={tag.id}
-                    value={tag.name}
-                    onSelect={() => handleTagToggle(tag.id)}
-                  >
-                    <Check
-                      className={cn(
-                        'mr-2 h-4 w-4',
-                        filters.tagIds?.includes(tag.id) ? 'opacity-100' : 'opacity-0'
-                      )}
-                    />
-                    <Badge
-                      style={{ backgroundColor: tag.color || '#3B82F6' }}
-                      className="text-white"
+                <CommandGroup>
+                  {tags?.map((tag) => (
+                    <CommandItem
+                      key={tag.id}
+                      value={tag.name}
+                      onSelect={() => handleTagToggle(tag.id)}
                     >
-                      {tag.name}
-                    </Badge>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </Command>
-          </PopoverContent>
-        </Popover>
+                      <Check
+                        className={cn(
+                          'mr-2 h-4 w-4',
+                          filters.tagIds?.includes(tag.id) ? 'opacity-100' : 'opacity-0'
+                        )}
+                      />
+                      <Badge
+                        style={{ backgroundColor: tag.color || '#3B82F6' }}
+                        className="text-white"
+                      >
+                        {tag.name}
+                      </Badge>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
 
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
-            <X className="h-4 w-4 mr-1" />
-            Limpiar
-          </Button>
-        )}
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 shrink-0">
+              <X className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">{language === 'es' ? 'Limpiar' : 'Clear'}</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Selected Tags Display with AND/OR indicator */}
