@@ -56,7 +56,7 @@ export default function Mileage() {
   return (
     <Layout>
       <TooltipProvider>
-        <div className="p-8 space-y-8">
+        <div className="page-container section-gap">
           <PageHeader
             title={t('mileage.title')}
             description={t('mileage.description')}

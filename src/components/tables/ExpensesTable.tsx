@@ -1,6 +1,8 @@
 import { useState, useCallback, memo, CSSProperties, ReactElement, useMemo } from 'react';
 import { List } from 'react-window';
 import { ExpenseWithRelations } from '@/types/expense.types';
+import { ExpenseCard } from './ExpenseCard';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -348,6 +350,7 @@ function ExpenseRowComponent({ index, style, expenses, onEdit, onDelete, t, lang
 
 export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
   const { t, language } = useLanguage();
+  const isMobile = useIsMobile();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const deleteMutation = useDeleteExpense();
 
@@ -382,8 +385,8 @@ export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: E
     );
   }
 
-  // Use virtualization only for large lists
-  const useVirtualization = expenses.length > 50;
+  // Use virtualization only for large lists on desktop
+  const useVirtualization = !isMobile && expenses.length > 50;
   const listHeight = useVirtualization 
     ? Math.min(TABLE_HEIGHT, expenses.length * ROW_HEIGHT)
     : expenses.length * ROW_HEIGHT;
@@ -396,6 +399,55 @@ export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: E
     language,
   };
 
+  // Mobile: Card view
+  if (isMobile) {
+    return (
+      <>
+        {/* Completeness Summary */}
+        {completenessStats.incomplete > 0 && (
+          <div className="mb-3 p-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+            <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
+              <AlertTriangle className="h-3 w-3 shrink-0" />
+              <span className="text-xs font-medium">
+                {language === 'es' 
+                  ? `${completenessStats.incomplete}/${completenessStats.total} incompletos`
+                  : `${completenessStats.incomplete}/${completenessStats.total} incomplete`
+                }
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          {expenses.map((expense) => (
+            <ExpenseCard
+              key={expense.id}
+              expense={expense}
+              onEdit={onEdit}
+              onDelete={handleSetDeleteId}
+            />
+          ))}
+        </div>
+
+        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t('expenses.deleteConfirm')}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t('expenses.deleteWarning')}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete}>{t('common.delete')}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
+    );
+  }
+
+  // Desktop: Table view
   return (
     <>
       {/* Completeness Summary */}
