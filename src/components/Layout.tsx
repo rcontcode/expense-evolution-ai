@@ -297,28 +297,33 @@ export const Layout = ({ children }: LayoutProps) => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[260px] p-0 flex flex-col border-0 shadow-2xl">
-                {/* Header - Minimal */}
-                <div className="px-3 py-2 flex items-center justify-between border-b border-border/30">
-                  <div className="flex items-center gap-2">
+              <SheetContent side="right" className="w-[280px] p-0 flex flex-col border-0 shadow-2xl bg-background">
+                {/* Header - Clean & Pro */}
+                <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-primary/5 to-transparent">
+                  <div className="flex items-center gap-2.5">
                     <PhoenixLogo variant="mini" />
-                    <span className="font-bold text-sm">EvoFinz</span>
+                    <span className="font-bold text-base bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">EvoFinz</span>
                   </div>
                   <SheetClose asChild>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">
-                      <X className="h-3.5 w-3.5" />
+                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full hover:bg-muted">
+                      <X className="h-4 w-4" />
                     </Button>
                   </SheetClose>
                 </div>
                 
-                {/* Quick Access - Top 4 most used */}
-                <div className="px-3 py-2 border-b border-border/30">
-                  <div className="grid grid-cols-4 gap-1">
+                {/* Entity Selector - Prominent */}
+                <div className="px-3 py-2 border-b border-border/20">
+                  <MobileMenuEntitySelector onNavigate={() => setMobileMenuOpen(false)} />
+                </div>
+                
+                {/* Quick Access Grid - 4 columns */}
+                <div className="px-3 py-2.5 bg-muted/30">
+                  <div className="grid grid-cols-4 gap-1.5">
                     {[
-                      { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-                      { icon: Receipt, label: language === 'es' ? 'Gastos' : 'Expenses', path: '/expenses' },
-                      { icon: TrendingUp, label: language === 'es' ? 'Ingresos' : 'Income', path: '/income' },
-                      { icon: Inbox, label: language === 'es' ? 'Bandeja' : 'Inbox', path: '/chaos' },
+                      { icon: LayoutDashboard, label: language === 'es' ? 'Panel' : 'Home', path: '/dashboard', color: 'text-amber-500' },
+                      { icon: Receipt, label: language === 'es' ? 'Gastos' : 'Expenses', path: '/expenses', color: 'text-red-500' },
+                      { icon: TrendingUp, label: language === 'es' ? 'Ingresos' : 'Income', path: '/income', color: 'text-emerald-500' },
+                      { icon: Inbox, label: language === 'es' ? 'Inbox' : 'Inbox', path: '/chaos', color: 'text-blue-500' },
                     ].map((item) => {
                       const Icon = item.icon;
                       const isActive = location.pathname === item.path;
@@ -327,12 +332,14 @@ export const Layout = ({ children }: LayoutProps) => {
                           key={item.path}
                           onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                           className={cn(
-                            "flex flex-col items-center gap-0.5 py-1.5 rounded-md transition-colors",
-                            isActive ? "bg-primary/10" : "hover:bg-muted"
+                            "flex flex-col items-center gap-1 py-2 px-1 rounded-lg transition-all",
+                            isActive 
+                              ? "bg-primary text-primary-foreground shadow-md" 
+                              : "bg-background hover:bg-muted border border-border/50"
                           )}
                         >
-                          <Icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")} />
-                          <span className={cn("text-[9px] font-medium", isActive ? "text-primary" : "text-muted-foreground")}>
+                          <Icon className={cn("h-5 w-5", isActive ? "text-primary-foreground" : item.color)} />
+                          <span className={cn("text-[10px] font-semibold leading-tight", isActive ? "text-primary-foreground" : "text-foreground")}>
                             {item.label}
                           </span>
                         </button>
@@ -340,24 +347,21 @@ export const Layout = ({ children }: LayoutProps) => {
                     })}
                   </div>
                 </div>
-
-                {/* Entity Selector - Compact */}
-                <div className="px-3 py-1.5 border-b border-border/30">
-                  <MobileMenuEntitySelector onNavigate={() => setMobileMenuOpen(false)} />
-                </div>
                 
-                {/* All Menu Items - Ultra Compact List */}
-                <nav className="flex-1 overflow-y-auto px-2 py-1">
-                  {NAV_SECTIONS.map((section) => (
-                    <div key={section.titleKey} className="mb-1">
-                      {/* Section Title */}
-                      <div className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                        <span>{section.emoji}</span>
-                        <span>{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
+                {/* All Menu Items - Grouped & Compact */}
+                <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
+                  {NAV_SECTIONS.slice(1).map((section) => (
+                    <div key={section.titleKey}>
+                      {/* Section Header */}
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <span className="text-sm">{section.emoji}</span>
+                        <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                          {t(section.titleKey).replace(/^[^\s]+\s/, '')}
+                        </span>
                       </div>
                       
-                      {/* Items - Compact Row List */}
-                      <div className="space-y-px">
+                      {/* Items Grid - 2 columns for better density */}
+                      <div className="grid grid-cols-2 gap-1">
                         {section.items.map((item) => {
                           const Icon = item.icon;
                           const isActive = location.pathname === item.path;
@@ -367,14 +371,14 @@ export const Layout = ({ children }: LayoutProps) => {
                               key={item.path}
                               onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                               className={cn(
-                                "w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors text-left",
+                                "flex items-center gap-1.5 px-2 py-1.5 rounded-md transition-all text-left",
                                 isActive 
-                                  ? "bg-primary/10 text-primary font-medium" 
+                                  ? "bg-primary/15 text-primary border border-primary/30" 
                                   : "hover:bg-muted text-foreground"
                               )}
                             >
                               <Icon className={cn("h-3.5 w-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
-                              <span className="text-xs truncate">{t(item.label)}</span>
+                              <span className="text-[11px] font-medium truncate">{t(item.label)}</span>
                             </button>
                           );
                         })}
@@ -383,16 +387,17 @@ export const Layout = ({ children }: LayoutProps) => {
                   ))}
                 </nav>
 
-                {/* Footer - Compact */}
-                <div className="border-t border-border/30 px-3 py-1.5 flex items-center gap-2 safe-area-bottom">
+                {/* Footer - Language + Logout */}
+                <div className="border-t border-border/30 px-3 py-2 flex items-center justify-between bg-muted/20 safe-area-bottom">
                   <MobileMenuLanguageSelector />
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    className="h-8 px-2 text-destructive hover:text-destructive hover:bg-destructive/10" 
+                    className="h-8 gap-1.5 px-2.5 text-destructive hover:text-destructive hover:bg-destructive/10 text-xs" 
                     onClick={() => { signOut(); setMobileMenuOpen(false); }}
                   >
                     <LogOut className="h-3.5 w-3.5" />
+                    <span>{language === 'es' ? 'Salir' : 'Logout'}</span>
                   </Button>
                 </div>
               </SheetContent>
