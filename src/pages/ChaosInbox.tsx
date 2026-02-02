@@ -13,7 +13,7 @@ import {
   Upload, Camera, Loader2, RefreshCw, 
   CheckCircle2, Clock, AlertTriangle, X,
   Smartphone, Monitor, Layers, ArrowRight, Video,
-  Edit3, ChevronDown, ChevronUp, Eye, MessageSquare
+  Edit3, ChevronDown, ChevronUp, Eye, MessageSquare, MoreHorizontal
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -32,6 +32,9 @@ import { useScanSessions } from '@/hooks/data/useScanSessions';
 import { cn } from '@/lib/utils';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, onDelete, isLoading, onDataExtracted }: {
   document: ReceiptDocument;
@@ -58,22 +61,47 @@ function DocumentImageWrapper({ document, onApprove, onReject, onAddComment, onD
   );
 }
 
-// Workflow step component
+// Workflow step component - Mobile optimized horizontal scroll
 function WorkflowStep({ 
   step, 
   title, 
-  description, 
   icon: Icon, 
   isActive,
-  count
+  count,
+  compact = false
 }: { 
   step: number;
   title: string;
-  description: string;
+  description?: string;
   icon: React.ElementType;
   isActive: boolean;
   count?: number;
+  compact?: boolean;
 }) {
+  if (compact) {
+    return (
+      <div className={cn(
+        "flex flex-col items-center gap-1 p-2 rounded-lg border min-w-[80px] transition-all",
+        isActive 
+          ? "border-primary bg-primary/10" 
+          : "border-muted bg-muted/30 opacity-60"
+      )}>
+        <div className={cn(
+          "flex items-center justify-center w-8 h-8 rounded-full",
+          isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+        )}>
+          <Icon className="h-4 w-4" />
+        </div>
+        <span className="text-[10px] font-medium text-center">{title}</span>
+        {count !== undefined && count > 0 && (
+          <Badge variant={isActive ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
+            {count}
+          </Badge>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={cn(
       "flex items-start gap-3 p-4 rounded-lg border transition-all",
@@ -102,7 +130,6 @@ function WorkflowStep({
             </Badge>
           )}
         </div>
-        <p className="text-sm text-muted-foreground mt-1">{description}</p>
       </div>
     </div>
   );
@@ -141,6 +168,7 @@ function SectionHeader({
 export default function ChaosInbox() {
   const { language } = useLanguage();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState<string | null>(null);
@@ -405,49 +433,75 @@ export default function ChaosInbox() {
   return (
     <Layout>
       <TooltipProvider>
-        <div className="p-4 md:p-8 space-y-6 max-w-6xl mx-auto">
-          {/* Header */}
+        <div className="p-3 sm:p-4 md:p-8 space-y-4 sm:space-y-6 max-w-6xl mx-auto">
+          {/* Header - Mobile Compact */}
           <PageHeader
             title={language === 'es' ? 'Bandeja de Recibos' : 'Receipt Inbox'}
-            description={language === 'es' 
+            description={!isMobile ? (language === 'es' 
               ? 'Captura, revisa y aprueba tus recibos'
-              : 'Capture, review and approve your receipts'}
+              : 'Capture, review and approve your receipts') : undefined}
           >
-            <InfoTooltip content={TOOLTIP_CONTENT.chaosInbox} />
-            <ScanSessionHistory />
+            {!isMobile && <InfoTooltip content={TOOLTIP_CONTENT.chaosInbox} />}
+            {!isMobile && <ScanSessionHistory />}
             
-            <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50">
-              <Switch
-                id="multi-receipt"
-                checked={detectMultipleReceipts}
-                onCheckedChange={setDetectMultipleReceipts}
-              />
-              <Label htmlFor="multi-receipt" className="flex items-center gap-1 text-xs cursor-pointer">
-                <Layers className="h-3 w-3" />
-                {language === 'es' ? 'Multi-recibo' : 'Multi-receipt'}
-              </Label>
-            </div>
+            {!isMobile && (
+              <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50">
+                <Switch
+                  id="multi-receipt"
+                  checked={detectMultipleReceipts}
+                  onCheckedChange={setDetectMultipleReceipts}
+                />
+                <Label htmlFor="multi-receipt" className="flex items-center gap-1 text-xs cursor-pointer">
+                  <Layers className="h-3 w-3" />
+                  {language === 'es' ? 'Multi-recibo' : 'Multi-receipt'}
+                </Label>
+              </div>
+            )}
             
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => refetch()}
               disabled={isLoading}
+              className="h-9 w-9 p-0 sm:h-9 sm:w-auto sm:px-3"
             >
               <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+              <span className="hidden sm:inline ml-2">{language === 'es' ? 'Actualizar' : 'Refresh'}</span>
             </Button>
+            
+            {/* Mobile overflow menu */}
+            {isMobile && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-9 w-9 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-background">
+                  <DropdownMenuItem onClick={() => setDetectMultipleReceipts(!detectMultipleReceipts)}>
+                    <Layers className="h-4 w-4 mr-2" />
+                    {detectMultipleReceipts 
+                      ? (language === 'es' ? 'Multi-recibo: ON' : 'Multi-receipt: ON')
+                      : (language === 'es' ? 'Multi-recibo: OFF' : 'Multi-receipt: OFF')
+                    }
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </PageHeader>
 
-          {/* Contextual Page Guide */}
-          <PageContextGuide
-            {...PAGE_GUIDES['chaos-inbox']}
-            actions={[
-              { icon: Camera, title: { es: 'Cámara', en: 'Camera' }, description: { es: 'Captura continua', en: 'Continuous capture' }, action: () => setCameraDialogOpen(true) },
-              { icon: Upload, title: { es: 'Subir Archivo', en: 'Upload File' }, description: { es: 'Imagen o PDF', en: 'Image or PDF' }, action: () => fileInputRef.current?.click() },
-              { icon: CheckCircle2, title: { es: 'Revisar Pendientes', en: 'Review Pending' }, description: { es: `${pendingDocs.length} recibos`, en: `${pendingDocs.length} receipts` }, action: () => {} },
-              { icon: Edit3, title: { es: 'Correcciones', en: 'Corrections' }, description: { es: `${needsCorrectionDocs.length} pendientes`, en: `${needsCorrectionDocs.length} pending` }, action: () => {} }
-            ]}
-          />
+          {/* Contextual Page Guide - Hidden on mobile */}
+          {!isMobile && (
+            <PageContextGuide
+              {...PAGE_GUIDES['chaos-inbox']}
+              actions={[
+                { icon: Camera, title: { es: 'Cámara', en: 'Camera' }, description: { es: 'Captura continua', en: 'Continuous capture' }, action: () => setCameraDialogOpen(true) },
+                { icon: Upload, title: { es: 'Subir Archivo', en: 'Upload File' }, description: { es: 'Imagen o PDF', en: 'Image or PDF' }, action: () => fileInputRef.current?.click() },
+                { icon: CheckCircle2, title: { es: 'Revisar Pendientes', en: 'Review Pending' }, description: { es: `${pendingDocs.length} recibos`, en: `${pendingDocs.length} receipts` }, action: () => {} },
+                { icon: Edit3, title: { es: 'Correcciones', en: 'Corrections' }, description: { es: `${needsCorrectionDocs.length} pendientes`, en: `${needsCorrectionDocs.length} pending` }, action: () => {} }
+              ]}
+            />
+          )}
 
           {/* Upload Section - Always visible */}
           <Card className="border-dashed border-2 hover:border-primary/50 transition-colors">
