@@ -901,7 +901,7 @@ export function ReceiptReviewDialog({
                 )}
               </div>
 
-              {/* Description - Expandible */}
+              {/* Description - Full text display */}
               <div className="space-y-1">
                 <label className="text-sm font-medium">
                   {language === 'es' ? 'Descripción' : 'Description'}
@@ -914,46 +914,17 @@ export function ReceiptReviewDialog({
                     className="min-h-[120px]"
                   />
                 ) : (
-                  <Collapsible open={descriptionExpanded} onOpenChange={setDescriptionExpanded}>
-                    <div className="p-3 bg-muted/50 rounded-md">
-                      {data.description ? (
-                        <>
-                          <CollapsibleTrigger asChild>
-                            <div className="cursor-pointer group">
-                              <p className={cn(
-                                "transition-all",
-                                !descriptionExpanded && "line-clamp-2"
-                              )}>
-                                <CollapsibleContent forceMount className={cn(!descriptionExpanded && "hidden")}>
-                                  {data.description}
-                                </CollapsibleContent>
-                                {!descriptionExpanded && (
-                                  <span>{data.description}</span>
-                                )}
-                              </p>
-                              {data.description.length > 80 && (
-                                <div className="flex items-center gap-1 text-xs text-primary mt-1 group-hover:underline">
-                                  {descriptionExpanded ? (
-                                    <>
-                                      <ChevronUp className="h-3 w-3" />
-                                      {language === 'es' ? 'Ver menos' : 'Show less'}
-                                    </>
-                                  ) : (
-                                    <>
-                                      <ChevronDown className="h-3 w-3" />
-                                      {language === 'es' ? 'Ver más' : 'Show more'}
-                                    </>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </CollapsibleTrigger>
-                        </>
-                      ) : (
-                        <span className="text-muted-foreground italic">{language === 'es' ? 'Sin descripción' : 'No description'}</span>
-                      )}
-                    </div>
-                  </Collapsible>
+                  <div className="p-3 bg-muted/50 rounded-md max-h-[200px] overflow-y-auto">
+                    {data.description ? (
+                      <p className="whitespace-pre-wrap break-words text-sm">
+                        {data.description}
+                      </p>
+                    ) : (
+                      <span className="text-muted-foreground italic text-sm">
+                        {language === 'es' ? 'Sin descripción' : 'No description'}
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
 
