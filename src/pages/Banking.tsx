@@ -9,44 +9,50 @@ import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function Banking() {
   const { language } = useLanguage();
+  const isMobile = useIsMobile();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   return (
     <Layout>
-      <div className="p-8 space-y-6">
+      <div className="p-3 sm:p-4 md:p-8 space-y-4 sm:space-y-6">
         <PageHeader
           title={language === 'es' ? 'Análisis Bancario' : 'Bank Analysis'}
-          description={language === 'es' 
+          description={!isMobile ? (language === 'es' 
             ? 'Importa tus estados de cuenta y obtén insights inteligentes'
-            : 'Import your bank statements and get smart insights'}
+            : 'Import your bank statements and get smart insights') : undefined}
         />
 
-        <MentorQuoteBanner context="dashboard" className="mb-2" />
+        {!isMobile && <MentorQuoteBanner context="dashboard" className="mb-2" />}
         
-        {/* Contextual Page Guide */}
-        <PageContextGuide
-          {...PAGE_GUIDES.banking}
-          actions={[
-            { icon: Upload, title: { es: 'Importar Estado', en: 'Import Statement' }, description: { es: 'CSV o foto', en: 'CSV or photo' }, action: () => {} },
-            { icon: Search, title: { es: 'Buscar', en: 'Search' }, description: { es: 'En transacciones', en: 'In transactions' }, action: () => {} },
-            { icon: AlertTriangle, title: { es: 'Ver Anomalías', en: 'View Anomalies' }, description: { es: 'Cobros sospechosos', en: 'Suspicious charges' }, action: () => {} },
-            { icon: TrendingDown, title: { es: 'Suscripciones', en: 'Subscriptions' }, description: { es: 'Detectadas', en: 'Detected' }, path: '/dashboard' }
-          ]}
-        />
+        {/* Contextual Page Guide - hidden on mobile */}
+        {!isMobile && (
+          <PageContextGuide
+            {...PAGE_GUIDES.banking}
+            actions={[
+              { icon: Upload, title: { es: 'Importar Estado', en: 'Import Statement' }, description: { es: 'CSV o foto', en: 'CSV or photo' }, action: () => {} },
+              { icon: Search, title: { es: 'Buscar', en: 'Search' }, description: { es: 'En transacciones', en: 'In transactions' }, action: () => {} },
+              { icon: AlertTriangle, title: { es: 'Ver Anomalías', en: 'View Anomalies' }, description: { es: 'Cobros sospechosos', en: 'Suspicious charges' }, action: () => {} },
+              { icon: TrendingDown, title: { es: 'Suscripciones', en: 'Subscriptions' }, description: { es: 'Detectadas', en: 'Detected' }, path: '/dashboard' }
+            ]}
+          />
+        )}
 
-        {/* Workflow Visualizer - Bank Reconciliation Flow */}
-        <MiniWorkflow workflowId="bank-reconciliation" />
+        {/* Workflow Visualizer - hidden on mobile */}
+        {!isMobile && <MiniWorkflow workflowId="bank-reconciliation" />}
 
-        {/* Banking Integration Guide with Tooltips */}
-        <div data-highlight="bank-import-guide">
-          <BankingIntegrationGuide onImportClick={() => setImportDialogOpen(true)} />
-        </div>
+        {/* Banking Integration Guide with Tooltips - collapsed by default on mobile */}
+        {!isMobile && (
+          <div data-highlight="bank-import-guide">
+            <BankingIntegrationGuide onImportClick={() => setImportDialogOpen(true)} />
+          </div>
+        )}
         
         <div data-highlight="bank-analysis-dashboard">
-          <BankAnalysisDashboard />
+          <BankAnalysisDashboard onImportClick={() => setImportDialogOpen(true)} />
         </div>
 
         {/* Import Dialog */}
