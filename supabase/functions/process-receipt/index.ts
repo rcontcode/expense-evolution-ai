@@ -92,20 +92,42 @@ IMPORTANT: Always respond with a valid JSON object with this exact structure:
   "expenses": [
     {
       "vendor": "store or company name",
-      "amount": numeric value (no currency symbols),
+      "amount": numeric value (no currency symbols) - THIS IS THE TOTAL,
       "date": "YYYY-MM-DD format",
       "category": "one of: meals, travel, equipment, software, office_supplies, professional_services, utilities, home_office, mileage, fuel, other",
-      "description": "brief description of this specific item - include the original code if you decoded an ambiguous one",
+      "description": "brief summary of all items purchased",
       "confidence": "high, medium, or low",
       "currency": "CAD, USD, etc.",
       "cra_deductible": true or false,
       "cra_deduction_rate": percentage (e.g., 50 for meals, 100 for equipment),
       "typically_reimbursable": true or false (based on common contractor agreements),
       "receipt_index": number (which physical receipt this came from, starting at 1),
-      "decoded_from": "original cryptic code if any was decoded, e.g., 'CHVPREM → Premium Fuel'"
+      "decoded_from": "original cryptic code if any was decoded, e.g., 'CHVPREM → Premium Fuel'",
+      "line_items": [
+        {
+          "name": "item name or description (decode cryptic codes)",
+          "quantity": number (default 1 if not specified),
+          "unit_price": number (price per unit),
+          "total": number (quantity * unit_price),
+          "original_code": "the original code from receipt if it was decoded, null otherwise"
+        }
+      ],
+      "subtotal": number (sum before taxes),
+      "taxes": [
+        { "name": "GST", "rate": 5, "amount": number },
+        { "name": "PST", "rate": 7, "amount": number }
+      ],
+      "payment_method": "VISA, Mastercard, Debit, Cash, etc. if visible"
     }
   ]
 }
+
+CRITICAL FOR LINE ITEMS:
+- Extract EVERY visible line item from the receipt, not just the total
+- Decode cryptic item codes using vendor context (e.g., at Shell, "PREM" = Premium Fuel)
+- Include quantity and unit price when visible
+- If only total per item is visible, use quantity=1 and unit_price=total
+- Identify and separate taxes (GST, PST, HST, IVA, etc.)
 
 Category guidelines for Canadian tax deductions:
 - meals: restaurant, food, coffee, catering, groceries for personal consumption (50% CRA deductible, typically NOT reimbursable by clients)

@@ -3,6 +3,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+export interface LineItem {
+  name: string;
+  quantity?: number;
+  unit_price?: number;
+  total: number;
+  original_code?: string | null;
+}
+
+export interface TaxItem {
+  name: string;
+  rate?: number;
+  amount: number;
+}
+
 export interface ExtractedExpenseData {
   vendor: string;
   amount: number;
@@ -15,6 +29,10 @@ export interface ExtractedExpenseData {
   cra_deduction_rate: number;
   typically_reimbursable: boolean;
   client_id?: string | null;
+  line_items?: LineItem[];
+  subtotal?: number;
+  taxes?: TaxItem[];
+  payment_method?: string;
 }
 
 export interface ProcessReceiptResult {
