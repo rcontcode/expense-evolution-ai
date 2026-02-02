@@ -271,7 +271,7 @@ export default function Notifications() {
 
   return (
     <Layout>
-      <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <div className="page-container max-w-4xl mx-auto section-gap">
         {/* Header */}
         <PageHeader
           title={language === 'es' ? 'Notificaciones' : 'Notifications'}
@@ -314,35 +314,35 @@ export default function Notifications() {
           </AlertDialog>
         </PageHeader>
 
-        {/* Stats */}
+        {/* Stats - more compact */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4"
+          className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3"
         >
           <Card className="bg-gradient-to-br from-primary/10 to-primary/5">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/20">
-                  <Bell className="h-5 w-5 text-primary" />
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-primary/20">
+                  <Bell className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{notifications?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground">Total</p>
+                  <p className="text-xl font-bold">{notifications?.length || 0}</p>
+                  <p className="text-[10px] text-muted-foreground">Total</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           
           <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/20">
-                  <Clock className="h-5 w-5 text-blue-500" />
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-blue-500/20">
+                  <Clock className="h-4 w-4 text-blue-500" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{unreadCount}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xl font-bold">{unreadCount}</p>
+                  <p className="text-[10px] text-muted-foreground">
                     {language === 'es' ? 'Sin leer' : 'Unread'}
                   </p>
                 </div>
@@ -351,16 +351,16 @@ export default function Notifications() {
           </Card>
           
           <Card className="bg-gradient-to-br from-amber-500/10 to-amber-500/5">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-amber-500/20">
-                  <Trophy className="h-5 w-5 text-amber-500" />
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-amber-500/20">
+                  <Trophy className="h-4 w-4 text-amber-500" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">
+                  <p className="text-xl font-bold">
                     {notifications?.filter(n => n.type === 'achievement' || n.type === 'level_up').length || 0}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground">
                     {language === 'es' ? 'Logros' : 'Achievements'}
                   </p>
                 </div>
@@ -369,16 +369,16 @@ export default function Notifications() {
           </Card>
           
           <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-500/20">
-                  <Target className="h-5 w-5 text-green-500" />
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-green-500/20">
+                  <Target className="h-4 w-4 text-green-500" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">
+                  <p className="text-xl font-bold">
                     {notifications?.filter(n => n.type.includes('goal')).length || 0}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground">
                     {language === 'es' ? 'Metas' : 'Goals'}
                   </p>
                 </div>

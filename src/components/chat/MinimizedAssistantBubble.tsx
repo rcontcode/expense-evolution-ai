@@ -38,7 +38,7 @@ export const MinimizedAssistantBubble: React.FC<MinimizedAssistantBubbleProps> =
       initial={{ opacity: 0, scale: 0.5, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.5, y: 20 }}
-      className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2"
+      className="fixed bottom-4 right-4 z-40 flex flex-col items-end gap-2 pointer-events-none"
     >
       {/* Speech bubble with text preview when speaking */}
       <AnimatePresence>
@@ -119,8 +119,8 @@ export const MinimizedAssistantBubble: React.FC<MinimizedAssistantBubbleProps> =
               onClick={onExpand}
               variant="outline"
               className={cn(
-                "relative h-14 w-14 rounded-full p-0",
-                "bg-background/95 backdrop-blur-xl shadow-2xl",
+                "relative h-12 w-12 rounded-full p-0 pointer-events-auto",
+                "bg-background/95 backdrop-blur-xl shadow-lg",
                 "border-2 hover:scale-105 transition-transform",
                 isSpeaking && "border-primary animate-pulse",
                 isTutorialActive && !isSpeaking && "border-amber-500",
@@ -138,7 +138,7 @@ export const MinimizedAssistantBubble: React.FC<MinimizedAssistantBubbleProps> =
                 animate={isSpeaking ? { scale: [1, 1.2, 1] } : {}}
                 transition={{ duration: 0.5, repeat: Infinity }}
                 className={cn(
-                  "absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background",
+                  "absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background",
                   isSpeaking && "bg-primary",
                   isListening && !isSpeaking && "bg-red-500",
                   isTutorialActive && !isSpeaking && !isListening && "bg-amber-500",
@@ -167,7 +167,7 @@ export const MinimizedAssistantBubble: React.FC<MinimizedAssistantBubbleProps> =
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.5 }}
-              className="absolute -bottom-1 -left-1"
+              className="absolute -bottom-1 -left-1 pointer-events-auto"
             >
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -178,9 +178,9 @@ export const MinimizedAssistantBubble: React.FC<MinimizedAssistantBubbleProps> =
                     }}
                     variant="destructive"
                     size="icon"
-                    className="h-6 w-6 rounded-full shadow-md"
+                    className="h-5 w-5 rounded-full shadow-md"
                   >
-                    <Square className="h-3 w-3" />
+                    <Square className="h-2.5 w-2.5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="left">
@@ -192,21 +192,7 @@ export const MinimizedAssistantBubble: React.FC<MinimizedAssistantBubbleProps> =
         </AnimatePresence>
       </div>
 
-      {/* Expand hint - shows periodically */}
-      <AnimatePresence>
-        {!isSpeaking && !isListening && (
-          <motion.div
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: [0, 1, 1, 0], y: 0 }}
-            transition={{ duration: 4, repeat: Infinity, repeatDelay: 10 }}
-            className="absolute -left-24 bottom-4 bg-background/90 backdrop-blur-sm border rounded-lg px-2 py-1 shadow-sm"
-          >
-            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-              {language === 'es' ? '¿Necesitas ayuda?' : 'Need help?'}
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Expand hint - removed for less visual clutter */}
     </motion.div>
   );
 };
