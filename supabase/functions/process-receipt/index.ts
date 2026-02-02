@@ -109,7 +109,9 @@ IMPORTANT: Always respond with a valid JSON object with this exact structure:
           "quantity": number (default 1 if not specified),
           "unit_price": number (price per unit),
           "total": number (quantity * unit_price),
-          "original_code": "the original code from receipt if it was decoded, null otherwise"
+          "original_code": "the original code from receipt if it was decoded, null otherwise",
+          "sku": "product SKU/UPC/barcode if visible on receipt",
+          "product_search_url": "generate a search URL for this product at the vendor's website"
         }
       ],
       "subtotal": number (sum before taxes),
@@ -128,6 +130,25 @@ CRITICAL FOR LINE ITEMS:
 - Include quantity and unit price when visible
 - If only total per item is visible, use quantity=1 and unit_price=total
 - Identify and separate taxes (GST, PST, HST, IVA, etc.)
+
+PRODUCT SEARCH URLS - VERY IMPORTANT:
+Generate a product_search_url for each line item so reviewers can verify the purchase. Use these patterns:
+- Home Depot: https://www.homedepot.ca/search?q={product_name_encoded}
+- Home Depot (if SKU visible): https://www.homedepot.ca/product/{sku}
+- Costco: https://www.costco.ca/CatalogSearch?keyword={product_name_encoded}
+- Walmart: https://www.walmart.ca/search?q={product_name_encoded}
+- Canadian Tire: https://www.canadiantire.ca/en/search.html?q={product_name_encoded}
+- Staples: https://www.staples.ca/search?query={product_name_encoded}
+- Best Buy: https://www.bestbuy.ca/en-ca/search?search={product_name_encoded}
+- Amazon: https://www.amazon.ca/s?k={product_name_encoded}
+- London Drugs: https://www.londondrugs.com/search/?q={product_name_encoded}
+- Rona: https://www.rona.ca/en/search?term={product_name_encoded}
+- IKEA: https://www.ikea.com/ca/en/search/?q={product_name_encoded}
+- Shell/Chevron/Petro-Canada/Esso (fuel): null (no product link for fuel)
+- Restaurants/Cafes: null (no product link for food)
+- For unknown vendors: try https://www.google.com/search?q={vendor}+{product_name_encoded}
+
+Replace {product_name_encoded} with URL-encoded product name. Include SKU in search if available.
 
 Category guidelines for Canadian tax deductions:
 - meals: restaurant, food, coffee, catering, groceries for personal consumption (50% CRA deductible, typically NOT reimbursable by clients)

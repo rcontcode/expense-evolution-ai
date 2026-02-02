@@ -9,6 +9,8 @@ export interface LineItem {
   unit_price?: number;
   total: number;
   original_code?: string | null;
+  sku?: string | null;
+  product_search_url?: string | null;
 }
 
 export interface TaxItem {

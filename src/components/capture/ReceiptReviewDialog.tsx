@@ -18,7 +18,7 @@ import {
   Building2, Landmark, Calendar, DollarSign, Tag, Store,
   AlertTriangle, CheckCircle2, Clock, RotateCcw, Save, Sparkles, Trash2,
   RotateCw, Download, Maximize2, Move, RefreshCw, ChevronDown, ChevronUp,
-  Receipt, CreditCard, List
+  Receipt, CreditCard, List, ExternalLink
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -43,6 +43,8 @@ export interface LineItem {
   unit_price?: number;
   total: number;
   original_code?: string | null;
+  sku?: string | null;
+  product_search_url?: string | null;
 }
 
 export interface TaxItem {
@@ -970,12 +972,27 @@ export function ReceiptReviewDialog({
                           {data.line_items.map((item, idx) => (
                             <tr key={idx} className="hover:bg-muted/30">
                               <td className="p-2">
-                                <div className="font-medium">{item.name}</div>
-                                {item.original_code && (
-                                  <div className="text-xs text-muted-foreground">
-                                    {language === 'es' ? 'Código:' : 'Code:'} {item.original_code}
+                                <div className="flex items-start gap-1">
+                                  <div className="flex-1">
+                                    <div className="font-medium">{item.name}</div>
+                                    {(item.original_code || item.sku) && (
+                                      <div className="text-xs text-muted-foreground">
+                                        {item.sku ? `SKU: ${item.sku}` : `${language === 'es' ? 'Código' : 'Code'}: ${item.original_code}`}
+                                      </div>
+                                    )}
                                   </div>
-                                )}
+                                  {item.product_search_url && (
+                                    <a 
+                                      href={item.product_search_url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="shrink-0 p-1 rounded hover:bg-primary/10 text-primary transition-colors"
+                                      title={language === 'es' ? 'Ver producto en tienda' : 'View product in store'}
+                                    >
+                                      <ExternalLink className="h-3.5 w-3.5" />
+                                    </a>
+                                  )}
+                                </div>
                               </td>
                               <td className="p-2 text-center text-muted-foreground">
                                 {item.quantity || 1}
