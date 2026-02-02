@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,8 @@ import { toast } from 'sonner';
 import { 
   Check, X, Edit2, MessageSquare, Loader2, ZoomIn, ZoomOut,
   Building2, Landmark, Calendar, DollarSign, Tag, Store,
-  AlertTriangle, CheckCircle2, Clock, RotateCcw, Save, Sparkles, Trash2
+  AlertTriangle, CheckCircle2, Clock, RotateCcw, Save, Sparkles, Trash2,
+  RotateCw, Download, Maximize2, Move, RefreshCw, ChevronDown, ChevronUp
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -29,6 +30,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -95,14 +98,102 @@ export function ReceiptReviewDialog({
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [comment, setComment] = useState('');
   const [editedData, setEditedData] = useState<ExtractedData>(document.extracted_data || {});
-  const [imageZoom, setImageZoom] = useState(1);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
+  
+  // Image viewer state
+  const [imageZoom, setImageZoom] = useState(1);
+  const [imageRotation, setImageRotation] = useState(0);
+  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  // Reset image viewer state when dialog opens
+  useEffect(() => {
+    if (open) {
+      setImageZoom(1);
+      setImageRotation(0);
+      setImagePosition({ x: 0, y: 0 });
+      setIsFullscreen(false);
+      setEditedData(document.extracted_data || {});
+    }
+  }, [open, document.extracted_data]);
 
   // Get reimbursement suggestion from contract terms
   const reimbursementSuggestion = useContractReimbursementSuggestion(
     editedData.client_id,
     editedData.category
   );
+  
+  // Image viewer handlers
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.15 : 0.15;
+    setImageZoom(prev => Math.max(0.25, Math.min(5, prev + delta)));
+  }, []);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (imageZoom > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - imagePosition.x, y: e.clientY - imagePosition.y });
+    }
+  }, [imageZoom, imagePosition]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (isDragging && imageZoom > 1) {
+      setImagePosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  }, [isDragging, dragStart, imageZoom]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (imageZoom > 1 && e.touches.length === 1) {
+      const touch = e.touches[0];
+      setIsDragging(true);
+      setDragStart({ x: touch.clientX - imagePosition.x, y: touch.clientY - imagePosition.y });
+    }
+  }, [imageZoom, imagePosition]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (isDragging && imageZoom > 1 && e.touches.length === 1) {
+      const touch = e.touches[0];
+      setImagePosition({
+        x: touch.clientX - dragStart.x,
+        y: touch.clientY - dragStart.y
+      });
+    }
+  }, [isDragging, dragStart, imageZoom]);
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const rotateLeft = () => setImageRotation(prev => prev - 90);
+  const rotateRight = () => setImageRotation(prev => prev + 90);
+  const resetImageView = () => {
+    setImageZoom(1);
+    setImageRotation(0);
+    setImagePosition({ x: 0, y: 0 });
+  };
+
+  const downloadImage = () => {
+    if (imageUrl) {
+      const link = window.document.createElement('a');
+      link.href = imageUrl;
+      link.download = document.file_name || 'receipt.jpg';
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+    }
+  };
 
   // Check if document has no extracted data
   const hasNoData = !document.extracted_data?.vendor && !document.extracted_data?.amount && !document.extracted_data?.date;
@@ -291,47 +382,203 @@ export function ReceiptReviewDialog({
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left: Receipt Image */}
-          <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                {language === 'es' ? 'Imagen del recibo' : 'Receipt image'}
-              </span>
-              <div className="flex items-center gap-1">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8"
-                  onClick={() => setImageZoom(Math.max(0.5, imageZoom - 0.25))}
-                >
-                  <ZoomOut className="h-4 w-4" />
-                </Button>
-                <span className="text-xs text-muted-foreground w-12 text-center">{Math.round(imageZoom * 100)}%</span>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8"
-                  onClick={() => setImageZoom(Math.min(3, imageZoom + 0.25))}
-                >
-                  <ZoomIn className="h-4 w-4" />
-                </Button>
+          {/* Left: Receipt Image with Advanced Controls */}
+          <TooltipProvider>
+            <div className={cn(
+              "flex flex-col",
+              isFullscreen 
+                ? "fixed inset-0 z-50 bg-background p-4" 
+                : "h-full"
+            )}>
+              {/* Image Controls Toolbar */}
+              <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                <span className="text-sm font-medium text-muted-foreground">
+                  {language === 'es' ? 'Imagen del recibo' : 'Receipt image'}
+                </span>
+                <div className="flex items-center gap-1 flex-wrap">
+                  {/* Zoom controls */}
+                  <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7"
+                          onClick={() => setImageZoom(Math.max(0.25, imageZoom - 0.25))}
+                          disabled={imageZoom <= 0.25}
+                        >
+                          <ZoomOut className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{language === 'es' ? 'Alejar' : 'Zoom out'}</TooltipContent>
+                    </Tooltip>
+                    <span className="text-xs font-mono w-10 text-center text-muted-foreground">
+                      {Math.round(imageZoom * 100)}%
+                    </span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7"
+                          onClick={() => setImageZoom(Math.min(5, imageZoom + 0.25))}
+                          disabled={imageZoom >= 5}
+                        >
+                          <ZoomIn className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{language === 'es' ? 'Acercar' : 'Zoom in'}</TooltipContent>
+                    </Tooltip>
+                  </div>
+
+                  {/* Rotation controls */}
+                  <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7"
+                          onClick={rotateLeft}
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{language === 'es' ? 'Rotar izquierda' : 'Rotate left'}</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7"
+                          onClick={rotateRight}
+                        >
+                          <RotateCw className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{language === 'es' ? 'Rotar derecha' : 'Rotate right'}</TooltipContent>
+                    </Tooltip>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7"
+                          onClick={resetImageView}
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{language === 'es' ? 'Restablecer vista' : 'Reset view'}</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7"
+                          onClick={() => setIsFullscreen(!isFullscreen)}
+                        >
+                          <Maximize2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{language === 'es' ? 'Pantalla completa' : 'Fullscreen'}</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7"
+                          onClick={downloadImage}
+                          disabled={!imageUrl}
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{language === 'es' ? 'Descargar' : 'Download'}</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="flex-1 bg-muted rounded-lg overflow-auto relative">
-              {imageUrl ? (
-                <img 
-                  src={imageUrl} 
-                  alt={document.file_name}
-                  className="transition-transform origin-top-left"
-                  style={{ transform: `scale(${imageZoom})` }}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              
+              {/* Drag hint */}
+              {imageZoom > 1 && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2 bg-primary/5 rounded-md px-2 py-1">
+                  <Move className="h-3 w-3" />
+                  <span>{language === 'es' ? 'Arrastra para mover • Scroll para zoom' : 'Drag to move • Scroll to zoom'}</span>
                 </div>
               )}
+
+              {/* Image container with drag and zoom */}
+              <div 
+                ref={imageContainerRef}
+                className={cn(
+                  "flex-1 bg-muted/30 rounded-lg overflow-hidden flex items-center justify-center relative",
+                  imageZoom > 1 ? 'cursor-grab' : 'cursor-zoom-in',
+                  isDragging && 'cursor-grabbing'
+                )}
+                onWheel={handleWheel}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                {imageUrl ? (
+                  <img 
+                    src={imageUrl} 
+                    alt={document.file_name}
+                    draggable={false}
+                    style={{ 
+                      transform: `translate(${imagePosition.x}px, ${imagePosition.y}px) scale(${imageZoom}) rotate(${imageRotation}deg)`,
+                      transformOrigin: 'center center',
+                      transition: isDragging ? 'none' : 'transform 0.15s ease-out'
+                    }}
+                    className="max-w-full max-h-full object-contain rounded-lg shadow-lg select-none"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+
+              {/* Zoom slider for easier control */}
+              <div className="flex items-center gap-3 mt-2 px-1">
+                <ZoomOut className="h-4 w-4 text-muted-foreground" />
+                <input
+                  type="range"
+                  min="25"
+                  max="500"
+                  value={imageZoom * 100}
+                  onChange={(e) => setImageZoom(Number(e.target.value) / 100)}
+                  className="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+                <ZoomIn className="h-4 w-4 text-muted-foreground" />
+              </div>
+
+              {/* Exit fullscreen button */}
+              {isFullscreen && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsFullscreen(false)}
+                  className="absolute top-4 right-4"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  {language === 'es' ? 'Cerrar' : 'Close'}
+                </Button>
+              )}
             </div>
-          </div>
+          </TooltipProvider>
 
           {/* Right: Extracted Data & Actions */}
           <div className="flex flex-col h-full">
@@ -486,36 +733,33 @@ export function ReceiptReviewDialog({
                 )}
               </div>
 
-              {/* Client & Project Selectors */}
+              {/* Client & Project Selectors - ALWAYS clickable for quick editing */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-medium flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-muted-foreground" />
                     {language === 'es' ? 'Cliente' : 'Client'}
                   </label>
-                  {isEditing ? (
-                    <Select 
-                      value={editedData.client_id || 'none'} 
-                      onValueChange={(v) => updateField('client_id', v === 'none' ? undefined : v)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={language === 'es' ? 'Sin cliente' : 'No client'} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">{language === 'es' ? 'Sin cliente' : 'No client'}</SelectItem>
-                        {clients.map(client => (
-                          <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="p-3 bg-muted/50 rounded-md">
-                      {data.client_id 
-                        ? clients.find(c => c.id === data.client_id)?.name 
-                        : <span className="text-muted-foreground italic">{language === 'es' ? 'Sin cliente' : 'No client'}</span>
-                      }
-                    </div>
-                  )}
+                  <Select 
+                    value={editedData.client_id || 'none'} 
+                    onValueChange={(v) => {
+                      updateField('client_id', v === 'none' ? undefined : v);
+                      if (!isEditing) setIsEditing(true);
+                    }}
+                  >
+                    <SelectTrigger className={cn(
+                      "transition-all",
+                      !isEditing && "hover:border-primary/50 cursor-pointer"
+                    )}>
+                      <SelectValue placeholder={language === 'es' ? 'Sin cliente' : 'No client'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{language === 'es' ? 'Sin cliente' : 'No client'}</SelectItem>
+                      {clients.map(client => (
+                        <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-1">
@@ -523,29 +767,26 @@ export function ReceiptReviewDialog({
                     <Tag className="h-4 w-4 text-muted-foreground" />
                     {language === 'es' ? 'Proyecto' : 'Project'}
                   </label>
-                  {isEditing ? (
-                    <Select 
-                      value={editedData.project_id || 'none'} 
-                      onValueChange={(v) => updateField('project_id', v === 'none' ? undefined : v)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={language === 'es' ? 'Sin proyecto' : 'No project'} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">{language === 'es' ? 'Sin proyecto' : 'No project'}</SelectItem>
-                        {projects.map(project => (
-                          <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="p-3 bg-muted/50 rounded-md">
-                      {data.project_id 
-                        ? projects.find(p => p.id === data.project_id)?.name 
-                        : <span className="text-muted-foreground italic">{language === 'es' ? 'Sin proyecto' : 'No project'}</span>
-                      }
-                    </div>
-                  )}
+                  <Select 
+                    value={editedData.project_id || 'none'} 
+                    onValueChange={(v) => {
+                      updateField('project_id', v === 'none' ? undefined : v);
+                      if (!isEditing) setIsEditing(true);
+                    }}
+                  >
+                    <SelectTrigger className={cn(
+                      "transition-all",
+                      !isEditing && "hover:border-primary/50 cursor-pointer"
+                    )}>
+                      <SelectValue placeholder={language === 'es' ? 'Sin proyecto' : 'No project'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{language === 'es' ? 'Sin proyecto' : 'No project'}</SelectItem>
+                      {projects.map(project => (
+                        <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -660,7 +901,7 @@ export function ReceiptReviewDialog({
                 )}
               </div>
 
-              {/* Description */}
+              {/* Description - Expandible */}
               <div className="space-y-1">
                 <label className="text-sm font-medium">
                   {language === 'es' ? 'Descripción' : 'Description'}
@@ -670,12 +911,49 @@ export function ReceiptReviewDialog({
                     value={editedData.description || ''} 
                     onChange={(e) => updateField('description', e.target.value)}
                     placeholder={language === 'es' ? 'Descripción del gasto...' : 'Expense description...'}
-                    className="min-h-[80px]"
+                    className="min-h-[120px]"
                   />
                 ) : (
-                  <div className="p-3 bg-muted/50 rounded-md min-h-[60px]">
-                    {data.description || <span className="text-muted-foreground italic">{language === 'es' ? 'Sin descripción' : 'No description'}</span>}
-                  </div>
+                  <Collapsible open={descriptionExpanded} onOpenChange={setDescriptionExpanded}>
+                    <div className="p-3 bg-muted/50 rounded-md">
+                      {data.description ? (
+                        <>
+                          <CollapsibleTrigger asChild>
+                            <div className="cursor-pointer group">
+                              <p className={cn(
+                                "transition-all",
+                                !descriptionExpanded && "line-clamp-2"
+                              )}>
+                                <CollapsibleContent forceMount className={cn(!descriptionExpanded && "hidden")}>
+                                  {data.description}
+                                </CollapsibleContent>
+                                {!descriptionExpanded && (
+                                  <span>{data.description}</span>
+                                )}
+                              </p>
+                              {data.description.length > 80 && (
+                                <div className="flex items-center gap-1 text-xs text-primary mt-1 group-hover:underline">
+                                  {descriptionExpanded ? (
+                                    <>
+                                      <ChevronUp className="h-3 w-3" />
+                                      {language === 'es' ? 'Ver menos' : 'Show less'}
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ChevronDown className="h-3 w-3" />
+                                      {language === 'es' ? 'Ver más' : 'Show more'}
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </CollapsibleTrigger>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground italic">{language === 'es' ? 'Sin descripción' : 'No description'}</span>
+                      )}
+                    </div>
+                  </Collapsible>
                 )}
               </div>
 
