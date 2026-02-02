@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,10 +14,11 @@ import { useHighlight, type HighlightColor } from '@/contexts/HighlightContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ELEVENLABS_VOICES } from '@/hooks/utils/useElevenLabsTTS';
 import { usePlanLimits } from '@/hooks/data/usePlanLimits';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Mic, Volume2, Bell, Zap, Trash2, Plus, Clock, Calendar, 
   MessageSquare, History, Play, Settings2, VolumeX, Volume1, Highlighter,
-  User, UserCircle, Globe, ChevronDown, Sparkles
+  User, UserCircle, Globe, ChevronDown, Sparkles, Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -38,6 +39,8 @@ export function VoicePreferencesCard() {
   const [availableVoices, setAvailableVoices] = useState<VoiceInfo[]>([]);
   const [showVoiceList, setShowVoiceList] = useState(false);
   const [showPremiumVoices, setShowPremiumVoices] = useState(false);
+  const [isTestingPremiumVoice, setIsTestingPremiumVoice] = useState<string | null>(null);
+  const premiumAudioRef = React.useRef<HTMLAudioElement | null>(null);
   
   const [showShortcutDialog, setShowShortcutDialog] = useState(false);
   const [showReminderDialog, setShowReminderDialog] = useState(false);
@@ -147,6 +150,71 @@ export function VoicePreferencesCard() {
     utterance.volume = voicePrefs.volume;
     window.speechSynthesis.speak(utterance);
   };
+
+  // Test a premium ElevenLabs voice
+  const testPremiumVoice = useCallback(async (voiceId: string, lang: 'es' | 'en') => {
+    // Stop any playing audio
+    if (premiumAudioRef.current) {
+      premiumAudioRef.current.pause();
+      premiumAudioRef.current = null;
+    }
+    window.speechSynthesis.cancel();
+    
+    setIsTestingPremiumVoice(voiceId);
+    
+    try {
+      // Get authenticated user session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const testText = lang === 'es' 
+        ? 'Hola, soy tu asistente financiero. ¿En qué puedo ayudarte hoy?'
+        : 'Hello, I am your financial assistant. How can I help you today?';
+      
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': session?.access_token 
+              ? `Bearer ${session.access_token}` 
+              : `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            text: testText,
+            voiceId,
+            lang,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('API error');
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      premiumAudioRef.current = audio;
+      
+      audio.onended = () => {
+        setIsTestingPremiumVoice(null);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      audio.onerror = () => {
+        setIsTestingPremiumVoice(null);
+        toast.error(language === 'es' ? 'Error al reproducir' : 'Playback error');
+      };
+      
+      await audio.play();
+    } catch (error) {
+      console.error('Premium voice test error:', error);
+      setIsTestingPremiumVoice(null);
+      toast.error(language === 'es' ? 'Error al probar voz premium' : 'Error testing premium voice');
+    }
+  }, [language]);
+
 
   const handleAddShortcut = () => {
     if (!newShortcut.trigger || !newShortcut.route) {
@@ -374,28 +442,47 @@ export function VoicePreferencesCard() {
                   <Label className="text-xs font-medium flex items-center gap-1">
                     🌎 {language === 'es' ? 'Español (Latinoamérica)' : 'Spanish (Latin America)'}
                   </Label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2">
                     {[...ELEVENLABS_VOICES.es.female, ...ELEVENLABS_VOICES.es.male].map((voice) => {
                       const isSelected = voicePrefs.premiumVoiceId === voice.id;
                       const isFemale = ELEVENLABS_VOICES.es.female.some(v => v.id === voice.id);
+                      const isTesting = isTestingPremiumVoice === voice.id;
                       return (
-                        <button
-                          key={voice.id}
-                          onClick={() => voicePrefs.setPremiumVoiceId(isSelected ? null : voice.id)}
-                          className={`flex items-center gap-2 p-2 rounded-lg border text-left transition-all ${
-                            isSelected 
-                              ? 'bg-amber-500 text-white border-amber-600' 
-                              : 'bg-background hover:bg-muted border-border'
-                          }`}
-                        >
-                          <span>{isFemale ? '👩' : '👨'}</span>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium truncate">{voice.name}</p>
-                            <p className={`text-[10px] ${isSelected ? 'text-white/70' : 'text-muted-foreground'}`}>
-                              {voice.desc}
-                            </p>
-                          </div>
-                        </button>
+                        <div key={voice.id} className="flex items-center gap-2">
+                          <button
+                            onClick={() => voicePrefs.setPremiumVoiceId(isSelected ? null : voice.id)}
+                            className={`flex-1 flex items-center gap-2 p-2 rounded-lg border text-left transition-all ${
+                              isSelected 
+                                ? 'bg-primary text-primary-foreground border-primary' 
+                                : 'bg-background hover:bg-muted border-border'
+                            }`}
+                          >
+                            <span>{isFemale ? '👩' : '👨'}</span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium truncate">{voice.name}</p>
+                              <p className={`text-[10px] ${isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                                {voice.desc}
+                              </p>
+                            </div>
+                            {isSelected && <span className="text-xs">✓</span>}
+                          </button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-9 w-9 shrink-0"
+                            disabled={isTesting}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              testPremiumVoice(voice.id, 'es');
+                            }}
+                          >
+                            {isTesting ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Play className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
                       );
                     })}
                   </div>
@@ -406,28 +493,47 @@ export function VoicePreferencesCard() {
                   <Label className="text-xs font-medium flex items-center gap-1">
                     🌍 {language === 'es' ? 'Inglés (Norteamérica)' : 'English (North America)'}
                   </Label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2">
                     {[...ELEVENLABS_VOICES.en.female, ...ELEVENLABS_VOICES.en.male].map((voice) => {
                       const isSelected = voicePrefs.premiumVoiceId === voice.id;
                       const isFemale = ELEVENLABS_VOICES.en.female.some(v => v.id === voice.id);
+                      const isTesting = isTestingPremiumVoice === voice.id;
                       return (
-                        <button
-                          key={voice.id}
-                          onClick={() => voicePrefs.setPremiumVoiceId(isSelected ? null : voice.id)}
-                          className={`flex items-center gap-2 p-2 rounded-lg border text-left transition-all ${
-                            isSelected 
-                              ? 'bg-amber-500 text-white border-amber-600' 
-                              : 'bg-background hover:bg-muted border-border'
-                          }`}
-                        >
-                          <span>{isFemale ? '👩' : '👨'}</span>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium truncate">{voice.name}</p>
-                            <p className={`text-[10px] ${isSelected ? 'text-white/70' : 'text-muted-foreground'}`}>
-                              {voice.desc}
-                            </p>
-                          </div>
-                        </button>
+                        <div key={voice.id} className="flex items-center gap-2">
+                          <button
+                            onClick={() => voicePrefs.setPremiumVoiceId(isSelected ? null : voice.id)}
+                            className={`flex-1 flex items-center gap-2 p-2 rounded-lg border text-left transition-all ${
+                              isSelected 
+                                ? 'bg-primary text-primary-foreground border-primary' 
+                                : 'bg-background hover:bg-muted border-border'
+                            }`}
+                          >
+                            <span>{isFemale ? '👩' : '👨'}</span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium truncate">{voice.name}</p>
+                              <p className={`text-[10px] ${isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                                {voice.desc}
+                              </p>
+                            </div>
+                            {isSelected && <span className="text-xs">✓</span>}
+                          </button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-9 w-9 shrink-0"
+                            disabled={isTesting}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              testPremiumVoice(voice.id, 'en');
+                            }}
+                          >
+                            {isTesting ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Play className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
                       );
                     })}
                   </div>

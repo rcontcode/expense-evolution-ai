@@ -668,6 +668,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       
       setCurrentSpeakingText(text);
       setIsSpeaking(true);
+      options.onSpeakStart?.();
       
       const result = await options.premiumSpeak(text);
       
@@ -676,6 +677,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         // Premium completed - unblock mic
         setIsSpeaking(false);
         setCurrentSpeakingText('');
+        options.onSpeakEnd?.();
         
         if (continuousModeRef.current) {
           setTimeout(() => {
@@ -692,10 +694,32 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         return;
       }
       
-      // Premium failed - fall through to native TTS
-      console.log('[Voice] Premium TTS failed, falling back to native:', result.error);
+      // CRITICAL: Only fallback to native for "not_eligible" error (user has no premium minutes)
+      // For network/API errors, do NOT duplicate with native - just unblock and return
+      const shouldFallbackToNative = result.error === 'not_eligible';
+      
+      console.log('[Voice] Premium TTS failed:', result.error, '| Fallback to native:', shouldFallbackToNative);
       setIsSpeaking(false);
       setCurrentSpeakingText('');
+      
+      if (!shouldFallbackToNative) {
+        // Network/API error - unblock mic but don't speak with native
+        options.onSpeakEnd?.();
+        if (continuousModeRef.current) {
+          setTimeout(() => {
+            isPausedForSpeakingRef.current = false;
+            setTimeout(() => {
+              if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
+                createAndStartRecognition(true);
+              }
+            }, 200);
+          }, 300);
+        } else {
+          isPausedForSpeakingRef.current = false;
+        }
+        return;
+      }
+      // Fall through to native TTS only when user is not eligible for premium
     }
 
     // Use native TTS (either as fallback or primary)
