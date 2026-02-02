@@ -451,7 +451,7 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
         messages: aiMessages,
         tools: ASSISTANT_TOOLS,
         tool_choice: "auto",
-        max_tokens: 1000,
+        max_completion_tokens: 1000,
         temperature: 0.7,
       }),
     });
@@ -527,7 +527,7 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
                   content: JSON.stringify({ success: true, args: toolArgs }),
                 },
               ],
-              max_tokens: 800,
+              max_completion_tokens: 800,
               temperature: 0.7,
             }),
           });
