@@ -131,14 +131,32 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
     }
   }, []);
 
+  // Blocked voice IDs that are wrongly mapped (English speaker doing Spanish)
+  const BLOCKED_VOICE_IDS = new Set([
+    'jsCqWAovK2LkecY7zXl4', // "Sofía" - gringo accent
+    'z9fAnlkpzviPz146aGWa', // "Valentina" - gringo accent
+    'oWAxZDx7w5VEj9dCyTzz', // "Isabella" - gringo accent
+    'LcfcDJNUP1GQjkzn1xUU', // "Daniela" - too slow
+    'GBv7mTt0atIp3Br8iCZE', // "Diego" - too slow
+    'JBFqnCBsd6RMkjVDRZzb', // George (EN) wrongly used as ES
+  ]);
+
   // Get the appropriate voice ID based on language and gender
+  // IMPORTANT: Validates against blocked list to prevent gringo voices
   const getVoiceId = useCallback((): string => {
-    if (options.voiceId) return options.voiceId;
-    
     const lang = options.lang || 'es';
     const gender = options.voiceGender || 'female';
+    
+    // If user selected a voice, validate it's not blocked
+    if (options.voiceId && !BLOCKED_VOICE_IDS.has(options.voiceId)) {
+      return options.voiceId;
+    }
+    
+    // Fall back to safe default voice
     const voices = ELEVENLABS_VOICES[lang][gender];
-    return voices[0]?.id || ELEVENLABS_VOICES.es.female[0].id;
+    // Find first non-blocked voice
+    const safeVoice = voices.find(v => !BLOCKED_VOICE_IDS.has(v.id));
+    return safeVoice?.id || voices[0]?.id || ELEVENLABS_VOICES.es.female[0].id;
   }, [options.voiceId, options.lang, options.voiceGender]);
 
   const getVoicesForLang = useCallback((lang: 'es' | 'en'): VoicesForLang => {

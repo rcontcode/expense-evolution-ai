@@ -54,14 +54,14 @@ function detectGender(voice: ElevenLabsVoice): 'female' | 'male' {
 function isRecommendedLatamEs(voice: ElevenLabsVoice): boolean {
   const text = `${voice.name} ${voice.description ?? ''} ${labelsToText(voice.labels)}`.toLowerCase();
   // Must look Spanish/LatAm
-  const isSpanish = /spanish|español|latam|latin america|es-419|mexic|chile/.test(text);
+  const isSpanish = /spanish|español|latam|latin america|es-419|mexic|chile|argentin|colombi/.test(text);
   if (!isSpanish) return false;
 
-  // Must NOT look English-region
-  if (/english|en-us|en-gb|american|british|australian/.test(text)) return false;
+  // Must NOT look English-region (stricter check)
+  if (/english|en-us|en-gb|american|british|australian|united states/.test(text)) return false;
 
-  // Prefer Mexico/Chile/neutral latam
-  return /mexic|chile|latin america|latam|neutral|neutro/.test(text);
+  // Prefer Mexico/Chile/neutral latam/Colombia/Argentina
+  return /mexic|chile|latin america|latam|neutral|neutro|colombi|argentin/.test(text);
 }
 
 // Known-bad IDs that were incorrectly mapped as Spanish and sound “gringo” in-app.
