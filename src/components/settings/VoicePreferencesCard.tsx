@@ -34,12 +34,14 @@ export function VoicePreferencesCard() {
   const { language } = useLanguage();
   const voicePrefs = useVoicePreferences();
   const highlightCtx = useHighlight();
-  const { canUsePremiumVoice, getRemainingVoiceMinutes } = usePlanLimits();
+  const { canUsePremiumVoice, getRemainingVoiceMinutes, isGodMode } = usePlanLimits();
   
   const [availableVoices, setAvailableVoices] = useState<VoiceInfo[]>([]);
   const [showVoiceList, setShowVoiceList] = useState(false);
   const [showPremiumVoices, setShowPremiumVoices] = useState(false);
   const [isTestingPremiumVoice, setIsTestingPremiumVoice] = useState<string | null>(null);
+  const [lastPreviewTime, setLastPreviewTime] = useState<number>(0);
+  const PREVIEW_THROTTLE_MS = 2000; // Prevent rapid-fire clicks
   const premiumAudioRef = React.useRef<HTMLAudioElement | null>(null);
   
   const [showShortcutDialog, setShowShortcutDialog] = useState(false);
@@ -153,6 +155,13 @@ export function VoicePreferencesCard() {
 
   // Test a premium ElevenLabs voice - with fallback to native when limit exceeded
   const testPremiumVoice = useCallback(async (voiceId: string, lang: 'es' | 'en') => {
+    // Throttle: prevent rapid clicks
+    const now = Date.now();
+    if (now - lastPreviewTime < PREVIEW_THROTTLE_MS) {
+      return;
+    }
+    setLastPreviewTime(now);
+    
     // Stop any playing audio
     if (premiumAudioRef.current) {
       premiumAudioRef.current.pause();
@@ -465,7 +474,10 @@ export function VoicePreferencesCard() {
                       : '✨ High-quality voices with neutral Latin American accent'}
                   </p>
                   <Badge variant="outline" className="text-[10px]">
-                    {Math.round(getRemainingVoiceMinutes())} {language === 'es' ? 'min restantes' : 'min left'}
+                    {isGodMode 
+                      ? (language === 'es' ? '∞ Ilimitado' : '∞ Unlimited')
+                      : `${Math.round(getRemainingVoiceMinutes())} ${language === 'es' ? 'min restantes' : 'min left'}`
+                    }
                   </Badge>
                 </div>
                 

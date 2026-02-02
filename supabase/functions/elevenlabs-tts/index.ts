@@ -63,14 +63,23 @@ serve(async (req) => {
       );
     }
 
-    // Check if user is admin (bypass limits)
-    const { data: roleData } = await supabase
-      .from("roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .maybeSingle();
-    
-    const isAdmin = roleData?.role === "admin";
+    // Check if user is admin (bypass limits) - use user_roles table (same as frontend)
+    let isAdmin = false;
+    try {
+      const { data: roleData, error: roleError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      
+      if (!roleError && roleData) {
+        isAdmin = true;
+      }
+    } catch (e) {
+      // If table doesn't exist or query fails, assume not admin
+      console.log("Admin check failed, assuming non-admin:", e);
+    }
 
     // Get user's subscription plan
     const { data: subscription } = await supabase
@@ -187,11 +196,13 @@ serve(async (req) => {
       );
     }
 
-    // Increment usage tracking
-    await supabase.rpc("increment_voice_usage", {
-      p_user_id: user.id,
-      p_minutes: estimatedMinutes,
-    });
+    // Only increment usage tracking for non-admin users
+    if (!isAdmin) {
+      await supabase.rpc("increment_voice_usage", {
+        p_user_id: user.id,
+        p_minutes: estimatedMinutes,
+      });
+    }
 
     // Get the audio buffer
     const audioBuffer = await response.arrayBuffer();
