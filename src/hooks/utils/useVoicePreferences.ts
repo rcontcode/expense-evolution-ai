@@ -9,7 +9,8 @@ interface VoicePreferences {
   pitch: number; // 0 to 2
   voiceGender: VoiceGender; // Female, male, or auto
   selectedVoiceName: string | null; // Specific native voice name selected by user
-  premiumVoiceId: string | null; // ElevenLabs voice ID for premium TTS
+  premiumVoiceId: string | null; // Legacy: single voice ID (kept for backwards compatibility)
+  premiumVoiceIdByLang: { es: string | null; en: string | null }; // New: voice per language
   enableSoundEffects: boolean;
   confirmDestructiveActions: boolean;
   
@@ -62,6 +63,7 @@ const DEFAULT_PREFERENCES: VoicePreferences = {
   voiceGender: 'female',
   selectedVoiceName: null,
   premiumVoiceId: null,
+  premiumVoiceIdByLang: { es: null, en: null },
   enableSoundEffects: true,
   confirmDestructiveActions: true,
   customShortcuts: [],
@@ -88,7 +90,23 @@ export function useVoicePreferences() {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        return { ...DEFAULT_PREFERENCES, ...parsed };
+
+        // Backwards-compatible migration: older builds stored only `premiumVoiceId`.
+        // We intentionally DO NOT auto-apply that value to Spanish to avoid “gringo” Spanish.
+        const merged = { ...DEFAULT_PREFERENCES, ...parsed } as VoicePreferences;
+        if (!merged.premiumVoiceIdByLang || typeof merged.premiumVoiceIdByLang !== 'object') {
+          merged.premiumVoiceIdByLang = {
+            es: null,
+            en: parsed.premiumVoiceId ?? null,
+          };
+        } else {
+          merged.premiumVoiceIdByLang = {
+            es: merged.premiumVoiceIdByLang.es ?? null,
+            en: merged.premiumVoiceIdByLang.en ?? null,
+          };
+        }
+
+        return merged;
       }
     } catch (e) {
       console.error('Failed to load voice preferences:', e);
@@ -198,6 +216,20 @@ export function useVoicePreferences() {
   const setPremiumVoiceId = useCallback((voiceId: string | null) => {
     setPreferences(prev => ({ ...prev, premiumVoiceId: voiceId }));
   }, []);
+
+  const setPremiumVoiceIdForLang = useCallback((lang: 'es' | 'en', voiceId: string | null) => {
+    setPreferences(prev => ({
+      ...prev,
+      premiumVoiceIdByLang: {
+        ...(prev.premiumVoiceIdByLang ?? { es: null, en: null }),
+        [lang]: voiceId,
+      },
+    }));
+  }, []);
+
+  const getPremiumVoiceId = useCallback((lang: 'es' | 'en') => {
+    return preferences.premiumVoiceIdByLang?.[lang] ?? preferences.premiumVoiceId ?? null;
+  }, [preferences.premiumVoiceIdByLang, preferences.premiumVoiceId]);
 
   // Toggle sound effects
   const toggleSoundEffects = useCallback(() => {
@@ -369,6 +401,7 @@ export function useVoicePreferences() {
     voiceGender: preferences.voiceGender,
     selectedVoiceName: preferences.selectedVoiceName,
     premiumVoiceId: preferences.premiumVoiceId,
+    premiumVoiceIdByLang: preferences.premiumVoiceIdByLang,
     enableSoundEffects: preferences.enableSoundEffects,
     confirmDestructiveActions: preferences.confirmDestructiveActions,
     customShortcuts: preferences.customShortcuts,
@@ -384,6 +417,8 @@ export function useVoicePreferences() {
     setVoiceGender,
     setSelectedVoice,
     setPremiumVoiceId,
+    setPremiumVoiceIdForLang,
+    getPremiumVoiceId,
     toggleSoundEffects,
     toggleConfirmDestructive,
     

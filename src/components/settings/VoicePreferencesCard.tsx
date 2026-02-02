@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,8 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useVoicePreferences, type VoiceGender } from '@/hooks/utils/useVoicePreferences';
 import { useHighlight, type HighlightColor } from '@/contexts/HighlightContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ELEVENLABS_VOICES } from '@/hooks/utils/useElevenLabsTTS';
 import { usePlanLimits } from '@/hooks/data/usePlanLimits';
+import { useElevenLabsVoices, buildVoiceOptions, type ElevenLabsVoice } from '@/hooks/data/useElevenLabsVoices';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Mic, Volume2, Bell, Zap, Trash2, Plus, Clock, Calendar, 
@@ -35,6 +35,35 @@ export function VoicePreferencesCard() {
   const voicePrefs = useVoicePreferences();
   const highlightCtx = useHighlight();
   const { canUsePremiumVoice, getRemainingVoiceMinutes, isGodMode } = usePlanLimits();
+
+  const elevenLabsVoicesQuery = useElevenLabsVoices();
+
+  const premiumOptionsEs = useMemo(() => {
+    const voices = elevenLabsVoicesQuery.data?.voices ?? [];
+    return buildVoiceOptions(voices, 'es');
+  }, [elevenLabsVoicesQuery.data?.voices]);
+
+  const premiumOptionsEn = useMemo(() => {
+    const voices = elevenLabsVoicesQuery.data?.voices ?? [];
+    return buildVoiceOptions(voices, 'en');
+  }, [elevenLabsVoicesQuery.data?.voices]);
+
+  const selectedPremiumEs = voicePrefs.getPremiumVoiceId('es');
+  const selectedPremiumEn = voicePrefs.getPremiumVoiceId('en');
+  const currentLang = (language === 'es' ? 'es' : 'en') as 'es' | 'en';
+  const selectedForCurrentLang = voicePrefs.getPremiumVoiceId(currentLang);
+
+  // Hard safety: if Spanish has an EN voiceId stored, clear it.
+  useEffect(() => {
+    if (!elevenLabsVoicesQuery.data?.voices?.length) return;
+    const validEsIds = new Set([
+      ...premiumOptionsEs.female.map(v => v.id),
+      ...premiumOptionsEs.male.map(v => v.id),
+    ]);
+    if (selectedPremiumEs && !validEsIds.has(selectedPremiumEs)) {
+      voicePrefs.setPremiumVoiceIdForLang('es', null);
+    }
+  }, [elevenLabsVoicesQuery.data?.voices?.length, premiumOptionsEs.female, premiumOptionsEs.male, selectedPremiumEs, voicePrefs]);
   
   const [availableVoices, setAvailableVoices] = useState<VoiceInfo[]>([]);
   const [showVoiceList, setShowVoiceList] = useState(false);
@@ -175,9 +204,9 @@ export function VoicePreferencesCard() {
       ? 'Hola, soy tu asistente financiero.'
       : 'Hello, I am your financial assistant.';
     
-    // Check remaining minutes first
+    // Check remaining minutes first (admins are unlimited)
     const remaining = getRemainingVoiceMinutes();
-    if (remaining <= 0) {
+    if (!isGodMode && remaining <= 0) {
       // Use native voice fallback for preview
       toast.info(
         language === 'es' 
@@ -254,7 +283,7 @@ export function VoicePreferencesCard() {
       setIsTestingPremiumVoice(null);
       toast.error(language === 'es' ? 'Error al probar voz premium' : 'Error testing premium voice');
     }
-  }, [language, getRemainingVoiceMinutes]);
+  }, [PREVIEW_THROTTLE_MS, getRemainingVoiceMinutes, isGodMode, language, lastPreviewTime]);
 
 
   const handleAddShortcut = () => {
@@ -456,7 +485,7 @@ export function VoicePreferencesCard() {
                   <span className="text-amber-700 dark:text-amber-400">
                     {language === 'es' ? 'Voces Premium (ElevenLabs)' : 'Premium Voices (ElevenLabs)'}
                   </span>
-                  {voicePrefs.premiumVoiceId && (
+                  {selectedForCurrentLang && (
                     <Badge variant="default" className="ml-2 text-[10px] bg-amber-500">
                       {language === 'es' ? 'Activa' : 'Active'}
                     </Badge>
@@ -469,9 +498,9 @@ export function VoicePreferencesCard() {
               <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 space-y-3">
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted-foreground">
-                    {language === 'es' 
-                      ? '✨ Voces de alta calidad con acento latinoamericano neutral'
-                      : '✨ High-quality voices with neutral Latin American accent'}
+                    {language === 'es'
+                      ? '✨ Solo voces ES con acento MX/CL/LatAm neutro (sin “gringo”)'
+                      : '✨ Curated voices (no accent mismatch)'}
                   </p>
                   <Badge variant="outline" className="text-[10px]">
                     {isGodMode 
@@ -487,14 +516,39 @@ export function VoicePreferencesCard() {
                     🌎 {language === 'es' ? 'Español (Latinoamérica)' : 'Spanish (Latin America)'}
                   </Label>
                   <div className="grid grid-cols-1 gap-2">
-                    {[...ELEVENLABS_VOICES.es.female, ...ELEVENLABS_VOICES.es.male].map((voice) => {
-                      const isSelected = voicePrefs.premiumVoiceId === voice.id;
-                      const isFemale = ELEVENLABS_VOICES.es.female.some(v => v.id === voice.id);
-                      const isTesting = isTestingPremiumVoice === voice.id;
+                    {(() => {
+                      const all = [...premiumOptionsEs.female, ...premiumOptionsEs.male];
+                      const femaleIds = new Set(premiumOptionsEs.female.map(v => v.id));
+                      const getSubtitle = (v: ElevenLabsVoice) =>
+                        v.labels?.accent || v.labels?.description || v.description || '';
+
+                      // Loading/empty state
+                      if (elevenLabsVoicesQuery.isLoading) {
+                        return (
+                          <div className="text-xs text-muted-foreground flex items-center gap-2">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            {language === 'es' ? 'Cargando voces…' : 'Loading voices…'}
+                          </div>
+                        );
+                      }
+                      if (elevenLabsVoicesQuery.isError || all.length === 0) {
+                        return (
+                          <div className="text-xs text-muted-foreground">
+                            {language === 'es'
+                              ? 'No pude cargar voces premium. Usando lista local (limitada).'
+                              : 'Could not load premium voices. Falling back to local list.'}
+                          </div>
+                        );
+                      }
+
+                      return all.map((voice) => {
+                        const isSelected = selectedPremiumEs === voice.id;
+                        const isFemale = femaleIds.has(voice.id);
+                        const isTesting = isTestingPremiumVoice === voice.id;
                       return (
                         <div key={voice.id} className="flex items-center gap-2">
                           <button
-                            onClick={() => voicePrefs.setPremiumVoiceId(isSelected ? null : voice.id)}
+                            onClick={() => voicePrefs.setPremiumVoiceIdForLang('es', isSelected ? null : voice.id)}
                             className={`flex-1 flex items-center gap-2 p-2 rounded-lg border text-left transition-all ${
                               isSelected 
                                 ? 'bg-primary text-primary-foreground border-primary' 
@@ -505,7 +559,7 @@ export function VoicePreferencesCard() {
                             <div className="min-w-0 flex-1">
                               <p className="text-sm font-medium truncate">{voice.name}</p>
                               <p className={`text-[10px] ${isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                                {voice.desc}
+                                {getSubtitle(voice) || (language === 'es' ? 'Acento LATAM' : 'Voice')}
                               </p>
                             </div>
                             {isSelected && <span className="text-xs">✓</span>}
@@ -528,7 +582,8 @@ export function VoicePreferencesCard() {
                           </Button>
                         </div>
                       );
-                    })}
+                      });
+                    })()}
                   </div>
                 </div>
 
@@ -538,14 +593,27 @@ export function VoicePreferencesCard() {
                     🌍 {language === 'es' ? 'Inglés (Norteamérica)' : 'English (North America)'}
                   </Label>
                   <div className="grid grid-cols-1 gap-2">
-                    {[...ELEVENLABS_VOICES.en.female, ...ELEVENLABS_VOICES.en.male].map((voice) => {
-                      const isSelected = voicePrefs.premiumVoiceId === voice.id;
-                      const isFemale = ELEVENLABS_VOICES.en.female.some(v => v.id === voice.id);
-                      const isTesting = isTestingPremiumVoice === voice.id;
+                    {(() => {
+                      const all = [...premiumOptionsEn.female, ...premiumOptionsEn.male];
+                      const femaleIds = new Set(premiumOptionsEn.female.map(v => v.id));
+                      const getSubtitle = (v: ElevenLabsVoice) =>
+                        v.labels?.accent || v.labels?.description || v.description || '';
+
+                      if (elevenLabsVoicesQuery.isLoading) {
+                        return null;
+                      }
+                      if (elevenLabsVoicesQuery.isError || all.length === 0) {
+                        return null;
+                      }
+
+                      return all.map((voice) => {
+                        const isSelected = selectedPremiumEn === voice.id;
+                        const isFemale = femaleIds.has(voice.id);
+                        const isTesting = isTestingPremiumVoice === voice.id;
                       return (
                         <div key={voice.id} className="flex items-center gap-2">
                           <button
-                            onClick={() => voicePrefs.setPremiumVoiceId(isSelected ? null : voice.id)}
+                            onClick={() => voicePrefs.setPremiumVoiceIdForLang('en', isSelected ? null : voice.id)}
                             className={`flex-1 flex items-center gap-2 p-2 rounded-lg border text-left transition-all ${
                               isSelected 
                                 ? 'bg-primary text-primary-foreground border-primary' 
@@ -556,7 +624,7 @@ export function VoicePreferencesCard() {
                             <div className="min-w-0 flex-1">
                               <p className="text-sm font-medium truncate">{voice.name}</p>
                               <p className={`text-[10px] ${isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                                {voice.desc}
+                                {getSubtitle(voice) || (language === 'es' ? 'Inglés' : 'English')}
                               </p>
                             </div>
                             {isSelected && <span className="text-xs">✓</span>}
@@ -579,16 +647,17 @@ export function VoicePreferencesCard() {
                           </Button>
                         </div>
                       );
-                    })}
+                      });
+                    })()}
                   </div>
                 </div>
 
-                {voicePrefs.premiumVoiceId && (
+                {selectedForCurrentLang && (
                   <Button 
                     variant="outline" 
                     size="sm" 
                     className="w-full"
-                    onClick={() => voicePrefs.setPremiumVoiceId(null)}
+                    onClick={() => voicePrefs.setPremiumVoiceIdForLang(currentLang, null)}
                   >
                     {language === 'es' ? '✕ Usar voz automática' : '✕ Use automatic voice'}
                   </Button>
