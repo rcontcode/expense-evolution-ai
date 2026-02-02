@@ -1,316 +1,100 @@
 
-
-# 🎯 Plan: Sistema de Voz Premium con ElevenLabs - Modelo Rentable y Escalable
-
-## Resumen Ejecutivo
-
-Después de un análisis exhaustivo de patrones de uso, costos de ElevenLabs, y estrategias de pricing del mercado, he desarrollado un **modelo híbrido basado en créditos de voz** que maximiza el valor para el usuario mientras protege la rentabilidad del negocio.
-
----
-
-## Análisis de Uso Real y Proyectado
-
-### Estado Actual de la Base de Datos
-- La columna `voice_requests_count` **no existe aún** en `usage_tracking`
-- Solo hay 1 usuario activo (plan free) con actividad mínima
-- No hay datos históricos de uso de voz para analizar
-
-### Proyección de Uso Basada en Investigación
-
-Según datos de ChatGPT (10% de la población adulta mundial lo usa):
-
-| Tipo de Usuario | Sesiones/Mes | Interacciones/Sesión | Total/Mes |
-|-----------------|--------------|----------------------|-----------|
-| Casual | 3-5 días | 2-3 | 10-15 |
-| Regular | 10-15 días | 3-5 | 40-75 |
-| Power User | 20+ días | 5-10 | 150-200 |
-| Heavy (fanático) | Diario | 10+ | 300-500+ |
-
-**Conclusión clave:** 50 interacciones/mes es extremadamente restrictivo. Un usuario que realmente adopte el asistente de voz usará fácilmente **100-300 interacciones/mes**.
-
----
-
-## Costos Reales de ElevenLabs (2025)
-
-### Sistema de Créditos
-
-| Plan | Precio/Mes | Créditos | Costo por 1K Créditos |
-|------|------------|----------|----------------------|
-| Starter | $5 | 30,000 | $0.167 |
-| Creator | $22 | 100,000 | $0.22 |
-| Pro | $99 | 500,000 | $0.198 |
-| Scale | $330 | 2,000,000 | $0.165 |
-
-### Cálculo Real por Respuesta de Voz
-
-- Respuesta promedio: ~150 palabras = ~600 caracteres
-- **Modelo Turbo (recomendado):** 0.5 créditos/carácter = **300 créditos/respuesta**
-- **Modelo Multilingual v2:** 1 crédito/carácter = **600 créditos/respuesta**
-
-| Uso/Mes | Créditos (Turbo) | Costo en Plan Starter ($5) |
-|---------|------------------|---------------------------|
-| 50 | 15,000 | $0.83 |
-| 100 | 30,000 | $1.67 |
-| 200 | 60,000 | $3.33 |
-| 300 | 90,000 | $5.00 |
-| 500 | 150,000 | $8.33 |
-
-**Revelación importante:** Con el modelo Turbo (0.5 créditos/char), ¡el costo es **LA MITAD** de lo que calculé antes!
-
----
-
-## Modelo de Pricing Propuesto: Sistema de Créditos de Voz
-
-### Concepto: "Minutos de Voz Premium"
-
-En lugar de contar respuestas (confuso), usamos **minutos de voz premium** como métrica:
-- 1 minuto de voz ≈ 150 palabras ≈ 600 caracteres ≈ **300 créditos (Turbo)**
-- Más intuitivo para el usuario: "Tienes 20 minutos de voz premium este mes"
-
-### Nueva Diferenciación por Plan
-
-| Plan | Precio | Minutos Voz Premium/Mes | Respuestas Aprox. | Costo ElevenLabs | Margen |
-|------|--------|------------------------|-------------------|------------------|--------|
-| **Free** | $0 | 3 min (demo) | ~3 | $0.15 | N/A |
-| **Premium** | $6.99 | 30 min | ~30 | $1.50 | 79% ✅ |
-| **Pro** | $14.99 | 120 min | ~120 | $6.00 | 60% ✅ |
-| **Pro+ (nuevo)** | $24.99 | Ilimitado* | ~500 cap | $15.00 | 40% ⚠️ |
-
-*Ilimitado con fair-use cap de 500/mes para proteger contra abuso.
-
----
-
-## Estrategia Anti-Abuso y Protección de Márgenes
-
-### 1. Límite Duro con Fallback Elegante
-```text
-┌────────────────────────────────────────────────────────────────────────┐
-│                  FLUJO DE VOZ CON PROTECCIÓN                           │
-├────────────────────────────────────────────────────────────────────────┤
-│                                                                        │
-│  [Usuario pide respuesta de voz]                                       │
-│           │                                                            │
-│           ▼                                                            │
-│  ┌─────────────────────┐                                               │
-│  │ ¿Minutos restantes? │                                               │
-│  └──────────┬──────────┘                                               │
-│             │                                                          │
-│     ┌───────┴───────┐                                                  │
-│     │               │                                                  │
-│     ▼ Sí            ▼ No                                               │
-│  ┌──────────────┐  ┌────────────────────────────────────┐              │
-│  │ ElevenLabs   │  │ Web Speech API (gratis)            │              │
-│  │ TTS Premium  │  │ + Badge "Voz básica"               │              │
-│  │ + Badge      │  │ + CTA sutil "Recupera voz premium" │              │
-│  │ "Premium"    │  └────────────────────────────────────┘              │
-│  └──────────────┘                                                      │
-│                                                                        │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
-### 2. Compra de Minutos Adicionales (Upsell)
-- $2.99 por 30 minutos adicionales
-- Solo disponible para usuarios de pago
-- Genera ingreso extra sin subir precio base
-
-### 3. Notificaciones de Uso
-| % Usado | Acción |
-|---------|--------|
-| 50% | Notificación informativa discreta |
-| 80% | Alerta visual + sugerencia de upgrade |
-| 100% | Fallback a voz nativa + modal de upgrade |
-
----
-
-## Comparación con Competencia y Viabilidad
-
-### Apps con Voice AI Similar
-
-| App | Modelo | Límites | Precio |
-|-----|--------|---------|--------|
-| Notion AI | Por "AI blocks" | 100 free, luego $10/mes ilimitado | $10+/mes |
-| Otter.ai | Por minutos | 300 min/mes free, 1200 min Pro | $16.99/mes |
-| Descript | Por horas | 1hr/mes free, 30hrs Pro | $24/mes |
-| ChatGPT Plus | Ilimitado | Sin límite de mensajes | $20/mes |
-
-**Insight:** Apps con voice/audio usan modelo de tiempo (minutos/horas), no conteo de mensajes. Esto valida nuestro enfoque de "minutos de voz".
-
-### Márgenes del Mercado SaaS
-
-| Tipo | Margen Bruto Típico |
-|------|---------------------|
-| SaaS General | 70-85% |
-| SaaS con AI | 50-70% |
-| SaaS con Voice AI | 40-60% |
-
-**Nuestros márgenes propuestos (60-79%) están DENTRO del rango saludable.**
-
----
-
-## Implementación Técnica
-
-### Fase 1: Infraestructura de Base de Datos
-
-Agregar columna y función para tracking:
-
-```sql
--- Columna para tracking de minutos de voz
-ALTER TABLE usage_tracking 
-ADD COLUMN IF NOT EXISTS voice_minutes_used DECIMAL(10,2) DEFAULT 0;
-
--- Función para incrementar uso de voz
-CREATE OR REPLACE FUNCTION increment_voice_usage(
-  p_user_id UUID,
-  p_minutes DECIMAL
-)
-RETURNS VOID AS $$
-BEGIN
-  INSERT INTO usage_tracking (user_id, period_start, voice_minutes_used)
-  VALUES (
-    p_user_id, 
-    DATE_TRUNC('month', CURRENT_DATE)::DATE,
-    p_minutes
-  )
-  ON CONFLICT (user_id, period_start) 
-  DO UPDATE SET 
-    voice_minutes_used = usage_tracking.voice_minutes_used + p_minutes,
-    updated_at = NOW();
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-```
-
-### Fase 2: Edge Function de ElevenLabs TTS
-
-Ubicación: `supabase/functions/elevenlabs-tts/index.ts`
-
-Flujo:
-1. Autenticar usuario
-2. Verificar minutos restantes
-3. Si disponible → Llamar ElevenLabs API (modelo Turbo)
-4. Calcular minutos usados (chars / 600)
-5. Incrementar contador
-6. Retornar audio MP3
-
-Configuración:
-- Modelo: `eleven_turbo_v2_5` (más rápido, más barato)
-- Voz default: Roger (CwhRBWXzGAHq8TQ4Fs17)
-- Format: `mp3_22050_32` (balance calidad/tamaño)
-
-### Fase 3: Hook de React
-
-Crear `src/hooks/utils/useElevenLabsTTS.ts`:
-
-```typescript
-// Pseudocódigo del flujo
-const useElevenLabsTTS = () => {
-  const { remainingMinutes, incrementUsage } = usePlanLimits();
-  
-  const speak = async (text: string) => {
-    if (remainingMinutes <= 0) {
-      // Fallback a Web Speech API
-      return voiceSynthesisManager.speak(text);
-    }
-    
-    // Llamar edge function
-    const audio = await fetchElevenLabsAudio(text);
-    
-    // Calcular minutos usados
-    const minutesUsed = text.length / 600;
-    await incrementUsage('voice', minutesUsed);
-    
-    // Reproducir audio
-    playAudio(audio);
-  };
-  
-  return { speak, remainingMinutes };
-};
-```
-
-### Fase 4: Actualizar usePlanLimits
-
-Cambiar estructura de límites:
-
-```typescript
-export const PLAN_LIMITS = {
-  free: {
-    voice_minutes_per_month: 3,  // Demo
-    // ...
-  },
-  premium: {
-    voice_minutes_per_month: 30,
-    // ...
-  },
-  pro: {
-    voice_minutes_per_month: 120,
-    // ...
-  },
-};
-```
-
-### Fase 5: UI de Uso de Voz
-
-Componentes a crear:
-- `VoiceMinutesIndicator`: Barra de progreso con minutos usados
-- `VoiceUpgradePrompt`: Modal cuando se agotan minutos
-- `PremiumVoiceBadge`: Indicador visual de voz premium activa
-
----
-
-## Proyección Financiera
-
-### Escenario: 1,000 usuarios de pago
-
-| Plan | Usuarios | Revenue/Mes | Costo ElevenLabs (50% uso) | Margen Bruto |
-|------|----------|-------------|---------------------------|--------------|
-| Premium | 700 | $4,893 | $525 | $4,368 (89%) |
-| Pro | 250 | $3,748 | $750 | $2,998 (80%) |
-| Pro+ | 50 | $1,250 | $375 | $875 (70%) |
-| **Total** | 1,000 | **$9,891** | **$1,650** | **$8,241 (83%)** |
-
-**Margen bruto proyectado: 83%** (excelente para SaaS con AI)
-
-### Costo Mensual de ElevenLabs para tu App
-
-| Usuarios Activos | Plan ElevenLabs Necesario | Costo |
-|------------------|---------------------------|-------|
-| 1-100 | Starter ($5) | $5/mes |
-| 100-500 | Creator ($22) | $22/mes |
-| 500-2,000 | Pro ($99) | $99/mes |
-| 2,000+ | Scale ($330) | $330/mes |
-
----
-
-## Archivos a Crear/Modificar
-
-| Archivo | Tipo | Descripción |
-|---------|------|-------------|
-| `supabase/migrations/xxx_add_voice_minutes.sql` | Crear | Columna y función de voz |
-| `supabase/functions/elevenlabs-tts/index.ts` | Crear | Edge function de TTS |
-| `src/hooks/utils/useElevenLabsTTS.ts` | Crear | Hook de TTS premium |
-| `src/hooks/data/usePlanLimits.ts` | Modificar | Límites de minutos de voz |
-| `src/components/chat/VoiceMinutesIndicator.tsx` | Crear | UI de uso |
-| `src/components/chat/VoiceUpgradePrompt.tsx` | Crear | Modal de upgrade |
-| `src/components/chat/PremiumVoiceBadge.tsx` | Crear | Badge visual |
-| `src/components/chat/ChatAssistant.tsx` | Modificar | Integrar TTS premium |
-
----
-
-## Respuesta a tus Preguntas
-
-### ¿50 respuestas es muy poco?
-**Sí.** Basado en patrones de uso de ChatGPT, un usuario activo usará 100-300 interacciones/mes. Por eso propongo **minutos de voz** (30-120) que equivalen a más respuestas pero controlan el costo.
-
-### ¿Cómo evitar que se pasen del límite?
-1. **Límite duro** + fallback automático a voz nativa (gratis)
-2. **Notificaciones progresivas** al 50%, 80%, 100%
-3. **Opción de comprar más** ($2.99/30 min adicionales)
-
-### ¿Hay que cambiar precios?
-**No necesariamente.** Con el modelo Turbo de ElevenLabs (0.5 créditos/char), los márgenes son saludables (60-79%). Opcionalmente podrías agregar un tier "Pro+" a $24.99 para usuarios que quieran ilimitado.
-
-### ¿Por qué este modelo es mejor?
-1. **Intuitivo:** "Minutos de voz" es más fácil de entender que "respuestas"
-2. **Justo:** Respuestas largas consumen más, respuestas cortas menos
-3. **Escalable:** Puedes ajustar límites sin cambiar estructura
-4. **Rentable:** Márgenes del 60-83% según uso
-
+Objetivo
+- Corregir por qué te aparece “se acabaron los minutos” aunque eres el creador/admin.
+- Evitar que el sistema se “congele / relentece” cuando ocurre un 429.
+- Mejorar la experiencia de configuración: previsualización de voces confiable, cambio de voz que sí se aplique, y feedback claro de guardado (sin necesidad de botón “Guardar” si se guarda automático).
+
+Diagnóstico (causa raíz)
+1) Tu cuenta sí es admin en la base de datos, pero el backend de voz premium no te está reconociendo como admin:
+   - En frontend, usePlanLimits() usa la tabla public.user_roles para decidir “modo dios” (admin).
+   - En el backend function supabase/functions/elevenlabs-tts/index.ts se consulta una tabla “roles” (public.roles) que NO existe en tu base de datos, entonces isAdmin queda false y te aplica el límite (3 min).
+   - Resultado: el frontend cree que eres ilimitado, pero el backend te corta con 429 voice_limit_exceeded.
+
+2) Además, los previews y pruebas iniciales consumieron casi todo el cupo (2.96/3). Esto es normal con el cálculo actual (caracteres/600) si se prueba varias veces, pero en tu caso no debería cobrarse por ser admin/creador.
+
+3) El “freeze / blank screen” ocurre porque algunas rutas/UI no están manejando de forma robusta el 429 (y/o el estado de speaking/listening) y se quedan en un estado bloqueado.
+
+Qué vamos a cambiar (enfoque)
+A) Backend (función elevenlabs-tts): reconocer admin correctamente y no cobrar minutos a admin
+1. Cambiar el chequeo de admin:
+   - Reemplazar la consulta a “roles” por “user_roles” (misma fuente que usa el frontend).
+   - Manejar el error de tabla inexistente de forma segura (si falla la consulta, asumir no-admin sin romper el flujo).
+
+2. Bypass real de límites para admin:
+   - Si isAdmin=true:
+     - monthlyLimit = Infinity
+     - NO ejecutar increment_voice_usage (para que no se sumen minutos ni se “gasten” pruebas).
+   - Esto hace que, como creador/admin, nunca veas 429 por minutos.
+
+3. Robustez de respuestas:
+   - Mantener 429 + { error: "voice_limit_exceeded", useFallback: true } para usuarios no-admin cuando aplique.
+   - Asegurar Content-Type consistente en errores (application/json), para que el cliente siempre pueda parsear errorData sin fallar.
+
+B) Base de datos (opcional pero recomendado): “descontaminar” tu uso actual
+- Resetear tu voice_minutes_used del periodo actual a 0 (solo para tu usuario admin) para que no te quede “sucio” el panel/estado local.
+- Esto es opcional porque con el bypass ya no te afectará, pero mejora la claridad.
+- Lo haríamos con una migración SQL puntual (UPDATE sobre usage_tracking para tu user_id y period_start actual) o con una función segura “reset_my_voice_usage()” limitada a admin.
+
+C) Frontend: fallback correcto y sin duplicación cuando hay 429 (para usuarios normales)
+1. Ajustar la lógica de fallback en voz:
+   - Hoy useVoiceAssistant solo hace fallback nativo cuando premiumSpeak retorna error === 'not_eligible'.
+   - Cambiaremos para que también haga fallback cuando el error sea 'voice_limit_exceeded' (o mapearemos ese error a 'not_eligible' dentro de useElevenLabsTTS).
+   - Resultado: cuando un usuario llega al límite, no se “traba”: habla con voz nativa y se mantiene la UX.
+
+2. Evitar congelamientos:
+   - Asegurar que cuando premium falle (429 u otro), se liberen siempre:
+     - isPausedForSpeakingRef
+     - estados de “isSpeaking / isListening”
+   - Revisar el flujo stop/cancel para que no quede speechSynthesis en pending y provoque loops.
+
+D) Configuración de voces: que el cambio se aplique y se entienda
+1. Preview de voces premium:
+   - Ya existe botón Play por voz. Lo haremos más claro y consistente:
+     - Mostrar “Esto consume minutos premium” solo a no-admin.
+     - Si admin: mostrar “Ilimitado” en vez de Math.round(Infinity) (que hoy se vería raro).
+     - Throttle: impedir múltiples clicks rápidos que lancen varias solicitudes.
+     - (Opcional) Cache local por voiceId+lang del preview para no repetir consumo (usuarios no-admin).
+
+2. Guardado:
+   - Actualmente se guarda automáticamente en localStorage (useVoicePreferences).
+   - Añadiremos una etiqueta visible tipo “Guardado automáticamente” y/o un toast “Preferencia actualizada” cuando selecciones voz premium, para que se sienta “guardado” sin botón.
+   - Si prefieres un botón “Guardar”, lo podemos agregar, pero mi recomendación es mantener auto-guardado y solo dar feedback.
+
+3. Defaults correctos (acentos):
+   - Asegurar que, si idioma = español y no hay premiumVoiceId elegido, el default sea el primer set “es.female” (Matilda) o “es.male” según género.
+   - Si el usuario tiene guardado un voiceId que no corresponde al idioma (ej. un voiceId inglés pero UI en español), lo normalizaremos (reset a null o al default del idioma) para evitar “acento agringado hablando español”.
+
+Archivos involucrados (técnico)
+- Backend function:
+  - supabase/functions/elevenlabs-tts/index.ts
+- Frontend:
+  - src/hooks/utils/useElevenLabsTTS.ts (mapear 429/voice_limit_exceeded, mejorar errores)
+  - src/hooks/utils/useVoiceAssistant.ts (fallback también para voice_limit_exceeded + limpieza de estado)
+  - src/components/settings/VoicePreferencesCard.tsx (mostrar ilimitado para admin, feedback de guardado, throttle/cache preview)
+  - (Opcional) src/hooks/utils/useVoicePreferences.ts (normalización de premiumVoiceId por idioma)
+
+Plan de implementación (secuenciado)
+1) Confirmación en backend de tu rol admin (ya verificado en public.user_roles).
+2) Cambiar elevenlabs-tts:
+   - Admin check con user_roles
+   - No incrementar uso si admin
+   - Hardening del manejo de errores
+3) (Opcional) Reset de tu usage_tracking.voice_minutes_used del mes actual para tu usuario.
+4) Frontend:
+   - Fallback nativo cuando error sea voice_limit_exceeded
+   - Garantizar limpieza de estados para evitar “congelado”
+5) UX Settings:
+   - “Ilimitado” para admin
+   - Feedback claro de guardado
+   - Throttle/caching de previews
+   - Normalización de voiceId por idioma
+6) Pruebas end-to-end
+   - Como admin: reproducir previews, hablar en chat, confirmar que nunca aparece 429 y que el acento en español es latino neutral.
+   - Como usuario no-admin (cuenta de prueba): forzar agotamiento y confirmar fallback nativo sin duplicación ni freeze.
+   - Probar en móvil y desktop (por los estados de speechSynthesis/recognition).
+
+Criterios de éxito
+- Tu cuenta (admin/creador) no vuelve a ver “voice_limit_exceeded”.
+- El chat no se congela cuando hay errores o límites.
+- Cambiar una voz premium en configuración se nota inmediatamente en la voz del asistente.
+- Preview de voces funciona y explica claramente si consume minutos (solo no-admin).
