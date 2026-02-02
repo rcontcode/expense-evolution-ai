@@ -1,351 +1,435 @@
 
-# Plan: Optimizacion Responsive y Profesional de la App
+# Plan: Transformación Móvil Profesional - App de Nivel Nativo
 
 ## Resumen Ejecutivo
 
-Despues de analizar exhaustivamente la aplicacion, he identificado multiples areas donde la experiencia responsive puede mejorarse significativamente. El objetivo es transformar la app en una experiencia **escaneable, compacta y profesional** en todos los dispositivos.
+Después de revisar exhaustivamente **28 páginas** y **50+ componentes**, he identificado que la aplicación necesita una transformación profunda para convertirse en una experiencia móvil verdaderamente profesional. No se trata solo de "achicar" elementos, sino de **rediseñar estratégicamente** la arquitectura de información, la navegación, y la interacción táctil.
 
 ---
 
-## Problemas Identificados
+## Diagnóstico Crítico por Área
 
-### 1. Contenido Excesivamente Largo Verticalmente
-- **Dashboard**: Demasiados componentes apilados verticalmente (Timeline + Month Detail + Control Center + Vista Organizada)
-- **Paginas de contenido**: Padding excesivo (`p-8` = 32px en todas partes)
-- **Guias/Banners**: Multiples banners ocupan espacio valioso (Beta Banner + Nudge Banner + Onboarding + MentorQuote + PageContextGuide)
+### 1. NAVEGACIÓN MÓVIL (Layout.tsx)
+**Problemas:**
+- Bottom nav usa 5 items pero el central (Camera) ocupa demasiado espacio visual
+- El menu hamburguesa (Sheet) tiene demasiadas secciones y scroll excesivo
+- No hay acceso rápido a funciones frecuentes (Clientes, Mileage)
 
-### 2. Tamanios Inconsistentes
-- Cards con tamanios variables sin logica clara
-- Tablas con anchos fijos que no se adaptan a pantallas medianas
-- Botones con paddings irregulares
-
-### 3. Mobile vs Desktop No Optimizado
-- ExpensesTable usa porcentajes fijos que se rompen en tablets
-- Landing page muy larga para mobile
-- Formularios no optimizados para touch
-
-### 4. Espaciado Excesivo
-- `space-y-8` y `space-y-6` generan mucho espacio vertical
-- Cards con `CardHeader` + `CardContent` agregan padding innecesario
-- Margenes acumulativos entre componentes
-
----
-
-## Fase 1: Sistema de Espaciado Compacto
-
-### 1.1 Crear Clases Utilitarias de Densidad
-
-```css
-/* src/index.css - Agregar al final */
-.density-compact { --spacing-multiplier: 0.75; }
-.density-normal { --spacing-multiplier: 1; }
-.density-comfortable { --spacing-multiplier: 1.25; }
-
-/* Layout compacto para mobile */
-@media (max-width: 768px) {
-  .page-container {
-    @apply px-3 py-4;
-  }
-  .section-gap {
-    @apply space-y-3;
-  }
-}
-
-@media (min-width: 769px) {
-  .page-container {
-    @apply px-6 py-5;
-  }
-  .section-gap {
-    @apply space-y-4;
-  }
-}
-
-@media (min-width: 1280px) {
-  .page-container {
-    @apply px-8 py-6;
-  }
-  .section-gap {
-    @apply space-y-5;
-  }
-}
-```
-
-### 1.2 Actualizar Layout Base
-
-| Archivo | Cambio |
-|---------|--------|
-| `src/components/Layout.tsx` | Usar `page-container` en lugar de padding fijo |
-
----
-
-## Fase 2: Paginas Principales - Compactacion
-
-### 2.1 Dashboard (`src/pages/Dashboard.tsx`)
-
-**Problemas actuales**:
-- Timeline + MonthDetail ocupan mucho espacio vertical
-- Control Center colapsable pero muy extenso cuando abierto
-- Banners multiples (Beta + Nudge + Onboarding) compitiendo
-
-**Solucion**:
+**Solución:**
 ```text
-ANTES (scroll largo):
-┌─────────────────────────────────┐
-│ Beta Banner                     │
-│ Nudge Banner                    │
-│ Progressive Onboarding          │
-│ Interactive Welcome (opcional)  │
-├─────────────────────────────────┤
-│ Year Timeline Chart (grande)    │
-├─────────────────────────────────┤
-│ Month Detail Panel (grande)     │
-├─────────────────────────────────┤
-│ View Mode Toggle + Export       │
-├─────────────────────────────────┤
-│ Control Center (muy largo)      │
-└─────────────────────────────────┘
+ANTES (bottom nav):
+[Dashboard] [Expenses] [📷CAPTURE] [Income] [Settings]
 
-DESPUES (compacto):
-┌─────────────────────────────────┐
-│ [Alert Pills Compactos]         │ ← Beta + Nudges como pills inline
-├─────────────────────────────────┤
-│ Quick Stats Row (3 cards small) │ ← Nuevo: resumen en 1 linea
-├─────────────────────────────────┤
-│ Timeline + Month (side-by-side) │ ← En desktop: 2 columnas
-│   [Timeline 60%] [Month 40%]    │
-├─────────────────────────────────┤
-│ Quick Actions (horizontal)      │ ← Botones inline
-├─────────────────────────────────┤
-│ Control Center Tabs (compacto)  │ ← Tabs horizontales, contenido lazy
-└─────────────────────────────────┘
+DESPUÉS (más estratégico):
+[🏠 Home] [💰 Money] [📷] [📊 Tools] [☰ More]
+           ↓           ↓        ↓
+        Swipe tabs   FAB     Quick menu
 ```
 
-**Cambios especificos**:
-1. Unificar banners en un componente `AlertPills` horizontal
-2. En desktop (lg+): Timeline y MonthDetail side-by-side
-3. Reducir altura de barras en YearTimelineChart de `h-20` a `h-14`
-4. Control Center: tabs horizontales con scroll, lazy load agresivo
+### 2. DASHBOARD MÓVIL (MobileDashboard.tsx)
+**Problemas:**
+- BetaReminderBanner + ProgressiveOnboarding + NextActionBanner = demasiados banners
+- Stats cards (3 cols) tienen texto muy pequeño en pantallas <375px
+- YearTimelineChart no es táctil-friendly (barras pequeñas)
+- FABs flotantes se superponen con contenido
 
-### 2.2 Expenses Page (`src/pages/Expenses.tsx`)
+**Solución:**
+- Unificar banners en **AlertStack** colapsable (1 línea visible, expandible)
+- Stats cards: 2x2 grid con iconos más grandes
+- Timeline: barras más gruesas (min 32px) con **swipe horizontal** nativo
+- FABs: mover a esquina inferior izquierda, con **gesture** para expandir
 
-**Problemas**:
-- `p-8` (32px padding) excesivo
-- Multiples guias ocupando espacio
-- Tabla no responsive en tablets
+### 3. PÁGINAS DE CONTENIDO (Expenses, Income, Clients, etc.)
+**Problemas identificados por página:**
 
-**Solucion**:
-1. Reducir padding a `p-4 sm:p-6`
-2. Colapsar PageContextGuide por defecto en mobile
-3. ExpensesTable: modo "card view" en mobile en lugar de tabla
+| Página | Problema Principal | Impacto |
+|--------|-------------------|---------|
+| **Expenses.tsx** | 6 botones en header que se comprimen mal | Botones ilegibles |
+| **Income.tsx** | Tabla con 7 columnas no scrolleable | Datos cortados |
+| **Clients.tsx** | Cards con demasiada información | Scroll infinito |
+| **Mileage.tsx** | Mapa + stats + tabla todo junto | Abrumador |
+| **Banking.tsx** | `p-8` padding fijo (32px!) | Desperdicio espacio |
+| **NetWorth.tsx** | 4 summary cards + chart + 2 listas | Muy largo |
+| **Contracts.tsx** | `p-8 space-y-8` excesivo | 50% desperdicio |
+| **Mentorship.tsx** | 5 tabs con texto pequeño | Difícil de tocar |
+| **ChaosInbox.tsx** | Workflow steps + upload + cards todo visible | Caótico |
+| **Settings.tsx** | 2 tabs pero contenido muy largo | Scroll extremo |
 
-### 2.3 Income Page (`src/pages/Income.tsx`)
+### 4. COMPONENTES CRÍTICOS
+**ExpensesTable.tsx** ✅ Ya usa ExpenseCard en móvil - OK
+**ExpenseCard.tsx** - Bien diseñado pero badges muy pequeños
+**PageHeader.tsx** - Botones se comprimen, necesita overflow menu
+**PageContextGuide.tsx** - Ya se colapsa en móvil ✅
 
-**Problemas**:
-- Summary Cards (4) ocupan mucho espacio
-- Tabla de income no responsive
-
-**Solucion**:
-1. Summary Cards: 2x2 grid en mobile, 1x4 en desktop
-2. Tabla: vista cards en mobile
-
-### 2.4 Clients Page (`src/pages/Clients.tsx`)
-
-**Problema**: Grid de cards puede ser muy largo
-
-**Solucion**: 
-1. Cards mas compactas (reducir padding interno)
-2. Vista lista opcional con toggle
+### 5. DIÁLOGOS Y FORMULARIOS
+**ExpenseDialog.tsx** - `max-w-2xl` es demasiado ancho para móvil
+**Otros diálogos** - No usan full-screen en móvil
 
 ---
 
-## Fase 3: Componentes Criticos
+## Fase 1: Sistema de Navegación Móvil Profesional
 
-### 3.1 YearTimelineChart (`src/components/dashboard/YearTimelineChart.tsx`)
-
+### 1.1 Bottom Navigation Rediseñada
 ```typescript
-// Cambios:
-// 1. Reducir altura de barras
-// 2. Ocultar legend en mobile
-// 3. Compactar stats footer
-
-// ANTES
-<div className="h-16 sm:h-20">
-
-// DESPUES
-<div className="h-12 sm:h-16 lg:h-20">
-
-// Stats grid: 2 cols mobile, 4 desktop
-<div className="grid grid-cols-2 lg:grid-cols-4 gap-1 sm:gap-2">
+// Nueva estructura en Layout.tsx
+const MOBILE_NAV = [
+  { icon: Home, label: 'Home', path: '/dashboard' },
+  { icon: DollarSign, label: 'Money', paths: ['/expenses', '/income'], tabbed: true },
+  { icon: Camera, label: '', path: '/mobile-capture', fab: true }, // FAB central
+  { icon: BarChart2, label: 'Tools', menu: ['net-worth', 'mileage', 'banking'] },
+  { icon: Menu, label: 'More', drawer: true }
+];
 ```
 
-### 3.2 MonthDetailPanel (`src/components/dashboard/MonthDetailPanel.tsx`)
+### 1.2 Quick Actions Drawer
+- Deslizar desde abajo revela acciones rápidas
+- Agregar gasto, Agregar ingreso, Capturar recibo, Buscar
+- Gestos: swipe-up 50px = preview, swipe-up completo = abrir
 
-```typescript
-// Cambios:
-// 1. Balance cards mas compactos
-// 2. Quick actions como iconos en mobile
-// 3. Category breakdown colapsable por defecto
+### 1.3 Contextual FAB
+- En Dashboard: Camera (captura)
+- En Expenses: + (nuevo gasto)
+- En Income: + (nuevo ingreso)
+- Animación de morphing entre iconos
 
-// Balance cards: full width mobile, 3 cols desktop
-<div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-  {/* Cards con p-3 en lugar de p-4 */}
-  <div className="p-3 rounded-lg">
+---
+
+## Fase 2: Páginas con Diseño Mobile-First
+
+### 2.1 Dashboard Móvil Compacto
+
+```text
+┌─────────────────────────────────────┐
+│ [Alert Stack - 1 línea, expandible] │
+├─────────────────────────────────────┤
+│ ┌─────────┬─────────┐               │
+│ │ Income  │ Expense │  ← 2x2 stats  │
+│ │  $X.XK  │  $X.XK  │               │
+│ ├─────────┼─────────┤               │
+│ │ Balance │ Savings │               │
+│ │  ±$XXX  │  XX%    │               │
+│ └─────────┴─────────┘               │
+├─────────────────────────────────────┤
+│ ◀ Jan Feb [MAR] Apr May Jun ▶       │ ← Swipe timeline
+│ ████░░░░░░████████░░░████           │ ← Barras táctiles
+├─────────────────────────────────────┤
+│ This Month: $X,XXX                  │
+│ [Quick Actions Row - icons]         │
+├─────────────────────────────────────┤
+│ [Advanced Tools - collapsed]    ▼   │
+└─────────────────────────────────────┘
 ```
 
-### 3.3 ExpensesTable (`src/components/tables/ExpensesTable.tsx`)
+### 2.2 Expenses Móvil Optimizado
 
-**Problema critico**: Anchos en porcentajes fijos no funcionan en tablets
-
-**Solucion**: Responsive breakpoints con columnas priorizadas
-
-```typescript
-// Mobile (<768px): Vista Card
-// Tablet (768-1024px): Tabla simplificada (6 columnas)
-// Desktop (>1024px): Tabla completa (11 columnas)
-
-// Columnas por prioridad:
-// P1 (siempre visible): Completeness, Date, Vendor, Amount, Actions
-// P2 (tablet+): Category, Client, Status
-// P3 (desktop): Receipt, Reimbursement, Tags
+```text
+┌─────────────────────────────────────┐
+│ Gastos          [🔍] [📷] [⋮]       │ ← Header compacto
+├─────────────────────────────────────┤
+│ [Filtro rápido: chips horizontales] │
+│ [Todo] [Pendiente] [Esta semana]    │
+├─────────────────────────────────────┤
+│ ⚠ 5/23 incompletos          [Ver]  │ ← Banner inline
+├─────────────────────────────────────┤
+│ ┌─────────────────────────────────┐ │
+│ │ 📄 Costco         $156.78    ⋮ │ │ ← Cards compactas
+│ │    Mar 2 · Groceries · CRA     │ │
+│ └─────────────────────────────────┘ │
+│ ┌─────────────────────────────────┐ │
+│ │ 📄 Uber           $23.45     ⋮ │ │
+│ │    Mar 1 · Transport · Client  │ │
+│ └─────────────────────────────────┘ │
+└─────────────────────────────────────┘
 ```
 
-### 3.4 PageHeader (`src/components/PageHeader.tsx`)
+### 2.3 Income Móvil con Tabs Internos
 
-```typescript
-// Hacer botones responsive
-<div className="flex gap-2 flex-wrap justify-end">
-  {/* Mobile: iconos, Desktop: texto */}
-  <Button size={isMobile ? "icon" : "default"}>
-    {isMobile ? <Plus /> : <><Plus /> {text}</>}
-  </Button>
-</div>
+```text
+┌─────────────────────────────────────┐
+│ Ingresos    ◀ 2024 ▶    [+]         │
+├─────────────────────────────────────┤
+│ ┌────────┬────────┐                 │
+│ │ Total  │ Taxable│  ← 2 cards      │
+│ │$45.2K  │ $38.1K │                 │
+│ └────────┴────────┘                 │
+├─────────────────────────────────────┤
+│ [Income] [Projects]     ← Tabs      │
+├─────────────────────────────────────┤
+│ ┌─────────────────────────────────┐ │
+│ │ Freelance Project    $5,000    │ │
+│ │ Mar 1 · Client: ABC Corp       │ │
+│ └─────────────────────────────────┘ │
+└─────────────────────────────────────┘
+```
+
+### 2.4 Clients como Lista Compacta
+
+```text
+┌─────────────────────────────────────┐
+│ Clientes              [🔍] [+]      │
+├─────────────────────────────────────┤
+│ ○ Incompleto ◐ En progreso ● Activo │ ← Legend inline
+├─────────────────────────────────────┤
+│ ┌─────────────────────────────────┐ │
+│ │ ● ABC Corp               $12.5K│ │ ← Lista, no grid
+│ │   3 proyectos · Último: Mar 1  │ │
+│ └─────────────────────────────────┘ │
+│ ┌─────────────────────────────────┐ │
+│ │ ◐ XYZ Inc               $8.2K │ │
+│ │   1 proyecto · Falta: contrato │ │
+│ └─────────────────────────────────┘ │
+└─────────────────────────────────────┘
 ```
 
 ---
 
-## Fase 4: Sistema de Banners Inteligente
+## Fase 3: Componentes Touch-Optimized
 
-### 4.1 Nuevo Componente: AlertPillsRow
-
-Unifica todos los banners en una fila compacta:
-
+### 3.1 PageHeader Móvil
 ```typescript
-// src/components/dashboard/AlertPillsRow.tsx
-// Muestra: Beta reminder, Pending docs, Incomplete expenses
-// Como pills horizontales con scroll
-
-<div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-  {showBeta && <AlertPill variant="beta" />}
-  {pendingDocs > 0 && <AlertPill variant="pending" count={pendingDocs} />}
-  {incompleteExpenses > 0 && <AlertPill variant="incomplete" count={incompleteExpenses} />}
-</div>
+// Nuevo comportamiento en móvil
+<PageHeader title="Expenses">
+  {/* Desktop: todos los botones visibles */}
+  {/* Mobile: solo 2 principales + overflow menu */}
+  <MobileActionBar
+    primary={[
+      { icon: Camera, action: quickCapture },
+      { icon: Plus, action: addExpense }
+    ]}
+    overflow={[
+      { label: 'Export', icon: Download },
+      { label: 'Bulk Assign', icon: Users },
+      { label: 'Report', icon: FileText }
+    ]}
+  />
+</PageHeader>
 ```
 
-### 4.2 Colapsar Guias por Defecto en Mobile
-
+### 3.2 Diálogos Full-Screen en Móvil
 ```typescript
-// PageContextGuide: cerrado por defecto en mobile
-const [isOpen, setIsOpen] = useState(!isMobile);
+// ExpenseDialog, IncomeDialog, ClientDialog, etc.
+<Dialog>
+  <DialogContent className={cn(
+    "max-w-2xl", // desktop
+    isMobile && "fixed inset-0 h-full w-full max-w-full rounded-none m-0"
+  )}>
+    {/* Header sticky con close button */}
+    {/* Content scrollable */}
+    {/* Footer sticky con actions */}
+  </DialogContent>
+</Dialog>
+```
+
+### 3.3 Swipeable Cards
+```typescript
+// ExpenseCard con gestos
+<SwipeableCard
+  onSwipeLeft={() => deleteExpense(id)} // Rojo: eliminar
+  onSwipeRight={() => markComplete(id)}  // Verde: completar
+>
+  <ExpenseCard {...props} />
+</SwipeableCard>
+```
+
+### 3.4 Pull-to-Refresh
+```typescript
+// En listas principales
+<PullToRefresh onRefresh={refetchExpenses}>
+  <ExpenseList expenses={expenses} />
+</PullToRefresh>
 ```
 
 ---
 
-## Fase 5: Mejoras de UX Especificas
+## Fase 4: Sistema de Espaciado Móvil
 
-### 5.1 Scroll Horizontal para Tablas en Tablet
-
+### 4.1 CSS Variables Responsivas
 ```css
-.table-responsive {
-  @apply overflow-x-auto;
-  -webkit-overflow-scrolling: touch;
+:root {
+  --page-padding: 1rem;      /* 16px base */
+  --section-gap: 0.75rem;    /* 12px */
+  --card-padding: 0.75rem;   /* 12px */
+  --touch-target: 44px;      /* Mínimo Apple/Google */
 }
 
-.table-responsive::-webkit-scrollbar {
-  height: 4px;
+@media (min-width: 640px) {
+  :root {
+    --page-padding: 1.5rem;  /* 24px */
+    --section-gap: 1rem;     /* 16px */
+    --card-padding: 1rem;    /* 16px */
+  }
 }
-```
 
-### 5.2 Sticky Headers
-
-```typescript
-// Para tablas largas
-<div className="sticky top-0 z-10 bg-background">
-  <TableHeader />
-</div>
-```
-
-### 5.3 Touch-Friendly Targets
-
-```css
-/* Minimo 44x44px para targets touch */
-@media (max-width: 768px) {
-  .touch-target {
-    min-height: 44px;
-    min-width: 44px;
+@media (min-width: 1024px) {
+  :root {
+    --page-padding: 2rem;    /* 32px */
+    --section-gap: 1.5rem;   /* 24px */
+    --card-padding: 1.5rem;  /* 24px */
   }
 }
 ```
 
+### 4.2 Utility Classes
+```css
+.mobile-compact {
+  @apply p-3 sm:p-4 lg:p-6;
+}
+
+.mobile-gap {
+  @apply space-y-3 sm:space-y-4 lg:space-y-6;
+}
+
+.mobile-text {
+  @apply text-sm sm:text-base;
+}
+
+.mobile-heading {
+  @apply text-lg sm:text-xl lg:text-2xl;
+}
+```
+
 ---
 
-## Fase 6: Landing Page Optimizada
+## Fase 5: Optimizaciones Específicas por Página
 
-### 6.1 Reducir Secciones en Mobile
+### 5.1 Landing.tsx
+- Reducir secciones visibles en móvil (6 → 4)
+- Pricing: mostrar 1 plan expandido, otros colapsados
+- CTA sticky en bottom
+- Lazy load de secciones below-fold
 
-- Pricing: mostrar solo 2 planes (Free + Pro), "ver todos" para Premium
-- Features: colapsar a 6 features principales
-- Testimonios: 1 visible, swipe para mas
+### 5.2 Mentorship.tsx
+- Tabs: solo iconos en móvil, con tooltip on long-press
+- Cards: una columna, altura fija, scroll interno
+- Animaciones: reducir en móvil (menos framer-motion)
 
-### 6.2 CTA Sticky en Mobile
+### 5.3 ChaosInbox.tsx
+- Workflow steps: horizontal scroll, no stack vertical
+- Upload area: más grande, centrado
+- Pending cards: swipe para aprobar/rechazar
 
+### 5.4 Settings.tsx
+- Secciones colapsables por defecto
+- Búsqueda en settings
+- Bottom sheet para acciones peligrosas
+
+### 5.5 Mileage.tsx
+- Mapa: full-width, altura fija (40vh)
+- Stats: 2x2 grid debajo del mapa
+- Lista de viajes: lazy load con infinite scroll
+
+---
+
+## Fase 6: Gestos y Microinteracciones
+
+### 6.1 Gestos Implementados
+| Gesto | Acción | Contexto |
+|-------|--------|----------|
+| Pull down | Refresh | Listas |
+| Swipe left | Delete | Cards |
+| Swipe right | Complete/Approve | Cards |
+| Long press | Multi-select | Listas |
+| Pinch | Zoom chart | Gráficos |
+| Double tap | Quick edit | Cards |
+
+### 6.2 Feedback Háptico
 ```typescript
-// Footer sticky con CTA principal
-<div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur border-t sm:hidden">
-  <Button className="w-full">Comenzar Gratis</Button>
-</div>
+// Usar Vibration API
+function hapticFeedback(type: 'light' | 'medium' | 'heavy') {
+  if ('vibrate' in navigator) {
+    const patterns = { light: [10], medium: [20], heavy: [30, 10, 30] };
+    navigator.vibrate(patterns[type]);
+  }
+}
 ```
+
+### 6.3 Skeleton Loading
+- Skeletons que coinciden exactamente con el contenido final
+- Animación shimmer consistente
+- No mostrar skeleton si data en cache
 
 ---
 
 ## Archivos a Modificar
 
-| Archivo | Tipo | Prioridad |
-|---------|------|-----------|
-| `src/index.css` | CSS | Alta |
-| `src/pages/Dashboard.tsx` | Refactor | Alta |
-| `src/components/dashboard/YearTimelineChart.tsx` | Ajustes | Alta |
-| `src/components/dashboard/MonthDetailPanel.tsx` | Ajustes | Alta |
-| `src/components/tables/ExpensesTable.tsx` | Refactor mayor | Alta |
-| `src/pages/Expenses.tsx` | Ajustes | Media |
-| `src/pages/Income.tsx` | Ajustes | Media |
-| `src/pages/Clients.tsx` | Ajustes | Media |
-| `src/components/PageHeader.tsx` | Ajustes | Media |
-| `src/components/guidance/PageContextGuide.tsx` | Ajustes | Media |
-| `src/pages/Landing.tsx` | Optimizacion | Baja |
+### Alta Prioridad
+| Archivo | Cambios | Impacto |
+|---------|---------|---------|
+| `src/components/Layout.tsx` | Bottom nav rediseñado, Quick actions drawer | Alto |
+| `src/components/dashboard/MobileDashboard.tsx` | AlertStack, 2x2 stats, swipe timeline | Alto |
+| `src/pages/Expenses.tsx` | Header compacto, filtros como chips | Alto |
+| `src/pages/Income.tsx` | 2 summary cards, tabla → cards | Alto |
+| `src/pages/Clients.tsx` | Grid → lista compacta | Alto |
+| `src/index.css` | Variables CSS responsivas | Alto |
 
-## Archivos Nuevos
+### Media Prioridad
+| Archivo | Cambios |
+|---------|---------|
+| `src/pages/Banking.tsx` | Reducir padding |
+| `src/pages/NetWorth.tsx` | Tabs para Assets/Liabilities |
+| `src/pages/Mentorship.tsx` | Tabs con iconos |
+| `src/pages/ChaosInbox.tsx` | Workflow horizontal |
+| `src/pages/Settings.tsx` | Secciones colapsables |
+| `src/components/PageHeader.tsx` | Overflow menu |
 
-| Archivo | Proposito |
+### Nuevos Archivos
+| Archivo | Propósito |
 |---------|-----------|
-| `src/components/dashboard/AlertPillsRow.tsx` | Banners unificados |
-| `src/components/tables/ExpenseCard.tsx` | Vista card para mobile |
+| `src/components/mobile/AlertStack.tsx` | Banners unificados colapsables |
+| `src/components/mobile/MobileActionBar.tsx` | Header actions overflow |
+| `src/components/mobile/SwipeableCard.tsx` | Cards con gestos |
+| `src/components/mobile/QuickActionsDrawer.tsx` | Drawer de acciones rápidas |
+| `src/components/mobile/FullScreenDialog.tsx` | Diálogos full-screen |
+| `src/hooks/use-haptic.ts` | Feedback háptico |
 
 ---
 
-## Resultado Esperado
+## Métricas de Éxito
 
-1. **50% menos scroll** en Dashboard y paginas principales
-2. **Experiencia tablet** fluida sin scroll horizontal roto
-3. **Mobile-first** con targets touch adecuados
-4. **Carga mas rapida** con lazy loading agresivo
-5. **Consistencia visual** con sistema de espaciado unificado
+| Métrica | Antes | Después |
+|---------|-------|---------|
+| Scroll para ver contenido principal | 3-4 scrolls | 0-1 scroll |
+| Tamaño mínimo touch target | 32px | 44px |
+| Tiempo para agregar gasto | 8 taps | 3 taps |
+| Padding desperdiciado | 30-40% | <15% |
+| Elementos visibles sin scroll | 2-3 | 5-7 |
 
 ---
 
-## Orden de Implementacion
+## Orden de Implementación
 
-1. **Batch 1** (Critico): CSS utilities + Dashboard + ExpensesTable
-2. **Batch 2** (Importante): Pages secundarias + PageHeader + Guides
-3. **Batch 3** (Mejoras): Landing + Polish final
+1. **Batch 1** (Crítico - Esta sesión):
+   - CSS variables responsivas
+   - Layout bottom nav + overflow menu
+   - MobileDashboard AlertStack + stats 2x2
 
-La implementacion mantendra compatibilidad hacia atras y no rompera funcionalidad existente.
+2. **Batch 2** (Alto impacto):
+   - Expenses móvil optimizado
+   - Income móvil optimizado
+   - PageHeader con MobileActionBar
+
+3. **Batch 3** (Completar transformación):
+   - Clients lista compacta
+   - Full-screen dialogs
+   - SwipeableCard base
+
+4. **Batch 4** (Polish):
+   - Gestos avanzados
+   - Haptic feedback
+   - Mentorship, ChaosInbox, Settings
+   - Landing optimizada
+
+---
+
+## Resultado Final
+
+La aplicación se transformará de una **web responsive genérica** a una **experiencia móvil de nivel nativo** con:
+
+- Navegación intuitiva tipo app nativa
+- Contenido priorizado y escaneable
+- Interacciones táctiles naturales
+- Feedback inmediato en cada acción
+- Cero scroll innecesario
+- Densidad de información optimizada
+
+Todo manteniendo la funcionalidad completa del desktop para usuarios avanzados.
