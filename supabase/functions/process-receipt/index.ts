@@ -315,6 +315,12 @@ Extract expense information and return a JSON object with expenses array. If mul
         cra_deduction_rate: exp.cra_deduction_rate || 100,
         typically_reimbursable: exp.typically_reimbursable || false,
         receipt_index: exp.receipt_index || index + 1,
+        // Include line items, taxes, and payment details
+        line_items: exp.line_items || [],
+        subtotal: exp.subtotal || null,
+        taxes: exp.taxes || [],
+        payment_method: exp.payment_method || null,
+        decoded_from: exp.decoded_from || null,
       }))
     };
 
