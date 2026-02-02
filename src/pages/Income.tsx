@@ -145,42 +145,6 @@ export default function Income() {
           description={t('income.description')}
         >
           <div className="flex items-center gap-2">
-            {/* Year navigation with buttons */}
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-9 w-9"
-                onClick={() => setSelectedYear(selectedYear - 1)}
-                disabled={selectedYear <= currentYear - 4}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Select
-                value={selectedYear.toString()}
-                onValueChange={(value) => setSelectedYear(parseInt(value))}
-              >
-                <SelectTrigger className="w-[100px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-9 w-9"
-                onClick={() => setSelectedYear(selectedYear + 1)}
-                disabled={selectedYear >= currentYear}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
             <Button variant="outline" onClick={() => setProjectDialogOpen(true)}>
               <FolderKanban className="mr-2 h-4 w-4" />
               {t('income.newProject')}
@@ -205,6 +169,50 @@ export default function Income() {
             { icon: DollarSign, title: { es: 'Balance', en: 'Balance' }, description: { es: 'Ingresos vs gastos', en: 'Income vs expenses' }, path: '/dashboard' }
           ]}
         />
+
+        {/* Year Selector - positioned above summary cards */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-muted-foreground">
+              {language === 'es' ? 'Año fiscal:' : 'Fiscal year:'}
+            </span>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setSelectedYear(selectedYear - 1)}
+                disabled={selectedYear <= currentYear - 4}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Select
+                value={selectedYear.toString()}
+                onValueChange={(value) => setSelectedYear(parseInt(value))}
+              >
+                <SelectTrigger className="w-[100px] h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setSelectedYear(selectedYear + 1)}
+                disabled={selectedYear >= currentYear}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
 
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-4">
