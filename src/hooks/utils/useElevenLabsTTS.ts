@@ -161,10 +161,16 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
 
       setIsLoading(false);
 
-      // Check for errors
+      // Check for errors - map voice_limit_exceeded to trigger fallback
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.log('[ElevenLabsTTS] API error:', errorData);
+        
+        // Map voice_limit_exceeded to 'not_eligible' so fallback kicks in
+        if (errorData.error === 'voice_limit_exceeded') {
+          return { success: false, error: 'not_eligible' };
+        }
+        
         return { success: false, error: errorData.error || 'api_error' };
       }
 
