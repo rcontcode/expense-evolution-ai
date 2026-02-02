@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, Home } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -10,6 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { cn } from '@/lib/utils';
 
 interface PageHeaderProps {
   title: string;
@@ -43,6 +45,7 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
   const navigate = useNavigate();
   const location = useLocation();
   const { language } = useLanguage();
+  const isMobile = useIsMobile();
   
   const currentPath = location.pathname;
   const currentRoute = ROUTE_CONFIG[currentPath];
@@ -76,19 +79,20 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
   };
 
   return (
-    <div className="space-y-2 mb-6">
-      {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-2">
-        {showBack && canGoBack && (
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={handleBack}
-            className="h-8 w-8 shrink-0"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-        )}
+    <div className={cn("mb-4", isMobile ? "space-y-2" : "space-y-2 mb-6")}>
+      {/* Breadcrumb Navigation - Hidden on mobile for cleaner look */}
+      {!isMobile && (
+        <div className="flex items-center gap-2">
+          {showBack && canGoBack && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleBack}
+              className="h-8 w-8 shrink-0"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          )}
         
         <Breadcrumb>
           <BreadcrumbList>
@@ -141,17 +145,52 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
           </BreadcrumbList>
         </Breadcrumb>
       </div>
+      )}
+      
+      {/* Mobile: Back button + Title inline */}
+      {isMobile && showBack && canGoBack && (
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleBack}
+            className="h-8 w-8 shrink-0"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-lg font-bold truncate">{title}</h1>
+        </div>
+      )}
       
       {/* Title and Description */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">{title}</h1>
-          {description && (
-            <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{description}</p>
-          )}
-        </div>
+      <div className={cn(
+        "flex flex-col gap-3",
+        !isMobile && "sm:flex-row sm:items-start justify-between"
+      )}>
+        {/* Only show title block if not already shown in mobile back button row */}
+        {!(isMobile && showBack && canGoBack) && (
+          <div className="min-w-0">
+            <h1 className={cn(
+              "font-bold truncate",
+              isMobile ? "text-lg" : "text-xl sm:text-2xl lg:text-3xl"
+            )}>{title}</h1>
+            {description && (
+              <p className={cn(
+                "text-muted-foreground mt-0.5 line-clamp-1",
+                isMobile ? "text-xs" : "text-sm"
+              )}>{description}</p>
+            )}
+          </div>
+        )}
+        {/* Description for mobile when title is in back button row */}
+        {isMobile && showBack && canGoBack && description && (
+          <p className="text-xs text-muted-foreground line-clamp-1">{description}</p>
+        )}
         {children && (
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap justify-start sm:justify-end">
+          <div className={cn(
+            "flex items-center gap-1.5 shrink-0 flex-wrap",
+            isMobile ? "justify-start" : "sm:gap-2 justify-start sm:justify-end"
+          )}>
             {children}
           </div>
         )}

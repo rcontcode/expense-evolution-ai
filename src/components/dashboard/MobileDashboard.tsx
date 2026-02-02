@@ -1,4 +1,4 @@
-import { useState, useCallback, lazy, Suspense } from 'react';
+import { useState, useCallback, lazy, Suspense, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -10,6 +10,8 @@ import {
   ChevronDown, 
   ChevronUp,
   BarChart3,
+  PiggyBank,
+  AlertCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,6 +24,7 @@ import { YearTimelineChart } from '@/components/dashboard/YearTimelineChart';
 import { MonthDetailPanel } from '@/components/dashboard/MonthDetailPanel';
 import { ProgressiveOnboarding } from '@/components/onboarding/ProgressiveOnboarding';
 import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
+import { AlertStack } from '@/components/mobile/AlertStack';
 import { cn } from '@/lib/utils';
 
 // Lazy load heavy components
@@ -40,6 +43,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
 
   const handleAddIncome = useCallback(() => navigate('/income'), [navigate]);
   const handleAddExpense = useCallback(() => navigate('/expenses'), [navigate]);
@@ -56,88 +60,185 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
   const monthlyExpenses = stats?.monthlyTotal || 0;
   const monthlyBalance = monthlyIncome - monthlyExpenses;
   const isPositive = monthlyBalance >= 0;
+  const savingsRate = monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses) / monthlyIncome * 100) : 0;
+
+  // Unified alert stack for mobile
+  const alerts = useMemo(() => {
+    const items: Array<{ id: string; content: React.ReactNode; type: 'info' | 'warning' | 'success'; dismissible: boolean }> = [];
+    
+    if (pendingDocuments > 0 && !dismissedAlerts.includes('pending-docs')) {
+      items.push({
+        id: 'pending-docs',
+        content: (
+          <span className="flex items-center gap-2" onClick={() => navigate('/chaos')}>
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span className="truncate">
+              {pendingDocuments} {language === 'es' ? 'documentos pendientes' : 'pending documents'}
+            </span>
+          </span>
+        ),
+        type: 'warning',
+        dismissible: true,
+      });
+    }
+    
+    if (incompleteExpenses > 0 && !dismissedAlerts.includes('incomplete-expenses')) {
+      items.push({
+        id: 'incomplete-expenses',
+        content: (
+          <span className="flex items-center gap-2" onClick={() => navigate('/expenses')}>
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span className="truncate">
+              {incompleteExpenses} {language === 'es' ? 'gastos incompletos' : 'incomplete expenses'}
+            </span>
+          </span>
+        ),
+        type: 'warning',
+        dismissible: true,
+      });
+    }
+    
+    return items;
+  }, [pendingDocuments, incompleteExpenses, dismissedAlerts, language, navigate]);
+
+  const handleDismissAlert = (id: string) => {
+    setDismissedAlerts(prev => [...prev, id]);
+  };
 
   return (
-    <div className="space-y-4 pb-24">
-      {/* Beta Reminder */}
+    <div className="mobile-page mobile-gap">
+      {/* Unified Alert Stack - replaces multiple banners */}
+      <AlertStack 
+        alerts={alerts}
+        onDismiss={handleDismissAlert}
+        maxVisible={1}
+      />
+      
+      {/* Beta Reminder - compact */}
       <BetaReminderBanner />
       
-      {/* Progressive Onboarding for new users */}
+      {/* Progressive Onboarding - only for new users */}
       <ProgressiveOnboarding />
       
-      {/* Compact Stats Header */}
-      <div className="grid grid-cols-3 gap-2">
+      {/* 2x2 Stats Grid - Optimized for mobile */}
+      <div className="stats-grid-2x2">
         {isLoading ? (
           <>
-            <Skeleton className="h-20 rounded-xl" />
-            <Skeleton className="h-20 rounded-xl" />
-            <Skeleton className="h-20 rounded-xl" />
+            <Skeleton className="h-[72px] rounded-xl skeleton-shimmer" />
+            <Skeleton className="h-[72px] rounded-xl skeleton-shimmer" />
+            <Skeleton className="h-[72px] rounded-xl skeleton-shimmer" />
+            <Skeleton className="h-[72px] rounded-xl skeleton-shimmer" />
           </>
         ) : (
           <>
             {/* Income */}
-            <Card className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20">
-              <CardContent className="p-3 text-center">
-                <TrendingUp className="h-4 w-4 mx-auto mb-1 text-emerald-500" />
-                <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                  {formatCompact(monthlyIncome)}
-                </p>
-                <p className="text-[10px] text-muted-foreground truncate">
-                  {language === 'es' ? 'Ingresos' : 'Income'}
-                </p>
+            <Card 
+              className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20 cursor-pointer active:scale-[0.98] transition-transform"
+              onClick={handleAddIncome}
+            >
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                  <TrendingUp className="h-5 w-5 text-emerald-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 truncate">
+                    {formatCompact(monthlyIncome)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {language === 'es' ? 'Ingresos' : 'Income'}
+                  </p>
+                </div>
               </CardContent>
             </Card>
             
             {/* Expenses */}
-            <Card className="bg-gradient-to-br from-rose-500/10 to-pink-500/10 border-rose-500/20">
-              <CardContent className="p-3 text-center">
-                <TrendingDown className="h-4 w-4 mx-auto mb-1 text-rose-500" />
-                <p className="text-lg font-bold text-rose-600 dark:text-rose-400">
-                  {formatCompact(monthlyExpenses)}
-                </p>
-                <p className="text-[10px] text-muted-foreground truncate">
-                  {language === 'es' ? 'Gastos' : 'Expenses'}
-                </p>
+            <Card 
+              className="bg-gradient-to-br from-rose-500/10 to-pink-500/10 border-rose-500/20 cursor-pointer active:scale-[0.98] transition-transform"
+              onClick={handleAddExpense}
+            >
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center shrink-0">
+                  <TrendingDown className="h-5 w-5 text-rose-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-lg font-bold text-rose-600 dark:text-rose-400 truncate">
+                    {formatCompact(monthlyExpenses)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {language === 'es' ? 'Gastos' : 'Expenses'}
+                  </p>
+                </div>
               </CardContent>
             </Card>
             
             {/* Balance */}
             <Card className={cn(
-              "border",
+              "border cursor-pointer active:scale-[0.98] transition-transform",
               isPositive 
                 ? "bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border-blue-500/20"
                 : "bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/20"
-            )}>
-              <CardContent className="p-3 text-center">
-                <Wallet className={cn(
-                  "h-4 w-4 mx-auto mb-1",
-                  isPositive ? "text-blue-500" : "text-amber-500"
-                )} />
-                <p className={cn(
-                  "text-lg font-bold",
-                  isPositive 
-                    ? "text-blue-600 dark:text-blue-400"
-                    : "text-amber-600 dark:text-amber-400"
+            )}
+            onClick={() => navigate('/net-worth')}
+            >
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+                  isPositive ? "bg-blue-500/20" : "bg-amber-500/20"
                 )}>
-                  {isPositive ? '+' : ''}{formatCompact(monthlyBalance)}
-                </p>
-                <p className="text-[10px] text-muted-foreground truncate">
-                  {language === 'es' ? 'Balance' : 'Balance'}
-                </p>
+                  <Wallet className={cn(
+                    "h-5 w-5",
+                    isPositive ? "text-blue-500" : "text-amber-500"
+                  )} />
+                </div>
+                <div className="min-w-0">
+                  <p className={cn(
+                    "text-lg font-bold truncate",
+                    isPositive 
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-amber-600 dark:text-amber-400"
+                  )}>
+                    {isPositive ? '+' : ''}{formatCompact(monthlyBalance)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {language === 'es' ? 'Balance' : 'Balance'}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Savings Rate */}
+            <Card 
+              className="bg-gradient-to-br from-purple-500/10 to-violet-500/10 border-purple-500/20 cursor-pointer active:scale-[0.98] transition-transform"
+              onClick={() => navigate('/banking')}
+            >
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0">
+                  <PiggyBank className="h-5 w-5 text-purple-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-lg font-bold text-purple-600 dark:text-purple-400 truncate">
+                    {savingsRate.toFixed(0)}%
+                  </p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {language === 'es' ? 'Ahorro' : 'Savings'}
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </>
         )}
       </div>
       
-      {/* Nudge Banner */}
-      <NextActionBanner 
-        pendingDocuments={pendingDocuments}
-        incompleteExpenses={incompleteExpenses}
-        totalClients={totalClients}
-        totalIncomes={totalIncomes}
-        totalExpenses={stats?.totalExpenses || 0}
-      />
+      {/* Nudge Banner - Inline style */}
+      {(pendingDocuments > 0 || incompleteExpenses > 0 || totalClients === 0) && (
+        <NextActionBanner 
+          pendingDocuments={pendingDocuments}
+          incompleteExpenses={incompleteExpenses}
+          totalClients={totalClients}
+          totalIncomes={totalIncomes}
+          totalExpenses={stats?.totalExpenses || 0}
+        />
+      )}
       
       {/* Timeline Chart (scrollable) */}
       <div className="overflow-x-auto -mx-4 px-4">
@@ -183,16 +284,16 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
         )}
       </AnimatePresence>
       
-      {/* Floating Action Button */}
-      <div className="fixed bottom-20 right-4 flex flex-col gap-2 z-40">
+      {/* FAB container - positioned above bottom nav */}
+      <div className="mobile-fab-container flex flex-col gap-2">
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2 }}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
         >
           <Button
             size="icon"
-            className="h-12 w-12 rounded-full shadow-lg bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
+            className="mobile-fab-secondary bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30"
             onClick={onQuickCapture}
           >
             <Camera className="h-5 w-5" />
@@ -200,13 +301,13 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
         </motion.div>
         
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.3 }}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.3, type: 'spring', stiffness: 300 }}
         >
           <Button
             size="icon"
-            className="h-14 w-14 rounded-full shadow-xl bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+            className="mobile-fab"
             onClick={() => navigate('/expenses')}
           >
             <Plus className="h-6 w-6" />
