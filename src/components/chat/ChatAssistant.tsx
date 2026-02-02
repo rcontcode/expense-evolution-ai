@@ -179,7 +179,7 @@ export const ChatAssistant: React.FC = () => {
   const elevenLabsTTS = useElevenLabsTTS({
     lang: language as 'es' | 'en',
     voiceGender: voicePrefs.voiceGender === 'auto' ? 'female' : voicePrefs.voiceGender as 'female' | 'male',
-    voiceId: voicePrefs.premiumVoiceId || undefined,
+    voiceId: voicePrefs.getPremiumVoiceId(language as 'es' | 'en') || undefined,
   });
 
   // Current detected intent for visual feedback
