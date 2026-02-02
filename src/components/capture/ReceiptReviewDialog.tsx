@@ -17,7 +17,8 @@ import {
   Check, X, Edit2, MessageSquare, Loader2, ZoomIn, ZoomOut,
   Building2, Landmark, Calendar, DollarSign, Tag, Store,
   AlertTriangle, CheckCircle2, Clock, RotateCcw, Save, Sparkles, Trash2,
-  RotateCw, Download, Maximize2, Move, RefreshCw, ChevronDown, ChevronUp
+  RotateCw, Download, Maximize2, Move, RefreshCw, ChevronDown, ChevronUp,
+  Receipt, CreditCard, List
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -36,6 +37,20 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
+export interface LineItem {
+  name: string;
+  quantity?: number;
+  unit_price?: number;
+  total: number;
+  original_code?: string | null;
+}
+
+export interface TaxItem {
+  name: string;
+  rate?: number;
+  amount: number;
+}
+
 export interface ExtractedData {
   vendor?: string;
   amount?: number;
@@ -49,6 +64,10 @@ export interface ExtractedData {
   confidence?: 'high' | 'medium' | 'low';
   client_id?: string;
   project_id?: string;
+  line_items?: LineItem[];
+  subtotal?: number;
+  taxes?: TaxItem[];
+  payment_method?: string;
 }
 
 export interface ReceiptDocument {
@@ -928,7 +947,82 @@ export function ReceiptReviewDialog({
                 )}
               </div>
 
-              {/* Previous corrections */}
+              {/* Line Items Section */}
+              {data.line_items && data.line_items.length > 0 && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <List className="h-4 w-4 text-muted-foreground" />
+                    {language === 'es' ? 'Detalle de ítems' : 'Line Items'} 
+                    <Badge variant="secondary" className="ml-1">{data.line_items.length}</Badge>
+                  </label>
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="max-h-[250px] overflow-y-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-muted/70 sticky top-0">
+                          <tr>
+                            <th className="text-left p-2 font-medium">{language === 'es' ? 'Ítem' : 'Item'}</th>
+                            <th className="text-center p-2 font-medium w-16">{language === 'es' ? 'Cant.' : 'Qty'}</th>
+                            <th className="text-right p-2 font-medium w-20">{language === 'es' ? 'Precio' : 'Price'}</th>
+                            <th className="text-right p-2 font-medium w-20">Total</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {data.line_items.map((item, idx) => (
+                            <tr key={idx} className="hover:bg-muted/30">
+                              <td className="p-2">
+                                <div className="font-medium">{item.name}</div>
+                                {item.original_code && (
+                                  <div className="text-xs text-muted-foreground">
+                                    {language === 'es' ? 'Código:' : 'Code:'} {item.original_code}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="p-2 text-center text-muted-foreground">
+                                {item.quantity || 1}
+                              </td>
+                              <td className="p-2 text-right text-muted-foreground">
+                                ${item.unit_price?.toFixed(2) || item.total?.toFixed(2)}
+                              </td>
+                              <td className="p-2 text-right font-medium">
+                                ${item.total?.toFixed(2)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    
+                    {/* Subtotal, Taxes, Total */}
+                    <div className="border-t bg-muted/30 p-3 space-y-1">
+                      {data.subtotal !== undefined && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Subtotal</span>
+                          <span>${data.subtotal.toFixed(2)}</span>
+                        </div>
+                      )}
+                      {data.taxes && data.taxes.map((tax, idx) => (
+                        <div key={idx} className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            {tax.name} {tax.rate ? `(${tax.rate}%)` : ''}
+                          </span>
+                          <span>${tax.amount.toFixed(2)}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between font-bold pt-1 border-t">
+                        <span>Total</span>
+                        <span>${data.amount?.toFixed(2)}</span>
+                      </div>
+                      {data.payment_method && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground pt-1">
+                          <CreditCard className="h-3 w-3" />
+                          {data.payment_method}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {document.user_corrections && (
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
                   <p className="font-medium text-amber-800 mb-1 text-sm">
