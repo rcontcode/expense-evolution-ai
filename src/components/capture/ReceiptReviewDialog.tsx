@@ -135,21 +135,31 @@ export function ReceiptReviewDialog({
   useEffect(() => {
     if (open && document.id) {
       const savedRotation = localStorage.getItem(`receipt-rotation-${document.id}`);
-      if (savedRotation) {
-        setImageRotation(parseInt(savedRotation, 10));
-      }
+      // Important: reset to 0 when there's no saved value, otherwise rotation can
+      // "leak" from a previous document.
+      setImageRotation(savedRotation ? parseInt(savedRotation, 10) : 0);
     }
   }, [open, document.id]);
 
-  // Reset image viewer state when dialog opens (except rotation which is persisted)
+  // Reset dialog-local state when opening or when switching to a different document.
+  // NOTE: Do NOT depend on `document.extracted_data` here.
+  // In many parent implementations this object is recreated on each render which
+  // would continuously overwrite `editedData`, preventing `hasChanges` from ever
+  // becoming true and wiping out re-processed fields like `line_items`.
   useEffect(() => {
-    if (open) {
-      setImageZoom(1);
-      setImagePosition({ x: 0, y: 0 });
-      setIsFullscreen(false);
-      setEditedData(document.extracted_data || {});
-    }
-  }, [open, document.extracted_data]);
+    if (!open) return;
+
+    setImageZoom(1);
+    setImagePosition({ x: 0, y: 0 });
+    setIsFullscreen(false);
+    setDescriptionExpanded(false);
+    setShowCommentInput(false);
+    setComment('');
+
+    // When opening a receipt, start from the persisted extracted data.
+    setIsEditing(false);
+    setEditedData(document.extracted_data || {});
+  }, [open, document.id]);
 
   // Get reimbursement suggestion from contract terms
   const reimbursementSuggestion = useContractReimbursementSuggestion(
@@ -207,14 +217,18 @@ export function ReceiptReviewDialog({
   }, []);
 
   const rotateLeft = () => {
-    const newRotation = imageRotation - 90;
-    setImageRotation(newRotation);
-    localStorage.setItem(`receipt-rotation-${document.id}`, String(newRotation));
+    setImageRotation((prev) => {
+      const next = prev - 90;
+      localStorage.setItem(`receipt-rotation-${document.id}`, String(next));
+      return next;
+    });
   };
   const rotateRight = () => {
-    const newRotation = imageRotation + 90;
-    setImageRotation(newRotation);
-    localStorage.setItem(`receipt-rotation-${document.id}`, String(newRotation));
+    setImageRotation((prev) => {
+      const next = prev + 90;
+      localStorage.setItem(`receipt-rotation-${document.id}`, String(next));
+      return next;
+    });
   };
   const resetImageView = () => {
     setImageZoom(1);
