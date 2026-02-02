@@ -277,7 +277,7 @@ export default function Reconciliation() {
   if (wizardMode) {
     return (
       <Layout>
-        <div className="p-8 space-y-6">
+        <div className="page-container section-gap overflow-x-hidden">
           {/* Header with mode toggle */}
           <PageHeader
             title={t('nav.reconciliation')}
@@ -307,7 +307,7 @@ export default function Reconciliation() {
 
   return (
     <Layout>
-      <div className="p-8 space-y-8">
+      <div className="page-container section-gap overflow-x-hidden">
         {/* Header */}
         <PageHeader
           title={t('nav.reconciliation')}
