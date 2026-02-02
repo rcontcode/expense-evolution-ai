@@ -20,7 +20,8 @@ import {
   Clock,
   CheckCircle,
   MessageCircle,
-  BarChart3
+  BarChart3,
+  Upload
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBankTransactions } from '@/hooks/data/useBankTransactions';
@@ -32,6 +33,8 @@ import { AnomalyAlerts } from './AnomalyAlerts';
 import { Input } from '@/components/ui/input';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 function AlertCard({ alert, language }: { alert: BankAlert; language: string }) {
   const severityColors = {
@@ -100,8 +103,13 @@ function RecurringPaymentCard({ payment, language }: { payment: RecurringPayment
   );
 }
 
-export function BankAnalysisDashboard() {
+interface BankAnalysisDashboardProps {
+  onImportClick?: () => void;
+}
+
+export function BankAnalysisDashboard({ onImportClick }: BankAnalysisDashboardProps) {
   const { language } = useLanguage();
+  const isMobile = useIsMobile();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
@@ -124,120 +132,170 @@ export function BankAnalysisDashboard() {
   // Group transactions by vendor for bill tracking
   const vendorSummary = insights.topVendors.slice(0, 5);
 
+  const handleImport = () => {
+    if (onImportClick) {
+      onImportClick();
+    } else {
+      setImportDialogOpen(true);
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Building2 className="h-6 w-6" />
-            {language === 'es' ? 'Análisis Bancario Inteligente' : 'Smart Bank Analysis'}
-          </h2>
-          <p className="text-muted-foreground mt-1">
-            {language === 'es' 
-              ? 'Analiza tus estados de cuenta, detecta patrones y recibe alertas'
-              : 'Analyze your statements, detect patterns and receive alerts'}
-          </p>
+    <TooltipProvider>
+      <div className="space-y-4 sm:space-y-6">
+        {/* Header - compact on mobile */}
+        {!isMobile && (
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Building2 className="h-6 w-6" />
+                {language === 'es' ? 'Análisis Bancario Inteligente' : 'Smart Bank Analysis'}
+              </h2>
+              <p className="text-muted-foreground mt-1">
+                {language === 'es' 
+                  ? 'Analiza tus estados de cuenta, detecta patrones y recibe alertas'
+                  : 'Analyze your statements, detect patterns and receive alerts'}
+              </p>
+            </div>
+            <Button onClick={handleImport} className="bg-gradient-primary">
+              <ArrowUpRight className="h-4 w-4 mr-2" />
+              {language === 'es' ? 'Importar Estado' : 'Import Statement'}
+            </Button>
+          </div>
+        )}
+
+        {/* Mobile: Import button at top */}
+        {isMobile && (
+          <Button onClick={handleImport} className="w-full bg-gradient-primary min-h-[44px]">
+            <Upload className="h-4 w-4 mr-2" />
+            {language === 'es' ? 'Importar Estado de Cuenta' : 'Import Bank Statement'}
+          </Button>
+        )}
+
+        {/* Summary Cards - 2x2 grid on mobile */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+          <Card className="p-2 sm:p-0">
+            <CardHeader className="pb-1 sm:pb-2 p-2 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 sm:gap-2">
+                <Wallet className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="truncate">{language === 'es' ? 'Transacciones' : 'Transactions'}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-2 sm:p-6 pt-0 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{totalTransactions}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                ${totalAmount.toFixed(2)}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="p-2 sm:p-0">
+            <CardHeader className="pb-1 sm:pb-2 p-2 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 sm:gap-2">
+                <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="truncate">{language === 'es' ? 'Recurrentes' : 'Recurring'}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-2 sm:p-6 pt-0 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{insights.recurringPayments.length}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                ${insights.recurringPayments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}/{language === 'es' ? 'mes' : 'mo'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="p-2 sm:p-0">
+            <CardHeader className="pb-1 sm:pb-2 p-2 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 sm:gap-2">
+                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
+                <span className="truncate">{language === 'es' ? 'Conciliados' : 'Matched'}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-2 sm:p-6 pt-0 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{matchedCount}</div>
+              <Progress 
+                value={totalTransactions > 0 ? (matchedCount / totalTransactions) * 100 : 0} 
+                className="h-1.5 sm:h-2 mt-1 sm:mt-2"
+              />
+            </CardContent>
+          </Card>
+
+          <Card className={`p-2 sm:p-0 ${pendingCount > 0 ? 'border-amber-500/30' : ''}`}>
+            <CardHeader className="pb-1 sm:pb-2 p-2 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 sm:gap-2">
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-amber-600" />
+                <span className="truncate">{language === 'es' ? 'Pendientes' : 'Pending'}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-2 sm:p-6 pt-0 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{pendingCount}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                {language === 'es' ? 'requieren atención' : 'need attention'}
+              </p>
+            </CardContent>
+          </Card>
         </div>
-        <Button onClick={() => setImportDialogOpen(true)} className="bg-gradient-primary">
-          <ArrowUpRight className="h-4 w-4 mr-2" />
-          {language === 'es' ? 'Importar Estado' : 'Import Statement'}
-        </Button>
-      </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Wallet className="h-4 w-4" />
-              {language === 'es' ? 'Total Transacciones' : 'Total Transactions'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalTransactions}</div>
-            <p className="text-xs text-muted-foreground">
-              ${totalAmount.toFixed(2)} {language === 'es' ? 'procesados' : 'processed'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <RefreshCw className="h-4 w-4" />
-              {language === 'es' ? 'Pagos Recurrentes' : 'Recurring Payments'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{insights.recurringPayments.length}</div>
-            <p className="text-xs text-muted-foreground">
-              ${insights.recurringPayments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}/
-              {language === 'es' ? 'mes' : 'month'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              {language === 'es' ? 'Conciliados' : 'Matched'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{matchedCount}</div>
-            <Progress 
-              value={totalTransactions > 0 ? (matchedCount / totalTransactions) * 100 : 0} 
-              className="h-2 mt-2"
-            />
-          </CardContent>
-        </Card>
-
-        <Card className={pendingCount > 0 ? 'border-amber-500/30' : ''}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Clock className="h-4 w-4 text-amber-600" />
-              {language === 'es' ? 'Pendientes' : 'Pending'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingCount}</div>
-            <p className="text-xs text-muted-foreground">
-              {language === 'es' ? 'requieren atención' : 'need attention'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Content Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="overview" className="flex items-center gap-1">
-            <PieChart className="h-3 w-3" />
-            {language === 'es' ? 'Resumen' : 'Overview'}
-          </TabsTrigger>
-          <TabsTrigger value="search" className="flex items-center gap-1">
-            <MessageCircle className="h-3 w-3" />
-            {language === 'es' ? 'Preguntar' : 'Ask'}
-          </TabsTrigger>
-          <TabsTrigger value="trends" className="flex items-center gap-1">
-            <BarChart3 className="h-3 w-3" />
-            {language === 'es' ? 'Tendencias' : 'Trends'}
-          </TabsTrigger>
-          <TabsTrigger value="recurring" className="flex items-center gap-1">
-            <RefreshCw className="h-3 w-3" />
-            {language === 'es' ? 'Recurrentes' : 'Recurring'}
-          </TabsTrigger>
-          <TabsTrigger value="transactions" className="flex items-center gap-1">
-            <Wallet className="h-3 w-3" />
-            {language === 'es' ? 'Lista' : 'List'}
-          </TabsTrigger>
-          <TabsTrigger value="alerts" className="flex items-center gap-1">
-            <Bell className="h-3 w-3" />
-            {language === 'es' ? 'Alertas' : 'Alerts'}
-          </TabsTrigger>
-        </TabsList>
+        {/* Main Content Tabs - horizontal scroll on mobile */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <div className="overflow-x-auto scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
+            <TabsList className={`${isMobile ? 'inline-flex w-auto min-w-full' : 'grid w-full grid-cols-6'}`}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TabsTrigger value="overview" className="flex items-center gap-1 min-h-[40px] px-2 sm:px-4">
+                    <PieChart className="h-3 w-3 sm:h-4 sm:w-4" />
+                    {!isMobile && (language === 'es' ? 'Resumen' : 'Overview')}
+                  </TabsTrigger>
+                </TooltipTrigger>
+                {isMobile && <TooltipContent>{language === 'es' ? 'Resumen' : 'Overview'}</TooltipContent>}
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TabsTrigger value="search" className="flex items-center gap-1 min-h-[40px] px-2 sm:px-4">
+                    <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                    {!isMobile && (language === 'es' ? 'Preguntar' : 'Ask')}
+                  </TabsTrigger>
+                </TooltipTrigger>
+                {isMobile && <TooltipContent>{language === 'es' ? 'Preguntar' : 'Ask'}</TooltipContent>}
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TabsTrigger value="trends" className="flex items-center gap-1 min-h-[40px] px-2 sm:px-4">
+                    <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                    {!isMobile && (language === 'es' ? 'Tendencias' : 'Trends')}
+                  </TabsTrigger>
+                </TooltipTrigger>
+                {isMobile && <TooltipContent>{language === 'es' ? 'Tendencias' : 'Trends'}</TooltipContent>}
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TabsTrigger value="recurring" className="flex items-center gap-1 min-h-[40px] px-2 sm:px-4">
+                    <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
+                    {!isMobile && (language === 'es' ? 'Recurrentes' : 'Recurring')}
+                  </TabsTrigger>
+                </TooltipTrigger>
+                {isMobile && <TooltipContent>{language === 'es' ? 'Recurrentes' : 'Recurring'}</TooltipContent>}
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TabsTrigger value="transactions" className="flex items-center gap-1 min-h-[40px] px-2 sm:px-4">
+                    <Wallet className="h-3 w-3 sm:h-4 sm:w-4" />
+                    {!isMobile && (language === 'es' ? 'Lista' : 'List')}
+                  </TabsTrigger>
+                </TooltipTrigger>
+                {isMobile && <TooltipContent>{language === 'es' ? 'Lista' : 'List'}</TooltipContent>}
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TabsTrigger value="alerts" className="flex items-center gap-1 min-h-[40px] px-2 sm:px-4">
+                    <Bell className="h-3 w-3 sm:h-4 sm:w-4" />
+                    {!isMobile && (language === 'es' ? 'Alertas' : 'Alerts')}
+                  </TabsTrigger>
+                </TooltipTrigger>
+                {isMobile && <TooltipContent>{language === 'es' ? 'Alertas' : 'Alerts'}</TooltipContent>}
+              </Tooltip>
+            </TabsList>
+          </div>
 
         <TabsContent value="search">
           <SmartSearchChat />
@@ -494,5 +552,6 @@ export function BankAnalysisDashboard() {
         onClose={() => setImportDialogOpen(false)} 
       />
     </div>
+    </TooltipProvider>
   );
 }
