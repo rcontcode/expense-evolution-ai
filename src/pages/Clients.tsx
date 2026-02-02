@@ -11,6 +11,7 @@ import { useMileage } from '@/hooks/data/useMileage';
 import { useContracts } from '@/hooks/data/useContracts';
 import { ClientDialog } from '@/components/dialogs/ClientDialog';
 import { ClientFinancialOverview } from '@/components/clients/ClientFinancialOverview';
+import { ClientCard } from '@/components/clients/ClientCard';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { Client } from '@/types/expense.types';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -21,6 +22,7 @@ import { SectionEmptyState } from '@/components/guidance/SectionEmptyState';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PageHeader } from '@/components/PageHeader';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +48,7 @@ const STATUS_ICONS: Record<ClientStatus, React.ElementType> = {
 
 export default function Clients() {
   const { t, language } = useLanguage();
+  const isMobile = useIsMobile();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | undefined>();
   const [pendingOpenClientId, setPendingOpenClientId] = useState<string | null>(null);
@@ -189,183 +192,203 @@ export default function Clients() {
               </CardContent>
             </Card>
           ) : clients && clients.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4" data-highlight="clients-grid">
-              {clients.map((client) => {
-                const hasTestData = getClientHasTestData(client.id);
-                const completeness = calculateClientCompleteness(client, hasTestData);
-                const statusConfig = CLIENT_STATUS_CONFIG[completeness.status];
-                const StatusIcon = STATUS_ICONS[completeness.status];
+            // Mobile: Lista compacta, Desktop: Grid de cards
+            isMobile ? (
+              <div className="space-y-2" data-highlight="clients-list">
+                {clients.map((client) => {
+                  const hasTestData = getClientHasTestData(client.id);
+                  return (
+                    <ClientCard
+                      key={client.id}
+                      client={client}
+                      hasTestData={hasTestData}
+                      onEdit={handleEdit}
+                      onDelete={(id) => setDeleteId(id)}
+                      onViewFinancial={setFinancialClient}
+                      onDeleteTestData={(id) => setDeleteTestDataId(id)}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4" data-highlight="clients-grid">
+                {clients.map((client) => {
+                  const hasTestData = getClientHasTestData(client.id);
+                  const completeness = calculateClientCompleteness(client, hasTestData);
+                  const statusConfig = CLIENT_STATUS_CONFIG[completeness.status];
+                  const StatusIcon = STATUS_ICONS[completeness.status];
 
-                return (
-                  <Card key={client.id} className="hover:shadow-lg transition-shadow relative overflow-hidden">
-                    {/* Status indicator bar */}
-                    <div className={`absolute top-0 left-0 right-0 h-1 ${statusConfig.bgColor.replace('bg-', 'bg-').replace('/30', '')}`} />
-                    
-                    <CardHeader className="p-3 sm:p-4 pb-2">
-                      <div className="flex items-start justify-between">
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <CardTitle className="text-xl">{client.name}</CardTitle>
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Badge className={`${statusConfig.bgColor} ${statusConfig.color} border-0 gap-1`}>
-                                  <StatusIcon className="h-3 w-3" />
-                                  <span className="text-xs">{completeness.percentage}%</span>
-                                </Badge>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs">
-                                <div className="space-y-2">
-                                  <p className="font-medium">
-                                    {language === 'es' ? statusConfig.label : statusConfig.labelEn}
-                                  </p>
-                                  {completeness.missingFields.length > 0 ? (
-                                    <>
-                                      <p className="text-xs text-muted-foreground">{t('clients.missingFields')}:</p>
-                                      <ul className="text-xs space-y-0.5">
-                                        {completeness.missingFields.map(field => (
-                                          <li key={field.key}>• {language === 'es' ? field.label : field.labelEn}</li>
-                                        ))}
-                                      </ul>
-                                    </>
-                                  ) : (
-                                    <p className="text-xs text-green-600">{t('clients.profileComplete')}</p>
-                                  )}
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
+                  return (
+                    <Card key={client.id} className="hover:shadow-lg transition-shadow relative overflow-hidden">
+                      {/* Status indicator bar */}
+                      <div className={`absolute top-0 left-0 right-0 h-1 ${statusConfig.bgColor.replace('bg-', 'bg-').replace('/30', '')}`} />
+                      
+                      <CardHeader className="p-3 sm:p-4 pb-2">
+                        <div className="flex items-start justify-between">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <CardTitle className="text-xl">{client.name}</CardTitle>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <Badge className={`${statusConfig.bgColor} ${statusConfig.color} border-0 gap-1`}>
+                                    <StatusIcon className="h-3 w-3" />
+                                    <span className="text-xs">{completeness.percentage}%</span>
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-xs">
+                                  <div className="space-y-2">
+                                    <p className="font-medium">
+                                      {language === 'es' ? statusConfig.label : statusConfig.labelEn}
+                                    </p>
+                                    {completeness.missingFields.length > 0 ? (
+                                      <>
+                                        <p className="text-xs text-muted-foreground">{t('clients.missingFields')}:</p>
+                                        <ul className="text-xs space-y-0.5">
+                                          {completeness.missingFields.map(field => (
+                                            <li key={field.key}>• {language === 'es' ? field.label : field.labelEn}</li>
+                                          ))}
+                                        </ul>
+                                      </>
+                                    ) : (
+                                      <p className="text-xs text-green-600">{t('clients.profileComplete')}</p>
+                                    )}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                            {hasTestData && (
+                              <div className="flex items-center gap-1.5 text-xs text-amber-600">
+                                <FlaskConical className="h-3 w-3" />
+                                <span>{t('clients.hasTestData')}</span>
+                              </div>
+                            )}
                           </div>
-                          {hasTestData && (
-                            <div className="flex items-center gap-1.5 text-xs text-amber-600">
-                              <FlaskConical className="h-3 w-3" />
-                              <span>{t('clients.hasTestData')}</span>
-                            </div>
-                          )}
+                          <div className="flex gap-1">
+                            {hasTestData && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                                    onClick={() => setDeleteTestDataId(client.id)}
+                                  >
+                                    <FlaskConical className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>{t('clients.deleteTestData')}</TooltipContent>
+                              </Tooltip>
+                            )}
+                            <InfoTooltip content={TOOLTIP_CONTENT.editAction} variant="wrapper">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEdit(client)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </InfoTooltip>
+                            <InfoTooltip content={TOOLTIP_CONTENT.deleteAction} variant="wrapper">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeleteId(client.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </InfoTooltip>
+                          </div>
                         </div>
-                        <div className="flex gap-1">
-                          {hasTestData && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
-                                  onClick={() => setDeleteTestDataId(client.id)}
-                                >
-                                  <FlaskConical className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>{t('clients.deleteTestData')}</TooltipContent>
-                            </Tooltip>
-                          )}
-                          <InfoTooltip content={TOOLTIP_CONTENT.editAction} variant="wrapper">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEdit(client)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </InfoTooltip>
-                          <InfoTooltip content={TOOLTIP_CONTENT.deleteAction} variant="wrapper">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setDeleteId(client.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </InfoTooltip>
+                      </CardHeader>
+                      <CardContent className="p-3 sm:p-4 pt-0 space-y-2 sm:space-y-3">
+                        {/* Progress bar */}
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>{t('clients.completeness')}</span>
+                            <span>{completeness.percentage}%</span>
+                          </div>
+                          <Progress value={completeness.percentage} className="h-1.5" />
                         </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-3 sm:p-4 pt-0 space-y-2 sm:space-y-3">
-                      {/* Progress bar */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>{t('clients.completeness')}</span>
-                          <span>{completeness.percentage}%</span>
+
+                        {/* Client info icons */}
+                        <div className="flex flex-wrap gap-2">
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <div className={`p-1.5 rounded-full ${client.contact_email ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
+                                <Mail className={`h-3.5 w-3.5 ${client.contact_email ? 'text-green-600' : 'text-muted-foreground'}`} />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>{client.contact_email || t('clients.contactEmail')}</TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <div className={`p-1.5 rounded-full ${client.contact_phone ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
+                                <Phone className={`h-3.5 w-3.5 ${client.contact_phone ? 'text-green-600' : 'text-muted-foreground'}`} />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>{client.contact_phone || t('clients.contactPhone')}</TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <div className={`p-1.5 rounded-full ${client.industry ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
+                                <Building2 className={`h-3.5 w-3.5 ${client.industry ? 'text-green-600' : 'text-muted-foreground'}`} />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>{client.industry || t('clients.industry')}</TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <div className={`p-1.5 rounded-full ${client.website ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
+                                <Globe className={`h-3.5 w-3.5 ${client.website ? 'text-green-600' : 'text-muted-foreground'}`} />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>{client.website || t('clients.website')}</TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <div className={`p-1.5 rounded-full ${client.tax_id ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
+                                <FileText className={`h-3.5 w-3.5 ${client.tax_id ? 'text-green-600' : 'text-muted-foreground'}`} />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>{client.tax_id || t('clients.taxId')}</TooltipContent>
+                          </Tooltip>
                         </div>
-                        <Progress value={completeness.percentage} className="h-1.5" />
-                      </div>
 
-                      {/* Client info icons */}
-                      <div className="flex flex-wrap gap-2">
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <div className={`p-1.5 rounded-full ${client.contact_email ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
-                              <Mail className={`h-3.5 w-3.5 ${client.contact_email ? 'text-green-600' : 'text-muted-foreground'}`} />
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>{client.contact_email || t('clients.contactEmail')}</TooltipContent>
-                        </Tooltip>
+                        {/* Location */}
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <MapPin className="h-4 w-4" />
+                          <span>
+                            {client.province && `${client.province}, `}
+                            {client.country || 'Canada'}
+                          </span>
+                        </div>
 
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <div className={`p-1.5 rounded-full ${client.contact_phone ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
-                              <Phone className={`h-3.5 w-3.5 ${client.contact_phone ? 'text-green-600' : 'text-muted-foreground'}`} />
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>{client.contact_phone || t('clients.contactPhone')}</TooltipContent>
-                        </Tooltip>
+                        {client.notes && (
+                          <p className="text-sm text-muted-foreground line-clamp-2">{client.notes}</p>
+                        )}
 
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <div className={`p-1.5 rounded-full ${client.industry ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
-                              <Building2 className={`h-3.5 w-3.5 ${client.industry ? 'text-green-600' : 'text-muted-foreground'}`} />
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>{client.industry || t('clients.industry')}</TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <div className={`p-1.5 rounded-full ${client.website ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
-                              <Globe className={`h-3.5 w-3.5 ${client.website ? 'text-green-600' : 'text-muted-foreground'}`} />
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>{client.website || t('clients.website')}</TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <div className={`p-1.5 rounded-full ${client.tax_id ? 'bg-green-100 dark:bg-green-900/30' : 'bg-muted'}`}>
-                              <FileText className={`h-3.5 w-3.5 ${client.tax_id ? 'text-green-600' : 'text-muted-foreground'}`} />
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>{client.tax_id || t('clients.taxId')}</TooltipContent>
-                        </Tooltip>
-                      </div>
-
-                      {/* Location */}
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span>
-                          {client.province && `${client.province}, `}
-                          {client.country || 'Canada'}
-                        </span>
-                      </div>
-
-                      {client.notes && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">{client.notes}</p>
-                      )}
-
-                      {/* Quick Financial Overview Button */}
-                      <InfoTooltip content={TOOLTIP_CONTENT.clientFinancialOverview} variant="wrapper">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="w-full mt-2 gap-2"
-                          onClick={() => setFinancialClient(client)}
-                        >
-                          <PieChart className="h-4 w-4" />
-                          {language === 'es' ? 'Panorama Financiero' : 'Financial Overview'}
-                        </Button>
-                      </InfoTooltip>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+                        {/* Quick Financial Overview Button */}
+                        <InfoTooltip content={TOOLTIP_CONTENT.clientFinancialOverview} variant="wrapper">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full mt-2 gap-2"
+                            onClick={() => setFinancialClient(client)}
+                          >
+                            <PieChart className="h-4 w-4" />
+                            {language === 'es' ? 'Panorama Financiero' : 'Financial Overview'}
+                          </Button>
+                        </InfoTooltip>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )
           ) : (
             <SectionEmptyState 
               section="clients" 

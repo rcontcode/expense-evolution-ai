@@ -1,8 +1,8 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ContractForm } from '@/components/forms/ContractForm';
 import { useCreateContract } from '@/hooks/data/useContracts';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { ContractFormSchema } from '@/lib/validations/contract.schema';
+import { FullScreenDialog } from '@/components/mobile/FullScreenDialog';
 
 interface ContractDialogProps {
   open: boolean;
@@ -30,13 +30,12 @@ export function ContractDialog({ open, onOpenChange }: ContractDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t('contracts.uploadContract')}</DialogTitle>
-        </DialogHeader>
-        <ContractForm onSubmit={handleSubmit} isSubmitting={createContract.isPending} />
-      </DialogContent>
-    </Dialog>
+    <FullScreenDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('contracts.uploadContract')}
+    >
+      <ContractForm onSubmit={handleSubmit} isSubmitting={createContract.isPending} />
+    </FullScreenDialog>
   );
 }
