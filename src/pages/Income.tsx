@@ -139,7 +139,7 @@ export default function Income() {
 
   return (
     <Layout>
-      <div className="p-8 space-y-8">
+      <div className="page-container section-gap">
         <PageHeader
           title={t('income.title')}
           description={t('income.description')}
@@ -214,55 +214,55 @@ export default function Income() {
           </div>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
+        {/* Summary Cards - 2x2 mobile, 4 cols desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('income.totalIncome')}</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+              <CardTitle className="text-xs sm:text-sm font-medium">{t('income.totalIncome')}</CardTitle>
               <DollarSign className="h-4 w-4 text-chart-1" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-chart-1">
+            <CardContent className="p-3 pt-0">
+              <div className="text-lg sm:text-2xl font-bold text-chart-1">
                 ${summary?.totalIncome.toFixed(2) || '0.00'}
               </div>
-              <p className="text-xs text-muted-foreground">{t('income.thisYear')}</p>
+              <p className="text-xs text-muted-foreground hidden sm:block">{t('income.thisYear')}</p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('income.taxableIncome')}</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+              <CardTitle className="text-xs sm:text-sm font-medium">{t('income.taxableIncome')}</CardTitle>
               <Wallet className="h-4 w-4 text-chart-2" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-chart-2">
+            <CardContent className="p-3 pt-0">
+              <div className="text-lg sm:text-2xl font-bold text-chart-2">
                 ${summary?.taxableIncome.toFixed(2) || '0.00'}
               </div>
-              <p className="text-xs text-muted-foreground">{t('income.subjectToTax')}</p>
+              <p className="text-xs text-muted-foreground hidden sm:block">{t('income.subjectToTax')}</p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('income.nonTaxable')}</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+              <CardTitle className="text-xs sm:text-sm font-medium">{t('income.nonTaxable')}</CardTitle>
               <PiggyBank className="h-4 w-4 text-chart-3" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-chart-3">
+            <CardContent className="p-3 pt-0">
+              <div className="text-lg sm:text-2xl font-bold text-chart-3">
                 ${summary?.nonTaxableIncome.toFixed(2) || '0.00'}
               </div>
-              <p className="text-xs text-muted-foreground">{t('income.taxExempt')}</p>
+              <p className="text-xs text-muted-foreground hidden sm:block">{t('income.taxExempt')}</p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('income.transactions')}</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
+              <CardTitle className="text-xs sm:text-sm font-medium">{t('income.transactions')}</CardTitle>
               <TrendingUp className="h-4 w-4 text-chart-4" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary?.count || 0}</div>
-              <p className="text-xs text-muted-foreground">{t('income.entries')}</p>
+            <CardContent className="p-3 pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{summary?.count || 0}</div>
+              <p className="text-xs text-muted-foreground hidden sm:block">{t('income.entries')}</p>
             </CardContent>
           </Card>
         </div>

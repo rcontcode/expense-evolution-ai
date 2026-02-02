@@ -134,7 +134,7 @@ export default function Clients() {
   return (
     <Layout>
       <TooltipProvider>
-        <div className="p-8 space-y-8">
+        <div className="page-container section-gap">
           <PageHeader
             title={t('clients.title')}
             description={t('clients.description')}
@@ -161,18 +161,18 @@ export default function Clients() {
             ]}
           />
 
-          {/* Legend */}
+          {/* Legend - compact on mobile */}
           <Card className="bg-muted/30">
-            <CardContent className="py-3">
-              <div className="flex flex-wrap items-center gap-4 text-sm">
-                <span className="font-medium text-muted-foreground">{t('clients.legendTitle')}:</span>
+            <CardContent className="py-2 px-3">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
+                <span className="font-medium text-muted-foreground hidden sm:inline">{t('clients.legendTitle')}:</span>
                 {(Object.keys(CLIENT_STATUS_CONFIG) as ClientStatus[]).map((status) => {
                   const config = CLIENT_STATUS_CONFIG[status];
                   const StatusIcon = STATUS_ICONS[status];
                   return (
-                    <div key={status} className="flex items-center gap-1.5">
-                      <StatusIcon className={`h-4 w-4 ${config.color}`} />
-                      <span className="text-muted-foreground">
+                    <div key={status} className="flex items-center gap-1">
+                      <StatusIcon className={`h-3 w-3 sm:h-4 sm:w-4 ${config.color}`} />
+                      <span className="text-muted-foreground text-xs sm:text-sm">
                         {language === 'es' ? config.label : config.labelEn}
                       </span>
                     </div>
@@ -189,7 +189,7 @@ export default function Clients() {
               </CardContent>
             </Card>
           ) : clients && clients.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-highlight="clients-grid">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4" data-highlight="clients-grid">
               {clients.map((client) => {
                 const hasTestData = getClientHasTestData(client.id);
                 const completeness = calculateClientCompleteness(client, hasTestData);
@@ -201,7 +201,7 @@ export default function Clients() {
                     {/* Status indicator bar */}
                     <div className={`absolute top-0 left-0 right-0 h-1 ${statusConfig.bgColor.replace('bg-', 'bg-').replace('/30', '')}`} />
                     
-                    <CardHeader className="pb-2">
+                    <CardHeader className="p-3 sm:p-4 pb-2">
                       <div className="flex items-start justify-between">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-2">
@@ -278,7 +278,7 @@ export default function Clients() {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-3">
+                    <CardContent className="p-3 sm:p-4 pt-0 space-y-2 sm:space-y-3">
                       {/* Progress bar */}
                       <div className="space-y-1">
                         <div className="flex justify-between text-xs text-muted-foreground">
