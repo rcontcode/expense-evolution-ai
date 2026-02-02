@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ export function FeedbackButton() {
   const [success, setSuccess] = useState(false);
   const { language } = useLanguage();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
 
   const content = {
     es: {
@@ -77,6 +79,11 @@ export function FeedbackButton() {
   };
 
   const t = content[language];
+
+  // Hide on mobile - the floating button blocks content and mobile has other access points
+  if (isMobile) {
+    return null;
+  }
 
   const handleSubmit = async () => {
     if (!type || !message.trim()) {
