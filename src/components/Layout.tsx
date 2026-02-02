@@ -384,8 +384,8 @@ export const Layout = ({ children }: LayoutProps) => {
                           </span>
                         </div>
                         
-                        {/* Items Grid - 2 columns with better styling */}
-                        <div className="grid grid-cols-2 gap-1">
+                        {/* Items Grid - 2 columns with vibrant icons */}
+                        <div className="grid grid-cols-2 gap-1.5">
                           {section.items.map((item) => {
                             const Icon = item.icon;
                             const isActive = location.pathname === item.path;
@@ -395,21 +395,21 @@ export const Layout = ({ children }: LayoutProps) => {
                                 key={item.path}
                                 onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                                 className={cn(
-                                  "flex items-center gap-1.5 px-2 py-1.5 rounded-md transition-all text-left",
+                                  "flex items-center gap-2 px-2 py-2 rounded-lg transition-all text-left group",
                                   isActive 
-                                    ? cn("bg-background/90 shadow-sm border", theme.border, theme.text)
-                                    : "hover:bg-background/60 text-foreground"
+                                    ? cn("bg-background shadow-md border", theme.border)
+                                    : "hover:bg-background/80 bg-background/40"
                                 )}
                               >
                                 <div className={cn(
-                                  "w-5 h-5 rounded flex items-center justify-center shrink-0",
-                                  isActive ? theme.iconWrapper : "bg-muted"
+                                  "w-6 h-6 rounded-md flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                                  theme.iconWrapper
                                 )}>
-                                  <Icon className={cn("h-3 w-3", isActive ? "text-white" : "text-muted-foreground")} />
+                                  <Icon className="h-3.5 w-3.5 text-white drop-shadow-sm" />
                                 </div>
                                 <span className={cn(
-                                  "text-[11px] font-medium truncate",
-                                  isActive && theme.text
+                                  "text-[11px] font-semibold truncate transition-colors",
+                                  isActive ? theme.text : "text-foreground/80 group-hover:text-foreground"
                                 )}>
                                   {t(item.label)}
                                 </span>
