@@ -607,26 +607,43 @@ export function ReceiptReviewDialog({
               <span className="text-sm font-medium text-muted-foreground">
                 {language === 'es' ? 'Datos extraídos' : 'Extracted data'}
               </span>
-              {!isEditing && (
+              <div className="flex items-center gap-2">
+                {/* Re-process button - always visible */}
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => { setIsEditing(true); setEditedData(document.extracted_data || {}); }}
+                  onClick={handleProcessWithAI}
+                  disabled={!imageUrl || isProcessingAI}
+                  className="text-primary border-primary/30 hover:bg-primary/10"
                 >
-                  <Edit2 className="h-4 w-4 mr-1" />
-                  {language === 'es' ? 'Editar' : 'Edit'}
+                  {isProcessingAI ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-1" />
+                  )}
+                  {language === 'es' ? 'Re-procesar' : 'Re-process'}
                 </Button>
-              )}
-              {isEditing && (
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={resetEdits}
-                >
-                  <RotateCcw className="h-4 w-4 mr-1" />
-                  {language === 'es' ? 'Descartar' : 'Discard'}
-                </Button>
-              )}
+                {!isEditing && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => { setIsEditing(true); setEditedData(document.extracted_data || {}); }}
+                  >
+                    <Edit2 className="h-4 w-4 mr-1" />
+                    {language === 'es' ? 'Editar' : 'Edit'}
+                  </Button>
+                )}
+                {isEditing && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={resetEdits}
+                  >
+                    <RotateCcw className="h-4 w-4 mr-1" />
+                    {language === 'es' ? 'Descartar' : 'Discard'}
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Scrollable data area */}
