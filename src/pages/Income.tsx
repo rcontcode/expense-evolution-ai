@@ -30,7 +30,16 @@ import {
   MoreHorizontal,
   Calendar,
   Repeat,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,7 +68,9 @@ import {
 export default function Income() {
   const { t, language } = useLanguage();
   const dateLocale = language === 'es' ? es : enUS;
+  const currentYear = new Date().getFullYear();
   
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
   const [incomeDialogOpen, setIncomeDialogOpen] = useState(false);
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
   const [selectedIncome, setSelectedIncome] = useState<IncomeWithRelations | undefined>();
@@ -67,9 +78,11 @@ export default function Income() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteType, setDeleteType] = useState<'income' | 'project'>('income');
 
-  const { data: incomeList, isLoading: incomeLoading } = useIncome();
+  const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
+
+  const { data: incomeList, isLoading: incomeLoading } = useIncome({ year: selectedYear });
   const { data: projects, isLoading: projectsLoading } = useProjects();
-  const { data: summary } = useIncomeSummary();
+  const { data: summary } = useIncomeSummary(selectedYear);
   const deleteIncomeMutation = useDeleteIncome();
 
   // Listen for voice command actions
@@ -131,7 +144,43 @@ export default function Income() {
           title={t('income.title')}
           description={t('income.description')}
         >
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {/* Year navigation with buttons */}
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => setSelectedYear(selectedYear - 1)}
+                disabled={selectedYear <= currentYear - 4}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Select
+                value={selectedYear.toString()}
+                onValueChange={(value) => setSelectedYear(parseInt(value))}
+              >
+                <SelectTrigger className="w-[100px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => setSelectedYear(selectedYear + 1)}
+                disabled={selectedYear >= currentYear}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
             <Button variant="outline" onClick={() => setProjectDialogOpen(true)}>
               <FolderKanban className="mr-2 h-4 w-4" />
               {t('income.newProject')}
