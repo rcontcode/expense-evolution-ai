@@ -18,7 +18,7 @@ export default function Banking() {
 
   return (
     <Layout>
-      <div className="p-3 sm:p-4 md:p-8 space-y-4 sm:space-y-6">
+      <div className="page-container section-gap">
         <PageHeader
           title={language === 'es' ? 'Análisis Bancario' : 'Bank Analysis'}
           description={!isMobile ? (language === 'es' 

@@ -87,7 +87,7 @@ export default function Settings() {
 
   return (
     <Layout>
-      <div className="p-3 sm:p-4 md:p-8 space-y-4 sm:space-y-6 max-w-6xl mx-auto">
+      <div className="page-container section-gap">
         <PageHeader
           title={t('nav.settings')}
           description={!isMobile ? (language === 'es' 

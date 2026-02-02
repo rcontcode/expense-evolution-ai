@@ -433,7 +433,7 @@ export default function ChaosInbox() {
   return (
     <Layout>
       <TooltipProvider>
-        <div className="p-3 sm:p-4 md:p-8 space-y-4 sm:space-y-6 max-w-6xl mx-auto">
+        <div className="page-container section-gap">
           {/* Header - Mobile Compact */}
           <PageHeader
             title={language === 'es' ? 'Bandeja de Recibos' : 'Receipt Inbox'}
