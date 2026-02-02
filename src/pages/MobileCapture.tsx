@@ -10,31 +10,49 @@ import {
   ArrowLeft,
   Wifi,
   WifiOff,
-  Check
+  Zap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useReceiptProcessor } from '@/hooks/data/useReceiptProcessor';
-import { useCreateExpense } from '@/hooks/data/useExpenses';
+import { useReceiptProcessor, ExtractedExpenseData } from '@/hooks/data/useReceiptProcessor';
+import { useCreateExpense, useUpdateExpense } from '@/hooks/data/useExpenses';
+import { useCaptureStreak } from '@/hooks/data/useCaptureStreak';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
+import { MobileCaptureStats } from '@/components/capture/MobileCaptureStats';
+import { QuickEditPanel } from '@/components/capture/QuickEditPanel';
 
 export default function MobileCapture() {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [captureCount, setCaptureCount] = useState(0);
-  const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
+  const [lastSavedExpense, setLastSavedExpense] = useState<ExtractedExpenseData | null>(null);
+  const [savedExpenseId, setSavedExpenseId] = useState<string | null>(null);
+  const [showQuickEdit, setShowQuickEdit] = useState(false);
 
   const { processReceipt, isProcessing } = useReceiptProcessor();
   const createExpense = useCreateExpense();
+  const updateExpense = useUpdateExpense();
+  const { 
+    todayCount, 
+    dailyGoal, 
+    currentStreak, 
+    goalProgress, 
+    goalReached,
+    recordCapture 
+  } = useCaptureStreak();
 
   // Monitor online status
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
+    const handleOnline = () => {
+      setIsOnline(true);
+      toast.success(language === 'es' ? '¡Conexión restaurada!' : 'Connection restored!');
+    };
     const handleOffline = () => setIsOnline(false);
     
     window.addEventListener('online', handleOnline);
@@ -44,7 +62,7 @@ export default function MobileCapture() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [language]);
 
   const handleCameraCapture = () => {
     fileInputRef.current?.click();
@@ -60,6 +78,15 @@ export default function MobileCapture() {
     reader.readAsDataURL(file);
   };
 
+  const triggerSuccessConfetti = () => {
+    confetti({
+      particleCount: 80,
+      spread: 60,
+      origin: { y: 0.7 },
+      colors: ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'],
+    });
+  };
+
   const handleProcessAndSave = async () => {
     if (!imageBase64) return;
 
@@ -68,9 +95,12 @@ export default function MobileCapture() {
       
       if (result?.expenses?.length) {
         let savedCount = 0;
+        let lastExpense: ExtractedExpenseData | null = null;
+        let lastId: string | null = null;
+
         for (const exp of result.expenses) {
           if (!exp.vendor || !exp.amount) continue;
-          await createExpense.mutateAsync({
+          const newExpense = await createExpense.mutateAsync({
             vendor: exp.vendor,
             amount: exp.amount,
             date: exp.date,
@@ -80,21 +110,25 @@ export default function MobileCapture() {
             status: 'pending'
           } as any);
           savedCount++;
+          lastExpense = exp;
+          lastId = newExpense?.id || null;
         }
         
-        setCaptureCount(prev => prev + savedCount);
-        setLastSavedTime(new Date());
+        recordCapture(savedCount);
+        triggerSuccessConfetti();
+        
+        if (lastExpense) {
+          setLastSavedExpense(lastExpense);
+          setSavedExpenseId(lastId);
+          setShowQuickEdit(true);
+        }
         
         toast.success(
           language === 'es' 
-            ? `¡${savedCount} gasto(s) guardado(s)! Sincronizado con tu laptop.`
-            : `${savedCount} expense(s) saved! Synced to your laptop.`
+            ? `¡${savedCount} gasto(s) guardado(s)!`
+            : `${savedCount} expense(s) saved!`
         );
         
-        // Reset for next capture
-        setImagePreview(null);
-        setImageBase64(null);
-        if (fileInputRef.current) fileInputRef.current.value = '';
       } else {
         toast.error(
           language === 'es'
@@ -115,105 +149,222 @@ export default function MobileCapture() {
   const handleRetake = () => {
     setImagePreview(null);
     setImageBase64(null);
+    setShowQuickEdit(false);
+    setLastSavedExpense(null);
+    setSavedExpenseId(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleQuickEditSave = async (updates: { 
+    clientId?: string; 
+    projectId?: string; 
+    category?: string;
+  }) => {
+    if (!savedExpenseId) return;
+    
+    try {
+      await updateExpense.mutateAsync({
+        id: savedExpenseId,
+        updates: {
+          client_id: updates.clientId || null,
+          project_id: updates.projectId || null,
+          category: updates.category,
+        },
+      });
+      setShowQuickEdit(false);
+      setImagePreview(null);
+      setImageBase64(null);
+      setSavedExpenseId(null);
+      setLastSavedExpense(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (error) {
+      console.error('Error updating expense:', error);
+    }
+  };
+
+  const handleCaptureAnother = () => {
+    setShowQuickEdit(false);
+    setImagePreview(null);
+    setImageBase64(null);
+    setLastSavedExpense(null);
+    setSavedExpenseId(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    // Small delay then open camera
+    setTimeout(() => handleCameraCapture(), 100);
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b px-4 py-3">
+      {/* Animated Header */}
+      <motion.header 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="sticky top-0 z-50 bg-gradient-to-r from-primary/90 via-accent/80 to-primary/90 backdrop-blur border-b border-primary/20 px-4 py-3"
+      >
         <div className="flex items-center justify-between">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate('/dashboard')}
+            className="text-primary-foreground hover:bg-white/20"
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <Camera className="h-5 w-5 text-primary" />
-            <span className="font-semibold">
+            <motion.div
+              animate={{ 
+                boxShadow: ['0 0 0 0 rgba(255,255,255,0.4)', '0 0 0 8px rgba(255,255,255,0)', '0 0 0 0 rgba(255,255,255,0)']
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="p-1.5 rounded-full bg-white/20"
+            >
+              <Camera className="h-5 w-5 text-primary-foreground" />
+            </motion.div>
+            <span className="font-semibold text-primary-foreground">
               {language === 'es' ? 'Captura Móvil' : 'Mobile Capture'}
             </span>
           </div>
-          <Badge variant={isOnline ? 'default' : 'destructive'} className="gap-1">
+          <Badge 
+            variant={isOnline ? 'default' : 'destructive'} 
+            className={cn(
+              "gap-1 transition-all",
+              isOnline 
+                ? "bg-emerald-500/90 hover:bg-emerald-500" 
+                : "bg-red-500/90 animate-pulse"
+            )}
+          >
             {isOnline ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
             {isOnline ? 'Online' : 'Offline'}
           </Badge>
         </div>
-      </header>
+      </motion.header>
 
       {/* Main Content */}
       <main className="flex-1 p-4 space-y-4">
-        {/* Stats Card */}
-        {captureCount > 0 && (
-          <Card className="bg-primary/10 border-primary/20">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    {language === 'es' ? 'Capturados hoy' : 'Captured today'}
-                  </p>
-                  <p className="text-2xl font-bold text-primary">{captureCount}</p>
-                </div>
-                {lastSavedTime && (
-                  <div className="text-right">
-                    <p className="text-xs text-muted-foreground">
-                      {language === 'es' ? 'Último guardado' : 'Last saved'}
-                    </p>
-                    <p className="text-sm font-medium">
-                      {lastSavedTime.toLocaleTimeString()}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Stats Card - Always visible */}
+        <MobileCaptureStats
+          todayCount={todayCount}
+          dailyGoal={dailyGoal}
+          currentStreak={currentStreak}
+          goalProgress={goalProgress}
+          goalReached={goalReached}
+        />
 
         {/* Camera Area */}
-        <Card className="flex-1">
-          <CardContent className="p-4">
-            {!imagePreview ? (
-              <div 
-                onClick={handleCameraCapture}
-                className={cn(
-                  "aspect-[3/4] rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-4 cursor-pointer transition-all",
-                  "border-primary/30 bg-primary/5 hover:border-primary hover:bg-primary/10 active:scale-[0.98]"
-                )}
-              >
-                <div className="p-6 rounded-full bg-primary/20">
-                  <Camera className="h-12 w-12 text-primary" />
-                </div>
-                <div className="text-center px-4">
-                  <p className="text-lg font-semibold">
-                    {language === 'es' ? 'Toca para fotografiar' : 'Tap to photograph'}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {language === 'es' 
-                      ? 'Captura tu recibo y se procesará automáticamente'
-                      : 'Capture your receipt and it will be processed automatically'
-                    }
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted relative">
-                  <img 
-                    src={imagePreview} 
-                    alt="Receipt preview" 
-                    className="w-full h-full object-contain"
-                  />
-                  {isProcessing && (
-                    <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center gap-3">
-                      <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                      <p className="text-sm font-medium">
-                        {language === 'es' ? 'Analizando...' : 'Analyzing...'}
-                      </p>
-                    </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="overflow-hidden border-2 border-transparent bg-gradient-to-br from-card to-card">
+            {/* Animated gradient border */}
+            <div className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-blue-500 via-purple-500 to-emerald-500 opacity-50 blur-sm animate-gradient-border" />
+            
+            <CardContent className="p-4">
+              {!imagePreview ? (
+                <motion.div 
+                  onClick={handleCameraCapture}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={cn(
+                    "aspect-[3/4] rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-4 cursor-pointer transition-all relative overflow-hidden",
+                    "border-primary/40 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/10",
+                    "hover:border-primary hover:shadow-lg hover:shadow-primary/20"
                   )}
+                >
+                  {/* Shimmer effect */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12"
+                    animate={{ x: ['-200%', '200%'] }}
+                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+                  />
+                  
+                  {/* Dotted pattern background */}
+                  <div className="absolute inset-0 opacity-5" style={{
+                    backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
+                    backgroundSize: '20px 20px'
+                  }} />
+                  
+                  <motion.div 
+                    className="p-6 rounded-full bg-gradient-to-br from-primary/30 to-accent/20 shadow-lg shadow-primary/20"
+                    animate={{ 
+                      y: [0, -8, 0],
+                      boxShadow: [
+                        '0 10px 25px -5px rgba(59, 130, 246, 0.2)',
+                        '0 20px 35px -5px rgba(59, 130, 246, 0.3)',
+                        '0 10px 25px -5px rgba(59, 130, 246, 0.2)'
+                      ]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    <Camera className="h-12 w-12 text-primary" />
+                  </motion.div>
+                  <div className="text-center px-4 relative z-10">
+                    <p className="text-lg font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                      {language === 'es' ? 'Toca para fotografiar' : 'Tap to photograph'}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {language === 'es' 
+                        ? 'Captura tu recibo y se procesará automáticamente'
+                        : 'Capture your receipt and it will be processed automatically'
+                      }
+                    </p>
+                  </div>
+                </motion.div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted relative">
+                    <img 
+                      src={imagePreview} 
+                      alt="Receipt preview" 
+                      className="w-full h-full object-contain"
+                    />
+                    
+                    {/* Laser scan animation during processing */}
+                    <AnimatePresence>
+                      {isProcessing && (
+                        <>
+                          {/* Dark overlay */}
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-background/60 backdrop-blur-sm"
+                          />
+                          
+                          {/* Laser line */}
+                          <motion.div
+                            initial={{ top: '0%' }}
+                            animate={{ top: '100%' }}
+                            transition={{ 
+                              duration: 2, 
+                              repeat: Infinity, 
+                              ease: 'linear' 
+                            }}
+                            className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent shadow-[0_0_20px_5px_rgba(16,185,129,0.5)]"
+                          />
+                          
+                          {/* Processing text */}
+                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                            >
+                              <Zap className="h-10 w-10 text-emerald-500" />
+                            </motion.div>
+                            <p className="text-sm font-medium text-foreground">
+                              {language === 'es' ? 'Analizando...' : 'Analyzing...'}
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Hidden file input */}
         <input
@@ -226,52 +377,97 @@ export default function MobileCapture() {
         />
 
         {/* Action Buttons */}
-        {imagePreview && !isProcessing && (
-          <div className="grid grid-cols-2 gap-3">
-            <Button 
-              variant="outline" 
-              size="lg" 
-              onClick={handleRetake}
-              className="h-14"
+        <AnimatePresence>
+          {imagePreview && !isProcessing && !showQuickEdit && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="grid grid-cols-2 gap-3"
             >
-              <RefreshCw className="mr-2 h-5 w-5" />
-              {language === 'es' ? 'Repetir' : 'Retake'}
-            </Button>
-            <Button 
-              size="lg" 
-              onClick={handleProcessAndSave}
-              disabled={!isOnline}
-              className="h-14"
-            >
-              <Sparkles className="mr-2 h-5 w-5" />
-              {language === 'es' ? 'Procesar' : 'Process'}
-            </Button>
-          </div>
-        )}
+              <Button 
+                variant="outline" 
+                size="lg" 
+                onClick={handleRetake}
+                className="h-14 border-2 hover:border-primary/50 hover:bg-primary/5 transition-all"
+              >
+                <RefreshCw className="mr-2 h-5 w-5" />
+                {language === 'es' ? 'Repetir' : 'Retake'}
+              </Button>
+              <Button 
+                size="lg" 
+                onClick={handleProcessAndSave}
+                disabled={!isOnline}
+                className={cn(
+                  "h-14 font-semibold transition-all",
+                  "bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%]",
+                  "hover:bg-[position:100%_0] hover:shadow-lg hover:shadow-primary/30",
+                  "active:scale-[0.98]"
+                )}
+              >
+                <Sparkles className="mr-2 h-5 w-5" />
+                {language === 'es' ? 'Procesar' : 'Process'}
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Quick capture again button after processing */}
-        {!imagePreview && captureCount > 0 && (
-          <Button 
-            size="lg" 
-            onClick={handleCameraCapture}
-            className="w-full h-14"
+        {!imagePreview && !showQuickEdit && todayCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
           >
-            <Camera className="mr-2 h-5 w-5" />
-            {language === 'es' ? 'Capturar otro recibo' : 'Capture another receipt'}
-          </Button>
+            <Button 
+              size="lg" 
+              onClick={handleCameraCapture}
+              className={cn(
+                "w-full h-14 font-semibold",
+                "bg-gradient-to-r from-emerald-500 to-green-500",
+                "hover:from-emerald-600 hover:to-green-600",
+                "shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50",
+                "transition-all active:scale-[0.98]"
+              )}
+            >
+              <Camera className="mr-2 h-5 w-5" />
+              {language === 'es' ? 'Capturar otro recibo' : 'Capture another receipt'}
+            </Button>
+          </motion.div>
         )}
       </main>
 
-      {/* Offline Warning */}
-      {!isOnline && (
-        <div className="fixed bottom-0 left-0 right-0 bg-destructive text-destructive-foreground p-3 text-center text-sm">
-          <WifiOff className="h-4 w-4 inline-block mr-2" />
-          {language === 'es' 
-            ? 'Sin conexión. Los gastos se guardarán cuando vuelvas a conectarte.'
-            : 'Offline. Expenses will be saved when you reconnect.'
-          }
-        </div>
+      {/* Quick Edit Panel */}
+      {showQuickEdit && lastSavedExpense && (
+        <QuickEditPanel
+          expense={lastSavedExpense}
+          onSave={handleQuickEditSave}
+          onCaptureAnother={handleCaptureAnother}
+          onEditMore={() => navigate('/expenses')}
+          onClose={() => {
+            setShowQuickEdit(false);
+            handleRetake();
+          }}
+        />
       )}
+
+      {/* Offline Warning */}
+      <AnimatePresence>
+        {!isOnline && (
+          <motion.div
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            exit={{ y: 100 }}
+            className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-amber-500 to-orange-500 text-white p-3 text-center text-sm shadow-lg"
+          >
+            <WifiOff className="h-4 w-4 inline-block mr-2" />
+            {language === 'es' 
+              ? 'Sin conexión. Los gastos se guardarán cuando vuelvas a conectarte.'
+              : 'Offline. Expenses will be saved when you reconnect.'
+            }
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
