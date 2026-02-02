@@ -10,7 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   RotateCcw, Globe, BookOpen,
-  Shield, Ticket, Settings2, Database
+  Shield, Ticket, Settings2, Database, ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { NotificationPreferences } from '@/components/settings/NotificationPreferences';
@@ -21,6 +21,9 @@ import { PageHeader } from '@/components/PageHeader';
 import { DisplayPreferencesCard } from '@/components/settings/DisplayPreferencesCard';
 import { ThemeCard } from '@/components/settings/ThemeCard';
 import { useIsAdmin } from '@/hooks/data/useIsAdmin';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 
 // Lazy load heavy sections
 const DataPrivacyCard = lazy(() => import('@/components/settings/DataPrivacyCard').then(m => ({ default: m.DataPrivacyCard })));
@@ -34,164 +37,259 @@ const SectionSkeleton = () => (
   </div>
 );
 
+// Collapsible section wrapper for mobile
+function SettingsSection({ 
+  title, 
+  icon: Icon, 
+  children, 
+  defaultOpen = false,
+  isMobile 
+}: { 
+  title: string; 
+  icon: React.ElementType; 
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+  isMobile: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  
+  if (!isMobile) {
+    return <>{children}</>;
+  }
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger asChild>
+        <Button 
+          variant="ghost" 
+          className="w-full justify-between p-3 h-auto bg-muted/50 hover:bg-muted"
+        >
+          <div className="flex items-center gap-2">
+            <Icon className="h-4 w-4 text-primary" />
+            <span className="font-medium">{title}</span>
+          </div>
+          <ChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} />
+        </Button>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pt-3">
+        {children}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
 export default function Settings() {
   const navigate = useNavigate();
   const { t, language, setLanguage } = useLanguage();
   const { data: isAdmin } = useIsAdmin();
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('preferences');
 
   return (
     <Layout>
-      <div className="p-4 sm:p-8 space-y-6 max-w-6xl mx-auto">
+      <div className="p-3 sm:p-4 md:p-8 space-y-4 sm:space-y-6 max-w-6xl mx-auto">
         <PageHeader
           title={t('nav.settings')}
-          description={language === 'es' 
+          description={!isMobile ? (language === 'es' 
             ? 'Personaliza la aplicación y gestiona tus datos' 
-            : 'Customize the app and manage your data'}
+            : 'Customize the app and manage your data') : undefined}
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="preferences" className="gap-2">
+          <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-6">
+            <TabsTrigger value="preferences" className="gap-2 min-h-[44px]">
               <Settings2 className="h-4 w-4" />
-              <span className="hidden sm:inline">{language === 'es' ? 'Preferencias' : 'Preferences'}</span>
+              <span className="text-xs sm:text-sm">{language === 'es' ? 'Preferencias' : 'Preferences'}</span>
             </TabsTrigger>
-            <TabsTrigger value="data" className="gap-2">
+            <TabsTrigger value="data" className="gap-2 min-h-[44px]">
               <Database className="h-4 w-4" />
-              <span className="hidden sm:inline">{language === 'es' ? 'Datos' : 'Data'}</span>
+              <span className="text-xs sm:text-sm">{language === 'es' ? 'Datos' : 'Data'}</span>
             </TabsTrigger>
           </TabsList>
 
           {/* ============== PREFERENCES TAB ============== */}
-          <TabsContent value="preferences" className="space-y-6">
+          <TabsContent value="preferences" className="space-y-4 sm:space-y-6">
             {/* Fiscal Jurisdictions - Multi-country support */}
-            <div data-highlight="fiscal-entities">
-              <FiscalEntitiesCard />
-            </div>
+            <SettingsSection 
+              title={language === 'es' ? 'Entidades Fiscales' : 'Fiscal Entities'} 
+              icon={Globe} 
+              defaultOpen={true}
+              isMobile={isMobile}
+            >
+              <div data-highlight="fiscal-entities">
+                <FiscalEntitiesCard />
+              </div>
+            </SettingsSection>
 
             {/* Subscription Management */}
-            <div data-highlight="subscription-settings">
-              <SubscriptionManager />
-            </div>
+            <SettingsSection 
+              title={language === 'es' ? 'Suscripción' : 'Subscription'} 
+              icon={Shield} 
+              isMobile={isMobile}
+            >
+              <div data-highlight="subscription-settings">
+                <SubscriptionManager />
+              </div>
+            </SettingsSection>
 
             {/* Language Section */}
-            <Card data-highlight="language-settings">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-primary" />
-                  <div>
-                    <CardTitle>{t('settings.languageTitle')}</CardTitle>
-                    <CardDescription>{t('settings.languageDescription')}</CardDescription>
+            <SettingsSection 
+              title={language === 'es' ? 'Idioma' : 'Language'} 
+              icon={Globe} 
+              isMobile={isMobile}
+            >
+              <Card data-highlight="language-settings">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-5 w-5 text-primary" />
+                    <div>
+                      <CardTitle className="text-base">{t('settings.languageTitle')}</CardTitle>
+                      <CardDescription className="text-xs sm:text-sm">{t('settings.languageDescription')}</CardDescription>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Label>{t('common.language')}</Label>
-                  <Select value={language} onValueChange={(val) => setLanguage(val as any)}>
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="es">Español</SelectItem>
-                      <SelectItem value="en">English</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <Label>{t('common.language')}</Label>
+                    <Select value={language} onValueChange={(val) => setLanguage(val as any)}>
+                      <SelectTrigger className="w-full sm:w-[200px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="es">Español</SelectItem>
+                        <SelectItem value="en">English</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+            </SettingsSection>
 
             {/* Display Preferences */}
-            <DisplayPreferencesCard />
+            <SettingsSection 
+              title={language === 'es' ? 'Visualización' : 'Display'} 
+              icon={Settings2} 
+              isMobile={isMobile}
+            >
+              <DisplayPreferencesCard />
+            </SettingsSection>
 
             {/* Voice Preferences */}
-            <Suspense fallback={<SectionSkeleton />}>
-              <div data-highlight="voice-preferences">
-                <VoicePreferencesCard />
-              </div>
-            </Suspense>
+            <SettingsSection 
+              title={language === 'es' ? 'Voz' : 'Voice'} 
+              icon={Settings2} 
+              isMobile={isMobile}
+            >
+              <Suspense fallback={<SectionSkeleton />}>
+                <div data-highlight="voice-preferences">
+                  <VoicePreferencesCard />
+                </div>
+              </Suspense>
+            </SettingsSection>
 
-            {/* Theme Section - New Optimized Component */}
-            <ThemeCard />
+            {/* Theme Section */}
+            <SettingsSection 
+              title={language === 'es' ? 'Tema' : 'Theme'} 
+              icon={Settings2} 
+              isMobile={isMobile}
+            >
+              <ThemeCard />
+            </SettingsSection>
 
             {/* Notification Preferences */}
-            <NotificationPreferences />
+            <SettingsSection 
+              title={language === 'es' ? 'Notificaciones' : 'Notifications'} 
+              icon={Settings2} 
+              isMobile={isMobile}
+            >
+              <NotificationPreferences />
+            </SettingsSection>
 
             {/* Onboarding Guides Section */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-primary" />
-                  <div>
-                    <CardTitle>{language === 'es' ? 'Guías de Ayuda' : 'Help Guides'}</CardTitle>
-                    <CardDescription>
-                      {language === 'es' 
-                        ? 'Restablece las guías de onboarding para verlas de nuevo en cada página' 
-                        : 'Reset the onboarding guides to see them again on each page'}
-                    </CardDescription>
+            <SettingsSection 
+              title={language === 'es' ? 'Guías de Ayuda' : 'Help Guides'} 
+              icon={BookOpen} 
+              isMobile={isMobile}
+            >
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-primary" />
+                    <div>
+                      <CardTitle className="text-base">{language === 'es' ? 'Guías de Ayuda' : 'Help Guides'}</CardTitle>
+                      <CardDescription className="text-xs sm:text-sm">
+                        {language === 'es' 
+                          ? 'Restablece las guías de onboarding' 
+                          : 'Reset the onboarding guides'}
+                      </CardDescription>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-wrap gap-3">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      const keysToRemove = Object.keys(localStorage).filter(key => 
-                        key.startsWith('onboarding-dismissed-') || 
-                        key.startsWith('guide-') ||
-                        key.startsWith('tip-') ||
-                        key === 'setup-banner-dismissed'
-                      );
-                      keysToRemove.forEach(key => localStorage.removeItem(key));
-                      toast.success(
-                        language === 'es' 
-                          ? '¡Guías de página restablecidas!' 
-                          : 'Page guides reset!'
-                      );
-                    }}
-                  >
-                    <RotateCcw className="mr-2 h-4 w-4" />
-                    {language === 'es' ? 'Restablecer Guías de Página' : 'Reset Page Guides'}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      resetOnboardingTutorial();
-                      toast.success(
-                        language === 'es' 
-                          ? '¡Tutorial reiniciado! Recarga la página para verlo.' 
-                          : 'Tutorial reset! Reload the page to see it.'
-                      );
-                    }}
-                  >
-                    <RotateCcw className="mr-2 h-4 w-4" />
-                    {language === 'es' ? 'Ver Tutorial de Inicio' : 'View Welcome Tutorial'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="min-h-[44px]"
+                      onClick={() => {
+                        const keysToRemove = Object.keys(localStorage).filter(key => 
+                          key.startsWith('onboarding-dismissed-') || 
+                          key.startsWith('guide-') ||
+                          key.startsWith('tip-') ||
+                          key === 'setup-banner-dismissed'
+                        );
+                        keysToRemove.forEach(key => localStorage.removeItem(key));
+                        toast.success(
+                          language === 'es' 
+                            ? '¡Guías de página restablecidas!' 
+                            : 'Page guides reset!'
+                        );
+                      }}
+                    >
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      {language === 'es' ? 'Guías de Página' : 'Page Guides'}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="min-h-[44px]"
+                      onClick={() => {
+                        resetOnboardingTutorial();
+                        toast.success(
+                          language === 'es' 
+                            ? '¡Tutorial reiniciado!' 
+                            : 'Tutorial reset!'
+                        );
+                      }}
+                    >
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      {language === 'es' ? 'Tutorial' : 'Tutorial'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </SettingsSection>
 
             {/* Admin Section */}
             {isAdmin && (
               <Card className="border-primary/50 bg-primary/5">
-                <CardHeader>
+                <CardHeader className="pb-3">
                   <div className="flex items-center gap-2">
                     <Shield className="h-5 w-5 text-primary" />
                     <div>
-                      <CardTitle>{language === 'es' ? 'Administración' : 'Administration'}</CardTitle>
-                      <CardDescription>
+                      <CardTitle className="text-base">{language === 'es' ? 'Administración' : 'Administration'}</CardTitle>
+                      <CardDescription className="text-xs sm:text-sm">
                         {language === 'es' 
-                          ? 'Herramientas de administración del sistema' 
-                          : 'System administration tools'}
+                          ? 'Herramientas de administración' 
+                          : 'Administration tools'}
                       </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Button onClick={() => navigate('/admin/beta-codes')} className="gap-2">
+                  <Button onClick={() => navigate('/admin/beta-codes')} className="gap-2 min-h-[44px]">
                     <Ticket className="h-4 w-4" />
-                    {language === 'es' ? 'Gestionar Códigos Beta' : 'Manage Beta Codes'}
+                    {language === 'es' ? 'Códigos Beta' : 'Beta Codes'}
                   </Button>
                 </CardContent>
               </Card>
@@ -199,7 +297,7 @@ export default function Settings() {
           </TabsContent>
 
           {/* ============== DATA TAB ============== */}
-          <TabsContent value="data" className="space-y-6">
+          <TabsContent value="data" className="space-y-4 sm:space-y-6">
             <Suspense fallback={<SectionSkeleton />}>
               <SampleDataManager />
               <DataPrivacyCard />
