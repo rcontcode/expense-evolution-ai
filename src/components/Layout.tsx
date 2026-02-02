@@ -297,103 +297,102 @@ export const Layout = ({ children }: LayoutProps) => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[280px] p-0 flex flex-col border-l-0">
-                {/* Header - Compact with Gradient */}
-                <div className="bg-gradient-to-r from-primary/10 via-cyan-500/10 to-purple-500/10 px-3 py-2.5 flex items-center justify-between">
+              <SheetContent side="right" className="w-[260px] p-0 flex flex-col border-0 shadow-2xl">
+                {/* Header - Minimal */}
+                <div className="px-3 py-2 flex items-center justify-between border-b border-border/30">
                   <div className="flex items-center gap-2">
                     <PhoenixLogo variant="mini" />
-                    <span className="font-bold text-base bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">EvoFinz</span>
+                    <span className="font-bold text-sm">EvoFinz</span>
                   </div>
                   <SheetClose asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
-                      <X className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full">
+                      <X className="h-3.5 w-3.5" />
                     </Button>
                   </SheetClose>
                 </div>
                 
+                {/* Quick Access - Top 4 most used */}
+                <div className="px-3 py-2 border-b border-border/30">
+                  <div className="grid grid-cols-4 gap-1">
+                    {[
+                      { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+                      { icon: Receipt, label: language === 'es' ? 'Gastos' : 'Expenses', path: '/expenses' },
+                      { icon: TrendingUp, label: language === 'es' ? 'Ingresos' : 'Income', path: '/income' },
+                      { icon: Inbox, label: language === 'es' ? 'Bandeja' : 'Inbox', path: '/chaos' },
+                    ].map((item) => {
+                      const Icon = item.icon;
+                      const isActive = location.pathname === item.path;
+                      return (
+                        <button
+                          key={item.path}
+                          onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
+                          className={cn(
+                            "flex flex-col items-center gap-0.5 py-1.5 rounded-md transition-colors",
+                            isActive ? "bg-primary/10" : "hover:bg-muted"
+                          )}
+                        >
+                          <Icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground")} />
+                          <span className={cn("text-[9px] font-medium", isActive ? "text-primary" : "text-muted-foreground")}>
+                            {item.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* Entity Selector - Compact */}
-                <div className="px-3 py-2 border-b bg-muted/30">
+                <div className="px-3 py-1.5 border-b border-border/30">
                   <MobileMenuEntitySelector onNavigate={() => setMobileMenuOpen(false)} />
                 </div>
                 
-                {/* Scrollable Content - Ultra Compact */}
-                <nav className="flex-1 overflow-y-auto px-2 py-2">
-                  {NAV_SECTIONS.map((section, sectionIndex) => {
-                    const theme = sectionThemes[section.themeKey];
-                    return (
-                      <div key={section.titleKey} className={cn("mb-2", sectionIndex > 0 && "pt-1")}>
-                        {/* Section Title - Colored & Compact */}
-                        <div className={cn(
-                          "flex items-center gap-1.5 px-2 py-1 text-[11px] font-bold uppercase tracking-wider",
-                          theme.text
-                        )}>
-                          <span className="text-sm">{section.emoji}</span>
-                          <span>{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
-                        </div>
-                        
-                        {/* Items Grid - 2 columns for compactness */}
-                        <div className="grid grid-cols-2 gap-1">
-                          {section.items.map((item) => {
-                            const Icon = item.icon;
-                            const isActive = location.pathname === item.path;
-                            
-                            return (
-                              <button
-                                key={item.path}
-                                onClick={() => {
-                                  navigate(item.path);
-                                  setMobileMenuOpen(false);
-                                }}
-                                className={cn(
-                                  "flex flex-col items-center justify-center gap-0.5 p-2 rounded-lg transition-all",
-                                  "hover:bg-muted active:scale-95",
-                                  isActive && cn(
-                                    "bg-gradient-to-br",
-                                    theme.gradient,
-                                    "ring-1",
-                                    theme.border
-                                  )
-                                )}
-                              >
-                                <div className={cn(
-                                  "p-1.5 rounded-lg",
-                                  isActive ? theme.iconWrapper : "bg-muted"
-                                )}>
-                                  <Icon className={cn(
-                                    "h-4 w-4",
-                                    isActive ? "text-white" : "text-muted-foreground"
-                                  )} />
-                                </div>
-                                <span className={cn(
-                                  "text-[10px] font-medium text-center leading-tight line-clamp-1",
-                                  isActive ? theme.text : "text-muted-foreground"
-                                )}>
-                                  {t(item.label).split(' ')[0]}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
+                {/* All Menu Items - Ultra Compact List */}
+                <nav className="flex-1 overflow-y-auto px-2 py-1">
+                  {NAV_SECTIONS.map((section) => (
+                    <div key={section.titleKey} className="mb-1">
+                      {/* Section Title */}
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                        <span>{section.emoji}</span>
+                        <span>{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
                       </div>
-                    );
-                  })}
+                      
+                      {/* Items - Compact Row List */}
+                      <div className="space-y-px">
+                        {section.items.map((item) => {
+                          const Icon = item.icon;
+                          const isActive = location.pathname === item.path;
+                          
+                          return (
+                            <button
+                              key={item.path}
+                              onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
+                              className={cn(
+                                "w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors text-left",
+                                isActive 
+                                  ? "bg-primary/10 text-primary font-medium" 
+                                  : "hover:bg-muted text-foreground"
+                              )}
+                            >
+                              <Icon className={cn("h-3.5 w-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
+                              <span className="text-xs truncate">{t(item.label)}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </nav>
 
-                {/* Footer - Compact Row */}
-                <div className="border-t bg-muted/30 px-3 py-2 flex items-center gap-2 safe-area-bottom">
-                  <div className="flex-1">
-                    <MobileMenuLanguageSelector />
-                  </div>
+                {/* Footer - Compact */}
+                <div className="border-t border-border/30 px-3 py-1.5 flex items-center gap-2 safe-area-bottom">
+                  <MobileMenuLanguageSelector />
                   <Button 
                     variant="ghost" 
-                    size="icon"
-                    className="h-10 w-10 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg" 
-                    onClick={() => {
-                      signOut();
-                      setMobileMenuOpen(false);
-                    }}
+                    size="sm"
+                    className="h-8 px-2 text-destructive hover:text-destructive hover:bg-destructive/10" 
+                    onClick={() => { signOut(); setMobileMenuOpen(false); }}
                   >
-                    <LogOut className="h-4 w-4" />
+                    <LogOut className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </SheetContent>

@@ -41,7 +41,7 @@ export function MobileMenuEntitySelector({ onNavigate }: MobileMenuEntitySelecto
   };
 
   if (isLoading) {
-    return <Skeleton className="h-10 w-full rounded-lg" />;
+    return <Skeleton className="h-8 w-full rounded-md" />;
   }
 
   // No entities - show setup prompt
@@ -50,18 +50,16 @@ export function MobileMenuEntitySelector({ onNavigate }: MobileMenuEntitySelecto
       <button
         onClick={handleClick}
         className={cn(
-          "w-full flex items-center gap-2 px-3 py-2",
-          "bg-primary/10 hover:bg-primary/20 rounded-lg",
-          "border border-dashed border-primary/40",
-          "transition-all duration-200",
-          "active:scale-[0.98]"
+          "w-full flex items-center gap-2 px-2 py-1.5 rounded-md",
+          "bg-primary/5 hover:bg-primary/10 border border-dashed border-primary/30",
+          "transition-colors active:scale-[0.98]"
         )}
       >
-        <span className="text-lg">🌍</span>
-        <span className="flex-1 text-left text-xs font-medium text-primary">
-          {language === 'es' ? 'Configurar' : 'Set Up'}
+        <span className="text-sm">🌍</span>
+        <span className="flex-1 text-left text-[11px] font-medium text-primary">
+          {language === 'es' ? 'Configurar jurisdicción' : 'Set up jurisdiction'}
         </span>
-        <ChevronRight className="h-4 w-4 text-primary" />
+        <ChevronRight className="h-3 w-3 text-primary" />
       </button>
     );
   }
@@ -70,22 +68,18 @@ export function MobileMenuEntitySelector({ onNavigate }: MobileMenuEntitySelecto
     <button
       onClick={handleClick}
       className={cn(
-        "w-full flex items-center gap-2 px-3 py-2",
-        "bg-gradient-to-r from-primary/5 to-cyan-500/5 hover:from-primary/10 hover:to-cyan-500/10",
-        "rounded-lg border border-primary/20",
-        "transition-all duration-200",
-        "active:scale-[0.98]"
+        "w-full flex items-center gap-2 px-2 py-1.5 rounded-md",
+        "bg-muted/50 hover:bg-muted border border-border/30",
+        "transition-colors active:scale-[0.98]"
       )}
     >
-      <span className="text-lg">
+      <span className="text-sm">
         {primaryEntity ? countryFlags[primaryEntity.country] || '🌍' : '🌍'}
       </span>
-      <div className="flex-1 text-left min-w-0">
-        <p className="text-xs font-semibold truncate">
-          {primaryEntity?.name || (language === 'es' ? 'Sin configurar' : 'Not configured')}
-        </p>
-      </div>
-      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+      <span className="flex-1 text-left text-[11px] font-medium truncate">
+        {primaryEntity?.name || (language === 'es' ? 'Sin configurar' : 'Not set')}
+      </span>
+      <ChevronRight className="h-3 w-3 text-muted-foreground" />
     </button>
   );
 }
