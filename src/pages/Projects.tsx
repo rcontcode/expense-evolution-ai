@@ -200,7 +200,7 @@ export default function Projects() {
 
   return (
     <Layout>
-      <div className="p-8 space-y-6">
+      <div className="page-container section-gap">
         <PageHeader
           title={language === 'es' ? 'Proyectos' : 'Projects'}
           description={language === 'es' 

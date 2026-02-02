@@ -61,7 +61,7 @@ export default function Contracts() {
 
   return (
     <Layout>
-      <div className="p-4 sm:p-8 space-y-4 sm:space-y-8">
+      <div className="page-container section-gap">
         <PageHeader
           title={t('nav.contracts')}
           description={!isMobile ? t('contracts.description') : undefined}
