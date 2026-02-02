@@ -175,13 +175,11 @@ export const ChatAssistant: React.FC = () => {
   // Language detection
   const langDetection = useLanguageDetection();
 
-  // Premium voice synthesis (ElevenLabs) with automatic fallback to native
+  // Premium voice synthesis (ElevenLabs)
   const elevenLabsTTS = useElevenLabsTTS({
     lang: language as 'es' | 'en',
-    onFallback: () => {
-      // Silently fall back - no need to notify user
-      console.log('[ChatAssistant] Using native voice fallback');
-    },
+    voiceGender: voicePrefs.voiceGender === 'auto' ? 'female' : voicePrefs.voiceGender as 'female' | 'male',
+    voiceId: voicePrefs.premiumVoiceId || undefined,
   });
 
   // Current detected intent for visual feedback

@@ -8,7 +8,8 @@ interface VoicePreferences {
   volume: number; // 0 to 1
   pitch: number; // 0 to 2
   voiceGender: VoiceGender; // Female, male, or auto
-  selectedVoiceName: string | null; // Specific voice name selected by user
+  selectedVoiceName: string | null; // Specific native voice name selected by user
+  premiumVoiceId: string | null; // ElevenLabs voice ID for premium TTS
   enableSoundEffects: boolean;
   confirmDestructiveActions: boolean;
   
@@ -60,6 +61,7 @@ const DEFAULT_PREFERENCES: VoicePreferences = {
   pitch: 1.0,
   voiceGender: 'female',
   selectedVoiceName: null,
+  premiumVoiceId: null,
   enableSoundEffects: true,
   confirmDestructiveActions: true,
   customShortcuts: [],
@@ -190,6 +192,11 @@ export function useVoicePreferences() {
   // Set specific voice by name
   const setSelectedVoice = useCallback((voiceName: string | null) => {
     setPreferences(prev => ({ ...prev, selectedVoiceName: voiceName }));
+  }, []);
+
+  // Set premium ElevenLabs voice ID
+  const setPremiumVoiceId = useCallback((voiceId: string | null) => {
+    setPreferences(prev => ({ ...prev, premiumVoiceId: voiceId }));
   }, []);
 
   // Toggle sound effects
@@ -361,6 +368,7 @@ export function useVoicePreferences() {
     pitch: preferences.pitch,
     voiceGender: preferences.voiceGender,
     selectedVoiceName: preferences.selectedVoiceName,
+    premiumVoiceId: preferences.premiumVoiceId,
     enableSoundEffects: preferences.enableSoundEffects,
     confirmDestructiveActions: preferences.confirmDestructiveActions,
     customShortcuts: preferences.customShortcuts,
@@ -375,6 +383,7 @@ export function useVoicePreferences() {
     setPitch,
     setVoiceGender,
     setSelectedVoice,
+    setPremiumVoiceId,
     toggleSoundEffects,
     toggleConfirmDestructive,
     

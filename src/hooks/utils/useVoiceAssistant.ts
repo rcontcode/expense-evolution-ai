@@ -3,6 +3,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 import type { VoiceGender } from './useVoicePreferences';
 
+interface PremiumSpeakResult {
+  success: boolean;
+  error?: string;
+}
+
 interface UseVoiceAssistantOptions {
   onTranscript?: (text: string) => void;
   onInterimTranscript?: (text: string) => void;
@@ -16,8 +21,8 @@ interface UseVoiceAssistantOptions {
   pitch?: number; // 0.5 to 2.0, default 1.0
   voiceGender?: VoiceGender; // female, male, or auto
   selectedVoiceName?: string | null; // Specific voice name selected by user
-  /** Optional premium TTS function (e.g., ElevenLabs) - if provided, will be used instead of native TTS */
-  premiumSpeak?: (text: string) => Promise<void>;
+  /** Optional premium TTS function (e.g., ElevenLabs) - returns success/error for fallback handling */
+  premiumSpeak?: (text: string) => Promise<PremiumSpeakResult>;
   /** Whether premium TTS is currently speaking (for state sync) */
   isPremiumSpeaking?: boolean;
 }
@@ -635,41 +640,40 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   }, [language, options, createAndStartRecognition]);
 
   // Speak text with COMPLETE mic blocking and natural sentence pauses
-  // Uses premium TTS (ElevenLabs) if available, otherwise falls back to native
+  // Uses premium TTS (ElevenLabs) if available and successful, otherwise falls back to native
   const speak = useCallback(async (text: string) => {
     if (!isSupported || !text) return;
 
-    // If premium TTS is available, use it
-    if (options.premiumSpeak) {
-      console.log('[Voice] Using premium TTS');
-      
-      // Block mic during premium speech
-      isPausedForSpeakingRef.current = true;
-      
-      // Stop recognition completely
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.abort();
-        } catch (e) {
-          // Ignore
-        }
-        recognitionRef.current = null;
+    // Block mic during speech
+    isPausedForSpeakingRef.current = true;
+    
+    // Stop recognition completely
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (e) {
+        // Ignore
       }
-      setIsListening(false);
-      
-      // Clear any accumulated text and pause timer
-      accumulatedTextRef.current = '';
-      clearPauseTimeout();
+      recognitionRef.current = null;
+    }
+    setIsListening(false);
+    
+    // Clear any accumulated text and pause timer
+    accumulatedTextRef.current = '';
+    clearPauseTimeout();
+
+    // Try premium TTS first if available
+    if (options.premiumSpeak) {
+      console.log('[Voice] Attempting premium TTS');
       
       setCurrentSpeakingText(text);
       setIsSpeaking(true);
       
-      try {
-        await options.premiumSpeak(text);
-      } catch (err) {
-        console.error('[Voice] Premium TTS error:', err);
-      } finally {
-        // Unblock mic after premium TTS finishes
+      const result = await options.premiumSpeak(text);
+      
+      if (result.success) {
+        console.log('[Voice] Premium TTS completed successfully');
+        // Premium completed - unblock mic
         setIsSpeaking(false);
         setCurrentSpeakingText('');
         
@@ -685,11 +689,16 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         } else {
           isPausedForSpeakingRef.current = false;
         }
+        return;
       }
-      return;
+      
+      // Premium failed - fall through to native TTS
+      console.log('[Voice] Premium TTS failed, falling back to native:', result.error);
+      setIsSpeaking(false);
+      setCurrentSpeakingText('');
     }
 
-    // Fallback to native TTS
+    // Use native TTS (either as fallback or primary)
     // NEW: Log and cancel any existing speech FIRST
     console.log('[Voice] Using native TTS - Cancelling any existing speech before speaking');
     window.speechSynthesis.cancel();

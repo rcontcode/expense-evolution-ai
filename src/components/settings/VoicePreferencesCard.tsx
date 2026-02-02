@@ -12,10 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useVoicePreferences, type VoiceGender } from '@/hooks/utils/useVoicePreferences';
 import { useHighlight, type HighlightColor } from '@/contexts/HighlightContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { ELEVENLABS_VOICES } from '@/hooks/utils/useElevenLabsTTS';
+import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 import { 
   Mic, Volume2, Bell, Zap, Trash2, Plus, Clock, Calendar, 
   MessageSquare, History, Play, Settings2, VolumeX, Volume1, Highlighter,
-  User, UserCircle, Globe, ChevronDown
+  User, UserCircle, Globe, ChevronDown, Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -31,9 +33,11 @@ export function VoicePreferencesCard() {
   const { language } = useLanguage();
   const voicePrefs = useVoicePreferences();
   const highlightCtx = useHighlight();
+  const { canUsePremiumVoice, getRemainingVoiceMinutes } = usePlanLimits();
   
   const [availableVoices, setAvailableVoices] = useState<VoiceInfo[]>([]);
   const [showVoiceList, setShowVoiceList] = useState(false);
+  const [showPremiumVoices, setShowPremiumVoices] = useState(false);
   
   const [showShortcutDialog, setShowShortcutDialog] = useState(false);
   const [showReminderDialog, setShowReminderDialog] = useState(false);
@@ -329,6 +333,119 @@ export function VoicePreferencesCard() {
               ))}
             </div>
           </div>
+
+          {/* Premium ElevenLabs Voices */}
+          <Collapsible open={showPremiumVoices} onOpenChange={setShowPremiumVoices} className="pt-2">
+            <CollapsibleTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full justify-between bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30"
+              >
+                <span className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-amber-500" />
+                  <span className="text-amber-700 dark:text-amber-400">
+                    {language === 'es' ? 'Voces Premium (ElevenLabs)' : 'Premium Voices (ElevenLabs)'}
+                  </span>
+                  {voicePrefs.premiumVoiceId && (
+                    <Badge variant="default" className="ml-2 text-[10px] bg-amber-500">
+                      {language === 'es' ? 'Activa' : 'Active'}
+                    </Badge>
+                  )}
+                </span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${showPremiumVoices ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-2">
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    {language === 'es' 
+                      ? '✨ Voces de alta calidad con acento latinoamericano neutral'
+                      : '✨ High-quality voices with neutral Latin American accent'}
+                  </p>
+                  <Badge variant="outline" className="text-[10px]">
+                    {Math.round(getRemainingVoiceMinutes())} {language === 'es' ? 'min restantes' : 'min left'}
+                  </Badge>
+                </div>
+                
+                {/* Spanish Voices */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium flex items-center gap-1">
+                    🌎 {language === 'es' ? 'Español (Latinoamérica)' : 'Spanish (Latin America)'}
+                  </Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[...ELEVENLABS_VOICES.es.female, ...ELEVENLABS_VOICES.es.male].map((voice) => {
+                      const isSelected = voicePrefs.premiumVoiceId === voice.id;
+                      const isFemale = ELEVENLABS_VOICES.es.female.some(v => v.id === voice.id);
+                      return (
+                        <button
+                          key={voice.id}
+                          onClick={() => voicePrefs.setPremiumVoiceId(isSelected ? null : voice.id)}
+                          className={`flex items-center gap-2 p-2 rounded-lg border text-left transition-all ${
+                            isSelected 
+                              ? 'bg-amber-500 text-white border-amber-600' 
+                              : 'bg-background hover:bg-muted border-border'
+                          }`}
+                        >
+                          <span>{isFemale ? '👩' : '👨'}</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">{voice.name}</p>
+                            <p className={`text-[10px] ${isSelected ? 'text-white/70' : 'text-muted-foreground'}`}>
+                              {voice.desc}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* English Voices */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium flex items-center gap-1">
+                    🌍 {language === 'es' ? 'Inglés (Norteamérica)' : 'English (North America)'}
+                  </Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[...ELEVENLABS_VOICES.en.female, ...ELEVENLABS_VOICES.en.male].map((voice) => {
+                      const isSelected = voicePrefs.premiumVoiceId === voice.id;
+                      const isFemale = ELEVENLABS_VOICES.en.female.some(v => v.id === voice.id);
+                      return (
+                        <button
+                          key={voice.id}
+                          onClick={() => voicePrefs.setPremiumVoiceId(isSelected ? null : voice.id)}
+                          className={`flex items-center gap-2 p-2 rounded-lg border text-left transition-all ${
+                            isSelected 
+                              ? 'bg-amber-500 text-white border-amber-600' 
+                              : 'bg-background hover:bg-muted border-border'
+                          }`}
+                        >
+                          <span>{isFemale ? '👩' : '👨'}</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">{voice.name}</p>
+                            <p className={`text-[10px] ${isSelected ? 'text-white/70' : 'text-muted-foreground'}`}>
+                              {voice.desc}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {voicePrefs.premiumVoiceId && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => voicePrefs.setPremiumVoiceId(null)}
+                  >
+                    {language === 'es' ? '✕ Usar voz automática' : '✕ Use automatic voice'}
+                  </Button>
+                )}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Available Voices - Expandable List */}
           <Collapsible open={showVoiceList} onOpenChange={setShowVoiceList} className="pt-2">
