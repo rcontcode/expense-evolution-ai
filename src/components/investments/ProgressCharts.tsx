@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, Legend, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, PiggyBank, Target, Calendar } from 'lucide-react';
+import { MobileChartHint } from '@/components/ui/mobile-chart-hint';
 
 interface ProgressChartsProps {
   savingsGoals: any[];
@@ -18,7 +19,7 @@ const CHART_COLORS = [
 ];
 
 export function ProgressCharts({ savingsGoals, investmentGoals }: ProgressChartsProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   // Combine all goals for overview
   const allGoals = useMemo(() => {
@@ -193,6 +194,7 @@ export function ProgressCharts({ savingsGoals, investmentGoals }: ProgressCharts
                 <Legend />
               </AreaChart>
             </ResponsiveContainer>
+            <MobileChartHint language={language} />
           </CardContent>
         </Card>
 
@@ -232,6 +234,7 @@ export function ProgressCharts({ savingsGoals, investmentGoals }: ProgressCharts
                 />
               </PieChart>
             </ResponsiveContainer>
+            <MobileChartHint language={language} />
           </CardContent>
         </Card>
 
@@ -279,6 +282,7 @@ export function ProgressCharts({ savingsGoals, investmentGoals }: ProgressCharts
                 />
               </BarChart>
             </ResponsiveContainer>
+            <MobileChartHint language={language} />
           </CardContent>
         </Card>
       </div>

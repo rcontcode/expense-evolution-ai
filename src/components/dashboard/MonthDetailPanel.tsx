@@ -37,6 +37,7 @@ import {
   ResponsiveContainer,
   Tooltip as RechartsTooltip,
 } from 'recharts';
+import { MobileChartHint } from '@/components/ui/mobile-chart-hint';
 
 // Budget Progress Component
 function BudgetProgressSection({ 
@@ -464,6 +465,7 @@ export function MonthDetailPanel({
                     />
                   </RechartsPieChart>
                 </ResponsiveContainer>
+                <MobileChartHint language={language} className="mt-1" />
               </div>
             </div>
             
