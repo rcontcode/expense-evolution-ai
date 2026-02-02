@@ -56,6 +56,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -83,6 +84,7 @@ const PUBLIC_ROUTES = ['/', '/landing', '/quiz', '/auth', '/legal', '/install'];
 
 export const ChatAssistant: React.FC = () => {
   const location = useLocation();
+  const isMobile = useIsMobile();
   
   // Don't render on public/marketing pages
   const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname);
@@ -1243,18 +1245,21 @@ export const ChatAssistant: React.FC = () => {
       )}
 
       {/* Floating Button - only when chat is fully closed and not in bubble mode */}
-      <Button
-        onClick={() => setIsOpen(true)}
-        className={cn(
-          "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
-          "bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500",
-          "transition-all duration-300 hover:scale-110",
-          (isOpen || isMinimized || isBubbleMode || isContinuousMode || isListening || isSpeaking) && "hidden"
-        )}
-        size="icon"
-      >
-        <PhoenixLogo variant="badge" showEffects={false} className="h-7 w-7" />
-      </Button>
+      {/* Hidden on mobile to prevent overlapping with bottom nav */}
+      {!isMobile && (
+        <Button
+          onClick={() => setIsOpen(true)}
+          className={cn(
+            "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
+            "bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500",
+            "transition-all duration-300 hover:scale-110",
+            (isOpen || isMinimized || isBubbleMode || isContinuousMode || isListening || isSpeaking) && "hidden"
+          )}
+          size="icon"
+        >
+          <PhoenixLogo variant="badge" showEffects={false} className="h-7 w-7" />
+        </Button>
+      )}
 
       {/* Compact Bubble Mode - shows pulsating phoenix when auto-minimized during tutorials/navigation */}
       <AnimatePresence>

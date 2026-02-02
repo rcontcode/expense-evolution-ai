@@ -2,7 +2,7 @@ import { ExpenseFilters as Filters, ExpenseCategory, ExpenseStatus, Reimbursemen
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, X, Clock, FileCheck, Landmark, Ban, Building2, XCircle, AlertCircle, CheckCircle2, Filter, Receipt, AlertTriangle, User, Tag } from 'lucide-react';
+import { Search, X, Clock, FileCheck, Landmark, Ban, Building2, XCircle, AlertCircle, CheckCircle2, Filter, Receipt, AlertTriangle, User, Tag, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import { useClients } from '@/hooks/data/useClients';
 import { useTags } from '@/hooks/data/useTags';
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories';
@@ -15,6 +15,8 @@ import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const QUICK_STATUS_FILTERS = [
   { value: 'all', label: 'Todos', labelEn: 'All', icon: Filter, color: 'bg-muted text-muted-foreground' },
@@ -45,6 +47,8 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
   const { data: clients } = useClients();
   const { data: tags } = useTags();
   const [tagPopoverOpen, setTagPopoverOpen] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleSearchChange = (value: string) => {
     onChange({ ...filters, searchQuery: value || undefined });
@@ -113,9 +117,187 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
   const selectedTags = tags?.filter(t => filters.tagIds?.includes(t.id)) || [];
   const tagFilterMode = filters.tagFilterMode || 'OR';
 
+  // Count active filters for mobile badge
+  const activeFilterCount = [
+    filters.onlyIncomplete,
+    filters.reimbursementType,
+    filters.statuses?.length,
+    filters.hasReceipt,
+    filters.category,
+    filters.clientIds?.length,
+    filters.tagIds?.length
+  ].filter(Boolean).length;
+
+  // Mobile: Compact collapsible layout
+  if (isMobile) {
+    return (
+      <div className="flex flex-col gap-2 mb-3">
+        {/* Row 1: Search + Filter button */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={language === 'es' ? 'Buscar vendedor...' : 'Search vendor...'}
+              value={filters.searchQuery || ''}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-9 h-10"
+            />
+          </div>
+          <Collapsible open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" size="icon" className="h-10 w-10 relative shrink-0">
+                <SlidersHorizontal className="h-4 w-4" />
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </Button>
+            </CollapsibleTrigger>
+          </Collapsible>
+          {hasActiveFilters && (
+            <Button variant="ghost" size="icon" onClick={clearFilters} className="h-10 w-10 shrink-0">
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+
+        {/* Row 2: Quick filters - Incomplete only always visible + category select */}
+        <div className="flex gap-2 items-center">
+          <button
+            onClick={handleIncompleteFilterToggle}
+            className={cn(
+              'inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border shrink-0 min-h-[36px]',
+              filters.onlyIncomplete 
+                ? 'bg-destructive/10 text-destructive border-destructive/30' 
+                : 'bg-muted/50 text-muted-foreground border-transparent hover:bg-muted'
+            )}
+          >
+            <AlertTriangle className="h-3.5 w-3.5" />
+            <span>{language === 'es' ? 'Incompletos' : 'Incomplete'}</span>
+          </button>
+          
+          <Select value={filters.category || 'all'} onValueChange={handleCategoryChange}>
+            <SelectTrigger className="flex-1 h-9 text-xs">
+              <SelectValue placeholder={language === 'es' ? 'Todas' : 'All'} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{language === 'es' ? 'Todas las categorías' : 'All categories'}</SelectItem>
+              {EXPENSE_CATEGORIES.map((cat) => (
+                <SelectItem key={cat.value} value={cat.value}>
+                  {cat.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select 
+            value={filters.clientIds?.[0] || 'all'} 
+            onValueChange={handleClientChange}
+          >
+            <SelectTrigger className="flex-1 h-9 text-xs">
+              <SelectValue placeholder={language === 'es' ? 'Todos' : 'All'} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{language === 'es' ? 'Todos los clientes' : 'All clients'}</SelectItem>
+              {clients?.map((client) => (
+                <SelectItem key={client.id} value={client.id}>
+                  {client.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Collapsible: Advanced filters */}
+        <Collapsible open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
+          <CollapsibleContent className="space-y-3 pt-2">
+            {/* Reimbursement Type */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">{language === 'es' ? 'Tipo Reembolso' : 'Reimb. Type'}</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {REIMBURSEMENT_FILTERS.map((type) => {
+                  const Icon = type.icon;
+                  const isActive = (filters.reimbursementType || 'all') === type.value;
+                  return (
+                    <button
+                      key={type.value}
+                      onClick={() => handleReimbursementTypeChange(type.value)}
+                      className={cn(
+                        'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-all',
+                        isActive 
+                          ? `${type.color} ring-1 ring-offset-1 ring-offset-background ring-primary/50` 
+                          : 'bg-muted/50 text-muted-foreground'
+                      )}
+                    >
+                      <Icon className="h-3 w-3" />
+                      <span>{language === 'es' ? type.label : type.labelEn}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Status */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">{language === 'es' ? 'Estado' : 'Status'}</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {QUICK_STATUS_FILTERS.slice(0, 5).map((status) => {
+                  const Icon = status.icon;
+                  const isActive = activeStatus === status.value;
+                  return (
+                    <button
+                      key={status.value}
+                      onClick={() => handleQuickStatusFilter(status.value)}
+                      className={cn(
+                        'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-all',
+                        isActive 
+                          ? `${status.color} ring-1 ring-offset-1 ring-offset-background ring-primary/50` 
+                          : 'bg-muted/50 text-muted-foreground'
+                      )}
+                    >
+                      <Icon className="h-3 w-3" />
+                      <span>{language === 'es' ? status.label : status.labelEn}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Receipt filter */}
+            <div className="flex items-center gap-2">
+              <Switch 
+                checked={!!filters.hasReceipt} 
+                onCheckedChange={handleReceiptFilterToggle}
+              />
+              <Label className="text-xs">{language === 'es' ? 'Solo con recibo' : 'With receipt only'}</Label>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Selected Tags Display */}
+        {selectedTags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1">
+            {selectedTags.map((tag) => (
+              <Badge
+                key={tag.id}
+                style={{ backgroundColor: tag.color || '#3B82F6' }}
+                className="text-white text-xs cursor-pointer"
+                onClick={() => handleTagToggle(tag.id)}
+              >
+                {tag.name}
+                <X className="h-3 w-3 ml-1" />
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Desktop: Full layout
   return (
     <div className="flex flex-col gap-3 mb-4">
-      {/* Row 1: Incomplete Filter + Reimbursement Types - Horizontal scroll on mobile */}
       <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
         <button
           onClick={handleIncompleteFilterToggle}

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MinimizedAssistantBubbleProps {
   onExpand: () => void;
@@ -25,6 +26,12 @@ export const MinimizedAssistantBubble: React.FC<MinimizedAssistantBubbleProps> =
   currentText,
 }) => {
   const { language } = useLanguage();
+  const isMobile = useIsMobile();
+
+  // Hide on mobile to prevent overlap with bottom nav
+  if (isMobile) {
+    return null;
+  }
 
   // Truncate text for bubble preview
   const previewText = currentText

@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AudioLevelIndicator } from './voice/AudioLevelIndicator';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MinimizedAssistantProps {
   onExpand: () => void;
@@ -29,6 +30,12 @@ export const MinimizedAssistant: React.FC<MinimizedAssistantProps> = ({
   currentText,
 }) => {
   const { language } = useLanguage();
+  const isMobile = useIsMobile();
+  
+  // Hide on mobile to prevent overlap with bottom nav
+  if (isMobile) {
+    return null;
+  }
   
   // Truncate text for preview
   const previewText = currentText 
