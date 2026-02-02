@@ -412,39 +412,69 @@ export function MentorQuoteBanner({
   }, [quote, context, language, financialProfile, investmentGoals]);
 
   return (
-    <Card className={`bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border-primary/20 overflow-hidden ${className}`}>
-      <CardContent className="py-4">
+    <Card 
+      className={`
+        relative overflow-hidden cursor-pointer
+        bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 
+        dark:from-amber-950/40 dark:via-orange-950/30 dark:to-yellow-950/40
+        border-2 border-amber-200/60 dark:border-amber-700/40
+        shadow-lg shadow-amber-200/30 dark:shadow-amber-900/20
+        hover:shadow-xl hover:shadow-amber-300/40 dark:hover:shadow-amber-800/30
+        hover:border-amber-300 dark:hover:border-amber-600
+        hover:scale-[1.005] active:scale-[0.995]
+        transition-all duration-300 ease-out
+        group
+        ${className}
+      `}
+      onClick={refreshQuote}
+    >
+      {/* Subtle animated glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-amber-400/0 via-amber-400/10 to-amber-400/0 animate-pulse opacity-50 pointer-events-none" />
+      
+      {/* Pulsing indicator dot */}
+      <div className="absolute top-3 right-3 flex items-center gap-1.5">
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" />
+        </span>
+        <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 opacity-70 group-hover:opacity-100 transition-opacity">
+          {language === 'es' ? 'Click para más' : 'Click for more'}
+        </span>
+      </div>
+
+      <CardContent className="py-4 pr-28">
         <div className="flex items-start gap-4">
-          <div className="shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-            <Quote className="h-5 w-5 text-primary" />
+          {/* Mentor icon with glow */}
+          <div className="shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-400/30 group-hover:shadow-amber-500/50 transition-shadow">
+            <Quote className="h-6 w-6 text-white drop-shadow-sm" />
           </div>
           
           <div className={`flex-1 transition-opacity duration-300 ${isAnimating ? 'opacity-0' : 'opacity-100'}`}>
-            <blockquote className="text-base font-medium italic text-foreground">
+            <blockquote className="text-base font-medium italic text-amber-950 dark:text-amber-100">
               "{quote.quote}"
             </blockquote>
-            <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-              <Sparkles className="h-3 w-3 text-primary" />
+            <div className="mt-2 flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300">
+              <Sparkles className="h-3 w-3 text-amber-500" />
               <span className="font-semibold">{quote.author}</span>
               {quote.book && (
                 <>
                   <span>•</span>
-                  <span className="text-xs italic">{quote.book}</span>
+                  <span className="text-xs italic opacity-80">{quote.book}</span>
                 </>
               )}
               <span className="text-[10px] opacity-60" title={language === 'es' ? 'Cita con fines educativos' : 'Quote for educational purposes'}>*</span>
             </div>
 
             {/* Personalized Application */}
-            <div className="mt-3 pt-3 border-t border-primary/20">
+            <div className="mt-3 pt-3 border-t border-amber-300/40 dark:border-amber-600/40">
               <div className="flex items-start gap-2">
-                <User className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <User className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-xs font-medium text-primary">
+                  <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
                     {firstName ? `${firstName}, ` : ''}
                     {language === 'es' ? 'esto lo puedes aplicar:' : 'you can apply this:'}
                   </span>
-                  <p className="text-sm text-muted-foreground mt-0.5">
+                  <p className="text-sm text-amber-800/80 dark:text-amber-200/80 mt-0.5">
                     {personalizedApplication}
                   </p>
                 </div>
@@ -452,25 +482,29 @@ export function MentorQuoteBanner({
             </div>
 
             {showTip && tip && (
-              <div className="mt-3 pt-3 border-t border-primary/20">
+              <div className="mt-3 pt-3 border-t border-amber-300/40 dark:border-amber-600/40">
                 <div className="flex items-start gap-2">
                   <Lightbulb className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
                   <div>
                     <span className="text-xs font-medium text-yellow-600 dark:text-yellow-400">
                       {language === 'es' ? 'Consejo del día' : 'Tip of the day'}
                     </span>
-                    <p className="text-sm text-muted-foreground">{tip.tip}</p>
+                    <p className="text-sm text-amber-800/80 dark:text-amber-200/80">{tip.tip}</p>
                   </div>
                 </div>
               </div>
             )}
           </div>
 
+          {/* Refresh button with better visibility */}
           <Button
             variant="ghost"
             size="icon"
-            onClick={refreshQuote}
-            className="shrink-0 h-8 w-8 text-muted-foreground hover:text-primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              refreshQuote();
+            }}
+            className="absolute bottom-3 right-3 shrink-0 h-9 w-9 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800/60 hover:text-amber-900 dark:hover:text-amber-100 shadow-md border border-amber-300/50 dark:border-amber-600/50"
             title={language === 'es' ? 'Nueva frase' : 'New quote'}
           >
             <RefreshCw className={`h-4 w-4 ${isAnimating ? 'animate-spin' : ''}`} />
