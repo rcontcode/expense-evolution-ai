@@ -131,11 +131,20 @@ export function ReceiptReviewDialog({
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
-  // Reset image viewer state when dialog opens
+  // Load saved rotation from localStorage
+  useEffect(() => {
+    if (open && document.id) {
+      const savedRotation = localStorage.getItem(`receipt-rotation-${document.id}`);
+      if (savedRotation) {
+        setImageRotation(parseInt(savedRotation, 10));
+      }
+    }
+  }, [open, document.id]);
+
+  // Reset image viewer state when dialog opens (except rotation which is persisted)
   useEffect(() => {
     if (open) {
       setImageZoom(1);
-      setImageRotation(0);
       setImagePosition({ x: 0, y: 0 });
       setIsFullscreen(false);
       setEditedData(document.extracted_data || {});
@@ -197,12 +206,21 @@ export function ReceiptReviewDialog({
     setIsDragging(false);
   }, []);
 
-  const rotateLeft = () => setImageRotation(prev => prev - 90);
-  const rotateRight = () => setImageRotation(prev => prev + 90);
+  const rotateLeft = () => {
+    const newRotation = imageRotation - 90;
+    setImageRotation(newRotation);
+    localStorage.setItem(`receipt-rotation-${document.id}`, String(newRotation));
+  };
+  const rotateRight = () => {
+    const newRotation = imageRotation + 90;
+    setImageRotation(newRotation);
+    localStorage.setItem(`receipt-rotation-${document.id}`, String(newRotation));
+  };
   const resetImageView = () => {
     setImageZoom(1);
     setImageRotation(0);
     setImagePosition({ x: 0, y: 0 });
+    localStorage.removeItem(`receipt-rotation-${document.id}`);
   };
 
   const downloadImage = () => {
@@ -1131,6 +1149,18 @@ export function ReceiptReviewDialog({
                 </AlertDialog>
               )}
               
+              {/* Save button - always visible when editing with changes */}
+              {isEditing && hasChanges && (
+                <Button 
+                  onClick={handleSaveChanges} 
+                  disabled={isLoading}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                >
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                  {language === 'es' ? 'Guardar' : 'Save'}
+                </Button>
+              )}
+
               {isPending && (
                 <>
                   <Button 
@@ -1156,24 +1186,11 @@ export function ReceiptReviewDialog({
                     className="flex-1 bg-success hover:bg-success/90"
                   >
                     {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
-                    {isEditing && hasChanges 
-                      ? (language === 'es' ? 'Guardar y Aprobar' : 'Save & Approve')
-                      : (language === 'es' ? 'Aprobar' : 'Approve')}
+                    {language === 'es' ? 'Aprobar' : 'Approve'}
                   </Button>
                 </>
               )}
 
-              {/* Save button for non-pending (already approved/rejected) receipts */}
-              {!isPending && isEditing && hasChanges && (
-                <Button 
-                  onClick={handleSaveChanges} 
-                  disabled={isLoading}
-                  className="flex-1 bg-primary hover:bg-primary/90"
-                >
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                  {language === 'es' ? 'Guardar Cambios' : 'Save Changes'}
-                </Button>
-              )}
             </div>
           </div>
         </div>
