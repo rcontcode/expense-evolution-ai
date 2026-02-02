@@ -11,6 +11,133 @@ const corsHeaders = {
 // Jessica (cgSgspJ2msm6clMCkdW9) - Mexicana, cálida y clara - native Spanish speaker
 const DEFAULT_VOICE_ID = "cgSgspJ2msm6clMCkdW9";
 
+// Prefer real Spanish (LatAm) voices from Voice Library when no explicit voiceId is provided.
+let cachedDefaultSpanishShared:
+  | { publicOwnerId: string; voiceId: string }
+  | null = null;
+
+const BLOCKED_SPANISH_VOICE_IDS = new Set<string>([
+  "jsCqWAovK2LkecY7zXl4", // Sofía
+  "z9fAnlkpzviPz146aGWa", // Valentina
+  "oWAxZDx7w5VEj9dCyTzz", // Isabella
+  "LcfcDJNUP1GQjkzn1xUU", // Daniela (too slow)
+  "GBv7mTt0atIp3Br8iCZE", // Diego (too slow)
+  "JBFqnCBsd6RMkjVDRZzb", // George (EN)
+]);
+
+const SPANISH_ACCENT_ALLOW_RE = /(mexic|chile|latin|latam|neutral|es-419)/i;
+const ENGLISH_ACCENT_BLOCK_RE = /(american|british|australian|canadian)/i;
+
+type SharedVoice = {
+  public_owner_id: string;
+  voice_id: string;
+  name: string;
+  accent?: string | null;
+  gender?: string | null;
+  language?: string | null;
+  preview_url?: string | null;
+  featured?: boolean | null;
+  rate?: number | null;
+  usage_character_count_7d?: number | null;
+};
+
+function parseVoiceId(input: string):
+  | { kind: "regular"; voiceId: string }
+  | { kind: "shared"; publicOwnerId: string; sharedVoiceId: string } {
+  const trimmed = input.trim();
+  if (trimmed.startsWith("shared:")) {
+    const parts = trimmed.split(":");
+    const publicOwnerId = parts[1] ?? "";
+    const sharedVoiceId = parts.slice(2).join(":");
+    return { kind: "shared", publicOwnerId, sharedVoiceId };
+  }
+  return { kind: "regular", voiceId: trimmed };
+}
+
+async function fetchDefaultSpanishSharedVoice(ELEVENLABS_API_KEY: string) {
+  if (cachedDefaultSpanishShared) return cachedDefaultSpanishShared;
+
+  const url = new URL("https://api.elevenlabs.io/v1/shared-voices");
+  url.searchParams.set("page_size", "60");
+  url.searchParams.set("language", "es");
+  url.searchParams.set("gender", "Female");
+
+  const resp = await fetch(url.toString(), {
+    method: "GET",
+    headers: { "xi-api-key": ELEVENLABS_API_KEY },
+  });
+
+  const data = await resp.json().catch(() => null);
+  if (!resp.ok) {
+    throw new Error(
+      `ElevenLabs shared voices (default ES) fetch failed [${resp.status}]: ${JSON.stringify(data)}`,
+    );
+  }
+
+  const raw: SharedVoice[] = (data?.voices ?? []) as SharedVoice[];
+  const sorted = [...raw].sort((a, b) => {
+    const af = a.featured ? 1 : 0;
+    const bf = b.featured ? 1 : 0;
+    if (af !== bf) return bf - af;
+    const ar = Number(a.rate ?? 0);
+    const br = Number(b.rate ?? 0);
+    if (ar !== br) return br - ar;
+    const au = Number(a.usage_character_count_7d ?? 0);
+    const bu = Number(b.usage_character_count_7d ?? 0);
+    return bu - au;
+  });
+
+  const picked = sorted.find((v) => {
+    if (!v?.public_owner_id || !v?.voice_id) return false;
+    if (BLOCKED_SPANISH_VOICE_IDS.has(v.voice_id)) return false;
+    const accent = (v.accent ?? "").toLowerCase();
+    if (ENGLISH_ACCENT_BLOCK_RE.test(accent)) return false;
+    return SPANISH_ACCENT_ALLOW_RE.test(accent);
+  });
+
+  if (!picked) return null;
+  cachedDefaultSpanishShared = {
+    publicOwnerId: picked.public_owner_id,
+    voiceId: picked.voice_id,
+  };
+  return cachedDefaultSpanishShared;
+}
+
+async function addSharedVoiceToCollection(
+  ELEVENLABS_API_KEY: string,
+  publicOwnerId: string,
+  sharedVoiceId: string,
+): Promise<string> {
+  // Adding requires a name; we keep it deterministic.
+  const addResp = await fetch(
+    `https://api.elevenlabs.io/v1/voices/add/${publicOwnerId}/${sharedVoiceId}`,
+    {
+      method: "POST",
+      headers: {
+        "xi-api-key": ELEVENLABS_API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        new_name: `Evo ES ${sharedVoiceId.slice(0, 8)}`,
+      }),
+    },
+  );
+
+  const addData = await addResp.json().catch(() => null);
+  if (!addResp.ok) {
+    throw new Error(
+      `ElevenLabs add shared voice failed [${addResp.status}]: ${JSON.stringify(addData)}`,
+    );
+  }
+
+  const newVoiceId = (addData?.voice_id ?? "") as string;
+  if (!newVoiceId) {
+    throw new Error("ElevenLabs add shared voice failed: missing voice_id");
+  }
+
+  return newVoiceId;
+}
+
 // Plan limits in minutes per month
 const PLAN_LIMITS: Record<string, number> = {
   free: 3,
@@ -157,30 +284,68 @@ serve(async (req) => {
       );
     }
 
-    // Call ElevenLabs API with Turbo model (faster, cheaper, multilingual)
-    const selectedVoiceId = voiceId || DEFAULT_VOICE_ID;
-    
-    const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${selectedVoiceId}?output_format=mp3_22050_32`,
-      {
-        method: "POST",
-        headers: {
-          "xi-api-key": ELEVENLABS_API_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: cleanedText,
-          model_id: "eleven_turbo_v2_5", // Fastest, cheapest, multilingual
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.75,
-            style: 0.3,
-            use_speaker_boost: true,
-            speed: 0.95,
-          },
-        }),
+    // Decide voice
+    let selectedVoiceInput: string | null = typeof voiceId === "string" ? voiceId : null;
+
+    // If the client didn't specify a voice and it's Spanish, pick a high-quality LatAm voice from Voice Library.
+    if ((!selectedVoiceInput || !selectedVoiceInput.trim()) && (lang === "es")) {
+      try {
+        const def = await fetchDefaultSpanishSharedVoice(ELEVENLABS_API_KEY);
+        if (def) {
+          selectedVoiceInput = `shared:${def.publicOwnerId}:${def.voiceId}`;
+        }
+      } catch (e) {
+        console.warn("Failed to fetch default Spanish shared voice; falling back.", e);
       }
-    );
+    }
+
+    if (!selectedVoiceInput || !selectedVoiceInput.trim()) {
+      selectedVoiceInput = DEFAULT_VOICE_ID;
+    }
+
+    const parsed = parseVoiceId(selectedVoiceInput);
+    let selectedVoiceIdForTts = parsed.kind === "shared" ? parsed.sharedVoiceId : parsed.voiceId;
+    
+    const callTts = async (voiceId: string) => {
+      return await fetch(
+        `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_22050_32`,
+        {
+          method: "POST",
+          headers: {
+            "xi-api-key": ELEVENLABS_API_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text: cleanedText,
+            model_id: "eleven_turbo_v2_5", // Fastest, cheapest, multilingual
+            voice_settings: {
+              stability: 0.5,
+              similarity_boost: 0.75,
+              style: 0.3,
+              use_speaker_boost: true,
+              speed: 0.95,
+            },
+          }),
+        },
+      );
+    };
+
+    let response = await callTts(selectedVoiceIdForTts);
+
+    // If it's a shared voice and it wasn't usable directly, add it to the collection and retry.
+    if (!response.ok && parsed.kind === "shared" && (response.status === 404 || response.status === 401)) {
+      try {
+        const addedVoiceId = await addSharedVoiceToCollection(
+          ELEVENLABS_API_KEY,
+          parsed.publicOwnerId,
+          parsed.sharedVoiceId,
+        );
+        selectedVoiceIdForTts = addedVoiceId;
+        response = await callTts(selectedVoiceIdForTts);
+      } catch (e) {
+        console.warn("Failed adding shared voice to collection:", e);
+      }
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
