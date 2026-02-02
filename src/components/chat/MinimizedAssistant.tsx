@@ -43,19 +43,20 @@ export const MinimizedAssistant: React.FC<MinimizedAssistantProps> = ({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.9 }}
       className={cn(
-        "fixed bottom-4 right-4 z-50",
-        "bg-background/95 backdrop-blur-xl border rounded-2xl shadow-2xl",
-        "min-w-[280px] max-w-[350px]",
+        "fixed bottom-4 right-4 z-40",
+        "bg-background/95 backdrop-blur-xl border rounded-xl shadow-lg",
+        "min-w-[240px] max-w-[300px]",
         isSpeaking && "ring-2 ring-primary ring-opacity-50",
         isContinuousMode && "ring-2 ring-green-500 ring-opacity-50"
       )}
     >
       {/* Header */}
-      <div className="flex items-center gap-2 p-3 border-b">
+      <div className="flex items-center gap-2 p-2.5 border-b">
         <PhoenixLogo 
           variant="badge" 
           state={isSpeaking ? 'rebirth' : 'default'}
           showEffects={isSpeaking}
+          className="h-6 w-6"
         />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">
@@ -137,12 +138,12 @@ export const MinimizedAssistant: React.FC<MinimizedAssistantProps> = ({
 
       {/* Preview content when speaking */}
       {(isSpeaking || isListening) && (
-        <div className="p-3 space-y-2">
+        <div className="p-2.5 space-y-1.5">
           {/* Audio level indicator when listening */}
           {isListening && !isSpeaking && (
             <div className="flex items-center gap-2">
-              <AudioLevelIndicator isListening={true} variant="bars" className="w-12" />
-              <span className="text-xs text-muted-foreground">
+              <AudioLevelIndicator isListening={true} variant="bars" className="w-10" />
+              <span className="text-[10px] text-muted-foreground">
                 {language === 'es' ? 'Escuchando...' : 'Listening...'}
               </span>
             </div>
@@ -150,25 +151,25 @@ export const MinimizedAssistant: React.FC<MinimizedAssistantProps> = ({
           
           {/* Speaking preview */}
           {isSpeaking && previewText && (
-            <div className="text-xs text-muted-foreground line-clamp-2 italic">
+            <div className="text-[10px] text-muted-foreground line-clamp-2 italic">
               "{previewText}"
             </div>
           )}
           
           {/* Animated speaking indicator */}
           {isSpeaking && (
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
+            <div className="flex items-center gap-0.5">
+              {[...Array(4)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="w-1 bg-primary rounded-full"
+                  className="w-0.5 bg-primary rounded-full"
                   animate={{
-                    height: [8, 16, 8],
+                    height: [6, 12, 6],
                   }}
                   transition={{
-                    duration: 0.5,
+                    duration: 0.4,
                     repeat: Infinity,
-                    delay: i * 0.1,
+                    delay: i * 0.08,
                   }}
                 />
               ))}
@@ -177,11 +178,11 @@ export const MinimizedAssistant: React.FC<MinimizedAssistantProps> = ({
         </div>
       )}
 
-      {/* Expand hint */}
+      {/* Expand hint - compact */}
       {!isSpeaking && !isListening && (
         <div className="p-2 text-center">
-          <span className="text-[10px] text-muted-foreground">
-            {language === 'es' ? 'Toca para expandir' : 'Tap to expand'}
+          <span className="text-[9px] text-muted-foreground">
+            {language === 'es' ? 'Expandir' : 'Expand'}
           </span>
         </div>
       )}
