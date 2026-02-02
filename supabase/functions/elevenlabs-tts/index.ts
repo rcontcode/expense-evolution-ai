@@ -7,8 +7,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Voice options - default to a neutral, high-quality voice for both ES/EN
-const DEFAULT_VOICE_ID = "CwhRBWXzGAHq8TQ4Fs17"; // Roger - Clear, professional
+// Voice options - default to native Latin American Spanish voices
+// Jessica (cgSgspJ2msm6clMCkdW9) - Mexicana, cálida y clara - native Spanish speaker
+const DEFAULT_VOICE_ID = "cgSgspJ2msm6clMCkdW9";
 
 // Plan limits in minutes per month
 const PLAN_LIMITS: Record<string, number> = {
