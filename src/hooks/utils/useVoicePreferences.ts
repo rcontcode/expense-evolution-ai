@@ -84,6 +84,16 @@ const SOUND_EFFECTS = {
   listening: { frequency: 440, duration: 0.08, type: 'sine' as OscillatorType },
 };
 
+// Blocked voice IDs that have wrong accents (English speaker doing Spanish)
+const BLOCKED_ES_VOICE_IDS = new Set([
+  'jsCqWAovK2LkecY7zXl4', // "Sofía" - gringo accent
+  'z9fAnlkpzviPz146aGWa', // "Valentina" - gringo accent
+  'oWAxZDx7w5VEj9dCyTzz', // "Isabella" - gringo accent
+  'LcfcDJNUP1GQjkzn1xUU', // "Daniela" - too slow
+  'GBv7mTt0atIp3Br8iCZE', // "Diego" - too slow
+  'JBFqnCBsd6RMkjVDRZzb', // George (EN) wrongly used as ES
+]);
+
 export function useVoicePreferences() {
   const [preferences, setPreferences] = useState<VoicePreferences>(() => {
     try {
@@ -92,7 +102,7 @@ export function useVoicePreferences() {
         const parsed = JSON.parse(stored);
 
         // Backwards-compatible migration: older builds stored only `premiumVoiceId`.
-        // We intentionally DO NOT auto-apply that value to Spanish to avoid “gringo” Spanish.
+        // We intentionally DO NOT auto-apply that value to Spanish to avoid "gringo" Spanish.
         const merged = { ...DEFAULT_PREFERENCES, ...parsed } as VoicePreferences;
         if (!merged.premiumVoiceIdByLang || typeof merged.premiumVoiceIdByLang !== 'object') {
           merged.premiumVoiceIdByLang = {
@@ -100,8 +110,10 @@ export function useVoicePreferences() {
             en: parsed.premiumVoiceId ?? null,
           };
         } else {
+          // Clean up any blocked ES voice IDs that may have been saved previously
+          const esVoiceId = merged.premiumVoiceIdByLang.es;
           merged.premiumVoiceIdByLang = {
-            es: merged.premiumVoiceIdByLang.es ?? null,
+            es: esVoiceId && BLOCKED_ES_VOICE_IDS.has(esVoiceId) ? null : esVoiceId,
             en: merged.premiumVoiceIdByLang.en ?? null,
           };
         }
@@ -218,6 +230,12 @@ export function useVoicePreferences() {
   }, []);
 
   const setPremiumVoiceIdForLang = useCallback((lang: 'es' | 'en', voiceId: string | null) => {
+    // Validate: don't allow saving blocked ES voice IDs
+    if (lang === 'es' && voiceId && BLOCKED_ES_VOICE_IDS.has(voiceId)) {
+      console.warn('[VoicePrefs] Blocked invalid ES voice ID:', voiceId);
+      voiceId = null;
+    }
+    
     setPreferences(prev => ({
       ...prev,
       premiumVoiceIdByLang: {
@@ -228,7 +246,14 @@ export function useVoicePreferences() {
   }, []);
 
   const getPremiumVoiceId = useCallback((lang: 'es' | 'en') => {
-    return preferences.premiumVoiceIdByLang?.[lang] ?? preferences.premiumVoiceId ?? null;
+    const voiceId = preferences.premiumVoiceIdByLang?.[lang] ?? preferences.premiumVoiceId ?? null;
+    
+    // Safety: don't return blocked ES voice IDs
+    if (lang === 'es' && voiceId && BLOCKED_ES_VOICE_IDS.has(voiceId)) {
+      return null;
+    }
+    
+    return voiceId;
   }, [preferences.premiumVoiceIdByLang, preferences.premiumVoiceId]);
 
   // Toggle sound effects
