@@ -2,6 +2,7 @@ import { useState, useCallback, memo, CSSProperties, ReactElement, useMemo } fro
 import { List } from 'react-window';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { ExpenseCard } from './ExpenseCard';
+import { SwipeableCard } from '@/components/mobile/SwipeableCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -420,12 +421,18 @@ export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: E
 
         <div className="space-y-2">
           {expenses.map((expense) => (
-            <ExpenseCard
+            <SwipeableCard
               key={expense.id}
-              expense={expense}
-              onEdit={onEdit}
-              onDelete={handleSetDeleteId}
-            />
+              onSwipeLeft={() => handleSetDeleteId(expense.id)}
+              leftAction={{ label: language === 'es' ? 'Eliminar' : 'Delete' }}
+              threshold={80}
+            >
+              <ExpenseCard
+                expense={expense}
+                onEdit={onEdit}
+                onDelete={handleSetDeleteId}
+              />
+            </SwipeableCard>
           ))}
         </div>
 

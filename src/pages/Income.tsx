@@ -19,6 +19,7 @@ import { es, enUS } from 'date-fns/locale';
 import { PageHeader } from '@/components/PageHeader';
 import { SectionEmptyState } from '@/components/guidance/SectionEmptyState';
 import { IncomeCard } from '@/components/tables/IncomeCard';
+import { SwipeableCard } from '@/components/mobile/SwipeableCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Plus,
@@ -330,15 +331,24 @@ export default function Income() {
                 /* Mobile: Card view */
                 <div className="space-y-2" data-highlight="income-list">
                   {incomeList.map((income) => (
-                    <IncomeCard
+                    <SwipeableCard
                       key={income.id}
-                      income={income}
-                      onEdit={handleEditIncome}
-                      onDelete={(id) => {
-                        setDeleteId(id);
+                      onSwipeLeft={() => {
+                        setDeleteId(income.id);
                         setDeleteType('income');
                       }}
-                    />
+                      leftAction={{ label: language === 'es' ? 'Eliminar' : 'Delete' }}
+                      threshold={80}
+                    >
+                      <IncomeCard
+                        income={income}
+                        onEdit={handleEditIncome}
+                        onDelete={(id) => {
+                          setDeleteId(id);
+                          setDeleteType('income');
+                        }}
+                      />
+                    </SwipeableCard>
                   ))}
                 </div>
               ) : (

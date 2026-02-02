@@ -1,8 +1,8 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TagForm } from '@/components/forms/TagForm';
 import { useCreateTag, useUpdateTag } from '@/hooks/data/useTags';
 import { Tag, TagInsert } from '@/types/expense.types';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { FullScreenDialog } from '@/components/mobile/FullScreenDialog';
 
 interface TagDialogProps {
   open: boolean;
@@ -29,18 +29,17 @@ export function TagDialog({ open, onClose, tag }: TagDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{tag ? t('tags.editTag') : t('tags.createTag')}</DialogTitle>
-        </DialogHeader>
-        <TagForm
-          tag={tag}
-          onSubmit={handleSubmit}
-          onCancel={onClose}
-          isLoading={createMutation.isPending || updateMutation.isPending}
-        />
-      </DialogContent>
-    </Dialog>
+    <FullScreenDialog
+      open={open}
+      onOpenChange={onClose}
+      title={tag ? t('tags.editTag') : t('tags.createTag')}
+    >
+      <TagForm
+        tag={tag}
+        onSubmit={handleSubmit}
+        onCancel={onClose}
+        isLoading={createMutation.isPending || updateMutation.isPending}
+      />
+    </FullScreenDialog>
   );
 }

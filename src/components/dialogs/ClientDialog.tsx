@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ClientForm } from '@/components/forms/ClientForm';
 import { ClientFormValues } from '@/lib/validations/client.schema';
 import { useCreateClient, useUpdateClient, useDeleteClientTestData } from '@/hooks/data/useClients';
@@ -10,7 +9,7 @@ import { useContracts } from '@/hooks/data/useContracts';
 import { Client } from '@/types/expense.types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import { FlaskConical, Loader2, CheckCircle2, Sparkles } from 'lucide-react';
+import { FlaskConical, Loader2, CheckCircle2 } from 'lucide-react';
 import { ClientProjectsSection } from '@/components/clients/ClientProjectsSection';
 import confetti from 'canvas-confetti';
 import {
@@ -25,6 +24,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
+import { FullScreenDialog } from '@/components/mobile/FullScreenDialog';
 
 interface ClientDialogProps {
   open: boolean;
@@ -136,42 +136,41 @@ export function ClientDialog({ open, onClose, client }: ClientDialogProps) {
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{client ? 'Edit Client' : 'Create New Client'}</DialogTitle>
-          </DialogHeader>
-          
-          {client && hasTestData && (
-            <div className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
-                <FlaskConical className="h-4 w-4" />
-                <span className="text-sm">{t('clients.hasTestData')}</span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-amber-700 border-amber-300 hover:bg-amber-100"
-                onClick={() => setShowDeleteTestData(true)}
-              >
-                {t('clients.deleteTestData')}
-              </Button>
+      <FullScreenDialog
+        open={open}
+        onOpenChange={onClose}
+        title={client ? t('clients.editClient') : t('clients.addClient')}
+        description={client?.name}
+      >
+        {client && hasTestData && (
+          <div className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800 mb-4">
+            <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+              <FlaskConical className="h-4 w-4" />
+              <span className="text-sm">{t('clients.hasTestData')}</span>
             </div>
-          )}
-          
-          <ClientForm
-            client={client}
-            onSubmit={handleSubmit}
-            onCancel={onClose}
-            isLoading={createMutation.isPending || updateMutation.isPending}
-          />
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-amber-700 border-amber-300 hover:bg-amber-100"
+              onClick={() => setShowDeleteTestData(true)}
+            >
+              {t('clients.deleteTestData')}
+            </Button>
+          </div>
+        )}
+        
+        <ClientForm
+          client={client}
+          onSubmit={handleSubmit}
+          onCancel={onClose}
+          isLoading={createMutation.isPending || updateMutation.isPending}
+        />
 
-          {/* Projects Section - only show when editing */}
-          {client && (
-            <ClientProjectsSection clientId={client.id} />
-          )}
-        </DialogContent>
-      </Dialog>
+        {/* Projects Section - only show when editing */}
+        {client && (
+          <ClientProjectsSection clientId={client.id} />
+        )}
+      </FullScreenDialog>
 
       <AlertDialog open={showDeleteTestData} onOpenChange={(open) => {
         if (!open && deleteStep === 'idle') setShowDeleteTestData(false);
