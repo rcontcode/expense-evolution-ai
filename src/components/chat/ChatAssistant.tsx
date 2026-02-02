@@ -48,6 +48,7 @@ import { useVoiceConfirmation } from '@/hooks/utils/useVoiceConfirmation';
 import { useConversationState } from '@/hooks/utils/useConversationState';
 import { useConversationMemory } from '@/hooks/utils/useConversationMemory';
 import { useVoiceSynthesis } from '@/hooks/utils/useVoiceSynthesis';
+import { useElevenLabsTTS } from '@/hooks/utils/useElevenLabsTTS';
 import { voiceSynthesisManager } from '@/lib/voiceSynthesisManager';
 import { useLanguageDetection } from '@/hooks/utils/useLanguageDetection';
 import { cn } from '@/lib/utils';
@@ -173,6 +174,15 @@ export const ChatAssistant: React.FC = () => {
 
   // Language detection
   const langDetection = useLanguageDetection();
+
+  // Premium voice synthesis (ElevenLabs) with automatic fallback to native
+  const elevenLabsTTS = useElevenLabsTTS({
+    lang: language as 'es' | 'en',
+    onFallback: () => {
+      // Silently fall back - no need to notify user
+      console.log('[ChatAssistant] Using native voice fallback');
+    },
+  });
 
   // Current detected intent for visual feedback
   const [currentIntent, setCurrentIntent] = useState<{
@@ -387,6 +397,8 @@ export const ChatAssistant: React.FC = () => {
     pitch: voicePrefs.pitch,
     voiceGender: voicePrefs.voiceGender,
     selectedVoiceName: voicePrefs.selectedVoiceName,
+    premiumSpeak: elevenLabsTTS.speak,
+    isPremiumSpeaking: elevenLabsTTS.isSpeaking,
     onInterimTranscript: (text) => {
       // Update input field with live transcript
       setInput(text);
@@ -1337,6 +1349,7 @@ export const ChatAssistant: React.FC = () => {
     console.log('[Voice] Stopping ALL voice activity');
     window.speechSynthesis.cancel();
     audioPlayback.stop();
+    elevenLabsTTS.stop(); // Stop premium TTS
     stopSpeaking();
     if (isContinuousMode) {
       stopContinuousListening();
@@ -1344,12 +1357,13 @@ export const ChatAssistant: React.FC = () => {
     if (isListening) {
       toggleListening(); // This will stop listening
     }
-  }, [audioPlayback, stopSpeaking, isContinuousMode, stopContinuousListening, isListening, toggleListening]);
+  }, [audioPlayback, elevenLabsTTS, stopSpeaking, isContinuousMode, stopContinuousListening, isListening, toggleListening]);
 
   const handleMicClick = () => {
     // CRITICAL: Cancel ALL speech synthesis first
     window.speechSynthesis.cancel();
     audioPlayback.stop();
+    elevenLabsTTS.stop(); // Stop premium TTS
     
     if (isSpeaking) {
       stopSpeaking();
@@ -1365,6 +1379,7 @@ export const ChatAssistant: React.FC = () => {
     // CRITICAL: Cancel ALL speech synthesis before toggling
     window.speechSynthesis.cancel();
     audioPlayback.stop();
+    elevenLabsTTS.stop(); // Stop premium TTS
     
     if (isSpeaking) {
       stopSpeaking();
