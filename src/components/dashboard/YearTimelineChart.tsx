@@ -229,8 +229,8 @@ export function YearTimelineChart({
                       isFuture && "opacity-40 cursor-not-allowed"
                     )}
                   >
-                    {/* Bars container */}
-                    <div className="relative w-full h-16 sm:h-20 flex items-end justify-center gap-0.5">
+                    {/* Bars container - More compact on mobile */}
+                    <div className="relative w-full h-12 sm:h-16 lg:h-20 flex items-end justify-center gap-0.5">
                       {/* Income bar */}
                       <div
                         className={cn(
@@ -293,8 +293,8 @@ export function YearTimelineChart({
           })}
         </div>
         
-        {/* Legend */}
-        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+        {/* Legend - Hidden on mobile for compact view */}
+        <div className="hidden sm:flex items-center justify-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded bg-gradient-to-t from-success/80 to-success/50" />
             <span>{language === 'es' ? 'Ingresos' : 'Income'}</span>
@@ -313,21 +313,21 @@ export function YearTimelineChart({
           </div>
         </div>
         
-        {/* Year summary stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-border/50">
+        {/* Year summary stats - 2 cols mobile, 4 cols desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 pt-2 border-t border-border/50">
           <div className="text-center p-2 rounded-lg bg-success/5">
-            <p className="text-[10px] sm:text-xs text-muted-foreground">
-              {language === 'es' ? 'Total Ingresos' : 'Total Income'}
+            <p className="text-[10px] text-muted-foreground">
+              {language === 'es' ? 'Ingresos' : 'Income'}
             </p>
-            <p className="text-sm sm:text-base font-bold text-success">
+            <p className="text-sm font-bold text-success">
               {isLoading ? '...' : formatCurrency(yearlyTotals.totalIncome, true)}
             </p>
           </div>
           <div className="text-center p-2 rounded-lg bg-destructive/5">
-            <p className="text-[10px] sm:text-xs text-muted-foreground">
-              {language === 'es' ? 'Total Gastos' : 'Total Expenses'}
+            <p className="text-[10px] text-muted-foreground">
+              {language === 'es' ? 'Gastos' : 'Expenses'}
             </p>
-            <p className="text-sm sm:text-base font-bold text-destructive">
+            <p className="text-sm font-bold text-destructive">
               {isLoading ? '...' : formatCurrency(yearlyTotals.totalExpenses, true)}
             </p>
           </div>
@@ -335,25 +335,25 @@ export function YearTimelineChart({
             "text-center p-2 rounded-lg",
             yearlyTotals.totalBalance >= 0 ? "bg-success/5" : "bg-destructive/5"
           )}>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">
-              {language === 'es' ? 'Balance Anual' : 'Year Balance'}
+            <p className="text-[10px] text-muted-foreground">
+              Balance
             </p>
             <p className={cn(
-              "text-sm sm:text-base font-bold",
+              "text-sm font-bold",
               yearlyTotals.totalBalance >= 0 ? "text-success" : "text-destructive"
             )}>
               {isLoading ? '...' : formatCurrency(yearlyTotals.totalBalance, true)}
             </p>
           </div>
           <div className="text-center p-2 rounded-lg bg-primary/5">
-            <p className="text-[10px] sm:text-xs text-muted-foreground">
-              {language === 'es' ? 'Tasa Ahorro' : 'Savings Rate'}
+            <p className="text-[10px] text-muted-foreground">
+              {language === 'es' ? 'Ahorro' : 'Savings'}
             </p>
             <p className={cn(
-              "text-sm sm:text-base font-bold",
+              "text-sm font-bold",
               yearlyTotals.savingsRate >= 0 ? "text-primary" : "text-destructive"
             )}>
-              {isLoading ? '...' : `${yearlyTotals.savingsRate.toFixed(1)}%`}
+              {isLoading ? '...' : `${yearlyTotals.savingsRate.toFixed(0)}%`}
             </p>
           </div>
         </div>

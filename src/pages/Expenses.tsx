@@ -87,40 +87,40 @@ export default function Expenses() {
   return (
     <Layout>
       <TooltipProvider delayDuration={200}>
-        <div className="p-8 space-y-6">
+        <div className="page-container section-gap">
           <PageHeader
             title={t('expenses.title')}
             description={t('expenses.manageExpenses')}
           >
             <div className="flex gap-2 flex-wrap">
               <InfoTooltip content={TOOLTIP_CONTENT.bulkAssign} variant="wrapper" side="bottom">
-                <Button variant="outline" onClick={() => setBulkAssignOpen(true)} data-highlight="bulk-assign-button">
+                <Button variant="outline" size="sm" onClick={() => setBulkAssignOpen(true)} data-highlight="bulk-assign-button" className="hide-mobile">
                   <Users className="mr-2 h-4 w-4" />
                   {t('expenses.bulkAssign')}
                 </Button>
               </InfoTooltip>
               <InfoTooltip content={TOOLTIP_CONTENT.reimbursementReport} variant="wrapper" side="bottom">
-                <Button variant="outline" onClick={() => setReimbursementReportOpen(true)} data-highlight="reimbursement-report">
+                <Button variant="outline" size="sm" onClick={() => setReimbursementReportOpen(true)} data-highlight="reimbursement-report" className="hide-mobile">
                   <FileText className="mr-2 h-4 w-4" />
-                  {t('reimbursements.title')}
+                  <span className="hidden lg:inline">{t('reimbursements.title')}</span>
                 </Button>
               </InfoTooltip>
               <InfoTooltip content={TOOLTIP_CONTENT.exportButton} variant="wrapper" side="bottom">
-                <Button variant="outline" onClick={() => setExportDialogOpen(true)} data-highlight="export-button">
-                  <Download className="mr-2 h-4 w-4" />
-                  {t('common.export')}
+                <Button variant="outline" size="sm" onClick={() => setExportDialogOpen(true)} data-highlight="export-button">
+                  <Download className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">{t('common.export')}</span>
                 </Button>
               </InfoTooltip>
               <InfoTooltip content={TOOLTIP_CONTENT.addExpense} variant="wrapper" side="bottom">
-                <Button variant="outline" onClick={handleCreate} data-highlight="add-expense-button">
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t('expenses.addExpense')}
+                <Button variant="outline" size="sm" onClick={handleCreate} data-highlight="add-expense-button">
+                  <Plus className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">{t('expenses.addExpense')}</span>
                 </Button>
               </InfoTooltip>
               <InfoTooltip content={TOOLTIP_CONTENT.quickCapture} variant="wrapper" side="bottom">
-                <Button onClick={() => setQuickCaptureOpen(true)} className="bg-primary" data-highlight="quick-capture">
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  {t('quickCapture.title')}
+                <Button size="sm" onClick={() => setQuickCaptureOpen(true)} className="bg-primary" data-highlight="quick-capture">
+                  <Sparkles className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">{t('quickCapture.title')}</span>
                 </Button>
               </InfoTooltip>
             </div>

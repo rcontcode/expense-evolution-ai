@@ -236,7 +236,7 @@ export default function Dashboard() {
   return (
     <Layout>
       <TooltipProvider delayDuration={200}>
-        <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+        <div className="page-container section-gap">
           
           {/* Beta Reminder Banner - Gentle motivational prompts */}
           <BetaReminderBanner />
@@ -265,22 +265,24 @@ export default function Dashboard() {
                (siempre visible; esto es el “contenido” principal)
              ============================================= */}
 
-          <div data-highlight="timeline-chart">
-            <YearTimelineChart
-              selectedMonth={selectedMonth}
-              onMonthSelect={setSelectedMonth}
-              selectedYear={selectedYear}
-              onYearChange={setSelectedYear}
-            />
-          </div>
+          <div className="side-by-side" data-highlight="timeline-section">
+            <div data-highlight="timeline-chart">
+              <YearTimelineChart
+                selectedMonth={selectedMonth}
+                onMonthSelect={setSelectedMonth}
+                selectedYear={selectedYear}
+                onYearChange={setSelectedYear}
+              />
+            </div>
 
-          <div data-highlight="balance-card">
-            <MonthDetailPanel
-              year={selectedYear}
-              month={selectedMonth}
-              onAddIncome={handleAddIncome}
-              onAddExpense={handleAddExpense}
-            />
+            <div data-highlight="balance-card">
+              <MonthDetailPanel
+                year={selectedYear}
+                month={selectedMonth}
+                onAddIncome={handleAddIncome}
+                onAddExpense={handleAddExpense}
+              />
+            </div>
           </div>
 
           {/* View Mode Toggle + Export (siempre visible) */}
