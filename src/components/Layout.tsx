@@ -163,13 +163,39 @@ const getNavSections = (language: string) => [
   },
 ];
 
-// Bottom navigation items for mobile - uses translation keys
+// Strategic mobile navigation - optimized for thumb zones and common actions
 const getMobileNavItems = (language: string) => [
-  { icon: LayoutDashboard, labelKey: 'nav.dashboard', path: '/dashboard' },
-  { icon: Receipt, labelKey: 'nav.expenses', path: '/expenses' },
-  { icon: Camera, labelKey: 'nav.capture', path: '/capture', primary: true },
-  { icon: TrendingUp, labelKey: 'nav.income', path: '/income' },
-  { icon: Settings, labelKey: 'nav.config', path: '/settings' },
+  { 
+    icon: LayoutDashboard, 
+    labelKey: 'nav.dashboard', 
+    path: '/dashboard',
+    type: 'nav' as const
+  },
+  { 
+    icon: Receipt, 
+    labelKey: language === 'es' ? 'Dinero' : 'Money', 
+    paths: ['/expenses', '/income'],
+    currentPath: '/expenses',
+    type: 'tabbed' as const
+  },
+  { 
+    icon: Camera, 
+    labelKey: '', 
+    path: '/mobile-capture', 
+    type: 'fab' as const
+  },
+  { 
+    icon: Scale, 
+    labelKey: language === 'es' ? 'Tools' : 'Tools', 
+    paths: ['/net-worth', '/mileage', '/banking', '/reconciliation'],
+    currentPath: '/net-worth',
+    type: 'menu' as const
+  },
+  { 
+    icon: Menu, 
+    labelKey: language === 'es' ? 'Más' : 'More', 
+    type: 'drawer' as const
+  },
 ];
 
 export const Layout = ({ children }: LayoutProps) => {
@@ -377,39 +403,90 @@ export const Layout = ({ children }: LayoutProps) => {
           {children}
         </main>
 
-        {/* Mobile Bottom Navigation */}
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t safe-area-inset-bottom">
-          <div className="flex items-center justify-around py-2">
-            {MOBILE_NAV_ITEMS.map((item) => {
+        {/* Mobile Bottom Navigation - Professional Native-Level */}
+        <nav className="mobile-bottom-nav">
+          <div className="flex items-center justify-around h-full max-h-16">
+            {MOBILE_NAV_ITEMS.map((item, index) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.path;
               
-              if (item.primary) {
+              // FAB (Central capture button)
+              if (item.type === 'fab') {
                 return (
                   <button
-                    key={item.path}
-                    onClick={() => navigate(item.path)}
-                    className="flex flex-col items-center justify-center -mt-6"
+                    key={`fab-${index}`}
+                    onClick={() => navigate(item.path!)}
+                    className="mobile-bottom-nav-fab"
                   >
-                    <div className="w-14 h-14 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg shadow-primary/30">
-                      <Icon className="h-6 w-6 text-primary-foreground" />
+                    <div className="mobile-bottom-nav-fab-button">
+                      <Icon className="h-6 w-6" />
                     </div>
-                    <span className="text-xs mt-1 font-medium text-primary">{t(item.labelKey)}</span>
                   </button>
                 );
               }
               
+              // Tabbed navigation (Money: Expenses/Income)
+              if (item.type === 'tabbed') {
+                const isActive = item.paths?.some(p => location.pathname === p);
+                return (
+                  <button
+                    key={`tabbed-${index}`}
+                    onClick={() => navigate(item.currentPath || item.paths![0])}
+                    className={cn(
+                      "mobile-bottom-nav-item",
+                      isActive && "active"
+                    )}
+                  >
+                    <Icon className={cn("h-5 w-5", isActive && "text-primary")} />
+                    <span className={cn("text-[10px] mt-0.5", isActive && "font-medium")}>{item.labelKey}</span>
+                  </button>
+                );
+              }
+              
+              // Menu button (Tools)
+              if (item.type === 'menu') {
+                const isActive = item.paths?.some(p => location.pathname === p);
+                return (
+                  <button
+                    key={`menu-${index}`}
+                    onClick={() => navigate(item.currentPath || '/net-worth')}
+                    className={cn(
+                      "mobile-bottom-nav-item",
+                      isActive && "active"
+                    )}
+                  >
+                    <Icon className={cn("h-5 w-5", isActive && "text-primary")} />
+                    <span className={cn("text-[10px] mt-0.5", isActive && "font-medium")}>{item.labelKey}</span>
+                  </button>
+                );
+              }
+              
+              // Drawer button (More)
+              if (item.type === 'drawer') {
+                return (
+                  <button
+                    key={`drawer-${index}`}
+                    onClick={() => setMobileMenuOpen(true)}
+                    className="mobile-bottom-nav-item"
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="text-[10px] mt-0.5">{item.labelKey}</span>
+                  </button>
+                );
+              }
+              
+              // Standard navigation item
+              const isActive = location.pathname === item.path;
               return (
                 <button
                   key={item.path}
-                  onClick={() => navigate(item.path)}
+                  onClick={() => navigate(item.path!)}
                   className={cn(
-                    "flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-colors",
-                    isActive ? "text-primary" : "text-muted-foreground"
+                    "mobile-bottom-nav-item",
+                    isActive && "active"
                   )}
                 >
                   <Icon className={cn("h-5 w-5", isActive && "text-primary")} />
-                  <span className={cn("text-xs mt-1", isActive && "font-medium")}>{t(item.labelKey)}</span>
+                  <span className={cn("text-[10px] mt-0.5", isActive && "font-medium")}>{item.labelKey}</span>
                 </button>
               );
             })}

@@ -13,6 +13,8 @@ import { IncomeWithRelations, IncomeFormData } from '@/types/income.types';
 import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
 import { useEntity } from '@/contexts/EntityContext';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 interface IncomeDialogProps {
   open: boolean;
@@ -23,6 +25,7 @@ interface IncomeDialogProps {
 export function IncomeDialog({ open, onClose, income }: IncomeDialogProps) {
   const { t } = useLanguage();
   const { currentEntity } = useEntity();
+  const isMobile = useIsMobile();
   const createMutation = useCreateIncome();
   const updateMutation = useUpdateIncome();
   const { canAddIncome, planType, usage, limits, incrementUsage, getUpgradePlan } = usePlanLimits();
@@ -69,8 +72,11 @@ export function IncomeDialog({ open, onClose, income }: IncomeDialogProps) {
   return (
     <>
       <Dialog open={open && !showUpgradePrompt} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className={cn(
+          "max-w-2xl max-h-[90vh] overflow-y-auto",
+          isMobile && "dialog-fullscreen-mobile flex flex-col"
+        )}>
+          <DialogHeader className={cn(isMobile && "sticky top-0 z-10 bg-background pb-3 border-b")}>
             <DialogTitle>
               {income ? t('income.editIncome') : t('income.addIncome')}
             </DialogTitle>
@@ -78,12 +84,14 @@ export function IncomeDialog({ open, onClose, income }: IncomeDialogProps) {
               {income ? t('income.editDescription') : t('income.addDescription')}
             </DialogDescription>
           </DialogHeader>
-          <IncomeForm
-            income={income}
-            onSubmit={handleSubmit}
-            onCancel={onClose}
-            isLoading={createMutation.isPending || updateMutation.isPending}
-          />
+          <div className={cn(isMobile && "flex-1 overflow-y-auto py-4")}>
+            <IncomeForm
+              income={income}
+              onSubmit={handleSubmit}
+              onCancel={onClose}
+              isLoading={createMutation.isPending || updateMutation.isPending}
+            />
+          </div>
         </DialogContent>
       </Dialog>
 

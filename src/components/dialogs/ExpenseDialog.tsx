@@ -7,6 +7,8 @@ import { ExpenseWithRelations } from '@/types/expense.types';
 import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
 import { useEntity } from '@/contexts/EntityContext';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 interface ExpenseDialogProps {
   open: boolean;
@@ -16,6 +18,7 @@ interface ExpenseDialogProps {
 
 export function ExpenseDialog({ open, onClose, expense }: ExpenseDialogProps) {
   const { currentEntity } = useEntity();
+  const isMobile = useIsMobile();
   const createMutation = useCreateExpense();
   const updateMutation = useUpdateExpense();
   const addTagsMutation = useAddExpenseTags();
@@ -90,16 +93,21 @@ export function ExpenseDialog({ open, onClose, expense }: ExpenseDialogProps) {
   return (
     <>
       <Dialog open={open && !showUpgradePrompt} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className={cn(
+          "max-w-2xl max-h-[90vh] overflow-y-auto",
+          isMobile && "dialog-fullscreen-mobile flex flex-col"
+        )}>
+          <DialogHeader className={cn(isMobile && "sticky top-0 z-10 bg-background pb-3 border-b")}>
             <DialogTitle>{expense ? 'Edit Expense' : 'Create New Expense'}</DialogTitle>
           </DialogHeader>
-          <ExpenseForm
-            expense={expense}
-            onSubmit={handleSubmit}
-            onCancel={onClose}
-            isLoading={createMutation.isPending || updateMutation.isPending}
-          />
+          <div className={cn(isMobile && "flex-1 overflow-y-auto py-4")}>
+            <ExpenseForm
+              expense={expense}
+              onSubmit={handleSubmit}
+              onCancel={onClose}
+              isLoading={createMutation.isPending || updateMutation.isPending}
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
