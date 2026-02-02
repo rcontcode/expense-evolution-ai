@@ -151,7 +151,7 @@ export function VoicePreferencesCard() {
     window.speechSynthesis.speak(utterance);
   };
 
-  // Test a premium ElevenLabs voice
+  // Test a premium ElevenLabs voice - with fallback to native when limit exceeded
   const testPremiumVoice = useCallback(async (voiceId: string, lang: 'es' | 'en') => {
     // Stop any playing audio
     if (premiumAudioRef.current) {
@@ -162,13 +162,32 @@ export function VoicePreferencesCard() {
     
     setIsTestingPremiumVoice(voiceId);
     
-    try {
-      // Get authenticated user session
-      const { data: { session } } = await supabase.auth.getSession();
+    const testText = lang === 'es' 
+      ? 'Hola, soy tu asistente financiero.'
+      : 'Hello, I am your financial assistant.';
+    
+    // Check remaining minutes first
+    const remaining = getRemainingVoiceMinutes();
+    if (remaining <= 0) {
+      // Use native voice fallback for preview
+      toast.info(
+        language === 'es' 
+          ? 'Límite alcanzado - usando voz nativa para preview' 
+          : 'Limit reached - using native voice for preview'
+      );
       
-      const testText = lang === 'es' 
-        ? 'Hola, soy tu asistente financiero. ¿En qué puedo ayudarte hoy?'
-        : 'Hello, I am your financial assistant. How can I help you today?';
+      const voices = window.speechSynthesis.getVoices();
+      const nativeVoice = voices.find(v => v.lang.startsWith(lang)) || voices[0];
+      const utterance = new SpeechSynthesisUtterance(testText);
+      if (nativeVoice) utterance.voice = nativeVoice;
+      utterance.onend = () => setIsTestingPremiumVoice(null);
+      utterance.onerror = () => setIsTestingPremiumVoice(null);
+      window.speechSynthesis.speak(utterance);
+      return;
+    }
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
       
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
@@ -189,7 +208,20 @@ export function VoicePreferencesCard() {
       );
 
       if (!response.ok) {
-        throw new Error('API error');
+        const errorData = await response.json().catch(() => ({}));
+        
+        // Handle limit exceeded - show upgrade message
+        if (errorData.error === 'voice_limit_exceeded') {
+          setIsTestingPremiumVoice(null);
+          toast.warning(
+            language === 'es' 
+              ? `⏰ Límite mensual alcanzado (${errorData.currentUsage?.toFixed(1) || 3}/${errorData.limit || 3} min). Actualiza tu plan para más minutos.`
+              : `⏰ Monthly limit reached (${errorData.currentUsage?.toFixed(1) || 3}/${errorData.limit || 3} min). Upgrade for more minutes.`
+          );
+          return;
+        }
+        
+        throw new Error(errorData.error || 'API error');
       }
 
       const audioBlob = await response.blob();
@@ -213,7 +245,7 @@ export function VoicePreferencesCard() {
       setIsTestingPremiumVoice(null);
       toast.error(language === 'es' ? 'Error al probar voz premium' : 'Error testing premium voice');
     }
-  }, [language]);
+  }, [language, getRemainingVoiceMinutes]);
 
 
   const handleAddShortcut = () => {
