@@ -116,6 +116,10 @@ serve(async (req) => {
           billing_period: billingPeriod,
         },
       },
+      // Require terms of service acceptance
+      consent_collection: {
+        terms_of_service: 'required',
+      },
       // Customize checkout page appearance
       custom_text: {
         submit: {
