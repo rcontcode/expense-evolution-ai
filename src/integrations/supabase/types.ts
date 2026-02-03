@@ -2012,6 +2012,102 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_configurations: {
+        Row: {
+          bank_analyses_per_month: number
+          clients_limit: number
+          contract_analyses_per_month: number
+          created_at: string
+          description: string | null
+          display_name: string | null
+          expenses_per_month: number
+          export_excel_enabled: boolean
+          fire_calculator_enabled: boolean
+          gamification_enabled: boolean
+          id: string
+          incomes_per_month: number
+          is_active: boolean
+          mentorship_components: number
+          mileage_enabled: boolean
+          net_worth_enabled: boolean
+          ocr_scans_per_month: number
+          plan_type: string
+          projects_limit: number
+          rrsp_tfsa_optimizer_enabled: boolean
+          sort_order: number
+          t2125_export_enabled: boolean
+          tags_unlimited: boolean
+          tax_calendar_enabled: boolean
+          tax_optimizer_enabled: boolean
+          updated_at: string
+          voice_assistant_enabled: boolean
+          voice_minutes_per_month: number
+          voice_requests_per_month: number
+        }
+        Insert: {
+          bank_analyses_per_month?: number
+          clients_limit?: number
+          contract_analyses_per_month?: number
+          created_at?: string
+          description?: string | null
+          display_name?: string | null
+          expenses_per_month?: number
+          export_excel_enabled?: boolean
+          fire_calculator_enabled?: boolean
+          gamification_enabled?: boolean
+          id?: string
+          incomes_per_month?: number
+          is_active?: boolean
+          mentorship_components?: number
+          mileage_enabled?: boolean
+          net_worth_enabled?: boolean
+          ocr_scans_per_month?: number
+          plan_type: string
+          projects_limit?: number
+          rrsp_tfsa_optimizer_enabled?: boolean
+          sort_order?: number
+          t2125_export_enabled?: boolean
+          tags_unlimited?: boolean
+          tax_calendar_enabled?: boolean
+          tax_optimizer_enabled?: boolean
+          updated_at?: string
+          voice_assistant_enabled?: boolean
+          voice_minutes_per_month?: number
+          voice_requests_per_month?: number
+        }
+        Update: {
+          bank_analyses_per_month?: number
+          clients_limit?: number
+          contract_analyses_per_month?: number
+          created_at?: string
+          description?: string | null
+          display_name?: string | null
+          expenses_per_month?: number
+          export_excel_enabled?: boolean
+          fire_calculator_enabled?: boolean
+          gamification_enabled?: boolean
+          id?: string
+          incomes_per_month?: number
+          is_active?: boolean
+          mentorship_components?: number
+          mileage_enabled?: boolean
+          net_worth_enabled?: boolean
+          ocr_scans_per_month?: number
+          plan_type?: string
+          projects_limit?: number
+          rrsp_tfsa_optimizer_enabled?: boolean
+          sort_order?: number
+          t2125_export_enabled?: boolean
+          tags_unlimited?: boolean
+          tax_calendar_enabled?: boolean
+          tax_optimizer_enabled?: boolean
+          updated_at?: string
+          voice_assistant_enabled?: boolean
+          voice_minutes_per_month?: number
+          voice_requests_per_month?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           beta_expires_at: string | null
