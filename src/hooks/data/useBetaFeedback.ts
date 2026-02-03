@@ -253,16 +253,8 @@ export const useBetaFeedback = () => {
 
       if (error) throw error;
 
-      // Award points for feedback
-      const hasDetailedComment = (params.comment?.length || 0) > 100 || (params.suggestions?.length || 0) > 100;
-      const basePoints = 25;
-      const bonusPoints = hasDetailedComment ? 25 : 0;
-      
-      await supabase.rpc('award_beta_points', {
-        p_user_id: user.id,
-        p_points: basePoints + bonusPoints,
-        p_category: 'feedback',
-      });
+      // Points are now awarded automatically via database trigger on insert
+      // The trigger awards 25 points base, +25 if comment/suggestions > 100 chars
 
       return data;
     },
@@ -299,21 +291,8 @@ export const useBetaFeedback = () => {
 
       if (error) throw error;
 
-      // Award points for bug report based on severity
-      const severityPoints: Record<string, number> = {
-        low: 25,
-        medium: 50,
-        high: 75,
-        critical: 150,
-      };
-      const points = severityPoints[params.severity || 'medium'] || 50;
-      const screenshotBonus = params.screenshot_url ? 25 : 0;
-      
-      await supabase.rpc('award_beta_points', {
-        p_user_id: user.id,
-        p_points: points + screenshotBonus,
-        p_category: 'bug_report',
-      });
+      // Points are now awarded automatically via database trigger on insert
+      // The trigger awards points based on severity + 25 bonus for screenshots
 
       return data;
     },
