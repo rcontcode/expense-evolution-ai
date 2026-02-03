@@ -3,8 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsAdmin } from '@/hooks/data/useIsAdmin';
 
-// Plan limits configuration
-export const PLAN_LIMITS = {
+// Fallback plan limits (used if DB fetch fails)
+const FALLBACK_LIMITS = {
   free: {
     expenses_per_month: 50,
     incomes_per_month: 20,
@@ -14,8 +14,7 @@ export const PLAN_LIMITS = {
     contract_analyses_per_month: 0,
     bank_analyses_per_month: 0,
     voice_requests_per_month: Infinity,
-    voice_minutes_per_month: 3, // Premium voice (ElevenLabs) - demo
-    // Features
+    voice_minutes_per_month: 3,
     mileage: false,
     gamification: false,
     net_worth: false,
@@ -38,8 +37,7 @@ export const PLAN_LIMITS = {
     contract_analyses_per_month: 0,
     bank_analyses_per_month: 0,
     voice_requests_per_month: Infinity,
-    voice_minutes_per_month: 30, // Premium voice (ElevenLabs)
-    // Features
+    voice_minutes_per_month: 30,
     mileage: true,
     gamification: true,
     net_worth: true,
@@ -62,8 +60,7 @@ export const PLAN_LIMITS = {
     contract_analyses_per_month: Infinity,
     bank_analyses_per_month: Infinity,
     voice_requests_per_month: Infinity,
-    voice_minutes_per_month: 120, // Premium voice (ElevenLabs)
-    // Features
+    voice_minutes_per_month: 120,
     mileage: true,
     gamification: true,
     net_worth: true,
@@ -79,8 +76,35 @@ export const PLAN_LIMITS = {
   },
 } as const;
 
+// Keep PLAN_LIMITS export for backward compatibility with tests
+export const PLAN_LIMITS = FALLBACK_LIMITS;
+
 export type PlanType = 'free' | 'premium' | 'pro';
-export type FeatureKey = keyof typeof PLAN_LIMITS.free;
+export type FeatureKey = keyof typeof FALLBACK_LIMITS.free;
+
+interface PlanLimits {
+  expenses_per_month: number;
+  incomes_per_month: number;
+  ocr_scans_per_month: number;
+  clients: number;
+  projects: number;
+  contract_analyses_per_month: number;
+  bank_analyses_per_month: number;
+  voice_requests_per_month: number;
+  voice_minutes_per_month: number;
+  mileage: boolean;
+  gamification: boolean;
+  net_worth: boolean;
+  tax_calendar: boolean;
+  tags_unlimited: boolean;
+  export_excel: boolean;
+  fire_calculator: boolean;
+  mentorship_components: number;
+  voice_assistant: boolean;
+  tax_optimizer: boolean;
+  rrsp_tfsa_optimizer: boolean;
+  t2125_export: boolean;
+}
 
 interface UsageData {
   expenses_count: number;
@@ -99,12 +123,74 @@ interface SubscriptionData {
   expires_at: string | null;
 }
 
+// Convert DB row to PlanLimits format
+function dbRowToLimits(row: Record<string, unknown>): PlanLimits {
+  const toNumber = (val: unknown, fallback: number): number => {
+    if (val === -1 || val === null) return Infinity;
+    return typeof val === 'number' ? val : fallback;
+  };
+  
+  return {
+    expenses_per_month: toNumber(row.expenses_per_month, 50),
+    incomes_per_month: toNumber(row.incomes_per_month, 20),
+    ocr_scans_per_month: toNumber(row.ocr_scans_per_month, 5),
+    clients: toNumber(row.clients_limit, 2),
+    projects: toNumber(row.projects_limit, 2),
+    contract_analyses_per_month: toNumber(row.contract_analyses_per_month, 0),
+    bank_analyses_per_month: toNumber(row.bank_analyses_per_month, 0),
+    voice_requests_per_month: toNumber(row.voice_requests_per_month, Infinity),
+    voice_minutes_per_month: toNumber(row.voice_minutes_per_month, 3),
+    mileage: row.mileage_enabled === true,
+    gamification: row.gamification_enabled === true,
+    net_worth: row.net_worth_enabled === true,
+    tax_calendar: row.tax_calendar_enabled === true,
+    tags_unlimited: row.tags_unlimited === true,
+    export_excel: row.export_excel_enabled === true,
+    fire_calculator: row.fire_calculator_enabled === true,
+    mentorship_components: typeof row.mentorship_components === 'number' ? row.mentorship_components : 0,
+    voice_assistant: row.voice_assistant_enabled !== false,
+    tax_optimizer: row.tax_optimizer_enabled === true,
+    rrsp_tfsa_optimizer: row.rrsp_tfsa_optimizer_enabled === true,
+    t2125_export: row.t2125_export_enabled === true,
+  };
+}
+
 export function usePlanLimits() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
   // Admins (server-validated via roles table) should always bypass plan limits ("modo dios")
   const { data: isAdmin, isLoading: isLoadingAdmin } = useIsAdmin();
+
+  // Fetch plan configurations from database
+  const { data: planConfigs, isLoading: isLoadingConfigs } = useQuery({
+    queryKey: ['plan-configurations'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('plan_configurations')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+      
+      if (error) {
+        console.error('Error fetching plan configurations:', error);
+        return null;
+      }
+      
+      // Convert to map
+      const configMap: Record<string, PlanLimits> = {};
+      for (const row of data || []) {
+        const rawRow = row as Record<string, unknown>;
+        const planType = rawRow.plan_type as string;
+        if (planType) {
+          configMap[planType] = dbRowToLimits(rawRow);
+        }
+      }
+      
+      return configMap;
+    },
+    staleTime: 1000 * 60 * 10, // 10 minutes - configs rarely change
+  });
 
   // Fetch subscription
   const { data: subscription, isLoading: isLoadingSubscription } = useQuery({
@@ -164,7 +250,7 @@ export function usePlanLimits() {
         return null;
       }
       
-      // Map to UsageData interface (voice_requests_count and voice_minutes_used may not exist in old types)
+      // Map to UsageData interface
       if (data) {
         const rawData = data as Record<string, unknown>;
         return {
@@ -232,7 +318,10 @@ export function usePlanLimits() {
   const subscriptionPlanType = subscription?.plan_type || 'free';
   const isGodMode = !!isAdmin;
   const planType: PlanType = isGodMode ? 'pro' : subscriptionPlanType;
-  const limits = PLAN_LIMITS[planType];
+  
+  // Use DB config if available, fallback to hardcoded
+  const limits: PlanLimits = planConfigs?.[planType] || FALLBACK_LIMITS[planType];
+  
   const currentUsage = usage || {
     expenses_count: 0,
     incomes_count: 0,
@@ -375,7 +464,7 @@ export function usePlanLimits() {
     usage: currentUsage,
     clientCount,
     projectCount,
-    isLoading: isLoadingSubscription || isLoadingUsage || isLoadingAdmin,
+    isLoading: isLoadingSubscription || isLoadingUsage || isLoadingAdmin || isLoadingConfigs,
     subscription,
     isGodMode,
     
