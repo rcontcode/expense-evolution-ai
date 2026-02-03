@@ -2885,32 +2885,6 @@ export type Database = {
         Args: { p_days?: number; p_user_id: string }
         Returns: undefined
       }
-      award_beta_points: {
-        Args: { p_category?: string; p_points: number; p_user_id: string }
-        Returns: {
-          best_streak: number
-          bug_report_points: number
-          created_at: string
-          feature_usage_points: number
-          feedback_points: number
-          id: string
-          last_activity_date: string | null
-          referral_points: number
-          reward_claimed: boolean
-          reward_claimed_at: string | null
-          streak_days: number
-          tier: string
-          total_points: number
-          updated_at: string
-          user_id: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "beta_tester_points"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
       can_use_ai: {
         Args: { credit_limit?: number; user_uuid: string }
         Returns: boolean
@@ -2991,6 +2965,32 @@ export type Database = {
       increment_voice_usage: {
         Args: { p_minutes: number; p_user_id: string }
         Returns: undefined
+      }
+      internal_award_beta_points: {
+        Args: { p_category?: string; p_points: number; p_user_id: string }
+        Returns: {
+          best_streak: number
+          bug_report_points: number
+          created_at: string
+          feature_usage_points: number
+          feedback_points: number
+          id: string
+          last_activity_date: string | null
+          referral_points: number
+          reward_claimed: boolean
+          reward_claimed_at: string | null
+          streak_days: number
+          tier: string
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "beta_tester_points"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       is_admin: { Args: { p_user_id: string }; Returns: boolean }
       revoke_beta_access: {

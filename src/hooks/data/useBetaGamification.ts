@@ -218,34 +218,10 @@ export const useBetaGamification = () => {
     enabled: !!user?.id,
   });
 
-  // Award points
-  const awardPoints = useMutation({
-    mutationFn: async ({ 
-      points, 
-      category 
-    }: { 
-      points: number; 
-      category: 'feedback' | 'bug_report' | 'referral' | 'feature_usage'; 
-    }) => {
-      if (!user?.id) throw new Error('Not authenticated');
-
-      const { data, error } = await supabase.rpc('award_beta_points', {
-        p_user_id: user.id,
-        p_points: points,
-        p_category: category,
-      });
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['beta-points'] });
-      toast({
-        title: `+${variables.points} puntos! 🎉`,
-        description: 'Sigue así para ganar recompensas',
-      });
-    },
-  });
+  // Award points - REMOVED: Points are now awarded automatically via database triggers
+  // When inserting into beta_feedback or beta_bug_reports tables,
+  // triggers award points based on content quality and severity
+  // This prevents exploitation by users calling the RPC directly
 
   // Update streak
   const updateStreak = useMutation({
@@ -353,7 +329,6 @@ export const useBetaGamification = () => {
     // Loading
     isLoading: isLoadingPoints || isLoadingGoals || isLoadingCompletions || isLoadingRedemptions,
     // Mutations
-    awardPoints,
     updateStreak,
     claimReward,
     // Helpers
