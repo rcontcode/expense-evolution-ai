@@ -9,10 +9,10 @@ const corsHeaders = {
 
 // Price IDs for EvoFinz plans
 const PRICE_IDS = {
-  premium_monthly: "price_1SnBvH7BLBLy48jQTW0FYtxP",
-  premium_annual: "price_1SnBwm7BLBLy48jQX7j8AA4S",
-  pro_monthly: "price_1SnBvY7BLBLy48jQ3SM3pbQY",
-  pro_annual: "price_1SnBx67BLBLy48jQFh5Cj6Xc",
+  premium_monthly: "price_1SwafM3wR30iWwFnJpszo14u",
+  premium_annual: "price_1Swaff3wR30iWwFnGvO9x4Fa",
+  pro_monthly: "price_1Swafv3wR30iWwFn0z52B0W7",
+  pro_annual: "price_1SwagD3wR30iWwFn9RABKpl3",
 };
 
 // Marketing-optimized product descriptions for checkout

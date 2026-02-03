@@ -9,10 +9,10 @@ const corsHeaders = {
 
 // Product IDs for EvoFinz plans
 const PRODUCT_IDS = {
-  premium_monthly: "prod_TkhJLlgoAdGcGC",
-  premium_annual: "prod_TkhL8wDZL2MPDd",
-  pro_monthly: "prod_TkhKMQlrqFnKYc",
-  pro_annual: "prod_TkhLVXHrCf97Ir",
+  premium_monthly: "prod_TuPUlFnv10u2OA",
+  premium_annual: "prod_TuPUaVFFZ9bBgf",
+  pro_monthly: "prod_TuPUJPLiqh0kC7",
+  pro_annual: "prod_TuPVHHsOi7e4Au",
 };
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
