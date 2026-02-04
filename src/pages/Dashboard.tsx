@@ -311,105 +311,173 @@ export default function Dashboard() {
                   <Button 
                     variant="outline" 
                     className={cn(
-                      "w-full py-6 gap-3 transition-all duration-300",
-                      "bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10",
-                      "border-2 border-primary/30 hover:border-primary/60",
-                      "shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20",
-                      "hover:-translate-y-0.5 active:scale-[0.99]",
-                      showAllTools && "border-primary bg-primary/5"
+                      "w-full py-8 gap-4 transition-all duration-300 group relative overflow-hidden",
+                      "bg-gradient-to-r from-primary/15 via-accent/20 to-amber-500/15",
+                      "border-2 hover:border-primary/80",
+                      "shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30",
+                      "hover:-translate-y-1 active:scale-[0.99]",
+                      showAllTools 
+                        ? "border-primary bg-gradient-to-r from-primary/20 via-accent/25 to-amber-500/20" 
+                        : "border-primary/40"
                     )}
                   >
+                    {/* Animated background glow */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
+                    
+                    {/* Icon container with glow */}
                     <div className={cn(
-                      "p-2 rounded-lg transition-all",
+                      "p-3 rounded-xl transition-all duration-300 relative",
                       showAllTools 
-                        ? "bg-primary text-primary-foreground" 
-                        : "bg-primary/20 text-primary"
+                        ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/40" 
+                        : "bg-gradient-to-br from-primary/30 to-accent/30 text-primary group-hover:from-primary group-hover:to-primary/80 group-hover:text-primary-foreground group-hover:shadow-lg group-hover:shadow-primary/30"
                     )}>
-                      <BarChart3 className="h-5 w-5" />
+                      <BarChart3 className="h-6 w-6" />
+                      {/* Pulsing ring when closed */}
+                      {!showAllTools && (
+                        <span className="absolute inset-0 rounded-xl border-2 border-primary/50 animate-ping opacity-30" />
+                      )}
                     </div>
-                    <div className="flex flex-col items-start text-left flex-1">
-                      <span className="font-semibold text-base">
-                        {language === 'es' ? 'Centro de Control Avanzado' : 'Advanced Control Center'}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
+                    
+                    {/* Text content */}
+                    <div className="flex flex-col items-start text-left flex-1 z-10">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-lg bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+                          {language === 'es' ? 'Centro de Control Avanzado' : 'Advanced Control Center'}
+                        </span>
+                        <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm">
+                          PRO
+                        </span>
+                      </div>
+                      <span className="text-sm text-muted-foreground mt-0.5">
                         {language === 'es' 
-                          ? 'Análisis, mentoría, impuestos, inversiones y más herramientas' 
-                          : 'Analytics, mentorship, taxes, investments and more tools'}
+                          ? '📊 Gráficos • 🎯 Análisis • 🎓 Mentoría • 💰 Impuestos • 📈 Inversiones' 
+                          : '📊 Charts • 🎯 Analytics • 🎓 Mentorship • 💰 Taxes • 📈 Investments'}
                       </span>
                     </div>
+                    
+                    {/* Chevron with enhanced animation */}
                     <div className={cn(
-                      "p-1.5 rounded-full transition-all",
-                      showAllTools ? "bg-primary/20 rotate-180" : "bg-muted"
+                      "p-2 rounded-full transition-all duration-300",
+                      showAllTools 
+                        ? "bg-primary/30 rotate-180" 
+                        : "bg-gradient-to-br from-muted to-muted/50 group-hover:from-primary/20 group-hover:to-accent/20"
                     )}>
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronDown className={cn(
+                        "h-5 w-5 transition-transform",
+                        showAllTools && "text-primary"
+                      )} />
                     </div>
                   </Button>
                 </CollapsibleTrigger>
                 
                 <CollapsibleContent className="pt-4">
-                  <Card className="border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden" data-highlight="control-center">
-                    <CardHeader className="pb-3 pt-4">
-                      <div className="flex items-center gap-2">
-                        <BarChart3 className="h-5 w-5 text-primary" />
-                        <CardTitle className="text-lg font-semibold">
-                          {language === 'es' ? 'Herramientas Avanzadas' : 'Advanced Tools'}
-                        </CardTitle>
+                  <Card className="border-2 border-primary/20 bg-gradient-to-br from-card via-card to-accent/5 backdrop-blur-sm overflow-hidden shadow-xl" data-highlight="control-center">
+                    {/* Decorative header bar */}
+                    <div className="h-1.5 bg-gradient-to-r from-primary via-accent to-amber-500" />
+                    
+                    <CardHeader className="pb-4 pt-5">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20">
+                          <BarChart3 className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                            {language === 'es' ? 'Herramientas Avanzadas' : 'Advanced Tools'}
+                          </CardTitle>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {language === 'es' ? 'Potencia tu gestión financiera' : 'Power up your financial management'}
+                          </p>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                        <TabsList className="flex flex-wrap gap-1.5 h-auto bg-muted/30 p-1.5 rounded-lg">
-                          <TabsTrigger value="charts" className="px-3 py-2 text-xs rounded-md data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                            <BarChart3 className="h-4 w-4 mr-1.5" />
+                        <TabsList className="flex flex-wrap gap-2 h-auto bg-gradient-to-br from-muted/50 to-muted/30 p-2 rounded-xl border border-border/50">
+                          {/* Charts Tab */}
+                          <TabsTrigger 
+                            value="charts" 
+                            className={cn(
+                              "px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
+                              "data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-blue-500",
+                              "data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30",
+                              "hover:bg-blue-500/10"
+                            )}
+                          >
+                            <BarChart3 className="h-4 w-4 mr-2" />
                             {t('taxAnalysis.charts')}
                           </TabsTrigger>
-                          <TabsTrigger value="analytics" className="px-3 py-2 text-xs rounded-md data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-                            <Scale className="h-4 w-4 mr-1.5" />
+                          
+                          {/* Analytics Tab */}
+                          <TabsTrigger 
+                            value="analytics" 
+                            className={cn(
+                              "px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
+                              "data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-violet-500",
+                              "data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/30",
+                              "hover:bg-purple-500/10"
+                            )}
+                          >
+                            <Scale className="h-4 w-4 mr-2" />
                             {language === 'es' ? 'Análisis' : 'Analytics'}
                           </TabsTrigger>
-                          <TabsTrigger value="mentorship" className="px-3 py-2 text-xs rounded-md data-[state=active]:bg-amber-600 data-[state=active]:text-white">
-                            <GraduationCap className="h-4 w-4 mr-1.5" />
+                          
+                          {/* Mentorship Tab */}
+                          <TabsTrigger 
+                            value="mentorship" 
+                            className={cn(
+                              "px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
+                              "data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500",
+                              "data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/30",
+                              "hover:bg-amber-500/10"
+                            )}
+                          >
+                            <GraduationCap className="h-4 w-4 mr-2" />
                             {language === 'es' ? 'Mentoría' : 'Mentorship'}
                           </TabsTrigger>
                           
                           {/* More dropdown for less-used tabs */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="px-3 py-2 h-auto text-xs">
-                                <MoreHorizontal className="h-4 w-4 mr-1.5" />
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="px-4 py-2.5 h-auto text-sm font-medium hover:bg-accent/50 rounded-lg"
+                              >
+                                <MoreHorizontal className="h-4 w-4 mr-2" />
                                 {language === 'es' ? 'Más' : 'More'}
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setActiveTab('goals')}>
-                                <Target className="h-4 w-4 mr-2" />
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuItem onClick={() => setActiveTab('goals')} className="gap-2">
+                                <Target className="h-4 w-4 text-emerald-500" />
                                 {language === 'es' ? 'Metas de Ahorro' : 'Savings Goals'}
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('tax')}>
-                                <Receipt className="h-4 w-4 mr-2" />
+                              <DropdownMenuItem onClick={() => setActiveTab('tax')} className="gap-2">
+                                <Receipt className="h-4 w-4 text-green-500" />
                                 {language === 'es' ? 'Impuestos' : 'Taxes'}
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('mileage')}>
-                                <MapPin className="h-4 w-4 mr-2" />
+                              <DropdownMenuItem onClick={() => setActiveTab('mileage')} className="gap-2">
+                                <MapPin className="h-4 w-4 text-blue-500" />
                                 {language === 'es' ? 'Kilometraje' : 'Mileage'}
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('subscriptions')}>
-                                <RefreshCw className="h-4 w-4 mr-2" />
+                              <DropdownMenuItem onClick={() => setActiveTab('subscriptions')} className="gap-2">
+                                <RefreshCw className="h-4 w-4 text-violet-500" />
                                 {language === 'es' ? 'Suscripciones' : 'Subscriptions'}
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('fire')}>
-                                🔥 FIRE
+                              <DropdownMenuItem onClick={() => setActiveTab('fire')} className="gap-2">
+                                <span className="text-lg">🔥</span>
+                                FIRE
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('debt')}>
-                                <Landmark className="h-4 w-4 mr-2" />
+                              <DropdownMenuItem onClick={() => setActiveTab('debt')} className="gap-2">
+                                <Landmark className="h-4 w-4 text-red-500" />
                                 {language === 'es' ? 'Deudas' : 'Debt'}
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('portfolio')}>
-                                <Briefcase className="h-4 w-4 mr-2" />
+                              <DropdownMenuItem onClick={() => setActiveTab('portfolio')} className="gap-2">
+                                <Briefcase className="h-4 w-4 text-indigo-500" />
                                 Portfolio
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('education')}>
-                                <GraduationCap className="h-4 w-4 mr-2" />
+                              <DropdownMenuItem onClick={() => setActiveTab('education')} className="gap-2">
+                                <GraduationCap className="h-4 w-4 text-amber-500" />
                                 {language === 'es' ? 'Educación' : 'Education'}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
