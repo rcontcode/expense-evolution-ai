@@ -20,6 +20,47 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
+// Safe date parser for Stripe timestamps - handles number, string, or ISO formats
+function parseStripeDate(value: unknown): string | null {
+  if (value === null || value === undefined) {
+    logStep("parseStripeDate: value is null/undefined");
+    return null;
+  }
+
+  try {
+    let date: Date;
+
+    if (typeof value === "number") {
+      // Unix timestamp in seconds
+      date = new Date(value * 1000);
+    } else if (typeof value === "string") {
+      // Could be numeric string or ISO string
+      const numericValue = Number(value);
+      if (!isNaN(numericValue)) {
+        // Numeric string - treat as Unix timestamp
+        date = new Date(numericValue * 1000);
+      } else {
+        // Try parsing as ISO string
+        date = new Date(value);
+      }
+    } else {
+      logStep("parseStripeDate: unexpected type", { type: typeof value, value });
+      return null;
+    }
+
+    // Validate the date is valid
+    if (isNaN(date.getTime())) {
+      logStep("parseStripeDate: invalid date result", { value, type: typeof value });
+      return null;
+    }
+
+    return date.toISOString();
+  } catch (err) {
+    logStep("parseStripeDate: error parsing", { value, error: err instanceof Error ? err.message : String(err) });
+    return null;
+  }
+}
+
 function getPlanFromProductId(productId: string): { planType: string; billingPeriod: string | null } {
   switch (productId) {
     case PRODUCT_IDS.premium_monthly:
@@ -108,22 +149,37 @@ serve(async (req) => {
         const productId = subscription.items.data[0]?.price?.product as string;
         const { planType, billingPeriod } = getPlanFromProductId(productId);
         const isActive = subscription.status === "active" || subscription.status === "trialing";
-        const expiresAt = new Date(subscription.current_period_end * 1000).toISOString();
+        
+        // Log raw values for debugging
+        logStep("Raw subscription data", { 
+          status: subscription.status,
+          current_period_end: subscription.current_period_end,
+          current_period_end_type: typeof subscription.current_period_end,
+          productId 
+        });
 
-        logStep("Updating subscription", { userId, planType, billingPeriod, isActive });
+        // Only parse date if subscription is active
+        const expiresAt = isActive ? parseStripeDate(subscription.current_period_end) : null;
 
-        await supabaseClient
+        logStep("Updating subscription", { userId, planType, billingPeriod, isActive, expiresAt });
+
+        const { error: upsertError } = await supabaseClient
           .from("user_subscriptions")
           .upsert({
             user_id: userId,
             plan_type: isActive ? planType : "free",
             billing_period: isActive ? billingPeriod : null,
             is_active: isActive,
-            expires_at: isActive ? expiresAt : null,
+            expires_at: expiresAt,
             stripe_customer_id: customerId,
             stripe_subscription_id: subscription.id,
             updated_at: new Date().toISOString(),
           }, { onConflict: "user_id" });
+
+        if (upsertError) {
+          logStep("Upsert error", { error: upsertError.message, code: upsertError.code });
+          throw new Error(`Database upsert failed: ${upsertError.message}`);
+        }
 
         logStep("Subscription updated successfully");
         break;
@@ -151,7 +207,7 @@ serve(async (req) => {
 
         logStep("Subscription cancelled, reverting to free", { userId });
 
-        await supabaseClient
+        const { error: upsertError } = await supabaseClient
           .from("user_subscriptions")
           .upsert({
             user_id: userId,
@@ -163,6 +219,10 @@ serve(async (req) => {
             stripe_subscription_id: null,
             updated_at: new Date().toISOString(),
           }, { onConflict: "user_id" });
+
+        if (upsertError) {
+          logStep("Upsert error on cancellation", { error: upsertError.message });
+        }
 
         break;
       }
