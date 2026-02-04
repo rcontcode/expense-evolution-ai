@@ -33,6 +33,7 @@ import { AudioLevelIndicator } from './voice/AudioLevelIndicator';
 import { SmartSuggestions } from './SmartSuggestions';
 import { ConversationContext } from './ConversationContext';
 import { TypingIndicator, ThinkingStatus } from './TypingIndicator';
+import { VoiceSettingsPanel } from './VoiceSettingsPanel';
 import { useSmartContext } from '@/hooks/utils/useSmartContext';
 import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 
@@ -1347,7 +1348,7 @@ export const ChatAssistant: React.FC = () => {
                 />
               )}
               
-              {/* Voice Settings Popover */}
+              {/* Voice Settings Popover - Full voice configuration */}
               {isVoiceSupported && (
                 <Popover>
                   <PopoverTrigger asChild>
@@ -1355,72 +1356,13 @@ export const ChatAssistant: React.FC = () => {
                       <Settings className="h-3.5 w-3.5" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-72" align="end" sideOffset={8}>
-                    <div className="space-y-4">
-                      <h4 className="font-medium text-sm">{language === 'es' ? 'Configuración de Voz' : 'Voice Settings'}</h4>
-                      
-                      <p className="text-[10px] text-muted-foreground">
-                        {language === 'es' 
-                          ? '💡 Más opciones en Configuración → Preferencias de Voz'
-                          : '💡 More options in Settings → Voice Preferences'}
-                      </p>
-                      
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span>{language === 'es' ? 'Velocidad' : 'Speed'}</span>
-                          <Badge variant="secondary" className="text-[10px] h-5">{voicePrefs.speechSpeed.toFixed(1)}x</Badge>
-                        </div>
-                        <Slider
-                          value={[voicePrefs.speechSpeed]}
-                          min={0.5}
-                          max={2}
-                          step={0.1}
-                          onValueChange={([v]) => voicePrefs.setSpeechSpeed(v)}
-                        />
-                        <div className="flex justify-between text-[9px] text-muted-foreground">
-                          <span>0.5x</span>
-                          <span>2.0x</span>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span>{language === 'es' ? 'Volumen' : 'Volume'}</span>
-                          <Badge variant="secondary" className="text-[10px] h-5">{Math.round(voicePrefs.volume * 100)}%</Badge>
-                        </div>
-                        <Slider
-                          value={[voicePrefs.volume]}
-                          min={0}
-                          max={1}
-                          step={0.1}
-                          onValueChange={([v]) => voicePrefs.setVolume(v)}
-                        />
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs">{language === 'es' ? 'Leer respuestas' : 'Read responses'}</span>
-                        <Button
-                          variant={autoSpeak ? "default" : "outline"}
-                          size="sm"
-                          className="h-6 text-xs"
-                          onClick={() => setAutoSpeak(!autoSpeak)}
-                        >
-                          {autoSpeak ? 'On' : 'Off'}
-                        </Button>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs">{language === 'es' ? 'Sonidos' : 'Sounds'}</span>
-                        <Button
-                          variant={voicePrefs.enableSoundEffects ? "default" : "outline"}
-                          size="sm"
-                          className="h-6 text-xs"
-                          onClick={() => voicePrefs.toggleSoundEffects()}
-                        >
-                          {voicePrefs.enableSoundEffects ? 'On' : 'Off'}
-                        </Button>
-                      </div>
-                    </div>
+                  <PopoverContent className="w-80" align="end" sideOffset={8}>
+                    <VoiceSettingsPanel
+                      language={language as 'es' | 'en'}
+                      autoSpeak={autoSpeak}
+                      onAutoSpeakChange={setAutoSpeak}
+                      compact
+                    />
                   </PopoverContent>
                 </Popover>
               )}
