@@ -310,12 +310,39 @@ export default function Dashboard() {
                 <CollapsibleTrigger asChild>
                   <Button 
                     variant="outline" 
-                    className="w-full gap-2 border-dashed"
+                    className={cn(
+                      "w-full py-6 gap-3 transition-all duration-300",
+                      "bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10",
+                      "border-2 border-primary/30 hover:border-primary/60",
+                      "shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20",
+                      "hover:-translate-y-0.5 active:scale-[0.99]",
+                      showAllTools && "border-primary bg-primary/5"
+                    )}
                   >
-                    {showAllTools ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                    <BarChart3 className="h-4 w-4" />
-                    {language === 'es' ? 'Centro de Control Avanzado' : 'Advanced Control Center'}
-                    {showAllTools ? '' : ` (${language === 'es' ? 'expandir' : 'expand'})`}
+                    <div className={cn(
+                      "p-2 rounded-lg transition-all",
+                      showAllTools 
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-primary/20 text-primary"
+                    )}>
+                      <BarChart3 className="h-5 w-5" />
+                    </div>
+                    <div className="flex flex-col items-start text-left flex-1">
+                      <span className="font-semibold text-base">
+                        {language === 'es' ? 'Centro de Control Avanzado' : 'Advanced Control Center'}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {language === 'es' 
+                          ? 'Análisis, mentoría, impuestos, inversiones y más herramientas' 
+                          : 'Analytics, mentorship, taxes, investments and more tools'}
+                      </span>
+                    </div>
+                    <div className={cn(
+                      "p-1.5 rounded-full transition-all",
+                      showAllTools ? "bg-primary/20 rotate-180" : "bg-muted"
+                    )}>
+                      <ChevronDown className="h-4 w-4" />
+                    </div>
                   </Button>
                 </CollapsibleTrigger>
                 
