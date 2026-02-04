@@ -1,58 +1,84 @@
 
-# Plan: Corregir Product IDs en check-subscription
+
+# Plan: Corregir Bug del Stripe Webhook
 
 ## Problema Identificado
-La función `check-subscription` tiene Product IDs obsoletos que no coinciden con los productos actuales de Stripe, causando que usuarios con suscripción activa sean identificados como "free".
+
+El webhook está fallando con el error:
+```
+SubtleCryptoProvider cannot be used in a synchronous context.
+Use `await constructEventAsync(...)` instead of `constructEvent(...)`
+```
+
+Este error ocurre porque en Deno (el runtime de Edge Functions), la verificación de firma de Stripe requiere usar el método **asíncrono** `constructEventAsync` en lugar del síncrono `constructEvent`.
+
+## Estado Actual de Tu Suscripción
+
+**¡Tu pago fue exitoso!** La suscripción está activa en la base de datos:
+- Plan: Premium Monthly
+- Estado: Activo
+- Customer ID: cus_TuqoUrFY1eCBSn
+- Subscription ID: sub_1Sx1Be3wR30iWwFnG9oSzBsS
 
 ## Cambio Requerido
 
-### Archivo: `supabase/functions/check-subscription/index.ts`
+### Archivo: `supabase/functions/stripe-webhook/index.ts`
 
-**Líneas 11-16 - Actualizar PRODUCT_IDS:**
+**Problema en líneas 59-66:**
+```typescript
+// Código actual (INCORRECTO para Deno)
+try {
+  event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+} catch (err) {
+  // ...
+}
+```
 
-| Plan | ID Actual (incorrecto) | ID Correcto |
-|------|------------------------|-------------|
-| Premium Monthly | `prod_TkhJLlgoAdGcGC` | `prod_TuPUlFnv10u2OA` |
-| Premium Annual | `prod_TkhL8wDZL2MPDd` | `prod_TuPUaVFFZ9bBgf` |
-| Pro Monthly | `prod_TkhKMQlrqFnKYc` | `prod_TuPUJPLiqh0kC7` |
-| Pro Annual | `prod_TkhLVXHrCf97Ir` | `prod_TuPVHHsOi7e4Au` |
+**Solución:**
+```typescript
+// Código corregido (CORRECTO para Deno)
+try {
+  event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
+} catch (err) {
+  // ...
+}
+```
 
-## Implementación
+## Por Qué Es Importante
 
-1. Actualizar las líneas 11-16 con los nuevos Product IDs
-2. Desplegar la función actualizada
-3. Verificar con una llamada de prueba
+Aunque tu suscripción actual funciona (porque `check-subscription` consulta directamente a Stripe), el webhook es necesario para:
+- Actualizar la base de datos cuando se cancele una suscripción
+- Procesar upgrades/downgrades de plan
+- Manejar pagos fallidos y reactivaciones
+- Mantener la base de datos sincronizada con Stripe
 
-## Verificación Post-Cambio
-
-Después de la actualización, el flujo completo funcionará así:
+## Flujo Después de la Corrección
 
 ```text
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  Usuario paga   │────▶│ Stripe envía     │────▶│ stripe-webhook  │
-│  (checkout)     │     │ subscription.    │     │ actualiza DB    │
-│                 │     │ created          │     │                 │
-└─────────────────┘     └──────────────────┘     └─────────────────┘
-                                                         │
-                                                         ▼
+│  Stripe envía   │────▶│ stripe-webhook   │────▶│ Verifica firma  │
+│  evento         │     │ (Edge Function)  │     │ con             │
+│                 │     │                  │     │ constructEvent- │
+│                 │     │                  │     │ Async()         │
+└─────────────────┘     └──────────────────┘     └────────┬────────┘
+                                                          │
+                                                          ▼
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  App muestra    │◀────│ check-subscription│◀────│ user_           │
-│  plan correcto  │     │ verifica en      │     │ subscriptions   │
-│  (Premium/Pro)  │     │ Stripe + DB      │     │ table           │
+│  Base de datos  │◀────│ Procesa evento   │◀────│ Firma válida    │
+│  actualizada    │     │ (create/update/  │     │ ✅              │
+│  correctamente  │     │ delete)          │     │                 │
 └─────────────────┘     └──────────────────┘     └─────────────────┘
 ```
 
-## Pasos para Probar (Post-Implementación)
+## Implementación
 
-1. Ir a la app → página de suscripción
-2. Seleccionar plan Premium o Pro
-3. Pagar con tarjeta de prueba: `4242 4242 4242 4242`
-4. Verificar en Stripe Dashboard → Webhooks que el evento muestra "200 OK"
-5. Confirmar que la app muestra el plan correcto
+1. Cambiar `constructEvent` a `constructEventAsync` (añadir `await`)
+2. Desplegar la función actualizada
+3. Reenviar los eventos fallidos desde Stripe Dashboard
 
-## Detalles Técnicos
+## Pasos Post-Implementación
 
-- La función `check-subscription` consulta directamente a Stripe API para obtener suscripciones activas
-- Compara el `product_id` de la suscripción con los IDs hardcodeados
-- Si no hay match, devuelve `plan_type: "free"` aunque el usuario tenga suscripción activa
-- También actualiza la tabla `user_subscriptions` para mantener sincronía con la base de datos
+1. En Stripe Dashboard → Webhooks → Ver eventos fallidos
+2. Hacer clic en "Resend" para los eventos `customer.subscription.created` e `invoice.payment_succeeded`
+3. Verificar que ahora respondan con status 200
+
