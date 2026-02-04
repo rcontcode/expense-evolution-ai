@@ -15,23 +15,23 @@ const PRICE_IDS = {
   pro_annual: "price_1SwagD3wR30iWwFn9RABKpl3",
 };
 
-// Marketing-optimized product descriptions for checkout
+// Short descriptions for Stripe (max 500 chars)
 const PRODUCT_DESCRIPTIONS: Record<string, { name: string; description: string }> = {
   premium_monthly: {
     name: "EvoFinz Premium Mensual",
-    description: "🚀 Tu camino a la libertad financiera empieza HOY:\n\n✅ Gastos e ingresos ILIMITADOS\n✅ 50 escaneos OCR de recibos/mes\n✅ Clientes y proyectos ilimitados\n✅ Mileage tracking completo para deducciones\n✅ Gamificación + XP para motivarte diariamente\n✅ Net Worth tracking en tiempo real\n✅ Calendario fiscal con alertas inteligentes\n✅ Analytics avanzados (9+ gráficos)\n✅ Biblioteca de educación financiera\n\n💡 Cancela cuando quieras. Sin compromisos.",
+    description: "Gastos/ingresos ilimitados, 50 OCR/mes, clientes ilimitados, mileage tracking, gamificación, net worth, calendario fiscal, analytics avanzados.",
   },
   premium_annual: {
     name: "EvoFinz Premium Anual",
-    description: "🎉 ¡AHORRA 20%! Tu mejor inversión del año:\n\n✅ TODO lo del plan Premium Mensual\n✅ 12 meses de tranquilidad financiera\n✅ Equivalente a solo $5.59/mes\n✅ Sin interrupciones - enfócate en crecer\n\n🏆 INCLUYE:\n• Gastos/ingresos ILIMITADOS\n• 50 OCR/mes + Mileage tracking\n• Gamificación + Net Worth\n• Calendario fiscal + Analytics avanzados\n• Biblioteca de educación financiera\n\n💪 Miles de profesionales ya organizaron sus finanzas con EvoFinz.",
+    description: "Ahorra 20% - Todo Premium: gastos ilimitados, 50 OCR/mes, mileage, gamificación, net worth, calendario fiscal, analytics. Solo $5.59/mes.",
   },
   pro_monthly: {
     name: "EvoFinz Pro Mensual",
-    description: "👑 El plan COMPLETO para profesionales exigentes:\n\n✅ TODO lo del Premium +\n✅ OCR ILIMITADO - escanea sin límites\n✅ Análisis INTELIGENTE de contratos\n✅ Análisis bancario con detección de anomalías\n✅ Optimizador fiscal inteligente\n✅ Calculadora FIRE + Optimizador RRSP/TFSA\n✅ 8 módulos de mentoría (Kiyosaki, Tracy, Clear)\n✅ Asistente de voz inteligente\n✅ Exportación fiscal oficial (T2125/F29)\n✅ Predicciones y tendencias\n✅ Soporte prioritario 24/7\n\n🔥 Convierte el caos financiero en dominio total.",
+    description: "Plan completo: OCR ilimitado, análisis de contratos, optimizador fiscal, calculadora FIRE, mentoría financiera, asistente de voz, soporte 24/7.",
   },
   pro_annual: {
     name: "EvoFinz Pro Anual",
-    description: "🏆 MÁXIMO AHORRO + TODAS las herramientas PRO:\n\n🎁 ¡AHORRA 20%! Solo $11.99/mes (vs $14.99)\n\n👑 INCLUYE ABSOLUTAMENTE TODO:\n• OCR ILIMITADO para todos tus recibos\n• Análisis inteligente de contratos\n• Detección de anomalías bancarias\n• Optimizador fiscal + RRSP/TFSA/APV\n• Calculadora FIRE completa + proyecciones\n• 8 módulos de mentoría financiera\n• Asistente de voz inteligente\n• Exportación fiscal oficial\n• Predicciones, tendencias y reconciliación\n• Soporte prioritario 24/7\n\n🚀 De empleado a EXPERTO financiero. Tu transformación empieza ahora.\n\n✨ Garantía de satisfacción: 30 días o te devolvemos el dinero.",
+    description: "Ahorra 20% - Todo Pro: OCR ilimitado, contratos, fiscal, FIRE, mentoría, voz, exportación oficial, soporte 24/7. Solo $11.99/mes.",
   },
 };
 
