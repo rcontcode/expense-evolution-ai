@@ -16,7 +16,6 @@ import {
   Search, 
   Users, 
   Calendar as CalendarIcon,
-  DollarSign,
   MoreHorizontal,
   Edit,
   Trash2,
@@ -24,12 +23,10 @@ import {
   Copy,
   Filter,
   X,
-  TrendingUp,
-  TrendingDown,
   ArrowUpRight,
   ArrowDownRight,
-  BarChart3,
-  PieChart
+  PieChart,
+  BarChart3
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProjectsWithClients } from '@/hooks/data/useProjectClients';
@@ -40,6 +37,7 @@ import { useClients } from '@/hooks/data/useClients';
 import { ProjectDialog } from '@/components/dialogs/ProjectDialog';
 import { ProjectDetailDialog } from '@/components/projects/ProjectDetailDialog';
 import { ProjectFinancialOverview } from '@/components/projects/ProjectFinancialOverview';
+import { ProjectsSummaryBanner } from '@/components/projects/ProjectsSummaryBanner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   DropdownMenu, 
@@ -214,6 +212,12 @@ export default function Projects() {
         </PageHeader>
 
         <SetupProgressBanner variant="compact" />
+
+        {/* Personalized Summary Banner */}
+        <ProjectsSummaryBanner 
+          projects={filteredProjects} 
+          projectFinancials={projectFinancials}
+        />
 
         {/* Search and Filters */}
         <div className="space-y-4">
