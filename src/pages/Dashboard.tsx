@@ -441,44 +441,87 @@ export default function Dashboard() {
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                className="px-4 py-2.5 h-auto text-sm font-medium hover:bg-accent/50 rounded-lg"
+                                className="px-4 py-2.5 h-auto text-sm font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 rounded-lg transition-all"
                               >
-                                <MoreHorizontal className="h-4 w-4 mr-2" />
-                                {language === 'es' ? 'Más' : 'More'}
+                                <MoreHorizontal className="h-4 w-4 mr-2 text-primary" />
+                                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-semibold">
+                                  {language === 'es' ? 'Más' : 'More'}
+                                </span>
+                                <span className="ml-1.5 px-1.5 py-0.5 text-[9px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full">+6</span>
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem onClick={() => setActiveTab('goals')} className="gap-2">
-                                <Target className="h-4 w-4 text-emerald-500" />
-                                {language === 'es' ? 'Metas de Ahorro' : 'Savings Goals'}
+                            <DropdownMenuContent align="end" className="w-56 p-2 border-2 border-primary/20 bg-gradient-to-br from-card to-accent/5">
+                              <DropdownMenuItem onClick={() => setActiveTab('goals')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-emerald-500/10 hover:to-green-500/10 cursor-pointer transition-all">
+                                <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500/20 to-green-500/20">
+                                  <Target className="h-4 w-4 text-emerald-500" />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">🎯 {language === 'es' ? 'Metas de Ahorro' : 'Savings Goals'}</span>
+                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Define tus objetivos' : 'Set your targets'}</span>
+                                </div>
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('tax')} className="gap-2">
-                                <Receipt className="h-4 w-4 text-green-500" />
-                                {language === 'es' ? 'Impuestos' : 'Taxes'}
+                              <DropdownMenuItem onClick={() => setActiveTab('tax')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-green-500/10 hover:to-lime-500/10 cursor-pointer transition-all">
+                                <div className="p-2 rounded-lg bg-gradient-to-br from-green-500/20 to-lime-500/20">
+                                  <Receipt className="h-4 w-4 text-green-500" />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-green-600 dark:text-green-400">💰 {language === 'es' ? 'Impuestos' : 'Taxes'}</span>
+                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Optimiza deducciones' : 'Optimize deductions'}</span>
+                                </div>
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('mileage')} className="gap-2">
-                                <MapPin className="h-4 w-4 text-blue-500" />
-                                {language === 'es' ? 'Kilometraje' : 'Mileage'}
+                              <DropdownMenuItem onClick={() => setActiveTab('mileage')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-cyan-500/10 cursor-pointer transition-all">
+                                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20">
+                                  <MapPin className="h-4 w-4 text-blue-500" />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-blue-600 dark:text-blue-400">🚗 {language === 'es' ? 'Kilometraje' : 'Mileage'}</span>
+                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Viajes deducibles' : 'Deductible trips'}</span>
+                                </div>
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('subscriptions')} className="gap-2">
-                                <RefreshCw className="h-4 w-4 text-violet-500" />
-                                {language === 'es' ? 'Suscripciones' : 'Subscriptions'}
+                              <DropdownMenuItem onClick={() => setActiveTab('subscriptions')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-violet-500/10 hover:to-purple-500/10 cursor-pointer transition-all">
+                                <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20">
+                                  <RefreshCw className="h-4 w-4 text-violet-500" />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-violet-600 dark:text-violet-400">🔄 {language === 'es' ? 'Suscripciones' : 'Subscriptions'}</span>
+                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Detecta recurrentes' : 'Detect recurring'}</span>
+                                </div>
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('fire')} className="gap-2">
-                                <span className="text-lg">🔥</span>
-                                FIRE
+                              <DropdownMenuItem onClick={() => setActiveTab('fire')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-orange-500/10 hover:to-red-500/10 cursor-pointer transition-all">
+                                <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500/20 to-red-500/20">
+                                  <span className="text-lg">🔥</span>
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-orange-600 dark:text-orange-400">🔥 FIRE Calculator</span>
+                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Libertad financiera' : 'Financial freedom'}</span>
+                                </div>
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('debt')} className="gap-2">
-                                <Landmark className="h-4 w-4 text-red-500" />
-                                {language === 'es' ? 'Deudas' : 'Debt'}
+                              <DropdownMenuItem onClick={() => setActiveTab('debt')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-red-500/10 hover:to-rose-500/10 cursor-pointer transition-all">
+                                <div className="p-2 rounded-lg bg-gradient-to-br from-red-500/20 to-rose-500/20">
+                                  <Landmark className="h-4 w-4 text-red-500" />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-red-600 dark:text-red-400">🏦 {language === 'es' ? 'Deudas' : 'Debt'}</span>
+                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Avalancha/Bola de nieve' : 'Avalanche/Snowball'}</span>
+                                </div>
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('portfolio')} className="gap-2">
-                                <Briefcase className="h-4 w-4 text-indigo-500" />
-                                Portfolio
+                              <DropdownMenuItem onClick={() => setActiveTab('portfolio')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-indigo-500/10 hover:to-blue-500/10 cursor-pointer transition-all">
+                                <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500/20 to-blue-500/20">
+                                  <Briefcase className="h-4 w-4 text-indigo-500" />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">📈 Portfolio</span>
+                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Rastrea inversiones' : 'Track investments'}</span>
+                                </div>
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('education')} className="gap-2">
-                                <GraduationCap className="h-4 w-4 text-amber-500" />
-                                {language === 'es' ? 'Educación' : 'Education'}
+                              <DropdownMenuItem onClick={() => setActiveTab('education')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-amber-500/10 hover:to-yellow-500/10 cursor-pointer transition-all">
+                                <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-yellow-500/20">
+                                  <GraduationCap className="h-4 w-4 text-amber-500" />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-amber-600 dark:text-amber-400">📚 {language === 'es' ? 'Educación' : 'Education'}</span>
+                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Aprende finanzas' : 'Learn finance'}</span>
+                                </div>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
