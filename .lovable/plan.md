@@ -1,116 +1,58 @@
 
-# Plan: Arreglar Integración Stripe
+# Plan: Corregir Product IDs en check-subscription
 
-## Resumen Ejecutivo
-Corregir 2 bugs en las Edge Functions de Stripe que impiden crear checkouts y abrir el Customer Portal.
+## Problema Identificado
+La función `check-subscription` tiene Product IDs obsoletos que no coinciden con los productos actuales de Stripe, causando que usuarios con suscripción activa sean identificados como "free".
 
----
+## Cambio Requerido
 
-## Cambios Requeridos
+### Archivo: `supabase/functions/check-subscription/index.ts`
 
-### 1. Arreglar `create-checkout/index.ts`
+**Líneas 11-16 - Actualizar PRODUCT_IDS:**
 
-**Problema**: El parámetro `custom_text.terms_of_service_acceptance` requiere `consent_collection.terms_of_service = 'required'`.
+| Plan | ID Actual (incorrecto) | ID Correcto |
+|------|------------------------|-------------|
+| Premium Monthly | `prod_TkhJLlgoAdGcGC` | `prod_TuPUlFnv10u2OA` |
+| Premium Annual | `prod_TkhL8wDZL2MPDd` | `prod_TuPUaVFFZ9bBgf` |
+| Pro Monthly | `prod_TkhKMQlrqFnKYc` | `prod_TuPUJPLiqh0kC7` |
+| Pro Annual | `prod_TkhLVXHrCf97Ir` | `prod_TuPVHHsOi7e4Au` |
 
-**Solución**: Agregar la configuración de consentimiento o remover el texto personalizado de términos.
+## Implementación
 
-```text
-Archivo: supabase/functions/create-checkout/index.ts
+1. Actualizar las líneas 11-16 con los nuevos Product IDs
+2. Desplegar la función actualizada
+3. Verificar con una llamada de prueba
 
-Agregar en stripe.checkout.sessions.create():
+## Verificación Post-Cambio
 
-consent_collection: {
-  terms_of_service: 'required',
-},
-```
-
----
-
-### 2. Resolver Permisos del Customer Portal
-
-**Problema**: La API key actual (`rk_live_...`) es una Restricted Key sin permisos para el Customer Portal.
-
-**Opciones**:
-| Opción | Acción | Riesgo |
-|--------|--------|--------|
-| A (Recomendada) | Editar la Restricted Key en Stripe y agregar permiso `Customer Portal: Write` | Bajo |
-| B | Usar la Secret Key completa (`sk_live_`) | Medio (más acceso) |
-
-**Pasos en Stripe Dashboard**:
-1. Ir a https://dashboard.stripe.com/apikeys
-2. Click en la Restricted Key → Edit
-3. En "Customer Portal" seleccionar **Write**
-4. Guardar
-
----
-
-## Secuencia de Implementación
+Después de la actualización, el flujo completo funcionará así:
 
 ```text
-┌─────────────────────────────────────┐
-│ 1. Corregir create-checkout         │
-│    • Agregar consent_collection     │
-│    • Desplegar función              │
-└────────────────┬────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────┐
-│ 2. Usuario actualiza permisos       │
-│    en Stripe Dashboard              │
-│    (Customer Portal: Write)         │
-└────────────────┬────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────┐
-│ 3. Pruebas end-to-end               │
-│    • Test create-checkout           │
-│    • Test customer-portal           │
-│    • Simular webhook con test event │
-└─────────────────────────────────────┘
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  Usuario paga   │────▶│ Stripe envía     │────▶│ stripe-webhook  │
+│  (checkout)     │     │ subscription.    │     │ actualiza DB    │
+│                 │     │ created          │     │                 │
+└─────────────────┘     └──────────────────┘     └─────────────────┘
+                                                         │
+                                                         ▼
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  App muestra    │◀────│ check-subscription│◀────│ user_           │
+│  plan correcto  │     │ verifica en      │     │ subscriptions   │
+│  (Premium/Pro)  │     │ Stripe + DB      │     │ table           │
+└─────────────────┘     └──────────────────┘     └─────────────────┘
 ```
 
----
+## Pasos para Probar (Post-Implementación)
+
+1. Ir a la app → página de suscripción
+2. Seleccionar plan Premium o Pro
+3. Pagar con tarjeta de prueba: `4242 4242 4242 4242`
+4. Verificar en Stripe Dashboard → Webhooks que el evento muestra "200 OK"
+5. Confirmar que la app muestra el plan correcto
 
 ## Detalles Técnicos
 
-### Archivo: `supabase/functions/create-checkout/index.ts`
-
-Modificar la llamada a `stripe.checkout.sessions.create()` (línea 95-133):
-
-**Antes** (líneas 119-129):
-```typescript
-custom_text: {
-  submit: { ... },
-  terms_of_service_acceptance: {
-    message: 'Al suscribirte...',
-  },
-},
-```
-
-**Después**:
-```typescript
-consent_collection: {
-  terms_of_service: 'required',
-},
-custom_text: {
-  submit: { ... },
-  terms_of_service_acceptance: {
-    message: 'Al suscribirte...',
-  },
-},
-```
-
----
-
-## Verificación Post-Implementación
-
-1. **create-checkout**: Llamar la función → debe retornar URL de Stripe Checkout
-2. **customer-portal**: Llamar la función → debe retornar URL del portal (después de actualizar permisos)
-3. **stripe-webhook**: Enviar test event desde Stripe → verificar logs
-
----
-
-## Notas Importantes
-
-- El webhook (`stripe-webhook`) no ha recibido eventos todavía (logs vacíos), lo cual es normal porque aún no hay suscripciones completadas
-- Una vez arreglado `create-checkout`, podrás completar una suscripción de prueba para validar el webhook
+- La función `check-subscription` consulta directamente a Stripe API para obtener suscripciones activas
+- Compara el `product_id` de la suscripción con los IDs hardcodeados
+- Si no hay match, devuelve `plan_type: "free"` aunque el usuario tenga suscripción activa
+- También actualiza la tabla `user_subscriptions` para mantener sincronía con la base de datos
