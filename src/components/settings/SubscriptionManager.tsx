@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -84,6 +84,15 @@ export function SubscriptionManager() {
   const [selectedPlan, setSelectedPlan] = useState<'premium' | 'pro'>('premium');
   const [selectedBilling, setSelectedBilling] = useState<BillingPeriod>('annual');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Sync selectedPlan when planType changes (e.g., after subscription refresh)
+  useEffect(() => {
+    if (planType === 'premium') {
+      setSelectedPlan('pro');
+    } else if (planType === 'free') {
+      setSelectedPlan('premium');
+    }
+  }, [planType]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
