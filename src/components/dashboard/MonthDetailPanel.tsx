@@ -262,9 +262,66 @@ export function MonthDetailPanel({
 
   const isPositive = totals.balance >= 0;
 
+  // Generate personalized message based on financial reality
+  const personalizedMessage = useMemo(() => {
+    // Extract first name from full_name
+    const firstName = profile?.full_name?.split(' ')[0] || '';
+    const savingsRate = totals.totalIncome > 0 
+      ? ((totals.totalIncome - totals.totalExpenses) / totals.totalIncome * 100).toFixed(0)
+      : 0;
+    
+    if (!firstName) return null;
+    
+    if (totals.totalIncome === 0 && totals.totalExpenses === 0) {
+      return language === 'es' 
+        ? `¡Hola ${firstName}! Este mes aún no tiene movimientos. ¿Empezamos a registrar?`
+        : `Hi ${firstName}! No activity this month yet. Shall we start tracking?`;
+    }
+    
+    if (isPositive && Number(savingsRate) >= 20) {
+      return language === 'es'
+        ? `¡Excelente ${firstName}! Estás ahorrando el ${savingsRate}% de tus ingresos 🎯`
+        : `Excellent ${firstName}! You're saving ${savingsRate}% of your income 🎯`;
+    }
+    
+    if (isPositive && Number(savingsRate) >= 10) {
+      return language === 'es'
+        ? `Bien hecho ${firstName}. Vas por buen camino con ${savingsRate}% de ahorro 💪`
+        : `Well done ${firstName}. On track with ${savingsRate}% savings 💪`;
+    }
+    
+    if (isPositive) {
+      return language === 'es'
+        ? `${firstName}, tu balance es positivo. ¡Sigue así!`
+        : `${firstName}, your balance is positive. Keep it up!`;
+    }
+    
+    if (totals.expenseChange < -10) {
+      return language === 'es'
+        ? `${firstName}, redujiste gastos un ${Math.abs(totals.expenseChange).toFixed(0)}% vs mes anterior 📉`
+        : `${firstName}, you cut expenses by ${Math.abs(totals.expenseChange).toFixed(0)}% vs last month 📉`;
+    }
+    
+    return language === 'es'
+      ? `${firstName}, los gastos superan los ingresos. Revisemos juntos 🔍`
+      : `${firstName}, expenses exceed income. Let's review together 🔍`;
+  }, [profile?.full_name, totals, isPositive, language]);
+
   return (
     <Card className="border border-border/50 bg-gradient-to-br from-card via-card to-accent/5 backdrop-blur-sm overflow-hidden">
       <CardHeader className="pb-4">
+        {/* Personalized greeting banner */}
+        {personalizedMessage && (
+          <div className={cn(
+            "mb-4 p-3 rounded-xl text-sm font-medium animate-in fade-in slide-in-from-top-2 duration-300",
+            isPositive 
+              ? "bg-gradient-to-r from-success/10 via-success/5 to-emerald-500/10 text-success border border-success/20"
+              : "bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-500/10 text-amber-600 border border-amber-500/20"
+          )}>
+            {personalizedMessage}
+          </div>
+        )}
+        
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           {/* Month title */}
           <div className="flex items-center gap-3">
@@ -279,7 +336,7 @@ export function MonthDetailPanel({
                 {fullMonthNames[month]} {year}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                {language === 'es' ? 'Detalle del mes' : 'Month details'}
+                {language === 'es' ? 'Resumen Financiero' : 'Financial Summary'}
               </p>
             </div>
           </div>
