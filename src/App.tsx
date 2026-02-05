@@ -66,6 +66,7 @@ const BetaCodesAdmin = lazyWithRetry(() => import("./pages/admin/BetaCodes"));
 const BetaDashboardAdmin = lazyWithRetry(() => import("./pages/admin/BetaDashboard"));
 const FinancialQuiz = lazyWithRetry(() => import("./pages/FinancialQuiz"));
 const BetaFeedback = lazyWithRetry(() => import("./pages/BetaFeedback"));
+const FinancialAdventure = lazyWithRetry(() => import("./pages/FinancialAdventure"));
 
 // Lazy load heavy global components with retry
 const ChatAssistant = lazyWithRetry(() =>
@@ -213,6 +214,7 @@ const App = () => (
                         <Route path="/admin/beta-codes" element={<AdminRoute><BetaCodesAdmin /></AdminRoute>} />
                         <Route path="/admin/beta-dashboard" element={<AdminRoute><BetaDashboardAdmin /></AdminRoute>} />
                         <Route path="/beta-feedback" element={<ProtectedRoute><BetaFeedback /></ProtectedRoute>} />
+                        <Route path="/adventure" element={<ProtectedRoute><FinancialAdventure /></ProtectedRoute>} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>

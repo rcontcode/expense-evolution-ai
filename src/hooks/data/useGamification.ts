@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useGamificationCelebration, createAchievementCelebration, createLevelUpCelebration } from '@/contexts/GamificationContext';
 
 export interface UserLevel {
   id: string;
@@ -148,7 +149,8 @@ export function useUserAchievements() {
 export function useUnlockAchievement() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { showCelebration } = useGamificationCelebration();
 
   return useMutation({
     mutationFn: async (achievementKey: string) => {
@@ -184,7 +186,17 @@ export function useUnlockAchievement() {
         queryClient.invalidateQueries({ queryKey: ['user-achievements'] });
         queryClient.invalidateQueries({ queryKey: ['user-level'] });
         const achievement = ACHIEVEMENTS[achievementKey as keyof typeof ACHIEVEMENTS];
-        toast.success(`${achievement?.icon} ${t('gamification.achievementUnlocked')}: ${t(`gamification.achievements.${achievementKey}`)}`);
+        
+        // Trigger epic celebration via GamificationProvider
+        if (achievement) {
+          const celebrationData = createAchievementCelebration(
+            achievementKey,
+            achievement.icon,
+            achievement.points,
+            language as 'es' | 'en'
+          );
+          showCelebration(celebrationData);
+        }
       }
     },
   });

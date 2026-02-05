@@ -28,6 +28,7 @@ import {
   Inbox,
   Camera,
   Plus,
+  Trophy,
   Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -131,6 +132,12 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     label: { es: 'Mentoría', en: 'Mentorship' }, 
     path: '/mentorship',
     keywords: ['mentor', 'mentoria', 'aprender', 'learn', 'educacion', 'education']
+  },
+  { 
+    icon: Trophy, 
+    label: { es: 'Tu Aventura', en: 'Your Adventure' }, 
+    path: '/adventure',
+    keywords: ['adventure', 'aventura', 'gamification', 'logros', 'achievements', 'xp', 'level', 'nivel', 'racha', 'streak']
   },
   { 
     icon: Sparkles, 
