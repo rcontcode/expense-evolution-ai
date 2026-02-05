@@ -1,4 +1,4 @@
-import { ReactNode, memo } from 'react';
+import { ReactNode, memo, useMemo } from 'react';
 import { ChevronDown, ChevronRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -16,49 +16,40 @@ interface AreaSectionProps {
   className?: string;
 }
 
-// Color configurations for each area with vibrant gradients
-const AREA_STYLES: Record<FocusAreaId, {
-  gradient: string;
-  headerGradient: string;
-  iconBg: string;
-  shadow: string;
-  accent: string;
-}> = {
-  negocio: {
-    gradient: 'from-blue-500/20 via-cyan-500/10 to-transparent',
-    headerGradient: 'from-blue-600 to-cyan-500',
-    iconBg: 'bg-gradient-to-br from-blue-500 to-cyan-400',
-    shadow: 'shadow-blue-500/20',
-    accent: 'text-blue-600 dark:text-blue-400',
-  },
-  familia: {
-    gradient: 'from-emerald-500/20 via-teal-500/10 to-transparent',
-    headerGradient: 'from-emerald-600 to-teal-500',
-    iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-400',
-    shadow: 'shadow-emerald-500/20',
-    accent: 'text-emerald-600 dark:text-emerald-400',
-  },
-  diadia: {
-    gradient: 'from-amber-500/20 via-orange-500/10 to-transparent',
-    headerGradient: 'from-amber-600 to-orange-500',
-    iconBg: 'bg-gradient-to-br from-amber-500 to-orange-400',
-    shadow: 'shadow-amber-500/20',
-    accent: 'text-amber-600 dark:text-amber-400',
-  },
-  crecimiento: {
-    gradient: 'from-purple-500/20 via-pink-500/10 to-transparent',
-    headerGradient: 'from-purple-600 to-pink-500',
-    iconBg: 'bg-gradient-to-br from-purple-500 to-pink-400',
-    shadow: 'shadow-purple-500/20',
-    accent: 'text-purple-600 dark:text-purple-400',
-  },
-  impuestos: {
-    gradient: 'from-rose-500/20 via-red-500/10 to-transparent',
-    headerGradient: 'from-rose-600 to-red-500',
-    iconBg: 'bg-gradient-to-br from-rose-500 to-red-400',
-    shadow: 'shadow-rose-500/20',
-    accent: 'text-rose-600 dark:text-rose-400',
-  },
+// Area styling using semantic chart tokens from the design system
+const getAreaStyles = (areaId: FocusAreaId) => {
+  const styleMap: Record<FocusAreaId, {
+    gradientClass: string;
+    iconBgClass: string;
+    accentClass: string;
+  }> = {
+    negocio: {
+      gradientClass: 'from-[hsl(var(--chart-1)/0.2)] via-[hsl(var(--chart-1)/0.1)] to-transparent',
+      iconBgClass: 'bg-[hsl(var(--chart-1))]',
+      accentClass: 'text-[hsl(var(--chart-1))]',
+    },
+    familia: {
+      gradientClass: 'from-[hsl(var(--chart-2)/0.2)] via-[hsl(var(--chart-2)/0.1)] to-transparent',
+      iconBgClass: 'bg-[hsl(var(--chart-2))]',
+      accentClass: 'text-[hsl(var(--chart-2))]',
+    },
+    diadia: {
+      gradientClass: 'from-[hsl(var(--chart-3)/0.2)] via-[hsl(var(--chart-3)/0.1)] to-transparent',
+      iconBgClass: 'bg-[hsl(var(--chart-3))]',
+      accentClass: 'text-[hsl(var(--chart-3))]',
+    },
+    crecimiento: {
+      gradientClass: 'from-[hsl(var(--chart-4)/0.2)] via-[hsl(var(--chart-4)/0.1)] to-transparent',
+      iconBgClass: 'bg-[hsl(var(--chart-4))]',
+      accentClass: 'text-[hsl(var(--chart-4))]',
+    },
+    impuestos: {
+      gradientClass: 'from-[hsl(var(--chart-5)/0.2)] via-[hsl(var(--chart-5)/0.1)] to-transparent',
+      iconBgClass: 'bg-[hsl(var(--chart-5))]',
+      accentClass: 'text-[hsl(var(--chart-5))]',
+    },
+  };
+  return styleMap[areaId];
 };
 
 export const AreaSection = memo(({ 
@@ -70,7 +61,7 @@ export const AreaSection = memo(({
 }: AreaSectionProps) => {
   const { language } = useLanguage();
   const area = FOCUS_AREAS[areaId];
-  const styles = AREA_STYLES[areaId];
+  const styles = useMemo(() => getAreaStyles(areaId), [areaId]);
 
   if (!area) return null;
 
@@ -84,7 +75,7 @@ export const AreaSection = memo(({
         <Card 
           className={cn(
             "border-2 transition-all duration-300 overflow-hidden relative",
-            !isCollapsed && `shadow-lg ${styles.shadow}`,
+            !isCollapsed && "shadow-lg shadow-primary/20",
             isCollapsed && "hover:shadow-md",
             className
           )}
@@ -96,7 +87,7 @@ export const AreaSection = memo(({
           <div 
             className={cn(
               "absolute inset-0 bg-gradient-to-br opacity-50 pointer-events-none",
-              styles.gradient
+              styles.gradientClass
             )}
           />
           
@@ -109,8 +100,8 @@ export const AreaSection = memo(({
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     whileTap={{ scale: 0.95 }}
                     className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-lg",
-                      styles.iconBg
+                      "w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-lg text-white",
+                      styles.iconBgClass
                     )}
                   >
                     <span className="drop-shadow-md">{area.emoji}</span>
@@ -120,8 +111,8 @@ export const AreaSection = memo(({
                     <div className="flex items-center gap-2">
                       <h3 
                         className={cn(
-                          "font-bold text-xl",
-                          styles.accent
+                          "font-bold text-xl drop-shadow-sm",
+                          styles.accentClass
                         )}
                       >
                         {area.name[language as 'es' | 'en'] || area.name.es}
@@ -130,7 +121,7 @@ export const AreaSection = memo(({
                         <motion.div
                           initial={{ opacity: 0, scale: 0 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          className={cn("p-1 rounded-full", styles.iconBg)}
+                          className={cn("p-1 rounded-full", styles.iconBgClass)}
                         >
                           <Sparkles className="h-3 w-3 text-white" />
                         </motion.div>
@@ -151,7 +142,7 @@ export const AreaSection = memo(({
                     size="sm" 
                     className={cn(
                       "h-10 w-10 p-0 rounded-full",
-                      !isCollapsed && styles.iconBg,
+                      !isCollapsed && styles.iconBgClass,
                       !isCollapsed && "text-white shadow-md"
                     )}
                   >
@@ -179,8 +170,8 @@ export const AreaSection = memo(({
                     {/* Decorative top border */}
                     <div 
                       className={cn(
-                        "h-1 w-full rounded-full mb-6 bg-gradient-to-r",
-                        styles.headerGradient
+                        "h-1 w-full rounded-full mb-6",
+                        styles.iconBgClass
                       )}
                     />
                     {children}
