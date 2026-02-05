@@ -33,13 +33,17 @@ const STOP_COMMANDS = {
   en: ['stop', 'pause', 'quit'],
 };
 
-// Pause duration (ms) before sending accumulated transcript (increased for natural speech)
-const PAUSE_THRESHOLD_MS = 2200;
+// Pause duration (ms) before sending accumulated transcript
+const PAUSE_THRESHOLD_MS = 1800; // Reduced for faster response while still allowing natural pauses
 
 // Extended cooldown after TTS finishes to prevent self-transcription
 const TTS_COOLDOWN_MS = 2500;
 const TTS_COOLDOWN_PREMIUM_MS = 3000;
 const DUPLICATE_THRESHOLD_MS = 5000; // Don't repeat same text within 5 seconds
+
+// Throttle restart attempts to prevent infinite loops
+const MAX_RESTART_ATTEMPTS = 3;
+const RESTART_COOLDOWN_MS = 800;
 
 export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   const { language } = useLanguage();
@@ -84,6 +88,11 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   // SAFETY: prevent the mic from staying blocked forever if speech synthesis hangs.
   const speakWatchdogRef = useRef<NodeJS.Timeout | null>(null);
   const synthStuckSinceRef = useRef<number | null>(null);
+  
+  // RESTART THROTTLING: Prevent infinite restart loops
+  const restartAttemptsRef = useRef(0);
+  const lastRestartTimeRef = useRef<number>(0);
+  const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const clearSpeakWatchdog = useCallback(() => {
     if (speakWatchdogRef.current) {
@@ -273,15 +282,46 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         return;
       }
       
-      // In continuous mode, try to restart on transient errors with AGGRESSIVE reconnection
+      // In continuous mode, try to restart on transient errors with THROTTLED reconnection
       if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-        // Use exponential backoff for mobile devices which have flaky connections
-        const isNetworkError = event.error === 'network' || event.error === 'service-not-allowed';
-        const delay = isNetworkError ? 500 : 200; // Longer delay for network issues
+        const now = Date.now();
+        const timeSinceLastRestart = now - lastRestartTimeRef.current;
         
-        setTimeout(() => {
+        // Reset counter if enough time has passed
+        if (timeSinceLastRestart > 2000) {
+          restartAttemptsRef.current = 0;
+        }
+        
+        // Check if we've exceeded max attempts
+        if (restartAttemptsRef.current >= MAX_RESTART_ATTEMPTS) {
+          console.log('[Voice] Max restart attempts reached, cooling down...');
+          // Clear any pending timeout
+          if (restartTimeoutRef.current) {
+            clearTimeout(restartTimeoutRef.current);
+          }
+          // Wait longer before trying again
+          restartTimeoutRef.current = setTimeout(() => {
+            restartAttemptsRef.current = 0;
+            if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
+              console.log('[Voice] Resuming after cooldown');
+              createAndStartRecognition(true);
+            }
+          }, RESTART_COOLDOWN_MS);
+          return;
+        }
+        
+        restartAttemptsRef.current++;
+        lastRestartTimeRef.current = now;
+        
+        // Use small delay to prevent rapid cycling
+        const delay = 150 + (restartAttemptsRef.current * 100); // Progressive delay
+        
+        if (restartTimeoutRef.current) {
+          clearTimeout(restartTimeoutRef.current);
+        }
+        restartTimeoutRef.current = setTimeout(() => {
           if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-            console.log('[Voice] Aggressive reconnection attempt');
+            console.log('[Voice] Throttled reconnection attempt', restartAttemptsRef.current);
             createAndStartRecognition(true);
           }
         }, delay);
@@ -299,18 +339,45 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         return;
       }
       
-      // In continuous mode, restart automatically with AGGRESSIVE retry logic
+      // In continuous mode, restart automatically with THROTTLED retry logic
       if (continuousModeRef.current) {
-        // Immediate retry for continuous mode - critical for mobile
-        const retryImmediate = () => {
+        const now = Date.now();
+        const timeSinceLastRestart = now - lastRestartTimeRef.current;
+        
+        // Reset counter if enough time has passed
+        if (timeSinceLastRestart > 2000) {
+          restartAttemptsRef.current = 0;
+        }
+        
+        // Check if we're restarting too fast
+        if (restartAttemptsRef.current >= MAX_RESTART_ATTEMPTS) {
+          console.log('[Voice] Too many restarts in onend, pausing...');
+          if (restartTimeoutRef.current) {
+            clearTimeout(restartTimeoutRef.current);
+          }
+          restartTimeoutRef.current = setTimeout(() => {
+            restartAttemptsRef.current = 0;
+            if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
+              console.log('[Voice] Delayed restart after throttle in onend');
+              createAndStartRecognition(true);
+            }
+          }, RESTART_COOLDOWN_MS);
+          return;
+        }
+        
+        restartAttemptsRef.current++;
+        lastRestartTimeRef.current = now;
+        
+        // Small delay to prevent rapid cycling
+        if (restartTimeoutRef.current) {
+          clearTimeout(restartTimeoutRef.current);
+        }
+        restartTimeoutRef.current = setTimeout(() => {
           if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
             console.log('[Voice] Auto-restart in continuous mode');
             createAndStartRecognition(true);
           }
-        };
-        
-        // Try immediate restart, if fails will be caught by onerror
-        setTimeout(retryImmediate, 50);
+        }, 100);
       } else {
         setIsListening(false);
       }
@@ -409,6 +476,13 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     accumulatedTextRef.current = '';
     clearPauseTimeout();
     
+    // Clear any pending restart timeouts
+    if (restartTimeoutRef.current) {
+      clearTimeout(restartTimeoutRef.current);
+      restartTimeoutRef.current = null;
+    }
+    restartAttemptsRef.current = 0;
+    
     // Kill recognition multiple times to ensure it's dead
     if (recognitionRef.current) {
       try {
@@ -435,6 +509,14 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     setIsContinuousMode(false);
     accumulatedTextRef.current = '';
     clearPauseTimeout();
+    
+    // Clear any pending restart timeouts
+    if (restartTimeoutRef.current) {
+      clearTimeout(restartTimeoutRef.current);
+      restartTimeoutRef.current = null;
+    }
+    restartAttemptsRef.current = 0;
+    
     stopRecognition();
   }, [stopRecognition, clearPauseTimeout]);
 

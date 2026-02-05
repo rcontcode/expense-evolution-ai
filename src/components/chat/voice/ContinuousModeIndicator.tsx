@@ -51,10 +51,18 @@ export function ContinuousModeIndicator({
         {/* Status indicator */}
         <div className="flex items-center gap-2">
           <motion.div
-            animate={{
-              scale: isSpeaking ? [1, 1.2, 1] : isListening ? [1, 1.1, 1] : 1,
+            animate={
+              isSpeaking 
+                ? { scale: [1, 1.15, 1], opacity: 1 }
+                : isListening 
+                  ? { scale: [1, 1.08, 1], opacity: 1 }
+                  : { scale: 1, opacity: 0.7 }
+            }
+            transition={{ 
+              repeat: isSpeaking || isListening ? Infinity : 0, 
+              duration: isSpeaking ? 0.8 : 1.2,
+              ease: "easeInOut"
             }}
-            transition={{ repeat: Infinity, duration: 1 }}
             className={cn(
               "h-3 w-3 rounded-full",
               isSpeaking ? "bg-primary" : isListening ? "bg-red-500" : "bg-green-500"
@@ -141,8 +149,16 @@ export function FloatingVoiceIndicator({
       )}
     >
       <motion.div
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ repeat: Infinity, duration: 0.8 }}
+        animate={
+          isSpeaking 
+            ? { scale: [1, 1.1, 1] }
+            : { scale: [1, 1.05, 1] }
+        }
+        transition={{ 
+          repeat: Infinity, 
+          duration: isSpeaking ? 0.6 : 1.5,
+          ease: "easeInOut"
+        }}
       >
         {isSpeaking ? (
           <Volume2 className="h-4 w-4" />
