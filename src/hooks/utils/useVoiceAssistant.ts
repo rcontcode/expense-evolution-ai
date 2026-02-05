@@ -54,6 +54,10 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   // CRITICAL: Flag that blocks ALL recognition during speech
   const isPausedForSpeakingRef = useRef(false);
   
+  // ANTI-ECHO: Track if we're currently outputting audio to prevent self-transcription
+  const isOutputtingAudioRef = useRef(false);
+  const audioOutputCooldownRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Accumulation for pause-based sending
   const accumulatedTextRef = useRef('');
   const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -177,8 +181,8 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onresult = (event: any) => {
       // CRITICAL: Ignore all results if paused for speaking
-      if (isPausedForSpeakingRef.current) {
-        console.log('[Voice] Ignoring result - paused for speaking');
+      if (isPausedForSpeakingRef.current || isOutputtingAudioRef.current) {
+        console.log('[Voice] Ignoring result - audio output active (preventing self-transcription)');
         return;
       }
 
@@ -473,25 +477,36 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       currentSentenceIndexRef.current = 0;
       options.onSpeakEnd?.();
       
-      // Resume listening after delay if in continuous mode
+      // Resume listening after extended delay if in continuous mode (prevents echo capture)
       if (continuousModeRef.current) {
         setTimeout(() => {
           console.log('[Voice] Unblocking mic after speech');
           isPausedForSpeakingRef.current = false;
+          // Keep audio output flag active for extra time to prevent echo
+          if (audioOutputCooldownRef.current) clearTimeout(audioOutputCooldownRef.current);
+          audioOutputCooldownRef.current = setTimeout(() => {
+            isOutputtingAudioRef.current = false;
+          }, 1000);
           
           setTimeout(() => {
-            if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
+            if (continuousModeRef.current && !isPausedForSpeakingRef.current && !isOutputtingAudioRef.current) {
               createAndStartRecognition(true);
             }
-          }, 200);
-        }, 1000);
+          }, 600);
+        }, 1500);
       } else {
         isPausedForSpeakingRef.current = false;
+        if (audioOutputCooldownRef.current) clearTimeout(audioOutputCooldownRef.current);
+        audioOutputCooldownRef.current = setTimeout(() => {
+          isOutputtingAudioRef.current = false;
+        }, 800);
       }
       return;
     }
 
     const sentence = sentenceQueueRef.current[currentSentenceIndexRef.current];
+    // Mark audio output as active while speaking
+    isOutputtingAudioRef.current = true;
     console.log('[Voice] Speaking sentence', currentSentenceIndexRef.current + 1, '/', sentenceQueueRef.current.length);
     
     setCurrentSentenceIndex(currentSentenceIndexRef.current);
@@ -682,14 +697,23 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         if (continuousModeRef.current) {
           setTimeout(() => {
             isPausedForSpeakingRef.current = false;
+            // Extended cooldown before allowing recognition
+            if (audioOutputCooldownRef.current) clearTimeout(audioOutputCooldownRef.current);
+            audioOutputCooldownRef.current = setTimeout(() => {
+              isOutputtingAudioRef.current = false;
+            }, 1000);
             setTimeout(() => {
-              if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
+              if (continuousModeRef.current && !isPausedForSpeakingRef.current && !isOutputtingAudioRef.current) {
                 createAndStartRecognition(true);
               }
-            }, 200);
-          }, 500);
+            }, 600);
+          }, 1200);
         } else {
           isPausedForSpeakingRef.current = false;
+          if (audioOutputCooldownRef.current) clearTimeout(audioOutputCooldownRef.current);
+          audioOutputCooldownRef.current = setTimeout(() => {
+            isOutputtingAudioRef.current = false;
+          }, 800);
         }
         return;
       }
