@@ -33,8 +33,13 @@ const STOP_COMMANDS = {
   en: ['stop', 'pause', 'quit'],
 };
 
-// Pause duration (ms) before sending accumulated transcript
-const PAUSE_THRESHOLD_MS = 1800;
+// Pause duration (ms) before sending accumulated transcript (increased for natural speech)
+const PAUSE_THRESHOLD_MS = 2200;
+
+// Extended cooldown after TTS finishes to prevent self-transcription
+const TTS_COOLDOWN_MS = 2500;
+const TTS_COOLDOWN_PREMIUM_MS = 3000;
+const DUPLICATE_THRESHOLD_MS = 5000; // Don't repeat same text within 5 seconds
 
 export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   const { language } = useLanguage();
@@ -58,10 +63,12 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   const isOutputtingAudioRef = useRef(false);
   const audioOutputCooldownRef = useRef<NodeJS.Timeout | null>(null);
 
-// DUPLICATE PREVENTION: Track last spoken text to prevent repeating
-const lastSpokenTextRef = useRef<string>('');
-const lastSpokenTimeRef = useRef<number>(0);
-const DUPLICATE_THRESHOLD_MS = 5000; // Don't repeat same text within 5 seconds
+  // DUPLICATE PREVENTION: Track last spoken text to prevent repeating
+  const lastSpokenTextRef = useRef<string>('');
+  const lastSpokenTimeRef = useRef<number>(0);
+  
+  // AUDIO OUTPUT TRACKING: Precise timing for when audio actually stops
+  const audioEndTimeRef = useRef<number>(0);
   
   // Accumulation for pause-based sending
   const accumulatedTextRef = useRef('');
@@ -188,6 +195,13 @@ const DUPLICATE_THRESHOLD_MS = 5000; // Don't repeat same text within 5 seconds
       // CRITICAL: Ignore all results if paused for speaking
       if (isPausedForSpeakingRef.current || isOutputtingAudioRef.current) {
         console.log('[Voice] Ignoring result - audio output active (preventing self-transcription)');
+        return;
+      }
+
+      // EXTRA SAFETY: Check if audio recently ended (within cooldown window)
+      const timeSinceAudioEnd = Date.now() - audioEndTimeRef.current;
+      if (timeSinceAudioEnd < TTS_COOLDOWN_MS && audioEndTimeRef.current > 0) {
+        console.log('[Voice] Ignoring result - too soon after audio ended:', timeSinceAudioEnd, 'ms');
         return;
       }
 
@@ -480,6 +494,9 @@ const DUPLICATE_THRESHOLD_MS = 5000; // Don't repeat same text within 5 seconds
       setCurrentSentenceIndex(0);
       sentenceQueueRef.current = [];
       currentSentenceIndexRef.current = 0;
+      
+      // Mark precise time when audio ended
+      audioEndTimeRef.current = Date.now();
       options.onSpeakEnd?.();
       
       // Resume listening after extended delay if in continuous mode (prevents echo capture)
@@ -491,20 +508,20 @@ const DUPLICATE_THRESHOLD_MS = 5000; // Don't repeat same text within 5 seconds
           if (audioOutputCooldownRef.current) clearTimeout(audioOutputCooldownRef.current);
           audioOutputCooldownRef.current = setTimeout(() => {
             isOutputtingAudioRef.current = false;
-          }, 1800); // Extended cooldown to prevent self-transcription
+          }, TTS_COOLDOWN_MS); // Extended cooldown to prevent self-transcription
           
           setTimeout(() => {
             if (continuousModeRef.current && !isPausedForSpeakingRef.current && !isOutputtingAudioRef.current) {
               createAndStartRecognition(true);
             }
-          }, 1200); // Longer delay before restarting recognition
-        }, 2000); // Extended wait after speech ends
+          }, TTS_COOLDOWN_MS - 500); // Sync with cooldown
+        }, TTS_COOLDOWN_MS); // Extended wait after speech ends
       } else {
         isPausedForSpeakingRef.current = false;
         if (audioOutputCooldownRef.current) clearTimeout(audioOutputCooldownRef.current);
         audioOutputCooldownRef.current = setTimeout(() => {
           isOutputtingAudioRef.current = false;
-        }, 1500);
+        }, TTS_COOLDOWN_MS - 500);
       }
       return;
     }
@@ -520,8 +537,8 @@ const DUPLICATE_THRESHOLD_MS = 5000; // Don't repeat same text within 5 seconds
     const utterance = new SpeechSynthesisUtterance(sentence);
     utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
     // Use provided speech speed or default
-    utterance.rate = (options.speechSpeed ?? 1.0) * 0.95; // Slightly slower base for natural speech
-    utterance.pitch = options.pitch ?? 1.0;
+    utterance.rate = (options.speechSpeed ?? 1.0) * 0.92; // Slower for clarity and natural feel
+    utterance.pitch = (options.pitch ?? 1.0) * 1.05; // Slightly higher for friendliness
     utterance.volume = options.volume ?? 1.0;
 
     // Get a native voice - check for user-selected specific voice first
