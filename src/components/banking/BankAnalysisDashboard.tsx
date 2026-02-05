@@ -31,6 +31,9 @@ import { SmartSearchChat } from './SmartSearchChat';
 import { CategoryTrendsChart } from './CategoryTrendsChart';
 import { AnomalyAlerts } from './AnomalyAlerts';
 import { Input } from '@/components/ui/input';
+import { BankingWelcomeExperience } from './BankingWelcomeExperience';
+import { FinancialHealthPanel } from './FinancialHealthPanel';
+import { SmartBudgetIntegration } from './SmartBudgetIntegration';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -143,8 +146,19 @@ export function BankAnalysisDashboard({ onImportClick }: BankAnalysisDashboardPr
   return (
     <TooltipProvider>
       <div className="space-y-4 sm:space-y-6">
+        {/* Welcome/Onboarding Experience */}
+        <BankingWelcomeExperience onImportClick={handleImport} />
+
+        {/* Financial Insights - only show when has transactions */}
+        {totalTransactions > 0 && (
+          <div className="grid gap-4 lg:grid-cols-2">
+            <FinancialHealthPanel />
+            <SmartBudgetIntegration />
+          </div>
+        )}
+
         {/* Header - compact on mobile */}
-        {!isMobile && (
+        {!isMobile && totalTransactions > 0 && (
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -164,8 +178,8 @@ export function BankAnalysisDashboard({ onImportClick }: BankAnalysisDashboardPr
           </div>
         )}
 
-        {/* Mobile: Import button at top */}
-        {isMobile && (
+        {/* Mobile: Import button - only if has transactions */}
+        {isMobile && totalTransactions > 0 && (
           <Button onClick={handleImport} className="w-full bg-gradient-primary min-h-[44px]">
             <Upload className="h-4 w-4 mr-2" />
             {language === 'es' ? 'Importar Estado de Cuenta' : 'Import Bank Statement'}
