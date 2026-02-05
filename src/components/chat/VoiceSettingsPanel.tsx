@@ -10,6 +10,9 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useElevenLabsVoices, buildVoiceOptions, ElevenLabsVoice } from '@/hooks/data/useElevenLabsVoices';
 import { useVoicePreferences, VoiceGender } from '@/hooks/utils/useVoicePreferences';
+ import { useAppSounds } from '@/hooks/utils/useAppSounds';
+ import { Slider as SliderComponent } from '@/components/ui/slider';
+ import { Flame, Music, Gamepad2 } from 'lucide-react';
 
 interface VoiceSettingsPanelProps {
   language: 'es' | 'en';
@@ -26,6 +29,8 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
 }) => {
   const voicePrefs = useVoicePreferences();
   const { data: voicesData, isLoading: isLoadingVoices } = useElevenLabsVoices();
+   const sounds = useAppSounds();
+   const [soundPrefs, setSoundPrefs] = React.useState(sounds.getPreferences());
   
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'elevenlabs' | 'native'>('elevenlabs');
@@ -186,14 +191,48 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
         <div className="flex items-center justify-between">
           <span className="text-xs">{language === 'es' ? 'Sonidos' : 'Sounds'}</span>
           <Button
-            variant={voicePrefs.enableSoundEffects ? "default" : "outline"}
+            variant={soundPrefs.enabled ? "default" : "outline"}
             size="sm"
             className="h-6 text-xs"
-            onClick={() => voicePrefs.toggleSoundEffects()}
+            onClick={() => {
+              sounds.setEnabled(!soundPrefs.enabled);
+              setSoundPrefs(sounds.getPreferences());
+            }}
           >
-            {voicePrefs.enableSoundEffects ? 'On' : 'Off'}
+            {soundPrefs.enabled ? 'On' : 'Off'}
           </Button>
         </div>
+         
+         {/* Sound Style Quick Select */}
+         {soundPrefs.enabled && (
+           <div className="space-y-2 pt-2 border-t">
+             <span className="text-xs text-muted-foreground">
+               {language === 'es' ? 'Estilo de sonidos' : 'Sound style'}
+             </span>
+             <div className="flex gap-1">
+               {(['phoenix', 'minimal', 'arcade'] as const).map((style) => {
+                 const Icon = style === 'phoenix' ? Flame : style === 'minimal' ? Music : Gamepad2;
+                 const isSelected = soundPrefs.style === style;
+                 return (
+                   <Button
+                     key={style}
+                     variant={isSelected ? "default" : "ghost"}
+                     size="sm"
+                     className="flex-1 h-7 text-xs"
+                     onClick={() => {
+                       sounds.setStyle(style);
+                       setSoundPrefs(sounds.getPreferences());
+                       sounds.preview('success', style);
+                     }}
+                   >
+                     <Icon className="h-3 w-3 mr-1" />
+                     {style.charAt(0).toUpperCase() + style.slice(1)}
+                   </Button>
+                 );
+               })}
+             </div>
+           </div>
+         )}
       </div>
 
       {/* Voice Selection */}
