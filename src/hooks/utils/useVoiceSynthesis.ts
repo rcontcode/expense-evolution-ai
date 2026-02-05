@@ -40,7 +40,22 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
   // Clean text for speech (remove emojis, markdown, etc.)
   const cleanText = useCallback((text: string): string => {
     return text
-      .replace(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]/gu, '') // Emojis
+      // CRITICAL: Convert problematic Unicode to ASCII (prevents "alien" speech)
+      .replace(/…/g, '...') // Unicode ellipsis
+      .replace(/[""]/g, '"') // Smart quotes
+      .replace(/['']/g, "'") // Smart apostrophes
+      .replace(/—/g, '-') // Em dash
+      .replace(/–/g, '-') // En dash
+      .replace(/•/g, '-') // Bullet
+      .replace(/→/g, ' a ') // Arrow
+      .replace(/←/g, '') // Left arrow
+      .replace(/©®™/g, '') // Legal symbols
+      .replace(/°/g, ' grados ') // Degree
+      // Emojis
+      .replace(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]/gu, '')
+      // CJK and other problematic unicode
+      .replace(/[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\uFF00-\uFFEF\u4E00-\u9FAF]/g, '')
+      // Markdown
       .replace(/\*\*/g, '')
       .replace(/\*/g, '')
       .replace(/#{1,6}\s/g, '')
