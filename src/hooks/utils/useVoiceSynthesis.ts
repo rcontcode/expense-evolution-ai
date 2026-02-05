@@ -161,8 +161,9 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
 
     const utterance = new SpeechSynthesisUtterance(sentence);
     utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
-    utterance.rate = (options.speechSpeed ?? 1.0) * 0.95;
-    utterance.pitch = options.pitch ?? 1.0;
+    // Gentler rate for comprehension - no machine-gunning
+    utterance.rate = (options.speechSpeed ?? 0.85) * 0.88;
+    utterance.pitch = (options.pitch ?? 1.0) * 1.02;
     utterance.volume = options.volume ?? 1.0;
 
     const voice = getBestVoice();
@@ -180,12 +181,12 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
 
     utterance.onend = () => {
       currentIndexRef.current++;
-      // Natural pause between sentences
+      // Extended natural pause between sentences for "thinking room"
       setTimeout(() => {
         if (!window.speechSynthesis.paused && sentenceQueueRef.current.length > 0) {
           speakNextSentence();
         }
-      }, 400);
+      }, 650);
     };
 
     utterance.onerror = (event) => {

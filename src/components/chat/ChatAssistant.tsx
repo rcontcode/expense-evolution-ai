@@ -582,12 +582,18 @@ export const ChatAssistant: React.FC = () => {
   }, [isListening, isContinuousMode, recordingStartTime]);
 
   // Update input with live transcript - only when actually listening and NOT speaking
-  // This prevents the AI's speech from being captured as user input
+  // This prevents the AI's speech from being captured as user input AND stops during processing
   useEffect(() => {
-    if (transcript && isListening && !isSpeaking) {
+    // CRITICAL: Block transcript updates when:
+    // 1. AI is speaking (isSpeaking or elevenLabsTTS.isSpeaking)
+    // 2. Processing user request (isLoading)
+    // 3. Processing voice input (isProcessingVoice)
+    const isOutputtingOrProcessing = isSpeaking || elevenLabsTTS.isSpeaking || isLoading || isProcessingVoice;
+    
+    if (transcript && isListening && !isOutputtingOrProcessing) {
       setInput(transcript);
     }
-  }, [transcript, isListening, isSpeaking]);
+  }, [transcript, isListening, isSpeaking, elevenLabsTTS.isSpeaking, isLoading, isProcessingVoice]);
 
   useEffect(() => {
     if (scrollRef.current) {

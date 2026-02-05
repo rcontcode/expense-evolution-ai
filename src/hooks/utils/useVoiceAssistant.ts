@@ -34,12 +34,15 @@ const STOP_COMMANDS = {
 };
 
 // Pause duration (ms) before sending accumulated transcript
-const PAUSE_THRESHOLD_MS = 1800; // Reduced for faster response while still allowing natural pauses
+const PAUSE_THRESHOLD_MS = 1500; // Quick response but allow natural pauses
 
 // Extended cooldown after TTS finishes to prevent self-transcription
 const TTS_COOLDOWN_MS = 2500;
-const TTS_COOLDOWN_PREMIUM_MS = 3000;
+const TTS_COOLDOWN_PREMIUM_MS = 3500;
 const DUPLICATE_THRESHOLD_MS = 5000; // Don't repeat same text within 5 seconds
+
+// Inter-sentence pause for natural breathing room
+const SENTENCE_PAUSE_MS = 650; // Increased for "thinking room"
 
 // Throttle restart attempts to prevent infinite loops
 const MAX_RESTART_ATTEMPTS = 3;
@@ -619,8 +622,9 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     const utterance = new SpeechSynthesisUtterance(sentence);
     utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
     // Use provided speech speed or default
-    utterance.rate = (options.speechSpeed ?? 1.0) * 0.92; // Slower for clarity and natural feel
-    utterance.pitch = (options.pitch ?? 1.0) * 1.05; // Slightly higher for friendliness
+    // Apply gentler rate multiplier for more natural pacing (no machine-gunning)
+    utterance.rate = (options.speechSpeed ?? 0.85) * 0.88; // Significantly slower for comprehension
+    utterance.pitch = (options.pitch ?? 1.0) * 1.02; // Subtle pitch for warmth
     utterance.volume = options.volume ?? 1.0;
 
     // Get a native voice - check for user-selected specific voice first
@@ -718,12 +722,12 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       synthStuckSinceRef.current = null;
       currentSentenceIndexRef.current++;
       
-      // Add a natural pause between sentences (400ms)
+      // Add a LONGER natural pause between sentences for "thinking room"
       setTimeout(() => {
         if (!window.speechSynthesis.paused && sentenceQueueRef.current.length > 0) {
           speakNextSentence();
         }
-      }, 400);
+      }, SENTENCE_PAUSE_MS);
     };
 
     utterance.onerror = (event) => {
