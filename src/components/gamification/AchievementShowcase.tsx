@@ -1,10 +1,11 @@
  import { motion } from 'framer-motion';
  import { useLanguage } from '@/contexts/LanguageContext';
  import { useUserAchievements, ACHIEVEMENTS } from '@/hooks/data/useGamification';
- import { Trophy, Lock, Sparkles, Star, Flame, Crown, Gift } from 'lucide-react';
+import { Trophy, Lock, Sparkles, Star, Flame, Crown, Gift, Zap, Target, TrendingUp, Medal } from 'lucide-react';
  import { cn } from '@/lib/utils';
  import { Badge } from '@/components/ui/badge';
  import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Progress } from '@/components/ui/progress';
  
  // Achievement categories with colors
  const ACHIEVEMENT_CATEGORIES = {
@@ -66,6 +67,38 @@
    },
  };
  
+// Rarity tiers for achievements
+const RARITY_TIERS = {
+  common: { 
+    labelEs: 'Común', labelEn: 'Common', 
+    color: 'bg-slate-500', textColor: 'text-slate-400',
+    glow: '' 
+  },
+  rare: { 
+    labelEs: 'Raro', labelEn: 'Rare', 
+    color: 'bg-blue-500', textColor: 'text-blue-400',
+    glow: 'shadow-blue-500/30' 
+  },
+  epic: { 
+    labelEs: 'Épico', labelEn: 'Epic', 
+    color: 'bg-purple-500', textColor: 'text-purple-400',
+    glow: 'shadow-purple-500/50' 
+  },
+  legendary: { 
+    labelEs: 'Legendario', labelEn: 'Legendary', 
+    color: 'bg-gradient-to-r from-amber-400 to-orange-500', textColor: 'text-amber-400',
+    glow: 'shadow-amber-500/60' 
+  },
+};
+
+// Get rarity based on points
+const getRarity = (points: number) => {
+  if (points >= 100) return 'legendary';
+  if (points >= 50) return 'epic';
+  if (points >= 25) return 'rare';
+  return 'common';
+};
+
  // Achievement descriptions in both languages
  const ACHIEVEMENT_NAMES: Record<string, { es: string; en: string; desc_es: string; desc_en: string }> = {
    first_expense: { es: 'Primer Gasto', en: 'First Expense', desc_es: 'Registraste tu primer gasto', desc_en: 'You logged your first expense' },
@@ -167,29 +200,66 @@
        <div className={cn('animate-pulse rounded-2xl bg-muted h-64', className)} />
      );
    }
+  
+  const progressPercent = (totalUnlocked / totalAchievements) * 100;
  
    return (
      <div className={cn('space-y-6', className)}>
        {/* Header with progress */}
-       <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
          <div>
-           <h2 className="text-2xl font-black flex items-center gap-2">
+          <h2 className="text-2xl font-black flex items-center gap-3">
              <Trophy className="h-6 w-6 text-amber-500" />
              {text.title}
+            <motion.span
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="text-2xl"
+            >
+              🎮
+            </motion.span>
            </h2>
            <p className="text-sm text-muted-foreground">{text.subtitle}</p>
          </div>
          
-         <motion.div
-           className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-lg"
-           animate={{ scale: [1, 1.02, 1] }}
-           transition={{ duration: 2, repeat: Infinity }}
-         >
-           <Star className="h-4 w-4" />
-           <span>{totalUnlocked}/{totalAchievements}</span>
-           <span className="text-xs opacity-80">{text.unlocked}</span>
-         </motion.div>
+        <div className="flex flex-col items-end gap-2">
+          <motion.div
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white font-bold shadow-lg shadow-orange-500/30"
+            animate={{ scale: [1, 1.02, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+            >
+              <Star className="h-5 w-5" />
+            </motion.div>
+            <span className="text-lg">{totalUnlocked}/{totalAchievements}</span>
+            <span className="text-xs opacity-80">{text.unlocked}</span>
+          </motion.div>
+          
+          {/* Progress bar */}
+          <div className="w-48 flex items-center gap-2">
+            <Progress value={progressPercent} className="h-2" />
+            <span className="text-xs font-bold text-muted-foreground">{Math.round(progressPercent)}%</span>
+          </div>
+        </div>
        </div>
+      
+      {/* Rarity legend */}
+      <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 border border-muted">
+        <span className="text-xs font-medium text-muted-foreground mr-2">
+          {language === 'es' ? 'Rareza:' : 'Rarity:'}
+        </span>
+        {Object.entries(RARITY_TIERS).map(([key, tier]) => (
+          <div key={key} className="flex items-center gap-1.5">
+            <div className={cn('w-3 h-3 rounded-full', tier.color)} />
+            <span className={cn('text-xs font-medium', tier.textColor)}>
+              {language === 'es' ? tier.labelEs : tier.labelEn}
+            </span>
+          </div>
+        ))}
+      </div>
  
        {/* Achievement categories */}
        <div className="space-y-4">
@@ -205,19 +275,45 @@
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                className={cn(
-                 'p-4 rounded-xl border-2 transition-all',
+                  'p-4 rounded-2xl border-2 transition-all hover:shadow-lg',
                  category.bgColor,
                  category.borderColor
                )}
              >
                {/* Category header */}
-               <div className="flex items-center justify-between mb-3">
-                 <h3 className={cn('font-bold bg-gradient-to-r bg-clip-text text-transparent', category.color)}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className={cn('text-lg font-bold bg-gradient-to-r bg-clip-text text-transparent flex items-center gap-2', category.color)}>
+                    {categoryKey === 'beginner' && '🌱'}
+                    {categoryKey === 'streak' && '🔥'}
+                    {categoryKey === 'savings' && '💰'}
+                    {categoryKey === 'investment' && '📈'}
+                    {categoryKey === 'activity' && '⚡'}
+                    {categoryKey === 'education' && '📚'}
+                    {categoryKey === 'special' && '✨'}
                    {language === 'es' ? category.labelEs : category.labelEn}
                  </h3>
-                 <Badge variant="outline" className={cn('border-2', category.borderColor)}>
-                   {unlockedInCategory}/{categoryAchievements.length}
-                 </Badge>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-background/50">
+                      <motion.div
+                        animate={unlockedInCategory === categoryAchievements.length ? { scale: [1, 1.2, 1] } : {}}
+                        transition={{ duration: 1, repeat: Infinity }}
+                      >
+                        {unlockedInCategory === categoryAchievements.length ? (
+                          <Medal className="h-4 w-4 text-amber-500" />
+                        ) : (
+                          <Target className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </motion.div>
+                      <span className="text-sm font-bold">
+                        {unlockedInCategory}/{categoryAchievements.length}
+                      </span>
+                    </div>
+                    {unlockedInCategory === categoryAchievements.length && (
+                      <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
+                        {language === 'es' ? '¡Completo!' : 'Complete!'}
+                      </Badge>
+                    )}
+                  </div>
                </div>
                
                {/* Achievement grid */}
@@ -230,6 +326,8 @@
                      const achievement = ACHIEVEMENTS[key as keyof typeof ACHIEVEMENTS];
                      const isUnlocked = unlockedKeys.has(key);
                      const info = ACHIEVEMENT_NAMES[key] || { es: key, en: key, desc_es: '', desc_en: '' };
+                      const rarity = getRarity(achievement?.points || 0);
+                      const rarityTier = RARITY_TIERS[rarity];
                      
                      if (!showAll && !isUnlocked) return null;
                      
@@ -241,11 +339,12 @@
                              animate={{ opacity: 1, scale: 1 }}
                              transition={{ delay: index * 0.02 }}
                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.95 }}
                              className={cn(
-                               'relative aspect-square rounded-xl flex items-center justify-center cursor-pointer transition-all',
+                                'relative aspect-square rounded-xl flex items-center justify-center cursor-pointer transition-all group',
                                isUnlocked
-                                 ? cn('bg-gradient-to-br shadow-lg', category.color)
-                                 : 'bg-muted/50 border border-muted'
+                                  ? cn('bg-gradient-to-br shadow-lg', category.color, rarityTier.glow)
+                                  : 'bg-muted/50 border border-muted hover:border-primary/30'
                              )}
                            >
                              {isUnlocked ? (
@@ -257,29 +356,43 @@
                                  <motion.div
                                    className="absolute inset-0 rounded-xl"
                                    animate={{
-                                     boxShadow: ['0 0 0px rgba(255,255,255,0)', '0 0 20px rgba(255,255,255,0.5)', '0 0 0px rgba(255,255,255,0)']
+                                      boxShadow: ['0 0 0px rgba(255,255,255,0)', '0 0 25px rgba(255,255,255,0.6)', '0 0 0px rgba(255,255,255,0)']
                                    }}
-                                   transition={{ duration: 2, repeat: Infinity, delay: index * 0.1 }}
+                                    transition={{ duration: 1.5, repeat: Infinity, delay: index * 0.1 }}
                                  />
+                                  {/* Rarity indicator */}
+                                  <div className={cn('absolute -top-1 -left-1 w-2.5 h-2.5 rounded-full', rarityTier.color)} />
                                </>
                              ) : (
-                               <Lock className="h-5 w-5 text-muted-foreground/50" />
+                                <motion.div
+                                  animate={{ opacity: [0.3, 0.5, 0.3] }}
+                                  transition={{ duration: 2, repeat: Infinity }}
+                                >
+                                  <Lock className="h-5 w-5 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
+                                </motion.div>
                              )}
                              
                              {/* Points badge */}
                              {isUnlocked && (
-                               <span className="absolute -bottom-1 -right-1 text-[10px] bg-background rounded-full px-1.5 py-0.5 font-bold shadow border">
+                                <motion.span 
+                                  className="absolute -bottom-1 -right-1 text-[10px] bg-background rounded-full px-1.5 py-0.5 font-bold shadow border"
+                                  animate={{ scale: [1, 1.1, 1] }}
+                                  transition={{ duration: 2, repeat: Infinity, delay: index * 0.05 }}
+                                >
                                  +{achievement?.points}
-                               </span>
+                                </motion.span>
                              )}
                            </motion.div>
                          </TooltipTrigger>
-                         <TooltipContent side="top" className="max-w-xs">
-                           <div className="text-center">
-                             <p className="font-bold flex items-center justify-center gap-1">
+                          <TooltipContent side="top" className="max-w-xs p-3">
+                            <div className="text-center space-y-2">
+                              <div className={cn('inline-block px-2 py-0.5 rounded-full text-[10px] font-bold text-white', rarityTier.color)}>
+                                {language === 'es' ? rarityTier.labelEs : rarityTier.labelEn}
+                              </div>
+                              <p className="font-bold flex items-center justify-center gap-1 text-base">
                                {achievement?.icon} {language === 'es' ? info.es : info.en}
                              </p>
-                             <p className="text-xs text-muted-foreground">
+                              <p className="text-sm text-muted-foreground">
                                {language === 'es' ? info.desc_es : info.desc_en}
                              </p>
                              <Badge variant="secondary" className="mt-1">
@@ -287,7 +400,7 @@
                                {achievement?.points} {text.points}
                              </Badge>
                              {!isUnlocked && (
-                               <p className="text-xs text-muted-foreground mt-1 flex items-center justify-center gap-1">
+                                <p className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1 bg-muted/50 px-2 py-1 rounded-full">
                                  <Lock className="h-3 w-3" />
                                  {text.locked}
                                </p>
@@ -309,15 +422,59 @@
          <motion.div
            initial={{ opacity: 0 }}
            animate={{ opacity: 1 }}
-           className="text-center p-4 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20"
+            className="text-center p-5 rounded-2xl bg-gradient-to-r from-primary/10 via-accent/10 to-amber-500/10 border-2 border-primary/20 shadow-lg"
          >
-           <p className="text-sm font-medium flex items-center justify-center gap-2">
-             <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+            <motion.p 
+              className="text-base font-semibold flex items-center justify-center gap-3"
+              animate={{ scale: [1, 1.01, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <motion.span
+                animate={{ rotate: [0, 15, -15, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                <Sparkles className="h-5 w-5 text-primary" />
+              </motion.span>
              {text.keepGoing}
-             <Gift className="h-4 w-4 text-accent" />
-           </p>
+              <motion.span
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              >
+                <Gift className="h-5 w-5 text-accent" />
+              </motion.span>
+            </motion.p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {language === 'es' 
+                ? `¡Solo te faltan ${totalAchievements - totalUnlocked} logros para completar tu colección!` 
+                : `Only ${totalAchievements - totalUnlocked} achievements left to complete your collection!`}
+            </p>
          </motion.div>
        )}
+        
+        {/* All complete celebration */}
+        {totalUnlocked === totalAchievements && totalAchievements > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center p-6 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-red-500/20 border-2 border-amber-500/40 shadow-xl"
+          >
+            <motion.div
+              animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.05, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="text-5xl mb-3"
+            >
+              🏆👑🏆
+            </motion.div>
+            <h3 className="text-xl font-black bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 bg-clip-text text-transparent">
+              {language === 'es' ? '¡LEYENDA COMPLETADA!' : 'LEGEND COMPLETE!'}
+            </h3>
+            <p className="text-sm text-muted-foreground mt-2">
+              {language === 'es' 
+                ? '¡Has desbloqueado todos los logros! Eres un verdadero maestro financiero.' 
+                : 'You unlocked all achievements! You are a true financial master.'}
+            </p>
+          </motion.div>
+        )}
      </div>
    );
  }
