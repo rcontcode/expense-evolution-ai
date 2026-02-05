@@ -57,7 +57,7 @@ interface ConversationEntry {
 }
 
 const DEFAULT_PREFERENCES: VoicePreferences = {
-  speechSpeed: 1.0,
+  speechSpeed: 0.85, // Slower default to prevent machine-gun speech
   volume: 1.0,
   pitch: 1.0,
   voiceGender: 'female',
