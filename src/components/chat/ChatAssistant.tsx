@@ -400,6 +400,8 @@ export const ChatAssistant: React.FC = () => {
     pauseSpeech,
     resumeSpeech,
     stopSpeaking,
+    pauseRecognition,
+    resumeRecognition,
   } = useVoiceAssistant({
     speechSpeed: voicePrefs.speechSpeed,
     volume: voicePrefs.volume,
@@ -594,6 +596,18 @@ export const ChatAssistant: React.FC = () => {
       setInput(transcript);
     }
   }, [transcript, isListening, isSpeaking, elevenLabsTTS.isSpeaking, isLoading, isProcessingVoice]);
+
+  // CRITICAL: Pause/resume recognition when processing state changes
+  // This prevents the mic from capturing during API calls
+  useEffect(() => {
+    if (isLoading || isProcessingVoice) {
+      // Pause recognition while processing
+      pauseRecognition();
+    } else if (isContinuousMode) {
+      // Resume recognition after processing completes (with cooldown)
+      resumeRecognition();
+    }
+  }, [isLoading, isProcessingVoice, isContinuousMode, pauseRecognition, resumeRecognition]);
 
   useEffect(() => {
     if (scrollRef.current) {

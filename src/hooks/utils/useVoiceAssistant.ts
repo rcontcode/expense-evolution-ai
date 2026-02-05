@@ -34,7 +34,8 @@ const STOP_COMMANDS = {
 };
 
 // Pause duration (ms) before sending accumulated transcript
-const PAUSE_THRESHOLD_MS = 1500; // Quick response but allow natural pauses
+// BALANCED: 1200ms allows natural speech pauses but responds quickly
+const PAUSE_THRESHOLD_MS = 1200;
 
 // Extended cooldown after TTS finishes to prevent self-transcription
 const TTS_COOLDOWN_MS = 2500;
@@ -523,11 +524,62 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     stopRecognition();
   }, [stopRecognition, clearPauseTimeout]);
 
-  // Clean text for speech
+  // Pause recognition temporarily (for when AI is processing)
+  // This doesn't exit continuous mode, just temporarily stops listening
+  const pauseRecognition = useCallback(() => {
+    console.log('[Voice] Pausing recognition (processing)');
+    isPausedForSpeakingRef.current = true;
+    isOutputtingAudioRef.current = true;
+    accumulatedTextRef.current = '';
+    clearPauseTimeout();
+    
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (e) {
+        // Ignore
+      }
+    }
+    setIsListening(false);
+  }, [clearPauseTimeout]);
+
+  // Resume recognition after processing is complete
+  const resumeRecognition = useCallback(() => {
+    console.log('[Voice] Resuming recognition after processing');
+    
+    // Extended cooldown to avoid catching AI's response
+    setTimeout(() => {
+      isPausedForSpeakingRef.current = false;
+      isOutputtingAudioRef.current = false;
+      
+      if (continuousModeRef.current) {
+        setTimeout(() => {
+          if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
+            createAndStartRecognition(true);
+          }
+        }, 300);
+      }
+    }, 500);
+  }, [createAndStartRecognition]);
+
+  // Clean text for speech - CRITICAL: Sanitize problematic Unicode that causes "alien" rendering
   const cleanTextForSpeech = useCallback((text: string): string => {
     return text
+      // CRITICAL: Convert problematic Unicode to ASCII (prevents "alien" speech)
+      .replace(/…/g, '...') // Unicode ellipsis causes rendering issues
+      .replace(/[""]/g, '"') // Smart quotes
+      .replace(/['']/g, "'") // Smart apostrophes
+      .replace(/—/g, '-') // Em dash
+      .replace(/–/g, '-') // En dash
+      .replace(/•/g, '-') // Bullet
+      .replace(/→/g, ' a ') // Arrow (mispronounced)
+      .replace(/←/g, '') // Left arrow
+      .replace(/[©®™]/g, '') // Legal symbols
+      .replace(/°/g, ' grados ') // Degree
       // Remove emojis
       .replace(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]/gu, '')
+      // CJK and other problematic unicode blocks
+      .replace(/[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\uFF00-\uFFEF\u4E00-\u9FAF]/g, '')
       // Remove markdown
       .replace(/\*\*/g, '')
       .replace(/\*/g, '')
@@ -1045,6 +1097,8 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     startContinuousListening,
     stopContinuousListening,
     toggleListening,
+    pauseRecognition,
+    resumeRecognition,
     speak,
     pauseSpeech,
     resumeSpeech,
