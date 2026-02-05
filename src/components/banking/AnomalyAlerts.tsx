@@ -259,7 +259,7 @@ export function AnomalyAlerts() {
               <Bell className="h-5 w-5 text-primary" />
               {language === 'es' ? 'Alertas y Anomalías' : 'Alerts & Anomalies'}
             </CardTitle>
-            <CardDescription className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-2 mt-1">
               {criticalCount > 0 && (
                 <Badge variant="destructive" className="text-xs">
                   {criticalCount} {language === 'es' ? 'críticas' : 'critical'}
@@ -270,7 +270,7 @@ export function AnomalyAlerts() {
                   {warningCount} {language === 'es' ? 'advertencias' : 'warnings'}
                 </Badge>
               )}
-            </CardDescription>
+              </div>
           </div>
           <Button
             variant="ghost"
