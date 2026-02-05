@@ -34,6 +34,11 @@ import { Input } from '@/components/ui/input';
 import { BankingWelcomeExperience } from './BankingWelcomeExperience';
 import { FinancialHealthPanel } from './FinancialHealthPanel';
 import { SmartBudgetIntegration } from './SmartBudgetIntegration';
+ import { SpendingPredictor } from './SpendingPredictor';
+ import { SavingsOpportunityFinder } from './SavingsOpportunityFinder';
+ import { SubscriptionTracker } from './SubscriptionTracker';
+ import { CashFlowForecast } from './CashFlowForecast';
+ import { SmartInsightsEngine } from './SmartInsightsEngine';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -151,9 +156,25 @@ export function BankAnalysisDashboard({ onImportClick }: BankAnalysisDashboardPr
 
         {/* Financial Insights - only show when has transactions */}
         {totalTransactions > 0 && (
-          <div className="grid gap-4 lg:grid-cols-2">
-            <FinancialHealthPanel />
-            <SmartBudgetIntegration />
+          <div className="space-y-4">
+            {/* Row 1: Smart Insights + Spending Predictor */}
+            <div className="grid gap-4 lg:grid-cols-2">
+              <SmartInsightsEngine />
+              <SpendingPredictor />
+            </div>
+            
+            {/* Row 2: Cash Flow + Savings Opportunities */}
+            <div className="grid gap-4 lg:grid-cols-2">
+              <CashFlowForecast />
+              <SavingsOpportunityFinder />
+            </div>
+            
+            {/* Row 3: Financial Health + Budget + Subscriptions */}
+            <div className="grid gap-4 lg:grid-cols-3">
+              <FinancialHealthPanel />
+              <SmartBudgetIntegration />
+              <SubscriptionTracker />
+            </div>
           </div>
         )}
 
