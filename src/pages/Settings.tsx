@@ -24,6 +24,7 @@ import { useIsAdmin } from '@/hooks/data/useIsAdmin';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+ import { SoundPreferencesPanel } from '@/components/settings/SoundPreferencesPanel';
 
 // Lazy load heavy sections
 const DataPrivacyCard = lazy(() => import('@/components/settings/DataPrivacyCard').then(m => ({ default: m.DataPrivacyCard })));
@@ -186,6 +187,17 @@ export default function Settings() {
                 </div>
               </Suspense>
             </SettingsSection>
+ 
+             {/* Sound Preferences */}
+             <SettingsSection 
+               title={language === 'es' ? 'Sonidos' : 'Sounds'} 
+               icon={Settings2} 
+               isMobile={isMobile}
+             >
+               <div data-highlight="sound-preferences">
+                 <SoundPreferencesPanel language={language === 'es' ? 'es' : 'en'} />
+               </div>
+             </SettingsSection>
 
             {/* Theme Section */}
             <SettingsSection 
