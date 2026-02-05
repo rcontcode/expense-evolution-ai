@@ -57,6 +57,11 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   // ANTI-ECHO: Track if we're currently outputting audio to prevent self-transcription
   const isOutputtingAudioRef = useRef(false);
   const audioOutputCooldownRef = useRef<NodeJS.Timeout | null>(null);
+
+// DUPLICATE PREVENTION: Track last spoken text to prevent repeating
+const lastSpokenTextRef = useRef<string>('');
+const lastSpokenTimeRef = useRef<number>(0);
+const DUPLICATE_THRESHOLD_MS = 5000; // Don't repeat same text within 5 seconds
   
   // Accumulation for pause-based sending
   const accumulatedTextRef = useRef('');
@@ -486,20 +491,20 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
           if (audioOutputCooldownRef.current) clearTimeout(audioOutputCooldownRef.current);
           audioOutputCooldownRef.current = setTimeout(() => {
             isOutputtingAudioRef.current = false;
-          }, 1000);
+          }, 1800); // Extended cooldown to prevent self-transcription
           
           setTimeout(() => {
             if (continuousModeRef.current && !isPausedForSpeakingRef.current && !isOutputtingAudioRef.current) {
               createAndStartRecognition(true);
             }
-          }, 600);
-        }, 1500);
+          }, 1200); // Longer delay before restarting recognition
+        }, 2000); // Extended wait after speech ends
       } else {
         isPausedForSpeakingRef.current = false;
         if (audioOutputCooldownRef.current) clearTimeout(audioOutputCooldownRef.current);
         audioOutputCooldownRef.current = setTimeout(() => {
           isOutputtingAudioRef.current = false;
-        }, 800);
+        }, 1500);
       }
       return;
     }
@@ -659,6 +664,21 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   const speak = useCallback(async (text: string) => {
     if (!isSupported || !text) return;
 
+    // DUPLICATE PREVENTION: Check if we're about to repeat ourselves
+    const cleanedForDupeCheck = text.trim().toLowerCase().substring(0, 100);
+    const now = Date.now();
+    if (
+      cleanedForDupeCheck === lastSpokenTextRef.current.toLowerCase().substring(0, 100) &&
+      now - lastSpokenTimeRef.current < DUPLICATE_THRESHOLD_MS
+    ) {
+      console.log('[Voice] BLOCKED: Duplicate speech detected within threshold, skipping');
+      return;
+    }
+    
+    // Track this speech attempt
+    lastSpokenTextRef.current = text.trim();
+    lastSpokenTimeRef.current = now;
+
     // Block mic during speech
     isPausedForSpeakingRef.current = true;
     
@@ -701,19 +721,19 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
             if (audioOutputCooldownRef.current) clearTimeout(audioOutputCooldownRef.current);
             audioOutputCooldownRef.current = setTimeout(() => {
               isOutputtingAudioRef.current = false;
-            }, 1000);
+            }, 2000); // Extended cooldown for premium TTS
             setTimeout(() => {
               if (continuousModeRef.current && !isPausedForSpeakingRef.current && !isOutputtingAudioRef.current) {
                 createAndStartRecognition(true);
               }
-            }, 600);
-          }, 1200);
+            }, 1500); // Longer delay for recognition restart
+          }, 2500); // Longer pause after premium TTS ends
         } else {
           isPausedForSpeakingRef.current = false;
           if (audioOutputCooldownRef.current) clearTimeout(audioOutputCooldownRef.current);
           audioOutputCooldownRef.current = setTimeout(() => {
             isOutputtingAudioRef.current = false;
-          }, 800);
+          }, 1500);
         }
         return;
       }
