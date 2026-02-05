@@ -131,6 +131,15 @@ export const useDisplayPreferences = () => {
     }, 450);
   }, [flushSave]);
 
+  // Cleanup timer on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) {
+        window.clearTimeout(saveTimerRef.current);
+      }
+    };
+  }, []);
+
   // Stable callbacks that don't depend on `preferences` state directly
   const setViewMode = useCallback((mode: ViewMode) => {
     const newPreferences = { ...preferencesRef.current, view_mode: mode };

@@ -130,12 +130,12 @@ export function FinancialHabitsCard() {
             {/* Daily Habits */}
             {dailyHabits.length > 0 && (
               <div className="space-y-2">
-                <p className="text-sm font-medium flex items-center gap-1">
-                  {language === 'es' ? 'Diarios' : 'Daily'}
+              <div className="text-sm font-medium flex items-center gap-1">
+                  <span>{language === 'es' ? 'Diarios' : 'Daily'}</span>
                   <Badge variant="secondary" className="text-xs ml-1">
                     {dailyHabits.filter(h => h.completedToday).length}/{dailyHabits.length}
                   </Badge>
-                </p>
+                </div>
                 {dailyHabits.map((habit) => (
                   <div 
                     key={habit.id}
