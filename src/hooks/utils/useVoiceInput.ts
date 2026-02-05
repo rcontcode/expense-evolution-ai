@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
@@ -47,13 +47,21 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}) {
   const accumulatedTranscriptRef = useRef<string>('');
   const shouldRestartRef = useRef<boolean>(false);
   const maxDurationRef = useRef<NodeJS.Timeout | null>(null);
+  const restartCountRef = useRef<number>(0);
+  const lastRestartTimeRef = useRef<number>(0);
+  const isInitializingRef = useRef<boolean>(false);
 
   const voiceLanguage = options.language || (appLanguage === 'es' ? 'es-ES' : 'en-CA');
 
-  // Max recording duration: 60 seconds
+  // Constants
   const MAX_DURATION_MS = 60000;
+  const MAX_RESTARTS_PER_SECOND = 3;
+  const RESTART_COOLDOWN_MS = 500;
 
   useEffect(() => {
+    if (isInitializingRef.current) return;
+    isInitializingRef.current = true;
+    
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     setIsSupported(!!SpeechRecognition);
 
@@ -93,15 +101,11 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}) {
       };
 
       recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
+        console.log('[Voice] Recognition error:', event.error);
         
-        // Don't stop on no-speech error in continuous mode - just restart
-        if (event.error === 'no-speech' && shouldRestartRef.current) {
-          try {
-            recognition.start();
-          } catch (e) {
-            // Already running, ignore
-          }
+        // For aborted/no-speech errors, let onend handle restart logic
+        if (event.error === 'aborted' || event.error === 'no-speech') {
+          // Don't do anything here - onend will handle it with proper throttling
           return;
         }
         
@@ -127,12 +131,54 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}) {
       };
 
       recognition.onend = () => {
-        // Auto-restart if we should keep listening (handles browser auto-stop)
+        console.log('[Voice] Recognition ended, paused:', !shouldRestartRef.current, 'continuous:', options.continuous);
+        
+        // Throttle restarts to prevent infinite loops
         if (shouldRestartRef.current) {
+          const now = Date.now();
+          const timeSinceLastRestart = now - lastRestartTimeRef.current;
+          
+          // Reset counter if enough time has passed
+          if (timeSinceLastRestart > 1000) {
+            restartCountRef.current = 0;
+          }
+          
+          // Check if we're restarting too fast
+          if (restartCountRef.current >= MAX_RESTARTS_PER_SECOND) {
+            console.log('[Voice] Too many restarts, pausing...');
+            // Wait before trying again
+            setTimeout(() => {
+              restartCountRef.current = 0;
+              if (shouldRestartRef.current && recognitionRef.current) {
+                try {
+                  console.log('[Voice] Delayed restart after throttle');
+                  recognitionRef.current.start();
+                  lastRestartTimeRef.current = Date.now();
+                } catch (e) {
+                  console.log('[Voice] Delayed restart failed:', e);
+                  setIsListening(false);
+                  shouldRestartRef.current = false;
+                }
+              }
+            }, RESTART_COOLDOWN_MS);
+            return;
+          }
+          
+          // Normal restart with small delay
           try {
-            recognition.start();
+            restartCountRef.current++;
+            lastRestartTimeRef.current = now;
+            console.log('[Voice] Auto-restart in continuous mode');
+            setTimeout(() => {
+              if (shouldRestartRef.current && recognitionRef.current) {
+                try {
+                  recognitionRef.current.start();
+                } catch (e) {
+                  console.log('[Voice] Restart failed:', e);
+                }
+              }
+            }, 100); // Small delay to prevent rapid cycling
           } catch (e) {
-            // If can't restart, stop listening
             setIsListening(false);
             shouldRestartRef.current = false;
           }
@@ -143,6 +189,8 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}) {
 
       recognitionRef.current = recognition;
     }
+
+    isInitializingRef.current = false;
 
     return () => {
       if (recognitionRef.current) {
@@ -167,6 +215,8 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}) {
       setTranscript('');
       setIsListening(true);
       shouldRestartRef.current = true;
+      restartCountRef.current = 0;
+      lastRestartTimeRef.current = Date.now();
       
       // Set max duration timeout (60 seconds)
       if (maxDurationRef.current) {
@@ -192,6 +242,7 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}) {
 
   const stopListening = useCallback(() => {
     shouldRestartRef.current = false;
+    restartCountRef.current = 0;
     if (maxDurationRef.current) {
       clearTimeout(maxDurationRef.current);
       maxDurationRef.current = null;
