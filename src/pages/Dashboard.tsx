@@ -341,18 +341,27 @@ export default function Dashboard() {
                     {/* Text content */}
                     <div className="flex flex-col items-start text-left flex-1 z-10">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-lg bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
+                        <span className="font-bold text-lg bg-gradient-to-r from-primary via-accent to-amber-500 bg-clip-text text-transparent animate-pulse">
                           {language === 'es' ? 'Centro de Control Avanzado' : 'Advanced Control Center'}
                         </span>
-                        <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm">
+                        <span className="px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white shadow-lg shadow-orange-500/50 animate-pulse ring-2 ring-amber-400/30">
                           PRO
                         </span>
                       </div>
-                      <span className="text-sm text-muted-foreground mt-0.5">
-                        {language === 'es' 
-                          ? '📊 Gráficos • 🎯 Análisis • 🎓 Mentoría • 💰 Impuestos • 📈 Inversiones' 
-                          : '📊 Charts • 🎯 Analytics • 🎓 Mentorship • 💰 Taxes • 📈 Investments'}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 shadow-sm shadow-blue-500/20">
+                          📊 {language === 'es' ? 'Gráficos' : 'Charts'}
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-sm shadow-purple-500/20">
+                          🎯 {language === 'es' ? 'Análisis' : 'Analytics'}
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-sm shadow-amber-500/20">
+                          🎓 {language === 'es' ? 'Mentoría' : 'Mentorship'}
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm shadow-emerald-500/20">
+                          💰 {language === 'es' ? 'Más' : 'More'}
+                        </span>
+                      </div>
                     </div>
                     
                     {/* Chevron with enhanced animation */}
@@ -371,20 +380,20 @@ export default function Dashboard() {
                 </CollapsibleTrigger>
                 
                 <CollapsibleContent className="pt-4">
-                  <Card className="border-2 border-primary/20 bg-gradient-to-br from-card via-card to-accent/5 backdrop-blur-sm overflow-hidden shadow-xl" data-highlight="control-center">
+                  <Card className="border-2 border-primary/30 bg-gradient-to-br from-card via-primary/5 to-accent/10 backdrop-blur-sm overflow-hidden shadow-2xl shadow-primary/20 ring-1 ring-primary/10" data-highlight="control-center">
                     {/* Decorative header bar */}
-                    <div className="h-1.5 bg-gradient-to-r from-primary via-accent to-amber-500" />
+                    <div className="h-2 bg-gradient-to-r from-blue-500 via-purple-500 via-amber-500 to-rose-500 shadow-lg shadow-primary/30" />
                     
                     <CardHeader className="pb-4 pt-5">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20">
-                          <BarChart3 className="h-5 w-5 text-primary" />
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-primary via-accent to-amber-500 shadow-lg shadow-primary/40 animate-pulse">
+                          <BarChart3 className="h-6 w-6 text-white" />
                         </div>
                         <div>
-                          <CardTitle className="text-lg font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                          <CardTitle className="text-xl font-black bg-gradient-to-r from-primary via-accent to-amber-500 bg-clip-text text-transparent">
                             {language === 'es' ? 'Herramientas Avanzadas' : 'Advanced Tools'}
                           </CardTitle>
-                          <p className="text-xs text-muted-foreground mt-0.5">
+                          <p className="text-sm text-muted-foreground mt-1 font-medium">
                             {language === 'es' ? 'Potencia tu gestión financiera' : 'Power up your financial management'}
                           </p>
                         </div>
@@ -392,18 +401,22 @@ export default function Dashboard() {
                     </CardHeader>
                     <CardContent className="pt-0">
                       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                        <TabsList className="flex flex-wrap gap-2 h-auto bg-gradient-to-br from-muted/50 to-muted/30 p-2 rounded-xl border border-border/50">
+                        <TabsList className="flex flex-wrap gap-2 h-auto bg-gradient-to-br from-muted/80 via-muted/50 to-primary/10 p-3 rounded-2xl border-2 border-primary/20 shadow-inner">
                           {/* Charts Tab */}
                           <TabsTrigger 
                             value="charts" 
                             className={cn(
-                              "px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
+                              "px-5 py-3 text-sm font-bold rounded-xl transition-all duration-300 flex items-center gap-2",
                               "data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-blue-500",
-                              "data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/30",
-                              "hover:bg-blue-500/10"
+                              "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-blue-500/50 data-[state=active]:scale-105",
+                              "data-[state=active]:ring-2 data-[state=active]:ring-blue-400/50",
+                              "hover:bg-blue-500/20 hover:text-blue-400 hover:scale-102",
+                              "bg-blue-500/5 text-blue-600 dark:text-blue-400 border border-blue-500/20"
                             )}
                           >
-                            <BarChart3 className="h-4 w-4 mr-2" />
+                            <div className="p-1.5 rounded-lg bg-blue-500/20">
+                              <BarChart3 className="h-4 w-4" />
+                            </div>
                             {t('taxAnalysis.charts')}
                           </TabsTrigger>
                           
@@ -411,13 +424,17 @@ export default function Dashboard() {
                           <TabsTrigger 
                             value="analytics" 
                             className={cn(
-                              "px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
+                              "px-5 py-3 text-sm font-bold rounded-xl transition-all duration-300 flex items-center gap-2",
                               "data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-violet-500",
-                              "data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/30",
-                              "hover:bg-purple-500/10"
+                              "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-purple-500/50 data-[state=active]:scale-105",
+                              "data-[state=active]:ring-2 data-[state=active]:ring-purple-400/50",
+                              "hover:bg-purple-500/20 hover:text-purple-400 hover:scale-102",
+                              "bg-purple-500/5 text-purple-600 dark:text-purple-400 border border-purple-500/20"
                             )}
                           >
-                            <Scale className="h-4 w-4 mr-2" />
+                            <div className="p-1.5 rounded-lg bg-purple-500/20">
+                              <Scale className="h-4 w-4" />
+                            </div>
                             {language === 'es' ? 'Análisis' : 'Analytics'}
                           </TabsTrigger>
                           
@@ -425,13 +442,17 @@ export default function Dashboard() {
                           <TabsTrigger 
                             value="mentorship" 
                             className={cn(
-                              "px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
+                              "px-5 py-3 text-sm font-bold rounded-xl transition-all duration-300 flex items-center gap-2",
                               "data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500",
-                              "data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/30",
-                              "hover:bg-amber-500/10"
+                              "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-amber-500/50 data-[state=active]:scale-105",
+                              "data-[state=active]:ring-2 data-[state=active]:ring-amber-400/50",
+                              "hover:bg-amber-500/20 hover:text-amber-400 hover:scale-102",
+                              "bg-amber-500/5 text-amber-600 dark:text-amber-400 border border-amber-500/20"
                             )}
                           >
-                            <GraduationCap className="h-4 w-4 mr-2" />
+                            <div className="p-1.5 rounded-lg bg-amber-500/20">
+                              <GraduationCap className="h-4 w-4" />
+                            </div>
                             {language === 'es' ? 'Mentoría' : 'Mentorship'}
                           </TabsTrigger>
                           
@@ -441,13 +462,15 @@ export default function Dashboard() {
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                className="px-4 py-2.5 h-auto text-sm font-medium hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 rounded-lg transition-all"
+                                className="px-5 py-3 h-auto text-sm font-bold rounded-xl transition-all duration-300 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 hover:from-emerald-500/20 hover:to-teal-500/20 hover:scale-105 hover:shadow-lg hover:shadow-emerald-500/20"
                               >
-                                <MoreHorizontal className="h-4 w-4 mr-2 text-primary" />
-                                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-semibold">
+                                <div className="p-1.5 rounded-lg bg-emerald-500/20 mr-2">
+                                  <MoreHorizontal className="h-4 w-4 text-emerald-500" />
+                                </div>
+                                <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent font-bold">
                                   {language === 'es' ? 'Más' : 'More'}
                                 </span>
-                                <span className="ml-1.5 px-1.5 py-0.5 text-[9px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full">+6</span>
+                                <span className="ml-2 px-2 py-0.5 text-[10px] font-black bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-full shadow-lg shadow-rose-500/40 animate-pulse">+6</span>
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56 p-2 border-2 border-primary/20 bg-gradient-to-br from-card to-accent/5">
