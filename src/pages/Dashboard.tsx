@@ -36,6 +36,7 @@ import { useNudgeSystem } from '@/hooks/utils/useNudgeSystem';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileDashboard } from '@/components/dashboard/MobileDashboard';
 import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
+import { DashboardGamificationWidget } from '@/components/gamification';
 
 // Lazy load chart components for better performance
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
@@ -252,6 +253,9 @@ export default function Dashboard() {
           
           {/* Progressive Onboarding - Mission-based for new users */}
           <ProgressiveOnboarding />
+          
+          {/* Gamification Widget - Your Financial Adventure */}
+          <DashboardGamificationWidget compact={false} />
           
           {/* Interactive Guide - Shown on first visit or on demand */}
           {showGuide && (
