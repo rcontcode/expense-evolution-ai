@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { EntityProvider } from "@/contexts/EntityContext";
 import { HighlightProvider } from "@/contexts/HighlightContext";
+import { GamificationProvider } from "@/contexts/GamificationContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import { AuthenticatedRedirect } from "@/components/AuthenticatedRedirect";
@@ -173,6 +174,7 @@ const App = () => (
             <AuthProvider>
               <EntityProvider>
                 <HighlightProvider>
+                  <GamificationProvider>
                   <MissionListenerInitializer />
                   <LazyErrorBoundary name="Routes" fallback={<PageErrorFallback />}>
                     <Suspense fallback={<PageLoader />}>
@@ -230,6 +232,7 @@ const App = () => (
                   <Suspense fallback={null}>
                     <FeedbackButton />
                   </Suspense>
+                  </GamificationProvider>
                 </HighlightProvider>
               </EntityProvider>
             </AuthProvider>
