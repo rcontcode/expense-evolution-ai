@@ -1,12 +1,17 @@
  import { lazy, Suspense, memo, useEffect, useState, useRef, useCallback, useMemo, type ReactNode } from 'react';
+ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+ import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
  import { Skeleton } from '@/components/ui/skeleton';
-import { AreaSection } from './AreaSection';
+ import { SortableAreaWrapper } from './SortableAreaWrapper';
+ import { SwipeableAreaSection } from './SwipeableAreaSection';
+ import { AreaSearchBar } from './AreaSearchBar';
  import { FocusSelector } from './FocusSelector';
  import { ControlCenterHeader } from './ControlCenterHeader';
  import { ContextualGuide } from './ContextualGuide';
  import { EmptyAreaState } from './EmptyAreaState';
  import { AreaErrorBoundary } from './AreaErrorBoundary';
-import { FOCUS_AREA_ORDER, FocusAreaId } from '@/lib/constants/focus-areas';
+ import { AreaSection } from './AreaSection';
+ import { FOCUS_AREA_ORDER, FOCUS_AREAS, FocusAreaId } from '@/lib/constants/focus-areas';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { useLanguage } from '@/contexts/LanguageContext';
  import { AnimatePresence } from 'framer-motion';
@@ -64,14 +69,27 @@ const ImpuestosAreaContent = lazy(() => import('./areas/ImpuestosAreaContent').t
 
 export const OrganizedDashboard = memo(() => {
   const { language } = useLanguage();
-  const {
+   const [searchQuery, setSearchQuery] = useState('');
+   const [isMobile, setIsMobile] = useState(false);
+ 
+   // Detect mobile for swipe gestures
+   useEffect(() => {
+     const checkMobile = () => setIsMobile(window.innerWidth < 768);
+     checkMobile();
+     window.addEventListener('resize', checkMobile);
+     return () => window.removeEventListener('resize', checkMobile);
+   }, []);
+ 
+   const {
     activeAreas,
     isAreaCollapsed,
     toggleCollapsed,
     showFocusDialog,
     setShowFocusDialog,
     setActiveAreas,
-  } = useDisplayPreferences();
+     areaOrder,
+     setAreaOrder,
+   } = useDisplayPreferences();
   const [focusSelectorOpen, setFocusSelectorOpen] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const dialogShownRef = useRef(false);
@@ -85,11 +103,31 @@ export const OrganizedDashboard = memo(() => {
     }
   }, [showFocusDialog, setShowFocusDialog]);
 
-   // Memoize derived state
-   const visibleAreas = useMemo(
-     () => FOCUS_AREA_ORDER.filter((areaId) => activeAreas.includes(areaId)),
-     [activeAreas]
+ // Drag and drop sensors
+   const sensors = useSensors(
+     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
    );
+ 
+   // Memoize derived state with custom order
+   const orderedAreas = useMemo(() => {
+     const baseOrder = areaOrder || FOCUS_AREA_ORDER;
+     return baseOrder.filter((areaId) => activeAreas.includes(areaId));
+   }, [activeAreas, areaOrder]);
+ 
+   // Filter by search query
+   const visibleAreas = useMemo(() => {
+     if (!searchQuery.trim()) return orderedAreas;
+     const query = searchQuery.toLowerCase();
+     return orderedAreas.filter((areaId) => {
+       const area = FOCUS_AREAS[areaId];
+       return (
+         area?.name.es.toLowerCase().includes(query) ||
+         area?.name.en.toLowerCase().includes(query) ||
+         area?.description.es.toLowerCase().includes(query) ||
+         area?.description.en.toLowerCase().includes(query)
+       );
+     });
+   }, [orderedAreas, searchQuery]);
    
    const { allCollapsed, expandedCount } = useMemo(() => {
      const collapsed = visibleAreas.filter(areaId => isAreaCollapsed(areaId));
@@ -112,13 +150,28 @@ export const OrganizedDashboard = memo(() => {
     });
   }, [visibleAreas, isAreaCollapsed, toggleCollapsed]);
 
-  const handleCollapseAll = useCallback(() => {
-    visibleAreas.forEach(areaId => {
-      if (!isAreaCollapsed(areaId)) {
-        toggleCollapsed(areaId);
-      }
-    });
-  }, [visibleAreas, isAreaCollapsed, toggleCollapsed]);
+ const handleCollapseAll = useCallback(() => {
+     visibleAreas.forEach(areaId => {
+       if (!isAreaCollapsed(areaId)) {
+         toggleCollapsed(areaId);
+       }
+     });
+   }, [visibleAreas, isAreaCollapsed, toggleCollapsed]);
+ 
+   // Handle drag end for reordering
+   const handleDragEnd = useCallback((event: DragEndEvent) => {
+     const { active, over } = event;
+     if (over && active.id !== over.id) {
+       const oldIndex = orderedAreas.indexOf(active.id as FocusAreaId);
+       const newIndex = orderedAreas.indexOf(over.id as FocusAreaId);
+       const newOrder = arrayMove(orderedAreas, oldIndex, newIndex);
+       // Preserve any inactive areas in their original positions
+       const fullOrder = FOCUS_AREA_ORDER.map(areaId => 
+         newOrder.includes(areaId) ? newOrder[newOrder.indexOf(areaId)] : areaId
+       ).filter((v, i, a) => a.indexOf(v) === i) as FocusAreaId[];
+       setAreaOrder(fullOrder);
+     }
+   }, [orderedAreas, setAreaOrder]);
 
    return (
      <div className="space-y-6" role="region" aria-label={language === 'es' ? 'Centro de Control' : 'Control Center'}>
@@ -135,21 +188,44 @@ export const OrganizedDashboard = memo(() => {
        />
  
        {/* Contextual Guide */}
-       <AnimatePresence>
-         {showGuide && <ContextualGuide />}
-       </AnimatePresence>
+       {/* Search and Guide */}
+       <div className="flex items-center gap-4">
+         <AreaSearchBar value={searchQuery} onChange={setSearchQuery} />
+         <AnimatePresence>
+           {showGuide && <ContextualGuide />}
+         </AnimatePresence>
+       </div>
 
-      {/* Area Sections */}
-      {visibleAreas.map((areaId) => (
-        <AreaSection
-          key={areaId}
-          areaId={areaId}
-          isCollapsed={isAreaCollapsed(areaId)}
-          onToggleCollapse={() => handleToggleCollapse(areaId)}
-        >
-          <AreaContentRenderer areaId={areaId} isCollapsed={isAreaCollapsed(areaId)} />
-        </AreaSection>
-      ))}
+       {/* Area Sections with Drag & Drop */}
+       <DndContext
+         sensors={sensors}
+         collisionDetection={closestCenter}
+         onDragEnd={handleDragEnd}
+       >
+         <SortableContext items={visibleAreas} strategy={verticalListSortingStrategy}>
+           {visibleAreas.map((areaId, index) => (
+             <SortableAreaWrapper key={areaId} id={areaId} index={index}>
+               {isMobile ? (
+                 <SwipeableAreaSection
+                   areaId={areaId}
+                   isCollapsed={isAreaCollapsed(areaId)}
+                   onToggleCollapse={() => handleToggleCollapse(areaId)}
+                 >
+                   <AreaContentRenderer areaId={areaId} isCollapsed={isAreaCollapsed(areaId)} />
+                 </SwipeableAreaSection>
+               ) : (
+                 <AreaSection
+                   areaId={areaId}
+                   isCollapsed={isAreaCollapsed(areaId)}
+                   onToggleCollapse={() => handleToggleCollapse(areaId)}
+                 >
+                   <AreaContentRenderer areaId={areaId} isCollapsed={isAreaCollapsed(areaId)} />
+                 </AreaSection>
+               )}
+             </SortableAreaWrapper>
+           ))}
+         </SortableContext>
+       </DndContext>
 
        {/* Empty state */}
        {visibleAreas.length === 0 && (

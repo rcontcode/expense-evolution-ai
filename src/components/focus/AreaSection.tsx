@@ -1,4 +1,6 @@
-import { ReactNode, memo, useMemo } from 'react';
+ import { ReactNode, memo, useMemo } from 'react';
+ import { AreaStatsPreview } from './AreaStatsPreview';
+ import { AreaHealthBadge } from './AreaHealthBadge';
 import { ChevronDown, ChevronRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -127,13 +129,21 @@ export const AreaSection = memo(({
                         </motion.div>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {area.description[language as 'es' | 'en'] || area.description.es}
-                    </p>
-                  </div>
-                </div>
-                
-                <motion.div
+                     <p className="text-sm text-muted-foreground hidden sm:block">
+                       {area.description[language as 'es' | 'en'] || area.description.es}
+                     </p>
+                     {/* Show stats preview when collapsed */}
+                     {isCollapsed && (
+                       <div className="mt-1">
+                         <AreaStatsPreview areaId={areaId} />
+                       </div>
+                     )}
+                   </div>
+                 </div>
+                 
+                 <div className="flex items-center gap-2">
+                   <AreaHealthBadge areaId={areaId} />
+                   <motion.div
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
@@ -151,8 +161,9 @@ export const AreaSection = memo(({
                     ) : (
                       <ChevronDown className="h-5 w-5" />
                     )}
-                  </Button>
-                </motion.div>
+                     </Button>
+                   </motion.div>
+                 </div>
               </div>
             </CardHeader>
           </CollapsibleTrigger>

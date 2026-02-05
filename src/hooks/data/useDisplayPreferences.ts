@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -179,10 +179,15 @@ export const useDisplayPreferences = () => {
     savePreferences(newPreferences);
   }, [savePreferences]);
 
-  const setShowFocusDialog = useCallback((show: boolean) => {
-    const newPreferences = { ...preferencesRef.current, show_focus_dialog: show };
-    savePreferences(newPreferences);
-  }, [savePreferences]);
+ const setShowFocusDialog = useCallback((show: boolean) => {
+     const newPreferences = { ...preferencesRef.current, show_focus_dialog: show };
+     savePreferences(newPreferences);
+   }, [savePreferences]);
+ 
+   const setAreaOrder = useCallback((order: FocusAreaId[]) => {
+     const newPreferences = { ...preferencesRef.current, area_order: order };
+     savePreferences(newPreferences);
+   }, [savePreferences]);
 
   // Derived checks using useMemo to avoid new functions on each render
   const isAreaActive = useCallback((areaId: FocusAreaId) => {
@@ -193,33 +198,36 @@ export const useDisplayPreferences = () => {
     return preferences.collapsed_areas.includes(areaId);
   }, [preferences.collapsed_areas]);
 
-  return useMemo(() => ({
-    preferences,
-    isLoading,
-    isSaving,
-    viewMode: preferences.view_mode,
-    activeAreas: preferences.active_areas,
-    collapsedAreas: preferences.collapsed_areas,
-    showFocusDialog: preferences.show_focus_dialog,
-    setViewMode,
-    toggleArea,
-    toggleCollapsed,
-    activateAllAreas,
-    setActiveAreas,
-    isAreaActive,
-    isAreaCollapsed,
-    setShowFocusDialog
-  }), [
-    preferences,
-    isLoading,
-    isSaving,
-    setViewMode,
-    toggleArea,
-    toggleCollapsed,
-    activateAllAreas,
-    setActiveAreas,
-    isAreaActive,
-    isAreaCollapsed,
-    setShowFocusDialog
-  ]);
+ return useMemo(() => ({
+     preferences,
+     isLoading,
+     isSaving,
+     viewMode: preferences.view_mode,
+     activeAreas: preferences.active_areas,
+     collapsedAreas: preferences.collapsed_areas,
+     showFocusDialog: preferences.show_focus_dialog,
+     areaOrder: (preferences as any).area_order as FocusAreaId[] | undefined,
+     setViewMode,
+     toggleArea,
+     toggleCollapsed,
+     activateAllAreas,
+     setActiveAreas,
+     setAreaOrder,
+     isAreaActive,
+     isAreaCollapsed,
+     setShowFocusDialog
+   }), [
+     preferences,
+     isLoading,
+     isSaving,
+     setViewMode,
+     toggleArea,
+     toggleCollapsed,
+     activateAllAreas,
+     setActiveAreas,
+     setAreaOrder,
+     isAreaActive,
+     isAreaCollapsed,
+     setShowFocusDialog
+   ]);
 };
