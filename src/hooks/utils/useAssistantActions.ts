@@ -1,6 +1,31 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
+
+type IncomeType = Database['public']['Enums']['income_type'];
+
+// Map common income type strings to valid enum values
+const mapIncomeType = (type?: string): IncomeType => {
+  if (!type) return 'other';
+  const normalized = type.toLowerCase();
+  
+  if (normalized.includes('salario') || normalized.includes('salary') || normalized.includes('sueldo')) return 'salary';
+  if (normalized.includes('cliente') || normalized.includes('client')) return 'client_payment';
+  if (normalized.includes('bono') || normalized.includes('bonus')) return 'bonus';
+  if (normalized.includes('regalo') || normalized.includes('gift')) return 'gift';
+  if (normalized.includes('reembolso') || normalized.includes('refund')) return 'refund';
+  if (normalized.includes('acciones') || normalized.includes('stock')) return 'investment_stocks';
+  if (normalized.includes('crypto')) return 'investment_crypto';
+  if (normalized.includes('fondo') || normalized.includes('fund')) return 'investment_funds';
+  if (normalized.includes('arriendo') || normalized.includes('rental') || normalized.includes('alquiler')) return 'passive_rental';
+  if (normalized.includes('royalty') || normalized.includes('regalía')) return 'passive_royalties';
+  if (normalized.includes('online') || normalized.includes('negocio')) return 'online_business';
+  if (normalized.includes('freelance') || normalized.includes('independiente')) return 'freelance';
+  
+  return 'other';
+};
 
 interface ActionResult {
   success: boolean;
@@ -32,6 +57,11 @@ interface UseAssistantActionsOptions {
   onHighlight?: (target: string) => void;
   onActionStart?: (action: string, target?: string) => void;
   onActionComplete?: (action: string, result: ActionResult) => void;
+  onRunTutorial?: (tutorialId: string) => void;
+  onShowInsights?: (insightType: string) => void;
+  onSetGoal?: (goalData: Record<string, unknown>) => void;
+  onCreateExpense?: (data: { amount: number; vendor?: string; category?: string; description?: string }) => void;
+  onCreateIncome?: (data: { amount: number; source?: string; income_type?: string; description?: string }) => void;
 }
 
 const ROUTE_MAP: Record<string, string> = {
@@ -64,6 +94,11 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
     onHighlight,
     onActionStart,
     onActionComplete,
+    onRunTutorial,
+    onShowInsights,
+    onSetGoal,
+    onCreateExpense,
+    onCreateIncome,
   } = options;
   
   const navigate = useNavigate();
@@ -138,6 +173,158 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
             }
           }
           result = { success: true, message: action.message };
+          break;
+        }
+
+        case 'run_tutorial': {
+          const tutorialId = action.data?.tutorialId as string;
+          if (tutorialId) {
+            onRunTutorial?.(tutorialId);
+            const msg = language === 'es' 
+              ? 'Iniciando tutorial...' 
+              : 'Starting tutorial...';
+            toast.info(msg);
+            result = { success: true, message: action.message };
+          }
+          break;
+        }
+
+        case 'calculate_fire': {
+          // Navigate to mentorship where FIRE calculator is
+          navigate('/mentorship');
+          onNavigate?.('/mentorship');
+          const msg = language === 'es'
+            ? 'Te llevo al calculador FIRE...'
+            : 'Taking you to the FIRE calculator...';
+          toast.success(msg);
+          result = { success: true, message: action.message };
+          break;
+        }
+
+        case 'show_insights': {
+          const insightType = action.data?.insightType as string;
+          if (insightType) {
+            onShowInsights?.(insightType);
+            result = { success: true, message: action.message };
+          }
+          break;
+        }
+
+        case 'set_goal': {
+          if (action.data) {
+            onSetGoal?.(action.data);
+            // Navigate to settings where goals are configured
+            navigate('/settings');
+            onNavigate?.('/settings');
+            const msg = language === 'es'
+              ? 'Te llevo a configurar tu meta...'
+              : 'Taking you to set up your goal...';
+            toast.success(msg);
+            result = { success: true, message: action.message };
+          }
+          break;
+        }
+
+        case 'create_expense': {
+          const expenseData = action.data as { amount: number; vendor?: string; category?: string; description?: string };
+          if (expenseData && expenseData.amount) {
+            try {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) {
+                const { error } = await supabase.from('expenses').insert({
+                  user_id: user.id,
+                  amount: expenseData.amount,
+                  vendor: expenseData.vendor || 'Sin especificar',
+                  category: expenseData.category || 'other',
+                  description: expenseData.description || expenseData.vendor,
+                  date: new Date().toISOString().split('T')[0],
+                });
+
+                if (error) throw error;
+
+                onCreateExpense?.(expenseData);
+                const msg = language === 'es'
+                  ? `Gasto de $${expenseData.amount} registrado${expenseData.vendor ? ` en ${expenseData.vendor}` : ''}`
+                  : `Expense of $${expenseData.amount} recorded${expenseData.vendor ? ` at ${expenseData.vendor}` : ''}`;
+                toast.success(msg);
+                result = { success: true, message: action.message, data: expenseData };
+              }
+            } catch (err) {
+              console.error('[Assistant] Failed to create expense:', err);
+              const errMsg = language === 'es'
+                ? 'No pude registrar el gasto'
+                : 'Failed to record expense';
+              toast.error(errMsg);
+              result = { success: false, message: errMsg };
+            }
+          }
+          break;
+        }
+
+        case 'create_income': {
+          const incomeData = action.data as { amount: number; source?: string; income_type?: string; description?: string };
+          if (incomeData && incomeData.amount) {
+            try {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) {
+                const { error } = await supabase.from('income').insert({
+                  user_id: user.id,
+                  amount: incomeData.amount,
+                  source: incomeData.source || 'Sin especificar',
+                  income_type: mapIncomeType(incomeData.income_type),
+                  description: incomeData.description || incomeData.source,
+                  date: new Date().toISOString().split('T')[0],
+                });
+
+                if (error) throw error;
+
+                onCreateIncome?.(incomeData);
+                const msg = language === 'es'
+                  ? `Ingreso de $${incomeData.amount} registrado${incomeData.source ? ` de ${incomeData.source}` : ''}`
+                  : `Income of $${incomeData.amount} recorded${incomeData.source ? ` from ${incomeData.source}` : ''}`;
+                toast.success(msg);
+                result = { success: true, message: action.message, data: incomeData };
+              }
+            } catch (err) {
+              console.error('[Assistant] Failed to create income:', err);
+              const errMsg = language === 'es'
+                ? 'No pude registrar el ingreso'
+                : 'Failed to record income';
+              toast.error(errMsg);
+              result = { success: false, message: errMsg };
+            }
+          }
+          break;
+        }
+
+        case 'export': {
+          const reportType = action.data?.reportType as string;
+          const format = (action.data?.format as string) || 'excel';
+          // Navigate to reports section
+          navigate('/reports');
+          onNavigate?.('/reports');
+          const msg = language === 'es'
+            ? `Preparando reporte de ${reportType}...`
+            : `Preparing ${reportType} report...`;
+          toast.info(msg);
+          result = { success: true, message: action.message };
+          break;
+        }
+
+        case 'open': {
+          // Open a specific item
+          const targetRoute = action.route || (action.target ? ROUTE_MAP[action.target] : null);
+          if (targetRoute) {
+            navigate(targetRoute);
+            onNavigate?.(targetRoute);
+            // If we have an item name, we could search/highlight it
+            if (action.data?.itemName) {
+              setTimeout(() => {
+                onHighlight?.(action.data.itemName as string);
+              }, 500);
+            }
+            result = { success: true, message: action.message };
+          }
           break;
         }
 

@@ -266,21 +266,114 @@ const ASSISTANT_TOOLS = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "run_tutorial",
+      description: "Start an interactive tutorial to teach the user how to use a feature. Use when user asks 'how do I...', 'teach me...', 'show me how...', 'enseñame...', 'cómo se hace...'",
+      parameters: {
+        type: "object",
+        properties: {
+          tutorialId: {
+            type: "string",
+            enum: [
+              "add_expense", "add_income", "add_client", "add_project", 
+              "upload_receipt", "analyze_bank", "track_mileage", "add_asset",
+              "add_liability", "set_budget", "export_report", "use_ocr",
+              "voice_commands", "fire_calculator", "tax_optimizer"
+            ],
+            description: "ID of the tutorial to run",
+          },
+          message: {
+            type: "string",
+            description: "Brief message before starting the tutorial",
+          },
+        },
+        required: ["tutorialId", "message"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "calculate_fire",
+      description: "Calculate FIRE (Financial Independence, Retire Early) metrics. Use when user asks about retirement, financial independence, or FIRE.",
+      parameters: {
+        type: "object",
+        properties: {
+          monthlyExpenses: { type: "number", description: "User's monthly expenses (if provided)" },
+          currentSavings: { type: "number", description: "Current savings/investments (if provided)" },
+          monthlySavings: { type: "number", description: "How much they save per month (if provided)" },
+          targetAge: { type: "number", description: "Target retirement age (if provided)" },
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "show_insights",
+      description: "Show specific financial insights or analysis. Use when user asks for analysis, patterns, or insights.",
+      parameters: {
+        type: "object",
+        properties: {
+          insightType: {
+            type: "string",
+            enum: [
+              "spending_patterns", "income_sources", "category_breakdown", 
+              "monthly_comparison", "client_profitability", "project_roi",
+              "tax_deductions", "savings_opportunities", "recurring_charges",
+              "cash_flow", "debt_analysis", "net_worth_trend"
+            ],
+            description: "Type of insight to show",
+          },
+          message: {
+            type: "string",
+            description: "Explanation of the insight",
+          },
+        },
+        required: ["insightType", "message"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "set_goal",
+      description: "Help user set or track a financial goal. Use when user mentions saving for something, paying off debt, or achieving a target.",
+      parameters: {
+        type: "object",
+        properties: {
+          goalType: {
+            type: "string",
+            enum: ["savings", "debt_payoff", "investment", "expense_reduction", "income_increase", "fire", "emergency_fund"],
+            description: "Type of goal",
+          },
+          targetAmount: { type: "number", description: "Target amount if specified" },
+          deadline: { type: "string", description: "Target date if specified" },
+          message: { type: "string", description: "Motivational message about the goal" },
+        },
+        required: ["goalType", "message"],
+      },
+    },
+  },
 ];
 
 // ============================================================================
 // SYSTEM PROMPT - IA-First Conversational Assistant with COMPLETE APP KNOWLEDGE
 // ============================================================================
-const SYSTEM_PROMPT = `Eres Phoenix, un asistente financiero con inteligencia artificial REAL. Eres EXPERTO en finanzas personales, impuestos, inversiones y en TODA la funcionalidad de esta aplicación.
+const SYSTEM_PROMPT = `Eres Phoenix, un asistente financiero con inteligencia artificial AVANZADA. Eres EXPERTO en finanzas personales, impuestos, inversiones y DOMINAS COMPLETAMENTE esta aplicación.
 
 ## TU IDENTIDAD
-Eres el copiloto financiero personal del usuario. Tienes conocimiento profundo de:
+Eres el copiloto financiero personal del usuario - como tener un CFO personal en el bolsillo. Tienes conocimiento profundo de:
 - Finanzas personales y empresariales
 - Estrategias fiscales y deducciones
 - Inversiones y patrimonio neto
 - La metodología FIRE (Financial Independence, Retire Early)
 - Los mentores financieros: Robert Kiyosaki, Jim Rohn, Brian Tracy
 - TODA la funcionalidad de esta aplicación
+- Impuestos de Canadá (T2125, RRSP, TFSA) y Chile (SII, APV, boletas)
 
 ## CONOCIMIENTO COMPLETO DE LA APLICACIÓN
 
@@ -395,12 +488,16 @@ Eres el copiloto financiero personal del usuario. Tienes conocimiento profundo d
 - **APV** (Chile): Ahorro Previsional Voluntario, beneficios tributarios
 - **Formulario T2125** (Canadá): Declaración de ingresos de negocio
 - **Boletas de honorarios** (Chile): Documentos de servicios profesionales
+- **Régimen Pro-Pyme** (Chile): Beneficios para pequeñas empresas
+- **GST/HST** (Canadá): Impuesto a ventas para negocios
 
 ### Inversiones
 - **FIRE**: Financial Independence, Retire Early. Regla del 4%, tasa de retiro segura.
 - **Número FIRE**: 25x gastos anuales (o 300x gastos mensuales)
 - **Asignación de activos**: Diversificación entre acciones, bonos, inmuebles
 - **Interés compuesto**: Crecimiento exponencial del dinero
+- **ETFs vs Fondos Mutuos**: Costos, diversificación, liquidez
+- **Dollar Cost Averaging**: Invertir cantidades fijas periódicamente
 
 ### Mentoría Kiyosaki
 - **Padre Rico, Padre Pobre**: Activos generan ingresos, pasivos generan gastos
@@ -408,12 +505,14 @@ Eres el copiloto financiero personal del usuario. Tienes conocimiento profundo d
 - **Activos reales**: Lo que pone dinero en tu bolsillo
 - **Deuda buena**: Financia activos que generan flujo de efectivo
 - **Deuda mala**: Financia lujos que deprecian
+- **Flujo de efectivo**: Ingreso pasivo > gastos = libertad financiera
 
 ### Hábitos Financieros
 - **Págate primero**: Ahorra ANTES de gastar
 - **50/30/20**: 50% necesidades, 30% deseos, 20% ahorro
 - **Fondo de emergencia**: 3-6 meses de gastos
 - **Revisión semanal**: Revisa gastos cada semana
+- **Automatización**: Transferencias automáticas a ahorro/inversión
 
 ## CÓMO RESPONDER
 
@@ -421,29 +520,116 @@ Eres el copiloto financiero personal del usuario. Tienes conocimiento profundo d
 2. **Sé ESPECÍFICO**: Menciona secciones exactas de la app cuando sea útil
 3. **Sé PROACTIVO**: Sugiere funciones relevantes basándote en la pregunta
 4. **Sé MOTIVADOR**: Usa la filosofía de los mentores para inspirar
-5. **USA TOOLS solo cuando sea ACCIÓN**: navigate solo si piden ir, create_expense solo si dan monto
+5. **USA TOOLS cuando sea apropiado**:
+   - navigate: cuando piden ir a algún lado
+   - create_expense/income: cuando dan monto y concepto
+   - run_tutorial: cuando piden "cómo se hace", "enseñame", "muéstrame"
+   - calculate_fire: cuando preguntan por retiro/independencia financiera
+   - show_insights: cuando piden análisis o patrones
+   - set_goal: cuando mencionan metas financieras
+
+## COMANDOS DE VOZ QUE PUEDES EJECUTAR
+
+El usuario puede darte comandos de voz. Entiende estas variaciones:
+
+### Navegación
+- "Llévame a gastos" / "Ir a gastos" / "Abre gastos" → navigate(expenses)
+- "Muéstrame el dashboard" / "Volver al inicio" → navigate(dashboard)
+- "Quiero ver mis clientes" → navigate(clients)
+- "Abre patrimonio" / "Net worth" → navigate(networth)
+
+### Creación de Datos
+- "Gasté 50 pesos en Uber" → create_expense(50, "Uber", "transporte")
+- "Pagué 200 en Amazon" → create_expense(200, "Amazon")
+- "Recibí 5000 de trabajo" → create_income(5000, "trabajo", "freelance")
+- "Me pagaron 1000 del cliente X" → create_income(1000, "X", "client_payment")
+
+### Tutoriales y Ayuda
+- "¿Cómo agrego un gasto?" → run_tutorial(add_expense)
+- "Enseñame a usar el OCR" → run_tutorial(use_ocr)
+- "¿Cómo funciona el kilometraje?" → run_tutorial(track_mileage)
+- "Explícame el FIRE" → explain + navigate(mentorship) si quieren ver más
+
+### Análisis e Insights
+- "¿Cuánto gasté este mes?" → query_financial_data + respuesta
+- "¿En qué gasto más?" → show_insights(category_breakdown)
+- "Analiza mis gastos" → show_insights(spending_patterns)
+- "¿Cuánto puedo deducir?" → show_insights(tax_deductions)
 
 ## EJEMPLOS DE RESPUESTAS EXPERTAS
 
 Usuario: "¿Cómo puedo ahorrar más?"
 Tú: "¡Gran pregunta! Te sugiero el método 'Págate primero' de los mentores financieros: antes de pagar cualquier gasto, destina un % fijo a ahorro. En la app, ve a Configuración > Metas de Ahorro para establecer un objetivo. También puedes activar el seguimiento de Hábitos Financieros en la sección de Mentoría para crear una racha de ahorro diario. ¿Quieres que te lleve a alguna de estas secciones?"
 
+Usuario: "Gasté 150 en supermercado"
+Tú: [USAR TOOL create_expense con amount=150, vendor="supermercado", category="groceries"]
+
+Usuario: "¿Cómo subo un recibo?"
+Tú: [USAR TOOL run_tutorial con tutorialId="upload_receipt", message="Te muestro cómo subir un recibo paso a paso"]
+
+Usuario: "¿Cuánto necesito para retirarme?"
+Tú: [USAR TOOL calculate_fire] + explicación de la regla del 4% y número FIRE
+
+Usuario: "Analiza en qué gasto más"
+Tú: [USAR TOOL show_insights con insightType="category_breakdown"] + insights basados en contexto
+
 Usuario: "¿Qué es el cuadrante de Kiyosaki?"
-Tú: "El Cuadrante del Flujo de Efectivo de Robert Kiyosaki divide las formas de generar ingresos en 4 categorías: E (Empleado - trabajas por sueldo), S (Auto-empleado - eres tu propio jefe pero intercambias tiempo por dinero), B (Dueño de negocio - sistemas trabajan para ti), I (Inversor - tu dinero trabaja para ti). La libertad financiera viene de moverte del lado izquierdo (E-S) al derecho (B-I). ¡En la app tenemos esta herramienta en Mentoría para que analices dónde estás!"
+Tú: "El Cuadrante ESBI de Kiyosaki:
+
+• **E** (Empleado): Trabajas por sueldo, intercambias tiempo por dinero
+• **S** (Self-employed): Eres tu propio jefe, pero sigues vendiendo tu tiempo  
+• **B** (Business owner): Sistemas y personas trabajan para ti
+• **I** (Investor): Tu dinero trabaja para ti
+
+La libertad está en el lado derecho (B-I) donde generas ingresos pasivos.
+
+En la app tenemos esta herramienta en Mentoría. ¿Te llevo?"
+
+Usuario: "Llévame a gastos"
+Tú: [USAR TOOL navigate con target="expenses", message="Te llevo a la sección de gastos"]
 
 Usuario: "¿Cómo funciona el OCR?"
-Tú: "¡Es magia! 📸 Toma una foto de cualquier recibo o factura, súbela en Gastos o en el Centro de Revisión, y la IA extrae automáticamente: monto, fecha, comercio y categoría. Solo revisa que esté correcto y ¡listo! Ahorra horas de digitación manual. ¿Quieres probarlo?"
+Tú: "El OCR es como magia 📸
+
+1. Toma foto de tu recibo
+2. Súbelo en Gastos o Centro de Revisión  
+3. La IA extrae: monto, fecha, comercio, categoría
+
+¡Ahorra horas de digitación!
+
+¿Quieres que te enseñe paso a paso?"
 
 Usuario: "No entiendo mis impuestos"
-Tú: "¡Tranquilo, para eso estoy! 😊 Los impuestos se basan en: (1) tus ingresos totales, (2) menos las deducciones permitidas (gastos de negocio, RRSP, etc.), (3) = tu base imponible, (4) aplicando las tasas de tu país. En la app, la sección de Impuestos en el Centro de Control te muestra tu estimación automática. También tenemos optimizadores para RRSP/TFSA si estás en Canadá, o APV si estás en Chile. ¿Qué país te aplica?"
+Tú: "¡Tranquilo! 😊 Los impuestos son simples:
+
+**Ingresos** - **Deducciones** = **Base imponible**
+
+Las deducciones reducen lo que pagas. Ejemplos:
+• Gastos de negocio (materiales, software)
+• Home office (% de arriendo/hipoteca)
+• Transporte para trabajo
+• RRSP/APV (ahorro para retiro)
+
+En la app, la sección de Impuestos calcula tu estimación. ¿Estás en Canadá o Chile?"
+
+## CUANDO NO SEPAS ALGO
+
+Si te preguntan algo fuera de la app o que no sabes:
+- Admítelo con honestidad
+- Ofrece ayuda relacionada que SÍ puedas dar
+- Sugiere dónde podrían encontrar la info
+
+Ejemplo: "No tengo información sobre ese tema específico, pero puedo ayudarte con [algo relacionado que sí sé]. ¿Te interesa?"
 
 ## REGLAS CRÍTICAS
 1. SIEMPRE responde en el idioma del usuario
-2. **UBICACIÓN ACTUAL ES SAGRADA**: El campo "currentRoute" en el contexto te indica EXACTAMENTE dónde está el usuario. NUNCA asumas que está en otra página. Si ves "/net-worth", el usuario está en Patrimonio Neto, NO en Dashboard.
+2. **UBICACIÓN ACTUAL ES SAGRADA**: El campo "currentRoute" en el contexto te indica EXACTAMENTE dónde está el usuario. NUNCA asumas otra página. Si ves "/net-worth" = Patrimonio Neto, NO Dashboard.
 3. Demuestra conocimiento profundo de la app y finanzas
 4. Sugiere secciones específicas cuando sea relevante
 5. Sé conversacional pero experto
 6. Si preguntan algo fuera de tu conocimiento, admítelo con gracia pero ofrece ayuda relacionada
+7. **USA LOS TOOLS** cuando el usuario pide acciones, no solo respondas
+8. **PRIORIZA ACCIONES**: Si pueden hacer algo en la app, guíalos a hacerlo
 
 ## FORMATO DE RESPUESTAS (MUY IMPORTANTE)
 
@@ -582,6 +768,44 @@ function executeExportTool(args: { reportType: string; format?: string; period?:
     message: language === 'es' 
       ? `Preparando tu reporte de ${args.reportType}...`
       : `Preparing your ${args.reportType} report...`,
+  };
+}
+
+function executeRunTutorialTool(args: { tutorialId: string; message: string }) {
+  return {
+    action: 'run_tutorial',
+    data: { tutorialId: args.tutorialId },
+    message: args.message,
+  };
+}
+
+function executeCalculateFireTool(args: { monthlyExpenses?: number; currentSavings?: number; monthlySavings?: number; targetAge?: number }, language: 'es' | 'en') {
+  return {
+    action: 'calculate_fire',
+    data: args,
+    message: language === 'es'
+      ? 'Calculando tu número FIRE...'
+      : 'Calculating your FIRE number...',
+  };
+}
+
+function executeShowInsightsTool(args: { insightType: string; message: string }) {
+  return {
+    action: 'show_insights',
+    data: { insightType: args.insightType },
+    message: args.message,
+  };
+}
+
+function executeSetGoalTool(args: { goalType: string; targetAmount?: number; deadline?: string; message: string }) {
+  return {
+    action: 'set_goal',
+    data: {
+      goalType: args.goalType,
+      targetAmount: args.targetAmount,
+      deadline: args.deadline,
+    },
+    message: args.message,
   };
 }
 
@@ -743,6 +967,18 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
           break;
         case 'export_report':
           actionResponse = executeExportTool(toolArgs, language as 'es' | 'en');
+          break;
+        case 'run_tutorial':
+          actionResponse = executeRunTutorialTool(toolArgs);
+          break;
+        case 'calculate_fire':
+          actionResponse = executeCalculateFireTool(toolArgs, language as 'es' | 'en');
+          break;
+        case 'show_insights':
+          actionResponse = executeShowInsightsTool(toolArgs);
+          break;
+        case 'set_goal':
+          actionResponse = executeSetGoalTool(toolArgs);
           break;
         case 'explain_chart':
         case 'query_financial_data':
