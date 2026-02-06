@@ -47,7 +47,7 @@ export function useGamificationTriggers() {
 
   // Trigger gamification for an action
   const triggerAction = useCallback(async (config: GamificationConfig & {
-    tableName?: string;
+    tableName?: 'expenses' | 'income' | 'clients' | 'mileage' | 'contracts' | 'investment_goals' | 'financial_education';
     currentCount?: number;
   }) => {
     if (!user) return;
