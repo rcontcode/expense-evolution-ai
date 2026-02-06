@@ -63,13 +63,19 @@ export function useCreateIncome() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { trackAction } = useMissionTracker();
+  const { triggers } = useGamificationTriggers();
 
   return useMutation({
     mutationFn: async (data: IncomeFormData) => {
+      if (!user) throw new Error('Not authenticated');
+      
+      // Get current count BEFORE creating
+      const currentCount = await getTableCount('income', user.id);
+
       const { error, data: newIncome } = await supabase
         .from('income')
         .insert({
-          user_id: user!.id,
+          user_id: user.id,
           amount: data.amount,
           currency: data.currency,
           date: data.date.toISOString().split('T')[0],
@@ -88,10 +94,16 @@ export function useCreateIncome() {
         .single();
 
       if (error) throw error;
+      
+      // Trigger gamification
+      await triggers.income(currentCount);
+      
       return newIncome;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['income'] });
+      queryClient.invalidateQueries({ queryKey: ['user-level'] });
+      queryClient.invalidateQueries({ queryKey: ['user-achievements'] });
       // Track mission progress
       trackAction('add_income', 1);
       toast.success('Ingreso registrado');
