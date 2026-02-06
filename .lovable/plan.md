@@ -1,258 +1,137 @@
 
+# Plan: Sistema de Gestión de Leads + Integración GHL
 
-# Plan de Mejoras: Landing Page, Gamificación y Beta Testers
-
-## Diagnóstico Ejecutivo
-
-Tras una auditoría exhaustiva del código, identifiqué **3 sistemas funcionando en silos** que necesitan integración profunda y optimizaciones de conversión.
+## Resumen Ejecutivo
+Implementar un panel administrativo para gestionar leads del quiz dentro de EvoFinz, más configurar la integración con GoHighLevel para automatizar seguimiento por email/SMS.
 
 ---
 
-## 1. LANDING PAGE - Optimización de Conversión
+## Parte 1: Panel Admin de Leads (Lovable)
 
-### Problemas Detectados
+### 1.1 Nueva página `/admin/leads`
+Crear una interfaz para ver, filtrar y exportar leads:
 
-| Problema | Impacto | Evidencia |
-|----------|---------|-----------|
-| Archivo monolítico | Mantenibilidad pobre | `Landing.tsx` tiene 1,721 líneas |
-| Sin social proof dinámico | Baja confianza | Solo texto estático, sin contadores reales |
-| Sin urgencia real | Baja conversión | No hay límites ni escasez comunicada |
-| CTAs genéricos | Menos clics | "Comenzar Gratis" vs. mensajes personalizados |
-| Sin tracking de conversión | Cero datos | No hay eventos de analytics en CTAs |
+**Funcionalidades:**
+- Tabla con todos los leads del quiz
+- Filtros por: nivel (principiante/emergente/evolucionando/maestro), país, fecha, convertido
+- Búsqueda por nombre/email
+- Exportar a CSV/Excel
+- Marcar como "contactado" o "convertido"
+- Ver detalles del quiz (preguntas fallidas, score, etc.)
 
-### Mejoras Propuestas
-
-**A. Social Proof Dinámico**
-
-Crear componente `LiveSocialProof.tsx` que muestre:
-
-```text
-┌─────────────────────────────────────────┐
-│ 🔥 247 personas se unieron esta semana  │
-│ ⭐ 4.9/5 calificación promedio          │
-│ 🌎 Usuarios en 12 países                │
-└─────────────────────────────────────────┘
+**Componentes a crear:**
+```
+src/pages/admin/LeadsManagement.tsx  → Página principal
+src/components/admin/LeadsTable.tsx  → Tabla de leads
+src/components/admin/LeadFilters.tsx → Filtros
+src/components/admin/LeadDetail.tsx  → Modal con detalles
 ```
 
-- Datos reales desde Supabase (conteo de usuarios, países únicos)
-- Actualización cada 30 segundos con animación de incremento
-- Fallback a números mínimos si no hay suficientes datos
+### 1.2 Protección de acceso
+- Solo accesible para usuarios con rol `admin`
+- Agregar verificación en la ruta
 
-**B. Urgencia Estratégica**
+---
 
-Agregar banner de "spots limitados" para beta:
+## Parte 2: Integración GoHighLevel
 
-```text
-┌─────────────────────────────────────────┐
-│ ⏰ Solo 23 lugares Beta disponibles     │
-│    [████████░░] 77% lleno               │
-│    Precio especial expira en 48h        │
-└─────────────────────────────────────────┘
+### 2.1 Configurar webhook en GHL
+**Pasos que debes hacer en GHL:**
+1. Ir a Automations → Workflows → Create Workflow
+2. Trigger: "Inbound Webhook"
+3. Copiar la URL del webhook
+4. Agregar acciones: crear contacto, agregar a campaña, etc.
+
+### 2.2 Agregar secret en Lovable
+- Configurar `GHL_WEBHOOK_URL` con la URL del webhook
+
+### 2.3 El código ya está listo
+El edge function `send-quiz-lead` ya tiene la lógica para enviar a GHL:
+```typescript
+const ghlWebhookUrl = Deno.env.get("GHL_WEBHOOK_URL");
+if (ghlWebhookUrl) {
+  // Envía: first_name, last_name, email, phone, 
+  // country, situation, goal, obstacle, quiz_score, quiz_level
+}
 ```
 
-**C. CTAs Contextuales**
+---
 
-- Hora del día: "Empieza tu mañana productiva" vs "Termina el día organizado"
-- Scroll depth: CTAs más agresivos después del 60% de scroll
-- Personalización por referrer (Google vs directo vs social)
+## Parte 3: Secuencias de Email Sugeridas (en GHL)
 
-**D. Tracking de Conversión**
+### Secuencia "Post-Quiz"
+| Día | Email | Objetivo |
+|-----|-------|----------|
+| 0 | "Tu resultado: [nivel]" | Recordar score + CTA registro |
+| 1 | "3 tips para [su obstáculo]" | Valor + CTA |
+| 3 | "El 80% de [nivel] cometen este error" | Urgencia |
+| 7 | "Última oportunidad: acceso beta" | Escasez |
 
-Integrar con `useAnalytics` existente:
-- `trackEvent('cta_clicked', { location, variant, scroll_depth })`
-- `trackEvent('pricing_viewed', { plan, billing_period })`
-- `trackEvent('beta_code_entered', { valid: boolean })`
+### Segmentación automática
+Usar campos custom para segmentar:
+- `quiz_level` → Contenido por nivel
+- `obstacle` → Tips específicos
+- `goal` → CTAs personalizados
 
 ---
 
-## 2. GAMIFICACIÓN - Integración Automática
+## Estructura de Archivos a Crear
 
-### Problemas Detectados
+```
+src/pages/admin/
+  └── LeadsManagement.tsx      # Página principal de leads
 
-| Problema | Impacto | Evidencia |
-|----------|---------|-----------|
-| Triggers manuales | Logros no se desbloquean | `useUnlockAchievement` debe llamarse explícitamente |
-| Sin conexión a CRUD | Achievements perdidos | `useExpenses` no dispara `first_expense` automáticamente |
-| Celebraciones aisladas | Menos engagement | Solo se celebra en algunos lugares |
-| XP no integrado con Beta | Sistemas duplicados | Beta points ≠ Financial XP |
+src/components/admin/
+  ├── LeadsTable.tsx           # Tabla con datos
+  ├── LeadFilters.tsx          # Filtros de búsqueda
+  ├── LeadDetail.tsx           # Modal de detalle
+  └── LeadsExport.tsx          # Botón exportar CSV
 
-### Mejoras Propuestas
-
-**A. Hook de Triggers Automáticos**
-
-Crear `useGamificationTriggers.ts` que se inyecte en hooks de datos:
-
-```text
-┌─────────────────────────────────────────────────────┐
-│ useCreateExpense                                     │
-│   └── onSuccess                                      │
-│         ├── invalidateQueries                        │
-│         ├── trackAction('add_expense')    ✓ Existe  │
-│         ├── unlockAchievement('first_expense') 🆕   │
-│         ├── checkMilestone(expenses.length)    🆕   │
-│         └── awardXP(5)                         🆕   │
-└─────────────────────────────────────────────────────┘
+src/hooks/admin/
+  └── useLeadsManagement.ts    # Lógica de carga/filtros
 ```
 
-**B. Wrapper de Mutaciones Gamificadas**
+---
 
-Crear `withGamification()` HOC para mutaciones:
+## Detalles Técnicos
 
-```text
-const useCreateExpense = withGamification(
-  baseCreateExpense,
-  {
-    firstAction: 'first_expense',
-    milestones: { 10: 'expenses_10', 50: 'expenses_50', 100: 'expenses_100' },
-    xpPerAction: 5
-  }
-);
+### Query para cargar leads
+```sql
+SELECT 
+  id, name, email, phone, country, 
+  situation, goal, obstacle,
+  quiz_score, quiz_level, failed_questions,
+  converted_to_user, contacted_at,
+  created_at
+FROM quiz_leads
+ORDER BY created_at DESC
 ```
 
-**Hooks a modificar:**
-- `useExpenses.ts` - create/delete
-- `useIncome.ts` - create/delete  
-- `useClients.ts` - create
-- `useMileageEntries.ts` - create
-- `useSavingsGoals.ts` - create/contribute
-- `useBankTransactions.ts` - import
-
-**C. Celebraciones Contextuales**
-
-Expandir `GamificationCelebration` para soportar:
-- Mini-celebraciones (toast animado) para acciones pequeñas
-- Medium-celebraciones (modal pequeño) para milestones
-- Epic-celebraciones (fullscreen actual) para level-ups
-
-**D. Dashboard de Progreso Unificado**
-
-Mejorar `DashboardGamificationWidget` con:
-- "Siguiente logro más cercano" con progreso visual
-- Predicción de cuándo alcanzará el siguiente nivel
-- Comparación anónima con otros usuarios del mismo nivel
-
----
-
-## 3. BETA TESTERS - Unificación y Engagement
-
-### Problemas Detectados
-
-| Problema | Impacto | Evidencia |
-|----------|---------|-----------|
-| Puntos Beta aislados | Confusión de usuario | `beta_tester_points` ≠ `user_financial_level` |
-| Sin email engagement | Rachas perdidas | No hay recordatorios de racha |
-| Referrals sin seguimiento | Menos virality | No se celebra cuando alguien acepta invitación |
-| Feedback sin recompensa visible | Menos submissions | Toast genérico, no celebración |
-
-### Mejoras Propuestas
-
-**A. Unificación de Puntos**
-
-Crear sistema híbrido donde:
-- Puntos Beta contribuyen al XP financiero (ratio 2:1)
-- Nivel financiero desbloquea recompensas beta adicionales
-- Un solo "Perfil de Progreso" en el Dashboard
-
-```text
-┌─────────────────────────────────────────────────────┐
-│ 🏆 Tu Progreso Total                                 │
-│                                                      │
-│ ╭──────────────────────────────────────────────────╮│
-│ │ Financial XP: 450  │  Beta Points: 320          ││
-│ │ Combined Level: 7 ⭐                             ││
-│ ╰──────────────────────────────────────────────────╯│
-│                                                      │
-│ Próximo milestone: 🎯 500 XP → Nivel 8              │
-│ [██████████████░░░░░░] 90%                          │
-└─────────────────────────────────────────────────────┘
+### Campos a agregar en la tabla
+```sql
+ALTER TABLE quiz_leads 
+ADD COLUMN contacted_at TIMESTAMP,
+ADD COLUMN contact_notes TEXT,
+ADD COLUMN ghl_synced BOOLEAN DEFAULT false;
 ```
 
-**B. Sistema de Notificaciones Proactivas**
-
-Crear `BetaEngagementSystem`:
-
-| Trigger | Notificación | Canal |
-|---------|--------------|-------|
-| Racha en riesgo (22h sin actividad) | "¡No pierdas tu racha de 7 días!" | In-app + opcional email |
-| Referido aceptó invitación | "🎉 ¡Tu amigo Juan se unió!" + +100 pts | In-app celebración |
-| Nuevo feedback respondido | "El equipo respondió tu sugerencia" | In-app |
-| Cerca de siguiente tier | "¡Solo 50 puntos para Gold!" | In-app |
-
-**C. Celebraciones de Referrals**
-
-Cuando un referido se registra:
-1. Notificar al referrer inmediatamente
-2. Mostrar mini-celebración con confetti
-3. Incrementar contador visual en `ReferralCard`
-4. Agregar +1 slot de invitación bonus
-
-**D. Leaderboard Anónimo**
-
-Crear `BetaLeaderboard.tsx`:
-- Top 10 contribuidores (por puntos, anónimo o con opt-in)
-- Posición del usuario actual
-- Estadísticas de comunidad (total bugs reportados, features sugeridos)
+### Exportación CSV
+Usar la librería `xlsx` ya instalada para generar archivos exportables.
 
 ---
 
-## 4. ARQUITECTURA TÉCNICA
+## Próximos Pasos Inmediatos
 
-### Nuevos Archivos a Crear
+1. **Tú configuras en GHL:**
+   - Crear workflow con trigger "Inbound Webhook"
+   - Copiar URL del webhook
 
-| Archivo | Propósito |
-|---------|-----------|
-| `src/hooks/utils/useGamificationTriggers.ts` | Orquestador central de triggers |
-| `src/hooks/utils/withGamification.ts` | HOC para mutaciones |
-| `src/components/landing/LiveSocialProof.tsx` | Contadores dinámicos |
-| `src/components/landing/UrgencyBanner.tsx` | Escasez y tiempo limitado |
-| `src/components/beta/BetaLeaderboard.tsx` | Ranking de contribuidores |
-| `src/components/beta/ReferralCelebration.tsx` | Celebración de nuevos referidos |
-| `src/components/gamification/MiniCelebration.tsx` | Toasts animados |
-| `src/components/gamification/UnifiedProgressCard.tsx` | Beta + Financial combinado |
+2. **Yo implemento:**
+   - Panel admin de leads
+   - Agregar campos de seguimiento
+   - Configurar el secret GHL_WEBHOOK_URL
 
-### Archivos a Modificar
-
-| Archivo | Cambios |
-|---------|---------|
-| `src/hooks/data/useExpenses.ts` | Agregar triggers de gamificación |
-| `src/hooks/data/useIncome.ts` | Agregar triggers de gamificación |
-| `src/hooks/data/useClients.ts` | Agregar trigger `first_client` |
-| `src/hooks/data/useGamification.ts` | Agregar función `checkAndUnlock` |
-| `src/pages/Landing.tsx` | Integrar LiveSocialProof y UrgencyBanner |
-| `src/hooks/utils/useAnalytics.ts` | Agregar eventos de conversión |
-| `src/contexts/GamificationContext.tsx` | Soporte para mini/medium celebrations |
-
----
-
-## 5. PRIORIZACIÓN DE IMPLEMENTACIÓN
-
-### Fase 1: Quick Wins (Impacto inmediato)
-
-1. **Triggers automáticos en `useExpenses`/`useIncome`** - 30% más logros desbloqueados
-2. **LiveSocialProof en Landing** - +15% confianza estimada
-3. **Tracking de conversión en CTAs** - Datos para optimizar
-
-### Fase 2: Engagement (Retención)
-
-4. **Mini-celebraciones para acciones diarias** - Más dopamina, más retención
-5. **Celebración de referrals aceptados** - Más invitaciones enviadas
-6. **Unificación visual Beta + Financial XP** - Menos confusión
-
-### Fase 3: Virality (Crecimiento)
-
-7. **Urgency Banner con spots limitados** - +20% conversión estimada
-8. **Leaderboard de beta testers** - Competencia sana
-9. **Notificaciones de racha en riesgo** - Proteger streaks
-
----
-
-## Resumen de Impacto Esperado
-
-| Métrica | Estado Actual | Objetivo |
-|---------|---------------|----------|
-| Logros desbloqueados/usuario | ~3 | 8+ |
-| Tasa conversión Landing | Desconocida | Medible + optimizable |
-| Referrals por usuario | ~0.5 | 2+ |
-| Retención de racha | Variable | +40% |
-| Puntos beta promedio | ~150 | 400+ |
-
+3. **Opcional después:**
+   - Dashboard con métricas de conversión
+   - Alertas cuando llegan nuevos leads
+   - Integración bidireccional (GHL → Lovable)
