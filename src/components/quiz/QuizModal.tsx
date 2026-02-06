@@ -125,6 +125,12 @@ const getQuestions = (language: string) => ({
 export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizModalProps) => {
   const { language } = useLanguage();
   const questions = getQuestions(language);
+  const { saveProgress, loadProgress, clearProgress } = useQuizPersistence();
+  const { trackQuizStep, trackQuizAbandonment, trackQuizCompletion, trackQuizResume } = useAnalytics();
+  
+  const startTimeRef = useRef<number>(Date.now());
+  const [showExitIntent, setShowExitIntent] = useState(false);
+  const hasShownExitIntentRef = useRef(false);
 
   const [step, setStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -145,6 +151,74 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
   const [showEncouragement, setShowEncouragement] = useState<number | null>(null);
   
   const hasVipReferral = referralInfo?.isValid && referralInfo?.referrerName;
+
+  // Load persisted progress on mount
+  useEffect(() => {
+    if (isOpen) {
+      const persisted = loadProgress();
+      if (persisted && persisted.step > 1) {
+        setStep(persisted.step);
+        setFormData(persisted.formData);
+        setComments(persisted.comments);
+        trackQuizResume(persisted.step);
+        toast.success(
+          language === 'es' 
+            ? '¡Continuamos donde lo dejaste!' 
+            : 'Resuming where you left off!'
+        );
+      }
+      startTimeRef.current = Date.now();
+    }
+  }, [isOpen]);
+
+  // Save progress whenever step or formData changes
+  useEffect(() => {
+    if (isOpen && step > 0) {
+      saveProgress(step, formData, comments);
+    }
+  }, [step, formData, comments, isOpen, saveProgress]);
+
+  // Track step views
+  useEffect(() => {
+    if (isOpen) {
+      const stepName = getStepName(step);
+      trackQuizStep(step, stepName, 'view');
+    }
+  }, [step, isOpen]);
+
+  const getStepName = (stepNum: number): string => {
+    if (stepNum === 0) return 'situation';
+    if (stepNum === 1) return 'country';
+    if (stepNum === 2) return 'goal';
+    if (stepNum === 3) return 'obstacle';
+    if (stepNum === 4) return 'time_spent';
+    if (stepNum >= 5 && stepNum <= 14) return `practice_${stepNum - 4}`;
+    if (stepNum === 15) return 'comments';
+    if (stepNum === 16) return 'contact';
+    return 'unknown';
+  };
+
+  // Handle close with exit intent
+  const handleClose = () => {
+    // Only show exit intent if user has made progress and hasn't seen it yet
+    if (step >= 2 && step < TOTAL_STEPS - 1 && !hasShownExitIntentRef.current) {
+      setShowExitIntent(true);
+      hasShownExitIntentRef.current = true;
+      trackQuizAbandonment(step, getStepName(step), 'exit_intent');
+    } else {
+      trackQuizAbandonment(step, getStepName(step), 'close');
+      onClose();
+    }
+  };
+
+  const handleExitIntentContinue = () => {
+    setShowExitIntent(false);
+  };
+
+  const handleExitIntentClose = () => {
+    setShowExitIntent(false);
+    onClose();
+  };
 
   // Keyboard navigation - Enter to continue
   const handleKeyDown = (e: React.KeyboardEvent) => {
