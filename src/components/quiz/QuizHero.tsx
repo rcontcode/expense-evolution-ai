@@ -7,6 +7,8 @@ import { PhoenixLogo } from "@/components/ui/phoenix-logo";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { Link } from "react-router-dom";
 import { LiveSocialProof } from "@/components/landing/LiveSocialProof";
+import { ResumeQuizBanner } from "./ResumeQuizBanner";
+import { useQuizPersistence } from "@/hooks/quiz/useQuizPersistence";
 import type { ReferralInfo } from "@/pages/FinancialQuiz";
 
 interface QuizHeroProps {
@@ -16,6 +18,32 @@ interface QuizHeroProps {
 }
 
 export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizHeroProps) => {
+  const { language } = useLanguage();
+  const { hasPersistedData, loadProgress, clearProgress } = useQuizPersistence();
+  const [showResumeBanner, setShowResumeBanner] = useState(false);
+  const [savedStep, setSavedStep] = useState(0);
+  
+  // Check for saved progress on mount
+  useEffect(() => {
+    if (hasPersistedData) {
+      const persisted = loadProgress();
+      if (persisted && persisted.step > 1) {
+        setSavedStep(persisted.step);
+        setShowResumeBanner(true);
+      }
+    }
+  }, [hasPersistedData, loadProgress]);
+  
+  const handleResume = () => {
+    setShowResumeBanner(false);
+    onStartQuiz();
+  };
+  
+  const handleStartFresh = () => {
+    clearProgress();
+    setShowResumeBanner(false);
+    onStartQuiz();
+  };
   const { language } = useLanguage();
   
   // Animated today counter (starts at base and increments randomly)
