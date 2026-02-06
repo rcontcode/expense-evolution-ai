@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Check, X, Flame, Loader2, Sparkles, PartyPopper, Rocket, Trophy, Crown, Gift, Mail } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { QuizProgress } from "./QuizProgress";
+import { ExitIntentPopup } from "./ExitIntentPopup";
+import { useQuizPersistence } from "@/hooks/quiz/useQuizPersistence";
+import { useAnalytics } from "@/hooks/utils/useAnalytics";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { QuizData, QuizResult, ReferralInfo } from "@/pages/FinancialQuiz";
