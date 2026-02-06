@@ -183,8 +183,10 @@ export function useGamificationTriggers() {
   };
 }
 
+type CountableTable = 'expenses' | 'income' | 'clients' | 'mileage' | 'contracts' | 'investment_goals' | 'financial_education';
+
 // Helper to get current count before mutation
-export async function getTableCount(tableName: string, userId: string): Promise<number> {
+export async function getTableCount(tableName: CountableTable, userId: string): Promise<number> {
   const { count } = await supabase
     .from(tableName)
     .select('*', { count: 'exact', head: true })
