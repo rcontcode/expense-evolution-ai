@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { ExpenseWithRelations, ExpenseInsert, ExpenseUpdate, ExpenseFilters } from '@/types/expense.types';
 import { useToast } from '@/hooks/use-toast';
 import { useMissionTracker } from './useMissions';
+import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
+import { useAuth } from '@/contexts/AuthContext';
 export function useExpenses(filters?: ExpenseFilters) {
   return useQuery({
     queryKey: ['expenses', filters],
