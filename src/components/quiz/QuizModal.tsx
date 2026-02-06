@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Check, X, Flame, Loader2, Sparkles, PartyPopper, Rocket, Trophy, Crown, Gift, Mail } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { QuizProgress } from "./QuizProgress";
+import { ExitIntentPopup } from "./ExitIntentPopup";
+import { useQuizPersistence } from "@/hooks/quiz/useQuizPersistence";
+import { useAnalytics } from "@/hooks/utils/useAnalytics";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { QuizData, QuizResult, ReferralInfo } from "@/pages/FinancialQuiz";
@@ -122,6 +125,12 @@ const getQuestions = (language: string) => ({
 export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizModalProps) => {
   const { language } = useLanguage();
   const questions = getQuestions(language);
+  const { saveProgress, loadProgress, clearProgress } = useQuizPersistence();
+  const { trackQuizStep, trackQuizAbandonment, trackQuizCompletion, trackQuizResume } = useAnalytics();
+  
+  const startTimeRef = useRef<number>(Date.now());
+  const [showExitIntent, setShowExitIntent] = useState(false);
+  const hasShownExitIntentRef = useRef(false);
 
   const [step, setStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -142,6 +151,74 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
   const [showEncouragement, setShowEncouragement] = useState<number | null>(null);
   
   const hasVipReferral = referralInfo?.isValid && referralInfo?.referrerName;
+
+  // Load persisted progress on mount
+  useEffect(() => {
+    if (isOpen) {
+      const persisted = loadProgress();
+      if (persisted && persisted.step > 1) {
+        setStep(persisted.step);
+        setFormData(persisted.formData);
+        setComments(persisted.comments);
+        trackQuizResume(persisted.step);
+        toast.success(
+          language === 'es' 
+            ? '¡Continuamos donde lo dejaste!' 
+            : 'Resuming where you left off!'
+        );
+      }
+      startTimeRef.current = Date.now();
+    }
+  }, [isOpen]);
+
+  // Save progress whenever step or formData changes
+  useEffect(() => {
+    if (isOpen && step > 0) {
+      saveProgress(step, formData, comments);
+    }
+  }, [step, formData, comments, isOpen, saveProgress]);
+
+  // Track step views
+  useEffect(() => {
+    if (isOpen) {
+      const stepName = getStepName(step);
+      trackQuizStep(step, stepName, 'view');
+    }
+  }, [step, isOpen]);
+
+  const getStepName = (stepNum: number): string => {
+    if (stepNum === 0) return 'situation';
+    if (stepNum === 1) return 'country';
+    if (stepNum === 2) return 'goal';
+    if (stepNum === 3) return 'obstacle';
+    if (stepNum === 4) return 'time_spent';
+    if (stepNum >= 5 && stepNum <= 14) return `practice_${stepNum - 4}`;
+    if (stepNum === 15) return 'comments';
+    if (stepNum === 16) return 'contact';
+    return 'unknown';
+  };
+
+  // Handle close with exit intent
+  const handleClose = () => {
+    // Only show exit intent if user has made progress and hasn't seen it yet
+    if (step >= 2 && step < TOTAL_STEPS - 1 && !hasShownExitIntentRef.current) {
+      setShowExitIntent(true);
+      hasShownExitIntentRef.current = true;
+      trackQuizAbandonment(step, getStepName(step), 'exit_intent');
+    } else {
+      trackQuizAbandonment(step, getStepName(step), 'close');
+      onClose();
+    }
+  };
+
+  const handleExitIntentContinue = () => {
+    setShowExitIntent(false);
+  };
+
+  const handleExitIntentClose = () => {
+    setShowExitIntent(false);
+    onClose();
+  };
 
   // Keyboard navigation - Enter to continue
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -235,12 +312,22 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
   const handleNext = async () => {
     if (!validateStep()) return;
 
+    // Track step completion
+    trackQuizStep(step, getStepName(step), 'complete');
+
     if (step < TOTAL_STEPS - 1) {
       setStep(step + 1);
     } else {
       // Final step - calculate and send
       setIsSubmitting(true);
       const result = calculateScore();
+      
+      // Track completion with timing
+      const timeSpentSeconds = Math.round((Date.now() - startTimeRef.current) / 1000);
+      trackQuizCompletion(result.score, result.level, timeSpentSeconds);
+      
+      // Clear persisted data on successful completion
+      clearProgress();
       
       // Send lead data in background
       await sendQuizLead(result);
@@ -568,7 +655,7 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
         className="max-w-lg bg-gradient-to-b from-slate-900 to-slate-950 border-slate-800 p-0 overflow-hidden"
         onKeyDown={handleKeyDown}
@@ -629,6 +716,15 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
           ) : null}
         </div>
       </DialogContent>
+      
+      {/* Exit Intent Popup */}
+      <ExitIntentPopup
+        isOpen={showExitIntent}
+        onClose={handleExitIntentClose}
+        onContinue={handleExitIntentContinue}
+        currentStep={step}
+        totalSteps={TOTAL_STEPS}
+      />
     </Dialog>
   );
 };
