@@ -142,6 +142,40 @@ export const useAnalytics = () => {
     trackEvent('social_proof_viewed', { page: window.location.pathname });
   }, [trackEvent]);
 
+  // NEW: Quiz funnel tracking
+  const trackQuizStep = useCallback((step: number, stepName: string, action: 'view' | 'complete' | 'skip') => {
+    trackEvent('quiz_step', { 
+      step, 
+      step_name: stepName, 
+      action,
+      timestamp: Date.now() 
+    });
+  }, [trackEvent]);
+
+  const trackQuizAbandonment = useCallback((step: number, stepName: string, method: 'close' | 'exit_intent' | 'navigation') => {
+    trackEvent('quiz_abandoned', { 
+      step, 
+      step_name: stepName, 
+      method,
+      progress_percent: Math.round((step / 17) * 100)
+    });
+  }, [trackEvent]);
+
+  const trackQuizCompletion = useCallback((score: number, level: string, timeSpentSeconds: number) => {
+    trackEvent('quiz_completed', { 
+      score, 
+      level, 
+      time_spent_seconds: timeSpentSeconds 
+    });
+  }, [trackEvent]);
+
+  const trackQuizResume = useCallback((resumedStep: number) => {
+    trackEvent('quiz_resumed', { 
+      resumed_at_step: resumedStep,
+      progress_percent: Math.round((resumedStep / 17) * 100)
+    });
+  }, [trackEvent]);
+
   return {
     trackEvent,
     trackRegistration,
@@ -150,11 +184,16 @@ export const useAnalytics = () => {
     trackSubscriptionSuccess,
     trackFeatureUsage,
     trackError,
-    // New conversion tracking methods
+    // Conversion tracking methods
     trackCtaClick,
     trackPricingView,
     trackBetaCodeEntry,
     trackScrollDepth,
-    trackSocialProofView
+    trackSocialProofView,
+    // Quiz funnel tracking
+    trackQuizStep,
+    trackQuizAbandonment,
+    trackQuizCompletion,
+    trackQuizResume
   };
 };
