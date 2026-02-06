@@ -4,9 +4,11 @@ import { useMissionTracker } from '@/hooks/data/useMissions';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
+export type AchievementKey = keyof typeof ACHIEVEMENTS;
+
 export interface GamificationConfig {
-  firstActionAchievement?: keyof typeof ACHIEVEMENTS;
-  milestones?: Record<number, keyof typeof ACHIEVEMENTS>;
+  firstActionAchievement?: AchievementKey;
+  milestones?: Record<number, AchievementKey>;
   xpPerAction?: number;
   missionAction?: string;
 }
@@ -19,8 +21,8 @@ export function useGamificationTriggers() {
 
   // Check and unlock milestone achievements based on count
   const checkMilestones = useCallback(async (
-    tableName: string,
-    milestones: Record<number, keyof typeof ACHIEVEMENTS>
+    tableName: 'expenses' | 'income' | 'clients' | 'mileage' | 'contracts' | 'investment_goals' | 'financial_education',
+    milestones: Record<number, AchievementKey>
   ) => {
     if (!user) return;
 
