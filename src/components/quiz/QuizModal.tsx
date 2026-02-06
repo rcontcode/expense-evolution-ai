@@ -312,12 +312,22 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
   const handleNext = async () => {
     if (!validateStep()) return;
 
+    // Track step completion
+    trackQuizStep(step, getStepName(step), 'complete');
+
     if (step < TOTAL_STEPS - 1) {
       setStep(step + 1);
     } else {
       // Final step - calculate and send
       setIsSubmitting(true);
       const result = calculateScore();
+      
+      // Track completion with timing
+      const timeSpentSeconds = Math.round((Date.now() - startTimeRef.current) / 1000);
+      trackQuizCompletion(result.score, result.level, timeSpentSeconds);
+      
+      // Clear persisted data on successful completion
+      clearProgress();
       
       // Send lead data in background
       await sendQuizLead(result);
