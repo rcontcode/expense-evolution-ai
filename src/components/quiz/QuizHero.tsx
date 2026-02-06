@@ -44,7 +44,6 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
     setShowResumeBanner(false);
     onStartQuiz();
   };
-  const { language } = useLanguage();
   
   // Animated today counter (starts at base and increments randomly)
   const [todayEvaluations, setTodayEvaluations] = useState(47);
