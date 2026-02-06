@@ -2293,12 +2293,15 @@ export type Database = {
       }
       quiz_leads: {
         Row: {
+          contact_notes: string | null
+          contacted_at: string | null
           converted_at: string | null
           converted_to_user: boolean | null
           country: string | null
           created_at: string
           email: string
           failed_questions: number[] | null
+          ghl_synced: boolean | null
           goal: string | null
           id: string
           name: string
@@ -2311,12 +2314,15 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          contact_notes?: string | null
+          contacted_at?: string | null
           converted_at?: string | null
           converted_to_user?: boolean | null
           country?: string | null
           created_at?: string
           email: string
           failed_questions?: number[] | null
+          ghl_synced?: boolean | null
           goal?: string | null
           id?: string
           name: string
@@ -2329,12 +2335,15 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          contact_notes?: string | null
+          contacted_at?: string | null
           converted_at?: string | null
           converted_to_user?: boolean | null
           country?: string | null
           created_at?: string
           email?: string
           failed_questions?: number[] | null
+          ghl_synced?: boolean | null
           goal?: string | null
           id?: string
           name?: string
