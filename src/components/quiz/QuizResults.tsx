@@ -656,6 +656,16 @@ export const QuizResults = ({ result, onRetake, referralInfo, onNavigateToAuth }
         </motion.div>
       )}
 
+      {/* Urgency Banner - Compact variant */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, delay: 0.65 }}
+        className="mb-6"
+      >
+        <UrgencyBanner variant="compact" />
+      </motion.div>
+
       {/* EPIC CTA Section - VIP Enhanced */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
