@@ -578,17 +578,17 @@ export default function Notifications() {
                       >
                         <Button
                           variant="outline"
-                          className="w-full h-auto p-4 flex items-start gap-3 justify-start hover:bg-muted/50"
+                          className="w-full h-auto p-4 flex items-start gap-3 justify-start hover:bg-muted/50 overflow-hidden"
                           onClick={() => navigate(action.path)}
                         >
-                          <div className={cn("p-2 rounded-lg", action.color)}>
+                          <div className={cn("p-2 rounded-lg shrink-0", action.color)}>
                             <action.icon className="h-4 w-4" />
                           </div>
-                          <div className="text-left">
-                            <p className="font-medium text-sm">{action.label}</p>
-                            <p className="text-xs text-muted-foreground">{action.description}</p>
+                          <div className="text-left min-w-0 flex-1">
+                            <p className="font-medium text-sm truncate">{action.label}</p>
+                            <p className="text-xs text-muted-foreground truncate">{action.description}</p>
                           </div>
-                          <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
+                          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                         </Button>
                       </motion.div>
                     ))}
