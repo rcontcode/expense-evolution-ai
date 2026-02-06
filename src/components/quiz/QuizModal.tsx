@@ -716,6 +716,15 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
           ) : null}
         </div>
       </DialogContent>
+      
+      {/* Exit Intent Popup */}
+      <ExitIntentPopup
+        isOpen={showExitIntent}
+        onClose={handleExitIntentClose}
+        onContinue={handleExitIntentContinue}
+        currentStep={step}
+        totalSteps={TOTAL_STEPS}
+      />
     </Dialog>
   );
 };
