@@ -655,7 +655,7 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
         className="max-w-lg bg-gradient-to-b from-slate-900 to-slate-950 border-slate-800 p-0 overflow-hidden"
         onKeyDown={handleKeyDown}
