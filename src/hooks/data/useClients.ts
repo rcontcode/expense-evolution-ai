@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from '@/types/expense.types';
 import { useToast } from '@/hooks/use-toast';
+import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
 
 type ClientInsert = {
   name: string;
