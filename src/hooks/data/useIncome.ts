@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Income, IncomeWithRelations, IncomeFormData } from '@/types/income.types';
 import { useMissionTracker } from './useMissions';
+import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
 export interface IncomeFilters {
   year?: number;
   month?: number;
