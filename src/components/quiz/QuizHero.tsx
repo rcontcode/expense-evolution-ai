@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { PhoenixLogo } from "@/components/ui/phoenix-logo";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { Link } from "react-router-dom";
+import { LiveSocialProof } from "@/components/landing/LiveSocialProof";
 import type { ReferralInfo } from "@/pages/FinancialQuiz";
 
 interface QuizHeroProps {
