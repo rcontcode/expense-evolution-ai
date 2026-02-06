@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { PhoenixScoreAnimation } from "./PhoenixScoreAnimation";
 import { QuizRecommendations } from "./QuizRecommendations";
+import { UrgencyBanner } from "@/components/landing/UrgencyBanner";
 import type { QuizResult, ReferralInfo } from "@/pages/FinancialQuiz";
 import confetti from "canvas-confetti";
 
@@ -654,6 +655,16 @@ export const QuizResults = ({ result, onRetake, referralInfo, onNavigateToAuth }
           />
         </motion.div>
       )}
+
+      {/* Urgency Banner - Compact variant */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, delay: 0.65 }}
+        className="mb-6"
+      >
+        <UrgencyBanner variant="compact" />
+      </motion.div>
 
       {/* EPIC CTA Section - VIP Enhanced */}
       <motion.div

@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { PhoenixLogo } from "@/components/ui/phoenix-logo";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { Link } from "react-router-dom";
+import { LiveSocialProof } from "@/components/landing/LiveSocialProof";
 import type { ReferralInfo } from "@/pages/FinancialQuiz";
 
 interface QuizHeroProps {
@@ -349,35 +350,14 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         </p>
       </motion.div>
 
-      {/* Social Proof */}
+      {/* Live Social Proof - Dynamic Stats */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.6 }}
-        className="flex items-center gap-3 mb-12 px-4 py-2 rounded-full bg-slate-800/30 backdrop-blur-sm border border-slate-700/30"
+        className="mb-12"
       >
-        <div className="flex -space-x-2">
-          {[
-            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=64&h=64&fit=crop&crop=face",
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop&crop=face",
-            "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=64&h=64&fit=crop&crop=face",
-            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=face",
-            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face",
-          ].map((avatar, i) => (
-            <div
-              key={i}
-              className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-900 shadow-lg"
-            >
-              <img
-                src={avatar}
-                alt=""
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-            </div>
-          ))}
-        </div>
-        <span className="text-slate-400 text-sm font-medium">{t.socialProof}</span>
+        <LiveSocialProof />
       </motion.div>
 
       {/* Features */}
