@@ -164,6 +164,18 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
         <LanguageSelector />
       </div>
 
+      {/* Resume Quiz Banner */}
+      {showResumeBanner && (
+        <div className="w-full max-w-xl mb-4">
+          <ResumeQuizBanner
+            onResume={handleResume}
+            onStartFresh={handleStartFresh}
+            savedStep={savedStep}
+            totalSteps={17}
+          />
+        </div>
+      )}
+
       {/* VIP Referral Banner - Stunning golden design */}
       <AnimatePresence>
         {hasValidReferral && !isLoadingReferral && (
