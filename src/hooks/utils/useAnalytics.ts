@@ -112,6 +112,36 @@ export const useAnalytics = () => {
     trackEvent('error_occurred', { error, context });
   }, [trackEvent]);
 
+  // NEW: Track CTA clicks for conversion optimization
+  const trackCtaClick = useCallback((location: string, variant?: string, scrollDepth?: number) => {
+    trackEvent('cta_clicked', { 
+      location, 
+      variant, 
+      scroll_depth: scrollDepth,
+      page: window.location.pathname 
+    });
+  }, [trackEvent]);
+
+  // NEW: Track pricing section views
+  const trackPricingView = useCallback((plan: string, billingPeriod: 'monthly' | 'annual') => {
+    trackEvent('pricing_viewed', { plan, billingPeriod });
+  }, [trackEvent]);
+
+  // NEW: Track beta code entry
+  const trackBetaCodeEntry = useCallback((valid: boolean, code?: string) => {
+    trackEvent('beta_code_entered', { valid, code_length: code?.length });
+  }, [trackEvent]);
+
+  // NEW: Track scroll depth milestones
+  const trackScrollDepth = useCallback((depth: number) => {
+    trackEvent('scroll_depth_reached', { depth, page: window.location.pathname });
+  }, [trackEvent]);
+
+  // NEW: Track social proof interaction
+  const trackSocialProofView = useCallback(() => {
+    trackEvent('social_proof_viewed', { page: window.location.pathname });
+  }, [trackEvent]);
+
   return {
     trackEvent,
     trackRegistration,
@@ -119,6 +149,12 @@ export const useAnalytics = () => {
     trackCheckoutStart,
     trackSubscriptionSuccess,
     trackFeatureUsage,
-    trackError
+    trackError,
+    // New conversion tracking methods
+    trackCtaClick,
+    trackPricingView,
+    trackBetaCodeEntry,
+    trackScrollDepth,
+    trackSocialProofView
   };
 };

@@ -14,3 +14,4 @@ export { ReferralCard } from './ReferralCard';
 export { ScreenshotUpload } from './ScreenshotUpload';
 export { StreakFlame } from './StreakFlame';
 export { SystemAlertsBanner } from './SystemAlertsBanner';
+export { UnifiedProgressCard } from './UnifiedProgressCard';

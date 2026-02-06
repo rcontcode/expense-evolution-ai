@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from '@/types/expense.types';
 import { useToast } from '@/hooks/use-toast';
+import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
 
 type ClientInsert = {
   name: string;
@@ -29,11 +30,15 @@ export function useClients() {
 export function useCreateClient(defaultEntityId?: string) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { triggers } = useGamificationTriggers();
 
   return useMutation({
     mutationFn: async (client: ClientInsert) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
+
+      // Get current count BEFORE creating
+      const currentCount = await getTableCount('clients', user.id);
 
       const { data, error } = await supabase
         .from('clients')
@@ -46,10 +51,16 @@ export function useCreateClient(defaultEntityId?: string) {
         .single();
       
       if (error) throw error;
+      
+      // Trigger gamification
+      await triggers.client(currentCount);
+      
       return data as Client;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['user-level'] });
+      queryClient.invalidateQueries({ queryKey: ['user-achievements'] });
       toast({
         title: 'Client created',
         description: 'The client has been created successfully.',

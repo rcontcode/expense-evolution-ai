@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { ExpenseWithRelations, ExpenseInsert, ExpenseUpdate, ExpenseFilters } from '@/types/expense.types';
 import { useToast } from '@/hooks/use-toast';
 import { useMissionTracker } from './useMissions';
+import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
+import { useAuth } from '@/contexts/AuthContext';
 export function useExpenses(filters?: ExpenseFilters) {
   return useQuery({
     queryKey: ['expenses', filters],
@@ -128,25 +130,36 @@ export function useExpenses(filters?: ExpenseFilters) {
 export function useCreateExpense() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { trackAction } = useMissionTracker();
+  const { triggers } = useGamificationTriggers();
 
   return useMutation({
     // user_id is added automatically, so we don't require it from the caller
     mutationFn: async (expense: Omit<ExpenseInsert, 'user_id'>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('Not authenticated');
+
+      // Get current count BEFORE creating
+      const currentCount = await getTableCount('expenses', userData.user.id);
 
       const { data, error } = await supabase
         .from('expenses')
-        .insert({ ...expense, user_id: user.id })
+        .insert({ ...expense, user_id: userData.user.id })
         .select()
         .single();
       
       if (error) throw error;
+      
+      // Trigger gamification with current count
+      await triggers.expense(currentCount);
+      
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['user-level'] });
+      queryClient.invalidateQueries({ queryKey: ['user-achievements'] });
       // Track mission progress
       trackAction('add_expense', 1);
       trackAction('categorize_expense', 1);
