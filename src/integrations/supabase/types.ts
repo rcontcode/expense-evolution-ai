@@ -2293,6 +2293,7 @@ export type Database = {
       }
       quiz_leads: {
         Row: {
+          comments: string | null
           contact_notes: string | null
           contacted_at: string | null
           converted_at: string | null
@@ -2314,6 +2315,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          comments?: string | null
           contact_notes?: string | null
           contacted_at?: string | null
           converted_at?: string | null
@@ -2335,6 +2337,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          comments?: string | null
           contact_notes?: string | null
           contacted_at?: string | null
           converted_at?: string | null
