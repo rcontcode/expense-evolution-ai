@@ -293,6 +293,7 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
         quiz_score: result.score,
         quiz_level: result.level,
         failed_questions: result.failedQuestions,
+        comments: comments || undefined,
       };
 
       const { data, error } = await supabase.functions.invoke("send-quiz-lead", {

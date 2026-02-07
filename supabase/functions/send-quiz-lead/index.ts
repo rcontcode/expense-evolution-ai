@@ -18,6 +18,7 @@ interface QuizLeadPayload {
   quiz_score: number;
   quiz_level: string;
   failed_questions: number[];
+  comments?: string;
 }
 
 serve(async (req) => {
@@ -57,6 +58,7 @@ serve(async (req) => {
         quiz_score: payload.quiz_score,
         quiz_level: payload.quiz_level,
         failed_questions: payload.failed_questions,
+        comments: payload.comments || null,
       })
       .select()
       .single();
@@ -91,6 +93,7 @@ serve(async (req) => {
           quiz_score: payload.quiz_score,
           quiz_level: payload.quiz_level,
           failed_questions: payload.failed_questions.join(","),
+          comments: payload.comments || "",
           source: "EvoFinz Quiz",
           lead_id: savedLead.id,
         };
