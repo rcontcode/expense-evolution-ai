@@ -144,6 +144,9 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
     if (!voiceEnabled) return;
     if (!currentQuestion) return;
     if (!voiceAssistant.isSupported) return;
+    
+    // Don't try to speak if ElevenLabs is still speaking (prevents overlap)
+    if (isSpeaking || isLoadingVoice) return;
 
     const questionKey = `${currentQuestion.id}-${state.currentStep}`;
 
@@ -156,7 +159,8 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
     hasSpokenRef.current = questionKey;
 
     // Slight delay for audio to feel natural
-    const delay = !isInitializedRef.current ? 450 : 600;
+    // First mount: quick start. Subsequent: wait for previous audio to finish
+    const delay = !isInitializedRef.current ? 450 : 800;
 
     if (!isInitializedRef.current) {
       isInitializedRef.current = true;
@@ -166,12 +170,12 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
     const timeout = setTimeout(() => {
       if (!voiceEnabled) return;
       if (!voiceAssistant.isSupported) return;
-      console.log('[Onboarding] Auto-speaking:', textToSpeak.substring(0, 50) + '...');
+      console.log('[Onboarding] Auto-speaking step', state.currentStep + 1, ':', textToSpeak.substring(0, 50) + '...');
       voiceAssistant.speak(textToSpeak);
     }, delay);
 
     return () => clearTimeout(timeout);
-  }, [voiceEnabled, voiceAssistant.isSupported, currentQuestion?.id, state.currentStep, lang, voiceAssistant]);
+  }, [voiceEnabled, voiceAssistant.isSupported, currentQuestion?.id, state.currentStep, lang, voiceAssistant, isSpeaking, isLoadingVoice]);
 
   // Check if current question has a selection
   const currentField = currentQuestion?.field;
@@ -192,25 +196,19 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
     if (!currentQuestion?.allowMultiple) {
       setIsTyping(true);
       
-      if (voiceEnabled) {
-        const acks = lang === 'es' 
-          ? ['¡Excelente!', '¡Perfecto!', '¡Muy bien!', '¡Entendido!']
-          : ['Excellent!', 'Perfect!', 'Great!', 'Got it!'];
-        
-        // If from voice, add confirmation of what was selected
-        const ack = acks[Math.floor(Math.random() * acks.length)];
-        const confirmation = fromVoice 
-          ? `${ack} ${option.label[lang]}.`
-          : ack;
-        voiceAssistant.speak(confirmation);
-      }
+      // DON'T speak acknowledgment here - let the auto-speak useEffect handle the next question
+      // This prevents overlap between "¡Perfecto!" and the next question's intro
+      // The next question's intro already has enthusiastic energy
+      
+      // Clear the hasSpokenRef so the next question can be spoken
+      hasSpokenRef.current = null;
       
       setTimeout(() => {
         setIsTyping(false);
         nextStep();
-      }, fromVoice ? 1500 : 1000);
+      }, fromVoice ? 800 : 600);
     }
-  }, [currentQuestion, selectOption, nextStep, voiceEnabled, lang, voiceAssistant]);
+  }, [currentQuestion, selectOption, nextStep, voiceAssistant]);
 
   const handleOptionClick = useCallback((option: OnboardingOption) => {
     handleOptionClickInternal(option, false);
