@@ -111,18 +111,21 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
   useEffect(() => {
     if (!voiceEnabled || !currentQuestion) return;
     
-    const questionKey = `${currentQuestion.id}-${state.currentStep}`;
+    const questionKey = `${currentQuestion.id}-${state.currentStep}-${selectedPremiumVoiceId || 'native'}`;
     if (hasSpokenRef.current === questionKey) return;
     
     hasSpokenRef.current = questionKey;
     
+    // First question speaks faster, subsequent ones have a small delay
+    const delay = state.currentStep === 0 ? 800 : 600;
+    
     const timeout = setTimeout(() => {
       const textToSpeak = `${currentQuestion.phoenixIntro[lang]}. ${currentQuestion.question[lang]}`;
       speak(textToSpeak);
-    }, 600);
+    }, delay);
     
     return () => clearTimeout(timeout);
-  }, [currentQuestion, state.currentStep, voiceEnabled, lang, speak]);
+  }, [currentQuestion, state.currentStep, voiceEnabled, lang, speak, selectedPremiumVoiceId]);
 
   // Check if current question has a selection
   const currentField = currentQuestion?.field;
@@ -260,37 +263,43 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
     <div className="w-full max-w-2xl mx-auto space-y-6">
       {/* Progress bar with controls */}
       <div className="space-y-2">
-        <div className="flex justify-between items-center text-sm text-white/60">
-          <span>{lang === 'es' ? 'Paso' : 'Step'} {state.currentStep + 1} / {totalSteps}</span>
-          <div className="flex items-center gap-2">
-            <span>{Math.round(progress)}%</span>
+        <div className="flex justify-between items-center text-sm text-white/70">
+          <span className="font-medium">{lang === 'es' ? 'Paso' : 'Step'} {state.currentStep + 1} / {totalSteps}</span>
+          <div className="flex items-center gap-1">
+            <span className="text-white/50 mr-2">{Math.round(progress)}%</span>
             
+            {/* Voice Settings Button */}
             <Button
-              variant="ghost"
+              variant={showVoiceSettings ? "default" : "outline"}
               size="sm"
               onClick={() => setShowVoiceSettings(!showVoiceSettings)}
               className={cn(
-                "h-8 w-8 p-0 rounded-full",
-                showVoiceSettings ? "text-primary bg-primary/20" : "text-white/40"
+                "h-8 w-8 p-0 rounded-full border-2 transition-all",
+                showVoiceSettings 
+                  ? "bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/30" 
+                  : "border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-white/50"
               )}
             >
               <Settings2 className="h-4 w-4" />
             </Button>
             
+            {/* Voice Toggle Button */}
             <Button
-              variant="ghost"
+              variant={voiceEnabled ? "default" : "outline"}
               size="sm"
               onClick={toggleVoice}
               className={cn(
-                "h-8 w-8 p-0 rounded-full",
-                voiceEnabled ? "text-primary bg-primary/20" : "text-white/40"
+                "h-8 w-8 p-0 rounded-full border-2 transition-all",
+                voiceEnabled 
+                  ? "bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/30" 
+                  : "border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-white/50"
               )}
             >
               {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
             </Button>
           </div>
         </div>
-        <Progress value={progress} className="h-2" />
+        <Progress value={progress} className="h-2 bg-white/20" />
       </div>
 
       {/* Voice Settings Panel */}
