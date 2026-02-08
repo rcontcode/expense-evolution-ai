@@ -1,0 +1,411 @@
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, ChevronLeft, ChevronRight, Check, Mic, MicOff, Volume2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
+import { PhoenixLogo } from '@/components/ui/phoenix-logo';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useUpsertLifeProfile, useMarkSectionComplete, LifeProfileSection } from '@/hooks/data/useLifeProfile';
+import { useElevenLabsTTS } from '@/hooks/utils/useElevenLabsTTS';
+import { useVoicePreferences } from '@/hooks/utils/useVoicePreferences';
+import { useVoiceAssistant } from '@/hooks/utils/useVoiceAssistant';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+
+// Extended questions organized by section
+const EXTENDED_QUESTIONS: Record<LifeProfileSection, ExtendedQuestion[]> = {
+  family: [
+    {
+      id: 'children',
+      question: { es: '¿Tienes hijos?', en: 'Do you have children?' },
+      intro: { es: 'La familia es una gran motivación financiera.', en: 'Family is a great financial motivator.' },
+      field: 'has_children',
+      type: 'single',
+      options: [
+        { id: 'yes', label: { es: 'Sí', en: 'Yes' }, value: 'true', icon: '👨‍👧‍👦' },
+        { id: 'no', label: { es: 'No', en: 'No' }, value: 'false', icon: '🙋' },
+        { id: 'planning', label: { es: 'Planeando', en: 'Planning' }, value: 'planning', icon: '🍼' },
+      ],
+    },
+    {
+      id: 'pets',
+      question: { es: '¿Tienes mascotas?', en: 'Do you have pets?' },
+      intro: { es: 'Las mascotas también son parte del presupuesto familiar.', en: 'Pets are also part of the family budget.' },
+      field: 'pets',
+      type: 'multiple',
+      options: [
+        { id: 'dog', label: { es: 'Perro', en: 'Dog' }, value: 'dog', icon: '🐕' },
+        { id: 'cat', label: { es: 'Gato', en: 'Cat' }, value: 'cat', icon: '🐱' },
+        { id: 'other', label: { es: 'Otro', en: 'Other' }, value: 'other', icon: '🐾' },
+        { id: 'none', label: { es: 'Ninguna', en: 'None' }, value: 'none', icon: '❌' },
+      ],
+    },
+  ],
+  work: [
+    {
+      id: 'job_title',
+      question: { es: '¿Cuál es tu profesión o puesto?', en: 'What\'s your profession or job title?' },
+      intro: { es: 'Conocer tu trabajo me ayuda a dar consejos más específicos.', en: 'Knowing your job helps me give more specific advice.' },
+      field: 'job_title',
+      type: 'text',
+      placeholder: { es: 'Ej: Ingeniero de Software, Contador, Freelancer...', en: 'E.g.: Software Engineer, Accountant, Freelancer...' },
+    },
+    {
+      id: 'side_hustle',
+      question: { es: '¿Tienes algún proyecto extra o negocio secundario?', en: 'Do you have any side project or secondary business?' },
+      intro: { es: 'Los ingresos extra pueden acelerar tus metas.', en: 'Extra income can accelerate your goals.' },
+      field: 'side_hustle',
+      type: 'single',
+      options: [
+        { id: 'yes', label: { es: 'Sí', en: 'Yes' }, value: 'true', icon: '🚀' },
+        { id: 'no', label: { es: 'No, pero me interesa', en: 'No, but interested' }, value: 'interested', icon: '🤔' },
+        { id: 'none', label: { es: 'No, enfocado en mi trabajo', en: 'No, focused on my job' }, value: 'false', icon: '💼' },
+      ],
+    },
+  ],
+  lifestyle: [
+    {
+      id: 'hobbies',
+      question: { es: '¿Qué te apasiona hacer en tu tiempo libre?', en: 'What do you love doing in your free time?' },
+      intro: { es: 'Tus pasiones me ayudan a motivarte de forma personal. 🎯', en: 'Your passions help me motivate you personally. 🎯' },
+      field: 'hobbies',
+      type: 'multiple',
+      options: [
+        { id: 'sports', label: { es: 'Deportes', en: 'Sports' }, value: 'sports', icon: '⚽' },
+        { id: 'gaming', label: { es: 'Videojuegos', en: 'Gaming' }, value: 'gaming', icon: '🎮' },
+        { id: 'reading', label: { es: 'Lectura', en: 'Reading' }, value: 'reading', icon: '📖' },
+        { id: 'travel', label: { es: 'Viajar', en: 'Travel' }, value: 'travel', icon: '✈️' },
+        { id: 'music', label: { es: 'Música', en: 'Music' }, value: 'music', icon: '🎵' },
+        { id: 'cooking', label: { es: 'Cocinar', en: 'Cooking' }, value: 'cooking', icon: '👨‍🍳' },
+      ],
+    },
+    {
+      id: 'daily_routine',
+      question: { es: '¿Cómo es tu rutina diaria?', en: 'What\'s your daily routine like?' },
+      intro: { es: 'Tu estilo de vida influye en cómo ahorrar mejor.', en: 'Your lifestyle influences how to save better.' },
+      field: 'daily_routine',
+      type: 'single',
+      options: [
+        { id: 'morning', label: { es: 'Madrugador', en: 'Morning person' }, value: 'morning_person', icon: '🌅' },
+        { id: 'night', label: { es: 'Noctámbulo', en: 'Night owl' }, value: 'night_owl', icon: '🌙' },
+        { id: 'flexible', label: { es: 'Flexible', en: 'Flexible' }, value: 'flexible', icon: '⏰' },
+      ],
+    },
+  ],
+  dreams: [
+    {
+      id: 'life_dreams',
+      question: { es: '¿Cuál es tu mayor sueño en la vida?', en: 'What\'s your biggest dream in life?' },
+      intro: { es: 'Los sueños grandes necesitan planes financieros sólidos. ✨', en: 'Big dreams need solid financial plans. ✨' },
+      field: 'life_dreams',
+      type: 'multiple',
+      options: [
+        { id: 'home', label: { es: 'Casa propia', en: 'Own a home' }, value: 'own_home', icon: '🏠' },
+        { id: 'travel', label: { es: 'Viajar por el mundo', en: 'Travel the world' }, value: 'travel_world', icon: '🌍' },
+        { id: 'retire', label: { es: 'Retirarme joven', en: 'Retire early' }, value: 'retire_early', icon: '🏖️' },
+        { id: 'business', label: { es: 'Mi propio negocio', en: 'Start a business' }, value: 'start_business', icon: '🚀' },
+        { id: 'freedom', label: { es: 'Libertad financiera', en: 'Financial freedom' }, value: 'financial_freedom', icon: '🦅' },
+      ],
+    },
+    {
+      id: 'motivations',
+      question: { es: '¿Qué te motiva a mejorar tus finanzas?', en: 'What motivates you to improve your finances?' },
+      intro: { es: 'Tu "por qué" es clave para mantenerte enfocado.', en: 'Your "why" is key to staying focused.' },
+      field: 'motivations',
+      type: 'multiple',
+      options: [
+        { id: 'family', label: { es: 'Mi familia', en: 'My family' }, value: 'family', icon: '👨‍👩‍👧' },
+        { id: 'freedom', label: { es: 'Libertad', en: 'Freedom' }, value: 'freedom', icon: '🦅' },
+        { id: 'security', label: { es: 'Seguridad', en: 'Security' }, value: 'security', icon: '🛡️' },
+        { id: 'experiences', label: { es: 'Vivir experiencias', en: 'Live experiences' }, value: 'experiences', icon: '🎯' },
+        { id: 'peace', label: { es: 'Tranquilidad', en: 'Peace of mind' }, value: 'peace', icon: '☮️' },
+      ],
+    },
+  ],
+  psychology: [
+    {
+      id: 'money_personality',
+      question: { es: '¿Cómo es tu relación con el dinero?', en: 'What\'s your relationship with money?' },
+      intro: { es: 'Ser honesto te ayudará a identificar patrones.', en: 'Being honest will help you identify patterns.' },
+      field: 'money_personality',
+      type: 'single',
+      options: [
+        { id: 'saver', label: { es: 'Ahorrador', en: 'Saver' }, value: 'saver', icon: '🐿️' },
+        { id: 'spender', label: { es: 'Gastador', en: 'Spender' }, value: 'spender', icon: '🛍️' },
+        { id: 'avoider', label: { es: 'Evitador', en: 'Avoider' }, value: 'avoider', icon: '🙈' },
+        { id: 'worrier', label: { es: 'Preocupado', en: 'Worrier' }, value: 'worrier', icon: '😰' },
+        { id: 'planner', label: { es: 'Planificador', en: 'Planner' }, value: 'planner', icon: '📋' },
+      ],
+    },
+    {
+      id: 'fears',
+      question: { es: '¿Cuál es tu mayor miedo financiero?', en: 'What\'s your biggest financial fear?' },
+      intro: { es: 'Conocer tus miedos me permite ayudarte a superarlos. 💪', en: 'Knowing your fears helps me help you overcome them. 💪' },
+      field: 'biggest_fears',
+      type: 'multiple',
+      options: [
+        { id: 'debt', label: { es: 'Quedar endeudado', en: 'Getting into debt' }, value: 'debt', icon: '📉' },
+        { id: 'job_loss', label: { es: 'Perder mi trabajo', en: 'Losing my job' }, value: 'job_loss', icon: '💼' },
+        { id: 'emergency', label: { es: 'Emergencia inesperada', en: 'Unexpected emergency' }, value: 'emergency', icon: '🚨' },
+        { id: 'retirement', label: { es: 'No poder retirarme', en: 'Can\'t retire' }, value: 'no_retirement', icon: '👴' },
+      ],
+    },
+  ],
+};
+
+interface ExtendedQuestion {
+  id: string;
+  question: { es: string; en: string };
+  intro: { es: string; en: string };
+  field: string;
+  type: 'single' | 'multiple' | 'text';
+  options?: { id: string; label: { es: string; en: string }; value: string; icon?: string }[];
+  placeholder?: { es: string; en: string };
+}
+
+interface ProfileExtenderDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  section: LifeProfileSection;
+  onComplete?: () => void;
+}
+
+export function ProfileExtenderDialog({ 
+  open, 
+  onOpenChange, 
+  section,
+  onComplete 
+}: ProfileExtenderDialogProps) {
+  const { language } = useLanguage();
+  const lang = language as 'es' | 'en';
+  const voicePrefs = useVoicePreferences();
+  
+  const [currentStep, setCurrentStep] = useState(0);
+  const [responses, setResponses] = useState<Record<string, string | string[]>>({});
+  const [isTyping, setIsTyping] = useState(false);
+  const hasSpokenRef = useRef<string | null>(null);
+  
+  const questions = EXTENDED_QUESTIONS[section] || [];
+  const currentQuestion = questions[currentStep];
+  const progress = ((currentStep + 1) / questions.length) * 100;
+  
+  const upsertLifeProfile = useUpsertLifeProfile();
+  const markSectionComplete = useMarkSectionComplete();
+  
+  // Voice setup
+  const selectedPremiumVoiceId = voicePrefs.getPremiumVoiceId(lang) || undefined;
+  const elevenLabsTTS = useElevenLabsTTS({
+    voiceId: selectedPremiumVoiceId,
+    lang,
+    voiceGender: voicePrefs.voiceGender === 'auto' ? 'female' : voicePrefs.voiceGender,
+  });
+  
+  const voiceAssistant = useVoiceAssistant({
+    speechSpeed: voicePrefs.speechSpeed,
+    volume: voicePrefs.volume,
+    pitch: voicePrefs.pitch,
+    voiceGender: voicePrefs.voiceGender === 'auto' ? 'female' : voicePrefs.voiceGender,
+    selectedVoiceName: voicePrefs.selectedVoiceName,
+    premiumSpeak: elevenLabsTTS.speak,
+    isPremiumSpeaking: elevenLabsTTS.isSpeaking,
+  });
+  
+  const isSpeaking = voiceAssistant.isSpeaking || elevenLabsTTS.isSpeaking;
+  
+  // Speak question when it changes
+  useEffect(() => {
+    if (!open || !currentQuestion) return;
+    
+    const questionKey = `${section}-${currentQuestion.id}`;
+    if (hasSpokenRef.current === questionKey) return;
+    hasSpokenRef.current = questionKey;
+    
+    const timeout = setTimeout(() => {
+      const text = `${currentQuestion.intro[lang]}. ${currentQuestion.question[lang]}`;
+      voiceAssistant.speak(text);
+    }, 500);
+    
+    return () => clearTimeout(timeout);
+  }, [open, currentQuestion, section, lang]);
+  
+  // Reset on open
+  useEffect(() => {
+    if (open) {
+      setCurrentStep(0);
+      setResponses({});
+      hasSpokenRef.current = null;
+    }
+  }, [open, section]);
+  
+  const handleOptionSelect = useCallback((value: string) => {
+    if (!currentQuestion) return;
+    
+    if (currentQuestion.type === 'multiple') {
+      const current = (responses[currentQuestion.field] as string[]) || [];
+      const newValues = current.includes(value)
+        ? current.filter(v => v !== value)
+        : [...current, value];
+      setResponses(prev => ({ ...prev, [currentQuestion.field]: newValues }));
+    } else {
+      setResponses(prev => ({ ...prev, [currentQuestion.field]: value }));
+      
+      // Auto-advance for single select
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        if (currentStep < questions.length - 1) {
+          setCurrentStep(prev => prev + 1);
+          hasSpokenRef.current = null;
+        } else {
+          handleComplete();
+        }
+      }, 800);
+    }
+  }, [currentQuestion, responses, currentStep, questions.length]);
+  
+  const handleNext = useCallback(() => {
+    if (currentStep < questions.length - 1) {
+      setCurrentStep(prev => prev + 1);
+      hasSpokenRef.current = null;
+    } else {
+      handleComplete();
+    }
+  }, [currentStep, questions.length]);
+  
+  const handleComplete = useCallback(async () => {
+    try {
+      // Convert boolean strings to actual booleans
+      const processedResponses = { ...responses };
+      for (const [key, value] of Object.entries(processedResponses)) {
+        if (value === 'true') processedResponses[key] = true as any;
+        else if (value === 'false') processedResponses[key] = false as any;
+      }
+      
+      await upsertLifeProfile.mutateAsync(processedResponses);
+      await markSectionComplete.mutateAsync(section);
+      
+      voiceAssistant.speak(lang === 'es' ? '¡Excelente! Sección completada.' : 'Excellent! Section completed.');
+      toast.success(lang === 'es' ? '¡Sección completada!' : 'Section completed!');
+      
+      onComplete?.();
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error saving profile section:', error);
+      toast.error(lang === 'es' ? 'Error al guardar' : 'Error saving');
+    }
+  }, [responses, section, upsertLifeProfile, markSectionComplete, lang, onComplete, onOpenChange]);
+  
+  const isOptionSelected = (value: string) => {
+    const response = responses[currentQuestion?.field || ''];
+    if (Array.isArray(response)) return response.includes(value);
+    return response === value;
+  };
+  
+  const hasResponse = () => {
+    const response = responses[currentQuestion?.field || ''];
+    if (Array.isArray(response)) return response.length > 0;
+    return !!response;
+  };
+  
+  if (!currentQuestion) return null;
+  
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <PhoenixLogo variant="mini" state="flames" />
+            {lang === 'es' ? 'Completando perfil' : 'Completing profile'}
+          </DialogTitle>
+        </DialogHeader>
+        
+        {/* Progress */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>{lang === 'es' ? 'Pregunta' : 'Question'} {currentStep + 1}/{questions.length}</span>
+            <span>{Math.round(progress)}%</span>
+          </div>
+          <Progress value={progress} className="h-2" />
+        </div>
+        
+        {/* Question */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentQuestion.id}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-4"
+          >
+            {/* Phoenix intro */}
+            <div className="flex items-start gap-3 p-3 bg-primary/10 rounded-lg">
+              {isSpeaking && (
+                <Volume2 className="h-4 w-4 text-primary animate-pulse mt-0.5" />
+              )}
+              <p className="text-sm">{currentQuestion.intro[lang]}</p>
+            </div>
+            
+            <h3 className="text-lg font-medium">{currentQuestion.question[lang]}</h3>
+            
+            {/* Options */}
+            {currentQuestion.options && (
+              <div className="grid gap-2">
+                {currentQuestion.options.map((option) => (
+                  <motion.button
+                    key={option.id}
+                    onClick={() => handleOptionSelect(option.value)}
+                    disabled={isTyping || isSpeaking}
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-lg border-2 text-left transition-all",
+                      "hover:border-primary hover:bg-primary/5",
+                      "disabled:opacity-50 disabled:cursor-not-allowed",
+                      isOptionSelected(option.value)
+                        ? "border-primary bg-primary/10"
+                        : "border-border"
+                    )}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                  >
+                    {option.icon && <span className="text-xl">{option.icon}</span>}
+                    <span className="font-medium">{option.label[lang]}</span>
+                    {isOptionSelected(option.value) && (
+                      <Check className="h-4 w-4 text-primary ml-auto" />
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+        
+        {/* Navigation for multi-select */}
+        {currentQuestion.type === 'multiple' && (
+          <div className="flex justify-between pt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCurrentStep(prev => Math.max(0, prev - 1));
+                hasSpokenRef.current = null;
+              }}
+              disabled={currentStep === 0}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              {lang === 'es' ? 'Atrás' : 'Back'}
+            </Button>
+            <Button
+              onClick={handleNext}
+              disabled={!hasResponse()}
+            >
+              {currentStep === questions.length - 1 
+                ? (lang === 'es' ? 'Completar' : 'Complete')
+                : (lang === 'es' ? 'Siguiente' : 'Next')}
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpsertFinancialProfile } from '@/hooks/data/useFinancialProfile';
+import { useUpsertLifeProfile, useMarkSectionComplete, LifeProfileSection } from '@/hooks/data/useLifeProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -11,8 +12,12 @@ export interface OnboardingQuestion {
   phoenixIntro: { es: string; en: string };
   options: OnboardingOption[];
   field: string;
+  table: 'financial' | 'life' | 'profile'; // Which table to save to
+  section?: LifeProfileSection; // For life profile sections
   allowMultiple?: boolean;
   allowCustom?: boolean;
+  isOptional?: boolean; // Can be skipped
+  stage: 'essential' | 'extended'; // Essential = must complete, Extended = can do later
 }
 
 export interface OnboardingOption {
@@ -28,9 +33,70 @@ export interface OnboardingState {
   responses: Record<string, string | string[]>;
   isComplete: boolean;
   isLoading: boolean;
+  skippedSections: string[];
 }
 
-const ONBOARDING_QUESTIONS: OnboardingQuestion[] = [
+// ============= ESSENTIAL QUESTIONS (Must complete) =============
+const ESSENTIAL_QUESTIONS: OnboardingQuestion[] = [
+  {
+    id: 'welcome',
+    question: {
+      es: '¿Cómo te gustaría que te llame?',
+      en: 'What should I call you?'
+    },
+    phoenixIntro: {
+      es: '¡Hola! 👋 Soy Phoenix, tu mentor financiero personal. Antes de empezar, quiero conocerte mejor.',
+      en: 'Hello! 👋 I\'m Phoenix, your personal financial mentor. Before we begin, I want to get to know you better.'
+    },
+    options: [
+      { id: 'first_name', label: { es: 'Mi nombre', en: 'My first name' }, value: 'first_name', icon: '👤' },
+      { id: 'nickname', label: { es: 'Un apodo', en: 'A nickname' }, value: 'nickname', icon: '😊' },
+    ],
+    field: 'name_preference',
+    table: 'profile',
+    stage: 'essential',
+  },
+  {
+    id: 'life_situation',
+    question: {
+      es: '¿Cuál describe mejor tu situación actual?',
+      en: 'Which best describes your current situation?'
+    },
+    phoenixIntro: {
+      es: 'Entender tu momento de vida me ayuda a darte consejos relevantes.',
+      en: 'Understanding your life stage helps me give you relevant advice.'
+    },
+    options: [
+      { id: 'single', label: { es: 'Soltero/a', en: 'Single' }, description: { es: 'Enfocado en mí', en: 'Focused on myself' }, value: 'single', icon: '🙋' },
+      { id: 'partnered', label: { es: 'En pareja', en: 'In a relationship' }, description: { es: 'Compartiendo la vida', en: 'Sharing life' }, value: 'partnered', icon: '💑' },
+      { id: 'family', label: { es: 'Con familia', en: 'With family' }, description: { es: 'Hijos o dependientes', en: 'Children or dependents' }, value: 'family', icon: '👨‍👩‍👧' },
+    ],
+    field: 'relationship_status',
+    table: 'life',
+    section: 'family',
+    stage: 'essential',
+  },
+  {
+    id: 'work_status',
+    question: {
+      es: '¿Cuál es tu situación laboral?',
+      en: 'What\'s your work situation?'
+    },
+    phoenixIntro: {
+      es: 'Tu tipo de trabajo influye en las estrategias que te recomendaré.',
+      en: 'Your type of work influences the strategies I\'ll recommend.'
+    },
+    options: [
+      { id: 'employed', label: { es: 'Empleado/a', en: 'Employed' }, description: { es: 'Trabajo para una empresa', en: 'Work for a company' }, value: 'employed', icon: '💼' },
+      { id: 'self_employed', label: { es: 'Independiente', en: 'Self-employed' }, description: { es: 'Mi propio negocio', en: 'My own business' }, value: 'self_employed', icon: '🚀' },
+      { id: 'mixed', label: { es: 'Ambos', en: 'Both' }, description: { es: 'Empleado + proyectos', en: 'Employee + side projects' }, value: 'mixed', icon: '⚡' },
+      { id: 'other', label: { es: 'Otro', en: 'Other' }, description: { es: 'Estudiante, retirado, etc.', en: 'Student, retired, etc.' }, value: 'other', icon: '🌟' },
+    ],
+    field: 'employment_status',
+    table: 'life',
+    section: 'work',
+    stage: 'essential',
+  },
   {
     id: 'goal',
     question: {
@@ -38,8 +104,8 @@ const ONBOARDING_QUESTIONS: OnboardingQuestion[] = [
       en: 'What is your main financial goal?'
     },
     phoenixIntro: {
-      es: '¡Hola! 👋 Soy Phoenix, tu asistente financiero personal. Para ayudarte mejor, me gustaría conocerte un poco.',
-      en: 'Hello! 👋 I\'m Phoenix, your personal financial assistant. To help you better, I\'d like to get to know you a bit.'
+      es: 'Ahora lo importante: ¿qué quieres lograr con tu dinero?',
+      en: 'Now the important part: what do you want to achieve with your money?'
     },
     options: [
       { id: 'debt', label: { es: 'Salir de deudas', en: 'Get out of debt' }, value: 'debt_free', icon: '💪' },
@@ -49,43 +115,162 @@ const ONBOARDING_QUESTIONS: OnboardingQuestion[] = [
       { id: 'organize', label: { es: 'Organizar mis finanzas', en: 'Organize my finances' }, value: 'organization', icon: '📊' },
     ],
     field: 'passions',
+    table: 'financial',
     allowMultiple: true,
+    stage: 'essential',
   },
   {
     id: 'experience',
     question: {
-      es: '¿Cómo describirías tu experiencia con dinero e inversiones?',
-      en: 'How would you describe your experience with money and investments?'
+      es: '¿Cómo describirías tu experiencia financiera?',
+      en: 'How would you describe your financial experience?'
     },
     phoenixIntro: {
-      es: 'Excelente elección. Ahora, para calibrar mis explicaciones...',
-      en: 'Great choice. Now, to calibrate my explanations...'
+      es: 'Para calibrar cómo te explico las cosas...',
+      en: 'To calibrate how I explain things...'
     },
     options: [
-      { 
-        id: 'beginner', 
-        label: { es: 'Principiante', en: 'Beginner' }, 
-        description: { es: 'Estoy empezando a aprender', en: 'I\'m just starting to learn' },
-        value: 'beginner', 
-        icon: '🌱' 
-      },
-      { 
-        id: 'intermediate', 
-        label: { es: 'Intermedio', en: 'Intermediate' }, 
-        description: { es: 'Conozco lo básico', en: 'I know the basics' },
-        value: 'intermediate', 
-        icon: '📚' 
-      },
-      { 
-        id: 'advanced', 
-        label: { es: 'Avanzado', en: 'Advanced' }, 
-        description: { es: 'Tengo experiencia significativa', en: 'I have significant experience' },
-        value: 'advanced', 
-        icon: '🎓' 
-      },
+      { id: 'beginner', label: { es: 'Principiante', en: 'Beginner' }, description: { es: 'Empezando a aprender', en: 'Just starting to learn' }, value: 'beginner', icon: '🌱' },
+      { id: 'intermediate', label: { es: 'Intermedio', en: 'Intermediate' }, description: { es: 'Conozco lo básico', en: 'Know the basics' }, value: 'intermediate', icon: '📚' },
+      { id: 'advanced', label: { es: 'Avanzado', en: 'Advanced' }, description: { es: 'Experiencia significativa', en: 'Significant experience' }, value: 'advanced', icon: '🎓' },
     ],
     field: 'financial_education_level',
+    table: 'financial',
+    stage: 'essential',
   },
+];
+
+// ============= EXTENDED QUESTIONS (Can do later) =============
+const EXTENDED_QUESTIONS: OnboardingQuestion[] = [
+  // === LIFESTYLE SECTION ===
+  {
+    id: 'hobbies',
+    question: {
+      es: '¿Qué te apasiona hacer en tu tiempo libre?',
+      en: 'What do you love doing in your free time?'
+    },
+    phoenixIntro: {
+      es: 'Conocer tus pasiones me ayuda a motivarte de forma más personal. 🎯',
+      en: 'Knowing your passions helps me motivate you more personally. 🎯'
+    },
+    options: [
+      { id: 'sports', label: { es: 'Deportes', en: 'Sports' }, value: 'sports', icon: '⚽' },
+      { id: 'gaming', label: { es: 'Videojuegos', en: 'Gaming' }, value: 'gaming', icon: '🎮' },
+      { id: 'reading', label: { es: 'Lectura', en: 'Reading' }, value: 'reading', icon: '📖' },
+      { id: 'travel', label: { es: 'Viajar', en: 'Travel' }, value: 'travel', icon: '✈️' },
+      { id: 'music', label: { es: 'Música', en: 'Music' }, value: 'music', icon: '🎵' },
+      { id: 'cooking', label: { es: 'Cocinar', en: 'Cooking' }, value: 'cooking', icon: '👨‍🍳' },
+      { id: 'art', label: { es: 'Arte/Creatividad', en: 'Art/Creativity' }, value: 'art', icon: '🎨' },
+      { id: 'outdoors', label: { es: 'Aire libre', en: 'Outdoors' }, value: 'outdoors', icon: '🏕️' },
+    ],
+    field: 'hobbies',
+    table: 'life',
+    section: 'lifestyle',
+    allowMultiple: true,
+    isOptional: true,
+    stage: 'extended',
+  },
+  // === DREAMS SECTION ===
+  {
+    id: 'dreams',
+    question: {
+      es: '¿Cuál es tu mayor sueño en la vida?',
+      en: 'What\'s your biggest dream in life?'
+    },
+    phoenixIntro: {
+      es: 'Los sueños grandes necesitan planes financieros sólidos. ¿Cuál es el tuyo? ✨',
+      en: 'Big dreams need solid financial plans. What\'s yours? ✨'
+    },
+    options: [
+      { id: 'home', label: { es: 'Casa propia', en: 'Own a home' }, value: 'own_home', icon: '🏠' },
+      { id: 'travel_world', label: { es: 'Viajar por el mundo', en: 'Travel the world' }, value: 'travel_world', icon: '🌍' },
+      { id: 'retire_early', label: { es: 'Retirarme joven', en: 'Retire early' }, value: 'retire_early', icon: '🏖️' },
+      { id: 'business', label: { es: 'Mi propio negocio', en: 'Start a business' }, value: 'start_business', icon: '🚀' },
+      { id: 'family_security', label: { es: 'Seguridad familiar', en: 'Family security' }, value: 'family_security', icon: '👨‍👩‍👧‍👦' },
+      { id: 'financial_freedom', label: { es: 'Libertad financiera', en: 'Financial freedom' }, value: 'financial_freedom', icon: '🦅' },
+    ],
+    field: 'life_dreams',
+    table: 'life',
+    section: 'dreams',
+    allowMultiple: true,
+    isOptional: true,
+    stage: 'extended',
+  },
+  {
+    id: 'motivations',
+    question: {
+      es: '¿Qué te motiva a mejorar tus finanzas?',
+      en: 'What motivates you to improve your finances?'
+    },
+    phoenixIntro: {
+      es: 'Entender tu "por qué" es clave para mantenerte enfocado en los momentos difíciles.',
+      en: 'Understanding your "why" is key to staying focused during tough times.'
+    },
+    options: [
+      { id: 'family', label: { es: 'Mi familia', en: 'My family' }, value: 'family', icon: '👨‍👩‍👧' },
+      { id: 'freedom', label: { es: 'Libertad', en: 'Freedom' }, value: 'freedom', icon: '🦅' },
+      { id: 'security', label: { es: 'Seguridad', en: 'Security' }, value: 'security', icon: '🛡️' },
+      { id: 'legacy', label: { es: 'Dejar legado', en: 'Leave a legacy' }, value: 'legacy', icon: '🌳' },
+      { id: 'experiences', label: { es: 'Vivir experiencias', en: 'Live experiences' }, value: 'experiences', icon: '🎯' },
+      { id: 'peace', label: { es: 'Tranquilidad', en: 'Peace of mind' }, value: 'peace', icon: '☮️' },
+    ],
+    field: 'motivations',
+    table: 'life',
+    section: 'dreams',
+    allowMultiple: true,
+    isOptional: true,
+    stage: 'extended',
+  },
+  // === PSYCHOLOGY SECTION ===
+  {
+    id: 'money_personality',
+    question: {
+      es: '¿Cómo es tu relación con el dinero?',
+      en: 'What\'s your relationship with money like?'
+    },
+    phoenixIntro: {
+      es: 'Ser honesto aquí te ayudará a identificar patrones y mejorar.',
+      en: 'Being honest here will help you identify patterns and improve.'
+    },
+    options: [
+      { id: 'saver', label: { es: 'Ahorrador', en: 'Saver' }, description: { es: 'Guardo todo lo que puedo', en: 'Save everything I can' }, value: 'saver', icon: '🐿️' },
+      { id: 'spender', label: { es: 'Gastador', en: 'Spender' }, description: { es: 'Disfruto gastar', en: 'Enjoy spending' }, value: 'spender', icon: '🛍️' },
+      { id: 'avoider', label: { es: 'Evitador', en: 'Avoider' }, description: { es: 'Prefiero no pensar en ello', en: 'Prefer not to think about it' }, value: 'avoider', icon: '🙈' },
+      { id: 'worrier', label: { es: 'Preocupado', en: 'Worrier' }, description: { es: 'Me estresa constantemente', en: 'Constantly stressed' }, value: 'worrier', icon: '😰' },
+      { id: 'planner', label: { es: 'Planificador', en: 'Planner' }, description: { es: 'Lo tengo todo calculado', en: 'Have it all calculated' }, value: 'planner', icon: '📋' },
+    ],
+    field: 'money_personality',
+    table: 'life',
+    section: 'psychology',
+    isOptional: true,
+    stage: 'extended',
+  },
+  {
+    id: 'fears',
+    question: {
+      es: '¿Cuál es tu mayor miedo financiero?',
+      en: 'What\'s your biggest financial fear?'
+    },
+    phoenixIntro: {
+      es: 'Conocer tus miedos me permite ayudarte a superarlos. 💪',
+      en: 'Knowing your fears allows me to help you overcome them. 💪'
+    },
+    options: [
+      { id: 'debt', label: { es: 'Quedar endeudado', en: 'Getting into debt' }, value: 'debt', icon: '📉' },
+      { id: 'job_loss', label: { es: 'Perder mi trabajo', en: 'Losing my job' }, value: 'job_loss', icon: '💼' },
+      { id: 'not_enough', label: { es: 'No ahorrar suficiente', en: 'Not saving enough' }, value: 'not_saving', icon: '🐌' },
+      { id: 'emergency', label: { es: 'Emergencia inesperada', en: 'Unexpected emergency' }, value: 'emergency', icon: '🚨' },
+      { id: 'retirement', label: { es: 'No poder retirarme', en: 'Can\'t retire' }, value: 'no_retirement', icon: '👴' },
+      { id: 'family_burden', label: { es: 'Ser carga para mi familia', en: 'Being a burden' }, value: 'burden', icon: '😔' },
+    ],
+    field: 'biggest_fears',
+    table: 'life',
+    section: 'psychology',
+    allowMultiple: true,
+    isOptional: true,
+    stage: 'extended',
+  },
+  // === FINANCIAL DETAILS ===
   {
     id: 'risk',
     question: {
@@ -93,75 +278,28 @@ const ONBOARDING_QUESTIONS: OnboardingQuestion[] = [
       en: 'What bothers you more: losing money or missing opportunities?'
     },
     phoenixIntro: {
-      es: 'Entender tu relación con el riesgo me ayudará a darte mejores consejos.',
-      en: 'Understanding your relationship with risk will help me give you better advice.'
+      es: 'Tu tolerancia al riesgo guiará mis recomendaciones de inversión.',
+      en: 'Your risk tolerance will guide my investment recommendations.'
     },
     options: [
-      { 
-        id: 'conservative', 
-        label: { es: 'Perder dinero', en: 'Losing money' }, 
-        description: { es: 'Prefiero seguridad', en: 'I prefer safety' },
-        value: 'conservative', 
-        icon: '🛡️' 
-      },
-      { 
-        id: 'moderate', 
-        label: { es: 'Ambos por igual', en: 'Both equally' }, 
-        description: { es: 'Balance es clave', en: 'Balance is key' },
-        value: 'moderate', 
-        icon: '⚖️' 
-      },
-      { 
-        id: 'aggressive', 
-        label: { es: 'Perder oportunidades', en: 'Missing opportunities' }, 
-        description: { es: 'Acepto más riesgo', en: 'I accept more risk' },
-        value: 'aggressive', 
-        icon: '🚀' 
-      },
+      { id: 'conservative', label: { es: 'Perder dinero', en: 'Losing money' }, description: { es: 'Prefiero seguridad', en: 'I prefer safety' }, value: 'conservative', icon: '🛡️' },
+      { id: 'moderate', label: { es: 'Ambos por igual', en: 'Both equally' }, description: { es: 'Balance es clave', en: 'Balance is key' }, value: 'moderate', icon: '⚖️' },
+      { id: 'aggressive', label: { es: 'Perder oportunidades', en: 'Missing opportunities' }, description: { es: 'Acepto más riesgo', en: 'I accept more risk' }, value: 'aggressive', icon: '🚀' },
     ],
     field: 'risk_tolerance',
-  },
-  {
-    id: 'time',
-    question: {
-      es: '¿Cuánto tiempo puedes dedicar a tus finanzas cada semana?',
-      en: 'How much time can you dedicate to your finances each week?'
-    },
-    phoenixIntro: {
-      es: 'Esto me ayudará a sugerirte acciones realistas.',
-      en: 'This will help me suggest realistic actions.'
-    },
-    options: [
-      { 
-        id: 'minimal', 
-        label: { es: 'Menos de 1 hora', en: 'Less than 1 hour' }, 
-        value: 'minimal', 
-        icon: '⏱️' 
-      },
-      { 
-        id: 'moderate', 
-        label: { es: '1-3 horas', en: '1-3 hours' }, 
-        value: 'part_time', 
-        icon: '🕐' 
-      },
-      { 
-        id: 'significant', 
-        label: { es: 'Más de 3 horas', en: 'More than 3 hours' }, 
-        value: 'full_time', 
-        icon: '📅' 
-      },
-    ],
-    field: 'time_availability',
+    table: 'financial',
+    isOptional: true,
+    stage: 'extended',
   },
   {
     id: 'capital',
     question: {
-      es: '¿Tienes algún ahorro o capital disponible para invertir?',
-      en: 'Do you have any savings or capital available to invest?'
+      es: '¿Tienes algún ahorro o capital disponible?',
+      en: 'Do you have any savings or capital available?'
     },
     phoenixIntro: {
-      es: 'No te preocupes, esto es solo para contextualizar mis consejos.',
-      en: 'Don\'t worry, this is just to contextualize my advice.'
+      es: 'Esto es solo para contextualizar - no te preocupes, todo es confidencial.',
+      en: 'This is just for context - don\'t worry, everything is confidential.'
     },
     options: [
       { id: 'none', label: { es: 'Aún no tengo ahorros', en: 'No savings yet' }, value: '0', icon: '🌱' },
@@ -170,41 +308,33 @@ const ONBOARDING_QUESTIONS: OnboardingQuestion[] = [
       { id: 'large', label: { es: 'Más de $25,000', en: 'More than $25,000' }, value: '50000', icon: '🏦' },
     ],
     field: 'available_capital',
-  },
-  {
-    id: 'monthly',
-    question: {
-      es: '¿Cuánto podrías apartar mensualmente para tus metas?',
-      en: 'How much could you set aside monthly for your goals?'
-    },
-    phoenixIntro: {
-      es: 'Último paso! Esto me permitirá calcular proyecciones realistas.',
-      en: 'Last step! This will allow me to calculate realistic projections.'
-    },
-    options: [
-      { id: 'tight', label: { es: 'Menos de $100', en: 'Less than $100' }, value: '50', icon: '🪙' },
-      { id: 'modest', label: { es: '$100 - $500', en: '$100 - $500' }, value: '300', icon: '💵' },
-      { id: 'good', label: { es: '$500 - $1,500', en: '$500 - $1,500' }, value: '1000', icon: '💰' },
-      { id: 'great', label: { es: 'Más de $1,500', en: 'More than $1,500' }, value: '2000', icon: '🎯' },
-    ],
-    field: 'monthly_investment_capacity',
+    table: 'financial',
+    isOptional: true,
+    stage: 'extended',
   },
 ];
 
+// Combine all questions
+const ALL_QUESTIONS = [...ESSENTIAL_QUESTIONS, ...EXTENDED_QUESTIONS];
+
 export function useConversationalOnboarding() {
   const { user } = useAuth();
-  const upsertProfile = useUpsertFinancialProfile();
+  const upsertFinancialProfile = useUpsertFinancialProfile();
+  const upsertLifeProfile = useUpsertLifeProfile();
+  const markSectionComplete = useMarkSectionComplete();
   
   const [state, setState] = useState<OnboardingState>({
     currentStep: 0,
     responses: {},
     isComplete: false,
     isLoading: false,
+    skippedSections: [],
   });
 
-  const currentQuestion = ONBOARDING_QUESTIONS[state.currentStep];
-  const totalSteps = ONBOARDING_QUESTIONS.length;
-  // Progress now shows current position (step 1 of 6 = 16.67%)
+  // Only show essential questions in onboarding, extended are for later
+  const activeQuestions = ESSENTIAL_QUESTIONS;
+  const currentQuestion = activeQuestions[state.currentStep];
+  const totalSteps = activeQuestions.length;
   const progress = ((state.currentStep + 1) / totalSteps) * 100;
 
   const selectOption = useCallback((optionValue: string) => {
@@ -213,7 +343,6 @@ export function useConversationalOnboarding() {
     const field = currentQuestion.field;
     
     if (currentQuestion.allowMultiple) {
-      // Toggle selection for multi-select
       setState(prev => {
         const currentValues = (prev.responses[field] as string[]) || [];
         const newValues = currentValues.includes(optionValue)
@@ -226,7 +355,6 @@ export function useConversationalOnboarding() {
         };
       });
     } else {
-      // Single select - just save, don't auto-advance
       setState(prev => ({
         ...prev,
         responses: { ...prev.responses, [field]: optionValue },
@@ -254,18 +382,41 @@ export function useConversationalOnboarding() {
     try {
       const responses = state.responses;
       
-      // Build profile data from responses
-      const profileData = {
-        passions: Array.isArray(responses.passions) ? responses.passions : [responses.passions].filter(Boolean),
-        financial_education_level: responses.financial_education_level as string,
-        risk_tolerance: responses.risk_tolerance as string,
-        time_availability: responses.time_availability as string,
-        available_capital: parseFloat(responses.available_capital as string) || 0,
-        monthly_investment_capacity: parseFloat(responses.monthly_investment_capacity as string) || 0,
-      };
+      // Separate responses by table
+      const financialData: Record<string, unknown> = {};
+      const lifeData: Record<string, unknown> = {};
+      const sectionsCompleted: Set<string> = new Set();
+      
+      for (const question of activeQuestions) {
+        const value = responses[question.field];
+        if (value === undefined) continue;
+        
+        if (question.table === 'financial') {
+          if (question.field === 'available_capital' || question.field === 'monthly_investment_capacity') {
+            financialData[question.field] = parseFloat(value as string) || 0;
+          } else {
+            financialData[question.field] = value;
+          }
+        } else if (question.table === 'life') {
+          lifeData[question.field] = value;
+          if (question.section) {
+            sectionsCompleted.add(question.section);
+          }
+        }
+      }
       
       // Save financial profile
-      await upsertProfile.mutateAsync(profileData);
+      if (Object.keys(financialData).length > 0) {
+        await upsertFinancialProfile.mutateAsync(financialData);
+      }
+      
+      // Save life profile
+      if (Object.keys(lifeData).length > 0) {
+        await upsertLifeProfile.mutateAsync({
+          ...lifeData,
+          sections_completed: Array.from(sectionsCompleted),
+        } as any);
+      }
       
       // Mark onboarding as completed
       await supabase
@@ -283,7 +434,7 @@ export function useConversationalOnboarding() {
       setState(prev => ({ ...prev, isLoading: false }));
       return false;
     }
-  }, [user, state.responses, upsertProfile]);
+  }, [user, state.responses, upsertFinancialProfile, upsertLifeProfile, activeQuestions]);
 
   const getPersonalizedSummary = useCallback((lang: 'es' | 'en') => {
     const responses = state.responses;
@@ -302,22 +453,21 @@ export function useConversationalOnboarding() {
       .map(g => goalLabels[g]?.[lang] || g)
       .join(lang === 'es' ? ' y ' : ' and ');
     
-    const riskLabels: Record<string, { es: string; en: string }> = {
-      conservative: { es: 'conservador', en: 'conservative' },
-      moderate: { es: 'moderado', en: 'moderate' },
-      aggressive: { es: 'orientado al crecimiento', en: 'growth-oriented' },
+    const situationLabels: Record<string, { es: string; en: string }> = {
+      single: { es: 'enfocándote en tu crecimiento personal', en: 'focusing on personal growth' },
+      partnered: { es: 'construyendo junto a tu pareja', en: 'building together with your partner' },
+      family: { es: 'cuidando de tu familia', en: 'taking care of your family' },
     };
     
-    const riskText = riskLabels[responses.risk_tolerance as string]?.[lang] || '';
+    const situation = situationLabels[responses.relationship_status as string]?.[lang] || '';
     
     if (lang === 'es') {
-      return `Basado en tus respuestas, tu meta es ${goalText}. Tienes un perfil de riesgo ${riskText}. ¡Vamos a trabajar juntos para lograrlo!`;
+      return `Tu meta es ${goalText}${situation ? `, ${situation}` : ''}. ¡Phoenix te acompañará en cada paso! Después podrás completar más detalles de tu perfil para consejos aún más personalizados.`;
     } else {
-      return `Based on your answers, your goal is to ${goalText}. You have a ${riskText} risk profile. Let's work together to achieve it!`;
+      return `Your goal is to ${goalText}${situation ? `, ${situation}` : ''}. Phoenix will accompany you every step of the way! You can complete more profile details later for even more personalized advice.`;
     }
   }, [state.responses]);
 
-  // Check if current question has a valid response
   const hasCurrentResponse = useCallback(() => {
     if (!currentQuestion) return false;
     const response = state.responses[currentQuestion.field];
@@ -325,7 +475,6 @@ export function useConversationalOnboarding() {
     return !!response;
   }, [currentQuestion, state.responses]);
 
-  // Check if this is the last step
   const isLastStep = state.currentStep === totalSteps - 1;
 
   return {
@@ -340,6 +489,8 @@ export function useConversationalOnboarding() {
     getPersonalizedSummary,
     hasCurrentResponse,
     isLastStep,
-    questions: ONBOARDING_QUESTIONS,
+    questions: activeQuestions,
+    extendedQuestions: EXTENDED_QUESTIONS,
+    allQuestions: ALL_QUESTIONS,
   };
 }
