@@ -10,6 +10,7 @@ import { Download, FileSpreadsheet, FileText, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import type { QuizLead } from '@/hooks/admin/useLeadsManagement';
+import { calculateLeadScore, getLeadPriority, getPriorityLabel } from '@/hooks/admin/useLeadScoring';
 
 interface LeadsExportProps {
   leads: QuizLead[];
@@ -20,28 +21,35 @@ export function LeadsExport({ leads, filename = 'quiz-leads' }: LeadsExportProps
   const [isExporting, setIsExporting] = useState(false);
 
   const prepareData = () => {
-    return leads.map((lead) => ({
-      Nombre: lead.name,
-      Email: lead.email,
-      Teléfono: lead.phone || '',
-      País: lead.country,
-      Situación: lead.situation,
-      Meta: lead.goal,
-      Obstáculo: lead.obstacle,
-      'Nivel Quiz': lead.quiz_level,
-      'Score Quiz': `${lead.quiz_score}%`,
-      'Tiempo invertido': lead.time_spent || '',
-      'Preguntas fallidas': lead.failed_questions?.join(', ') || '',
-      Contactado: lead.contacted_at ? 'Sí' : 'No',
-      'Fecha contacto': lead.contacted_at
-        ? new Date(lead.contacted_at).toLocaleDateString('es')
-        : '',
-      'Notas contacto': lead.contact_notes || '',
-      'Comentarios del quiz': lead.comments || '',
-      Convertido: lead.converted_to_user ? 'Sí' : 'No',
-      'Sincronizado GHL': lead.ghl_synced ? 'Sí' : 'No',
-      'Fecha registro': new Date(lead.created_at).toLocaleDateString('es'),
-    }));
+    return leads.map((lead) => {
+      const score = calculateLeadScore(lead);
+      const priority = getLeadPriority(score);
+      
+      return {
+        Nombre: lead.name,
+        Email: lead.email,
+        Teléfono: lead.phone || '',
+        País: lead.country,
+        'Lead Score': score,
+        Prioridad: getPriorityLabel(priority),
+        Situación: lead.situation,
+        Meta: lead.goal,
+        Obstáculo: lead.obstacle,
+        'Nivel Quiz': lead.quiz_level,
+        'Score Quiz': `${lead.quiz_score}%`,
+        'Tiempo invertido': lead.time_spent || '',
+        'Preguntas fallidas': lead.failed_questions?.join(', ') || '',
+        Contactado: lead.contacted_at ? 'Sí' : 'No',
+        'Fecha contacto': lead.contacted_at
+          ? new Date(lead.contacted_at).toLocaleDateString('es')
+          : '',
+        'Notas contacto': lead.contact_notes || '',
+        'Comentarios del quiz': lead.comments || '',
+        Convertido: lead.converted_to_user ? 'Sí' : 'No',
+        'Sincronizado GHL': lead.ghl_synced ? 'Sí' : 'No',
+        'Fecha registro': new Date(lead.created_at).toLocaleDateString('es'),
+      };
+    });
   };
 
   const exportToExcel = async () => {

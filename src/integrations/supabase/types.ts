@@ -1751,6 +1751,91 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_follow_ups: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          lead_id: string
+          notes: string | null
+          scheduled_at: string
+          task_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          lead_id: string
+          notes?: string | null
+          scheduled_at: string
+          task_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          lead_id?: string
+          notes?: string | null
+          scheduled_at?: string
+          task_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_follow_ups_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_interactions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          direction: string | null
+          id: string
+          interaction_type: string
+          lead_id: string
+          notes: string | null
+          outcome: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          direction?: string | null
+          id?: string
+          interaction_type: string
+          lead_id: string
+          notes?: string | null
+          outcome?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          direction?: string | null
+          id?: string
+          interaction_type?: string
+          lead_id?: string
+          notes?: string | null
+          outcome?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_interactions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       liabilities: {
         Row: {
           category: string
@@ -2305,9 +2390,11 @@ export type Database = {
           ghl_synced: boolean | null
           goal: string | null
           id: string
+          lead_score: number | null
           name: string
           obstacle: string | null
           phone: string | null
+          priority: string | null
           quiz_level: string | null
           quiz_score: number | null
           situation: string | null
@@ -2327,9 +2414,11 @@ export type Database = {
           ghl_synced?: boolean | null
           goal?: string | null
           id?: string
+          lead_score?: number | null
           name: string
           obstacle?: string | null
           phone?: string | null
+          priority?: string | null
           quiz_level?: string | null
           quiz_score?: number | null
           situation?: string | null
@@ -2349,9 +2438,11 @@ export type Database = {
           ghl_synced?: boolean | null
           goal?: string | null
           id?: string
+          lead_score?: number | null
           name?: string
           obstacle?: string | null
           phone?: string | null
+          priority?: string | null
           quiz_level?: string | null
           quiz_score?: number | null
           situation?: string | null

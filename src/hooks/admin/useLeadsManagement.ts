@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { calculateLeadScore, getLeadPriority, type LeadPriority } from './useLeadScoring';
 
 export interface QuizLead {
   id: string;
@@ -21,6 +22,8 @@ export interface QuizLead {
   contact_notes: string | null;
   comments: string | null;
   ghl_synced: boolean | null;
+  lead_score: number | null;
+  priority: string | null;
   created_at: string;
 }
 
@@ -29,7 +32,12 @@ export interface LeadFilters {
   level: string;
   country: string;
   converted: string;
+  contacted: string;
   hasComments: string;
+  priority: string;
+  situation: string;
+  goal: string;
+  obstacle: string;
   dateFrom: string;
   dateTo: string;
 }
@@ -39,7 +47,12 @@ const defaultFilters: LeadFilters = {
   level: '',
   country: '',
   converted: '',
+  contacted: '',
   hasComments: '',
+  priority: '',
+  situation: '',
+  goal: '',
+  obstacle: '',
   dateFrom: '',
   dateTo: '',
 };
@@ -76,6 +89,24 @@ export const useLeadsManagement = () => {
     return unique;
   }, [leads]);
 
+  // Get unique situations for filter dropdown
+  const situations = useMemo(() => {
+    const unique = [...new Set(leads.map((l) => l.situation))].filter(Boolean);
+    return unique.sort();
+  }, [leads]);
+
+  // Get unique goals for filter dropdown
+  const goals = useMemo(() => {
+    const unique = [...new Set(leads.map((l) => l.goal))].filter(Boolean);
+    return unique.sort();
+  }, [leads]);
+
+  // Get unique obstacles for filter dropdown
+  const obstacles = useMemo(() => {
+    const unique = [...new Set(leads.map((l) => l.obstacle))].filter(Boolean);
+    return unique.sort();
+  }, [leads]);
+
   // Apply filters
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
@@ -99,9 +130,29 @@ export const useLeadsManagement = () => {
       if (filters.converted === 'yes' && !lead.converted_to_user) return false;
       if (filters.converted === 'no' && lead.converted_to_user) return false;
 
+      // Contacted filter
+      if (filters.contacted === 'yes' && !lead.contacted_at) return false;
+      if (filters.contacted === 'no' && lead.contacted_at) return false;
+
       // Comments filter
       if (filters.hasComments === 'yes' && !lead.comments) return false;
       if (filters.hasComments === 'no' && lead.comments) return false;
+
+      // Priority filter
+      if (filters.priority) {
+        const score = calculateLeadScore(lead);
+        const priority = getLeadPriority(score);
+        if (priority !== filters.priority) return false;
+      }
+
+      // Situation filter
+      if (filters.situation && lead.situation !== filters.situation) return false;
+
+      // Goal filter
+      if (filters.goal && lead.goal !== filters.goal) return false;
+
+      // Obstacle filter
+      if (filters.obstacle && lead.obstacle !== filters.obstacle) return false;
 
       // Date range filter
       if (filters.dateFrom) {
@@ -169,12 +220,27 @@ export const useLeadsManagement = () => {
     },
   });
 
-  // Stats
+  // Stats with priority breakdown
   const stats = useMemo(() => {
     const total = leads.length;
     const contacted = leads.filter((l) => l.contacted_at).length;
     const converted = leads.filter((l) => l.converted_to_user).length;
     const synced = leads.filter((l) => l.ghl_synced).length;
+    const withComments = leads.filter((l) => l.comments).length;
+
+    // Calculate priority stats
+    const priorityStats = { hot: 0, warm: 0, cool: 0, cold: 0 };
+    const hotUncontacted: QuizLead[] = [];
+
+    leads.forEach((lead) => {
+      const score = calculateLeadScore(lead);
+      const priority = getLeadPriority(score);
+      priorityStats[priority]++;
+      
+      if (priority === 'hot' && !lead.contacted_at) {
+        hotUncontacted.push(lead);
+      }
+    });
 
     const byLevel = leads.reduce(
       (acc, l) => {
@@ -184,7 +250,16 @@ export const useLeadsManagement = () => {
       {} as Record<string, number>
     );
 
-    return { total, contacted, converted, synced, byLevel };
+    return { 
+      total, 
+      contacted, 
+      converted, 
+      synced, 
+      withComments,
+      byLevel, 
+      priorityStats,
+      hotUncontacted,
+    };
   }, [leads]);
 
   return {
@@ -204,6 +279,9 @@ export const useLeadsManagement = () => {
     pageSize,
     countries,
     levels,
+    situations,
+    goals,
+    obstacles,
     stats,
     markContacted,
     markConverted,
