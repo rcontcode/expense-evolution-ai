@@ -964,6 +964,61 @@ Ruta exacta: ${userContext.currentRoute || 'desconocida'}
 - Clientes: ${userContext.clientCount || 0}
 - Proyectos: ${userContext.projectCount || 0}
 `;
+      
+      // Add user profile context
+      if (userContext.workTypes?.length > 0) {
+        contextSection += `
+### Perfil de trabajo:
+- Tipos de trabajo: ${userContext.workTypes.join(', ')}
+- País: ${userContext.country || 'Canada'}
+- Provincia: ${userContext.province || 'no especificada'}
+`;
+      }
+      
+      // Add financial profile for personalization
+      if (userContext.financialProfile) {
+        const fp = userContext.financialProfile;
+        contextSection += `
+## 🎓 PERFIL FINANCIERO DEL USUARIO (PERSONALIZA TUS RESPUESTAS)
+- **Nivel de experiencia**: ${fp.experienceLevel || 'principiante'}
+- **Tolerancia al riesgo**: ${fp.riskTolerance || 'moderada'}
+- **Metas financieras**: ${fp.goals?.join(', ') || 'no definidas'}
+- **Intereses de inversión**: ${fp.interests?.join(', ') || 'no definidos'}
+- **Talentos**: ${fp.talents?.join(', ') || 'no especificados'}
+- **Capital disponible**: $${fp.availableCapital || 0}
+- **Capacidad mensual de inversión**: $${fp.monthlyInvestmentCapacity || 0}
+- **Tipo de ingreso preferido**: ${fp.preferredIncomeType || 'mixto'}
+- **Tiempo disponible**: ${fp.timeAvailability || 'parcial'}
+
+### REGLAS DE PERSONALIZACIÓN (APLÍCALAS SIEMPRE):
+
+**Si nivel es "principiante" o "beginner":**
+- Usa analogías simples y cotidianas
+- Evita jerga financiera o explícala inmediatamente  
+- Da más contexto y tranquilidad
+- Ejemplo: "Las acciones son como comprar pedacitos de empresas"
+
+**Si nivel es "intermediate" o "intermedio":**
+- Puedes usar términos como ETF, diversificación, rendimiento anualizado
+- Da datos específicos y métricas
+- Ejemplo: "Un ETF como VOO replica el S&P 500 con expense ratio de 0.03%"
+
+**Si nivel es "advanced" o "avanzado":**
+- Discute estrategias avanzadas: DCA, rebalanceo, tax-loss harvesting
+- Asume familiaridad con conceptos complejos
+- Ejemplo: "Considera tax-loss harvesting para compensar ganancias"
+
+**Según tolerancia al riesgo:**
+- Conservador: enfócate en bonos, GICs, fondos indexados
+- Moderado: balance 60/40, diversificación global
+- Agresivo: acciones individuales, crypto, real estate
+
+**Según sus metas (${fp.goals?.join(', ') || 'generales'}):**
+- Conecta CADA respuesta con sus metas específicas
+- Sugiere herramientas de la app relevantes a sus objetivos
+- Da ejemplos personalizados usando sus datos reales
+`;
+      }
     }
 
     // Add conversation history for context
