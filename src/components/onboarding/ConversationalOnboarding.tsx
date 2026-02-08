@@ -12,7 +12,7 @@ import { useConversationalOnboarding, OnboardingOption } from '@/hooks/utils/use
 import { useElevenLabsTTS } from '@/hooks/utils/useElevenLabsTTS';
 import { useVoicePreferences } from '@/hooks/utils/useVoicePreferences';
 import { useVoiceSynthesis } from '@/hooks/utils/useVoiceSynthesis';
-import { OnboardingVoiceSelector } from './OnboardingVoiceSelector';
+import { VoiceSettingsPanel } from '@/components/chat/VoiceSettingsPanel';
 import { cn } from '@/lib/utils';
 import confetti from 'canvas-confetti';
 
@@ -46,14 +46,18 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
     isLastStep,
   } = useConversationalOnboarding();
 
+  // Keep selection stable for rerenders and allow reacting to changes
+  const selectedPremiumVoiceId = voicePrefs.getPremiumVoiceId(lang) || undefined;
+
   // ElevenLabs TTS (premium voice)
   const elevenLabsTTS = useElevenLabsTTS({
-    voiceId: voicePrefs.getPremiumVoiceId(lang) || undefined,
+    voiceId: selectedPremiumVoiceId,
     lang,
     voiceGender: voicePrefs.voiceGender === 'auto' ? 'female' : voicePrefs.voiceGender,
   });
 
   // Fallback to native voice synthesis - include all voice preferences
+  // NOTE: If user volume is 0, they'll hear nothing. We handle unmute on toggle.
   const nativeTTS = useVoiceSynthesis({
     voiceGender: voicePrefs.voiceGender === 'auto' ? 'female' : voicePrefs.voiceGender,
     speechSpeed: voicePrefs.speechSpeed,
@@ -65,29 +69,30 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
   const isSpeaking = elevenLabsTTS.isSpeaking || nativeTTS.isSpeaking;
   const isLoadingVoice = elevenLabsTTS.isLoading;
 
+  // If user has global volume set to 0, onboarding will be silent.
+  // Auto-unmute once (they can still disable voice with the toggle).
+  useEffect(() => {
+    if (voiceEnabled && voicePrefs.volume === 0) {
+      voicePrefs.setVolume(1);
+    }
+  }, [voiceEnabled, voicePrefs.volume, voicePrefs.setVolume]);
+
+  // If user changes voice settings, allow re-speaking the current step.
+  useEffect(() => {
+    hasSpokenRef.current = null;
+  }, [selectedPremiumVoiceId, voicePrefs.selectedVoiceName, voicePrefs.voiceGender]);
+
   // Smart speak function - tries ElevenLabs first, falls back to native
   const speak = useCallback(async (text: string) => {
-    if (!voiceEnabled || !text?.trim()) {
-      console.log('[Onboarding] Voice disabled or empty text');
-      return;
-    }
-
-    console.log('[Onboarding] Speaking:', text.substring(0, 50) + '...');
-    console.log('[Onboarding] canUsePremium:', elevenLabsTTS.canUsePremium);
+    if (!voiceEnabled || !text?.trim()) return;
 
     // Try ElevenLabs first if available
     if (elevenLabsTTS.canUsePremium) {
-      console.log('[Onboarding] Trying ElevenLabs...');
       const result = await elevenLabsTTS.speak(text);
-      if (result.success) {
-        console.log('[Onboarding] ElevenLabs success');
-        return;
-      }
-      console.log('[Onboarding] ElevenLabs failed:', result.error);
+      if (result.success) return;
     }
 
     // Fallback to native TTS
-    console.log('[Onboarding] Using native TTS');
     nativeTTS.speak(text);
   }, [voiceEnabled, elevenLabsTTS, nativeTTS]);
 
@@ -208,9 +213,20 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
   }, [state.currentStep, onBack, previousStep, stopSpeaking]);
 
   const toggleVoice = useCallback(() => {
-    if (voiceEnabled) stopSpeaking();
-    setVoiceEnabled(!voiceEnabled);
-  }, [voiceEnabled, stopSpeaking]);
+    if (voiceEnabled) {
+      stopSpeaking();
+      setVoiceEnabled(false);
+      return;
+    }
+
+    // Turning voice on: if volume is 0, unmute so user actually hears it.
+    if (voicePrefs.volume === 0) {
+      voicePrefs.setVolume(1);
+    }
+
+    hasSpokenRef.current = null;
+    setVoiceEnabled(true);
+  }, [voiceEnabled, stopSpeaking, voicePrefs]);
 
   if (state.isComplete) {
     return (
@@ -282,11 +298,18 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
         <CollapsibleContent>
           <Card className="mb-4 border-primary/20">
             <CardContent className="pt-4">
-              <OnboardingVoiceSelector 
+              <VoiceSettingsPanel
                 language={lang}
-                onVoiceSelected={() => {
-                  hasSpokenRef.current = null;
+                autoSpeak={voiceEnabled}
+                onAutoSpeakChange={(v) => {
+                  // If user turns voice on while volume is 0, unmute for them
+                  if (v && voicePrefs.volume === 0) {
+                    voicePrefs.setVolume(1);
+                  }
+                  setVoiceEnabled(v);
+                  hasSpokenRef.current = null; // re-speak current step with new settings
                 }}
+                compact
               />
             </CardContent>
           </Card>
