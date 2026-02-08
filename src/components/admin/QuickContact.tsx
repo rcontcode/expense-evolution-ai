@@ -23,10 +23,33 @@ interface QuickContactProps {
 }
 
 /**
- * Generate WhatsApp message template
+ * Detect lead language based on country
+ */
+function detectLeadLanguage(lead: QuizLead): 'es' | 'en' {
+  const country = lead.country?.toLowerCase() || '';
+  // Canada = English, everything else = Spanish
+  if (country === 'canada' || country === 'ca') {
+    return 'en';
+  }
+  return 'es';
+}
+
+/**
+ * Generate WhatsApp message template (bilingual)
  */
 function generateWhatsAppMessage(lead: QuizLead): string {
   const firstName = lead.name.split(' ')[0];
+  const lang = detectLeadLanguage(lead);
+  
+  if (lang === 'en') {
+    return encodeURIComponent(
+      `Hi ${firstName}! 👋
+
+I'm from the EvoFinz team. I saw you completed our financial quiz and mentioned your goal is "${lead.goal}" but your main obstacle is "${lead.obstacle}".
+
+Would you like us to help you create a personalized plan to overcome that obstacle? 🎯`
+    );
+  }
   
   return encodeURIComponent(
     `¡Hola ${firstName}! 👋
@@ -38,10 +61,33 @@ Soy del equipo de EvoFinz. Vi que completaste nuestro quiz financiero y menciona
 }
 
 /**
- * Generate Email subject and body
+ * Generate Email subject and body (bilingual)
  */
 function generateEmailContent(lead: QuizLead): { subject: string; body: string } {
   const firstName = lead.name.split(' ')[0];
+  const lang = detectLeadLanguage(lead);
+  
+  if (lang === 'en') {
+    const subject = encodeURIComponent(
+      `${firstName}, your personalized financial plan is ready`
+    );
+    
+    const body = encodeURIComponent(
+      `Hi ${firstName},
+
+You completed our Financial Phoenix Quiz with a score of ${lead.quiz_score}%.
+Your current level is "${lead.quiz_level}" and we noticed your main obstacle is "${lead.obstacle}".
+
+We have specific recommendations to help you achieve your goal of "${lead.goal}".
+
+Would you like to schedule a 15-minute call to review them?
+
+Best regards,
+The EvoFinz Team`
+    );
+    
+    return { subject, body };
+  }
   
   const subject = encodeURIComponent(
     `${firstName}, tu plan financiero personalizado está listo`
