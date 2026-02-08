@@ -2195,9 +2195,11 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_mood: string | null
           beta_expires_at: string | null
           beta_extended_by: string | null
           beta_extension_reason: string | null
+          birth_date: string | null
           business_name: string | null
           business_number: string | null
           business_start_date: string | null
@@ -2213,7 +2215,9 @@ export type Database = {
           is_beta_tester: boolean | null
           language: string | null
           multi_country_enabled: boolean | null
+          nickname: string | null
           onboarding_completed: boolean | null
+          profile_completion_percentage: number | null
           province: string | null
           rut: string | null
           tax_regime: string | null
@@ -2221,9 +2225,11 @@ export type Database = {
           work_types: Database["public"]["Enums"]["work_type"][] | null
         }
         Insert: {
+          avatar_mood?: string | null
           beta_expires_at?: string | null
           beta_extended_by?: string | null
           beta_extension_reason?: string | null
+          birth_date?: string | null
           business_name?: string | null
           business_number?: string | null
           business_start_date?: string | null
@@ -2239,7 +2245,9 @@ export type Database = {
           is_beta_tester?: boolean | null
           language?: string | null
           multi_country_enabled?: boolean | null
+          nickname?: string | null
           onboarding_completed?: boolean | null
+          profile_completion_percentage?: number | null
           province?: string | null
           rut?: string | null
           tax_regime?: string | null
@@ -2247,9 +2255,11 @@ export type Database = {
           work_types?: Database["public"]["Enums"]["work_type"][] | null
         }
         Update: {
+          avatar_mood?: string | null
           beta_expires_at?: string | null
           beta_extended_by?: string | null
           beta_extension_reason?: string | null
+          birth_date?: string | null
           business_name?: string | null
           business_number?: string | null
           business_start_date?: string | null
@@ -2265,7 +2275,9 @@ export type Database = {
           is_beta_tester?: boolean | null
           language?: string | null
           multi_country_enabled?: boolean | null
+          nickname?: string | null
           onboarding_completed?: boolean | null
+          profile_completion_percentage?: number | null
           province?: string | null
           rut?: string | null
           tax_regime?: string | null
@@ -2905,6 +2917,129 @@ export type Database = {
           time_availability?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_life_profile: {
+        Row: {
+          anniversary_date: string | null
+          biggest_fears: string[] | null
+          biggest_financial_mistake: string | null
+          birthday_month: number | null
+          bucket_list: string[] | null
+          career_goals: string[] | null
+          children_ages: string[] | null
+          children_count: number | null
+          company_size: string | null
+          created_at: string
+          custom_milestones: Json | null
+          daily_routine: string | null
+          dependents_count: number | null
+          employment_status: string | null
+          financial_fears: string[] | null
+          has_children: boolean | null
+          hobbies: string[] | null
+          id: string
+          industry: string | null
+          job_title: string | null
+          last_profile_prompt: string | null
+          life_dreams: string[] | null
+          money_personality: string | null
+          motivations: string[] | null
+          passions: string[] | null
+          pets: string[] | null
+          profile_prompts_dismissed: number | null
+          proudest_financial_achievement: string | null
+          relationship_status: string | null
+          role_models: string | null
+          sections_completed: string[] | null
+          side_hustle: boolean | null
+          side_hustle_type: string | null
+          sports: string[] | null
+          updated_at: string
+          user_id: string
+          work_life_balance: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          anniversary_date?: string | null
+          biggest_fears?: string[] | null
+          biggest_financial_mistake?: string | null
+          birthday_month?: number | null
+          bucket_list?: string[] | null
+          career_goals?: string[] | null
+          children_ages?: string[] | null
+          children_count?: number | null
+          company_size?: string | null
+          created_at?: string
+          custom_milestones?: Json | null
+          daily_routine?: string | null
+          dependents_count?: number | null
+          employment_status?: string | null
+          financial_fears?: string[] | null
+          has_children?: boolean | null
+          hobbies?: string[] | null
+          id?: string
+          industry?: string | null
+          job_title?: string | null
+          last_profile_prompt?: string | null
+          life_dreams?: string[] | null
+          money_personality?: string | null
+          motivations?: string[] | null
+          passions?: string[] | null
+          pets?: string[] | null
+          profile_prompts_dismissed?: number | null
+          proudest_financial_achievement?: string | null
+          relationship_status?: string | null
+          role_models?: string | null
+          sections_completed?: string[] | null
+          side_hustle?: boolean | null
+          side_hustle_type?: string | null
+          sports?: string[] | null
+          updated_at?: string
+          user_id: string
+          work_life_balance?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          anniversary_date?: string | null
+          biggest_fears?: string[] | null
+          biggest_financial_mistake?: string | null
+          birthday_month?: number | null
+          bucket_list?: string[] | null
+          career_goals?: string[] | null
+          children_ages?: string[] | null
+          children_count?: number | null
+          company_size?: string | null
+          created_at?: string
+          custom_milestones?: Json | null
+          daily_routine?: string | null
+          dependents_count?: number | null
+          employment_status?: string | null
+          financial_fears?: string[] | null
+          has_children?: boolean | null
+          hobbies?: string[] | null
+          id?: string
+          industry?: string | null
+          job_title?: string | null
+          last_profile_prompt?: string | null
+          life_dreams?: string[] | null
+          money_personality?: string | null
+          motivations?: string[] | null
+          passions?: string[] | null
+          pets?: string[] | null
+          profile_prompts_dismissed?: number | null
+          proudest_financial_achievement?: string | null
+          relationship_status?: string | null
+          role_models?: string | null
+          sections_completed?: string[] | null
+          side_hustle?: boolean | null
+          side_hustle_type?: string | null
+          sports?: string[] | null
+          updated_at?: string
+          user_id?: string
+          work_life_balance?: string | null
+          years_experience?: number | null
         }
         Relationships: []
       }
