@@ -204,7 +204,8 @@ export function useConversationalOnboarding() {
 
   const currentQuestion = ONBOARDING_QUESTIONS[state.currentStep];
   const totalSteps = ONBOARDING_QUESTIONS.length;
-  const progress = ((state.currentStep) / totalSteps) * 100;
+  // Progress now shows current position (step 1 of 6 = 16.67%)
+  const progress = ((state.currentStep + 1) / totalSteps) * 100;
 
   const selectOption = useCallback((optionValue: string) => {
     if (!currentQuestion) return;
@@ -225,7 +226,7 @@ export function useConversationalOnboarding() {
         };
       });
     } else {
-      // Single select - move to next
+      // Single select - just save, don't auto-advance
       setState(prev => ({
         ...prev,
         responses: { ...prev.responses, [field]: optionValue },
@@ -236,9 +237,6 @@ export function useConversationalOnboarding() {
   const nextStep = useCallback(() => {
     if (state.currentStep < totalSteps - 1) {
       setState(prev => ({ ...prev, currentStep: prev.currentStep + 1 }));
-    } else {
-      // Complete onboarding
-      saveProfile();
     }
   }, [state.currentStep, totalSteps]);
 
@@ -249,7 +247,7 @@ export function useConversationalOnboarding() {
   }, [state.currentStep]);
 
   const saveProfile = useCallback(async () => {
-    if (!user) return;
+    if (!user) return false;
     
     setState(prev => ({ ...prev, isLoading: true }));
     
@@ -277,11 +275,13 @@ export function useConversationalOnboarding() {
       
       setState(prev => ({ ...prev, isComplete: true, isLoading: false }));
       toast.success('¡Perfil completado! 🎉');
+      return true;
       
     } catch (error: any) {
       console.error('Error saving profile:', error);
       toast.error(error.message || 'Error al guardar el perfil');
       setState(prev => ({ ...prev, isLoading: false }));
+      return false;
     }
   }, [user, state.responses, upsertProfile]);
 
@@ -317,6 +317,17 @@ export function useConversationalOnboarding() {
     }
   }, [state.responses]);
 
+  // Check if current question has a valid response
+  const hasCurrentResponse = useCallback(() => {
+    if (!currentQuestion) return false;
+    const response = state.responses[currentQuestion.field];
+    if (Array.isArray(response)) return response.length > 0;
+    return !!response;
+  }, [currentQuestion, state.responses]);
+
+  // Check if this is the last step
+  const isLastStep = state.currentStep === totalSteps - 1;
+
   return {
     state,
     currentQuestion,
@@ -327,6 +338,8 @@ export function useConversationalOnboarding() {
     previousStep,
     saveProfile,
     getPersonalizedSummary,
+    hasCurrentResponse,
+    isLastStep,
     questions: ONBOARDING_QUESTIONS,
   };
 }
