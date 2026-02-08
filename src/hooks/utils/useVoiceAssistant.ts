@@ -487,8 +487,8 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         return;
       }
       
-      // Only fallback for not_eligible
-      const shouldFallbackToNative = result.error === 'not_eligible';
+      // Fallback for not_eligible OR playback errors
+      const shouldFallbackToNative = ['not_eligible', 'playback_error', 'play_error', 'network_error'].includes(result.error || '');
       console.log('[Voice] Premium TTS failed:', result.error, '| Fallback:', shouldFallbackToNative);
       setIsSpeaking(false);
       setCurrentSpeakingText('');
@@ -500,6 +500,9 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         }, 500);
         return;
       }
+      
+      // Continue to native TTS fallback
+      console.log('[Voice] Falling back to native TTS');
     }
 
     // Use native TTS
