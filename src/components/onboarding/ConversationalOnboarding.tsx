@@ -1,13 +1,14 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Check, Sparkles, MessageCircle, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Sparkles, MessageCircle, Loader2, Volume2, VolumeX, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PhoenixLogo, PhoenixState } from '@/components/ui/phoenix-logo';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useConversationalOnboarding, OnboardingOption } from '@/hooks/utils/useConversationalOnboarding';
+import { useVoiceAssistant } from '@/hooks/utils/useVoiceAssistant';
 import { cn } from '@/lib/utils';
 import confetti from 'canvas-confetti';
 
@@ -21,6 +22,8 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
   const { language } = useLanguage();
   const lang = language as 'es' | 'en';
   const [isTyping, setIsTyping] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const hasSpokenRef = useRef<string | null>(null);
   
   const {
     state,
@@ -36,11 +39,35 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
     isLastStep,
   } = useConversationalOnboarding();
 
+  const { speak, stopSpeaking, isSpeaking, isSupported } = useVoiceAssistant({
+    onSpeakEnd: () => {
+      // Voice finished speaking
+    }
+  });
+
   // Phoenix state evolves with progress
   const phoenixState: PhoenixState = 
     state.currentStep <= 1 ? 'flames' :
     state.currentStep <= 3 ? 'smoke' :
     'rebirth';
+
+  // Speak the current question when it changes (only once per question)
+  useEffect(() => {
+    if (!voiceEnabled || !currentQuestion || !isSupported) return;
+    
+    const questionKey = `${currentQuestion.id}-${state.currentStep}`;
+    if (hasSpokenRef.current === questionKey) return;
+    
+    hasSpokenRef.current = questionKey;
+    
+    // Small delay for smoother transition
+    const timeout = setTimeout(() => {
+      const textToSpeak = `${currentQuestion.phoenixIntro[lang]}. ${currentQuestion.question[lang]}`;
+      speak(textToSpeak);
+    }, 500);
+    
+    return () => clearTimeout(timeout);
+  }, [currentQuestion, state.currentStep, voiceEnabled, lang, speak, isSupported]);
 
   // Check if current question has a selection
   const currentField = currentQuestion?.field;
@@ -54,21 +81,41 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
   };
 
   const handleOptionClick = useCallback((option: OnboardingOption) => {
+    stopSpeaking(); // Stop any ongoing speech
     selectOption(option.value);
     
     // For single-select, show typing animation then advance
     if (!currentQuestion?.allowMultiple) {
       setIsTyping(true);
+      
+      // Speak a brief acknowledgment
+      if (voiceEnabled && isSupported) {
+        const acks = lang === 'es' 
+          ? ['¡Excelente!', '¡Perfecto!', '¡Muy bien!', '¡Entendido!']
+          : ['Excellent!', 'Perfect!', 'Great!', 'Got it!'];
+        const ack = acks[Math.floor(Math.random() * acks.length)];
+        speak(ack);
+      }
+      
       setTimeout(() => {
         setIsTyping(false);
         nextStep();
-      }, 600);
+      }, 800);
     }
-  }, [currentQuestion, selectOption, nextStep]);
+  }, [currentQuestion, selectOption, nextStep, voiceEnabled, lang, speak, stopSpeaking, isSupported]);
 
   const handleComplete = useCallback(async () => {
+    stopSpeaking();
     const success = await saveProfile();
     if (success) {
+      // Speak completion message
+      if (voiceEnabled && isSupported) {
+        const message = lang === 'es' 
+          ? '¡Felicidades! Tu perfil está completo. Estoy listo para ayudarte en tu viaje financiero.'
+          : 'Congratulations! Your profile is complete. I\'m ready to help you on your financial journey.';
+        speak(message);
+      }
+      
       // Celebrate!
       confetti({
         particleCount: 100,
@@ -77,25 +124,52 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
         colors: ['#f97316', '#fb923c', '#fdba74'],
       });
       
-      // Navigate after a short celebration
+      // Navigate after celebration
       setTimeout(() => {
         onComplete();
         navigate('/dashboard');
-      }, 800);
+      }, 2000);
     }
-  }, [saveProfile, onComplete, navigate]);
+  }, [saveProfile, onComplete, navigate, voiceEnabled, lang, speak, stopSpeaking, isSupported]);
 
   const handleNextOrComplete = useCallback(() => {
+    stopSpeaking();
     if (isLastStep) {
       handleComplete();
     } else {
       setIsTyping(true);
+      
+      if (voiceEnabled && isSupported) {
+        const acks = lang === 'es' 
+          ? ['Sigamos adelante.', 'Continuemos.', 'Vamos a la siguiente.']
+          : ['Let\'s continue.', 'Moving on.', 'Next question.'];
+        const ack = acks[Math.floor(Math.random() * acks.length)];
+        speak(ack);
+      }
+      
       setTimeout(() => {
         setIsTyping(false);
         nextStep();
-      }, 400);
+      }, 600);
     }
-  }, [isLastStep, handleComplete, nextStep]);
+  }, [isLastStep, handleComplete, nextStep, voiceEnabled, lang, speak, stopSpeaking, isSupported]);
+
+  const handleBack = useCallback(() => {
+    stopSpeaking();
+    hasSpokenRef.current = null; // Allow re-speaking when going back
+    if (state.currentStep === 0) {
+      onBack?.();
+    } else {
+      previousStep();
+    }
+  }, [state.currentStep, onBack, previousStep, stopSpeaking]);
+
+  const toggleVoice = useCallback(() => {
+    if (voiceEnabled) {
+      stopSpeaking();
+    }
+    setVoiceEnabled(!voiceEnabled);
+  }, [voiceEnabled, stopSpeaking]);
 
   if (state.isComplete) {
     return (
@@ -127,18 +201,47 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
-      {/* Progress bar */}
+      {/* Progress bar with voice toggle */}
       <div className="space-y-2">
-        <div className="flex justify-between text-sm text-white/60">
+        <div className="flex justify-between items-center text-sm text-white/60">
           <span>{lang === 'es' ? 'Paso' : 'Step'} {state.currentStep + 1} / {totalSteps}</span>
-          <span>{Math.round(progress)}%</span>
+          <div className="flex items-center gap-3">
+            <span>{Math.round(progress)}%</span>
+            {isSupported && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleVoice}
+                className={cn(
+                  "h-8 w-8 p-0 rounded-full",
+                  voiceEnabled ? "text-primary bg-primary/20" : "text-white/40"
+                )}
+              >
+                {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </Button>
+            )}
+          </div>
         </div>
         <Progress value={progress} className="h-2" />
       </div>
 
-      {/* Phoenix Logo with evolution */}
-      <div className="flex justify-center">
-        <PhoenixLogo variant="sidebar" state={phoenixState} />
+      {/* Phoenix Logo with speaking indicator */}
+      <div className="flex flex-col items-center gap-2">
+        <div className="relative">
+          <PhoenixLogo variant="sidebar" state={phoenixState} />
+          {isSpeaking && (
+            <motion.div 
+              className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-primary/20 px-2 py-1 rounded-full"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              <Mic className="h-3 w-3 text-primary animate-pulse" />
+              <span className="text-xs text-primary">
+                {lang === 'es' ? 'Hablando...' : 'Speaking...'}
+              </span>
+            </motion.div>
+          )}
+        </div>
       </div>
 
       {/* Question Card */}
@@ -152,7 +255,7 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
         >
           <Card className="shadow-xl border-primary/20">
             <CardHeader className="space-y-4">
-              {/* Phoenix intro message with typing indicator */}
+              {/* Phoenix intro message */}
               <div className="flex items-start gap-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
                 <MessageCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
@@ -190,7 +293,7 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
                 <motion.button
                   key={option.id}
                   onClick={() => handleOptionClick(option)}
-                  disabled={isTyping}
+                  disabled={isTyping || isSpeaking}
                   className={cn(
                     "w-full p-4 rounded-lg border-2 text-left transition-all",
                     "hover:border-primary hover:bg-primary/5",
@@ -203,8 +306,8 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: isTyping ? 1 : 1.01 }}
-                  whileTap={{ scale: isTyping ? 1 : 0.99 }}
+                  whileHover={{ scale: (isTyping || isSpeaking) ? 1 : 1.01 }}
+                  whileTap={{ scale: (isTyping || isSpeaking) ? 1 : 0.99 }}
                 >
                   <div className="flex items-center gap-3">
                     {option.icon && (
@@ -239,7 +342,7 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
       <div className="flex justify-between">
         <Button
           variant="outline"
-          onClick={state.currentStep === 0 ? onBack : previousStep}
+          onClick={handleBack}
           disabled={isTyping}
           className="gap-2"
         >
