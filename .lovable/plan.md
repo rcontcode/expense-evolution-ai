@@ -249,4 +249,3 @@ Sistema de referidos amplifica alcance
 | Escalar | Sistema de referidos built-in |
 
 **Próximo paso concreto:** Crear los 3-5 posts de contenido y comenzar a contactar los 12 leads que ya tienes.
-
