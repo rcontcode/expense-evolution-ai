@@ -45,12 +45,12 @@ const ESSENTIAL_QUESTIONS: OnboardingQuestion[] = [
       en: 'What should I call you?'
     },
     phoenixIntro: {
-      es: '¡Hola! 👋 Soy Phoenix, tu mentor financiero personal. Antes de empezar, quiero conocerte mejor.',
-      en: 'Hello! 👋 I\'m Phoenix, your personal financial mentor. Before we begin, I want to get to know you better.'
+      es: '¡¡Hooola!! 🔥 ¡Qué emoción conocerte! Soy Phoenix, tu mentor financiero personal, y estoy aquí para ayudarte a conquistar tus metas. ¡Vamos a hacer magia juntos! Primero, cuéntame:',
+      en: "Hey there!! 🔥 I'm SO excited to meet you! I'm Phoenix, your personal financial mentor, and I'm here to help you conquer your goals. Let's make magic together! First, tell me:"
     },
     options: [
       { id: 'first_name', label: { es: 'Mi nombre', en: 'My first name' }, value: 'first_name', icon: '👤' },
-      { id: 'nickname', label: { es: 'Un apodo', en: 'A nickname' }, value: 'nickname', icon: '😊' },
+      { id: 'nickname', label: { es: 'Un apodo especial', en: 'A special nickname' }, value: 'nickname', icon: '😊' },
     ],
     field: 'name_preference',
     table: 'profile',
@@ -59,17 +59,17 @@ const ESSENTIAL_QUESTIONS: OnboardingQuestion[] = [
   {
     id: 'life_situation',
     question: {
-      es: '¿Cuál describe mejor tu situación actual?',
-      en: 'Which best describes your current situation?'
+      es: '¿Cuál describe mejor tu momento actual?',
+      en: 'Which best describes your current moment?'
     },
     phoenixIntro: {
-      es: 'Entender tu momento de vida me ayuda a darte consejos relevantes.',
-      en: 'Understanding your life stage helps me give you relevant advice.'
+      es: '¡Genial! 🎉 Ahora cuéntame un poquito más de ti. Esto me ayuda a darte consejos que realmente te sirvan:',
+      en: "Awesome! 🎉 Now tell me a bit more about yourself. This helps me give you advice that actually works for YOU:"
     },
     options: [
-      { id: 'single', label: { es: 'Soltero/a', en: 'Single' }, description: { es: 'Enfocado en mí', en: 'Focused on myself' }, value: 'single', icon: '🙋' },
-      { id: 'partnered', label: { es: 'En pareja', en: 'In a relationship' }, description: { es: 'Compartiendo la vida', en: 'Sharing life' }, value: 'partnered', icon: '💑' },
-      { id: 'family', label: { es: 'Con familia', en: 'With family' }, description: { es: 'Hijos o dependientes', en: 'Children or dependents' }, value: 'family', icon: '👨‍👩‍👧' },
+      { id: 'single', label: { es: 'Volando solo', en: 'Flying solo' }, description: { es: 'Enfocado en mí', en: 'Focused on me' }, value: 'single', icon: '🦅' },
+      { id: 'partnered', label: { es: 'En equipo', en: 'Team player' }, description: { es: 'Con mi pareja', en: 'With my partner' }, value: 'partnered', icon: '💕' },
+      { id: 'family', label: { es: 'Modo familia', en: 'Family mode' }, description: { es: 'Con hijos o dependientes', en: 'Kids or dependents' }, value: 'family', icon: '👨‍👩‍👧‍👦' },
     ],
     field: 'relationship_status',
     table: 'life',
@@ -79,18 +79,18 @@ const ESSENTIAL_QUESTIONS: OnboardingQuestion[] = [
   {
     id: 'work_status',
     question: {
-      es: '¿Cuál es tu situación laboral?',
-      en: 'What\'s your work situation?'
+      es: '¿Cómo generas tu dinero?',
+      en: 'How do you make your money?'
     },
     phoenixIntro: {
-      es: 'Tu tipo de trabajo influye en las estrategias que te recomendaré.',
-      en: 'Your type of work influences the strategies I\'ll recommend.'
+      es: '¡Perfecto! 💪 Ahora hablemos de lo que te mantiene ocupado. Tu tipo de trabajo cambia completamente las estrategias que te daré:',
+      en: "Perfect! 💪 Now let's talk about what keeps you busy. Your work type totally changes the strategies I'll give you:"
     },
     options: [
-      { id: 'employed', label: { es: 'Empleado/a', en: 'Employed' }, description: { es: 'Trabajo para una empresa', en: 'Work for a company' }, value: 'employed', icon: '💼' },
-      { id: 'self_employed', label: { es: 'Independiente', en: 'Self-employed' }, description: { es: 'Mi propio negocio', en: 'My own business' }, value: 'self_employed', icon: '🚀' },
-      { id: 'mixed', label: { es: 'Ambos', en: 'Both' }, description: { es: 'Empleado + proyectos', en: 'Employee + side projects' }, value: 'mixed', icon: '⚡' },
-      { id: 'other', label: { es: 'Otro', en: 'Other' }, description: { es: 'Estudiante, retirado, etc.', en: 'Student, retired, etc.' }, value: 'other', icon: '🌟' },
+      { id: 'employed', label: { es: 'Empleado', en: 'Employee' }, description: { es: 'En una empresa', en: 'At a company' }, value: 'employed', icon: '💼' },
+      { id: 'self_employed', label: { es: 'Mi propio jefe', en: 'My own boss' }, description: { es: 'Freelance o negocio', en: 'Freelance or business' }, value: 'self_employed', icon: '🚀' },
+      { id: 'mixed', label: { es: 'De todo un poco', en: 'A bit of everything' }, description: { es: 'Empleo + proyectos', en: 'Job + side projects' }, value: 'mixed', icon: '⚡' },
+      { id: 'other', label: { es: 'Otra cosa', en: 'Something else' }, description: { es: 'Estudiante, retirado...', en: 'Student, retired...' }, value: 'other', icon: '🌟' },
     ],
     field: 'employment_status',
     table: 'life',
@@ -100,19 +100,19 @@ const ESSENTIAL_QUESTIONS: OnboardingQuestion[] = [
   {
     id: 'goal',
     question: {
-      es: '¿Cuál es tu principal meta financiera?',
-      en: 'What is your main financial goal?'
+      es: '¿Cuál es tu misión financiera?',
+      en: 'What is your financial mission?'
     },
     phoenixIntro: {
-      es: 'Ahora lo importante: ¿qué quieres lograr con tu dinero?',
-      en: 'Now the important part: what do you want to achieve with your money?'
+      es: '¡Ahora viene lo BUENO! 🔥 Cuéntame, ¿qué quieres lograr con tu dinero? ¡Puedes elegir varias opciones!',
+      en: "NOW we're getting to the GOOD stuff! 🔥 Tell me, what do you want to achieve with your money? You can pick multiple!"
     },
     options: [
-      { id: 'debt', label: { es: 'Salir de deudas', en: 'Get out of debt' }, value: 'debt_free', icon: '💪' },
-      { id: 'save', label: { es: 'Ahorrar más', en: 'Save more' }, value: 'savings', icon: '💰' },
-      { id: 'retire', label: { es: 'Retiro temprano (FIRE)', en: 'Early retirement (FIRE)' }, value: 'fire', icon: '🔥' },
-      { id: 'passive', label: { es: 'Ingresos pasivos', en: 'Passive income' }, value: 'passive_income', icon: '📈' },
-      { id: 'organize', label: { es: 'Organizar mis finanzas', en: 'Organize my finances' }, value: 'organization', icon: '📊' },
+      { id: 'debt', label: { es: '¡Libertad de deudas!', en: 'Debt freedom!' }, value: 'debt_free', icon: '💪' },
+      { id: 'save', label: { es: 'Ahorrar como campeón', en: 'Save like a champion' }, value: 'savings', icon: '💰' },
+      { id: 'retire', label: { es: 'Retirarme joven (FIRE)', en: 'Early retirement (FIRE)' }, value: 'fire', icon: '🔥' },
+      { id: 'passive', label: { es: 'Dinero trabajando por mí', en: 'Money working for me' }, value: 'passive_income', icon: '📈' },
+      { id: 'organize', label: { es: 'Orden en mis finanzas', en: 'Financial order' }, value: 'organization', icon: '📊' },
     ],
     field: 'passions',
     table: 'financial',
@@ -122,17 +122,17 @@ const ESSENTIAL_QUESTIONS: OnboardingQuestion[] = [
   {
     id: 'experience',
     question: {
-      es: '¿Cómo describirías tu experiencia financiera?',
-      en: 'How would you describe your financial experience?'
+      es: '¿Qué tan cómodo te sientes con las finanzas?',
+      en: 'How comfortable are you with finances?'
     },
     phoenixIntro: {
-      es: 'Para calibrar cómo te explico las cosas...',
-      en: 'To calibrate how I explain things...'
+      es: '¡Ya casi terminamos! 🎯 Una última cosa: esto me ayuda a explicarte todo en el nivel correcto:',
+      en: "We're almost done! 🎯 One last thing: this helps me explain everything at the right level for you:"
     },
     options: [
-      { id: 'beginner', label: { es: 'Principiante', en: 'Beginner' }, description: { es: 'Empezando a aprender', en: 'Just starting to learn' }, value: 'beginner', icon: '🌱' },
-      { id: 'intermediate', label: { es: 'Intermedio', en: 'Intermediate' }, description: { es: 'Conozco lo básico', en: 'Know the basics' }, value: 'intermediate', icon: '📚' },
-      { id: 'advanced', label: { es: 'Avanzado', en: 'Advanced' }, description: { es: 'Experiencia significativa', en: 'Significant experience' }, value: 'advanced', icon: '🎓' },
+      { id: 'beginner', label: { es: 'Recién empezando', en: 'Just starting' }, description: { es: '¡Sin vergüenza, todos empezamos!', en: 'No shame, we all start somewhere!' }, value: 'beginner', icon: '🌱' },
+      { id: 'intermediate', label: { es: 'Me defiendo', en: 'I get by' }, description: { es: 'Conozco lo básico', en: 'Know the basics' }, value: 'intermediate', icon: '📚' },
+      { id: 'advanced', label: { es: 'Soy pro', en: "I'm a pro" }, description: { es: '¡Domino el tema!', en: 'I got this!' }, value: 'advanced', icon: '🏆' },
     ],
     field: 'financial_education_level',
     table: 'financial',
@@ -146,22 +146,23 @@ const EXTENDED_QUESTIONS: OnboardingQuestion[] = [
   {
     id: 'hobbies',
     question: {
-      es: '¿Qué te apasiona hacer en tu tiempo libre?',
-      en: 'What do you love doing in your free time?'
+      es: '¿Qué te hace feliz fuera del trabajo?',
+      en: 'What makes you happy outside of work?'
     },
     phoenixIntro: {
-      es: 'Conocer tus pasiones me ayuda a motivarte de forma más personal. 🎯',
-      en: 'Knowing your passions helps me motivate you more personally. 🎯'
+      es: '¡Oye, esto es SUPER importante! 🎉 Quiero conocer al humano detrás de los números. ¿Qué te apasiona? ¡Cuéntame todo!',
+      en: "Hey, this is SUPER important! 🎉 I want to know the human behind the numbers. What are you passionate about? Tell me everything!"
     },
     options: [
       { id: 'sports', label: { es: 'Deportes', en: 'Sports' }, value: 'sports', icon: '⚽' },
       { id: 'gaming', label: { es: 'Videojuegos', en: 'Gaming' }, value: 'gaming', icon: '🎮' },
       { id: 'reading', label: { es: 'Lectura', en: 'Reading' }, value: 'reading', icon: '📖' },
       { id: 'travel', label: { es: 'Viajar', en: 'Travel' }, value: 'travel', icon: '✈️' },
-      { id: 'music', label: { es: 'Música', en: 'Music' }, value: 'music', icon: '🎵' },
+      { id: 'musician', label: { es: 'Tocar música', en: 'Play music' }, value: 'musician', icon: '🎸' },
+      { id: 'dancing', label: { es: 'Bailar', en: 'Dancing' }, value: 'dancing', icon: '💃' },
       { id: 'cooking', label: { es: 'Cocinar', en: 'Cooking' }, value: 'cooking', icon: '👨‍🍳' },
       { id: 'art', label: { es: 'Arte/Creatividad', en: 'Art/Creativity' }, value: 'art', icon: '🎨' },
-      { id: 'outdoors', label: { es: 'Aire libre', en: 'Outdoors' }, value: 'outdoors', icon: '🏕️' },
+      { id: 'outdoors', label: { es: 'Naturaleza', en: 'Nature' }, value: 'outdoors', icon: '🏕️' },
     ],
     field: 'hobbies',
     table: 'life',
@@ -174,20 +175,20 @@ const EXTENDED_QUESTIONS: OnboardingQuestion[] = [
   {
     id: 'dreams',
     question: {
-      es: '¿Cuál es tu mayor sueño en la vida?',
-      en: 'What\'s your biggest dream in life?'
+      es: '¿Cuál es ESE sueño que te quita el sueño?',
+      en: "What's THAT dream that keeps you up at night?"
     },
     phoenixIntro: {
-      es: 'Los sueños grandes necesitan planes financieros sólidos. ¿Cuál es el tuyo? ✨',
-      en: 'Big dreams need solid financial plans. What\'s yours? ✨'
+      es: '¡Ahora sí! 🌟 Hablemos de lo que realmente importa. Ese sueño grande, ese "algún día"... ¡cuéntamelo!',
+      en: "Now we're talking! 🌟 Let's discuss what really matters. That big dream, that 'someday'... tell me about it!"
     },
     options: [
-      { id: 'home', label: { es: 'Casa propia', en: 'Own a home' }, value: 'own_home', icon: '🏠' },
-      { id: 'travel_world', label: { es: 'Viajar por el mundo', en: 'Travel the world' }, value: 'travel_world', icon: '🌍' },
-      { id: 'retire_early', label: { es: 'Retirarme joven', en: 'Retire early' }, value: 'retire_early', icon: '🏖️' },
-      { id: 'business', label: { es: 'Mi propio negocio', en: 'Start a business' }, value: 'start_business', icon: '🚀' },
-      { id: 'family_security', label: { es: 'Seguridad familiar', en: 'Family security' }, value: 'family_security', icon: '👨‍👩‍👧‍👦' },
-      { id: 'financial_freedom', label: { es: 'Libertad financiera', en: 'Financial freedom' }, value: 'financial_freedom', icon: '🦅' },
+      { id: 'home', label: { es: '¡Mi propia casa!', en: 'My own home!' }, value: 'own_home', icon: '🏠' },
+      { id: 'travel_world', label: { es: 'Recorrer el mundo', en: 'See the world' }, value: 'travel_world', icon: '🌍' },
+      { id: 'retire_early', label: { es: 'Retirarme joven', en: 'Retire young' }, value: 'retire_early', icon: '🏖️' },
+      { id: 'business', label: { es: 'Mi propio imperio', en: 'My own empire' }, value: 'start_business', icon: '🚀' },
+      { id: 'family_security', label: { es: 'Familia protegida', en: 'Family protected' }, value: 'family_security', icon: '🛡️' },
+      { id: 'financial_freedom', label: { es: '¡Libertad total!', en: 'Total freedom!' }, value: 'financial_freedom', icon: '🦅' },
     ],
     field: 'life_dreams',
     table: 'life',
@@ -199,20 +200,20 @@ const EXTENDED_QUESTIONS: OnboardingQuestion[] = [
   {
     id: 'motivations',
     question: {
-      es: '¿Qué te motiva a mejorar tus finanzas?',
-      en: 'What motivates you to improve your finances?'
+      es: '¿Por quién te levantas cada mañana a luchar?',
+      en: 'Who do you wake up fighting for every morning?'
     },
     phoenixIntro: {
-      es: 'Entender tu "por qué" es clave para mantenerte enfocado en los momentos difíciles.',
-      en: 'Understanding your "why" is key to staying focused during tough times.'
+      es: '💪 Esta es la pregunta más poderosa. Tu "para quién" es tu combustible cuando las cosas se ponen difíciles:',
+      en: "💪 This is the most powerful question. Your 'for whom' is your fuel when things get tough:"
     },
     options: [
       { id: 'family', label: { es: 'Mi familia', en: 'My family' }, value: 'family', icon: '👨‍👩‍👧' },
-      { id: 'freedom', label: { es: 'Libertad', en: 'Freedom' }, value: 'freedom', icon: '🦅' },
-      { id: 'security', label: { es: 'Seguridad', en: 'Security' }, value: 'security', icon: '🛡️' },
-      { id: 'legacy', label: { es: 'Dejar legado', en: 'Leave a legacy' }, value: 'legacy', icon: '🌳' },
-      { id: 'experiences', label: { es: 'Vivir experiencias', en: 'Live experiences' }, value: 'experiences', icon: '🎯' },
-      { id: 'peace', label: { es: 'Tranquilidad', en: 'Peace of mind' }, value: 'peace', icon: '☮️' },
+      { id: 'children', label: { es: 'Mis hijos', en: 'My kids' }, value: 'children', icon: '👶' },
+      { id: 'partner', label: { es: 'Mi pareja', en: 'My partner' }, value: 'partner', icon: '💕' },
+      { id: 'myself', label: { es: '¡Por mí mismo!', en: 'For myself!' }, value: 'myself', icon: '💪' },
+      { id: 'parents', label: { es: 'Mis padres', en: 'My parents' }, value: 'parents', icon: '👴👵' },
+      { id: 'future', label: { es: 'Mi futuro yo', en: 'My future self' }, value: 'future_self', icon: '🌟' },
     ],
     field: 'motivations',
     table: 'life',
