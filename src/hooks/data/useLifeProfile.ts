@@ -29,6 +29,7 @@ export interface LifeProfile {
   hobbies: string[];
   sports: string[];
   passions: string[];
+  interests: string[];
   daily_routine: string | null;
   work_life_balance: string | null;
   
