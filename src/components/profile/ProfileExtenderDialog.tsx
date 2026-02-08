@@ -73,12 +73,29 @@ const EXTENDED_QUESTIONS: Record<LifeProfileSection, ExtendedQuestion[]> = {
       field: 'hobbies',
       type: 'multiple',
       options: [
-        { id: 'sports', label: { es: 'Deportes', en: 'Sports' }, value: 'sports', icon: '⚽' },
-        { id: 'gaming', label: { es: 'Videojuegos', en: 'Gaming' }, value: 'gaming', icon: '🎮' },
         { id: 'reading', label: { es: 'Lectura', en: 'Reading' }, value: 'reading', icon: '📖' },
         { id: 'travel', label: { es: 'Viajar', en: 'Travel' }, value: 'travel', icon: '✈️' },
         { id: 'music', label: { es: 'Música', en: 'Music' }, value: 'music', icon: '🎵' },
         { id: 'cooking', label: { es: 'Cocinar', en: 'Cooking' }, value: 'cooking', icon: '👨‍🍳' },
+        { id: 'gaming', label: { es: 'Videojuegos', en: 'Gaming' }, value: 'gaming', icon: '🎮' },
+        { id: 'art', label: { es: 'Arte/Fotografía', en: 'Art/Photography' }, value: 'art', icon: '🎨' },
+      ],
+    },
+    {
+      id: 'sports',
+      question: { es: '¿Practicas algún deporte o actividad física?', en: 'Do you practice any sport or physical activity?' },
+      intro: { es: 'El ejercicio es inversión en salud... ¡y ahorro en doctores! 💪', en: 'Exercise is an investment in health... and savings on doctors! 💪' },
+      field: 'sports',
+      type: 'multiple',
+      options: [
+        { id: 'gym', label: { es: 'Gimnasio', en: 'Gym' }, value: 'gym', icon: '🏋️' },
+        { id: 'running', label: { es: 'Running/Jogging', en: 'Running/Jogging' }, value: 'running', icon: '🏃' },
+        { id: 'soccer', label: { es: 'Fútbol', en: 'Soccer' }, value: 'soccer', icon: '⚽' },
+        { id: 'swimming', label: { es: 'Natación', en: 'Swimming' }, value: 'swimming', icon: '🏊' },
+        { id: 'cycling', label: { es: 'Ciclismo', en: 'Cycling' }, value: 'cycling', icon: '🚴' },
+        { id: 'yoga', label: { es: 'Yoga/Pilates', en: 'Yoga/Pilates' }, value: 'yoga', icon: '🧘' },
+        { id: 'tennis', label: { es: 'Tenis/Padel', en: 'Tennis/Padel' }, value: 'tennis', icon: '🎾' },
+        { id: 'none', label: { es: 'No por ahora', en: 'Not right now' }, value: 'none', icon: '😅' },
       ],
     },
     {
@@ -185,7 +202,9 @@ export function ProfileExtenderDialog({
   const [currentStep, setCurrentStep] = useState(0);
   const [responses, setResponses] = useState<Record<string, string | string[]>>({});
   const [isTyping, setIsTyping] = useState(false);
+  const [interimText, setInterimText] = useState('');
   const hasSpokenRef = useRef<string | null>(null);
+  const handleOptionSelectRef = useRef<(value: string) => void>(() => {});
   
   const questions = EXTENDED_QUESTIONS[section] || [];
   const currentQuestion = questions[currentStep];
@@ -193,6 +212,24 @@ export function ProfileExtenderDialog({
   
   const upsertLifeProfile = useUpsertLifeProfile();
   const markSectionComplete = useMarkSectionComplete();
+  
+  // Voice transcript handler - match spoken words to options
+  const handleVoiceTranscript = useCallback((transcript: string) => {
+    if (!currentQuestion?.options) return;
+    
+    const lowerTranscript = transcript.toLowerCase();
+    
+    // Find matching option
+    const matchedOption = currentQuestion.options.find(opt => 
+      lowerTranscript.includes(opt.label.es.toLowerCase()) ||
+      lowerTranscript.includes(opt.label.en.toLowerCase())
+    );
+    
+    if (matchedOption) {
+      handleOptionSelectRef.current(matchedOption.value);
+      setInterimText('');
+    }
+  }, [currentQuestion]);
   
   // Voice setup
   const selectedPremiumVoiceId = voicePrefs.getPremiumVoiceId(lang) || undefined;
@@ -210,9 +247,13 @@ export function ProfileExtenderDialog({
     selectedVoiceName: voicePrefs.selectedVoiceName,
     premiumSpeak: elevenLabsTTS.speak,
     isPremiumSpeaking: elevenLabsTTS.isSpeaking,
+    onTranscript: handleVoiceTranscript,
+    onInterimTranscript: setInterimText,
   });
   
   const isSpeaking = voiceAssistant.isSpeaking || elevenLabsTTS.isSpeaking;
+  const isListening = voiceAssistant.isListening;
+  const canListen = !isSpeaking && !isTyping;
   
   // Speak question when it changes
   useEffect(() => {
@@ -265,6 +306,20 @@ export function ProfileExtenderDialog({
     }
   }, [currentQuestion, responses, currentStep, questions.length]);
   
+  // Update ref when function changes
+  useEffect(() => {
+    handleOptionSelectRef.current = handleOptionSelect;
+  }, [handleOptionSelect]);
+  
+  // Toggle microphone
+  const toggleListening = useCallback(() => {
+    if (isListening) {
+      voiceAssistant.stopListening();
+    } else {
+      voiceAssistant.startListening();
+    }
+  }, [isListening, voiceAssistant]);
+
   const handleNext = useCallback(() => {
     if (currentStep < questions.length - 1) {
       setCurrentStep(prev => prev + 1);
@@ -376,6 +431,51 @@ export function ProfileExtenderDialog({
                   </motion.button>
                 ))}
               </div>
+            )}
+            
+            {/* Voice input section */}
+            <div className="flex items-center justify-center gap-3 pt-2">
+              {/* Microphone button */}
+              <motion.button
+                onClick={toggleListening}
+                disabled={!canListen}
+                className={cn(
+                  "p-4 rounded-full transition-all shadow-lg",
+                  isListening
+                    ? "bg-primary text-primary-foreground shadow-primary/40 animate-pulse"
+                    : canListen
+                      ? "bg-muted hover:bg-primary/20 hover:text-primary"
+                      : "bg-muted opacity-50 cursor-not-allowed"
+                )}
+                whileHover={canListen ? { scale: 1.05 } : {}}
+                whileTap={canListen ? { scale: 0.95 } : {}}
+                aria-label={isListening ? 'Stop listening' : 'Start listening'}
+              >
+                {isListening ? (
+                  <MicOff className="h-5 w-5" />
+                ) : (
+                  <Mic className="h-5 w-5" />
+                )}
+              </motion.button>
+              
+              {/* Status text */}
+              <span className="text-sm text-muted-foreground">
+                {isListening 
+                  ? (lang === 'es' ? 'Escuchando...' : 'Listening...')
+                  : (lang === 'es' ? 'Toca para hablar' : 'Tap to speak')
+                }
+              </span>
+            </div>
+            
+            {/* Live transcript */}
+            {interimText && (
+              <motion.div
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center text-sm text-muted-foreground italic bg-muted/50 px-3 py-2 rounded-lg"
+              >
+                "{interimText}"
+              </motion.div>
             )}
           </motion.div>
         </AnimatePresence>
