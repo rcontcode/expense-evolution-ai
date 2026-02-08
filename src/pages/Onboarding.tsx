@@ -11,10 +11,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ChevronRight, ChevronLeft, Check, Sparkles } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Check, Sparkles, FileText, MessageCircle } from 'lucide-react';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { SampleDataOfferStep } from '@/components/guidance/SampleDataOfferStep';
 import { PhoenixLogo, PhoenixState } from '@/components/ui/phoenix-logo';
+import { ConversationalOnboarding } from '@/components/onboarding/ConversationalOnboarding';
 
 const PROVINCES = [
   'British Columbia', 'Alberta', 'Saskatchewan', 'Manitoba',
@@ -23,6 +24,7 @@ const PROVINCES = [
 ];
 
 export default function Onboarding() {
+  const [mode, setMode] = useState<'select' | 'traditional' | 'conversational'>('select');
   const [step, setStep] = useState(1);
   const [province, setProvince] = useState('');
   const [workTypes, setWorkTypes] = useState<('employee' | 'contractor' | 'corporation')[]>([]);
@@ -248,6 +250,109 @@ export default function Onboarding() {
     }
   };
 
+  // Mode selection screen
+  if (mode === 'select') {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-hero p-4 gap-6">
+        <div className="flex flex-col items-center gap-4">
+          <PhoenixLogo variant="sidebar" state="flames" />
+        </div>
+
+        <div className="text-center space-y-2 max-w-2xl">
+          <div className="flex items-center justify-center gap-2 text-primary">
+            <Sparkles className="h-6 w-6" />
+            <span className="text-sm font-medium uppercase tracking-wider">
+              {language === 'es' ? 'Bienvenida' : 'Welcome'}
+            </span>
+            <Sparkles className="h-6 w-6" />
+          </div>
+          <h1 className="text-3xl font-bold text-white">
+            {language === 'es' 
+              ? `¡Hola${firstName ? `, ${firstName}` : ''}! 👋`
+              : `Hello${firstName ? `, ${firstName}` : ''}! 👋`
+            }
+          </h1>
+          <p className="text-white/80">
+            {language === 'es'
+              ? '¿Cómo prefieres configurar tu perfil?'
+              : 'How would you like to set up your profile?'
+            }
+          </p>
+        </div>
+
+        <MentorQuoteBanner className="w-full max-w-2xl" />
+
+        <Card className="w-full max-w-2xl shadow-xl">
+          <CardHeader>
+            <CardTitle>
+              {language === 'es' ? 'Elige tu experiencia' : 'Choose your experience'}
+            </CardTitle>
+            <CardDescription>
+              {language === 'es' 
+                ? 'Ambas opciones te llevan al mismo resultado'
+                : 'Both options lead to the same result'
+              }
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              onClick={() => setMode('traditional')}
+              className="p-6 rounded-lg border-2 border-border hover:border-primary hover:bg-primary/5 transition-all text-left space-y-3"
+            >
+              <FileText className="h-8 w-8 text-primary" />
+              <div>
+                <h3 className="font-semibold">
+                  {language === 'es' ? 'Formulario rápido' : 'Quick form'}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'es' 
+                    ? '~2 minutos • Preguntas directas'
+                    : '~2 minutes • Direct questions'
+                  }
+                </p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setMode('conversational')}
+              className="p-6 rounded-lg border-2 border-primary bg-primary/10 hover:bg-primary/15 transition-all text-left space-y-3"
+            >
+              <MessageCircle className="h-8 w-8 text-primary" />
+              <div>
+                <h3 className="font-semibold">
+                  {language === 'es' ? 'Conversar con Phoenix' : 'Chat with Phoenix'}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'es' 
+                    ? '~5 minutos • Más personalizado'
+                    : '~5 minutes • More personalized'
+                  }
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+                <Sparkles className="h-3 w-3" />
+                {language === 'es' ? 'Recomendado' : 'Recommended'}
+              </span>
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Conversational mode
+  if (mode === 'conversational') {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-hero p-4 gap-6">
+        <ConversationalOnboarding 
+          onComplete={() => navigate('/dashboard')}
+          onBack={() => setMode('select')}
+        />
+      </div>
+    );
+  }
+
+  // Traditional form mode
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-hero p-4 gap-6">
       {/* Phoenix Logo - Evolves with onboarding progress */}
@@ -294,12 +399,17 @@ export default function Onboarding() {
         {/* Navigation - only show for steps 1-3 */}
         {step < 4 && (
           <div className="flex justify-between p-6 border-t">
-            {step > 1 && (
+            {step === 1 ? (
+              <Button variant="outline" onClick={() => setMode('select')}>
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                {t('onboarding.back')}
+              </Button>
+            ) : step > 1 ? (
               <Button variant="outline" onClick={() => setStep(step - 1)}>
                 <ChevronLeft className="mr-2 h-4 w-4" />
                 {t('onboarding.back')}
               </Button>
-            )}
+            ) : null}
             {step < 3 ? (
               <Button onClick={() => setStep(step + 1)} className="ml-auto">
                 {t('onboarding.next')}

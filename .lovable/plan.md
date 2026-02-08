@@ -1,5 +1,31 @@
 
-# Plan: Mejorar el Asistente Phoenix y Crear Onboarding Conversacional
+# Plan: Mejoras del Asistente Phoenix y Onboarding Conversacional
+
+## ✅ COMPLETADO
+
+### Fase 1: Enriquecimiento del Contexto del Asistente
+- [x] Agregado `useFinancialProfile` hook en ChatAssistant.tsx
+- [x] Contexto enriquecido incluye: experienceLevel, riskTolerance, goals, interests, talents, availableCapital, monthlyInvestmentCapacity, preferredIncomeType, timeAvailability
+- [x] También incluye workTypes, country, province del perfil básico
+
+### Fase 2: Personalización del System Prompt
+- [x] Reglas de personalización según nivel de experiencia (principiante/intermedio/avanzado)
+- [x] Ajuste de respuestas según tolerancia al riesgo (conservador/moderado/agresivo)
+- [x] Conexión de respuestas con metas del usuario
+
+### Fase 3: Onboarding Conversacional
+- [x] Creado `useConversationalOnboarding.ts` hook con flujo de 6 preguntas
+- [x] Creado `ConversationalOnboarding.tsx` componente con UI interactiva
+- [x] Integrado en Onboarding.tsx con selector de modo (formulario rápido vs conversacional)
+- [x] Phoenix guía al usuario con mensajes personalizados
+
+### Fase 4: Nuevos Tutoriales
+- [x] Añadido: bank-reconciliation (reconciliación bancaria)
+- [x] Añadido: beta-feedback (centro de feedback)
+- [x] Añadido: financial-journal (diario financiero)
+- [x] Añadido: habit-tracker (rastreador de hábitos)
+
+---
 
 ---
 

@@ -15,6 +15,7 @@ import { useIncome, useCreateIncome } from '@/hooks/data/useIncome';
 import { useClients } from '@/hooks/data/useClients';
 import { useProjects } from '@/hooks/data/useProjects';
 import { useExpenses, useCreateExpense } from '@/hooks/data/useExpenses';
+import { useFinancialProfile } from '@/hooks/data/useFinancialProfile';
 import { KaraokeText } from './KaraokeText';
 import { MinimizedAssistant } from './MinimizedAssistant';
 import { MinimizedAssistantBubble } from './MinimizedAssistantBubble';
@@ -144,6 +145,7 @@ export const ChatAssistant: React.FC = () => {
   const { data: clients } = useClients();
   const { data: projects } = useProjects();
   const { data: expenses } = useExpenses();
+  const { data: financialProfile } = useFinancialProfile();
   const { language } = useLanguage();
   const createExpense = useCreateExpense();
   const createIncome = useCreateIncome();
@@ -1019,6 +1021,22 @@ export const ChatAssistant: React.FC = () => {
         } : null,
         deductibleTotal,
         billableTotal,
+        // User profile data
+        workTypes: profile?.work_types || [],
+        country: profile?.country || 'Canada',
+        province: profile?.province,
+        // Financial profile for personalization
+        financialProfile: financialProfile ? {
+          experienceLevel: financialProfile.financial_education_level,
+          riskTolerance: financialProfile.risk_tolerance,
+          goals: financialProfile.passions,
+          interests: financialProfile.interests,
+          talents: financialProfile.talents,
+          availableCapital: financialProfile.available_capital,
+          monthlyInvestmentCapacity: financialProfile.monthly_investment_capacity,
+          preferredIncomeType: financialProfile.preferred_income_type,
+          timeAvailability: financialProfile.time_availability,
+        } : null,
       };
 
 

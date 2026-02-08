@@ -707,6 +707,136 @@ const VOICE_TUTORIALS: Tutorial[] = [
         }
       }
     ]
+  },
+  // ========== NEW TUTORIALS FOR MISSING FEATURES ==========
+  {
+    id: 'bank-reconciliation',
+    name: { es: 'Reconciliación bancaria', en: 'Bank reconciliation' },
+    triggers: [
+      'reconciliar', 'reconcile', 'reconciliación', 'reconciliation',
+      'cruzar transacciones', 'match transactions', 'comparar banco',
+      'compare bank', 'verificar transacciones', 'verify transactions'
+    ],
+    steps: [
+      {
+        title: { es: 'Paso 1: Importa tu estado bancario', en: 'Step 1: Import your bank statement' },
+        description: {
+          es: 'Primero, ve a la sección de Banca e importa tu estado de cuenta. EvoFinz analizará todas las transacciones automáticamente.',
+          en: 'First, go to the Banking section and import your statement. EvoFinz will analyze all transactions automatically.'
+        },
+        action: '/banking'
+      },
+      {
+        title: { es: 'Paso 2: Revisa coincidencias', en: 'Step 2: Review matches' },
+        description: {
+          es: 'El sistema compara las transacciones bancarias con tus gastos registrados. Verás cuáles ya están registradas y cuáles faltan.',
+          en: 'The system compares bank transactions with your recorded expenses. You\'ll see which are already recorded and which are missing.'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Aprueba o crea registros', en: 'Step 3: Approve or create records' },
+        description: {
+          es: 'Para cada transacción sin coincidencia, puedes crear un gasto nuevo con un clic. La reconciliación te asegura que no falte ningún gasto.',
+          en: 'For each unmatched transaction, you can create a new expense with one click. Reconciliation ensures no expense is missed.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'beta-feedback',
+    name: { es: 'Centro de feedback beta', en: 'Beta feedback center' },
+    triggers: [
+      'feedback', 'beta', 'reportar bug', 'report bug', 'problema',
+      'issue', 'sugerir', 'suggest', 'sugerencia', 'suggestion'
+    ],
+    steps: [
+      {
+        title: { es: 'Paso 1: Accede al Centro Beta', en: 'Step 1: Access Beta Center' },
+        description: {
+          es: 'Ve al Centro Beta desde el menú. Aquí puedes reportar problemas, sugerir mejoras, y ganar puntos por participar.',
+          en: 'Go to the Beta Center from the menu. Here you can report issues, suggest improvements, and earn points for participating.'
+        },
+        action: '/beta-feedback'
+      },
+      {
+        title: { es: 'Paso 2: Reporta o sugiere', en: 'Step 2: Report or suggest' },
+        description: {
+          es: 'Usa el formulario para describir el problema o tu idea. Puedes adjuntar capturas de pantalla para mayor claridad.',
+          en: 'Use the form to describe the issue or your idea. You can attach screenshots for clarity.'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Gana recompensas', en: 'Step 3: Earn rewards' },
+        description: {
+          es: 'Por cada reporte útil ganas puntos beta. Acumula puntos para desbloquear meses gratis de suscripción premium.',
+          en: 'For each useful report you earn beta points. Accumulate points to unlock free months of premium subscription.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'financial-journal',
+    name: { es: 'Diario financiero', en: 'Financial journal' },
+    triggers: [
+      'diario', 'journal', 'reflexión', 'reflection', 'diario financiero',
+      'financial journal', 'escribir', 'write', 'notas', 'notes'
+    ],
+    steps: [
+      {
+        title: { es: 'Paso 1: Accede al Diario', en: 'Step 1: Access the Journal' },
+        description: {
+          es: 'El Diario Financiero está en la sección de Mentoría. Es tu espacio para reflexionar sobre decisiones de dinero.',
+          en: 'The Financial Journal is in the Mentorship section. It\'s your space to reflect on money decisions.'
+        },
+        action: '/mentorship'
+      },
+      {
+        title: { es: 'Paso 2: Crea una entrada', en: 'Step 2: Create an entry' },
+        description: {
+          es: 'Escribe sobre tus gastos del día, lecciones aprendidas, metas logradas, o errores a evitar. La reflexión constante mejora tus finanzas.',
+          en: 'Write about today\'s expenses, lessons learned, goals achieved, or mistakes to avoid. Consistent reflection improves your finances.'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Revisa tu progreso', en: 'Step 3: Review your progress' },
+        description: {
+          es: 'Con el tiempo, tu diario se convierte en un registro valioso de tu evolución financiera. Puedes ver patrones y crecimiento.',
+          en: 'Over time, your journal becomes a valuable record of your financial evolution. You can see patterns and growth.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'habit-tracker',
+    name: { es: 'Rastreador de hábitos', en: 'Habit tracker' },
+    triggers: [
+      'hábitos', 'habits', 'hábito', 'habit', 'racha', 'streak',
+      'rutina', 'routine', 'disciplina', 'discipline', 'seguimiento'
+    ],
+    steps: [
+      {
+        title: { es: 'Paso 1: Define tus hábitos', en: 'Step 1: Define your habits' },
+        description: {
+          es: 'En la sección de Mentoría, crea hábitos financieros que quieras desarrollar: revisar gastos diario, ahorrar antes de gastar, etc.',
+          en: 'In the Mentorship section, create financial habits you want to develop: review expenses daily, save before spending, etc.'
+        },
+        action: '/mentorship'
+      },
+      {
+        title: { es: 'Paso 2: Marca tu progreso', en: 'Step 2: Mark your progress' },
+        description: {
+          es: 'Cada día que completes un hábito, márcalo. Construirás una racha que te motivará a mantener la consistencia.',
+          en: 'Each day you complete a habit, mark it. You\'ll build a streak that will motivate you to stay consistent.'
+        }
+      },
+      {
+        title: { es: 'Paso 3: Gana XP y sube de nivel', en: 'Step 3: Earn XP and level up' },
+        description: {
+          es: 'Por cada hábito completado ganas puntos de experiencia. Sube de nivel y desbloquea logros por tu disciplina financiera.',
+          en: 'For each completed habit you earn experience points. Level up and unlock achievements for your financial discipline.'
+        }
+      }
+    ]
   }
 ];
 
