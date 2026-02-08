@@ -86,6 +86,19 @@ export function LeadDetail({
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Personal Comments - Highlighted */}
+          {lead.comments && (
+            <div className="rounded-lg border-2 border-amber-400 bg-amber-50 dark:bg-amber-900/20 p-4">
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-300 mb-2 flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                💬 Mensaje personal del lead
+              </p>
+              <p className="text-sm text-amber-900 dark:text-amber-100 italic">
+                "{lead.comments}"
+              </p>
+            </div>
+          )}
+
           {/* Contact Info */}
           <div className="grid gap-3 md:grid-cols-2">
             <div className="flex items-center gap-2 text-sm">

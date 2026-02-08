@@ -19,6 +19,7 @@ export interface QuizLead {
   converted_to_user: boolean | null;
   contacted_at: string | null;
   contact_notes: string | null;
+  comments: string | null;
   ghl_synced: boolean | null;
   created_at: string;
 }
@@ -28,6 +29,7 @@ export interface LeadFilters {
   level: string;
   country: string;
   converted: string;
+  hasComments: string;
   dateFrom: string;
   dateTo: string;
 }
@@ -37,6 +39,7 @@ const defaultFilters: LeadFilters = {
   level: '',
   country: '',
   converted: '',
+  hasComments: '',
   dateFrom: '',
   dateTo: '',
 };
@@ -95,6 +98,10 @@ export const useLeadsManagement = () => {
       // Converted filter
       if (filters.converted === 'yes' && !lead.converted_to_user) return false;
       if (filters.converted === 'no' && lead.converted_to_user) return false;
+
+      // Comments filter
+      if (filters.hasComments === 'yes' && !lead.comments) return false;
+      if (filters.hasComments === 'no' && lead.comments) return false;
 
       // Date range filter
       if (filters.dateFrom) {
