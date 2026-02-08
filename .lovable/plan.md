@@ -1,34 +1,65 @@
 
-# Plan: Configurar Secreto GHL_WEBHOOK_URL
+# Plan: Mejoras al Panel de Leads + Comentarios del Quiz
 
 ## Resumen
-Solicitar el secreto `GHL_WEBHOOK_URL` de forma segura para habilitar la integración con GoHighLevel.
+Vamos a agregar el campo de comentarios al panel de administración y hacer mejoras de usabilidad para facilitar la gestión de leads.
 
-## Pasos a Ejecutar
+---
 
-### 1. Solicitar el Secreto
-Usaré el sistema seguro de secretos de Lovable Cloud para solicitar la URL del webhook. Esto:
-- Abrirá un campo de entrada encriptado
-- La URL nunca quedará expuesta en el chat
-- Se almacenará de forma segura en el backend
+## Cambios a Realizar
 
-### 2. Verificar la Integración
-Una vez configurado el secreto:
-- La Edge Function `send-quiz-lead` detectará automáticamente la variable `GHL_WEBHOOK_URL`
-- Cada nuevo lead del quiz se enviará a GoHighLevel
-- Los campos que se enviarán son:
-  - `first_name`, `last_name`, `email`, `phone`
-  - `country`, `situation`, `goal`, `obstacle`
-  - `quiz_score`, `quiz_level`, `failed_questions`
+### 1. Agregar Campo `comments` al Sistema de Leads
 
-### 3. Probar con un Lead Real
-Después de configurar:
-1. Completar el Financial Phoenix Quiz
-2. Ver en GHL que llegue la solicitud de muestra
-3. Mapear los campos en GHL
-4. Guardar y publicar el workflow
+**Hook `useLeadsManagement.ts`:**
+- Agregar `comments: string | null` a la interface `QuizLead`
 
-## Notas Técnicas
-- El código ya está listo en `supabase/functions/send-quiz-lead/index.ts`
-- Si GHL falla, el lead igual se guarda en la base de datos (no se pierde)
-- Puedes ver todos los leads en `/admin/leads`
+**LeadDetail.tsx (Modal de detalle):**
+- Mostrar los comentarios del usuario en una sección destacada con icono de mensaje
+- Si hay comentarios, mostrarlos en un recuadro amarillo/dorado para que resalte (es info de ventas muy valiosa)
+
+**LeadsTable.tsx:**
+- Agregar un indicador visual (icono de mensaje) cuando un lead tiene comentarios
+- Esto permite identificar rápidamente leads "calientes" que escribieron algo personal
+
+### 2. Incluir Comentarios en la Exportación
+
+**LeadsExport.tsx:**
+- Agregar columna "Comentarios del quiz" a la exportación Excel/CSV
+- Esto garantiza que la info llegue si exportas para otro CRM o análisis
+
+### 3. Filtro por Leads con Comentarios
+
+**LeadFilters.tsx:**
+- Agregar opción "Con comentarios" al filtro para encontrar rápidamente leads que expresaron necesidades específicas
+- Actualizar la interface `LeadFilters` en el hook
+
+---
+
+## Sección Técnica
+
+```text
+Archivos a modificar:
+├── src/hooks/admin/useLeadsManagement.ts  → Agregar comments a interface + filtro
+├── src/components/admin/LeadDetail.tsx    → Mostrar comentarios destacados
+├── src/components/admin/LeadsTable.tsx    → Indicador visual de comentarios
+├── src/components/admin/LeadsExport.tsx   → Columna de comentarios
+└── src/components/admin/LeadFilters.tsx   → Filtro "con comentarios"
+```
+
+**Diseño del indicador de comentarios en tabla:**
+- Icono `MessageSquare` junto al nombre cuando `lead.comments` existe
+- Color ámbar/dorado para destacar
+
+**Diseño del recuadro de comentarios en detalle:**
+- Fondo amarillo suave (`bg-amber-50 dark:bg-amber-900/20`)
+- Borde dorado
+- Título "💬 Mensaje personal del lead"
+- Posición prominente (antes del resto de info)
+
+---
+
+## Resultado Final
+- Verás un icono de mensaje en la tabla cuando un lead dejó comentarios
+- Al hacer clic en "Ver detalles", el comentario aparecerá destacado arriba
+- Podrás filtrar solo leads con comentarios
+- La exportación incluirá los comentarios
