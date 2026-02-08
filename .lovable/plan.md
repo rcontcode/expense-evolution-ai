@@ -1,203 +1,252 @@
 
 
-# Plan: Agregar Lead Score y Priority al Webhook de GHL
+# Plan de Lanzamiento Beta - EvoFinz
 
-## Resumen
-Vamos a modificar la Edge Function `send-quiz-lead` para calcular el **lead_score** (0-100) y la **priority** (hot/warm/cool/cold) al momento de capturar el lead, guardarlos en la base de datos, y enviarlos a GHL para segmentación automática.
+## Objetivo
+Lanzar la beta privada con 10-25 testers, contactándolos via WhatsApp y Email, y crear el contenido de marketing necesario.
 
 ---
 
-## Cambios a Realizar
+## Estado Actual del Sistema
 
-### 1. Actualizar Edge Function `send-quiz-lead`
+### Lo que YA tienes funcionando:
 
-**Agregar la lógica de scoring directamente en la función:**
-- Replicar la fórmula de `calculateLeadScore` del frontend
-- Calcular la prioridad basada en el score
-- Guardar `lead_score` y `priority` en la base de datos
-- Incluir ambos campos en el payload que se envía a GHL
+| Componente | Estado | Ubicación |
+|------------|--------|-----------|
+| Quiz de captación | Activo | `/` (página principal) |
+| CRM de Leads | Activo | `/admin/leads` |
+| Lead scoring automático | Activo | Score 0-100 con prioridades |
+| Gestión de códigos beta | Activo | `/admin/beta-codes` |
+| Dashboard beta admin | Activo | `/admin/beta-dashboard` |
+| Sistema de referidos | Activo | Mensajes pre-escritos listos |
+| Onboarding gamificado | Activo | Tutorial de 9 pasos |
+| Landing page completa | Activo | `/landing` |
 
-**Nuevos campos en el payload de GHL:**
-```javascript
-{
-  // ...campos existentes...
-  lead_score: 85,           // Puntuación 0-100
-  lead_priority: "hot",     // hot | warm | cool | cold
-  lead_priority_label: "PRIORIDAD", // Etiqueta en español
-  is_high_priority: true,   // Boolean para triggers fáciles
-}
+### Datos actuales:
+- 12 leads capturados
+- 2 usuarios registrados
+- 0 leads contactados (oportunidad de acción inmediata)
+
+---
+
+## Plan de Ejecución en 3 Fases
+
+### FASE 1: Preparación (1-2 días)
+
+#### 1.1 Contenido de Marketing a Crear
+
+**Posts para redes sociales (3-5 imágenes):**
+
+**Post 1 - Problema/Dolor:**
+```
+"¿Cuántas veces has terminado el mes preguntándote
+a dónde se fue tu dinero?"
+
+El 78% de las personas no tiene visibilidad
+de sus gastos mensuales.
+
+EvoFinz cambia eso.
+📸 Foto → Gasto registrado en 3 segundos.
+
+[CTA: Descubre tu nivel financiero - link al quiz]
 ```
 
+**Post 2 - Demo/Feature:**
+```
+🎯 Control financiero en 3 pasos:
+
+1. Toma foto del recibo
+2. La IA extrae todo automáticamente
+3. Dashboard te muestra dónde optimizar
+
+Sin Excel. Sin escribir nada. Sin excusas.
+
+Prueba gratis 👇
+[Link al quiz]
+```
+
+**Post 3 - Social Proof/Escasez:**
+```
+🔥 BETA PRIVADA - Solo 25 lugares
+
+Los primeros beta testers obtienen:
+✅ Acceso premium gratuito de por vida
+✅ Badge de "Founding Member"
+✅ Voz directa en las nuevas features
+
+¿Quieres ser uno?
+[Link al quiz]
+```
+
+**Mensajes de WhatsApp (ya tienes en ReferralCard, usar como base):**
+- Versión casual para amigos
+- Versión profesional para contactos de trabajo
+- Versión corta para grupos
+
+**Email de invitación (template):**
+```
+Asunto: 🎁 Invitación exclusiva - Beta privada EvoFinz
+
+Hola [NOMBRE],
+
+Vi que completaste el quiz financiero y tu perfil
+es exactamente el tipo de persona que buscamos
+para nuestra beta exclusiva.
+
+Como [SITUACIÓN], sé que [OBSTÁCULO] es un desafío real.
+EvoFinz te ayuda con exactamente eso.
+
+Te estoy reservando un lugar VIP.
+
+[BOTÓN: Activar mi acceso beta]
+
+Solo hay 25 lugares. Ya van [X] ocupados.
+
+Saludos,
+[Tu nombre]
+```
+
+#### 1.2 Configuración Previa
+
+**Acciones en /admin/beta-codes:**
+1. Crear códigos únicos para los 25 lugares
+2. O generar un código "LAUNCH25" con 25 usos máximos
+
+**Acciones en /admin/leads:**
+1. Revisar los 12 leads existentes
+2. Identificar los de mayor score para contactar primero
+
 ---
 
-## Beneficios para GHL
+### FASE 2: Contacto de Leads (3-5 días)
 
-Con estos campos, podrás crear en GHL:
+#### 2.1 Priorización de Contacto
 
-1. **Workflows por temperatura:**
-   - Si `lead_priority = "hot"` → Notificación inmediata al equipo de ventas
-   - Si `lead_priority = "warm"` → Secuencia de nurturing acelerada
-   - Si `lead_priority = "cool"` → Secuencia estándar
+Contactar en este orden (desde `/admin/leads`):
 
-2. **Tags automáticos:**
-   - Crear tag `🔥 HOT LEAD` cuando `is_high_priority = true`
-   - Usar `lead_priority_label` como tag visible
+| Prioridad | Criterio | Acción |
+|-----------|----------|--------|
+| 1 | Leads con comentarios personales | WhatsApp primero |
+| 2 | Score alto (HOT/WARM) | WhatsApp + Email |
+| 3 | Nivel "principiante" | Email con énfasis en ayuda |
+| 4 | Resto | Email masivo |
 
-3. **Filtros y segmentos:**
-   - Filtrar contactos por `lead_score >= 80` para campañas especiales
-   - Segmentar listas por `lead_priority`
+#### 2.2 Flujo de Contacto Manual
+
+```
+1. Abrir /admin/leads
+2. Click en lead → Ver detalles
+3. Click en icono WhatsApp → Mensaje pre-llenado se abre
+4. Enviar mensaje personalizado con código beta
+5. Marcar como "Contactado" con notas
+6. Si responde positivo → Enviar link de registro
+7. Si se registra → Marcar como "Convertido"
+```
+
+#### 2.3 Frecuencia de Seguimiento
+
+- **Día 1:** Primer contacto (WhatsApp)
+- **Día 3:** Si no responde → Email
+- **Día 7:** Último intento (WhatsApp corto)
+
+---
+
+### FASE 3: Lanzamiento y Amplificación (Ongoing)
+
+#### 3.1 Canales de Promoción
+
+**Canales inmediatos:**
+- WhatsApp personal a contactos de confianza
+- LinkedIn (tu red profesional)
+- Grupos de Facebook de finanzas personales
+- Reddit (r/personalfinance, r/chile, r/PersonalFinanceCanada)
+
+**Cada beta tester tiene herramientas para referir:**
+- Sistema de referidos con mensajes pre-escritos
+- Código personal generado automáticamente
+- +100 puntos beta por cada referido exitoso
+
+#### 3.2 Métricas a Monitorear
+
+Desde `/admin/beta-dashboard`:
+- Usuarios activos diarios
+- Feedback enviado
+- Bugs reportados
+- Referidos generados
+
+Desde `/admin/leads`:
+- Tasa de respuesta (contactados / total)
+- Tasa de conversión (convertidos / contactados)
+- Leads HOT sin contactar (urgente)
+
+---
+
+## Checklist de Lanzamiento
+
+### Antes de lanzar:
+- [ ] Crear 3-5 posts para redes sociales
+- [ ] Preparar email template personalizado
+- [ ] Generar códigos beta (25 lugares)
+- [ ] Revisar los 12 leads actuales y priorizarlos
+
+### Día del lanzamiento:
+- [ ] Publicar primer post en redes
+- [ ] Contactar 5 leads de mayor prioridad via WhatsApp
+- [ ] Enviar emails a los demás leads
+
+### Primera semana:
+- [ ] Seguimiento a leads que no respondieron
+- [ ] Monitorear nuevos signups en /admin/beta-dashboard
+- [ ] Responder feedback de beta testers
+- [ ] Celebrar cada conversión
 
 ---
 
 ## Sección Técnica
 
-### Archivo a modificar:
-```text
-supabase/functions/send-quiz-lead/index.ts
+### Sistema actual (funciona sin cambios):
+
+```
+Quiz (/) 
+    ↓
+Lead guardado en `quiz_leads` con scoring automático
+    ↓
+CRM (/admin/leads) muestra leads priorizados
+    ↓
+Contacto manual via WhatsApp/Email
+    ↓
+Registro (/auth) con código beta
+    ↓
+Usuario obtiene acceso premium + gamificación
+    ↓
+Sistema de referidos amplifica alcance
 ```
 
-### Lógica de scoring (a agregar en Edge Function):
+### Lo que NO necesitas para lanzar:
+- GHL (opcional para automatizar después)
+- Más desarrollo técnico
+- Cambios en la base de datos
 
-```typescript
-function calculateLeadScore(payload: QuizLeadPayload): number {
-  let score = 0;
-
-  // Quiz score bajo = más necesidad de ayuda (max +30)
-  if (payload.quiz_score <= 25) score += 30;
-  else if (payload.quiz_score <= 40) score += 25;
-  else if (payload.quiz_score <= 50) score += 20;
-  else if (payload.quiz_score <= 60) score += 10;
-
-  // Comentario personal = interés alto (max +30)
-  if (payload.comments && payload.comments.trim().length > 0) {
-    score += 25;
-    if (payload.comments.length > 50) score += 5;
-  }
-
-  // Nivel principiante = urgencia (max +15)
-  const level = payload.quiz_level?.toLowerCase();
-  if (level === 'principiante') score += 15;
-  else if (level === 'emergente') score += 10;
-  else if (level === 'evolucionando') score += 5;
-
-  // Obstáculos críticos (max +10)
-  const criticalObstacles = ['no sé por dónde empezar', 'gastos descontrolados', 
-                             'falta de conocimiento', 'deudas abrumadoras'];
-  if (criticalObstacles.some(obs => payload.obstacle.toLowerCase().includes(obs))) {
-    score += 10;
-  }
-
-  // Metas ambiciosas (max +10)
-  const ambitiousGoals = ['jubilación anticipada', 'fire', 'crecer patrimonio', 
-                          'independencia financiera', 'libertad financiera'];
-  if (ambitiousGoals.some(goal => payload.goal.toLowerCase().includes(goal))) {
-    score += 10;
-  }
-
-  // Dueño de negocio (max +5)
-  const businessSituations = ['dueño de negocio', 'empresario', 'emprendedor'];
-  if (businessSituations.some(sit => payload.situation.toLowerCase().includes(sit))) {
-    score += 5;
-  }
-
-  // Tiene teléfono (max +5)
-  if (payload.phone && payload.phone.trim().length > 0) {
-    score += 5;
-  }
-
-  // Tiempo invertido alto (max +5)
-  const highEngagement = ['1 - 3 horas', 'más de 3 horas', '1-3 horas'];
-  if (highEngagement.some(time => payload.time_spent?.toLowerCase().includes(time))) {
-    score += 5;
-  }
-
-  // Muchas preguntas fallidas (max +5)
-  if (payload.failed_questions && payload.failed_questions.length >= 5) {
-    score += 5;
-  }
-
-  return Math.min(100, score);
-}
-
-function getLeadPriority(score: number): string {
-  if (score >= 80) return 'hot';
-  if (score >= 50) return 'warm';
-  if (score >= 25) return 'cool';
-  return 'cold';
-}
-
-function getPriorityLabel(priority: string): string {
-  switch (priority) {
-    case 'hot': return 'PRIORIDAD';
-    case 'warm': return 'INTERESADO';
-    case 'cool': return 'POTENCIAL';
-    default: return 'NUEVO';
-  }
-}
-```
-
-### Payload actualizado para GHL:
-
-```typescript
-const leadScore = calculateLeadScore(payload);
-const leadPriority = getLeadPriority(leadScore);
-
-const ghlPayload = {
-  // Campos existentes...
-  first_name, last_name, email, phone,
-  country, situation, goal, obstacle,
-  time_spent, quiz_score, quiz_level,
-  failed_questions, comments, source, lead_id,
-  
-  // NUEVOS campos de scoring
-  lead_score: leadScore,
-  lead_priority: leadPriority,
-  lead_priority_label: getPriorityLabel(leadPriority),
-  is_high_priority: leadScore >= 80,
-  is_warm_or_higher: leadScore >= 50,
-};
-```
-
-### Insert en base de datos actualizado:
-
-```typescript
-const { data: savedLead } = await supabase
-  .from("quiz_leads")
-  .insert({
-    // ...campos existentes...
-    lead_score: leadScore,      // Nuevo
-    priority: leadPriority,     // Nuevo
-  })
-```
+### Mejoras opcionales post-lanzamiento:
+1. Notificaciones push para leads HOT nuevos
+2. Dashboard de analytics de quiz (abandono por paso)
+3. A/B testing en mensajes de resultado
+4. Automatización de emails con GHL cuando lo actives
 
 ---
 
-## Resultado Final
+## Resumen Ejecutivo
 
-Después de implementar:
+**Estás LISTO para lanzar.** Tu sistema está completo:
 
-1. **En la base de datos:** Cada lead tendrá su score y prioridad calculados automáticamente al crearse
-2. **En GHL:** Recibirás los campos:
-   - `lead_score`: 0-100
-   - `lead_priority`: hot/warm/cool/cold
-   - `lead_priority_label`: PRIORIDAD/INTERESADO/POTENCIAL/NUEVO
-   - `is_high_priority`: true/false (para triggers simples)
-3. **En tu panel admin:** Ya estaba calculando esto en el frontend, pero ahora estará sincronizado con GHL
+| Necesidad | Solución actual |
+|-----------|-----------------|
+| Captar leads | Quiz en página principal |
+| Priorizar leads | CRM con scoring automático |
+| Contactar leads | Botones de WhatsApp/Email en CRM |
+| Registrar usuarios | /auth con códigos beta |
+| Retener usuarios | Gamificación + referidos |
+| Escalar | Sistema de referidos built-in |
 
----
-
-## Configuración en GHL (Pasos Manuales)
-
-Una vez implementado, en GHL deberás:
-
-1. **Mapear los campos custom:**
-   - Crear campo "Lead Score" (número)
-   - Crear campo "Lead Priority" (dropdown: hot/warm/cool/cold)
-   
-2. **Crear workflow de notificación:**
-   - Trigger: Nuevo contacto donde `is_high_priority = true`
-   - Acción: Notificación push/email al equipo de ventas
-
-3. **Segmentar automáticamente:**
-   - Crear segmento "Leads HOT" con filtro `lead_priority = "hot"`
+**Próximo paso concreto:** Crear los 3-5 posts de contenido y comenzar a contactar los 12 leads que ya tienes.
 
