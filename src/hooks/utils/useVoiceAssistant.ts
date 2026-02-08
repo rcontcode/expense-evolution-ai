@@ -489,10 +489,11 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       // ONLY fallback to native if premium failed BEFORE audio started
       // These errors mean audio NEVER played:
       // - 'not_eligible': User doesn't have premium minutes
-      // - 'no_session': Not authenticated  
+      // - 'no_session': Not authenticated
       // - 'empty_text': Nothing to speak
+      // - 'play_error': Browser blocked autoplay (no user gesture)
       // Other errors (playback_error, network_error) mean audio MAY have started
-      const shouldFallbackToNative = ['not_eligible', 'no_session', 'empty_text'].includes(result.error || '');
+      const shouldFallbackToNative = ['not_eligible', 'no_session', 'empty_text', 'play_error'].includes(result.error || '');
       console.log('[Voice] Premium TTS result:', result.error, '| Fallback to native:', shouldFallbackToNative);
       
       if (!shouldFallbackToNative) {
