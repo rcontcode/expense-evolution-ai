@@ -53,9 +53,13 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
     voiceGender: voicePrefs.voiceGender === 'auto' ? 'female' : voicePrefs.voiceGender,
   });
 
-  // Fallback to native voice synthesis
+  // Fallback to native voice synthesis - include all voice preferences
   const nativeTTS = useVoiceSynthesis({
     voiceGender: voicePrefs.voiceGender === 'auto' ? 'female' : voicePrefs.voiceGender,
+    speechSpeed: voicePrefs.speechSpeed,
+    volume: voicePrefs.volume,
+    pitch: voicePrefs.pitch,
+    selectedVoiceName: voicePrefs.selectedVoiceName,
   });
 
   const isSpeaking = elevenLabsTTS.isSpeaking || nativeTTS.isSpeaking;
@@ -63,18 +67,27 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
 
   // Smart speak function - tries ElevenLabs first, falls back to native
   const speak = useCallback(async (text: string) => {
-    if (!voiceEnabled || !text?.trim()) return;
-
-    // Try ElevenLabs first
-    if (elevenLabsTTS.canUsePremium) {
-      const result = await elevenLabsTTS.speak(text);
-      if (result.success) return;
-      
-      // If failed, fall back to native
-      console.log('[Onboarding] ElevenLabs unavailable, using native TTS');
+    if (!voiceEnabled || !text?.trim()) {
+      console.log('[Onboarding] Voice disabled or empty text');
+      return;
     }
 
-    // Fallback to native
+    console.log('[Onboarding] Speaking:', text.substring(0, 50) + '...');
+    console.log('[Onboarding] canUsePremium:', elevenLabsTTS.canUsePremium);
+
+    // Try ElevenLabs first if available
+    if (elevenLabsTTS.canUsePremium) {
+      console.log('[Onboarding] Trying ElevenLabs...');
+      const result = await elevenLabsTTS.speak(text);
+      if (result.success) {
+        console.log('[Onboarding] ElevenLabs success');
+        return;
+      }
+      console.log('[Onboarding] ElevenLabs failed:', result.error);
+    }
+
+    // Fallback to native TTS
+    console.log('[Onboarding] Using native TTS');
     nativeTTS.speak(text);
   }, [voiceEnabled, elevenLabsTTS, nativeTTS]);
 
