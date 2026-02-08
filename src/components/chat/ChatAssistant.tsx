@@ -20,7 +20,7 @@ import { MinimizedAssistant } from './MinimizedAssistant';
 import { MinimizedAssistantBubble } from './MinimizedAssistantBubble';
 import { VoiceOnboarding } from './voice/VoiceOnboarding';
 import { useMicrophonePermission, MicrophonePermissionAlert } from './voice/MicrophonePermission';
-import { ContinuousModeIndicator, FloatingVoiceIndicator } from './voice/ContinuousModeIndicator';
+// ContinuousModeIndicator removed - using simplified Push-to-Talk only
 import { useVoiceKeyboardShortcuts } from '@/hooks/utils/useKeyboardShortcuts';
 // Import centralized voice modules
 import { processVoiceCommand, ClarificationOption } from './voice/VoiceCommandProcessor';
@@ -383,10 +383,9 @@ export const ChatAssistant: React.FC = () => {
     }
   }, [navigate, language]);
 
-  // Voice assistant hook with preferences
+  // Voice assistant hook - Simplified Push-to-Talk
   const {
     isListening,
-    isContinuousMode,
     isSpeaking,
     isSpeechPaused,
     isSupported: isVoiceSupported,
@@ -394,22 +393,16 @@ export const ChatAssistant: React.FC = () => {
     currentSpeakingText,
     currentSentenceIndex,
     toggleListening,
-    startContinuousListening,
-    stopContinuousListening,
     speak,
     pauseSpeech,
     resumeSpeech,
     stopSpeaking,
-    pauseRecognition,
-    resumeRecognition,
   } = useVoiceAssistant({
     speechSpeed: voicePrefs.speechSpeed,
     volume: voicePrefs.volume,
     pitch: voicePrefs.pitch,
     voiceGender: voicePrefs.voiceGender,
     selectedVoiceName: voicePrefs.selectedVoiceName,
-    premiumSpeak: elevenLabsTTS.speak,
-    isPremiumSpeaking: elevenLabsTTS.isSpeaking,
     onInterimTranscript: (text) => {
       // Update input field with live transcript
       setInput(text);
@@ -539,13 +532,6 @@ export const ChatAssistant: React.FC = () => {
           return;
       }
     },
-    onContinuousStopped: () => {
-      // Notify user that continuous mode was stopped by voice
-      const msg = language === 'es' 
-        ? 'Modo continuo desactivado.'
-        : 'Continuous mode stopped.';
-      toast.info(msg);
-    },
   });
 
   // Audio playback hook for Spotify-like controls
@@ -556,18 +542,13 @@ export const ChatAssistant: React.FC = () => {
   });
 
   // Track recording duration
-  // Track recording duration - in continuous mode, keep timer running even during speak pauses
   useEffect(() => {
-    // Start timer when listening starts (or continuous mode is active and listening)
-    const shouldTrackTime = isListening || isContinuousMode;
-    
-    if (shouldTrackTime && !recordingStartTime) {
+    if (isListening && !recordingStartTime) {
       setRecordingStartTime(Date.now());
       recordingIntervalRef.current = setInterval(() => {
         setRecordingDuration(prev => prev + 1);
       }, 1000);
-    } else if (!shouldTrackTime && recordingStartTime) {
-      // Only reset when BOTH listening stops AND continuous mode is off
+    } else if (!isListening && recordingStartTime) {
       setRecordingStartTime(null);
       setRecordingDuration(0);
       if (recordingIntervalRef.current) {
@@ -581,33 +562,16 @@ export const ChatAssistant: React.FC = () => {
         clearInterval(recordingIntervalRef.current);
       }
     };
-  }, [isListening, isContinuousMode, recordingStartTime]);
+  }, [isListening, recordingStartTime]);
 
   // Update input with live transcript - only when actually listening and NOT speaking
-  // This prevents the AI's speech from being captured as user input AND stops during processing
   useEffect(() => {
-    // CRITICAL: Block transcript updates when:
-    // 1. AI is speaking (isSpeaking or elevenLabsTTS.isSpeaking)
-    // 2. Processing user request (isLoading)
-    // 3. Processing voice input (isProcessingVoice)
     const isOutputtingOrProcessing = isSpeaking || elevenLabsTTS.isSpeaking || isLoading || isProcessingVoice;
     
     if (transcript && isListening && !isOutputtingOrProcessing) {
       setInput(transcript);
     }
   }, [transcript, isListening, isSpeaking, elevenLabsTTS.isSpeaking, isLoading, isProcessingVoice]);
-
-  // CRITICAL: Pause/resume recognition when processing state changes
-  // This prevents the mic from capturing during API calls
-  useEffect(() => {
-    if (isLoading || isProcessingVoice) {
-      // Pause recognition while processing
-      pauseRecognition();
-    } else if (isContinuousMode) {
-      // Resume recognition after processing completes (with cooldown)
-      resumeRecognition();
-    }
-  }, [isLoading, isProcessingVoice, isContinuousMode, pauseRecognition, resumeRecognition]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -693,12 +657,10 @@ export const ChatAssistant: React.FC = () => {
       }
     },
     onToggleContinuous: () => {
+      // Continuous mode removed - this is now a no-op
+      // The shortcut can toggle regular listening instead
       if (isVoiceSupported) {
-        if (isContinuousMode) {
-          stopContinuousListening();
-        } else {
-          startContinuousListening();
-        }
+        toggleListening();
       }
     },
     onStopSpeaking: () => {
@@ -1183,52 +1145,28 @@ export const ChatAssistant: React.FC = () => {
     sendMessage(question);
   };
 
-  // UNIFIED STOP FUNCTION - Stops ALL voice activity (speaking, listening, continuous mode)
-  // This prevents the user from having to press stop multiple times
+  // UNIFIED STOP FUNCTION - Stops ALL voice activity
   const stopAllVoiceActivity = useCallback(() => {
     console.log('[Voice] Stopping ALL voice activity');
     window.speechSynthesis.cancel();
     audioPlayback.stop();
-    elevenLabsTTS.stop(); // Stop premium TTS
+    elevenLabsTTS.stop();
     stopSpeaking();
-    if (isContinuousMode) {
-      stopContinuousListening();
-    }
     if (isListening) {
-      toggleListening(); // This will stop listening
-    }
-  }, [audioPlayback, elevenLabsTTS, stopSpeaking, isContinuousMode, stopContinuousListening, isListening, toggleListening]);
-
-  const handleMicClick = () => {
-    // CRITICAL: Cancel ALL speech synthesis first
-    window.speechSynthesis.cancel();
-    audioPlayback.stop();
-    elevenLabsTTS.stop(); // Stop premium TTS
-    
-    if (isSpeaking) {
-      stopSpeaking();
-    }
-    if (isContinuousMode) {
-      stopContinuousListening();
-    } else {
       toggleListening();
     }
-  };
+  }, [audioPlayback, elevenLabsTTS, stopSpeaking, isListening, toggleListening]);
 
-  const handleContinuousModeToggle = () => {
-    // CRITICAL: Cancel ALL speech synthesis before toggling
+  const handleMicClick = () => {
+    // Cancel ALL speech synthesis first
     window.speechSynthesis.cancel();
     audioPlayback.stop();
-    elevenLabsTTS.stop(); // Stop premium TTS
+    elevenLabsTTS.stop();
     
     if (isSpeaking) {
       stopSpeaking();
     }
-    if (isContinuousMode) {
-      stopContinuousListening();
-    } else {
-      startContinuousListening();
-    }
+    toggleListening();
   };
 
   return (
@@ -1254,16 +1192,7 @@ export const ChatAssistant: React.FC = () => {
         isSpeaking={isSpeaking}
       />
 
-      {/* Floating Voice Indicator when chat is closed but continuous mode is active */}
-      {!isOpen && (isContinuousMode || isListening || isSpeaking) && (
-        <FloatingVoiceIndicator 
-          isContinuousMode={isContinuousMode}
-          isListening={isListening}
-          isSpeaking={isSpeaking}
-          onOpen={() => setIsOpen(true)}
-          onStop={stopAllVoiceActivity}
-        />
-      )}
+      {/* Floating Voice Indicator removed - Push-to-Talk only */}
 
       {/* Floating Button - only when chat is fully closed and not in bubble mode */}
       {/* Hidden on mobile to prevent overlapping with bottom nav */}
@@ -1274,7 +1203,7 @@ export const ChatAssistant: React.FC = () => {
             "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
             "bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500",
             "transition-all duration-300 hover:scale-110",
-            (isOpen || isMinimized || isBubbleMode || isContinuousMode || isListening || isSpeaking) && "hidden"
+            (isOpen || isMinimized || isBubbleMode || isListening || isSpeaking) && "hidden"
           )}
           size="icon"
         >
@@ -1303,7 +1232,7 @@ export const ChatAssistant: React.FC = () => {
             onExpand={() => setIsMinimized(false)}
             isSpeaking={isSpeaking}
             isListening={isListening}
-            isContinuousMode={isContinuousMode}
+            isContinuousMode={false}
             onStopSpeaking={stopAllVoiceActivity}
             onStopContinuous={stopAllVoiceActivity}
             currentText={currentSpeakingText}
@@ -1343,13 +1272,11 @@ export const ChatAssistant: React.FC = () => {
                 <p className="text-xs text-muted-foreground">
                   {conversationState.isAwaitingClarification
                     ? (language === 'es' ? '🤔 Esperando tu elección...' : '🤔 Waiting for your choice...')
-                    : isContinuousMode
-                      ? (language === 'es' ? '🎙️ Modo continuo activo - di "detener" para parar' : '🎙️ Continuous mode - say "stop" to end')
-                      : isListening 
-                        ? (language === 'es' ? '🎤 Escuchando...' : '🎤 Listening...')
-                        : isSpeaking 
-                          ? (language === 'es' ? '🔊 Hablando...' : '🔊 Speaking...')
-                          : (language === 'es' ? `Hola ${userName}, ¿en qué te ayudo?` : `Hi ${userName}, how can I help?`)
+                    : isListening 
+                      ? (language === 'es' ? '🎤 Escuchando...' : '🎤 Listening...')
+                      : isSpeaking 
+                        ? (language === 'es' ? '🔊 Hablando...' : '🔊 Speaking...')
+                        : (language === 'es' ? `Hola ${userName}, ¿en qué te ayudo?` : `Hi ${userName}, how can I help?`)
                   }
                 </p>
               </div>
@@ -1387,33 +1314,8 @@ export const ChatAssistant: React.FC = () => {
                 </Popover>
               )}
               
-              {/* Continuous mode toggle - Main toggle */}
-              {isVoiceSupported && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant={isContinuousMode ? "default" : "ghost"}
-                      size="icon" 
-                      onClick={handleContinuousModeToggle}
-                      className={cn(
-                        "h-7 w-7",
-                        isContinuousMode && "bg-green-500 hover:bg-green-600 text-white"
-                      )}
-                    >
-                      <Radio className={cn("h-3.5 w-3.5", isContinuousMode && "animate-pulse")} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isContinuousMode 
-                      ? (language === 'es' ? 'Desactivar modo continuo' : 'Disable continuous mode')
-                      : (language === 'es' ? 'Modo continuo (manos libres)' : 'Continuous mode (hands-free)')
-                    }
-                  </TooltipContent>
-                </Tooltip>
-              )}
-              
-              {/* Stop button - Only show when speaking or in continuous mode */}
-              {isVoiceSupported && (isSpeaking || isContinuousMode) && (
+              {/* Stop button - Only show when speaking */}
+              {isVoiceSupported && isSpeaking && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button 
@@ -1455,38 +1357,17 @@ export const ChatAssistant: React.FC = () => {
             </div>
           </div>
 
-          {/* Voice Mode Banner */}
-          {isVoiceSupported && isContinuousMode && (
-            <div className="px-4 py-2 bg-green-500/10 border-b border-green-500/20 text-xs text-center text-green-700 dark:text-green-400">
-              {language === 'es' 
-                ? '🎙️ Modo continuo: habla naturalmente. Di "detener", "parar" o "stop" para desactivar.'
-                : '🎙️ Continuous mode: speak naturally. Say "stop", "pause" or "quit" to disable.'
-              }
-            </div>
-          )}
-
           {/* Microphone Permission Alert */}
           {isVoiceSupported && micPermission.permission === 'denied' && (
             <MicrophonePermissionAlert />
           )}
 
-          {/* Continuous Mode Indicator (inside chat) */}
-          {isVoiceSupported && isContinuousMode && (
-            <ContinuousModeIndicator
-              isActive={isContinuousMode}
-              isListening={isListening}
-              isSpeaking={isSpeaking}
-              duration={recordingDuration}
-              onStop={stopAllVoiceActivity}
-            />
-          )}
-
-          {/* Voice Mode Banner - Normal */}
-          {isVoiceSupported && !isContinuousMode && micPermission.permission !== 'denied' && (
+          {/* Voice Mode Banner */}
+          {isVoiceSupported && micPermission.permission !== 'denied' && (
             <div className="px-4 py-2 bg-muted/50 border-b text-xs text-center text-muted-foreground">
               {language === 'es' 
-                ? '🎙️ Toca el micrófono para hablar o activa el modo continuo (📻) • Ctrl+M'
-                : '🎙️ Tap the microphone to speak or enable continuous mode (📻) • Ctrl+M'
+                ? '🎙️ Toca el micrófono para hablar • Ctrl+M'
+                : '🎙️ Tap the microphone to speak • Ctrl+M'
               }
             </div>
           )}
@@ -1659,7 +1540,7 @@ export const ChatAssistant: React.FC = () => {
                           onClick={() => {
                             // If the mic is currently listening, avoid audioPlayback because it doesn't pause recognition.
                             // This prevents speaker-echo loops.
-                            if (isListening || isContinuousMode) {
+                            if (isListening) {
                               window.speechSynthesis.cancel();
                               audioPlayback.stop();
                               speak(msg.content);
@@ -1801,14 +1682,13 @@ export const ChatAssistant: React.FC = () => {
             </div>
           )}
 
-          {/* Recording Controls - Show for both listening and continuous mode */}
-          {(isListening || isContinuousMode) && (
+          {/* Recording Controls */}
+          {isListening && (
             <div className={cn(
               "px-4 py-3 border-t",
               isSpeaking ? "bg-primary/10" : "bg-red-500/10"
             )}>
               <div className="flex items-center gap-3">
-                {/* Audio Level Indicator */}
                 <AudioLevelIndicator 
                   isListening={isListening && !isSpeaking} 
                   variant="bars"
@@ -1816,17 +1696,13 @@ export const ChatAssistant: React.FC = () => {
                 />
                 <span className={cn(
                   "text-sm font-medium flex-1",
-                  isSpeaking 
-                    ? "text-primary" 
-                    : "text-red-600 dark:text-red-400"
+                  isSpeaking ? "text-primary" : "text-red-600 dark:text-red-400"
                 )}>
                   {isProcessingVoice 
                     ? (language === 'es' ? '⏳ Procesando...' : '⏳ Processing...')
                     : isSpeaking 
                       ? (language === 'es' ? '🔊 Hablando...' : '🔊 Speaking...')
-                      : isContinuousMode
-                        ? (language === 'es' ? '🎙️ Modo Continuo' : '🎙️ Continuous Mode')
-                        : (language === 'es' ? 'Grabando' : 'Recording')
+                      : (language === 'es' ? 'Grabando' : 'Recording')
                   }: {Math.floor(recordingDuration / 60)}:{(recordingDuration % 60).toString().padStart(2, '0')}
                 </span>
                 <Button
@@ -1955,19 +1831,16 @@ export const ChatAssistant: React.FC = () => {
                       disabled={isLoading}
                       className={cn(
                         "flex-shrink-0 transition-all",
-                        isContinuousMode && "bg-green-500 hover:bg-green-600 text-white",
-                        isListening && !isContinuousMode && "bg-red-500 hover:bg-red-600 animate-pulse"
+                        isListening && "bg-red-500 hover:bg-red-600 animate-pulse"
                       )}
                     >
-                      {isContinuousMode ? <Radio className="h-4 w-4" /> : isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                      {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {isContinuousMode 
-                      ? (language === 'es' ? 'Detener modo continuo' : 'Stop continuous mode')
-                      : isListening 
-                        ? (language === 'es' ? 'Detener grabación' : 'Stop recording')
-                        : (language === 'es' ? 'Hablar' : 'Speak')
+                    {isListening 
+                      ? (language === 'es' ? 'Detener grabación' : 'Stop recording')
+                      : (language === 'es' ? 'Hablar' : 'Speak')
                     }
                   </TooltipContent>
                 </Tooltip>
@@ -1981,9 +1854,7 @@ export const ChatAssistant: React.FC = () => {
                     ? (language === 'es' ? 'El asistente está hablando...' : 'Assistant is speaking...')
                     : isListening 
                       ? (language === 'es' ? 'Escuchando...' : 'Listening...')
-                      : isContinuousMode
-                        ? (language === 'es' ? 'Pausado, esperando...' : 'Paused, waiting...')
-                        : (language === 'es' ? 'Escribe o habla tu pregunta...' : 'Type or speak your question...')
+                      : (language === 'es' ? 'Escribe o habla tu pregunta...' : 'Type or speak your question...')
                 }
                 disabled={isLoading}
                 className={cn(

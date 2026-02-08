@@ -13,46 +13,43 @@ interface UseVoiceAssistantOptions {
   onInterimTranscript?: (text: string) => void;
   onSpeakStart?: () => void;
   onSpeakEnd?: () => void;
-  onContinuousStopped?: () => void;
   onSpeakProgress?: (sentenceIndex: number, totalSentences: number) => void;
-  onInterrupted?: () => void; // Called when user interrupts speech
-  speechSpeed?: number; // 0.5 to 2.0, default 1.0
-  volume?: number; // 0 to 1, default 1.0
-  pitch?: number; // 0.5 to 2.0, default 1.0
-  voiceGender?: VoiceGender; // female, male, or auto
-  selectedVoiceName?: string | null; // Specific voice name selected by user
-  /** Optional premium TTS function (e.g., ElevenLabs) - returns success/error for fallback handling */
+  onInterrupted?: () => void;
+  speechSpeed?: number;
+  volume?: number;
+  pitch?: number;
+  voiceGender?: VoiceGender;
+  selectedVoiceName?: string | null;
   premiumSpeak?: (text: string) => Promise<PremiumSpeakResult>;
-  /** Whether premium TTS is currently speaking (for state sync) */
   isPremiumSpeaking?: boolean;
 }
 
-// STRICT stop commands - must match EXACTLY
-const STOP_COMMANDS = {
-  es: ['detener', 'parar', 'stop'],
-  en: ['stop', 'pause', 'quit'],
-};
-
-// Pause duration (ms) before sending accumulated transcript
-// BALANCED: 1200ms allows natural speech pauses but responds quickly
+// Pause duration before sending accumulated transcript
 const PAUSE_THRESHOLD_MS = 1200;
 
-// Extended cooldown after TTS finishes to prevent self-transcription
-const TTS_COOLDOWN_MS = 2500;
-const TTS_COOLDOWN_PREMIUM_MS = 3500;
-const DUPLICATE_THRESHOLD_MS = 5000; // Don't repeat same text within 5 seconds
+// Cooldown after TTS finishes to prevent self-transcription
+const TTS_COOLDOWN_MS = 2000;
+const DUPLICATE_THRESHOLD_MS = 5000;
 
 // Inter-sentence pause for natural breathing room
-const SENTENCE_PAUSE_MS = 650; // Increased for "thinking room"
+const SENTENCE_PAUSE_MS = 650;
 
-// Throttle restart attempts to prevent infinite loops
-const MAX_RESTART_ATTEMPTS = 3;
-const RESTART_COOLDOWN_MS = 800;
-
+/**
+ * Simplified Push-to-Talk Voice Assistant Hook
+ * 
+ * This hook provides a simple, reliable voice interaction:
+ * 1. User taps mic → listens for speech
+ * 2. User stops talking → sends transcript
+ * 3. AI responds → speaks response
+ * 4. Back to idle
+ * 
+ * NO continuous mode, NO auto-restart, NO complex state management
+ */
 export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   const { language } = useLanguage();
+  
+  // Core states - only 3 needed!
   const [isListening, setIsListening] = useState(false);
-  const [isContinuousMode, setIsContinuousMode] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isSpeechPaused, setIsSpeechPaused] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
@@ -60,51 +57,21 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   const [currentSpeakingText, setCurrentSpeakingText] = useState('');
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
   
+  // Minimal refs - only what's actually needed
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
-  const continuousModeRef = useRef(false);
-  
-  // CRITICAL: Flag that blocks ALL recognition during speech
-  const isPausedForSpeakingRef = useRef(false);
-  
-  // ANTI-ECHO: Track if we're currently outputting audio to prevent self-transcription
-  const isOutputtingAudioRef = useRef(false);
-  const audioOutputCooldownRef = useRef<NodeJS.Timeout | null>(null);
-
-  // DUPLICATE PREVENTION: Track last spoken text to prevent repeating
-  const lastSpokenTextRef = useRef<string>('');
-  const lastSpokenTimeRef = useRef<number>(0);
-  
-  // AUDIO OUTPUT TRACKING: Precise timing for when audio actually stops
-  const audioEndTimeRef = useRef<number>(0);
-  
-  // Accumulation for pause-based sending
   const accumulatedTextRef = useRef('');
   const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Speech synthesis ref
-  const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
-  
-  // Sentence-by-sentence speech queue
   const sentenceQueueRef = useRef<string[]>([]);
   const currentSentenceIndexRef = useRef(0);
-
-  // SAFETY: prevent the mic from staying blocked forever if speech synthesis hangs.
-  const speakWatchdogRef = useRef<NodeJS.Timeout | null>(null);
-  const synthStuckSinceRef = useRef<number | null>(null);
   
-  // RESTART THROTTLING: Prevent infinite restart loops
-  const restartAttemptsRef = useRef(0);
-  const lastRestartTimeRef = useRef<number>(0);
-  const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const clearSpeakWatchdog = useCallback(() => {
-    if (speakWatchdogRef.current) {
-      clearTimeout(speakWatchdogRef.current);
-      speakWatchdogRef.current = null;
-    }
-    synthStuckSinceRef.current = null;
-  }, []);
+  // Anti-echo protection
+  const isOutputtingAudioRef = useRef(false);
+  const audioEndTimeRef = useRef<number>(0);
+  
+  // Duplicate prevention
+  const lastSpokenTextRef = useRef<string>('');
+  const lastSpokenTimeRef = useRef<number>(0);
 
   // Check browser support
   useEffect(() => {
@@ -114,13 +81,6 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     setIsSupported(hasSpeechRecognition && 'speechSynthesis' in window);
   }, []);
 
-  // Check if text is a stop command (EXACT match only)
-  const isStopCommand = useCallback((text: string) => {
-    const normalizedText = text.toLowerCase().trim().replace(/[.,!?¿¡]/g, '');
-    const commands = STOP_COMMANDS[language as keyof typeof STOP_COMMANDS] || STOP_COMMANDS.en;
-    return commands.includes(normalizedText);
-  }, [language]);
-
   // Clear pause timeout
   const clearPauseTimeout = useCallback(() => {
     if (pauseTimeoutRef.current) {
@@ -129,9 +89,9 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     }
   }, []);
 
-  // Stop recognition completely
+  // Stop recognition
   const stopRecognition = useCallback(() => {
-    console.log('[Voice] Stopping recognition completely');
+    console.log('[Voice] Stopping recognition');
     clearPauseTimeout();
     
     if (recognitionRef.current) {
@@ -152,12 +112,12 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     clearPauseTimeout();
     
     if (text && options.onTranscript) {
-      console.log('[Voice] Flushing accumulated text:', text);
+      console.log('[Voice] Sending transcript:', text);
       options.onTranscript(text);
     }
   }, [options, clearPauseTimeout]);
 
-  // Start pause timer - will flush after threshold
+  // Start pause timer
   const startPauseTimer = useCallback(() => {
     clearPauseTimeout();
     
@@ -168,11 +128,11 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     }, PAUSE_THRESHOLD_MS);
   }, [clearPauseTimeout, flushAccumulatedText]);
 
-  // Create and start recognition
-  const createAndStartRecognition = useCallback((continuous: boolean) => {
-    // Don't start if paused for speaking
-    if (isPausedForSpeakingRef.current) {
-      console.log('[Voice] Blocked: paused for speaking');
+  // Create and start recognition - SIMPLE single-phrase mode only
+  const createAndStartRecognition = useCallback(() => {
+    // Don't start if speaking
+    if (isOutputtingAudioRef.current) {
+      console.log('[Voice] Blocked: audio output active');
       return;
     }
     
@@ -191,30 +151,28 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     }
 
     const recognition = new SpeechRecognitionClass();
-    recognition.continuous = continuous;
+    recognition.continuous = false; // SIMPLE: Single phrase only
     recognition.interimResults = true;
     recognition.lang = language === 'es' ? 'es-ES' : 'en-US';
 
     recognition.onstart = () => {
-      if (!isPausedForSpeakingRef.current) {
-        console.log('[Voice] Recognition started');
-        setIsListening(true);
-        setTranscript('');
-      }
+      console.log('[Voice] Recognition started');
+      setIsListening(true);
+      setTranscript('');
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onresult = (event: any) => {
-      // CRITICAL: Ignore all results if paused for speaking
-      if (isPausedForSpeakingRef.current || isOutputtingAudioRef.current) {
-        console.log('[Voice] Ignoring result - audio output active (preventing self-transcription)');
+      // Ignore if audio is playing
+      if (isOutputtingAudioRef.current) {
+        console.log('[Voice] Ignoring result - audio output active');
         return;
       }
 
-      // EXTRA SAFETY: Check if audio recently ended (within cooldown window)
+      // Check cooldown after audio ended
       const timeSinceAudioEnd = Date.now() - audioEndTimeRef.current;
       if (timeSinceAudioEnd < TTS_COOLDOWN_MS && audioEndTimeRef.current > 0) {
-        console.log('[Voice] Ignoring result - too soon after audio ended:', timeSinceAudioEnd, 'ms');
+        console.log('[Voice] Ignoring result - too soon after audio:', timeSinceAudioEnd, 'ms');
         return;
       }
 
@@ -230,7 +188,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         }
       }
 
-      // Show interim text in UI
+      // Show interim text
       const displayText = accumulatedTextRef.current + (interimTranscript ? ' ' + interimTranscript : '');
       setTranscript(displayText.trim());
       
@@ -240,150 +198,38 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
 
       if (finalTranscript) {
         const trimmedFinal = finalTranscript.trim();
-        console.log('[Voice] Final transcript segment:', trimmedFinal);
+        console.log('[Voice] Final transcript:', trimmedFinal);
 
-        // Check for stop command FIRST (only exact matches)
-        if (continuousModeRef.current && isStopCommand(trimmedFinal)) {
-          console.log('[Voice] Stop command detected');
-          continuousModeRef.current = false;
-          setIsContinuousMode(false);
-          accumulatedTextRef.current = '';
-          stopRecognition();
-          options.onContinuousStopped?.();
-          return;
-        }
-
-        // Accumulate the text
+        // Accumulate text
         if (accumulatedTextRef.current) {
           accumulatedTextRef.current += ' ' + trimmedFinal;
         } else {
           accumulatedTextRef.current = trimmedFinal;
         }
 
-        // Update display
         setTranscript(accumulatedTextRef.current);
         if (options.onInterimTranscript) {
           options.onInterimTranscript(accumulatedTextRef.current);
         }
 
-        // In continuous mode, wait for pause before sending
-        if (continuousModeRef.current) {
-          startPauseTimer();
-        } else {
-          // Single mode: send immediately on final
-          flushAccumulatedText();
-        }
+        // Wait for pause before sending
+        startPauseTimer();
       }
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
       console.log('[Voice] Recognition error:', event.error);
-      
-      // Don't restart if paused for speaking or aborted
-      if (isPausedForSpeakingRef.current || event.error === 'aborted') {
-        setIsListening(false);
-        return;
-      }
-      
-      // In continuous mode, try to restart on transient errors with THROTTLED reconnection
-      if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-        const now = Date.now();
-        const timeSinceLastRestart = now - lastRestartTimeRef.current;
-        
-        // Reset counter if enough time has passed
-        if (timeSinceLastRestart > 2000) {
-          restartAttemptsRef.current = 0;
-        }
-        
-        // Check if we've exceeded max attempts
-        if (restartAttemptsRef.current >= MAX_RESTART_ATTEMPTS) {
-          console.log('[Voice] Max restart attempts reached, cooling down...');
-          // Clear any pending timeout
-          if (restartTimeoutRef.current) {
-            clearTimeout(restartTimeoutRef.current);
-          }
-          // Wait longer before trying again
-          restartTimeoutRef.current = setTimeout(() => {
-            restartAttemptsRef.current = 0;
-            if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-              console.log('[Voice] Resuming after cooldown');
-              createAndStartRecognition(true);
-            }
-          }, RESTART_COOLDOWN_MS);
-          return;
-        }
-        
-        restartAttemptsRef.current++;
-        lastRestartTimeRef.current = now;
-        
-        // Use small delay to prevent rapid cycling
-        const delay = 150 + (restartAttemptsRef.current * 100); // Progressive delay
-        
-        if (restartTimeoutRef.current) {
-          clearTimeout(restartTimeoutRef.current);
-        }
-        restartTimeoutRef.current = setTimeout(() => {
-          if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-            console.log('[Voice] Throttled reconnection attempt', restartAttemptsRef.current);
-            createAndStartRecognition(true);
-          }
-        }, delay);
-      } else {
-        setIsListening(false);
-      }
+      setIsListening(false);
     };
 
     recognition.onend = () => {
-      console.log('[Voice] Recognition ended, paused:', isPausedForSpeakingRef.current, 'continuous:', continuousModeRef.current);
+      console.log('[Voice] Recognition ended');
+      setIsListening(false);
       
-      // Don't restart if paused for speaking
-      if (isPausedForSpeakingRef.current) {
-        setIsListening(false);
-        return;
-      }
-      
-      // In continuous mode, restart automatically with THROTTLED retry logic
-      if (continuousModeRef.current) {
-        const now = Date.now();
-        const timeSinceLastRestart = now - lastRestartTimeRef.current;
-        
-        // Reset counter if enough time has passed
-        if (timeSinceLastRestart > 2000) {
-          restartAttemptsRef.current = 0;
-        }
-        
-        // Check if we're restarting too fast
-        if (restartAttemptsRef.current >= MAX_RESTART_ATTEMPTS) {
-          console.log('[Voice] Too many restarts in onend, pausing...');
-          if (restartTimeoutRef.current) {
-            clearTimeout(restartTimeoutRef.current);
-          }
-          restartTimeoutRef.current = setTimeout(() => {
-            restartAttemptsRef.current = 0;
-            if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-              console.log('[Voice] Delayed restart after throttle in onend');
-              createAndStartRecognition(true);
-            }
-          }, RESTART_COOLDOWN_MS);
-          return;
-        }
-        
-        restartAttemptsRef.current++;
-        lastRestartTimeRef.current = now;
-        
-        // Small delay to prevent rapid cycling
-        if (restartTimeoutRef.current) {
-          clearTimeout(restartTimeoutRef.current);
-        }
-        restartTimeoutRef.current = setTimeout(() => {
-          if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-            console.log('[Voice] Auto-restart in continuous mode');
-            createAndStartRecognition(true);
-          }
-        }, 100);
-      } else {
-        setIsListening(false);
+      // Flush any remaining text
+      if (accumulatedTextRef.current.trim()) {
+        flushAccumulatedText();
       }
     };
 
@@ -395,236 +241,85 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       console.error('[Voice] Failed to start recognition:', err);
       setIsListening(false);
     }
-  }, [language, options, isStopCommand, stopRecognition, startPauseTimer, flushAccumulatedText]);
+  }, [language, options, startPauseTimer, flushAccumulatedText]);
 
-  const forceStopSpeechAndUnblock = useCallback((reason: string) => {
-    console.warn('[Voice] Forcing speech stop/unblock:', reason);
-    clearSpeakWatchdog();
-
-    try {
-      window.speechSynthesis.cancel();
-    } catch {
-      // ignore
-    }
-
-    sentenceQueueRef.current = [];
-    currentSentenceIndexRef.current = 0;
-    setIsSpeaking(false);
-    setIsSpeechPaused(false);
-    setCurrentSpeakingText('');
-    setCurrentSentenceIndex(0);
-
-    // Always unblock mic
-    isPausedForSpeakingRef.current = false;
-
-    // If user is in continuous mode, resume recognition quickly
-    if (continuousModeRef.current) {
-      setTimeout(() => {
-        if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-          createAndStartRecognition(true);
-        }
-      }, 200);
-    }
-  }, [clearSpeakWatchdog, createAndStartRecognition]);
-
-  // Start single-phrase listening
+  // Start listening - simple!
   const startListening = useCallback(() => {
     if (!isSupported) return;
     
-    console.log('[Voice] Starting single listening');
+    console.log('[Voice] Starting listening');
     
     // Cancel any speech
     window.speechSynthesis.cancel();
     setIsSpeaking(false);
     
     // Reset state
-    isPausedForSpeakingRef.current = false;
-    continuousModeRef.current = false;
-    setIsContinuousMode(false);
+    isOutputtingAudioRef.current = false;
     accumulatedTextRef.current = '';
     clearPauseTimeout();
     
-    createAndStartRecognition(false);
+    createAndStartRecognition();
   }, [isSupported, createAndStartRecognition, clearPauseTimeout]);
 
-  // Start continuous mode
-  const startContinuousListening = useCallback(() => {
-    if (!isSupported) return;
-    
-    console.log('[Voice] Starting continuous mode');
-    
-    // Cancel any speech
-    window.speechSynthesis.cancel();
-    setIsSpeaking(false);
-    
-    // Reset state
-    isPausedForSpeakingRef.current = false;
-    continuousModeRef.current = true;
-    setIsContinuousMode(true);
-    accumulatedTextRef.current = '';
-    clearPauseTimeout();
-    
-    createAndStartRecognition(true);
-  }, [isSupported, createAndStartRecognition, clearPauseTimeout]);
-
-  // Stop continuous mode - AGGRESSIVE CLEANUP
-  const stopContinuousListening = useCallback(() => {
-    console.log('[Voice] FORCE stopping continuous mode');
-    
-    // CRITICAL: Set flags FIRST to prevent any restarts
-    continuousModeRef.current = false;
-    isPausedForSpeakingRef.current = true; // Block any pending restarts
-    
-    setIsContinuousMode(false);
-    setIsListening(false);
-    accumulatedTextRef.current = '';
-    clearPauseTimeout();
-    
-    // Clear any pending restart timeouts
-    if (restartTimeoutRef.current) {
-      clearTimeout(restartTimeoutRef.current);
-      restartTimeoutRef.current = null;
-    }
-    restartAttemptsRef.current = 0;
-    
-    // Kill recognition multiple times to ensure it's dead
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-        recognitionRef.current.stop();
-      } catch (e) {
-        // Ignore
-      }
-      recognitionRef.current = null;
-    }
-    
-    // Cancel any speech synthesis
-    window.speechSynthesis.cancel();
-    
-    // Unblock after a short delay
-    setTimeout(() => {
-      isPausedForSpeakingRef.current = false;
-    }, 500);
-  }, [clearPauseTimeout]);
-
-  // Stop all listening
+  // Stop listening
   const stopListening = useCallback(() => {
-    continuousModeRef.current = false;
-    setIsContinuousMode(false);
     accumulatedTextRef.current = '';
     clearPauseTimeout();
-    
-    // Clear any pending restart timeouts
-    if (restartTimeoutRef.current) {
-      clearTimeout(restartTimeoutRef.current);
-      restartTimeoutRef.current = null;
-    }
-    restartAttemptsRef.current = 0;
-    
     stopRecognition();
   }, [stopRecognition, clearPauseTimeout]);
 
-  // Pause recognition temporarily (for when AI is processing)
-  // This doesn't exit continuous mode, just temporarily stops listening
-  const pauseRecognition = useCallback(() => {
-    console.log('[Voice] Pausing recognition (processing)');
-    isPausedForSpeakingRef.current = true;
-    isOutputtingAudioRef.current = true;
-    accumulatedTextRef.current = '';
-    clearPauseTimeout();
-    
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-      } catch (e) {
-        // Ignore
-      }
+  // Toggle listening
+  const toggleListening = useCallback(() => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
     }
-    setIsListening(false);
-  }, [clearPauseTimeout]);
+  }, [isListening, startListening, stopListening]);
 
-  // Resume recognition after processing is complete
-  const resumeRecognition = useCallback(() => {
-    console.log('[Voice] Resuming recognition after processing');
-    
-    // Extended cooldown to avoid catching AI's response
-    setTimeout(() => {
-      isPausedForSpeakingRef.current = false;
-      isOutputtingAudioRef.current = false;
-      
-      if (continuousModeRef.current) {
-        setTimeout(() => {
-          if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-            createAndStartRecognition(true);
-          }
-        }, 300);
-      }
-    }, 500);
-  }, [createAndStartRecognition]);
-
-  // Clean text for speech - CRITICAL: Sanitize problematic Unicode that causes "alien" rendering
+  // Clean text for speech
   const cleanTextForSpeech = useCallback((text: string): string => {
     return text
-      // CRITICAL: Convert problematic Unicode to ASCII (prevents "alien" speech)
-      .replace(/…/g, '...') // Unicode ellipsis causes rendering issues
-      .replace(/[""]/g, '"') // Smart quotes
-      .replace(/['']/g, "'") // Smart apostrophes
-      .replace(/—/g, '-') // Em dash
-      .replace(/–/g, '-') // En dash
-      .replace(/•/g, '-') // Bullet
-      .replace(/→/g, ' a ') // Arrow (mispronounced)
-      .replace(/←/g, '') // Left arrow
-      .replace(/[©®™]/g, '') // Legal symbols
-      .replace(/°/g, ' grados ') // Degree
-      // Remove emojis
+      .replace(/…/g, '...')
+      .replace(/[""]/g, '"')
+      .replace(/['']/g, "'")
+      .replace(/—/g, '-')
+      .replace(/–/g, '-')
+      .replace(/•/g, '-')
+      .replace(/→/g, ' a ')
+      .replace(/←/g, '')
+      .replace(/[©®™]/g, '')
+      .replace(/°/g, ' grados ')
       .replace(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]/gu, '')
-      // CJK and other problematic unicode blocks
       .replace(/[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\uFF00-\uFFEF\u4E00-\u9FAF]/g, '')
-      // Remove markdown
       .replace(/\*\*/g, '')
       .replace(/\*/g, '')
       .replace(/#{1,6}\s/g, '')
       .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
       .replace(/`([^`]+)`/g, '$1')
       .replace(/```[\s\S]*?```/g, '')
-      // Remove list markers
       .replace(/^[\s]*[-•◦▪▸►]\s*/gm, '')
       .replace(/^\s*\d+\.\s*/gm, '')
-      // Clean whitespace
       .replace(/\s+/g, ' ')
       .trim();
   }, []);
 
-  // Split text into sentences for natural pauses
+  // Split text into sentences
   const splitIntoSentences = useCallback((text: string): string[] => {
-    // Split by sentence-ending punctuation but keep the punctuation
     const sentences = text.split(/(?<=[.!?。])\s+/);
     return sentences.filter(s => s.trim().length > 0);
   }, []);
 
-  // Speak the next sentence in queue
+  // Speak next sentence in queue
   const speakNextSentence = useCallback(() => {
-    // NEW: Verify synthesis is ready before speaking
     if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-      console.log('[Voice] Waiting for synthesis to be ready...');
-      // SAFETY: Some browsers get stuck in "speaking/pending" forever.
-      if (!synthStuckSinceRef.current) {
-        synthStuckSinceRef.current = Date.now();
-      } else if (Date.now() - synthStuckSinceRef.current > 3000) {
-        forceStopSpeechAndUnblock('speechSynthesis stuck (speaking/pending > 3s)');
-        return;
-      }
       setTimeout(speakNextSentence, 100);
       return;
     }
 
-    // reset stuck timer once synthesis is ready
-    synthStuckSinceRef.current = null;
-
     if (currentSentenceIndexRef.current >= sentenceQueueRef.current.length) {
       // All done
       console.log('[Voice] All sentences spoken');
-      clearSpeakWatchdog();
       setIsSpeaking(false);
       setIsSpeechPaused(false);
       setCurrentSpeakingText('');
@@ -632,40 +327,19 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       sentenceQueueRef.current = [];
       currentSentenceIndexRef.current = 0;
       
-      // Mark precise time when audio ended
       audioEndTimeRef.current = Date.now();
       options.onSpeakEnd?.();
       
-      // Resume listening after extended delay if in continuous mode (prevents echo capture)
-      if (continuousModeRef.current) {
-        setTimeout(() => {
-          console.log('[Voice] Unblocking mic after speech');
-          isPausedForSpeakingRef.current = false;
-          // Keep audio output flag active for extra time to prevent echo
-          if (audioOutputCooldownRef.current) clearTimeout(audioOutputCooldownRef.current);
-          audioOutputCooldownRef.current = setTimeout(() => {
-            isOutputtingAudioRef.current = false;
-          }, TTS_COOLDOWN_MS); // Extended cooldown to prevent self-transcription
-          
-          setTimeout(() => {
-            if (continuousModeRef.current && !isPausedForSpeakingRef.current && !isOutputtingAudioRef.current) {
-              createAndStartRecognition(true);
-            }
-          }, TTS_COOLDOWN_MS - 500); // Sync with cooldown
-        }, TTS_COOLDOWN_MS); // Extended wait after speech ends
-      } else {
-        isPausedForSpeakingRef.current = false;
-        if (audioOutputCooldownRef.current) clearTimeout(audioOutputCooldownRef.current);
-        audioOutputCooldownRef.current = setTimeout(() => {
-          isOutputtingAudioRef.current = false;
-        }, TTS_COOLDOWN_MS - 500);
-      }
+      // Unblock after cooldown
+      setTimeout(() => {
+        isOutputtingAudioRef.current = false;
+      }, TTS_COOLDOWN_MS);
       return;
     }
 
     const sentence = sentenceQueueRef.current[currentSentenceIndexRef.current];
-    // Mark audio output as active while speaking
     isOutputtingAudioRef.current = true;
+    
     console.log('[Voice] Speaking sentence', currentSentenceIndexRef.current + 1, '/', sentenceQueueRef.current.length);
     
     setCurrentSentenceIndex(currentSentenceIndexRef.current);
@@ -673,37 +347,24 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
 
     const utterance = new SpeechSynthesisUtterance(sentence);
     utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
-    // Use provided speech speed or default
-    // Apply gentler rate multiplier for more natural pacing (no machine-gunning)
-    utterance.rate = (options.speechSpeed ?? 0.85) * 0.88; // Significantly slower for comprehension
-    utterance.pitch = (options.pitch ?? 1.0) * 1.02; // Subtle pitch for warmth
+    utterance.rate = (options.speechSpeed ?? 0.85) * 0.88;
+    utterance.pitch = (options.pitch ?? 1.0) * 1.02;
     utterance.volume = options.volume ?? 1.0;
 
-    // Get a native voice - check for user-selected specific voice first
+    // Get voice
     const voices = window.speechSynthesis.getVoices();
     let preferredVoice: SpeechSynthesisVoice | undefined;
     
-    // PRIORITY 1: User selected a specific voice by name
     if (options.selectedVoiceName) {
       preferredVoice = voices.find(v => v.name === options.selectedVoiceName);
-      if (preferredVoice) {
-        console.log('[Voice] Using user-selected voice:', preferredVoice.name, 'lang:', preferredVoice.lang);
-        utterance.voice = preferredVoice;
-        utterance.lang = preferredVoice.lang;
-      }
     }
     
-    // PRIORITY 2: Auto-select based on gender and locale preferences
     if (!preferredVoice) {
       const voiceGender = options.voiceGender ?? 'female';
-      
-      // Priority locale codes for Chile (es-CL) and Canada (en-CA, fr-CA)
-      // Then fallback to generic Spanish/English
       const localePreference = language === 'es' 
-        ? ['es-CL', 'es-MX', 'es-419', 'es-ES', 'es-US', 'es'] // Chile first, then Latin America
-        : ['en-CA', 'en-US', 'en-GB', 'en-AU', 'en']; // Canada first
+        ? ['es-CL', 'es-MX', 'es-419', 'es-ES', 'es-US', 'es']
+        : ['en-CA', 'en-US', 'en-GB', 'en-AU', 'en'];
       
-      // Filter voices by language with locale priority
       let langVoices: SpeechSynthesisVoice[] = [];
       for (const locale of localePreference) {
         const matchingVoices = voices.filter(v => 
@@ -715,51 +376,29 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         }
       }
       
-      // If no voices found, fallback to any matching the base language
       if (langVoices.length === 0) {
         const baseLang = language === 'es' ? 'es' : 'en';
         langVoices = voices.filter(v => v.lang.startsWith(baseLang));
       }
       
       if (voiceGender !== 'auto' && langVoices.length > 0) {
-        // Common patterns for female voice names (expanded for Chile/Canada)
         const femalePatterns = /female|mujer|femenin|samantha|victoria|karen|monica|paulina|helena|zira|hazel|susan|alice|fiona|moira|tessa|ava|allison|kate|siri.*female|google.*female|microsoft.*female|francisca|catalina|ximena|carmen|valentina|amelie|chloe|marie|nathalie|sylvie|angelica|ines|consuelo|esperanza|lucia|rosa/i;
-        // Common patterns for male voice names (expanded for Chile/Canada)
         const malePatterns = /male|hombre|masculin|alex|jorge|daniel|david|diego|enrique|carlos|mark|thomas|oliver|james|fred|lee|rishi|aaron|siri.*male|google.*male|microsoft.*male|andres|pablo|rodrigo|mateo|sebastian|nicolas|felipe|ivan|pedro|antonio|luis|miguel|juan|manuel|jean|pierre|jacques|claude|benoit|francois/i;
         
         const targetPattern = voiceGender === 'female' ? femalePatterns : malePatterns;
         
-        // First try: exact gender match with local service (better quality)
-        preferredVoice = langVoices.find(v => 
-          v.localService && targetPattern.test(v.name)
-        );
-        
-        // Second try: exact gender match with any service
-        if (!preferredVoice) {
-          preferredVoice = langVoices.find(v => targetPattern.test(v.name));
-        }
-        
-        // Third try: local service (might be the preferred gender naturally)
-        if (!preferredVoice) {
-          preferredVoice = langVoices.find(v => v.localService);
-        }
-        
-        // Fourth try: any voice in language
-        if (!preferredVoice) {
-          preferredVoice = langVoices[0];
-        }
-        
-        console.log('[Voice] Auto-selected voice:', preferredVoice?.name, 'lang:', preferredVoice?.lang, 'for gender:', voiceGender);
+        preferredVoice = langVoices.find(v => v.localService && targetPattern.test(v.name))
+          || langVoices.find(v => targetPattern.test(v.name))
+          || langVoices.find(v => v.localService)
+          || langVoices[0];
       } else {
-        // Auto mode: prefer local service for better quality
         preferredVoice = langVoices.find(v => v.localService) || langVoices[0];
       }
-      
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-        // Also set the utterance language to match the voice locale
-        utterance.lang = preferredVoice.lang;
-      }
+    }
+    
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+      utterance.lang = preferredVoice.lang;
     }
 
     utterance.onstart = () => {
@@ -770,11 +409,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     };
 
     utterance.onend = () => {
-      // speech advanced successfully; ensure stuck timer doesn't falsely trigger
-      synthStuckSinceRef.current = null;
       currentSentenceIndexRef.current++;
-      
-      // Add a LONGER natural pause between sentences for "thinking room"
       setTimeout(() => {
         if (!window.speechSynthesis.paused && sentenceQueueRef.current.length > 0) {
           speakNextSentence();
@@ -784,9 +419,6 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
 
     utterance.onerror = (event) => {
       console.error('[Voice] Speech synthesis error:', event);
-      clearSpeakWatchdog();
-      
-      // Try next sentence or finish
       currentSentenceIndexRef.current++;
       if (currentSentenceIndexRef.current < sentenceQueueRef.current.length) {
         speakNextSentence();
@@ -794,50 +426,33 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
         setIsSpeaking(false);
         setIsSpeechPaused(false);
         setCurrentSpeakingText('');
-        
-        if (continuousModeRef.current) {
-          setTimeout(() => {
-            isPausedForSpeakingRef.current = false;
-            setTimeout(() => {
-              if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-                createAndStartRecognition(true);
-              }
-            }, 200);
-          }, 500);
-        } else {
-          isPausedForSpeakingRef.current = false;
-        }
+        isOutputtingAudioRef.current = false;
       }
     };
 
-    synthRef.current = utterance;
     window.speechSynthesis.speak(utterance);
-  }, [language, options, createAndStartRecognition]);
+  }, [language, options]);
 
-  // Speak text with COMPLETE mic blocking and natural sentence pauses
-  // Uses premium TTS (ElevenLabs) if available and successful, otherwise falls back to native
+  // Speak text
   const speak = useCallback(async (text: string) => {
     if (!isSupported || !text) return;
 
-    // DUPLICATE PREVENTION: Check if we're about to repeat ourselves
+    // Duplicate prevention
     const cleanedForDupeCheck = text.trim().toLowerCase().substring(0, 100);
     const now = Date.now();
     if (
       cleanedForDupeCheck === lastSpokenTextRef.current.toLowerCase().substring(0, 100) &&
       now - lastSpokenTimeRef.current < DUPLICATE_THRESHOLD_MS
     ) {
-      console.log('[Voice] BLOCKED: Duplicate speech detected within threshold, skipping');
+      console.log('[Voice] Blocked: Duplicate speech detected');
       return;
     }
     
-    // Track this speech attempt
     lastSpokenTextRef.current = text.trim();
     lastSpokenTimeRef.current = now;
 
-    // Block mic during speech
-    isPausedForSpeakingRef.current = true;
-    
-    // Stop recognition completely
+    // Stop recognition while speaking
+    isOutputtingAudioRef.current = true;
     if (recognitionRef.current) {
       try {
         recognitionRef.current.abort();
@@ -847,12 +462,10 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       recognitionRef.current = null;
     }
     setIsListening(false);
-    
-    // Clear any accumulated text and pause timer
     accumulatedTextRef.current = '';
     clearPauseTimeout();
 
-    // Try premium TTS first if available
+    // Try premium TTS first
     if (options.premiumSpeak) {
       console.log('[Voice] Attempting premium TTS');
       
@@ -863,117 +476,49 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       const result = await options.premiumSpeak(text);
       
       if (result.success) {
-        console.log('[Voice] Premium TTS completed successfully');
-        // Premium completed - unblock mic
+        console.log('[Voice] Premium TTS completed');
         setIsSpeaking(false);
         setCurrentSpeakingText('');
         options.onSpeakEnd?.();
         
-        if (continuousModeRef.current) {
-          setTimeout(() => {
-            isPausedForSpeakingRef.current = false;
-            // Extended cooldown before allowing recognition
-            if (audioOutputCooldownRef.current) clearTimeout(audioOutputCooldownRef.current);
-            audioOutputCooldownRef.current = setTimeout(() => {
-              isOutputtingAudioRef.current = false;
-            }, 2000); // Extended cooldown for premium TTS
-            setTimeout(() => {
-              if (continuousModeRef.current && !isPausedForSpeakingRef.current && !isOutputtingAudioRef.current) {
-                createAndStartRecognition(true);
-              }
-            }, 1500); // Longer delay for recognition restart
-          }, 2500); // Longer pause after premium TTS ends
-        } else {
-          isPausedForSpeakingRef.current = false;
-          if (audioOutputCooldownRef.current) clearTimeout(audioOutputCooldownRef.current);
-          audioOutputCooldownRef.current = setTimeout(() => {
-            isOutputtingAudioRef.current = false;
-          }, 1500);
-        }
+        setTimeout(() => {
+          isOutputtingAudioRef.current = false;
+        }, TTS_COOLDOWN_MS);
         return;
       }
       
-      // CRITICAL: Only fallback to native for "not_eligible" error (user has no premium minutes)
-      // For network/API errors, do NOT duplicate with native - just unblock and return
+      // Only fallback for not_eligible
       const shouldFallbackToNative = result.error === 'not_eligible';
-      
-      console.log('[Voice] Premium TTS failed:', result.error, '| Fallback to native:', shouldFallbackToNative);
+      console.log('[Voice] Premium TTS failed:', result.error, '| Fallback:', shouldFallbackToNative);
       setIsSpeaking(false);
       setCurrentSpeakingText('');
       
       if (!shouldFallbackToNative) {
-        // Network/API error - unblock mic but don't speak with native
         options.onSpeakEnd?.();
-        if (continuousModeRef.current) {
-          setTimeout(() => {
-            isPausedForSpeakingRef.current = false;
-            setTimeout(() => {
-              if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-                createAndStartRecognition(true);
-              }
-            }, 200);
-          }, 300);
-        } else {
-          isPausedForSpeakingRef.current = false;
-        }
+        setTimeout(() => {
+          isOutputtingAudioRef.current = false;
+        }, 500);
         return;
       }
-      // Fall through to native TTS only when user is not eligible for premium
     }
 
-    // Use native TTS (either as fallback or primary)
-    // NEW: Log and cancel any existing speech FIRST
-    console.log('[Voice] Using native TTS - Cancelling any existing speech before speaking');
+    // Use native TTS
+    console.log('[Voice] Using native TTS');
     window.speechSynthesis.cancel();
     
-    // NEW: Wait for cancel to take effect before proceeding
     if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-      console.log('[Voice] Waiting for previous speech to clear...');
       setTimeout(() => speak(text), 100);
       return;
     }
 
-    console.log('[Voice] Starting speech - BLOCKING MIC');
-    
-    // CRITICAL: Block recognition IMMEDIATELY
-    isPausedForSpeakingRef.current = true;
-
-    // SAFETY watchdog: never keep the mic blocked indefinitely
-    clearSpeakWatchdog();
-    speakWatchdogRef.current = setTimeout(() => {
-      forceStopSpeechAndUnblock('watchdog timeout (15s)');
-    }, 15000);
-    
-    // Stop recognition completely
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.abort();
-      } catch (e) {
-        // Ignore
-      }
-      recognitionRef.current = null;
-    }
-    setIsListening(false);
-    
-    // Clear any accumulated text and pause timer
-    accumulatedTextRef.current = '';
-    clearPauseTimeout();
-
     const cleanedText = cleanTextForSpeech(text);
     if (!cleanedText) {
-      // No text to speak, resume immediately if in continuous mode
-      if (continuousModeRef.current) {
-        isPausedForSpeakingRef.current = false;
-        setTimeout(() => {
-          if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-            createAndStartRecognition(true);
-          }
-        }, 300);
-      }
+      setTimeout(() => {
+        isOutputtingAudioRef.current = false;
+      }, 300);
       return;
     }
 
-    // Split into sentences for natural pauses
     const sentences = splitIntoSentences(cleanedText);
     sentenceQueueRef.current = sentences;
     currentSentenceIndexRef.current = 0;
@@ -981,18 +526,16 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     setCurrentSentenceIndex(0);
     setIsSpeechPaused(false);
 
-    // Small delay to ensure abort takes effect
     setTimeout(() => {
       speakNextSentence();
     }, 150);
-  }, [isSupported, options, cleanTextForSpeech, splitIntoSentences, clearPauseTimeout, speakNextSentence, createAndStartRecognition, clearSpeakWatchdog, forceStopSpeechAndUnblock]);
+  }, [isSupported, options, cleanTextForSpeech, splitIntoSentences, clearPauseTimeout, speakNextSentence]);
 
   // Pause speech
   const pauseSpeech = useCallback(() => {
     if (isSpeaking && !isSpeechPaused) {
       window.speechSynthesis.pause();
       setIsSpeechPaused(true);
-      console.log('[Voice] Speech paused');
     }
   }, [isSpeaking, isSpeechPaused]);
 
@@ -1001,16 +544,13 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     if (isSpeaking && isSpeechPaused) {
       window.speechSynthesis.resume();
       setIsSpeechPaused(false);
-      console.log('[Voice] Speech resumed');
     }
   }, [isSpeaking, isSpeechPaused]);
 
-  // Stop speaking completely (user can call this to interrupt)
+  // Stop speaking
   const stopSpeaking = useCallback((wasInterrupted = false) => {
     const wasActuallySpeaking = isSpeaking;
 
-    clearSpeakWatchdog();
-    
     window.speechSynthesis.cancel();
     sentenceQueueRef.current = [];
     currentSentenceIndexRef.current = 0;
@@ -1019,56 +559,18 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     setCurrentSpeakingText('');
     setCurrentSentenceIndex(0);
     
-    // Notify if this was an interruption
     if (wasInterrupted && wasActuallySpeaking) {
       options.onInterrupted?.();
     }
     
-    // Unblock mic if needed
-    if (continuousModeRef.current) {
-      setTimeout(() => {
-        isPausedForSpeakingRef.current = false;
-        setTimeout(() => {
-          if (continuousModeRef.current && !isPausedForSpeakingRef.current) {
-            createAndStartRecognition(true);
-          }
-        }, 200);
-      }, wasInterrupted ? 100 : 500); // Faster resume on interruption
-    } else {
-      isPausedForSpeakingRef.current = false;
-    }
-  }, [isSpeaking, createAndStartRecognition, options]);
-
-  // Interrupt current speech and immediately start listening
-  const interruptAndListen = useCallback(() => {
-    console.log('[Voice] User interrupted - stopping speech and starting listen');
-    stopSpeaking(true);
-    
-    // Small delay then start listening
     setTimeout(() => {
-      if (!isPausedForSpeakingRef.current) {
-        if (continuousModeRef.current) {
-          createAndStartRecognition(true);
-        } else {
-          createAndStartRecognition(false);
-        }
-      }
-    }, 150);
-  }, [stopSpeaking, createAndStartRecognition]);
-
-  // Toggle single listening
-  const toggleListening = useCallback(() => {
-    if (isListening) {
-      stopListening();
-    } else {
-      startListening();
-    }
-  }, [isListening, startListening, stopListening]);
+      isOutputtingAudioRef.current = false;
+    }, wasInterrupted ? 100 : 500);
+  }, [isSpeaking, options]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      isPausedForSpeakingRef.current = true;
       clearPauseTimeout();
       sentenceQueueRef.current = [];
       if (recognitionRef.current) {
@@ -1084,7 +586,6 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
 
   return {
     isListening,
-    isContinuousMode,
     isSpeaking,
     isSpeechPaused,
     isSupported,
@@ -1094,15 +595,10 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     totalSentences: sentenceQueueRef.current.length,
     startListening,
     stopListening,
-    startContinuousListening,
-    stopContinuousListening,
     toggleListening,
-    pauseRecognition,
-    resumeRecognition,
     speak,
     pauseSpeech,
     resumeSpeech,
     stopSpeaking,
-    interruptAndListen,
   };
 }
