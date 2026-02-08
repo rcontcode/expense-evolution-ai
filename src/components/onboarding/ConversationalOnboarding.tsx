@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Check, Sparkles, MessageCircle, Loader2, Volume2, VolumeX, Settings2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Sparkles, MessageCircle, Loader2, Volume2, VolumeX, Settings2, Mic, MicOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -11,7 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useConversationalOnboarding, OnboardingOption } from '@/hooks/utils/useConversationalOnboarding';
 import { useElevenLabsTTS } from '@/hooks/utils/useElevenLabsTTS';
 import { useVoicePreferences } from '@/hooks/utils/useVoicePreferences';
-import { useVoiceSynthesis } from '@/hooks/utils/useVoiceSynthesis';
+import { useVoiceAssistant } from '@/hooks/utils/useVoiceAssistant';
 import { VoiceSettingsPanel } from '@/components/chat/VoiceSettingsPanel';
 import { cn } from '@/lib/utils';
 import confetti from 'canvas-confetti';
@@ -28,7 +28,9 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
   const [isTyping, setIsTyping] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+  const [interimTranscript, setInterimTranscript] = useState('');
   const hasSpokenRef = useRef<string | null>(null);
+  const isInitializedRef = useRef(false);
   
   const voicePrefs = useVoicePreferences();
   
@@ -46,7 +48,7 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
     isLastStep,
   } = useConversationalOnboarding();
 
-  // Keep selection stable for rerenders and allow reacting to changes
+  // Keep selection stable for rerenders
   const selectedPremiumVoiceId = voicePrefs.getPremiumVoiceId(lang) || undefined;
 
   // ElevenLabs TTS (premium voice)
@@ -56,50 +58,78 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
     voiceGender: voicePrefs.voiceGender === 'auto' ? 'female' : voicePrefs.voiceGender,
   });
 
-  // Fallback to native voice synthesis - include all voice preferences
-  // NOTE: If user volume is 0, they'll hear nothing. We handle unmute on toggle.
-  const nativeTTS = useVoiceSynthesis({
-    voiceGender: voicePrefs.voiceGender === 'auto' ? 'female' : voicePrefs.voiceGender,
+  // Find matching option from transcript
+  const findMatchingOption = useCallback((transcript: string, options: OnboardingOption[]): OnboardingOption | null => {
+    const normalized = transcript.toLowerCase().trim();
+    
+    for (const option of options) {
+      const labelEs = option.label.es.toLowerCase();
+      const labelEn = option.label.en.toLowerCase();
+      const value = option.value.toLowerCase();
+      
+      // Match by label or value
+      if (
+        normalized.includes(labelEs) ||
+        normalized.includes(labelEn) ||
+        normalized.includes(value) ||
+        labelEs.includes(normalized) ||
+        labelEn.includes(normalized)
+      ) {
+        return option;
+      }
+    }
+    
+    return null;
+  }, []);
+
+  // Handle voice transcript
+  const handleVoiceResponse = useCallback((transcript: string) => {
+    if (!currentQuestion || !transcript.trim()) return;
+    
+    setInterimTranscript('');
+    
+    const matchedOption = findMatchingOption(transcript, currentQuestion.options);
+    
+    if (matchedOption) {
+      // User said a valid option
+      handleOptionClickInternal(matchedOption, true);
+    } else {
+      // Didn't match - provide feedback
+      const feedback = lang === 'es' 
+        ? 'No entendí tu respuesta. Por favor elige una de las opciones.'
+        : "I didn't understand. Please choose one of the options.";
+      voiceAssistant.speak(feedback);
+    }
+  }, [currentQuestion, lang]);
+
+  // Unified voice assistant with premium TTS integration
+  const voiceAssistant = useVoiceAssistant({
     speechSpeed: voicePrefs.speechSpeed,
     volume: voicePrefs.volume,
     pitch: voicePrefs.pitch,
+    voiceGender: voicePrefs.voiceGender === 'auto' ? 'female' : voicePrefs.voiceGender,
     selectedVoiceName: voicePrefs.selectedVoiceName,
+    premiumSpeak: elevenLabsTTS.speak,
+    isPremiumSpeaking: elevenLabsTTS.isSpeaking,
+    onTranscript: handleVoiceResponse,
+    onInterimTranscript: (text) => setInterimTranscript(text),
   });
 
-  const isSpeaking = elevenLabsTTS.isSpeaking || nativeTTS.isSpeaking;
+  const isSpeaking = voiceAssistant.isSpeaking || elevenLabsTTS.isSpeaking;
   const isLoadingVoice = elevenLabsTTS.isLoading;
+  const isListening = voiceAssistant.isListening;
 
-  // If user has global volume set to 0, onboarding will be silent.
-  // Auto-unmute once (they can still disable voice with the toggle).
+  // If user has global volume set to 0, auto-unmute
   useEffect(() => {
     if (voiceEnabled && voicePrefs.volume === 0) {
       voicePrefs.setVolume(1);
     }
   }, [voiceEnabled, voicePrefs.volume, voicePrefs.setVolume]);
 
-  // If user changes voice settings, allow re-speaking the current step.
+  // If user changes voice settings, allow re-speaking the current step
   useEffect(() => {
     hasSpokenRef.current = null;
   }, [selectedPremiumVoiceId, voicePrefs.selectedVoiceName, voicePrefs.voiceGender]);
-
-  // Smart speak function - tries ElevenLabs first, falls back to native
-  const speak = useCallback(async (text: string) => {
-    if (!voiceEnabled || !text?.trim()) return;
-
-    // Try ElevenLabs first if available
-    if (elevenLabsTTS.canUsePremium) {
-      const result = await elevenLabsTTS.speak(text);
-      if (result.success) return;
-    }
-
-    // Fallback to native TTS
-    nativeTTS.speak(text);
-  }, [voiceEnabled, elevenLabsTTS, nativeTTS]);
-
-  const stopSpeaking = useCallback(() => {
-    elevenLabsTTS.stop();
-    nativeTTS.stop();
-  }, [elevenLabsTTS, nativeTTS]);
 
   // Phoenix state evolves with progress
   const phoenixState: PhoenixState = 
@@ -107,25 +137,26 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
     state.currentStep <= 3 ? 'smoke' :
     'rebirth';
 
-  // Speak the current question when it changes
+  // Auto-speak the current question when it changes
   useEffect(() => {
     if (!voiceEnabled || !currentQuestion) return;
     
-    const questionKey = `${currentQuestion.id}-${state.currentStep}-${selectedPremiumVoiceId || 'native'}`;
+    const questionKey = `${currentQuestion.id}-${state.currentStep}`;
     if (hasSpokenRef.current === questionKey) return;
     
     hasSpokenRef.current = questionKey;
     
-    // First question speaks faster, subsequent ones have a small delay
-    const delay = state.currentStep === 0 ? 800 : 600;
+    // Small delay for smooth transition
+    const delay = isInitializedRef.current ? 600 : 1000;
+    isInitializedRef.current = true;
     
     const timeout = setTimeout(() => {
       const textToSpeak = `${currentQuestion.phoenixIntro[lang]}. ${currentQuestion.question[lang]}`;
-      speak(textToSpeak);
+      voiceAssistant.speak(textToSpeak);
     }, delay);
     
     return () => clearTimeout(timeout);
-  }, [currentQuestion, state.currentStep, voiceEnabled, lang, speak, selectedPremiumVoiceId]);
+  }, [currentQuestion, state.currentStep, voiceEnabled, lang]);
 
   // Check if current question has a selection
   const currentField = currentQuestion?.field;
@@ -138,8 +169,9 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
     return currentResponse === optionValue;
   };
 
-  const handleOptionClick = useCallback((option: OnboardingOption) => {
-    stopSpeaking();
+  // Internal handler for option selection (used by both click and voice)
+  const handleOptionClickInternal = useCallback((option: OnboardingOption, fromVoice = false) => {
+    voiceAssistant.stopSpeaking();
     selectOption(option.value);
     
     if (!currentQuestion?.allowMultiple) {
@@ -149,25 +181,35 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
         const acks = lang === 'es' 
           ? ['¡Excelente!', '¡Perfecto!', '¡Muy bien!', '¡Entendido!']
           : ['Excellent!', 'Perfect!', 'Great!', 'Got it!'];
-        speak(acks[Math.floor(Math.random() * acks.length)]);
+        
+        // If from voice, add confirmation of what was selected
+        const ack = acks[Math.floor(Math.random() * acks.length)];
+        const confirmation = fromVoice 
+          ? `${ack} ${option.label[lang]}.`
+          : ack;
+        voiceAssistant.speak(confirmation);
       }
       
       setTimeout(() => {
         setIsTyping(false);
         nextStep();
-      }, 1000);
+      }, fromVoice ? 1500 : 1000);
     }
-  }, [currentQuestion, selectOption, nextStep, voiceEnabled, lang, speak, stopSpeaking]);
+  }, [currentQuestion, selectOption, nextStep, voiceEnabled, lang, voiceAssistant]);
+
+  const handleOptionClick = useCallback((option: OnboardingOption) => {
+    handleOptionClickInternal(option, false);
+  }, [handleOptionClickInternal]);
 
   const handleComplete = useCallback(async () => {
-    stopSpeaking();
+    voiceAssistant.stopSpeaking();
     const success = await saveProfile();
     if (success) {
       if (voiceEnabled) {
         const message = lang === 'es' 
           ? '¡Felicidades! Tu perfil está completo. Estoy lista para ayudarte.'
           : 'Congratulations! Your profile is complete. I\'m ready to help you.';
-        speak(message);
+        voiceAssistant.speak(message);
       }
       
       confetti({
@@ -182,10 +224,10 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
         navigate('/dashboard');
       }, 2500);
     }
-  }, [saveProfile, onComplete, navigate, voiceEnabled, lang, speak, stopSpeaking]);
+  }, [saveProfile, onComplete, navigate, voiceEnabled, lang, voiceAssistant]);
 
   const handleNextOrComplete = useCallback(() => {
-    stopSpeaking();
+    voiceAssistant.stopSpeaking();
     if (isLastStep) {
       handleComplete();
     } else {
@@ -195,7 +237,7 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
         const acks = lang === 'es' 
           ? ['Sigamos.', 'Continuemos.', 'Siguiente.']
           : ['Let\'s continue.', 'Moving on.', 'Next.'];
-        speak(acks[Math.floor(Math.random() * acks.length)]);
+        voiceAssistant.speak(acks[Math.floor(Math.random() * acks.length)]);
       }
       
       setTimeout(() => {
@@ -203,33 +245,41 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
         nextStep();
       }, 800);
     }
-  }, [isLastStep, handleComplete, nextStep, voiceEnabled, lang, speak, stopSpeaking]);
+  }, [isLastStep, handleComplete, nextStep, voiceEnabled, lang, voiceAssistant]);
 
   const handleBack = useCallback(() => {
-    stopSpeaking();
+    voiceAssistant.stopSpeaking();
     hasSpokenRef.current = null;
     if (state.currentStep === 0) {
       onBack?.();
     } else {
       previousStep();
     }
-  }, [state.currentStep, onBack, previousStep, stopSpeaking]);
+  }, [state.currentStep, onBack, previousStep, voiceAssistant]);
 
   const toggleVoice = useCallback(() => {
     if (voiceEnabled) {
-      stopSpeaking();
+      voiceAssistant.stopSpeaking();
       setVoiceEnabled(false);
       return;
     }
 
-    // Turning voice on: if volume is 0, unmute so user actually hears it.
+    // Turning voice on: if volume is 0, unmute
     if (voicePrefs.volume === 0) {
       voicePrefs.setVolume(1);
     }
 
     hasSpokenRef.current = null;
     setVoiceEnabled(true);
-  }, [voiceEnabled, stopSpeaking, voicePrefs]);
+  }, [voiceEnabled, voiceAssistant, voicePrefs]);
+
+  const toggleMicrophone = useCallback(() => {
+    if (isSpeaking || isLoadingVoice) {
+      // Don't allow mic while Phoenix is speaking
+      return;
+    }
+    voiceAssistant.toggleListening();
+  }, [voiceAssistant, isSpeaking, isLoadingVoice]);
 
   if (state.isComplete) {
     return (
@@ -265,8 +315,8 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
       <div className="space-y-2">
         <div className="flex justify-between items-center text-sm text-white/70">
           <span className="font-medium">{lang === 'es' ? 'Paso' : 'Step'} {state.currentStep + 1} / {totalSteps}</span>
-          <div className="flex items-center gap-1">
-            <span className="text-white/50 mr-2">{Math.round(progress)}%</span>
+          <div className="flex items-center gap-2">
+            <span className="text-white/50">{Math.round(progress)}%</span>
             
             {/* Voice Settings Button */}
             <Button
@@ -274,10 +324,10 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
               size="sm"
               onClick={() => setShowVoiceSettings(!showVoiceSettings)}
               className={cn(
-                "h-8 w-8 p-0 rounded-full border-2 transition-all",
+                "h-9 w-9 p-0 rounded-full border-2 transition-all",
                 showVoiceSettings 
                   ? "bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/30" 
-                  : "border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-white/50"
+                  : "border-white/40 bg-white/20 text-white hover:bg-white/30 hover:border-white/60"
               )}
             >
               <Settings2 className="h-4 w-4" />
@@ -289,10 +339,10 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
               size="sm"
               onClick={toggleVoice}
               className={cn(
-                "h-8 w-8 p-0 rounded-full border-2 transition-all",
+                "h-9 w-9 p-0 rounded-full border-2 transition-all",
                 voiceEnabled 
                   ? "bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/30" 
-                  : "border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-white/50"
+                  : "border-white/40 bg-white/20 text-white hover:bg-white/30 hover:border-white/60"
               )}
             >
               {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
@@ -305,18 +355,17 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
       {/* Voice Settings Panel */}
       <Collapsible open={showVoiceSettings} onOpenChange={setShowVoiceSettings}>
         <CollapsibleContent>
-          <Card className="mb-4 border-primary/20">
+          <Card className="mb-4 border-primary/30 bg-card/95">
             <CardContent className="pt-4">
               <VoiceSettingsPanel
                 language={lang}
                 autoSpeak={voiceEnabled}
                 onAutoSpeakChange={(v) => {
-                  // If user turns voice on while volume is 0, unmute for them
                   if (v && voicePrefs.volume === 0) {
                     voicePrefs.setVolume(1);
                   }
                   setVoiceEnabled(v);
-                  hasSpokenRef.current = null; // re-speak current step with new settings
+                  hasSpokenRef.current = null;
                 }}
                 compact
               />
@@ -395,11 +444,68 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
             </CardHeader>
             
             <CardContent className="space-y-3">
+              {/* Microphone Button + Transcript */}
+              {voiceAssistant.isSupported && voiceEnabled && (
+                <div className="mb-4">
+                  <div className="flex items-center gap-3 justify-center">
+                    <Button
+                      variant={isListening ? "default" : "outline"}
+                      size="lg"
+                      onClick={toggleMicrophone}
+                      disabled={isSpeaking || isLoadingVoice || isTyping}
+                      className={cn(
+                        "h-14 w-14 rounded-full border-2 transition-all",
+                        isListening 
+                          ? "bg-destructive border-destructive text-destructive-foreground animate-pulse shadow-lg shadow-destructive/40" 
+                          : "border-primary/50 bg-primary/10 text-primary hover:bg-primary/20 hover:border-primary"
+                      )}
+                    >
+                      {isListening ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
+                    </Button>
+                  </div>
+                  
+                  {/* Listening status + transcript */}
+                  <AnimatePresence>
+                    {isListening && (
+                      <motion.div 
+                        className="mt-3 text-center"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                      >
+                        <div className="flex items-center justify-center gap-2 text-sm text-primary">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive/60 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
+                          </span>
+                          {lang === 'es' ? 'Escuchando...' : 'Listening...'}
+                        </div>
+                        {interimTranscript && (
+                          <p className="mt-2 text-sm text-muted-foreground italic">
+                            "{interimTranscript}"
+                          </p>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  
+                  {/* Hint text */}
+                  {!isListening && !isSpeaking && (
+                    <p className="mt-2 text-center text-xs text-muted-foreground">
+                      {lang === 'es' 
+                        ? 'Toca el micrófono para responder con tu voz' 
+                        : 'Tap the mic to answer with your voice'}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Options */}
               {currentQuestion.options.map((option, index) => (
                 <motion.button
                   key={option.id}
                   onClick={() => handleOptionClick(option)}
-                  disabled={isTyping || isSpeaking}
+                  disabled={isTyping || isSpeaking || isListening}
                   className={cn(
                     "w-full p-4 rounded-lg border-2 text-left transition-all",
                     "hover:border-primary hover:bg-primary/5",
@@ -412,8 +518,8 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: (isTyping || isSpeaking) ? 1 : 1.01 }}
-                  whileTap={{ scale: (isTyping || isSpeaking) ? 1 : 0.99 }}
+                  whileHover={{ scale: (isTyping || isSpeaking || isListening) ? 1 : 1.01 }}
+                  whileTap={{ scale: (isTyping || isSpeaking || isListening) ? 1 : 0.99 }}
                 >
                   <div className="flex items-center gap-3">
                     {option.icon && <span className="text-2xl">{option.icon}</span>}
@@ -447,7 +553,7 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
         <Button
           variant="outline"
           onClick={handleBack}
-          disabled={isTyping}
+          disabled={isTyping || isListening}
           className="gap-2"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -457,7 +563,7 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
         {(currentQuestion.allowMultiple || isLastStep) && (
           <Button
             onClick={handleNextOrComplete}
-            disabled={!hasCurrentResponse() || state.isLoading || isTyping}
+            disabled={!hasCurrentResponse() || state.isLoading || isTyping || isListening}
             className="gap-2"
           >
             {state.isLoading ? (
@@ -468,7 +574,7 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
             ) : isLastStep ? (
               <>
                 {lang === 'es' ? 'Completar' : 'Complete'}
-                <Check className="h-4 w-4" />
+                <Sparkles className="h-4 w-4" />
               </>
             ) : (
               <>
