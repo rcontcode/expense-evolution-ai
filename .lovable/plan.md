@@ -1,251 +1,205 @@
 
 
-# Plan de Lanzamiento Beta - EvoFinz
-
-## Objetivo
-Lanzar la beta privada con 10-25 testers, contactándolos via WhatsApp y Email, y crear el contenido de marketing necesario.
-
----
-
-## Estado Actual del Sistema
-
-### Lo que YA tienes funcionando:
-
-| Componente | Estado | Ubicación |
-|------------|--------|-----------|
-| Quiz de captación | Activo | `/` (página principal) |
-| CRM de Leads | Activo | `/admin/leads` |
-| Lead scoring automático | Activo | Score 0-100 con prioridades |
-| Gestión de códigos beta | Activo | `/admin/beta-codes` |
-| Dashboard beta admin | Activo | `/admin/beta-dashboard` |
-| Sistema de referidos | Activo | Mensajes pre-escritos listos |
-| Onboarding gamificado | Activo | Tutorial de 9 pasos |
-| Landing page completa | Activo | `/landing` |
-
-### Datos actuales:
-- 12 leads capturados
-- 2 usuarios registrados
-- 0 leads contactados (oportunidad de acción inmediata)
-
----
-
-## Plan de Ejecución en 3 Fases
-
-### FASE 1: Preparación (1-2 días)
-
-#### 1.1 Contenido de Marketing a Crear
-
-**Posts para redes sociales (3-5 imágenes):**
-
-**Post 1 - Problema/Dolor:**
-```
-"¿Cuántas veces has terminado el mes preguntándote
-a dónde se fue tu dinero?"
-
-El 78% de las personas no tiene visibilidad
-de sus gastos mensuales.
-
-EvoFinz cambia eso.
-📸 Foto → Gasto registrado en 3 segundos.
-
-[CTA: Descubre tu nivel financiero - link al quiz]
-```
-
-**Post 2 - Demo/Feature:**
-```
-🎯 Control financiero en 3 pasos:
-
-1. Toma foto del recibo
-2. La IA extrae todo automáticamente
-3. Dashboard te muestra dónde optimizar
-
-Sin Excel. Sin escribir nada. Sin excusas.
-
-Prueba gratis 👇
-[Link al quiz]
-```
-
-**Post 3 - Social Proof/Escasez:**
-```
-🔥 BETA PRIVADA - Solo 25 lugares
-
-Los primeros beta testers obtienen:
-✅ Acceso premium gratuito de por vida
-✅ Badge de "Founding Member"
-✅ Voz directa en las nuevas features
-
-¿Quieres ser uno?
-[Link al quiz]
-```
-
-**Mensajes de WhatsApp (ya tienes en ReferralCard, usar como base):**
-- Versión casual para amigos
-- Versión profesional para contactos de trabajo
-- Versión corta para grupos
-
-**Email de invitación (template):**
-```
-Asunto: 🎁 Invitación exclusiva - Beta privada EvoFinz
-
-Hola [NOMBRE],
-
-Vi que completaste el quiz financiero y tu perfil
-es exactamente el tipo de persona que buscamos
-para nuestra beta exclusiva.
-
-Como [SITUACIÓN], sé que [OBSTÁCULO] es un desafío real.
-EvoFinz te ayuda con exactamente eso.
-
-Te estoy reservando un lugar VIP.
-
-[BOTÓN: Activar mi acceso beta]
-
-Solo hay 25 lugares. Ya van [X] ocupados.
-
-Saludos,
-[Tu nombre]
-```
-
-#### 1.2 Configuración Previa
-
-**Acciones en /admin/beta-codes:**
-1. Crear códigos únicos para los 25 lugares
-2. O generar un código "LAUNCH25" con 25 usos máximos
-
-**Acciones en /admin/leads:**
-1. Revisar los 12 leads existentes
-2. Identificar los de mayor score para contactar primero
-
----
-
-### FASE 2: Contacto de Leads (3-5 días)
-
-#### 2.1 Priorización de Contacto
-
-Contactar en este orden (desde `/admin/leads`):
-
-| Prioridad | Criterio | Acción |
-|-----------|----------|--------|
-| 1 | Leads con comentarios personales | WhatsApp primero |
-| 2 | Score alto (HOT/WARM) | WhatsApp + Email |
-| 3 | Nivel "principiante" | Email con énfasis en ayuda |
-| 4 | Resto | Email masivo |
-
-#### 2.2 Flujo de Contacto Manual
-
-```
-1. Abrir /admin/leads
-2. Click en lead → Ver detalles
-3. Click en icono WhatsApp → Mensaje pre-llenado se abre
-4. Enviar mensaje personalizado con código beta
-5. Marcar como "Contactado" con notas
-6. Si responde positivo → Enviar link de registro
-7. Si se registra → Marcar como "Convertido"
-```
-
-#### 2.3 Frecuencia de Seguimiento
-
-- **Día 1:** Primer contacto (WhatsApp)
-- **Día 3:** Si no responde → Email
-- **Día 7:** Último intento (WhatsApp corto)
-
----
-
-### FASE 3: Lanzamiento y Amplificación (Ongoing)
-
-#### 3.1 Canales de Promoción
-
-**Canales inmediatos:**
-- WhatsApp personal a contactos de confianza
-- LinkedIn (tu red profesional)
-- Grupos de Facebook de finanzas personales
-- Reddit (r/personalfinance, r/chile, r/PersonalFinanceCanada)
-
-**Cada beta tester tiene herramientas para referir:**
-- Sistema de referidos con mensajes pre-escritos
-- Código personal generado automáticamente
-- +100 puntos beta por cada referido exitoso
-
-#### 3.2 Métricas a Monitorear
-
-Desde `/admin/beta-dashboard`:
-- Usuarios activos diarios
-- Feedback enviado
-- Bugs reportados
-- Referidos generados
-
-Desde `/admin/leads`:
-- Tasa de respuesta (contactados / total)
-- Tasa de conversión (convertidos / contactados)
-- Leads HOT sin contactar (urgente)
-
----
-
-## Checklist de Lanzamiento
-
-### Antes de lanzar:
-- [ ] Crear 3-5 posts para redes sociales
-- [ ] Preparar email template personalizado
-- [ ] Generar códigos beta (25 lugares)
-- [ ] Revisar los 12 leads actuales y priorizarlos
-
-### Día del lanzamiento:
-- [ ] Publicar primer post en redes
-- [ ] Contactar 5 leads de mayor prioridad via WhatsApp
-- [ ] Enviar emails a los demás leads
-
-### Primera semana:
-- [ ] Seguimiento a leads que no respondieron
-- [ ] Monitorear nuevos signups en /admin/beta-dashboard
-- [ ] Responder feedback de beta testers
-- [ ] Celebrar cada conversión
-
----
-
-## Sección Técnica
-
-### Sistema actual (funciona sin cambios):
-
-```
-Quiz (/) 
-    ↓
-Lead guardado en `quiz_leads` con scoring automático
-    ↓
-CRM (/admin/leads) muestra leads priorizados
-    ↓
-Contacto manual via WhatsApp/Email
-    ↓
-Registro (/auth) con código beta
-    ↓
-Usuario obtiene acceso premium + gamificación
-    ↓
-Sistema de referidos amplifica alcance
-```
-
-### Lo que NO necesitas para lanzar:
-- GHL (opcional para automatizar después)
-- Más desarrollo técnico
-- Cambios en la base de datos
-
-### Mejoras opcionales post-lanzamiento:
-1. Notificaciones push para leads HOT nuevos
-2. Dashboard de analytics de quiz (abandono por paso)
-3. A/B testing en mensajes de resultado
-4. Automatización de emails con GHL cuando lo actives
+# Análisis Completo: Sistema de Idiomas en EvoFinz
 
 ---
 
 ## Resumen Ejecutivo
 
-**Estás LISTO para lanzar.** Tu sistema está completo:
+Tu sistema de idiomas está **bien implementado** y funcionando correctamente. Sin embargo, hay algunas áreas que podrían confundir a usuarios o reducir conversiones. Te explico todo:
 
-| Necesidad | Solución actual |
-|-----------|-----------------|
-| Captar leads | Quiz en página principal |
-| Priorizar leads | CRM con scoring automático |
-| Contactar leads | Botones de WhatsApp/Email en CRM |
-| Registrar usuarios | /auth con códigos beta |
-| Retener usuarios | Gamificación + referidos |
-| Escalar | Sistema de referidos built-in |
+---
 
-**Próximo paso concreto:** Crear los 3-5 posts de contenido y comenzar a contactar los 12 leads que ya tienes.
+## ¿Cómo Funciona Actualmente?
+
+### Detección Automática de Idioma
+
+```text
+Usuario visita la app por primera vez
+         │
+         ▼
+┌─────────────────────────────────────┐
+│  ¿Tiene preferencia guardada?       │
+│  (localStorage 'language')          │
+└─────────────────────────────────────┘
+         │
+    ┌────┴────┐
+   Sí        No
+    │         │
+    ▼         ▼
+ Usar      Detectar idioma
+ guardado  del navegador
+           (navigator.language)
+                │
+                ▼
+    ┌─────────────────────┐
+    │ ¿Empieza con 'en'?  │
+    └─────────────────────┘
+           │         │
+          Sí        No
+           │         │
+           ▼         ▼
+        English   Español
+```
+
+### Lo que esto significa en la práctica
+
+| Usuario | Idioma Windows/Browser | Lo que ve |
+|---------|------------------------|-----------|
+| Persona en Canadá | `en-CA` | English |
+| Persona en Chile | `es-CL` | Español |
+| Persona en México | `es-MX` | Español |
+| Persona en USA | `en-US` | English |
+| Persona en Francia | `fr-FR` | Español (fallback) |
+| Persona en Brasil | `pt-BR` | Español (fallback) |
+
+**Resultado**: Los usuarios de Canadá ven inglés, los de Chile/Latam ven español. Esto está correcto para tu mercado objetivo.
+
+---
+
+## ¿Qué Ven Exactamente los Usuarios?
+
+### 1. Quiz de Captación (`/`)
+
+| Elemento | Estado |
+|----------|--------|
+| Título "¿Cuál es tu Nivel de Salud Financiera?" | Bilingüe (auto-detectado) |
+| Preguntas del quiz | Bilingüe |
+| Opciones de respuesta | Bilingüe |
+| Reporte final | Bilingüe |
+| **Selector de idioma visible** | **Sí** (esquina superior derecha) |
+
+El selector está en línea 162-165 de `QuizHero.tsx`:
+```jsx
+<div className="absolute top-4 right-4 z-30">
+  <LanguageSelector />
+</div>
+```
+
+### 2. Landing Page (`/landing`)
+
+| Elemento | Estado |
+|----------|--------|
+| Hero text | Bilingüe |
+| Features | Bilingüe |
+| Testimonios | Bilingüe |
+| FAQ | Bilingüe |
+| **Selector de idioma** | **Sí** (presente) |
+
+### 3. Registro/Login (`/auth`)
+
+| Elemento | Estado |
+|----------|--------|
+| Formularios | Bilingüe |
+| Errores | Bilingüe |
+| Mensajes de éxito | Bilingüe |
+
+### 4. Dashboard y App Interna
+
+| Elemento | Estado |
+|----------|--------|
+| Menú lateral | Bilingüe |
+| Formularios | Bilingüe |
+| Reportes | Bilingüe |
+| Tooltips | Bilingüe |
+
+---
+
+## ¿Qué Ves Tú (Admin)?
+
+### CRM de Leads (`/admin/leads`)
+
+| Campo | Idioma mostrado |
+|-------|-----------------|
+| Nombre del lead | Tal como lo ingresó |
+| Email | Universal |
+| País | Como lo seleccionó (Chile/Canadá) |
+| Situación | **En el idioma en que respondió el lead** |
+| Obstáculo | **En el idioma en que respondió el lead** |
+| Meta | **En el idioma en que respondió el lead** |
+
+**Importante**: Si un lead hizo el quiz en inglés, sus respuestas se guardan en inglés. Si lo hizo en español, se guardan en español.
+
+### Mensajes de WhatsApp/Email desde CRM
+
+Los mensajes pre-escritos en `QuickContact.tsx` están **solo en español** actualmente. Esto podría ser un problema si contactas leads angloparlantes.
+
+---
+
+## Problemas Identificados
+
+### Problema 1: Mensajes de contacto solo en español
+
+**Ubicación**: `src/components/admin/QuickContact.tsx`
+
+Actualmente los mensajes de WhatsApp/Email que usas para contactar leads están hardcoded en español. Si un lead canadiense hizo el quiz en inglés, recibiría un mensaje en español.
+
+**Impacto**: Medio-bajo (la mayoría de tus beta testers iniciales probablemente sean hispanohablantes que conoces)
+
+### Problema 2: Emails automáticos de Supabase Auth
+
+**Ubicación**: Configuración de Supabase
+
+Los emails de confirmación de cuenta, reset de password, etc. pueden estar en un solo idioma por defecto en la configuración de Supabase.
+
+**Impacto**: Bajo (los usuarios pueden entender emails básicos de verificación)
+
+### Problema 3: No hay detección por país seleccionado
+
+El idioma se detecta por el navegador, no por el país que el usuario selecciona en el quiz. Si alguien tiene Windows en inglés pero vive en Chile, verá la app en inglés a menos que cambie manualmente.
+
+**Impacto**: Muy bajo (el selector de idioma está visible y accesible)
+
+---
+
+## Recomendación Final
+
+| Área | Estado | ¿Bloquea lanzamiento? |
+|------|--------|----------------------|
+| Quiz completo | Bilingüe | No |
+| Reporte personalizado | Bilingüe | No |
+| Landing page | Bilingüe | No |
+| Auth/Registro | Bilingüe | No |
+| Dashboard interno | Bilingüe | No |
+| CRM Admin | Funcional | No |
+| Selector de idioma visible | Sí | No |
+
+**Conclusión: Estás listo para lanzar.** El sistema de idiomas está funcionando correctamente para tu mercado objetivo (Chile y Canadá anglófono).
+
+---
+
+## Mejoras Opcionales (Post-Lanzamiento)
+
+1. **Mensajes de contacto bilingües**: Detectar el idioma del lead y mostrar el mensaje apropiado en QuickContact
+2. **Sincronizar idioma con país del quiz**: Si el usuario selecciona Chile, sugerir español; si selecciona Canadá, preguntar preferencia
+3. **Emails transaccionales bilingües**: Configurar templates de email en ambos idiomas en el backend
+
+Estas mejoras pueden hacerse después de validar con los primeros 10-25 beta testers.
+
+---
+
+## Sección Técnica
+
+### Archivos clave del sistema de idiomas
+
+| Archivo | Función |
+|---------|---------|
+| `src/contexts/LanguageContext.tsx` | Proveedor global, detección automática, persistencia |
+| `src/lib/i18n.ts` | 2,118 líneas de traducciones ES/EN |
+| `src/components/LanguageSelector.tsx` | Dropdown para cambiar idioma |
+| `src/lib/country-content.ts` | Contenido específico por país (CRA vs SII) |
+
+### Flujo de detección
+
+```typescript
+// LanguageContext.tsx líneas 13-17
+const detectBrowserLanguage = (): Language => {
+  const browserLang = navigator.language || navigator.userLanguage || 'es';
+  return browserLang.toLowerCase().startsWith('en') ? 'en' : 'es';
+};
+```
+
+### Persistencia
+
+La preferencia del usuario se guarda en `localStorage` con clave `'language'`. Una vez que el usuario cambia manualmente el idioma, esa preferencia se respeta en futuras visitas.
+
