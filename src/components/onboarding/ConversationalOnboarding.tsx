@@ -139,35 +139,39 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
 
   // Auto-speak on mount and when step changes
   // CRITICAL: Must speak immediately when landing on this page!
+  // IMPORTANT: Wait until voice engine is supported/ready; otherwise the first speak() no-ops and never retries.
   useEffect(() => {
+    if (!voiceEnabled) return;
     if (!currentQuestion) return;
-    
+    if (!voiceAssistant.isSupported) return;
+
     const questionKey = `${currentQuestion.id}-${state.currentStep}`;
-    
+
     // Skip if we already spoke this question
     if (hasSpokenRef.current === questionKey) return;
-    
-    // Mark as spoken
-    hasSpokenRef.current = questionKey;
-    
+
     const textToSpeak = `${currentQuestion.phoenixIntro[lang]}. ${currentQuestion.question[lang]}`;
-    
-    // Delay slightly on first mount to ensure audio context is ready
-    // Shorter delay on subsequent steps
-    const delay = !isInitializedRef.current ? 500 : 600;
-    
+
+    // Mark as spoken ONLY once we're actually ready to speak
+    hasSpokenRef.current = questionKey;
+
+    // Slight delay for audio to feel natural
+    const delay = !isInitializedRef.current ? 450 : 600;
+
     if (!isInitializedRef.current) {
       isInitializedRef.current = true;
       console.log('[Onboarding] First mount - auto-speaking in', delay, 'ms');
     }
-    
+
     const timeout = setTimeout(() => {
+      if (!voiceEnabled) return;
+      if (!voiceAssistant.isSupported) return;
       console.log('[Onboarding] Auto-speaking:', textToSpeak.substring(0, 50) + '...');
       voiceAssistant.speak(textToSpeak);
     }, delay);
-    
+
     return () => clearTimeout(timeout);
-  }, [currentQuestion?.id, state.currentStep, lang, voiceAssistant.speak]);
+  }, [voiceEnabled, voiceAssistant.isSupported, currentQuestion?.id, state.currentStep, lang, voiceAssistant]);
 
   // Check if current question has a selection
   const currentField = currentQuestion?.field;
