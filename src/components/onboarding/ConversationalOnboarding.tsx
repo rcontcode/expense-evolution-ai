@@ -137,6 +137,9 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
     state.currentStep <= 3 ? 'smoke' :
     'rebirth';
 
+  // Track if speech is already in progress to prevent React StrictMode double-execution
+  const isSpeakingInProgressRef = useRef(false);
+
   // Auto-speak on mount and when step changes
   // CRITICAL: Must speak immediately when landing on this page!
   // IMPORTANT: Wait until voice engine is supported/ready; otherwise the first speak() no-ops and never retries.
@@ -152,6 +155,10 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
 
     // Skip if we already spoke this question
     if (hasSpokenRef.current === questionKey) return;
+    
+    // Prevent React StrictMode double-execution
+    if (isSpeakingInProgressRef.current) return;
+    isSpeakingInProgressRef.current = true;
 
     const textToSpeak = `${currentQuestion.phoenixIntro[lang]}. ${currentQuestion.question[lang]}`;
 
@@ -172,9 +179,17 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
       if (!voiceAssistant.isSupported) return;
       console.log('[Onboarding] Auto-speaking step', state.currentStep + 1, ':', textToSpeak.substring(0, 50) + '...');
       voiceAssistant.speak(textToSpeak);
+      
+      // Reset after speaking to allow next step
+      setTimeout(() => {
+        isSpeakingInProgressRef.current = false;
+      }, 100);
     }, delay);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      isSpeakingInProgressRef.current = false;
+    };
   }, [voiceEnabled, voiceAssistant.isSupported, currentQuestion?.id, state.currentStep, lang, voiceAssistant, isSpeaking, isLoadingVoice]);
 
   // Check if current question has a selection
