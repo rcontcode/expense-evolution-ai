@@ -137,44 +137,37 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
     state.currentStep <= 3 ? 'smoke' :
     'rebirth';
 
-  // Force speak immediately on mount (first question)
+  // Auto-speak on mount and when step changes
+  // CRITICAL: Must speak immediately when landing on this page!
   useEffect(() => {
     if (!currentQuestion) return;
     
-    // On first mount, speak immediately without waiting for voice settings
-    if (!isInitializedRef.current) {
-      isInitializedRef.current = true;
-      hasSpokenRef.current = `${currentQuestion.id}-${state.currentStep}`;
-      
-      // Speak immediately - no delay for first message!
-      const textToSpeak = `${currentQuestion.phoenixIntro[lang]}. ${currentQuestion.question[lang]}`;
-      
-      // Use a minimal delay just for audio context to be ready
-      const timeout = setTimeout(() => {
-        voiceAssistant.speak(textToSpeak);
-      }, 300);
-      
-      return () => clearTimeout(timeout);
-    }
-  }, []); // Only on mount
-  
-  // Auto-speak subsequent questions when step changes
-  useEffect(() => {
-    if (!voiceEnabled || !currentQuestion || !isInitializedRef.current) return;
-    
     const questionKey = `${currentQuestion.id}-${state.currentStep}`;
+    
+    // Skip if we already spoke this question
     if (hasSpokenRef.current === questionKey) return;
     
+    // Mark as spoken
     hasSpokenRef.current = questionKey;
     
-    // Small delay for smooth transition on subsequent questions
+    const textToSpeak = `${currentQuestion.phoenixIntro[lang]}. ${currentQuestion.question[lang]}`;
+    
+    // Delay slightly on first mount to ensure audio context is ready
+    // Shorter delay on subsequent steps
+    const delay = !isInitializedRef.current ? 500 : 600;
+    
+    if (!isInitializedRef.current) {
+      isInitializedRef.current = true;
+      console.log('[Onboarding] First mount - auto-speaking in', delay, 'ms');
+    }
+    
     const timeout = setTimeout(() => {
-      const textToSpeak = `${currentQuestion.phoenixIntro[lang]}. ${currentQuestion.question[lang]}`;
+      console.log('[Onboarding] Auto-speaking:', textToSpeak.substring(0, 50) + '...');
       voiceAssistant.speak(textToSpeak);
-    }, 600);
+    }, delay);
     
     return () => clearTimeout(timeout);
-  }, [currentQuestion, state.currentStep, voiceEnabled, lang]);
+  }, [currentQuestion?.id, state.currentStep, lang, voiceAssistant.speak]);
 
   // Check if current question has a selection
   const currentField = currentQuestion?.field;
