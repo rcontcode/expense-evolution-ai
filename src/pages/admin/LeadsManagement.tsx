@@ -9,7 +9,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { ArrowLeft, Users, Phone, UserCheck, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Users, Phone, UserCheck, RefreshCw, Flame, ThermometerSun, MessageSquare, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLeadsManagement } from '@/hooks/admin/useLeadsManagement';
 import { LeadFilters } from '@/components/admin/LeadFilters';
@@ -31,6 +31,9 @@ export default function LeadsManagement() {
     totalPages,
     countries,
     levels,
+    situations,
+    goals,
+    obstacles,
     stats,
     markContacted,
     markConverted,
@@ -49,7 +52,7 @@ export default function LeadsManagement() {
               <div>
                 <h1 className="text-2xl font-bold">Gestión de Leads</h1>
                 <p className="text-sm text-muted-foreground">
-                  Leads capturados del Financial Phoenix Quiz
+                  CRM inteligente con scoring automático
                 </p>
               </div>
             </div>
@@ -59,8 +62,31 @@ export default function LeadsManagement() {
       </div>
 
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Stats Cards */}
+        {/* Priority Stats - First Row */}
         <div className="grid gap-4 md:grid-cols-4">
+          {/* HOT leads without contact - URGENT */}
+          <Card className={stats.hotUncontacted.length > 0 ? 'border-red-300 bg-red-50/50 dark:bg-red-900/10' : ''}>
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center gap-1">
+                {stats.hotUncontacted.length > 0 && <AlertTriangle className="h-3 w-3 text-red-500" />}
+                HOT sin contactar
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className={`text-3xl font-bold ${stats.hotUncontacted.length > 0 ? 'text-red-600' : ''}`}>
+                  {stats.hotUncontacted.length}
+                </span>
+                <Flame className="h-8 w-8 text-red-500" />
+              </div>
+              {stats.hotUncontacted.length > 0 && (
+                <p className="text-xs text-red-600 mt-1 font-medium">
+                  ¡Requiere atención urgente!
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Total Leads</CardDescription>
@@ -102,18 +128,78 @@ export default function LeadsManagement() {
               </p>
             </CardContent>
           </Card>
+        </div>
 
+        {/* Priority Distribution - Second Row */}
+        <div className="grid gap-4 md:grid-cols-5">
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Sincronizados GHL</CardDescription>
+              <CardDescription className="flex items-center gap-1">
+                <Flame className="h-3 w-3 text-red-500" />
+                HOT (80-100)
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <span className="text-3xl font-bold">{stats.synced}</span>
-                <RefreshCw className="h-8 w-8 text-purple-500" />
+                <span className="text-2xl font-bold text-red-600">{stats.priorityStats.hot}</span>
+                <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center gap-1">
+                <ThermometerSun className="h-3 w-3 text-orange-500" />
+                WARM (50-79)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-bold text-orange-600">{stats.priorityStats.warm}</span>
+                <div className="w-3 h-3 rounded-full bg-orange-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>COOL (25-49)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-bold text-blue-600">{stats.priorityStats.cool}</span>
+                <div className="w-3 h-3 rounded-full bg-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>COLD (0-24)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-bold text-gray-600">{stats.priorityStats.cold}</span>
+                <div className="w-3 h-3 rounded-full bg-gray-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center gap-1">
+                <MessageSquare className="h-3 w-3 text-amber-500" />
+                Con comentarios
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-bold text-amber-600">{stats.withComments}</span>
+                <RefreshCw className="h-6 w-6 text-purple-500" />
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Enviados a GoHighLevel
+                Leads con mensaje personal
               </p>
             </CardContent>
           </Card>
@@ -147,18 +233,22 @@ export default function LeadsManagement() {
           resetFilters={resetFilters}
           countries={countries}
           levels={levels}
+          situations={situations}
+          goals={goals}
+          obstacles={obstacles}
         />
 
         {/* Results count */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             Mostrando {leads.length} de {allLeads.length} leads
+            {allLeads.length !== stats.total && ` (${stats.total} total)`}
           </p>
         </div>
 
         {/* Table */}
         {isLoading ? (
-          <TableSkeleton rows={10} columns={8} />
+          <TableSkeleton rows={10} columns={10} />
         ) : (
           <LeadsTable
             leads={leads}

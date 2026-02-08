@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, X, Filter, MessageSquare } from 'lucide-react';
+import { Search, X, Filter, MessageSquare, Flame, ThermometerSun, Snowflake } from 'lucide-react';
 import type { LeadFilters as LeadFiltersType } from '@/hooks/admin/useLeadsManagement';
 
 interface LeadFiltersProps {
@@ -16,6 +16,9 @@ interface LeadFiltersProps {
   resetFilters: () => void;
   countries: string[];
   levels: string[];
+  situations?: string[];
+  goals?: string[];
+  obstacles?: string[];
 }
 
 export function LeadFilters({
@@ -24,6 +27,9 @@ export function LeadFilters({
   resetFilters,
   countries,
   levels,
+  situations = [],
+  goals = [],
+  obstacles = [],
 }: LeadFiltersProps) {
   const hasActiveFilters =
     filters.search ||
@@ -31,6 +37,11 @@ export function LeadFilters({
     filters.country ||
     filters.converted ||
     filters.hasComments ||
+    filters.priority ||
+    filters.situation ||
+    filters.goal ||
+    filters.obstacle ||
+    filters.contacted ||
     filters.dateFrom ||
     filters.dateTo;
 
@@ -46,8 +57,15 @@ export function LeadFilters({
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Filter className="h-4 w-4" />
         <span>Filtros</span>
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" onClick={resetFilters} className="h-6 px-2">
+            <X className="mr-1 h-3 w-3" />
+            Limpiar
+          </Button>
+        )}
       </div>
 
+      {/* First row - Main filters */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Search */}
         <div className="relative">
@@ -60,9 +78,41 @@ export function LeadFilters({
           />
         </div>
 
+        {/* Priority */}
+        <Select
+          value={filters.priority || 'all'}
+          onValueChange={(value) => updateFilter('priority', value === 'all' ? '' : value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Prioridad" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas las prioridades</SelectItem>
+            <SelectItem value="hot">
+              <span className="flex items-center gap-2">
+                <Flame className="h-3 w-3 text-red-500" />
+                HOT (80-100)
+              </span>
+            </SelectItem>
+            <SelectItem value="warm">
+              <span className="flex items-center gap-2">
+                <ThermometerSun className="h-3 w-3 text-orange-500" />
+                WARM (50-79)
+              </span>
+            </SelectItem>
+            <SelectItem value="cool">
+              <span className="flex items-center gap-2">
+                <Snowflake className="h-3 w-3 text-blue-500" />
+                COOL (25-49)
+              </span>
+            </SelectItem>
+            <SelectItem value="cold">COLD (0-24)</SelectItem>
+          </SelectContent>
+        </Select>
+
         {/* Level */}
         <Select
-          value={filters.level}
+          value={filters.level || 'all'}
           onValueChange={(value) => updateFilter('level', value === 'all' ? '' : value)}
         >
           <SelectTrigger>
@@ -80,7 +130,7 @@ export function LeadFilters({
 
         {/* Country */}
         <Select
-          value={filters.country}
+          value={filters.country || 'all'}
           onValueChange={(value) => updateFilter('country', value === 'all' ? '' : value)}
         >
           <SelectTrigger>
@@ -95,10 +145,28 @@ export function LeadFilters({
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Second row - Status filters */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* Contacted */}
+        <Select
+          value={filters.contacted || 'all'}
+          onValueChange={(value) => updateFilter('contacted', value === 'all' ? '' : value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Estado de contacto" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="yes">Contactados</SelectItem>
+            <SelectItem value="no">Sin contactar</SelectItem>
+          </SelectContent>
+        </Select>
 
         {/* Converted */}
         <Select
-          value={filters.converted}
+          value={filters.converted || 'all'}
           onValueChange={(value) => updateFilter('converted', value === 'all' ? '' : value)}
         >
           <SelectTrigger>
@@ -113,7 +181,7 @@ export function LeadFilters({
 
         {/* Has Comments */}
         <Select
-          value={filters.hasComments}
+          value={filters.hasComments || 'all'}
           onValueChange={(value) => updateFilter('hasComments', value === 'all' ? '' : value)}
         >
           <SelectTrigger>
@@ -130,7 +198,70 @@ export function LeadFilters({
             <SelectItem value="no">Sin comentarios</SelectItem>
           </SelectContent>
         </Select>
+
+        {/* Situation */}
+        {situations.length > 0 && (
+          <Select
+            value={filters.situation || 'all'}
+            onValueChange={(value) => updateFilter('situation', value === 'all' ? '' : value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Situación" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las situaciones</SelectItem>
+              {situations.map((situation) => (
+                <SelectItem key={situation} value={situation}>
+                  {situation}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
+
+      {/* Third row - Goals and Obstacles */}
+      {(goals.length > 0 || obstacles.length > 0) && (
+        <div className="grid gap-4 md:grid-cols-2">
+          {goals.length > 0 && (
+            <Select
+              value={filters.goal || 'all'}
+              onValueChange={(value) => updateFilter('goal', value === 'all' ? '' : value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Meta" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las metas</SelectItem>
+                {goals.map((goal) => (
+                  <SelectItem key={goal} value={goal}>
+                    {goal}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {obstacles.length > 0 && (
+            <Select
+              value={filters.obstacle || 'all'}
+              onValueChange={(value) => updateFilter('obstacle', value === 'all' ? '' : value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Obstáculo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los obstáculos</SelectItem>
+                {obstacles.map((obstacle) => (
+                  <SelectItem key={obstacle} value={obstacle}>
+                    {obstacle}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      )}
 
       {/* Date range */}
       <div className="flex flex-wrap items-center gap-4">
@@ -152,13 +283,6 @@ export function LeadFilters({
             className="w-auto"
           />
         </div>
-
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={resetFilters}>
-            <X className="mr-1 h-4 w-4" />
-            Limpiar filtros
-          </Button>
-        )}
       </div>
     </div>
   );
