@@ -466,43 +466,46 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     clearPauseTimeout();
 
     // Try premium TTS first
+    // CRITICAL: Premium TTS (ElevenLabs) handles its own audio playback.
+    // Do NOT set isSpeaking/onSpeakStart here - ElevenLabs has its own isSpeaking state.
+    // This prevents voice duplication between ElevenLabs and native TTS.
     if (options.premiumSpeak) {
       console.log('[Voice] Attempting premium TTS');
       
-      setCurrentSpeakingText(text);
-      setIsSpeaking(true);
-      options.onSpeakStart?.();
+      // DON'T call setIsSpeaking or onSpeakStart here!
+      // ElevenLabs manages its own state via elevenLabsTTS.isSpeaking
       
       const result = await options.premiumSpeak(text);
       
       if (result.success) {
-        console.log('[Voice] Premium TTS completed');
-        setIsSpeaking(false);
-        setCurrentSpeakingText('');
-        options.onSpeakEnd?.();
-        
+        console.log('[Voice] Premium TTS completed successfully');
+        // ElevenLabs already handled onStart/onEnd callbacks internally
         setTimeout(() => {
           isOutputtingAudioRef.current = false;
         }, TTS_COOLDOWN_MS);
         return;
       }
       
-      // Fallback for not_eligible OR playback errors
-      const shouldFallbackToNative = ['not_eligible', 'playback_error', 'play_error', 'network_error'].includes(result.error || '');
-      console.log('[Voice] Premium TTS failed:', result.error, '| Fallback:', shouldFallbackToNative);
-      setIsSpeaking(false);
-      setCurrentSpeakingText('');
+      // ONLY fallback to native if premium failed BEFORE audio started
+      // These errors mean audio NEVER played:
+      // - 'not_eligible': User doesn't have premium minutes
+      // - 'no_session': Not authenticated  
+      // - 'empty_text': Nothing to speak
+      // Other errors (playback_error, network_error) mean audio MAY have started
+      const shouldFallbackToNative = ['not_eligible', 'no_session', 'empty_text'].includes(result.error || '');
+      console.log('[Voice] Premium TTS result:', result.error, '| Fallback to native:', shouldFallbackToNative);
       
       if (!shouldFallbackToNative) {
-        options.onSpeakEnd?.();
+        // Audio might have partially played - DON'T double-play with native
+        console.log('[Voice] Not falling back - audio may have started playing');
         setTimeout(() => {
           isOutputtingAudioRef.current = false;
         }, 500);
         return;
       }
       
-      // Continue to native TTS fallback
-      console.log('[Voice] Falling back to native TTS');
+      // User not eligible for premium - fall through to native TTS
+      console.log('[Voice] Falling back to native TTS (user not eligible for premium)');
     }
 
     // Use native TTS
