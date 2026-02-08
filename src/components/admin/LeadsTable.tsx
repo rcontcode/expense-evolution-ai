@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, Phone, UserCheck, Mail, CheckCircle } from 'lucide-react';
+import { MoreHorizontal, Eye, Phone, UserCheck, Mail, CheckCircle, MessageSquare } from 'lucide-react';
 import type { QuizLead } from '@/hooks/admin/useLeadsManagement';
 import { LeadDetail } from './LeadDetail';
 
@@ -64,7 +64,16 @@ export function LeadsTable({ leads, onMarkContacted, onMarkConverted }: LeadsTab
           <TableBody>
             {leads.map((lead) => (
               <TableRow key={lead.id}>
-                <TableCell className="font-medium">{lead.name}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    {lead.name}
+                    {lead.comments && (
+                      <span title="Tiene comentarios">
+                        <MessageSquare className="h-4 w-4 text-amber-500" />
+                      </span>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell>
                   <a
                     href={`mailto:${lead.email}`}

@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, X, Filter } from 'lucide-react';
+import { Search, X, Filter, MessageSquare } from 'lucide-react';
 import type { LeadFilters as LeadFiltersType } from '@/hooks/admin/useLeadsManagement';
 
 interface LeadFiltersProps {
@@ -30,6 +30,7 @@ export function LeadFilters({
     filters.level ||
     filters.country ||
     filters.converted ||
+    filters.hasComments ||
     filters.dateFrom ||
     filters.dateTo;
 
@@ -107,6 +108,26 @@ export function LeadFilters({
             <SelectItem value="all">Todos</SelectItem>
             <SelectItem value="yes">Convertidos</SelectItem>
             <SelectItem value="no">No convertidos</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Has Comments */}
+        <Select
+          value={filters.hasComments}
+          onValueChange={(value) => updateFilter('hasComments', value === 'all' ? '' : value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Comentarios" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="yes">
+              <span className="flex items-center gap-2">
+                <MessageSquare className="h-3 w-3 text-amber-500" />
+                Con comentarios
+              </span>
+            </SelectItem>
+            <SelectItem value="no">Sin comentarios</SelectItem>
           </SelectContent>
         </Select>
       </div>

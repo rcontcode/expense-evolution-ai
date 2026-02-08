@@ -37,6 +37,7 @@ export function LeadsExport({ leads, filename = 'quiz-leads' }: LeadsExportProps
         ? new Date(lead.contacted_at).toLocaleDateString('es')
         : '',
       'Notas contacto': lead.contact_notes || '',
+      'Comentarios del quiz': lead.comments || '',
       Convertido: lead.converted_to_user ? 'Sí' : 'No',
       'Sincronizado GHL': lead.ghl_synced ? 'Sí' : 'No',
       'Fecha registro': new Date(lead.created_at).toLocaleDateString('es'),
