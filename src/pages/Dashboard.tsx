@@ -37,6 +37,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileDashboard } from '@/components/dashboard/MobileDashboard';
 import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
 import { DashboardGamificationWidget } from '@/components/gamification';
+import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
+import { ProfileExtenderDialog } from '@/components/profile/ProfileExtenderDialog';
+import { LifeProfileSection } from '@/hooks/data/useLifeProfile';
 
 // Lazy load chart components for better performance
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
@@ -127,6 +130,15 @@ export default function Dashboard() {
   const [showAllTools, setShowAllTools] = useState(false);
   const [activeTab, setActiveTab] = useState('charts');
   const [showGuide, setShowGuide] = useState(false);
+  
+  // Profile extension state
+  const [profileExtenderOpen, setProfileExtenderOpen] = useState(false);
+  const [selectedProfileSection, setSelectedProfileSection] = useState<LifeProfileSection>('family');
+  
+  const handleStartProfileSection = useCallback((section: LifeProfileSection) => {
+    setSelectedProfileSection(section);
+    setProfileExtenderOpen(true);
+  }, []);
 
   const { refreshSubscription } = useSubscription();
   const { viewMode, setViewMode, isLoading: prefsLoading } = useDisplayPreferences();
@@ -254,8 +266,18 @@ export default function Dashboard() {
           {/* Progressive Onboarding - Mission-based for new users */}
           <ProgressiveOnboarding />
           
+          {/* Profile Completion Nudge - Invite user to share more about themselves */}
+          <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
+          
           {/* Gamification Widget - Your Financial Adventure */}
           <DashboardGamificationWidget compact={false} />
+          
+          {/* Profile Extender Dialog */}
+          <ProfileExtenderDialog
+            open={profileExtenderOpen}
+            onOpenChange={setProfileExtenderOpen}
+            section={selectedProfileSection}
+          />
           
           {/* Interactive Guide - Shown on first visit or on demand */}
           {showGuide && (
