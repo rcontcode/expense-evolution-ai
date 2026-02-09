@@ -1,201 +1,219 @@
 
+# Plan Integral: Mejoras al Onboarding y Uso de Datos en Toda la App
 
-# Plan: Corregir Onboarding Conversacional - Preguntas Faltantes Críticas
+## Diagnóstico Completo
 
-## 🚨 Problema Identificado
+He identificado varios problemas críticos que impiden que los datos del onboarding se usen correctamente en toda la aplicación:
 
-El onboarding conversacional NO pregunta datos **fiscales críticos** que son esenciales para el funcionamiento de la aplicación:
+---
 
-| Dato Faltante | Por Qué Es Crítico | Estado Actual |
-|---------------|---------------------|---------------|
-| **País** (CA/CL) | Determina leyes fiscales, moneda, formularios | ❌ No se pregunta |
-| **Provincia/Región** | Tasas de impuestos provinciales | ❌ Salta a esto sin país |
-| **Tipo de trabajo fiscal** | Define qué deducciones aplican | ❌ Pregunta genérica, no fiscal |
-| **Entidad fiscal primaria** | Requerido por gastos/ingresos | ❌ Nunca se crea |
+## Problema 1: Incompatibilidad de Work Types con la Base de Datos
 
-## 📋 Flujo Actual vs Flujo Correcto
+**Gravedad: CRÍTICA**
 
-### ❌ Flujo Actual (Problemático)
+El enum `work_type` en la base de datos solo acepta tres valores:
 ```
-1. ¿Cómo te llamo? (nombre)
-2. ¿Situación personal? (single/partnered/family)  ← SALTA A ESTO
-3. ¿Cómo generas dinero? (empleado/freelance)      ← Muy genérico
-4. ¿Metas financieras?
-5. ¿Experiencia con finanzas?
+employee | contractor | corporation
 ```
 
-### ✅ Flujo Corregido (Propuesto)
-```
-1. ¿Cómo te llamo? (nombre)
-2. ¿Dónde pagas tus impuestos? (🇨🇦 Canadá / 🇨🇱 Chile)     ← NUEVO
-3. ¿En qué provincia/región? (dinámico según país)          ← NUEVO
-4. ¿Cuál es tu situación laboral? (opciones fiscales según país) ← MEJORADO
-5. ¿Situación personal? (single/partnered/family)
-6. ¿Metas financieras?
-7. ¿Experiencia con finanzas?
-```
+Pero el onboarding conversacional intenta guardar tipos de Chile que **NO EXISTEN** en el enum:
+- `persona_natural` → ❌ Error de base de datos
+- `empresa_individual` → ❌ Error de base de datos  
+- `sociedad` → ❌ Error de base de datos
+- `empleado` → ❌ Error de base de datos
 
-## 🔧 Cambios Técnicos Requeridos
+### Solución
+1. Mapear los tipos de Chile a los valores del enum existente:
+   - `empleado` → `employee`
+   - `persona_natural` → `contractor`
+   - `empresa_individual` → `contractor`
+   - `sociedad` → `corporation`
 
-### 1. Agregar Nuevas Preguntas Esenciales
+2. Guardar el tipo específico de Chile en un campo separado (ya existe `tax_regime` que podría usarse, o crear lógica de mapeo)
 
-**Pregunta 2: País** (después del nombre)
-```typescript
-{
-  id: 'country',
-  question: { es: '¿Dónde pagas tus impuestos?', en: 'Where do you pay your taxes?' },
-  phoenixIntro: { 
-    es: '¡Perfecto! 🌎 Ahora, algo SÚPER importante. Para darte consejos fiscales precisos, necesito saber:',
-    en: "Perfect! 🌎 Now, something SUPER important. To give you accurate tax advice, I need to know:"
-  },
-  options: [
-    { id: 'CA', label: { es: 'Canadá', en: 'Canada' }, value: 'CA', icon: '🇨🇦' },
-    { id: 'CL', label: { es: 'Chile', en: 'Chile' }, value: 'CL', icon: '🇨🇱' },
-  ],
-  field: 'country',
-  table: 'profile',
-  stage: 'essential',
-}
-```
+---
 
-**Pregunta 3: Provincia/Región** (dinámica según país)
-```typescript
-{
-  id: 'province',
-  question: { 
-    es: '¿En qué provincia o región vives?', 
-    en: 'Which province or region do you live in?' 
-  },
-  phoenixIntro: { 
-    es: '¡Excelente! 📍 Las tasas de impuestos varían según tu ubicación. Esto me ayuda a calcular todo correctamente:',
-    en: "Excellent! 📍 Tax rates vary by location. This helps me calculate everything correctly:"
-  },
-  options: [], // Se cargarán dinámicamente según el país
-  field: 'province',
-  table: 'profile',
-  stage: 'essential',
-  dynamicOptions: true, // Nueva bandera para indicar opciones dinámicas
-}
-```
+## Problema 2: El Onboarding Tradicional No Pregunta País
 
-**Pregunta 4: Tipo de Trabajo Fiscal** (opciones según país)
-```typescript
-{
-  id: 'work_type',
-  question: { es: '¿Cuál es tu situación laboral principal?', en: 'What is your main work situation?' },
-  phoenixIntro: { 
-    es: '💼 Esto es CLAVE para optimizar tus impuestos. Cada tipo de trabajo tiene diferentes deducciones:',
-    en: "💼 This is KEY to optimizing your taxes. Each work type has different deductions:"
-  },
-  // CANADÁ:
-  options_CA: [
-    { id: 'employee', label: { es: 'Empleado (T4)', en: 'Employee (T4)' }, value: 'employee', icon: '💼' },
-    { id: 'sole_proprietor', label: { es: 'Sole Proprietor', en: 'Sole Proprietor' }, value: 'sole_proprietor', icon: '🚀' },
-    { id: 'contractor', label: { es: 'Contratista', en: 'Contractor' }, value: 'contractor', icon: '📝' },
-    { id: 'corporation', label: { es: 'Corporation', en: 'Corporation' }, value: 'corporation', icon: '🏢' },
-  ],
-  // CHILE:
-  options_CL: [
-    { id: 'empleado', label: { es: 'Empleado (contrato)', en: 'Employee (contract)' }, value: 'empleado', icon: '💼' },
-    { id: 'persona_natural', label: { es: 'Persona Natural (boletas)', en: 'Individual (invoices)' }, value: 'persona_natural', icon: '📝' },
-    { id: 'empresa_individual', label: { es: 'EIRL', en: 'EIRL' }, value: 'empresa_individual', icon: '🏢' },
-    { id: 'sociedad', label: { es: 'SpA / Ltda.', en: 'SpA / LLC' }, value: 'sociedad', icon: '🏛️' },
-  ],
-  field: 'work_types',
-  table: 'profile',
-  allowMultiple: true, // Pueden tener empleo + freelance
-  stage: 'essential',
-}
-```
+**Gravedad: ALTA**
 
-### 2. Actualizar Lógica de Guardado
+El formulario rápido (`Onboarding.tsx`) NO pregunta país - asume Canadá por defecto:
+- Lista de provincias hardcodeada (solo Canadá)
+- Work types hardcodeados (solo Canadá)
+- No crea entidad fiscal primaria
 
-En `saveProfile()`, agregar:
+### Solución
+1. Agregar paso de selección de país al inicio
+2. Hacer la lista de provincias/regiones dinámica según país
+3. Mostrar work types según país
+4. Crear entidad fiscal primaria al completar
+
+---
+
+## Problema 3: Campo `name_preference` No Se Guarda
+
+**Gravedad: MEDIA**
+
+El onboarding conversacional pregunta `name_preference` (nombre/apodo), pero:
+- No existe columna `name_preference` en la tabla `profiles`
+- Existe `nickname` pero no se usa
+- El campo se pierde y no se guarda
+
+### Solución
+1. Guardar en el campo `nickname` existente cuando el usuario elige "apodo"
+2. Actualizar `full_name` si elige "nombre"
+
+---
+
+## Problema 4: `display_currency` No Se Configura
+
+**Gravedad: MEDIA**
+
+Al seleccionar país, el sistema debería configurar automáticamente:
+- `display_currency` según país (CAD para Canadá, CLP para Chile)
+- Actualmente nunca se configura
+
+### Solución
+1. Al guardar perfil, establecer `display_currency` basado en el país
+2. Usar `countryConfig.currency` para obtener la moneda correcta
+
+---
+
+## Problema 5: Entidad Fiscal con Nombre Hardcodeado
+
+**Gravedad: BAJA**
+
+La entidad fiscal primaria se crea con nombre `"Mi Entidad Principal"` siempre en español, incluso si el usuario usa inglés.
+
+### Solución
+1. Usar el idioma del usuario para el nombre de la entidad
+
+---
+
+## Cambios Técnicos Requeridos
+
+### Archivo 1: `src/hooks/utils/useConversationalOnboarding.ts`
+
+**Cambios:**
+1. **Mapear work types de Chile a enum de BD**: Crear función `mapWorkTypeToEnum()`
+2. **Guardar name_preference correctamente**: Usar `nickname` o `full_name` según respuesta
+3. **Configurar display_currency**: Añadir al objeto `profileUpdate`
+4. **Nombre de entidad bilingüe**: Usar idioma del usuario
 
 ```typescript
-// Crear entidad fiscal primaria con los datos del onboarding
-const country = responses.country as string;
-const province = responses.province as string;
-
-if (country && province) {
-  const countryConfig = getCountryConfig(country as CountryCode);
-  
-  await supabase.from('fiscal_entities').upsert({
-    user_id: user.id,
-    name: lang === 'es' ? 'Mi Entidad Principal' : 'My Primary Entity',
-    country: country,
-    province: province,
-    entity_type: 'personal',
-    is_primary: true,
-    is_active: true,
-    default_currency: countryConfig.currency,
-  }, { onConflict: 'user_id,is_primary' }); // Evita duplicados
-}
-
-// Guardar work_types en profiles
-if (responses.work_types) {
-  await supabase.from('profiles').update({
-    country: country,
-    province: province,
-    work_types: Array.isArray(responses.work_types) ? responses.work_types : [responses.work_types],
-  }).eq('id', user.id);
-}
-```
-
-### 3. Manejar Preguntas Dinámicas
-
-Modificar el hook para soportar opciones dinámicas:
-
-```typescript
-// Obtener opciones actuales según el país seleccionado
-const getOptionsForQuestion = useCallback((question: OnboardingQuestion) => {
-  if (question.id === 'province') {
-    const country = state.responses.country as CountryCode;
-    if (!country) return [];
-    const config = getCountryConfig(country);
-    return config.regions.map(r => ({
-      id: r.code,
-      label: { es: r.name, en: r.name },
-      value: r.code,
-      icon: country === 'CA' ? '🍁' : '🌄',
-    }));
+// Mapeo de work types por país al enum de BD
+const mapWorkTypeToEnum = (workType: string, country: CountryCode): WorkType => {
+  if (country === 'CL') {
+    const mapping: Record<string, WorkType> = {
+      'empleado': 'employee',
+      'persona_natural': 'contractor',
+      'empresa_individual': 'contractor',
+      'sociedad': 'corporation',
+    };
+    return mapping[workType] || 'contractor';
   }
-  
-  if (question.id === 'work_type') {
-    const country = state.responses.country as CountryCode;
-    if (!country) return [];
-    const config = getCountryConfig(country);
-    return config.workTypes.map(w => ({
-      id: w.value,
-      label: w.label,
-      description: w.description,
-      value: w.value,
-      icon: w.value.includes('employ') ? '💼' : '🚀',
-    }));
-  }
-  
-  return question.options;
-}, [state.responses]);
+  // Para Canadá, los valores ya coinciden con el enum
+  return workType as WorkType;
+};
+```
+
+### Archivo 2: `src/pages/Onboarding.tsx`
+
+**Cambios:**
+1. **Agregar estado de país**: `const [country, setCountry] = useState<CountryCode>('CA');`
+2. **Paso de selección de país**: Nuevo paso antes de provincia
+3. **Provincias dinámicas**: Usar `getCountryConfig(country).regions`
+4. **Work types dinámicos**: Usar `getCountryConfig(country).workTypes`
+5. **Crear entidad fiscal**: Añadir lógica en `saveProfileData()`
+6. **Configurar display_currency**: Añadir al update de perfil
+
+### Archivo 3: `src/lib/constants/country-tax-config.ts`
+
+**Cambios (menor):**
+1. Agregar propiedad `enumValue` a cada workType para mapeo explícito
+
+---
+
+## Flujo Corregido del Onboarding Conversacional
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    PASO 1: Nombre                               │
+│ "¿Cómo te llamo?" → Guarda en nickname o full_name              │
+├─────────────────────────────────────────────────────────────────┤
+│                    PASO 2: País                                 │
+│ "¿Dónde pagas impuestos?" → profiles.country                    │
+│                           → profiles.display_currency (auto)    │
+├─────────────────────────────────────────────────────────────────┤
+│                    PASO 3: Provincia/Región                     │
+│ Dinámico según país → profiles.province                         │
+├─────────────────────────────────────────────────────────────────┤
+│                    PASO 4: Tipo de Trabajo                      │
+│ Opciones según país → profiles.work_types (mapeado a enum)      │
+├─────────────────────────────────────────────────────────────────┤
+│                    PASO 5: Situación Personal                   │
+│ → user_life_profile.relationship_status                         │
+├─────────────────────────────────────────────────────────────────┤
+│                    PASO 6: Metas Financieras                    │
+│ → user_financial_profile.passions                               │
+├─────────────────────────────────────────────────────────────────┤
+│                    PASO 7: Nivel de Experiencia                 │
+│ → user_financial_profile.financial_education_level              │
+├─────────────────────────────────────────────────────────────────┤
+│                    AL COMPLETAR:                                │
+│ ✓ profiles (country, province, work_types, display_currency)   │
+│ ✓ fiscal_entities (entidad primaria con país y moneda)         │
+│ ✓ user_life_profile                                             │
+│ ✓ user_financial_profile                                        │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📁 Archivos a Modificar
+## Flujo Corregido del Onboarding Tradicional
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    PASO 1: País + Provincia                     │
+│ Selector de país → Lista de provincias dinámica                 │
+│ Checkboxes de work type según país                              │
+├─────────────────────────────────────────────────────────────────┤
+│                    PASO 2: Clientes                             │
+│ ¿Tienes clientes? → Lista de clientes                           │
+├─────────────────────────────────────────────────────────────────┤
+│                    PASO 3: Revisión                             │
+│ Mostrar país, provincia, work types seleccionados               │
+├─────────────────────────────────────────────────────────────────┤
+│                    PASO 4: Sample Data                          │
+│ ¿Quieres datos de ejemplo?                                      │
+├─────────────────────────────────────────────────────────────────┤
+│                    AL COMPLETAR:                                │
+│ ✓ profiles (country, province, work_types, display_currency)   │
+│ ✓ fiscal_entities (entidad primaria)                            │
+│ ✓ clients (si aplica)                                           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Archivos a Modificar
 
 | Archivo | Cambios |
 |---------|---------|
-| `src/hooks/utils/useConversationalOnboarding.ts` | Agregar preguntas de país, provincia, work_types. Actualizar `saveProfile()` para crear `fiscal_entity` |
-| `src/components/onboarding/ConversationalOnboarding.tsx` | Usar `getOptionsForQuestion()` para manejar opciones dinámicas |
+| `src/hooks/utils/useConversationalOnboarding.ts` | Mapeo de work types, guardar nickname, display_currency, nombre bilingüe de entidad |
+| `src/pages/Onboarding.tsx` | Agregar selector de país, provincias dinámicas, work types dinámicos, crear entidad fiscal |
+| `src/lib/constants/country-tax-config.ts` | Agregar `enumValue` a workTypes para mapeo explícito |
 
 ---
 
-## 🎯 Resultado Esperado
+## Resultado Esperado
 
-Después de completar el onboarding, el usuario tendrá:
+Después de implementar estos cambios:
 
-1. ✅ **País y provincia** guardados en `profiles`
-2. ✅ **Work types** fiscales guardados en `profiles.work_types`
-3. ✅ **Entidad fiscal primaria** creada en `fiscal_entities` con país, provincia y moneda
-4. ✅ **Contexto completo** para que Phoenix dé consejos fiscales personalizados
-5. ✅ **Sistema listo** para mostrar formularios correctos (CRA vs SII)
-
+1. **Onboarding Conversacional y Tradicional** preguntan país primero
+2. **Work types** se mapean correctamente al enum de la BD
+3. **Entidad fiscal primaria** se crea siempre con país, provincia y moneda
+4. **display_currency** se configura automáticamente según país
+5. **Nombre de usuario** se guarda correctamente (nickname o full_name)
+6. **EntityContext y useCountryContext** funcionan con datos reales desde el primer momento
+7. **Toda la app** (Tax Calendar, Business Profile, etc.) usa los datos correctos del onboarding
