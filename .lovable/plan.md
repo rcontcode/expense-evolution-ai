@@ -1,197 +1,147 @@
 
-# Plan Integral: Mejoras al Onboarding y Uso de Datos en Toda la App
+# Plan de Mejoras Adicionales al Onboarding
 
-## Diagnóstico Completo
+## Problemas Identificados
 
-He identificado varios problemas críticos que impiden que los datos del onboarding se usen correctamente en toda la aplicación:
-
----
-
-## Problema 1: Incompatibilidad de Work Types con la Base de Datos
-
-**Gravedad: CRÍTICA**
-
-El enum `work_type` en la base de datos solo acepta tres valores:
-```
-employee | contractor | corporation
-```
-
-Pero el onboarding conversacional intenta guardar tipos de Chile que **NO EXISTEN** en el enum:
-- `persona_natural` → ❌ Error de base de datos
-- `empresa_individual` → ❌ Error de base de datos  
-- `sociedad` → ❌ Error de base de datos
-- `empleado` → ❌ Error de base de datos
-
-### Solución
-1. Mapear los tipos de Chile a los valores del enum existente:
-   - `empleado` → `employee`
-   - `persona_natural` → `contractor`
-   - `empresa_individual` → `contractor`
-   - `sociedad` → `corporation`
-
-2. Guardar el tipo específico de Chile en un campo separado (ya existe `tax_regime` que podría usarse, o crear lógica de mapeo)
-
----
-
-## Problema 2: El Onboarding Tradicional No Pregunta País
-
+### 1. Falta Validación en el Formulario Tradicional
 **Gravedad: ALTA**
 
-El formulario rápido (`Onboarding.tsx`) NO pregunta país - asume Canadá por defecto:
-- Lista de provincias hardcodeada (solo Canadá)
-- Work types hardcodeados (solo Canadá)
-- No crea entidad fiscal primaria
+El botón "Siguiente" en Step 1 del onboarding tradicional NO valida que:
+- ❌ Se haya seleccionado una provincia
+- ❌ Se haya seleccionado al menos un tipo de trabajo
 
-### Solución
-1. Agregar paso de selección de país al inicio
-2. Hacer la lista de provincias/regiones dinámica según país
-3. Mostrar work types según país
-4. Crear entidad fiscal primaria al completar
-
----
-
-## Problema 3: Campo `name_preference` No Se Guarda
-
-**Gravedad: MEDIA**
-
-El onboarding conversacional pregunta `name_preference` (nombre/apodo), pero:
-- No existe columna `name_preference` en la tabla `profiles`
-- Existe `nickname` pero no se usa
-- El campo se pierde y no se guarda
-
-### Solución
-1. Guardar en el campo `nickname` existente cuando el usuario elige "apodo"
-2. Actualizar `full_name` si elige "nombre"
-
----
-
-## Problema 4: `display_currency` No Se Configura
-
-**Gravedad: MEDIA**
-
-Al seleccionar país, el sistema debería configurar automáticamente:
-- `display_currency` según país (CAD para Canadá, CLP para Chile)
-- Actualmente nunca se configura
-
-### Solución
-1. Al guardar perfil, establecer `display_currency` basado en el país
-2. Usar `countryConfig.currency` para obtener la moneda correcta
-
----
-
-## Problema 5: Entidad Fiscal con Nombre Hardcodeado
-
-**Gravedad: BAJA**
-
-La entidad fiscal primaria se crea con nombre `"Mi Entidad Principal"` siempre en español, incluso si el usuario usa inglés.
-
-### Solución
-1. Usar el idioma del usuario para el nombre de la entidad
-
----
-
-## Cambios Técnicos Requeridos
-
-### Archivo 1: `src/hooks/utils/useConversationalOnboarding.ts`
-
-**Cambios:**
-1. **Mapear work types de Chile a enum de BD**: Crear función `mapWorkTypeToEnum()`
-2. **Guardar name_preference correctamente**: Usar `nickname` o `full_name` según respuesta
-3. **Configurar display_currency**: Añadir al objeto `profileUpdate`
-4. **Nombre de entidad bilingüe**: Usar idioma del usuario
+El usuario puede avanzar dejando campos críticos vacíos, lo que causará datos incompletos en la BD.
 
 ```typescript
-// Mapeo de work types por país al enum de BD
-const mapWorkTypeToEnum = (workType: string, country: CountryCode): WorkType => {
-  if (country === 'CL') {
-    const mapping: Record<string, WorkType> = {
-      'empleado': 'employee',
-      'persona_natural': 'contractor',
-      'empresa_individual': 'contractor',
-      'sociedad': 'corporation',
-    };
-    return mapping[workType] || 'contractor';
+// Actualmente (línea 570-574):
+{step < 3 ? (
+  <Button onClick={() => setStep(step + 1)} className="ml-auto">
+    {t('onboarding.next')}  // ← SIN VALIDACIÓN
+  </Button>
+```
+
+### 2. Falta Validación en el Onboarding Conversacional
+**Gravedad: MEDIA**
+
+Las preguntas dinámicas (province, work_type) no validan si el país fue seleccionado antes. Si por algún bug el país está vacío, las opciones quedan vacías y el usuario se queda atrapado.
+
+### 3. No Hay Feedback Visual de Campos Requeridos
+**Gravedad: MEDIA**
+
+El usuario no tiene indicación visual de cuáles campos son obligatorios (*) ni mensajes de error cuando intenta avanzar sin completarlos.
+
+### 4. El Campo `nickname` Nunca Se Captura
+**Gravedad: MEDIA**
+
+Aunque el usuario puede elegir "nickname" como preferencia de nombre, **nunca se le pide escribir el nickname**. El flujo actual solo guarda `preferred_name_type = 'nickname'` pero no hay un Input para que escriba su apodo.
+
+### 5. No Se Pregunta el Nombre Completo
+**Gravedad: MEDIA**
+
+Si el usuario viene de signup social (Google), puede que `full_name` esté vacío. El onboarding no pregunta esto y el sistema asume que el email tiene el nombre.
+
+---
+
+## Cambios Propuestos
+
+### Archivo 1: `src/pages/Onboarding.tsx`
+
+**A) Agregar validación antes de avanzar al Step 2:**
+```typescript
+const canProceedToStep2 = province.trim() !== '' && workTypes.length > 0;
+
+// En el botón "Siguiente":
+<Button 
+  onClick={() => setStep(step + 1)} 
+  disabled={!canProceedToStep2}  // ← NUEVA VALIDACIÓN
+  className="ml-auto"
+>
+```
+
+**B) Agregar indicadores visuales de campos requeridos:**
+```typescript
+<Label className="flex items-center gap-2">
+  📍 {language === 'es' ? 'Provincia / Región' : 'Province / Region'}
+  <span className="text-destructive">*</span>  {/* Indicador requerido */}
+</Label>
+```
+
+**C) Agregar mensaje de error si no se seleccionaron campos:**
+```typescript
+{!province && step === 1 && (
+  <p className="text-xs text-destructive">
+    {language === 'es' ? 'Por favor selecciona una provincia' : 'Please select a province'}
+  </p>
+)}
+```
+
+---
+
+### Archivo 2: `src/hooks/utils/useConversationalOnboarding.ts`
+
+**A) Agregar pregunta de nombre/nickname después de la preferencia:**
+```typescript
+{
+  id: 'user_name_input',
+  question: {
+    es: '¿Cómo te llamo entonces?',
+    en: 'What should I call you then?'
+  },
+  phoenixIntro: {
+    es: '¡Me encanta! 💫 Escríbeme tu nombre o apodo:',
+    en: 'Love it! 💫 Write your name or nickname:'
+  },
+  options: [], // No options - this is a text input question
+  field: 'display_name',
+  table: 'profile',
+  stage: 'essential',
+  allowCustom: true, // Permite input de texto libre
+  isTextInput: true, // Nueva bandera para indicar que es input de texto
+}
+```
+
+**B) Guardar el nombre ingresado correctamente:**
+```typescript
+// En saveProfile():
+const displayName = responses.display_name as string;
+const namePreference = responses.name_preference as string;
+
+if (displayName) {
+  if (namePreference === 'nickname') {
+    profileUpdate.nickname = displayName;
+  } else {
+    profileUpdate.full_name = displayName;
   }
-  // Para Canadá, los valores ya coinciden con el enum
-  return workType as WorkType;
-};
-```
-
-### Archivo 2: `src/pages/Onboarding.tsx`
-
-**Cambios:**
-1. **Agregar estado de país**: `const [country, setCountry] = useState<CountryCode>('CA');`
-2. **Paso de selección de país**: Nuevo paso antes de provincia
-3. **Provincias dinámicas**: Usar `getCountryConfig(country).regions`
-4. **Work types dinámicos**: Usar `getCountryConfig(country).workTypes`
-5. **Crear entidad fiscal**: Añadir lógica en `saveProfileData()`
-6. **Configurar display_currency**: Añadir al update de perfil
-
-### Archivo 3: `src/lib/constants/country-tax-config.ts`
-
-**Cambios (menor):**
-1. Agregar propiedad `enumValue` a cada workType para mapeo explícito
-
----
-
-## Flujo Corregido del Onboarding Conversacional
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    PASO 1: Nombre                               │
-│ "¿Cómo te llamo?" → Guarda en nickname o full_name              │
-├─────────────────────────────────────────────────────────────────┤
-│                    PASO 2: País                                 │
-│ "¿Dónde pagas impuestos?" → profiles.country                    │
-│                           → profiles.display_currency (auto)    │
-├─────────────────────────────────────────────────────────────────┤
-│                    PASO 3: Provincia/Región                     │
-│ Dinámico según país → profiles.province                         │
-├─────────────────────────────────────────────────────────────────┤
-│                    PASO 4: Tipo de Trabajo                      │
-│ Opciones según país → profiles.work_types (mapeado a enum)      │
-├─────────────────────────────────────────────────────────────────┤
-│                    PASO 5: Situación Personal                   │
-│ → user_life_profile.relationship_status                         │
-├─────────────────────────────────────────────────────────────────┤
-│                    PASO 6: Metas Financieras                    │
-│ → user_financial_profile.passions                               │
-├─────────────────────────────────────────────────────────────────┤
-│                    PASO 7: Nivel de Experiencia                 │
-│ → user_financial_profile.financial_education_level              │
-├─────────────────────────────────────────────────────────────────┤
-│                    AL COMPLETAR:                                │
-│ ✓ profiles (country, province, work_types, display_currency)   │
-│ ✓ fiscal_entities (entidad primaria con país y moneda)         │
-│ ✓ user_life_profile                                             │
-│ ✓ user_financial_profile                                        │
-└─────────────────────────────────────────────────────────────────┘
+}
 ```
 
 ---
 
-## Flujo Corregido del Onboarding Tradicional
+### Archivo 3: `src/components/onboarding/ConversationalOnboarding.tsx`
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    PASO 1: País + Provincia                     │
-│ Selector de país → Lista de provincias dinámica                 │
-│ Checkboxes de work type según país                              │
-├─────────────────────────────────────────────────────────────────┤
-│                    PASO 2: Clientes                             │
-│ ¿Tienes clientes? → Lista de clientes                           │
-├─────────────────────────────────────────────────────────────────┤
-│                    PASO 3: Revisión                             │
-│ Mostrar país, provincia, work types seleccionados               │
-├─────────────────────────────────────────────────────────────────┤
-│                    PASO 4: Sample Data                          │
-│ ¿Quieres datos de ejemplo?                                      │
-├─────────────────────────────────────────────────────────────────┤
-│                    AL COMPLETAR:                                │
-│ ✓ profiles (country, province, work_types, display_currency)   │
-│ ✓ fiscal_entities (entidad primaria)                            │
-│ ✓ clients (si aplica)                                           │
-└─────────────────────────────────────────────────────────────────┘
+**A) Agregar soporte para preguntas de texto libre:**
+```typescript
+{/* Text Input for name/nickname */}
+{currentQuestion.isTextInput && (
+  <div className="space-y-2">
+    <Input
+      value={customTextValue}
+      onChange={(e) => setCustomTextValue(e.target.value)}
+      placeholder={lang === 'es' ? 'Escribe aquí...' : 'Type here...'}
+      className="text-lg"
+      autoFocus
+    />
+    <Button 
+      onClick={() => {
+        selectOption(customTextValue);
+        nextStep();
+      }}
+      disabled={!customTextValue.trim()}
+    >
+      {lang === 'es' ? 'Continuar' : 'Continue'}
+    </Button>
+  </div>
+)}
 ```
 
 ---
@@ -200,20 +150,16 @@ const mapWorkTypeToEnum = (workType: string, country: CountryCode): WorkType => 
 
 | Archivo | Cambios |
 |---------|---------|
-| `src/hooks/utils/useConversationalOnboarding.ts` | Mapeo de work types, guardar nickname, display_currency, nombre bilingüe de entidad |
-| `src/pages/Onboarding.tsx` | Agregar selector de país, provincias dinámicas, work types dinámicos, crear entidad fiscal |
-| `src/lib/constants/country-tax-config.ts` | Agregar `enumValue` a workTypes para mapeo explícito |
+| `src/pages/Onboarding.tsx` | Agregar validación de campos obligatorios, indicadores visuales (*), mensajes de error |
+| `src/hooks/utils/useConversationalOnboarding.ts` | Agregar pregunta de nombre/nickname, guardar en campo correcto (nickname o full_name) |
+| `src/components/onboarding/ConversationalOnboarding.tsx` | Agregar soporte para preguntas tipo `isTextInput` con Input de texto libre |
 
 ---
 
 ## Resultado Esperado
 
-Después de implementar estos cambios:
-
-1. **Onboarding Conversacional y Tradicional** preguntan país primero
-2. **Work types** se mapean correctamente al enum de la BD
-3. **Entidad fiscal primaria** se crea siempre con país, provincia y moneda
-4. **display_currency** se configura automáticamente según país
-5. **Nombre de usuario** se guarda correctamente (nickname o full_name)
-6. **EntityContext y useCountryContext** funcionan con datos reales desde el primer momento
-7. **Toda la app** (Tax Calendar, Business Profile, etc.) usa los datos correctos del onboarding
+1. **Formulario tradicional** no permite avanzar sin provincia y work type
+2. **Onboarding conversacional** captura el nombre real/apodo del usuario
+3. **Indicadores visuales** claros de campos requeridos
+4. **Nombre guardado** en el campo correcto (`full_name` o `nickname`)
+5. **UX mejorada** con feedback inmediato al usuario
