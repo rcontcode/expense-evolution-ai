@@ -2,9 +2,26 @@ import { useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUpsertFinancialProfile } from '@/hooks/data/useFinancialProfile';
 import { useUpsertLifeProfile, useMarkSectionComplete, LifeProfileSection } from '@/hooks/data/useLifeProfile';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { getCountryConfig, CountryCode } from '@/lib/constants/country-tax-config';
+import { getCountryConfig, CountryCode, WorkTypeOption } from '@/lib/constants/country-tax-config';
+
+// Map work type values to DB enum values
+type WorkTypeEnum = 'employee' | 'contractor' | 'corporation';
+
+const mapWorkTypesToEnum = (
+  workTypes: string | string[], 
+  country: CountryCode
+): WorkTypeEnum[] => {
+  const config = getCountryConfig(country);
+  const types = Array.isArray(workTypes) ? workTypes : [workTypes];
+  
+  return types.map(type => {
+    const found = config.workTypes.find(wt => wt.value === type);
+    return found?.enumValue || 'contractor';
+  }).filter(Boolean) as WorkTypeEnum[];
+};
 
 // Conversational onboarding question flow
 export interface OnboardingQuestion {
@@ -355,6 +372,7 @@ const ALL_QUESTIONS = [...ESSENTIAL_QUESTIONS, ...EXTENDED_QUESTIONS];
 
 export function useConversationalOnboarding() {
   const { user } = useAuth();
+  const { language } = useLanguage();
   const upsertFinancialProfile = useUpsertFinancialProfile();
   const upsertLifeProfile = useUpsertLifeProfile();
   const markSectionComplete = useMarkSectionComplete();
@@ -502,23 +520,43 @@ export function useConversationalOnboarding() {
       }
       
       // Get country and province from responses
-      const country = responses.country as string;
+      const country = responses.country as CountryCode;
       const province = responses.province as string;
       const workTypes = responses.work_types;
+      const namePreference = responses.name_preference as string;
       
-      // Update profile with country, province, and work_types
+      // Map work types to DB enum values
+      const mappedWorkTypes = country && workTypes 
+        ? mapWorkTypesToEnum(workTypes, country)
+        : [];
+      
+      // Get country config for currency
+      const countryConfig = country ? getCountryConfig(country) : null;
+      
+      // Build profile update with all fields
       const profileUpdate: Record<string, unknown> = {
         onboarding_completed: true,
       };
       
       if (country) {
         profileUpdate.country = country;
+        // Auto-set display_currency based on country
+        if (countryConfig) {
+          profileUpdate.display_currency = countryConfig.currency;
+        }
       }
       if (province) {
         profileUpdate.province = province;
       }
-      if (workTypes) {
-        profileUpdate.work_types = Array.isArray(workTypes) ? workTypes : [workTypes];
+      if (mappedWorkTypes.length > 0) {
+        profileUpdate.work_types = mappedWorkTypes;
+      }
+      // Handle name_preference - save to nickname if they chose nickname option
+      if (namePreference === 'nickname') {
+        // User will enter nickname separately, just mark preference
+        profileUpdate.preferred_name_type = 'nickname';
+      } else if (namePreference === 'first_name') {
+        profileUpdate.preferred_name_type = 'first_name';
       }
       
       await supabase
@@ -528,7 +566,8 @@ export function useConversationalOnboarding() {
       
       // Create primary fiscal entity if country and province are set
       if (country && province) {
-        const countryConfig = getCountryConfig(country as CountryCode);
+        // Bilingual entity name based on user's language preference
+        const entityName = language === 'es' ? 'Mi Entidad Principal' : 'My Primary Entity';
         
         // Check if user already has a primary fiscal entity
         const { data: existingEntity } = await supabase
@@ -538,41 +577,45 @@ export function useConversationalOnboarding() {
           .eq('is_primary', true)
           .single();
         
+        const entityData = {
+          country: country,
+          province: province,
+          default_currency: countryConfig?.currency || 'CAD',
+        };
+        
         if (!existingEntity) {
           // Create new primary fiscal entity
           await supabase.from('fiscal_entities').insert({
             user_id: user.id,
-            name: 'Mi Entidad Principal',
-            country: country,
-            province: province,
+            name: entityName,
             entity_type: 'personal',
             is_primary: true,
             is_active: true,
-            default_currency: countryConfig.currency,
+            ...entityData,
           });
         } else {
           // Update existing primary entity
           await supabase.from('fiscal_entities')
-            .update({
-              country: country,
-              province: province,
-              default_currency: countryConfig.currency,
-            })
+            .update(entityData)
             .eq('id', existingEntity.id);
         }
       }
       
       setState(prev => ({ ...prev, isComplete: true, isLoading: false }));
-      toast.success('¡Perfil completado! 🎉');
+      const successMessage = language === 'es' ? '¡Perfil completado! 🎉' : 'Profile completed! 🎉';
+      toast.success(successMessage);
       return true;
       
     } catch (error: any) {
       console.error('Error saving profile:', error);
-      toast.error(error.message || 'Error al guardar el perfil');
+      const errorMessage = language === 'es' 
+        ? 'Error al guardar el perfil' 
+        : 'Error saving profile';
+      toast.error(error.message || errorMessage);
       setState(prev => ({ ...prev, isLoading: false }));
       return false;
     }
-  }, [user, state.responses, upsertFinancialProfile, upsertLifeProfile, activeQuestions]);
+  }, [user, state.responses, upsertFinancialProfile, upsertLifeProfile, activeQuestions, language]);
 
   const getPersonalizedSummary = useCallback((lang: 'es' | 'en') => {
     const responses = state.responses;
