@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Check, Sparkles, MessageCircle, Loader2, Volume2, VolumeX, Settings2, Mic, MicOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { PhoenixLogo, PhoenixState } from '@/components/ui/phoenix-logo';
@@ -29,6 +30,7 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState('');
+  const [textInputValue, setTextInputValue] = useState('');
   const hasSpokenRef = useRef<string | null>(null);
   const isInitializedRef = useRef(false);
   
@@ -528,49 +530,94 @@ export function ConversationalOnboarding({ onComplete, onBack }: ConversationalO
                 </div>
               )}
 
-              {/* Options */}
-              {currentQuestion.options.map((option, index) => (
-                <motion.button
-                  key={option.id}
-                  onClick={() => handleOptionClick(option)}
-                  disabled={isTyping || isSpeaking || isListening}
-                  className={cn(
-                    "w-full p-4 rounded-lg border-2 text-left transition-all",
-                    "hover:border-primary hover:bg-primary/5",
-                    "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-                    "disabled:opacity-50 disabled:cursor-not-allowed",
-                    isOptionSelected(option.value)
-                      ? "border-primary bg-primary/10 ring-2 ring-primary ring-offset-2"
-                      : "border-border bg-card"
-                  )}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: (isTyping || isSpeaking || isListening) ? 1 : 1.01 }}
-                  whileTap={{ scale: (isTyping || isSpeaking || isListening) ? 1 : 0.99 }}
-                >
-                  <div className="flex items-center gap-3">
-                    {option.icon && <span className="text-2xl">{option.icon}</span>}
-                    <div className="flex-1">
-                      <p className="font-medium">{option.label[lang]}</p>
-                      {option.description && (
-                        <p className="text-sm text-muted-foreground">
-                          {option.description[lang]}
-                        </p>
+              {/* Text Input for name/nickname questions */}
+              {currentQuestion.isTextInput ? (
+                <div className="space-y-4">
+                  <Input
+                    value={textInputValue}
+                    onChange={(e) => setTextInputValue(e.target.value)}
+                    placeholder={lang === 'es' ? 'Escribe aquí...' : 'Type here...'}
+                    className="text-lg h-12"
+                    autoFocus
+                    disabled={isTyping || isSpeaking}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && textInputValue.trim()) {
+                        selectOption(textInputValue.trim());
+                        setTextInputValue('');
+                        setIsTyping(true);
+                        hasSpokenRef.current = null;
+                        setTimeout(() => {
+                          setIsTyping(false);
+                          nextStep();
+                        }, 600);
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={() => {
+                      if (textInputValue.trim()) {
+                        selectOption(textInputValue.trim());
+                        setTextInputValue('');
+                        setIsTyping(true);
+                        hasSpokenRef.current = null;
+                        setTimeout(() => {
+                          setIsTyping(false);
+                          nextStep();
+                        }, 600);
+                      }
+                    }}
+                    disabled={!textInputValue.trim() || isTyping || isSpeaking}
+                    className="w-full"
+                  >
+                    {lang === 'es' ? 'Continuar' : 'Continue'}
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                /* Options */
+                currentQuestion.options.map((option, index) => (
+                  <motion.button
+                    key={option.id}
+                    onClick={() => handleOptionClick(option)}
+                    disabled={isTyping || isSpeaking || isListening}
+                    className={cn(
+                      "w-full p-4 rounded-lg border-2 text-left transition-all",
+                      "hover:border-primary hover:bg-primary/5",
+                      "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                      "disabled:opacity-50 disabled:cursor-not-allowed",
+                      isOptionSelected(option.value)
+                        ? "border-primary bg-primary/10 ring-2 ring-primary ring-offset-2"
+                        : "border-border bg-card"
+                    )}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ scale: (isTyping || isSpeaking || isListening) ? 1 : 1.01 }}
+                    whileTap={{ scale: (isTyping || isSpeaking || isListening) ? 1 : 0.99 }}
+                  >
+                    <div className="flex items-center gap-3">
+                      {option.icon && <span className="text-2xl">{option.icon}</span>}
+                      <div className="flex-1">
+                        <p className="font-medium">{option.label[lang]}</p>
+                        {option.description && (
+                          <p className="text-sm text-muted-foreground">
+                            {option.description[lang]}
+                          </p>
+                        )}
+                      </div>
+                      {isOptionSelected(option.value) && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        >
+                          <Check className="h-5 w-5 text-primary" />
+                        </motion.div>
                       )}
                     </div>
-                    {isOptionSelected(option.value) && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      >
-                        <Check className="h-5 w-5 text-primary" />
-                      </motion.div>
-                    )}
-                  </div>
-                </motion.button>
-              ))}
+                  </motion.button>
+                ))
+              )}
             </CardContent>
           </Card>
         </motion.div>
