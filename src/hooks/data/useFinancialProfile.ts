@@ -51,7 +51,7 @@ export function useUpsertFinancialProfile() {
           ...profile, 
           user_id: user!.id,
           updated_at: new Date().toISOString()
-        })
+        }, { onConflict: 'user_id' })
         .select()
         .single();
       
