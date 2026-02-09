@@ -222,9 +222,10 @@ export default function Onboarding() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   📍 {language === 'es' ? 'Provincia / Región' : 'Province / Region'}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Select value={province} onValueChange={setProvince}>
-                  <SelectTrigger>
+                  <SelectTrigger className={!province ? 'border-destructive/50' : ''}>
                     <SelectValue placeholder={language === 'es' ? 'Selecciona...' : 'Select...'} />
                   </SelectTrigger>
                   <SelectContent>
@@ -235,12 +236,18 @@ export default function Onboarding() {
                     ))}
                   </SelectContent>
                 </Select>
+                {!province && (
+                  <p className="text-xs text-destructive">
+                    {language === 'es' ? 'Por favor selecciona una provincia/región' : 'Please select a province/region'}
+                  </p>
+                )}
               </div>
 
               {/* Work Type Selection - Dynamic based on country */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   💼 {language === 'es' ? 'Tipo de Trabajo' : 'Work Type'}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <p className="text-xs text-muted-foreground">
                   {language === 'es' 
@@ -248,7 +255,7 @@ export default function Onboarding() {
                     : 'You can select multiple options'
                   }
                 </p>
-                <div className="space-y-2">
+                <div className={`space-y-2 ${workTypes.length === 0 ? 'border border-destructive/30 rounded-lg p-2' : ''}`}>
                   {countryConfig.workTypes.map(workType => (
                     <div key={workType.value} className="flex items-center space-x-2">
                       <Checkbox
@@ -267,6 +274,11 @@ export default function Onboarding() {
                     </div>
                   ))}
                 </div>
+                {workTypes.length === 0 && (
+                  <p className="text-xs text-destructive">
+                    {language === 'es' ? 'Por favor selecciona al menos un tipo de trabajo' : 'Please select at least one work type'}
+                  </p>
+                )}
               </div>
             </CardContent>
           </>
@@ -568,7 +580,11 @@ export default function Onboarding() {
               </Button>
             ) : null}
             {step < 3 ? (
-              <Button onClick={() => setStep(step + 1)} className="ml-auto">
+              <Button 
+                onClick={() => setStep(step + 1)} 
+                disabled={step === 1 && (!province || workTypes.length === 0)}
+                className="ml-auto"
+              >
                 {t('onboarding.next')}
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>

@@ -37,6 +37,7 @@ export interface OnboardingQuestion {
   isOptional?: boolean; // Can be skipped
   stage: 'essential' | 'extended'; // Essential = must complete, Extended = can do later
   dynamicOptions?: boolean; // Options are loaded dynamically based on previous responses
+  isTextInput?: boolean; // If true, show text input instead of options
 }
 
 export interface OnboardingOption {
@@ -74,6 +75,24 @@ const ESSENTIAL_QUESTIONS: OnboardingQuestion[] = [
     field: 'name_preference',
     table: 'profile',
     stage: 'essential',
+  },
+  // NEW: Text input for name/nickname
+  {
+    id: 'user_name_input',
+    question: {
+      es: '¿Cómo te llamo entonces?',
+      en: 'What should I call you then?'
+    },
+    phoenixIntro: {
+      es: '¡Me encanta! 💫 Escríbeme tu nombre o apodo:',
+      en: 'Love it! 💫 Write your name or nickname:'
+    },
+    options: [], // No options - this is a text input question
+    field: 'display_name',
+    table: 'profile',
+    stage: 'essential',
+    allowCustom: true,
+    isTextInput: true, // Flag for text input
   },
   // NEW: Country question - CRITICAL for tax calculations
   {
@@ -551,12 +570,20 @@ export function useConversationalOnboarding() {
       if (mappedWorkTypes.length > 0) {
         profileUpdate.work_types = mappedWorkTypes;
       }
-      // Handle name_preference - save to nickname if they chose nickname option
+      // Handle name_preference and display_name
+      const displayName = responses.display_name as string;
       if (namePreference === 'nickname') {
-        // User will enter nickname separately, just mark preference
         profileUpdate.preferred_name_type = 'nickname';
+        // Save to nickname field if they chose nickname
+        if (displayName) {
+          profileUpdate.nickname = displayName;
+        }
       } else if (namePreference === 'first_name') {
         profileUpdate.preferred_name_type = 'first_name';
+        // Save to full_name if they chose first name
+        if (displayName) {
+          profileUpdate.full_name = displayName;
+        }
       }
       
       await supabase
