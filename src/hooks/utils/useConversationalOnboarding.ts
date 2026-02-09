@@ -4,6 +4,7 @@ import { useUpsertFinancialProfile } from '@/hooks/data/useFinancialProfile';
 import { useUpsertLifeProfile, useMarkSectionComplete, LifeProfileSection } from '@/hooks/data/useLifeProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getCountryConfig, CountryCode } from '@/lib/constants/country-tax-config';
 
 // Conversational onboarding question flow
 export interface OnboardingQuestion {
@@ -18,6 +19,7 @@ export interface OnboardingQuestion {
   allowCustom?: boolean;
   isOptional?: boolean; // Can be skipped
   stage: 'essential' | 'extended'; // Essential = must complete, Extended = can do later
+  dynamicOptions?: boolean; // Options are loaded dynamically based on previous responses
 }
 
 export interface OnboardingOption {
@@ -56,6 +58,60 @@ const ESSENTIAL_QUESTIONS: OnboardingQuestion[] = [
     table: 'profile',
     stage: 'essential',
   },
+  // NEW: Country question - CRITICAL for tax calculations
+  {
+    id: 'country',
+    question: {
+      es: '¿Dónde pagas tus impuestos?',
+      en: 'Where do you pay your taxes?'
+    },
+    phoenixIntro: {
+      es: '¡Perfecto! 🌎 Ahora, algo SÚPER importante. Para darte consejos fiscales precisos y ayudarte a optimizar tus impuestos, necesito saber:',
+      en: "Perfect! 🌎 Now, something SUPER important. To give you accurate tax advice and help you optimize your taxes, I need to know:"
+    },
+    options: [
+      { id: 'CA', label: { es: 'Canadá', en: 'Canada' }, value: 'CA', icon: '🇨🇦' },
+      { id: 'CL', label: { es: 'Chile', en: 'Chile' }, value: 'CL', icon: '🇨🇱' },
+    ],
+    field: 'country',
+    table: 'profile',
+    stage: 'essential',
+  },
+  // NEW: Province/Region question - Dynamic based on country
+  {
+    id: 'province',
+    question: {
+      es: '¿En qué provincia o región vives?',
+      en: 'Which province or region do you live in?'
+    },
+    phoenixIntro: {
+      es: '¡Excelente! 📍 Las tasas de impuestos varían según tu ubicación. Esto me ayuda a calcular todo correctamente:',
+      en: "Excellent! 📍 Tax rates vary by location. This helps me calculate everything correctly:"
+    },
+    options: [], // Will be loaded dynamically based on country
+    field: 'province',
+    table: 'profile',
+    stage: 'essential',
+    dynamicOptions: true,
+  },
+  // NEW: Fiscal work type - Dynamic based on country
+  {
+    id: 'work_type',
+    question: {
+      es: '¿Cuál es tu situación laboral fiscal?',
+      en: 'What is your tax work situation?'
+    },
+    phoenixIntro: {
+      es: '💼 ¡Esto es CLAVE para optimizar tus impuestos! Cada tipo de trabajo tiene diferentes deducciones y beneficios fiscales:',
+      en: "💼 This is KEY to optimizing your taxes! Each work type has different deductions and tax benefits:"
+    },
+    options: [], // Will be loaded dynamically based on country
+    field: 'work_types',
+    table: 'profile',
+    allowMultiple: true, // User can have multiple work types (employee + freelance)
+    stage: 'essential',
+    dynamicOptions: true,
+  },
   {
     id: 'life_situation',
     question: {
@@ -74,27 +130,6 @@ const ESSENTIAL_QUESTIONS: OnboardingQuestion[] = [
     field: 'relationship_status',
     table: 'life',
     section: 'family',
-    stage: 'essential',
-  },
-  {
-    id: 'work_status',
-    question: {
-      es: '¿Cómo generas tu dinero?',
-      en: 'How do you make your money?'
-    },
-    phoenixIntro: {
-      es: '¡Perfecto! 💪 Ahora hablemos de lo que te mantiene ocupado. Tu tipo de trabajo cambia completamente las estrategias que te daré:',
-      en: "Perfect! 💪 Now let's talk about what keeps you busy. Your work type totally changes the strategies I'll give you:"
-    },
-    options: [
-      { id: 'employed', label: { es: 'Empleado', en: 'Employee' }, description: { es: 'En una empresa', en: 'At a company' }, value: 'employed', icon: '💼' },
-      { id: 'self_employed', label: { es: 'Mi propio jefe', en: 'My own boss' }, description: { es: 'Freelance o negocio', en: 'Freelance or business' }, value: 'self_employed', icon: '🚀' },
-      { id: 'mixed', label: { es: 'De todo un poco', en: 'A bit of everything' }, description: { es: 'Empleo + proyectos', en: 'Job + side projects' }, value: 'mixed', icon: '⚡' },
-      { id: 'other', label: { es: 'Otra cosa', en: 'Something else' }, description: { es: 'Estudiante, retirado...', en: 'Student, retired...' }, value: 'other', icon: '🌟' },
-    ],
-    field: 'employment_status',
-    table: 'life',
-    section: 'work',
     stage: 'essential',
   },
   {
@@ -338,6 +373,50 @@ export function useConversationalOnboarding() {
   const totalSteps = activeQuestions.length;
   const progress = ((state.currentStep + 1) / totalSteps) * 100;
 
+  // Get dynamic options for questions that depend on previous responses
+  const getOptionsForQuestion = useCallback((question: OnboardingQuestion): OnboardingOption[] => {
+    // Province options depend on country selection
+    if (question.id === 'province') {
+      const country = state.responses.country as CountryCode;
+      if (!country) return [];
+      
+      const config = getCountryConfig(country);
+      return config.regions.map(region => ({
+        id: region.code,
+        label: { es: region.name, en: region.name },
+        value: region.code,
+        icon: country === 'CA' ? '🍁' : '🌄',
+      }));
+    }
+    
+    // Work type options depend on country selection
+    if (question.id === 'work_type') {
+      const country = state.responses.country as CountryCode;
+      if (!country) return [];
+      
+      const config = getCountryConfig(country);
+      return config.workTypes.map(workType => ({
+        id: workType.value,
+        label: workType.label,
+        description: workType.description,
+        value: workType.value,
+        icon: workType.value.includes('employ') || workType.value === 'empleado' ? '💼' : 
+              workType.value.includes('corp') || workType.value === 'sociedad' ? '🏢' :
+              workType.value.includes('contractor') || workType.value.includes('persona') ? '📝' : '🚀',
+      }));
+    }
+    
+    return question.options;
+  }, [state.responses]);
+
+  // Get current question with dynamic options applied
+  const currentQuestionWithOptions = currentQuestion ? {
+    ...currentQuestion,
+    options: currentQuestion.dynamicOptions 
+      ? getOptionsForQuestion(currentQuestion)
+      : currentQuestion.options,
+  } : null;
+
   const selectOption = useCallback((optionValue: string) => {
     if (!currentQuestion) return;
     
@@ -392,6 +471,9 @@ export function useConversationalOnboarding() {
         const value = responses[question.field];
         if (value === undefined) continue;
         
+        // Skip profile fields - they're handled separately
+        if (question.table === 'profile') continue;
+        
         if (question.table === 'financial') {
           if (question.field === 'available_capital' || question.field === 'monthly_investment_capacity') {
             financialData[question.field] = parseFloat(value as string) || 0;
@@ -419,11 +501,66 @@ export function useConversationalOnboarding() {
         } as any);
       }
       
-      // Mark onboarding as completed
+      // Get country and province from responses
+      const country = responses.country as string;
+      const province = responses.province as string;
+      const workTypes = responses.work_types;
+      
+      // Update profile with country, province, and work_types
+      const profileUpdate: Record<string, unknown> = {
+        onboarding_completed: true,
+      };
+      
+      if (country) {
+        profileUpdate.country = country;
+      }
+      if (province) {
+        profileUpdate.province = province;
+      }
+      if (workTypes) {
+        profileUpdate.work_types = Array.isArray(workTypes) ? workTypes : [workTypes];
+      }
+      
       await supabase
         .from('profiles')
-        .update({ onboarding_completed: true })
+        .update(profileUpdate)
         .eq('id', user.id);
+      
+      // Create primary fiscal entity if country and province are set
+      if (country && province) {
+        const countryConfig = getCountryConfig(country as CountryCode);
+        
+        // Check if user already has a primary fiscal entity
+        const { data: existingEntity } = await supabase
+          .from('fiscal_entities')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('is_primary', true)
+          .single();
+        
+        if (!existingEntity) {
+          // Create new primary fiscal entity
+          await supabase.from('fiscal_entities').insert({
+            user_id: user.id,
+            name: 'Mi Entidad Principal',
+            country: country,
+            province: province,
+            entity_type: 'personal',
+            is_primary: true,
+            is_active: true,
+            default_currency: countryConfig.currency,
+          });
+        } else {
+          // Update existing primary entity
+          await supabase.from('fiscal_entities')
+            .update({
+              country: country,
+              province: province,
+              default_currency: countryConfig.currency,
+            })
+            .eq('id', existingEntity.id);
+        }
+      }
       
       setState(prev => ({ ...prev, isComplete: true, isLoading: false }));
       toast.success('¡Perfil completado! 🎉');
@@ -480,7 +617,7 @@ export function useConversationalOnboarding() {
 
   return {
     state,
-    currentQuestion,
+    currentQuestion: currentQuestionWithOptions, // Use the question with dynamic options
     totalSteps,
     progress,
     selectOption,
@@ -490,6 +627,7 @@ export function useConversationalOnboarding() {
     getPersonalizedSummary,
     hasCurrentResponse,
     isLastStep,
+    getOptionsForQuestion,
     questions: activeQuestions,
     extendedQuestions: EXTENDED_QUESTIONS,
     allQuestions: ALL_QUESTIONS,
