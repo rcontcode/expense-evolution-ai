@@ -88,6 +88,7 @@ export interface TaxDeadline {
 
 export interface WorkTypeOption {
   value: string;
+  enumValue: 'employee' | 'contractor' | 'corporation'; // Maps to DB enum
   label: { es: string; en: string };
   description: { es: string; en: string };
 }
@@ -171,10 +172,10 @@ export const CANADA_CONFIG: CountryConfig = {
     { id: 'ca-installments', name: 'Tax Installments', description: 'Quarterly tax installments', frequency: 'quarterly' },
   ],
   workTypes: [
-    { value: 'sole_proprietor', label: { es: 'Propietario Único', en: 'Sole Proprietor' }, description: { es: 'Negocio no incorporado', en: 'Unincorporated business' } },
-    { value: 'contractor', label: { es: 'Contratista', en: 'Contractor' }, description: { es: 'Trabajador independiente', en: 'Independent worker' } },
-    { value: 'corporation', label: { es: 'Corporación', en: 'Corporation' }, description: { es: 'Empresa incorporada', en: 'Incorporated company' } },
-    { value: 'employee', label: { es: 'Empleado', en: 'Employee' }, description: { es: 'Trabajador con nómina', en: 'Payroll employee' } },
+    { value: 'employee', enumValue: 'employee', label: { es: 'Empleado (T4)', en: 'Employee (T4)' }, description: { es: 'Trabajador con nómina', en: 'Payroll employee' } },
+    { value: 'sole_proprietor', enumValue: 'contractor', label: { es: 'Propietario Único', en: 'Sole Proprietor' }, description: { es: 'Negocio no incorporado', en: 'Unincorporated business' } },
+    { value: 'contractor', enumValue: 'contractor', label: { es: 'Contratista', en: 'Contractor' }, description: { es: 'Trabajador independiente', en: 'Independent worker' } },
+    { value: 'corporation', enumValue: 'corporation', label: { es: 'Corporación', en: 'Corporation' }, description: { es: 'Empresa incorporada', en: 'Incorporated company' } },
   ],
   businessIdConfig: {
     name: { es: 'Número de Negocio', en: 'Business Number' },
@@ -246,10 +247,10 @@ export const CHILE_CONFIG: CountryConfig = {
     { id: 'cl-dj', name: 'Declaraciones Juradas', description: 'Declaraciones juradas anuales', frequency: 'annual', month: 3, formId: 'DJ' },
   ],
   workTypes: [
-    { value: 'persona_natural', label: { es: 'Persona Natural', en: 'Individual' }, description: { es: 'Contribuyente individual', en: 'Individual taxpayer' } },
-    { value: 'empresa_individual', label: { es: 'Empresa Individual', en: 'Sole Proprietorship' }, description: { es: 'EIRL o empresa unipersonal', en: 'EIRL or sole proprietorship' } },
-    { value: 'sociedad', label: { es: 'Sociedad', en: 'Company' }, description: { es: 'SpA, Ltda., S.A.', en: 'SpA, LLC, Corporation' } },
-    { value: 'empleado', label: { es: 'Empleado', en: 'Employee' }, description: { es: 'Trabajador dependiente', en: 'Dependent worker' } },
+    { value: 'empleado', enumValue: 'employee', label: { es: 'Empleado (contrato)', en: 'Employee (contract)' }, description: { es: 'Trabajador dependiente', en: 'Dependent worker' } },
+    { value: 'persona_natural', enumValue: 'contractor', label: { es: 'Persona Natural (boletas)', en: 'Individual (invoices)' }, description: { es: 'Contribuyente individual', en: 'Individual taxpayer' } },
+    { value: 'empresa_individual', enumValue: 'contractor', label: { es: 'EIRL', en: 'EIRL' }, description: { es: 'EIRL o empresa unipersonal', en: 'EIRL or sole proprietorship' } },
+    { value: 'sociedad', enumValue: 'corporation', label: { es: 'SpA / Ltda.', en: 'SpA / LLC' }, description: { es: 'SpA, Ltda., S.A.', en: 'SpA, LLC, Corporation' } },
   ],
   businessIdConfig: {
     name: { es: 'RUT', en: 'Tax ID (RUT)' },
