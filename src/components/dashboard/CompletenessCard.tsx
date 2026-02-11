@@ -133,7 +133,7 @@ export function CompletenessCard({ expenses, isLoading }: CompletenessCardProps)
 
   return (
     <Card className={cn(
-      "border-2 transition-colors",
+      "border-2 transition-colors h-full",
       hasIssues 
         ? "border-yellow-500/30 bg-yellow-50/30 dark:bg-yellow-900/10" 
         : "border-green-500/30 bg-green-50/30 dark:bg-green-900/10"
