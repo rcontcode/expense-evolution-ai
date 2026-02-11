@@ -43,76 +43,91 @@ const LIABILITY_STYLES: Record<string, { bg: string; text: string }> = {
   other: { bg: 'bg-red-400', text: 'text-white' },
 };
 
-function squarify(items: TreemapItem[], containerWidth: number, containerHeight: number) {
-  if (items.length === 0) return [];
+interface Rect {
+  item: TreemapItem;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
+function squarify(items: TreemapItem[], containerWidth: number, containerHeight: number): Rect[] {
+  if (items.length === 0) return [];
   const totalValue = items.reduce((s, i) => s + i.value, 0);
   if (totalValue === 0) return [];
 
   const sorted = [...items].sort((a, b) => b.value - a.value);
-
-  interface Rect {
-    item: TreemapItem;
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-  }
-
   const rects: Rect[] = [];
+  const totalArea = containerWidth * containerHeight;
 
-  function layoutRow(row: TreemapItem[], rowTotal: number, x: number, y: number, w: number, h: number, isVertical: boolean) {
-    let offset = 0;
-    for (const item of row) {
-      const ratio = item.value / rowTotal;
-      if (isVertical) {
-        const itemH = h * ratio;
-        rects.push({ item, x, y: y + offset, w, h: itemH });
-        offset += itemH;
-      } else {
-        const itemW = w * ratio;
-        rects.push({ item, x: x + offset, y, w: itemW, h });
-        offset += itemW;
-      }
+  function worst(row: TreemapItem[], sideLen: number): number {
+    const rowSum = row.reduce((s, r) => s + r.value, 0);
+    let maxRatio = 0;
+    for (const r of row) {
+      const area = (r.value / totalValue) * totalArea;
+      const rowArea = (rowSum / totalValue) * totalArea;
+      const rowSide = rowArea / sideLen;
+      const itemSide = area / rowSide;
+      const ratio = Math.max(rowSide / Math.max(itemSide, 0.01), itemSide / Math.max(rowSide, 0.01));
+      maxRatio = Math.max(maxRatio, ratio);
     }
+    return maxRatio;
   }
 
-  function worstRatio(row: TreemapItem[], rowTotal: number, sideLength: number): number {
-    const areaFactor = (sideLength * sideLength) / (rowTotal * rowTotal);
-    let worst = 0;
-    for (const item of row) {
-      const r1 = areaFactor * item.value / (1 / item.value);
-      const area = item.value;
-      const maxSide = Math.max(area / sideLength * (containerWidth * containerHeight / totalValue), sideLength);
-      const minSide = Math.min(area / sideLength * (containerWidth * containerHeight / totalValue), sideLength);
-      const ratio = maxSide / Math.max(minSide, 0.001);
-      worst = Math.max(worst, ratio);
-    }
-    return worst;
-  }
-
-  // Simple slice-and-dice for reliability
-  function sliceDice(items: TreemapItem[], x: number, y: number, w: number, h: number, vertical: boolean) {
-    const total = items.reduce((s, i) => s + i.value, 0);
-    if (total === 0) return;
+  function layoutRow(row: TreemapItem[], x: number, y: number, w: number, h: number) {
+    const rowSum = row.reduce((s, r) => s + r.value, 0);
+    const rowArea = (rowSum / totalValue) * totalArea;
+    const isHorizontal = w >= h;
     
-    let offset = 0;
-    for (const item of items) {
-      const ratio = item.value / total;
-      if (vertical) {
-        const itemH = h * ratio;
-        rects.push({ item, x, y: y + offset, w, h: itemH });
-        offset += itemH;
-      } else {
-        const itemW = w * ratio;
-        rects.push({ item, x: x + offset, y, w: itemW, h });
-        offset += itemW;
+    if (isHorizontal) {
+      const rowWidth = rowArea / h;
+      let offsetY = 0;
+      for (const item of row) {
+        const itemArea = (item.value / totalValue) * totalArea;
+        const itemHeight = itemArea / rowWidth;
+        rects.push({ item, x, y: y + offsetY, w: rowWidth, h: itemHeight });
+        offsetY += itemHeight;
       }
+      return { x: x + rowWidth, y, w: w - rowWidth, h };
+    } else {
+      const rowHeight = rowArea / w;
+      let offsetX = 0;
+      for (const item of row) {
+        const itemArea = (item.value / totalValue) * totalArea;
+        const itemWidth = itemArea / rowHeight;
+        rects.push({ item, x: x + offsetX, y, w: itemWidth, h: rowHeight });
+        offsetX += itemWidth;
+      }
+      return { x, y: y + rowHeight, w, h: h - rowHeight };
     }
   }
 
-  sliceDice(sorted, 0, 0, containerWidth, containerHeight, containerHeight > containerWidth);
+  function process(data: TreemapItem[], x: number, y: number, w: number, h: number) {
+    if (data.length === 0) return;
+    if (data.length === 1) {
+      rects.push({ item: data[0], x, y, w, h });
+      return;
+    }
 
+    const sideLen = Math.min(w, h);
+    let row: TreemapItem[] = [data[0]];
+    let remaining = data.slice(1);
+
+    for (let i = 0; i < remaining.length; i++) {
+      const newRow = [...row, remaining[i]];
+      if (worst(newRow, sideLen) <= worst(row, sideLen)) {
+        row = newRow;
+      } else {
+        break;
+      }
+    }
+
+    remaining = data.slice(row.length);
+    const bounds = layoutRow(row, x, y, w, h);
+    process(remaining, bounds.x, bounds.y, bounds.w, bounds.h);
+  }
+
+  process(sorted, 0, 0, containerWidth, containerHeight);
   return rects;
 }
 
