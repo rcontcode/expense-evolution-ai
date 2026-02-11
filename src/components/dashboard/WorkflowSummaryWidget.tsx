@@ -333,7 +333,7 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
         </div>
       </div>
 
-      <CardContent className="p-4 flex-1 flex flex-col">
+      <CardContent className="p-4 flex-1 flex flex-col justify-between">
         {/* Celebration banner */}
         {showCelebration && (
           <div className="mb-3 p-3 rounded-xl bg-gradient-to-r from-success/20 via-primary/20 to-warning/20 border-2 border-success/40 animate-fade-in">
