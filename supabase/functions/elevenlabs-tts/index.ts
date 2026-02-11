@@ -287,17 +287,8 @@ serve(async (req) => {
     // Decide voice
     let selectedVoiceInput: string | null = typeof voiceId === "string" ? voiceId : null;
 
-    // If the client didn't specify a voice and it's Spanish, pick a high-quality LatAm voice from Voice Library.
-    if ((!selectedVoiceInput || !selectedVoiceInput.trim()) && (lang === "es")) {
-      try {
-        const def = await fetchDefaultSpanishSharedVoice(ELEVENLABS_API_KEY);
-        if (def) {
-          selectedVoiceInput = `shared:${def.publicOwnerId}:${def.voiceId}`;
-        }
-      } catch (e) {
-        console.warn("Failed to fetch default Spanish shared voice; falling back.", e);
-      }
-    }
+    // Always use the curated DEFAULT_VOICE_ID (Jessica) for Spanish when no voice is specified.
+    // Shared Voice Library voices were disabled due to inconsistent audio quality (background noise).
 
     if (!selectedVoiceInput || !selectedVoiceInput.trim()) {
       selectedVoiceInput = DEFAULT_VOICE_ID;
