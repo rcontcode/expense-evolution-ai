@@ -2432,7 +2432,7 @@
 
 @media (min-width: 1024px) {
   .side-by-side {
-    @apply flex-row items-end;
+    @apply flex-row items-stretch;
   }
   
   .side-by-side > :first-child {
