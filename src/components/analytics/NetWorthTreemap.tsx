@@ -17,29 +17,29 @@ interface TreemapNode {
 }
 
 const ASSET_COLORS: Record<string, string> = {
-  cash: 'hsl(142, 76%, 36%)',
-  investments: 'hsl(142, 76%, 46%)',
-  real_estate: 'hsl(142, 76%, 56%)',
-  crypto: 'hsl(142, 76%, 40%)',
-  business: 'hsl(142, 76%, 50%)',
-  retirement: 'hsl(142, 76%, 45%)',
-  other: 'hsl(142, 76%, 60%)',
+  cash: 'hsl(152, 60%, 38%)',
+  investments: 'hsl(158, 55%, 45%)',
+  real_estate: 'hsl(165, 50%, 42%)',
+  crypto: 'hsl(172, 55%, 40%)',
+  business: 'hsl(145, 50%, 48%)',
+  retirement: 'hsl(140, 45%, 43%)',
+  other: 'hsl(155, 40%, 50%)',
 };
 
 const LIABILITY_COLORS: Record<string, string> = {
-  mortgage: 'hsl(0, 84%, 40%)',
-  car_loan: 'hsl(0, 84%, 50%)',
-  student_loan: 'hsl(0, 84%, 45%)',
-  credit_card: 'hsl(0, 84%, 55%)',
-  personal_loan: 'hsl(0, 84%, 48%)',
-  business_loan: 'hsl(0, 84%, 42%)',
-  other: 'hsl(0, 84%, 60%)',
+  mortgage: 'hsl(0, 65%, 45%)',
+  car_loan: 'hsl(8, 60%, 50%)',
+  student_loan: 'hsl(350, 55%, 48%)',
+  credit_card: 'hsl(15, 60%, 52%)',
+  personal_loan: 'hsl(5, 55%, 47%)',
+  business_loan: 'hsl(355, 50%, 44%)',
+  other: 'hsl(10, 45%, 55%)',
 };
 
 const CustomTreemapContent = (props: any) => {
   const { x, y, width, height, name, value, color } = props;
   
-  if (width < 4 || height < 4) return null;
+  if (width < 3 || height < 3) return null;
   
   const formatValue = (val: number) => {
     if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
@@ -47,78 +47,66 @@ const CustomTreemapContent = (props: any) => {
     return `$${val.toFixed(0)}`;
   };
 
-  const showLabel = width > 70 && height > 50;
-  const labelText = showLabel
-    ? (name?.length > Math.floor(width / 9) ? name.substring(0, Math.floor(width / 9) - 2) + '…' : name)
-    : '';
+  const canShowName = width > 50 && height > 30;
+  const canShowValue = width > 35 && height > 20;
+  const maxChars = Math.max(3, Math.floor((width - 16) / 7));
+  const labelText = name?.length > maxChars ? name.substring(0, maxChars - 1) + '…' : name;
 
   return (
     <g>
+      {/* Cell background */}
       <rect
-        x={x + 1}
-        y={y + 1}
-        width={Math.max(width - 2, 0)}
-        height={Math.max(height - 2, 0)}
+        x={x + 1.5}
+        y={y + 1.5}
+        width={Math.max(width - 3, 0)}
+        height={Math.max(height - 3, 0)}
         fill={color}
         stroke="hsl(var(--background))"
-        strokeWidth={3}
-        rx={6}
-        style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
-        className="hover:opacity-85"
+        strokeWidth={2}
+        rx={4}
+        style={{ cursor: 'pointer' }}
       />
-      {showLabel && (
-        <foreignObject x={x + 2} y={y + 2} width={width - 4} height={height - 4}>
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              pointerEvents: 'none',
-            }}
-          >
-            <div
-              style={{
-                background: 'rgba(0,0,0,0.7)',
-                backdropFilter: 'blur(4px)',
-                borderRadius: '6px',
-                padding: '4px 10px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '1px',
-                maxWidth: '90%',
-              }}
-            >
-              <span
-                style={{
-                  color: '#ffffff',
-                  fontSize: `${Math.min(12, Math.max(9, width / 10))}px`,
-                  fontWeight: 700,
-                  lineHeight: 1.3,
-                  textAlign: 'center',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: '100%',
-                }}
-              >
-                {labelText}
-              </span>
-              <span
-                style={{
-                  color: 'rgba(255,255,255,0.85)',
-                  fontSize: `${Math.min(11, Math.max(8, width / 12))}px`,
-                  fontWeight: 600,
-                  lineHeight: 1.2,
-                }}
-              >
-                {formatValue(value)}
-              </span>
-            </div>
-          </div>
-        </foreignObject>
+      {/* Subtle darkening overlay for text contrast */}
+      {canShowValue && (
+        <rect
+          x={x + 1.5}
+          y={y + 1.5}
+          width={Math.max(width - 3, 0)}
+          height={Math.max(height - 3, 0)}
+          fill="rgba(0,0,0,0.2)"
+          rx={4}
+          style={{ pointerEvents: 'none' }}
+        />
+      )}
+      {/* Category name */}
+      {canShowName && (
+        <text
+          x={x + width / 2}
+          y={y + height / 2 - (canShowValue ? 7 : 0)}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fill="#fff"
+          fontSize={Math.min(13, Math.max(9, width / 9))}
+          fontWeight="700"
+          style={{ pointerEvents: 'none', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}
+        >
+          {labelText}
+        </text>
+      )}
+      {/* Value */}
+      {canShowValue && (
+        <text
+          x={x + width / 2}
+          y={canShowName ? y + height / 2 + 10 : y + height / 2}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fill="rgba(255,255,255,0.92)"
+          fontSize={Math.min(11, Math.max(8, width / 11))}
+          fontWeight="600"
+          style={{ pointerEvents: 'none', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}
+        >
+          {formatValue(value)}
+        </text>
       )}
     </g>
   );
