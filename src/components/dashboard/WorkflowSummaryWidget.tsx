@@ -333,7 +333,7 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
         </div>
       </div>
 
-      <CardContent className="p-4 flex-1 flex flex-col justify-between">
+      <CardContent className="p-4 flex-1 flex flex-col">
         {/* Celebration banner */}
         {showCelebration && (
           <div className="mb-3 p-3 rounded-xl bg-gradient-to-r from-success/20 via-primary/20 to-warning/20 border-2 border-success/40 animate-fade-in">
@@ -350,15 +350,54 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
           </div>
         )}
 
-        {/* Workflow grid */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-          {WORKFLOW_CONFIGS.map(config => (
-            <WorkflowMiniCard 
-              key={config.id} 
-              config={config} 
-              onComplete={handleWorkflowComplete}
-            />
-          ))}
+        {/* Workflow list - vertical for better space usage */}
+        <div className="flex-1 space-y-1.5">
+          {workflows.map(({ config, progress }) => {
+            const Icon = config.icon;
+            const progressPercent = progress 
+              ? Math.round((progress.currentStep / (progress.totalSteps - 1)) * 100)
+              : 0;
+            const actionItems = progress?.stats.find(s => s.value > 0 && s.type === 'count')?.value || 0;
+            const nextStep = progress?.stats.find(s => s.type === 'count')?.label || '';
+            
+            return (
+              <button
+                key={config.id}
+                onClick={() => navigate(config.path)}
+                className={cn(
+                  "w-full flex items-center gap-3 p-2.5 rounded-lg border transition-all text-left group",
+                  "hover:shadow-sm hover:scale-[1.01]",
+                  progressPercent === 100 
+                    ? "bg-success/5 border-success/20" 
+                    : "bg-muted/20 border-border/50 hover:border-primary/30"
+                )}
+              >
+                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", config.bgColor)}>
+                  <Icon className={cn("h-4 w-4", config.color)} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold truncate">{config.title[language]}</span>
+                    <div className="flex items-center gap-1.5">
+                      {actionItems > 0 && (
+                        <Badge variant="outline" className="h-5 px-1.5 text-[10px] bg-warning/10 text-warning border-warning/30">
+                          {actionItems}
+                        </Badge>
+                      )}
+                      <span className={cn(
+                        "text-[10px] font-bold",
+                        progressPercent === 100 ? "text-success" : "text-muted-foreground"
+                      )}>
+                        {progressPercent}%
+                      </span>
+                    </div>
+                  </div>
+                  <Progress value={progressPercent} className="h-1 mt-1" />
+                </div>
+                <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            );
+          })}
         </div>
 
         {/* Quick insight or motivational fill */}
