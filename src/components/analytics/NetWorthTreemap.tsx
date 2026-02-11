@@ -39,7 +39,7 @@ const LIABILITY_COLORS: Record<string, string> = {
 const CustomTreemapContent = (props: any) => {
   const { x, y, width, height, name, value, color } = props;
   
-  if (width < 30 || height < 30) return null;
+  if (width < 4 || height < 4) return null;
   
   const formatValue = (val: number) => {
     if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
@@ -47,63 +47,76 @@ const CustomTreemapContent = (props: any) => {
     return `$${val.toFixed(0)}`;
   };
 
-  const labelText = name?.length > 15 ? name.substring(0, 12) + '...' : name;
+  const showLabel = width > 70 && height > 50;
+  const labelText = showLabel
+    ? (name?.length > Math.floor(width / 9) ? name.substring(0, Math.floor(width / 9) - 2) + '…' : name)
+    : '';
 
   return (
     <g>
       <rect
-        x={x}
-        y={y}
-        width={width}
-        height={height}
+        x={x + 1}
+        y={y + 1}
+        width={Math.max(width - 2, 0)}
+        height={Math.max(height - 2, 0)}
         fill={color}
         stroke="hsl(var(--background))"
-        strokeWidth={2}
-        rx={4}
+        strokeWidth={3}
+        rx={6}
         style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
-        className="hover:opacity-80"
+        className="hover:opacity-85"
       />
-      {width > 55 && height > 35 && (
-        <foreignObject x={x} y={y} width={width} height={height}>
+      {showLabel && (
+        <foreignObject x={x + 2} y={y + 2} width={width - 4} height={height - 4}>
           <div
             style={{
               width: '100%',
               height: '100%',
               display: 'flex',
-              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '4px',
               pointerEvents: 'none',
             }}
           >
-            <span
+            <div
               style={{
-                color: '#ffffff',
-                fontSize: `${Math.min(13, width / 8)}px`,
-                fontWeight: 700,
-                lineHeight: 1.2,
-                textAlign: 'center',
-                textShadow: '0 1px 4px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.7)',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: '100%',
+                background: 'rgba(0,0,0,0.7)',
+                backdropFilter: 'blur(4px)',
+                borderRadius: '6px',
+                padding: '4px 10px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '1px',
+                maxWidth: '90%',
               }}
             >
-              {labelText}
-            </span>
-            <span
-              style={{
-                color: '#ffffff',
-                fontSize: `${Math.min(11, width / 10)}px`,
-                fontWeight: 600,
-                lineHeight: 1.2,
-                textShadow: '0 1px 4px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.7)',
-              }}
-            >
-              {formatValue(value)}
-            </span>
+              <span
+                style={{
+                  color: '#ffffff',
+                  fontSize: `${Math.min(12, Math.max(9, width / 10))}px`,
+                  fontWeight: 700,
+                  lineHeight: 1.3,
+                  textAlign: 'center',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: '100%',
+                }}
+              >
+                {labelText}
+              </span>
+              <span
+                style={{
+                  color: 'rgba(255,255,255,0.85)',
+                  fontSize: `${Math.min(11, Math.max(8, width / 12))}px`,
+                  fontWeight: 600,
+                  lineHeight: 1.2,
+                }}
+              >
+                {formatValue(value)}
+              </span>
+            </div>
           </div>
         </foreignObject>
       )}
