@@ -220,7 +220,7 @@ export const MonthComparisonChart = memo(({ expenses, isLoading }: MonthComparis
               <Bar 
                 dataKey="previous" 
                 name={language === 'es' ? 'Mes anterior' : 'Previous'} 
-                fill="hsl(var(--muted-foreground))" 
+                fill="hsl(var(--muted-foreground) / 0.35)" 
                 radius={[0, 4, 4, 0]}
               />
             </BarChart>
