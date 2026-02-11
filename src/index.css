@@ -2427,12 +2427,12 @@
 
 /* Side-by-side layout for desktop */
 .side-by-side {
-  @apply flex flex-col gap-4;
+  @apply flex flex-col gap-4 items-stretch;
 }
 
 @media (min-width: 1024px) {
   .side-by-side {
-    @apply flex-row;
+    @apply flex-row items-end;
   }
   
   .side-by-side > :first-child {
