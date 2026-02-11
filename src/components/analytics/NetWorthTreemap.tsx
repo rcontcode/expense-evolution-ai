@@ -36,22 +36,10 @@ const LIABILITY_COLORS: Record<string, string> = {
   other: 'hsl(0, 84%, 60%)',
 };
 
-const getContrastColor = (bgColor: string): string => {
-  // Parse HSL to determine lightness
-  const match = bgColor.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
-  if (match) {
-    const lightness = parseInt(match[3]);
-    return lightness > 55 ? '#1a1a2e' : '#ffffff';
-  }
-  return '#ffffff';
-};
-
 const CustomTreemapContent = (props: any) => {
   const { x, y, width, height, name, value, color, depth } = props;
   
   if (width < 30 || height < 30) return null;
-  
-  const textColor = getContrastColor(color || 'hsl(0, 0%, 50%)');
   
   const formatValue = (val: number) => {
     if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
@@ -82,10 +70,10 @@ const CustomTreemapContent = (props: any) => {
             x={x + width / 2}
             y={y + height / 2 - 8}
             textAnchor="middle"
-            fill={textColor}
+            fill="#ffffff"
             fontSize={Math.min(14, width / 8)}
-            fontWeight="600"
-            style={{ textShadow: `0 1px 2px rgba(0,0,0,0.3)` }}
+            fontWeight="700"
+            style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.5)' }}
           >
             {name?.length > 15 ? name.substring(0, 12) + '...' : name}
           </text>
@@ -93,9 +81,10 @@ const CustomTreemapContent = (props: any) => {
             x={x + width / 2}
             y={y + height / 2 + 10}
             textAnchor="middle"
-            fill={textColor}
+            fill="#ffffff"
             fontSize={Math.min(12, width / 10)}
-            style={{ textShadow: `0 1px 2px rgba(0,0,0,0.3)` }}
+            fontWeight="600"
+            style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.5)' }}
           >
             {formatValue(value)}
           </text>
