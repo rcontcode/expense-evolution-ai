@@ -55,7 +55,7 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
   // Get current voice selection
   const currentVoiceId = voicePrefs.premiumVoiceIdByLang?.[langFilter] || null;
 
-  // Preview voice with throttle
+  // Preview voice with throttle - uses previewUrl or TTS fallback
   const previewVoice = useCallback(async (voice: ElevenLabsVoice) => {
     const now = Date.now();
     if (now - lastPreviewRef.current < 2000) return;
@@ -67,12 +67,55 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
       audioRef.current = null;
     }
 
-    if (!voice.previewUrl) return;
-
     setPlayingVoiceId(voice.id);
     
     try {
-      const audio = new Audio(voice.previewUrl);
+      let audioUrl = voice.previewUrl;
+
+      // If no previewUrl, generate a short TTS sample via edge function
+      if (!audioUrl) {
+        const sampleText = language === 'es' 
+          ? 'Hola, esta es una muestra de mi voz. ¿Qué te parece?' 
+          : 'Hello, this is a sample of my voice. What do you think?';
+
+        // Extract the real voice ID for TTS (handle shared: format)
+        let ttsVoiceId = voice.id;
+        if (ttsVoiceId.startsWith('shared:')) {
+          // Pass the full shared:owner:id to the TTS function
+          ttsVoiceId = voice.id;
+        }
+
+        const { data: { session } } = await (await import('@/integrations/supabase/client')).supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) {
+          console.error('No auth token for TTS preview');
+          setPlayingVoiceId(null);
+          return;
+        }
+
+        const resp = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ text: sampleText, voiceId: ttsVoiceId, lang: language }),
+          }
+        );
+
+        if (!resp.ok) {
+          console.error('TTS preview failed:', resp.status);
+          setPlayingVoiceId(null);
+          return;
+        }
+
+        const blob = await resp.blob();
+        audioUrl = URL.createObjectURL(blob);
+      }
+
+      const audio = new Audio(audioUrl);
       audioRef.current = audio;
       
       audio.onended = () => {
@@ -90,7 +133,7 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
       console.error('Failed to play preview:', e);
       setPlayingVoiceId(null);
     }
-  }, []);
+  }, [language]);
 
   // Stop preview
   const stopPreview = useCallback(() => {
@@ -348,27 +391,25 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
                           )}
                         </div>
                         
-                        {voice.previewUrl && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 flex-shrink-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (isPlaying) {
-                                stopPreview();
-                              } else {
-                                previewVoice(voice);
-                              }
-                            }}
-                          >
-                            {isPlaying ? (
-                              <Pause className="h-3.5 w-3.5 text-primary" />
-                            ) : (
-                              <Play className="h-3.5 w-3.5" />
-                            )}
-                          </Button>
-                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 flex-shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (isPlaying) {
+                              stopPreview();
+                            } else {
+                              previewVoice(voice);
+                            }
+                          }}
+                        >
+                          {isPlaying ? (
+                            <Pause className="h-3.5 w-3.5 text-primary" />
+                          ) : (
+                            <Play className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
                       </div>
                     );
                   })}
