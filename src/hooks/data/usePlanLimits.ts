@@ -378,6 +378,8 @@ export function usePlanLimits() {
 
   const canUsePremiumVoice = () => {
     if (isGodMode) return true;
+    // While still loading admin/plan data, assume eligible to avoid false negatives
+    if (isLoadingAdmin || isLoadingConfigs) return true;
     const limit = limits.voice_minutes_per_month;
     if (limit === Infinity) return true;
     return currentUsage.voice_minutes_used < limit;
