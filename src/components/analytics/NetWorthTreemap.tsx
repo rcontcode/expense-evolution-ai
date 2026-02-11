@@ -64,32 +64,49 @@ const CustomTreemapContent = (props: any) => {
         }}
         className="hover:opacity-80"
       />
-      {width > 60 && height > 40 && (
-        <>
-          <text
-            x={x + width / 2}
-            y={y + height / 2 - 8}
-            textAnchor="middle"
-            fill="#ffffff"
-            fontSize={Math.min(14, width / 8)}
-            fontWeight="700"
-            style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.5)' }}
-          >
-            {name?.length > 15 ? name.substring(0, 12) + '...' : name}
-          </text>
-          <text
-            x={x + width / 2}
-            y={y + height / 2 + 10}
-            textAnchor="middle"
-            fill="#ffffff"
-            fontSize={Math.min(12, width / 10)}
-            fontWeight="600"
-            style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.5)' }}
-          >
-            {formatValue(value)}
-          </text>
-        </>
-      )}
+      {width > 60 && height > 40 && (() => {
+        const labelText = name?.length > 15 ? name.substring(0, 12) + '...' : name;
+        const valueText = formatValue(value);
+        const fontSize1 = Math.min(14, width / 8);
+        const fontSize2 = Math.min(12, width / 10);
+        const bgWidth = Math.min(width - 8, Math.max(labelText?.length || 0, valueText.length) * fontSize1 * 0.65 + 16);
+        const bgHeight = 36;
+        const bgX = x + width / 2 - bgWidth / 2;
+        const bgY = y + height / 2 - bgHeight / 2 - 4;
+        
+        return (
+          <>
+            <rect
+              x={bgX}
+              y={bgY}
+              width={bgWidth}
+              height={bgHeight}
+              fill="rgba(0,0,0,0.55)"
+              rx={4}
+            />
+            <text
+              x={x + width / 2}
+              y={y + height / 2 - 6}
+              textAnchor="middle"
+              fill="#ffffff"
+              fontSize={fontSize1}
+              fontWeight="700"
+            >
+              {labelText}
+            </text>
+            <text
+              x={x + width / 2}
+              y={y + height / 2 + 12}
+              textAnchor="middle"
+              fill="#ffffff"
+              fontSize={fontSize2}
+              fontWeight="600"
+            >
+              {valueText}
+            </text>
+          </>
+        );
+      })()}
     </g>
   );
 };
