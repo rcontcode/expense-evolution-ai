@@ -229,6 +229,7 @@ export function ProfileExtenderDialog({
   const [responses, setResponses] = useState<Record<string, string | string[]>>({});
   const [isTyping, setIsTyping] = useState(false);
   const [interimText, setInterimText] = useState('');
+  const [textInput, setTextInput] = useState('');
   const hasSpokenRef = useRef<string | null>(null);
   const handleOptionSelectRef = useRef<(value: string) => void>(() => {});
   
@@ -239,11 +240,39 @@ export function ProfileExtenderDialog({
   const upsertLifeProfile = useUpsertLifeProfile();
   const markSectionComplete = useMarkSectionComplete();
   
+  // speakAcknowledgmentRef to break circular dependency
+  const speakAcknowledgmentRef = useRef<(field: string, value: string) => void>(() => {});
+
   // Voice transcript handler - match spoken words to options with fuzzy matching
   const handleVoiceTranscript = useCallback((transcript: string) => {
-    if (!currentQuestion?.options) return;
+    if (!currentQuestion) return;
     
     const lower = transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    
+    // Handle TEXT type questions - accept any spoken text as the answer
+    if (currentQuestion.type === 'text') {
+      const cleanedText = transcript.trim();
+      if (cleanedText.length > 0) {
+        setResponses(prev => ({ ...prev, [currentQuestion.field]: cleanedText }));
+        setTextInput(cleanedText);
+        setInterimText('');
+        
+        // Speak acknowledgment and auto-advance
+        speakAcknowledgmentRef.current(currentQuestion.field, cleanedText);
+        setTimeout(() => {
+          if (currentStep < questions.length - 1) {
+            setCurrentStep(prev => prev + 1);
+            hasSpokenRef.current = null;
+          } else {
+            handleComplete();
+          }
+        }, 2500);
+      }
+      return;
+    }
+    
+    // For option-based questions
+    if (!currentQuestion.options) return;
     
     // Negation patterns → select "none"/"no" options
     const negationPatterns = [
@@ -303,7 +332,7 @@ export function ProfileExtenderDialog({
           : `"${transcript}" — Tap an option or try again`
       );
     }
-  }, [currentQuestion, lang]);
+  }, [currentQuestion, lang, currentStep, questions.length]);
   
   // Voice setup
   const selectedPremiumVoiceId = voicePrefs.getPremiumVoiceId(lang) || undefined;
@@ -325,6 +354,42 @@ export function ProfileExtenderDialog({
     onInterimTranscript: setInterimText,
   });
   
+  // Conversational acknowledgment after an answer
+  const speakAcknowledgment = useCallback((field: string, value: string) => {
+    const acks: Record<string, { es: string; en: string }> = {
+      job_title: { 
+        es: `¡${value}! ¡Qué interesante! Eso me ayuda mucho a personalizar tus consejos financieros. ¡Vamos con la siguiente!`, 
+        en: `${value}! How interesting! That helps me personalize your financial advice. Let's move on!` 
+      },
+      side_hustle: {
+        es: '¡Perfecto! Tener claro esto me ayuda a guiarte mejor.',
+        en: 'Perfect! Knowing this helps me guide you better.'
+      },
+      has_children: {
+        es: '¡Entendido! Esto cambia totalmente la estrategia financiera.',
+        en: 'Got it! This completely changes the financial strategy.'
+      },
+      pets: {
+        es: '¡Los peluditos también cuentan en el presupuesto! Anotado.',
+        en: 'Fur babies count in the budget too! Noted.'
+      },
+      hobbies: {
+        es: '¡Me encanta! Tus pasiones dicen mucho de cómo manejas el dinero.',
+        en: 'Love it! Your passions say a lot about how you handle money.'
+      },
+    };
+    const ack = acks[field] || {
+      es: '¡Perfecto! Anotado. ¡Seguimos!',
+      en: 'Perfect! Noted. Let\'s continue!'
+    };
+    voiceAssistant.speak(ack[lang]);
+  }, [lang, voiceAssistant]);
+
+  // Keep ref in sync
+  useEffect(() => {
+    speakAcknowledgmentRef.current = speakAcknowledgment;
+  }, [speakAcknowledgment]);
+
   const isSpeaking = voiceAssistant.isSpeaking || elevenLabsTTS.isSpeaking;
   const isListening = voiceAssistant.isListening;
   const canListen = !isSpeaking && !isTyping;
@@ -350,9 +415,15 @@ export function ProfileExtenderDialog({
     if (open) {
       setCurrentStep(0);
       setResponses({});
+      setTextInput('');
       hasSpokenRef.current = null;
     }
   }, [open, section]);
+
+  // Reset text input on step change
+  useEffect(() => {
+    setTextInput(responses[currentQuestion?.field || ''] as string || '');
+  }, [currentStep]);
   
   const handleOptionSelect = useCallback((value: string) => {
     if (!currentQuestion) return;
@@ -366,8 +437,9 @@ export function ProfileExtenderDialog({
     } else {
       setResponses(prev => ({ ...prev, [currentQuestion.field]: value }));
       
-      // Auto-advance for single select
+      // Speak acknowledgment and auto-advance for single select
       setIsTyping(true);
+      speakAcknowledgment(currentQuestion.field, value);
       setTimeout(() => {
         setIsTyping(false);
         if (currentStep < questions.length - 1) {
@@ -376,7 +448,7 @@ export function ProfileExtenderDialog({
         } else {
           handleComplete();
         }
-      }, 800);
+      }, 2000);
     }
   }, [currentQuestion, responses, currentStep, questions.length]);
   
@@ -504,6 +576,57 @@ export function ProfileExtenderDialog({
                     )}
                   </motion.button>
                 ))}
+              </div>
+            )}
+            
+            {/* Text input for free-text questions */}
+            {currentQuestion.type === 'text' && (
+              <div className="space-y-3">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={textInput}
+                    onChange={(e) => setTextInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && textInput.trim()) {
+                        setResponses(prev => ({ ...prev, [currentQuestion.field]: textInput.trim() }));
+                        speakAcknowledgment(currentQuestion.field, textInput.trim());
+                        setTimeout(() => {
+                          if (currentStep < questions.length - 1) {
+                            setCurrentStep(prev => prev + 1);
+                            hasSpokenRef.current = null;
+                          } else {
+                            handleComplete();
+                          }
+                        }, 2500);
+                      }
+                    }}
+                    placeholder={currentQuestion.placeholder?.[lang] || ''}
+                    className="w-full px-4 py-3 rounded-lg border-2 border-border bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
+                    disabled={isTyping || isSpeaking}
+                  />
+                </div>
+                <Button
+                  onClick={() => {
+                    if (textInput.trim()) {
+                      setResponses(prev => ({ ...prev, [currentQuestion.field]: textInput.trim() }));
+                      speakAcknowledgment(currentQuestion.field, textInput.trim());
+                      setTimeout(() => {
+                        if (currentStep < questions.length - 1) {
+                          setCurrentStep(prev => prev + 1);
+                          hasSpokenRef.current = null;
+                        } else {
+                          handleComplete();
+                        }
+                      }, 2500);
+                    }
+                  }}
+                  disabled={!textInput.trim() || isTyping || isSpeaking}
+                  className="w-full"
+                >
+                  {lang === 'es' ? 'Confirmar' : 'Confirm'}
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
               </div>
             )}
             
