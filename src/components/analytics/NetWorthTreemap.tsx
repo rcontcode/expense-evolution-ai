@@ -37,7 +37,7 @@ const LIABILITY_COLORS: Record<string, string> = {
 };
 
 const CustomTreemapContent = (props: any) => {
-  const { x, y, width, height, name, value, color, depth } = props;
+  const { x, y, width, height, name, value, color } = props;
   
   if (width < 30 || height < 30) return null;
   
@@ -46,6 +46,8 @@ const CustomTreemapContent = (props: any) => {
     if (val >= 1000) return `$${(val / 1000).toFixed(0)}K`;
     return `$${val.toFixed(0)}`;
   };
+
+  const labelText = name?.length > 15 ? name.substring(0, 12) + '...' : name;
 
   return (
     <g>
@@ -58,55 +60,53 @@ const CustomTreemapContent = (props: any) => {
         stroke="hsl(var(--background))"
         strokeWidth={2}
         rx={4}
-        style={{ 
-          cursor: 'pointer',
-          transition: 'opacity 0.2s',
-        }}
+        style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
         className="hover:opacity-80"
       />
-      {width > 60 && height > 40 && (() => {
-        const labelText = name?.length > 15 ? name.substring(0, 12) + '...' : name;
-        const valueText = formatValue(value);
-        const fontSize1 = Math.min(14, width / 8);
-        const fontSize2 = Math.min(12, width / 10);
-        const bgWidth = Math.min(width - 8, Math.max(labelText?.length || 0, valueText.length) * fontSize1 * 0.65 + 16);
-        const bgHeight = 36;
-        const bgX = x + width / 2 - bgWidth / 2;
-        const bgY = y + height / 2 - bgHeight / 2 - 4;
-        
-        return (
-          <>
-            <rect
-              x={bgX}
-              y={bgY}
-              width={bgWidth}
-              height={bgHeight}
-              fill="rgba(0,0,0,0.55)"
-              rx={4}
-            />
-            <text
-              x={x + width / 2}
-              y={y + height / 2 - 6}
-              textAnchor="middle"
-              fill="#ffffff"
-              fontSize={fontSize1}
-              fontWeight="700"
+      {width > 55 && height > 35 && (
+        <foreignObject x={x} y={y} width={width} height={height}>
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '4px',
+              pointerEvents: 'none',
+            }}
+          >
+            <span
+              style={{
+                color: '#ffffff',
+                fontSize: `${Math.min(13, width / 8)}px`,
+                fontWeight: 700,
+                lineHeight: 1.2,
+                textAlign: 'center',
+                textShadow: '0 1px 4px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.7)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '100%',
+              }}
             >
               {labelText}
-            </text>
-            <text
-              x={x + width / 2}
-              y={y + height / 2 + 12}
-              textAnchor="middle"
-              fill="#ffffff"
-              fontSize={fontSize2}
-              fontWeight="600"
+            </span>
+            <span
+              style={{
+                color: '#ffffff',
+                fontSize: `${Math.min(11, width / 10)}px`,
+                fontWeight: 600,
+                lineHeight: 1.2,
+                textShadow: '0 1px 4px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.7)',
+              }}
             >
-              {valueText}
-            </text>
-          </>
-        );
-      })()}
+              {formatValue(value)}
+            </span>
+          </div>
+        </foreignObject>
+      )}
     </g>
   );
 };
