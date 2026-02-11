@@ -28,6 +28,8 @@ import confetti from "canvas-confetti";
 interface WorkflowConfig {
   id: string;
   title: { es: string; en: string };
+  description: { es: string; en: string };
+  hint: { es: string; en: string };
   icon: React.ElementType;
   path: string;
   color: string;
@@ -39,6 +41,8 @@ const WORKFLOW_CONFIGS: WorkflowConfig[] = [
   {
     id: 'expense-capture',
     title: { es: 'Gastos', en: 'Expenses' },
+    description: { es: 'Captura y categoriza tus gastos', en: 'Capture and categorize expenses' },
+    hint: { es: 'Revisa gastos sin categoría o pendientes de aprobación', en: 'Review uncategorized or pending expenses' },
     icon: Camera,
     path: '/expenses',
     color: 'text-blue-600',
@@ -48,6 +52,8 @@ const WORKFLOW_CONFIGS: WorkflowConfig[] = [
   {
     id: 'client-billing',
     title: { es: 'Clientes', en: 'Clients' },
+    description: { es: 'Gestiona clientes y facturación', en: 'Manage clients and billing' },
+    hint: { es: 'Asigna gastos a clientes para reportes y cobros', en: 'Assign expenses to clients for reports' },
     icon: Users,
     path: '/clients',
     color: 'text-purple-600',
@@ -57,6 +63,8 @@ const WORKFLOW_CONFIGS: WorkflowConfig[] = [
   {
     id: 'tax-preparation',
     title: { es: 'Impuestos', en: 'Taxes' },
+    description: { es: 'Prepara tu declaración fiscal', en: 'Prepare your tax filing' },
+    hint: { es: 'Clasifica gastos como deducibles para CRA/SII', en: 'Classify expenses as deductible for tax' },
     icon: Calculator,
     path: '/dashboard?tab=tax',
     color: 'text-emerald-600',
@@ -66,6 +74,8 @@ const WORKFLOW_CONFIGS: WorkflowConfig[] = [
   {
     id: 'bank-reconciliation',
     title: { es: 'Banco', en: 'Banking' },
+    description: { es: 'Concilia transacciones bancarias', en: 'Reconcile bank transactions' },
+    hint: { es: 'Importa estados de cuenta y empareja con gastos', en: 'Import statements and match with expenses' },
     icon: Building2,
     path: '/banking',
     color: 'text-indigo-600',
@@ -75,6 +85,8 @@ const WORKFLOW_CONFIGS: WorkflowConfig[] = [
   {
     id: 'wealth-building',
     title: { es: 'Riqueza', en: 'Wealth' },
+    description: { es: 'Haz crecer tu patrimonio neto', en: 'Grow your net worth' },
+    hint: { es: 'Registra activos, pasivos y metas de inversión', en: 'Track assets, liabilities and goals' },
     icon: PiggyBank,
     path: '/net-worth',
     color: 'text-amber-600',
@@ -286,8 +298,8 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
               </h3>
               <p className="text-[10px] text-muted-foreground">
                 {language === 'es' 
-                  ? `${completedWorkflows}/${workflows.length} completados`
-                  : `${completedWorkflows}/${workflows.length} complete`
+                  ? `${completedWorkflows}/${workflows.length} completados · Toca cada área para avanzar`
+                  : `${completedWorkflows}/${workflows.length} complete · Tap each area to progress`
                 }
               </p>
             </div>
@@ -392,7 +404,18 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
                       </span>
                     </div>
                   </div>
+                  <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                    {progressPercent === 100 
+                      ? (language === 'es' ? '✓ Completado' : '✓ Complete')
+                      : config.description[language]
+                    }
+                  </p>
                   <Progress value={progressPercent} className="h-1 mt-1" />
+                  {actionItems > 0 && progressPercent < 100 && (
+                    <p className="text-[9px] text-primary/70 mt-0.5 truncate italic">
+                      💡 {config.hint[language]}
+                    </p>
+                  )}
                 </div>
                 <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
