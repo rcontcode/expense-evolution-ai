@@ -269,7 +269,7 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
 
   return (
     <Card className={cn(
-      "overflow-hidden border-2",
+      "overflow-hidden border-2 h-full flex flex-col",
       "bg-gradient-to-br from-background via-muted/20 to-background",
       className
     )}>
@@ -333,7 +333,7 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
         </div>
       </div>
 
-      <CardContent className="p-4">
+      <CardContent className="p-4 flex-1 flex flex-col">
         {/* Celebration banner */}
         {showCelebration && (
           <div className="mb-3 p-3 rounded-xl bg-gradient-to-r from-success/20 via-primary/20 to-warning/20 border-2 border-success/40 animate-fade-in">
@@ -361,31 +361,45 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
           ))}
         </div>
 
-        {/* Quick insight */}
-        {totalActionItems > 0 && (
-          <div className="mt-3 p-2.5 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20">
-            <div className="flex items-center justify-between">
+        {/* Quick insight or motivational fill */}
+        <div className="mt-auto pt-3">
+          {totalActionItems > 0 ? (
+            <div className="p-2.5 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  <p className="text-xs">
+                    {language === 'es' 
+                      ? `Tienes ${totalActionItems} items que requieren atención`
+                      : `You have ${totalActionItems} items requiring attention`
+                    }
+                  </p>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-7 text-xs"
+                  onClick={() => navigate('/expenses?incomplete=true')}
+                >
+                  {language === 'es' ? 'Ver' : 'View'}
+                  <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="p-2.5 rounded-lg bg-gradient-to-r from-success/5 to-success/10 border border-success/20">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                <p className="text-xs">
+                <CheckCircle2 className="h-4 w-4 text-success" />
+                <p className="text-xs text-success font-medium">
                   {language === 'es' 
-                    ? `Tienes ${totalActionItems} items que requieren atención`
-                    : `You have ${totalActionItems} items requiring attention`
+                    ? '¡Todo al día! No hay acciones pendientes.'
+                    : 'All caught up! No pending actions.'
                   }
                 </p>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-7 text-xs"
-                onClick={() => navigate('/expenses?incomplete=true')}
-              >
-                {language === 'es' ? 'Ver' : 'View'}
-                <ArrowRight className="h-3 w-3 ml-1" />
-              </Button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </CardContent>
     </Card>
   );
