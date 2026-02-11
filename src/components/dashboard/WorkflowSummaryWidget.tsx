@@ -58,7 +58,7 @@ const WORKFLOW_CONFIGS: WorkflowConfig[] = [
     id: 'tax-preparation',
     title: { es: 'Impuestos', en: 'Taxes' },
     icon: Calculator,
-    path: '/dashboard',
+    path: '/dashboard?tab=tax',
     color: 'text-emerald-600',
     bgColor: 'bg-emerald-100 dark:bg-emerald-900/40',
     borderColor: 'border-emerald-300 dark:border-emerald-700'
@@ -67,7 +67,7 @@ const WORKFLOW_CONFIGS: WorkflowConfig[] = [
     id: 'bank-reconciliation',
     title: { es: 'Banco', en: 'Banking' },
     icon: Building2,
-    path: '/reconciliation',
+    path: '/banking',
     color: 'text-indigo-600',
     bgColor: 'bg-indigo-100 dark:bg-indigo-900/40',
     borderColor: 'border-indigo-300 dark:border-indigo-700'
