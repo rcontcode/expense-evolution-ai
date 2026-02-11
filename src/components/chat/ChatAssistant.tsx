@@ -1166,6 +1166,9 @@ export const ChatAssistant: React.FC = () => {
     sendMessage(question);
   };
 
+  // Combined speaking state - reflects BOTH native TTS and ElevenLabs
+  const isAnySpeaking = isSpeaking || elevenLabsTTS.isSpeaking;
+
   // UNIFIED STOP FUNCTION - Stops ALL voice activity
   const stopAllVoiceActivity = useCallback(() => {
     console.log('[Voice] Stopping ALL voice activity');
@@ -1184,7 +1187,7 @@ export const ChatAssistant: React.FC = () => {
     audioPlayback.stop();
     elevenLabsTTS.stop();
     
-    if (isSpeaking) {
+    if (isAnySpeaking) {
       stopSpeaking();
     }
     toggleListening();
@@ -1210,7 +1213,7 @@ export const ChatAssistant: React.FC = () => {
           toggleListening();
         }}
         isListening={isListening}
-        isSpeaking={isSpeaking}
+        isSpeaking={isAnySpeaking}
       />
 
       {/* Floating Voice Indicator removed - Push-to-Talk only */}
@@ -1224,7 +1227,7 @@ export const ChatAssistant: React.FC = () => {
             "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
             "bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500",
             "transition-all duration-300 hover:scale-110",
-            (isOpen || isMinimized || isBubbleMode || isListening || isSpeaking) && "hidden"
+            (isOpen || isMinimized || isBubbleMode || isListening || isAnySpeaking) && "hidden"
           )}
           size="icon"
         >
@@ -1237,7 +1240,7 @@ export const ChatAssistant: React.FC = () => {
         {isBubbleMode && (
           <MinimizedAssistantBubble
             onExpand={expandFromBubble}
-            isSpeaking={isSpeaking}
+            isSpeaking={isAnySpeaking}
             isListening={isListening}
             isTutorialActive={!!activeTutorial}
             onStopSpeaking={stopAllVoiceActivity}
@@ -1251,7 +1254,7 @@ export const ChatAssistant: React.FC = () => {
         {isMinimized && !isBubbleMode && (
           <MinimizedAssistant
             onExpand={() => setIsMinimized(false)}
-            isSpeaking={isSpeaking}
+            isSpeaking={isAnySpeaking}
             isListening={isListening}
             isContinuousMode={false}
             onStopSpeaking={stopAllVoiceActivity}
@@ -1276,9 +1279,9 @@ export const ChatAssistant: React.FC = () => {
             <div className="flex items-center gap-3">
               <PhoenixLogo 
                 variant="mini" 
-                state={isSpeaking ? "rebirth" : "auto"} 
-                showEffects={isSpeaking}
-                className={cn(isSpeaking && "animate-pulse")}
+                state={isAnySpeaking ? "rebirth" : "auto"} 
+                showEffects={isAnySpeaking}
+                className={cn(isAnySpeaking && "animate-pulse")}
               />
               <div>
                 <div className="flex items-center gap-2">
@@ -1295,7 +1298,7 @@ export const ChatAssistant: React.FC = () => {
                     ? (language === 'es' ? '🤔 Esperando tu elección...' : '🤔 Waiting for your choice...')
                     : isListening 
                       ? (language === 'es' ? '🎤 Escuchando...' : '🎤 Listening...')
-                      : isSpeaking 
+                      : isAnySpeaking 
                         ? (language === 'es' ? '🔊 Hablando...' : '🔊 Speaking...')
                         : (language === 'es' ? `Hola ${userName}, ¿en qué te ayudo?` : `Hi ${userName}, how can I help?`)
                   }
@@ -1343,7 +1346,7 @@ export const ChatAssistant: React.FC = () => {
               )}
               
               {/* Stop button - Only show when speaking */}
-              {isVoiceSupported && isSpeaking && (
+              {isVoiceSupported && isAnySpeaking && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button 
@@ -1352,7 +1355,7 @@ export const ChatAssistant: React.FC = () => {
                       onClick={stopAllVoiceActivity}
                       className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-500/10"
                     >
-                      <Square className={cn("h-3.5 w-3.5", isSpeaking && "animate-pulse")} />
+                      <Square className={cn("h-3.5 w-3.5", isAnySpeaking && "animate-pulse")} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -1621,11 +1624,11 @@ export const ChatAssistant: React.FC = () => {
           </ScrollArea>
 
           {/* Karaoke Text Display - shows when speaking with sentence highlighting */}
-          {isSpeaking && currentSpeakingText && (
+          {isAnySpeaking && currentSpeakingText && (
             <KaraokeText
               text={currentSpeakingText}
               currentSentenceIndex={currentSentenceIndex}
-              isPlaying={isSpeaking}
+              isPlaying={isAnySpeaking}
               isPaused={isSpeechPaused}
               onPause={pauseSpeech}
               onResume={resumeSpeech}
@@ -1635,7 +1638,7 @@ export const ChatAssistant: React.FC = () => {
           )}
 
           {/* Audio Playback Controls - Spotify style */}
-          {(audioPlayback.isPlaying || audioPlayback.isPaused) && !isSpeaking && (
+          {(audioPlayback.isPlaying || audioPlayback.isPaused) && !isAnySpeaking && (
             <div className="px-4 py-3 border-t bg-muted/30">
               <div className="flex flex-col gap-2">
                 {/* Progress bar */}
@@ -1714,27 +1717,27 @@ export const ChatAssistant: React.FC = () => {
           {isListening && (
             <div className={cn(
               "px-4 py-3 border-t",
-              isSpeaking ? "bg-primary/10" : "bg-red-500/10"
+              isAnySpeaking ? "bg-primary/10" : "bg-red-500/10"
             )}>
               <div className="flex items-center gap-3">
                 <AudioLevelIndicator 
-                  isListening={isListening && !isSpeaking} 
+                  isListening={isListening && !isAnySpeaking} 
                   variant="bars"
                   className="w-8"
                 />
                 <span className={cn(
                   "text-sm font-medium flex-1",
-                  isSpeaking ? "text-primary" : "text-red-600 dark:text-red-400"
+                  isAnySpeaking ? "text-primary" : "text-red-600 dark:text-red-400"
                 )}>
                   {isProcessingVoice 
                     ? (language === 'es' ? '⏳ Procesando...' : '⏳ Processing...')
-                    : isSpeaking 
+                    : isAnySpeaking 
                       ? (language === 'es' ? '🔊 Hablando...' : '🔊 Speaking...')
                       : (language === 'es' ? 'Grabando' : 'Recording')
                   }: {Math.floor(recordingDuration / 60)}:{(recordingDuration % 60).toString().padStart(2, '0')}
                 </span>
                 <Button
-                  variant={isSpeaking ? "secondary" : "destructive"}
+                  variant={isAnySpeaking ? "secondary" : "destructive"}
                   size="sm"
                   onClick={stopAllVoiceActivity}
                   className="h-8"
@@ -1878,7 +1881,7 @@ export const ChatAssistant: React.FC = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={
-                  isSpeaking
+                  isAnySpeaking
                     ? (language === 'es' ? 'El asistente está hablando...' : 'Assistant is speaking...')
                     : isListening 
                       ? (language === 'es' ? 'Escuchando...' : 'Listening...')
@@ -1888,7 +1891,7 @@ export const ChatAssistant: React.FC = () => {
                 className={cn(
                   "flex-1",
                   isListening && "border-red-500 bg-red-50 dark:bg-red-950/20",
-                  isSpeaking && "border-primary bg-primary/5"
+                  isAnySpeaking && "border-primary bg-primary/5"
                 )}
               />
               <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
