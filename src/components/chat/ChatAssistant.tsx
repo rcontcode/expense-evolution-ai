@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
@@ -1315,21 +1316,28 @@ export const ChatAssistant: React.FC = () => {
               
               {/* Voice Settings Popover - Full voice configuration */}
               {isVoiceSupported && (
-                <Popover>
-                  <PopoverTrigger asChild>
+                <Sheet>
+                  <SheetTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-7 w-7">
                       <Settings className="h-3.5 w-3.5" />
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-96 max-h-[70vh] overflow-y-auto" align="end" sideOffset={8}>
-                    <VoiceSettingsPanel
-                      language={language as 'es' | 'en'}
-                      autoSpeak={autoSpeak}
-                      onAutoSpeakChange={setAutoSpeak}
-                      compact
-                    />
-                  </PopoverContent>
-                </Popover>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-[400px] sm:w-[440px] overflow-y-auto">
+                    <SheetHeader>
+                      <SheetTitle className="flex items-center gap-2">
+                        <Settings className="h-4 w-4 text-primary" />
+                        {language === 'es' ? 'Configuración de Voz' : 'Voice Settings'}
+                      </SheetTitle>
+                    </SheetHeader>
+                    <div className="mt-4">
+                      <VoiceSettingsPanel
+                        language={language as 'es' | 'en'}
+                        autoSpeak={autoSpeak}
+                        onAutoSpeakChange={setAutoSpeak}
+                      />
+                    </div>
+                  </SheetContent>
+                </Sheet>
               )}
               
               {/* Stop button - Only show when speaking */}

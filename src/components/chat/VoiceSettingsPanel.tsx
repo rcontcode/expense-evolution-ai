@@ -141,10 +141,13 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
 
   return (
     <div className={cn("space-y-4", compact && "space-y-3")}>
-      <h4 className="font-semibold text-sm flex items-center gap-2">
-        <Speaker className="h-4 w-4 text-primary" />
-        {language === 'es' ? 'Configuración de Voz' : 'Voice Settings'}
-      </h4>
+      {!compact && null /* Title handled by parent Sheet */}
+      {compact && (
+        <h4 className="font-semibold text-sm flex items-center gap-2">
+          <Speaker className="h-4 w-4 text-primary" />
+          {language === 'es' ? 'Configuración de Voz' : 'Voice Settings'}
+        </h4>
+      )}
 
       {/* Basic Settings */}
       <div className="space-y-3 pb-3 border-b">
@@ -312,7 +315,7 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
                   : 'No voices available for these filters'}
               </div>
             ) : (
-              <ScrollArea className="h-[280px] pr-2">
+              <ScrollArea className={cn(compact ? "h-[280px]" : "h-[400px]", "pr-2")}>
                 <div className="space-y-1.5">
                   {filteredVoices.map((voice) => {
                     const isSelected = currentVoiceId === voice.id;
@@ -388,7 +391,7 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
                   : 'No native voices available for this language'}
               </div>
             ) : (
-              <ScrollArea className="h-[180px] pr-2">
+              <ScrollArea className={cn(compact ? "h-[180px]" : "h-[300px]", "pr-2")}>
                 <div className="space-y-1.5">
                   {nativeVoices.map((voice) => {
                     const isSelected = voicePrefs.selectedVoiceName === voice.name;
