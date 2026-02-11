@@ -239,23 +239,71 @@ export function ProfileExtenderDialog({
   const upsertLifeProfile = useUpsertLifeProfile();
   const markSectionComplete = useMarkSectionComplete();
   
-  // Voice transcript handler - match spoken words to options
+  // Voice transcript handler - match spoken words to options with fuzzy matching
   const handleVoiceTranscript = useCallback((transcript: string) => {
     if (!currentQuestion?.options) return;
     
-    const lowerTranscript = transcript.toLowerCase();
+    const lower = transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     
-    // Find matching option
-    const matchedOption = currentQuestion.options.find(opt => 
-      lowerTranscript.includes(opt.label.es.toLowerCase()) ||
-      lowerTranscript.includes(opt.label.en.toLowerCase())
-    );
+    // Negation patterns → select "none"/"no" options
+    const negationPatterns = [
+      'no tengo', 'ninguno', 'ninguna', 'nada', 'sin ', 'no hay',
+      'don\'t have', 'no pets', 'none', 'i have no', 'not yet',
+      'no no', 'ni perros', 'ni gatos',
+    ];
+    const isNegation = negationPatterns.some(p => lower.includes(p));
+    
+    if (isNegation) {
+      const noneOption = currentQuestion.options.find(opt =>
+        ['none', 'no', 'false'].includes(opt.value) ||
+        opt.id === 'none' || opt.id === 'no'
+      );
+      if (noneOption) {
+        handleOptionSelectRef.current(noneOption.value);
+        setInterimText('');
+        return;
+      }
+    }
+    
+    // Keyword-based fuzzy matching for each option
+    const keywordMap: Record<string, string[]> = {
+      dog: ['perro', 'perrito', 'perrita', 'dog', 'puppy', 'can'],
+      cat: ['gato', 'gatito', 'gatita', 'cat', 'kitten', 'michi'],
+      other: ['otra', 'otro', 'other', 'hamster', 'pajaro', 'pez', 'conejo', 'tortuga', 'loro'],
+      yes: ['si', 'sip', 'yes', 'claro', 'por supuesto', 'obvio', 'afirmativo'],
+      no: ['no', 'nah', 'nel', 'nope'],
+      planning: ['planes', 'planning', 'futuro', 'algun dia', 'pensando'],
+    };
+    
+    // Try keyword match first
+    for (const opt of currentQuestion.options) {
+      const keywords = keywordMap[opt.id] || [];
+      if (keywords.some(kw => lower.includes(kw))) {
+        handleOptionSelectRef.current(opt.value);
+        setInterimText('');
+        return;
+      }
+    }
+    
+    // Fallback: exact label match
+    const matchedOption = currentQuestion.options.find(opt => {
+      const esLabel = opt.label.es.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s]/g, '');
+      const enLabel = opt.label.en.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s]/g, '');
+      return lower.includes(esLabel) || lower.includes(enLabel);
+    });
     
     if (matchedOption) {
       handleOptionSelectRef.current(matchedOption.value);
       setInterimText('');
+    } else {
+      // Show feedback that voice was heard but not understood
+      setInterimText(
+        lang === 'es'
+          ? `"${transcript}" — Toca una opción o intenta de nuevo`
+          : `"${transcript}" — Tap an option or try again`
+      );
     }
-  }, [currentQuestion]);
+  }, [currentQuestion, lang]);
   
   // Voice setup
   const selectedPremiumVoiceId = voicePrefs.getPremiumVoiceId(lang) || undefined;
