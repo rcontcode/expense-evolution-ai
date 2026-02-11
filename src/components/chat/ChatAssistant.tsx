@@ -1261,12 +1261,12 @@ export const ChatAssistant: React.FC = () => {
       {/* Chat Window */}
       {isOpen && !isMinimized && (
         <div className={cn(
-          "fixed bottom-6 right-6 z-50 w-[420px] max-w-[calc(100vw-48px)]",
+          "fixed bottom-6 right-6 z-50 w-[460px] max-w-[calc(100vw-48px)]",
           "bg-background border border-border rounded-2xl shadow-2xl",
           "flex flex-col overflow-hidden",
           "animate-in slide-in-from-bottom-4 fade-in duration-300"
         )}
-        style={{ height: 'min(650px, calc(100vh - 100px))' }}
+        style={{ height: 'min(750px, calc(100vh - 80px))' }}
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b bg-primary/5">
@@ -1321,7 +1321,7 @@ export const ChatAssistant: React.FC = () => {
                       <Settings className="h-3.5 w-3.5" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-80" align="end" sideOffset={8}>
+                  <PopoverContent className="w-96 max-h-[70vh] overflow-y-auto" align="end" sideOffset={8}>
                     <VoiceSettingsPanel
                       language={language as 'es' | 'en'}
                       autoSpeak={autoSpeak}

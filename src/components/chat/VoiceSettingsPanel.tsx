@@ -312,7 +312,7 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
                   : 'No voices available for these filters'}
               </div>
             ) : (
-              <ScrollArea className="h-[180px] pr-2">
+              <ScrollArea className="h-[280px] pr-2">
                 <div className="space-y-1.5">
                   {filteredVoices.map((voice) => {
                     const isSelected = currentVoiceId === voice.id;

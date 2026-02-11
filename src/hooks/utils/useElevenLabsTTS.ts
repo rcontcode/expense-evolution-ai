@@ -176,9 +176,15 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
     cleanupAudio();
 
     // Check if user can use premium voice
+    // Also check isPlanLoading - if still loading, assume eligible to avoid race condition
     const canUsePremium = canUsePremiumVoice();
     
-    if (!canUsePremium || !user) {
+    if (!user) {
+      return { success: false, error: 'not_eligible' };
+    }
+    
+    if (!canUsePremium && !isPlanLoading) {
+      console.log('[ElevenLabs] Not eligible for premium voice (canUsePremium=false, isPlanLoading=false)');
       return { success: false, error: 'not_eligible' };
     }
 
@@ -270,7 +276,7 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
       setIsLoading(false);
       return { success: false, error: 'network_error' };
     }
-  }, [user, canUsePremiumVoice, options, cleanupAudio, getVoiceId, queryClient]);
+  }, [user, canUsePremiumVoice, isPlanLoading, options, cleanupAudio, getVoiceId, queryClient]);
 
   const stop = useCallback(() => {
     cleanupAudio();
