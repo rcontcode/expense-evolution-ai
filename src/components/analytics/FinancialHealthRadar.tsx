@@ -276,18 +276,18 @@ export function FinancialHealthRadar() {
   );
 
   const getScoreLevel = (score: number) => {
-    if (score >= 80) return { label: t.levels.excellent, color: 'bg-green-500', textColor: 'text-green-500' };
-    if (score >= 60) return { label: t.levels.good, color: 'bg-blue-500', textColor: 'text-blue-500' };
-    if (score >= 40) return { label: t.levels.fair, color: 'bg-yellow-500', textColor: 'text-yellow-500' };
-    if (score >= 20) return { label: t.levels.poor, color: 'bg-orange-500', textColor: 'text-orange-500' };
-    return { label: t.levels.critical, color: 'bg-red-500', textColor: 'text-red-500' };
+    if (score >= 80) return { label: t.levels.excellent, color: 'bg-emerald-500', textColor: 'text-emerald-500', barColor: 'bg-emerald-500', glowColor: 'shadow-emerald-500/30' };
+    if (score >= 60) return { label: t.levels.good, color: 'bg-sky-500', textColor: 'text-sky-500', barColor: 'bg-sky-500', glowColor: 'shadow-sky-500/30' };
+    if (score >= 40) return { label: t.levels.fair, color: 'bg-amber-500', textColor: 'text-amber-500', barColor: 'bg-amber-500', glowColor: 'shadow-amber-500/30' };
+    if (score >= 20) return { label: t.levels.poor, color: 'bg-orange-500', textColor: 'text-orange-500', barColor: 'bg-orange-500', glowColor: 'shadow-orange-500/30' };
+    return { label: t.levels.critical, color: 'bg-red-500', textColor: 'text-red-500', barColor: 'bg-red-500', glowColor: 'shadow-red-500/30' };
   };
 
   const overallLevel = getScoreLevel(overallScore);
 
   const getTrendIcon = (score: number) => {
-    if (score >= 60) return <TrendingUp className="h-4 w-4 text-green-500" />;
-    if (score >= 40) return <Minus className="h-4 w-4 text-yellow-500" />;
+    if (score >= 60) return <TrendingUp className="h-4 w-4 text-emerald-500" />;
+    if (score >= 40) return <Minus className="h-4 w-4 text-amber-500" />;
     return <TrendingDown className="h-4 w-4 text-red-500" />;
   };
 
@@ -313,8 +313,16 @@ export function FinancialHealthRadar() {
     return null;
   };
 
+  const overallBg = overallScore >= 80
+    ? 'from-emerald-500 to-teal-500'
+    : overallScore >= 60
+    ? 'from-sky-500 to-blue-500'
+    : overallScore >= 40
+    ? 'from-amber-500 to-yellow-500'
+    : 'from-red-500 to-orange-500';
+
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -323,9 +331,9 @@ export function FinancialHealthRadar() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">{t.overallScore}:</span>
-            <Badge className={`${overallLevel.color} text-lg px-3 py-1`}>
+            <div className={`bg-gradient-to-r ${overallBg} text-white text-lg font-bold px-3 py-0.5 rounded-full shadow-lg`}>
               {overallScore}
-            </Badge>
+            </div>
           </div>
         </div>
         <CardDescription>{t.description}</CardDescription>
@@ -346,12 +354,20 @@ export function FinancialHealthRadar() {
                   domain={[0, 100]} 
                   tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
                 />
+                <defs>
+                  <linearGradient id="radarGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.7} />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
+                  </linearGradient>
+                </defs>
                 <Radar
                   name="Score"
                   dataKey="score"
                   stroke="hsl(var(--primary))"
-                  fill="hsl(var(--primary))"
-                  fillOpacity={0.5}
+                  strokeWidth={2}
+                  fill="url(#radarGradient)"
+                  fillOpacity={1}
+                  dot={{ r: 4, fill: 'hsl(var(--primary))', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
                 />
                 <Tooltip content={<CustomTooltip />} />
               </RadarChart>
@@ -363,7 +379,7 @@ export function FinancialHealthRadar() {
             {radarData.map((dim) => {
               const level = getScoreLevel(dim.score);
               return (
-                <div key={dim.dimension} className="space-y-1">
+                 <div key={dim.dimension} className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">{dim.dimension}</span>
@@ -378,12 +394,18 @@ export function FinancialHealthRadar() {
                     </div>
                     <div className="flex items-center gap-2">
                       {getTrendIcon(dim.score)}
-                      <span className={`text-sm font-semibold ${level.textColor}`}>
+                      <span className={`text-sm font-bold ${level.textColor}`}>
                         {dim.score}
                       </span>
                     </div>
                   </div>
-                  <Progress value={dim.score} className="h-2" />
+                  {/* Custom colored progress bar */}
+                  <div className="h-2.5 rounded-full bg-muted/40 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${level.barColor}`}
+                      style={{ width: `${dim.score}%` }}
+                    />
+                  </div>
                 </div>
               );
             })}
@@ -391,12 +413,12 @@ export function FinancialHealthRadar() {
             {/* Overall Score Summary */}
             <div className="mt-4 pt-4 border-t border-border">
               <div className="flex items-center justify-between">
-                <span className="font-semibold">{t.overallScore}</span>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className={overallLevel.textColor}>
+                <span className="font-semibold text-lg">{t.overallScore}</span>
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className={`${overallLevel.textColor} border-current font-semibold`}>
                     {overallLevel.label}
                   </Badge>
-                  <span className={`text-xl font-bold ${overallLevel.textColor}`}>
+                  <span className={`text-2xl font-black ${overallLevel.textColor}`}>
                     {overallScore}/100
                   </span>
                 </div>
