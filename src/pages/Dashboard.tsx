@@ -85,6 +85,8 @@ const BudgetHistoryChart = lazy(() => import('@/components/dashboard/BudgetHisto
 const CategoryBudgetsCard = lazy(() => import('@/components/dashboard/CategoryBudgetsCard').then(m => ({ default: m.CategoryBudgetsCard })));
 const BudgetAlertsCard = lazy(() => import('@/components/dashboard/BudgetAlertsCard').then(m => ({ default: m.BudgetAlertsCard })));
 const CategoryYearComparison = lazy(() => import('@/components/analytics/CategoryYearComparison').then(m => ({ default: m.CategoryYearComparison })));
+const WorkflowSummaryWidget = lazy(() => import('@/components/dashboard/WorkflowSummaryWidget').then(m => ({ default: m.WorkflowSummaryWidget })));
+const CompletenessCard = lazy(() => import('@/components/dashboard/CompletenessCard').then(m => ({ default: m.CompletenessCard })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -266,12 +268,6 @@ export default function Dashboard() {
           {/* Progressive Onboarding - Mission-based for new users */}
           <ProgressiveOnboarding />
           
-          {/* Profile Completion Nudge - Invite user to share more about themselves */}
-          <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
-          
-          {/* Gamification Widget - Your Financial Adventure */}
-          <DashboardGamificationWidget compact={false} />
-          
           {/* Profile Extender Dialog */}
           <ProfileExtenderDialog
             open={profileExtenderOpen}
@@ -310,6 +306,22 @@ export default function Dashboard() {
               />
             </div>
           </div>
+
+          {/* Workflow Progress + Completeness */}
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Suspense fallback={<Skeleton className="h-[200px]" />}>
+              <WorkflowSummaryWidget />
+            </Suspense>
+            {allExpenses && allExpenses.length > 0 && (
+              <Suspense fallback={<Skeleton className="h-[200px]" />}>
+                <CompletenessCard expenses={allExpenses} isLoading={isLoading} />
+              </Suspense>
+            )}
+          </div>
+
+          {/* Profile Completion Nudge + Gamification (moved below timeline) */}
+          <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
+          <DashboardGamificationWidget compact={true} />
 
           {/* View Mode Toggle + Export (siempre visible) */}
           <div className="flex items-center justify-between gap-4 py-2">
