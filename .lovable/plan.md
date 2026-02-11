@@ -1,165 +1,98 @@
 
-# Plan de Mejoras Adicionales al Onboarding
 
-## Problemas Identificados
+# Plan: Consolidar y Mejorar el Dashboard (Sin Caos)
 
-### 1. Falta Validación en el Formulario Tradicional
-**Gravedad: ALTA**
+## Problema Actual
 
-El botón "Siguiente" en Step 1 del onboarding tradicional NO valida que:
-- ❌ Se haya seleccionado una provincia
-- ❌ Se haya seleccionado al menos un tipo de trabajo
+El Dashboard tiene **6 elementos apilados** antes de llegar al contenido real (Timeline). Esto causa scroll excesivo y fatiga visual. Agregar componentes sin quitar nada empeoraría la situación.
 
-El usuario puede avanzar dejando campos críticos vacíos, lo que causará datos incompletos en la BD.
+## Estrategia: Consolidar + Reintegrar Selectivamente
 
-```typescript
-// Actualmente (línea 570-574):
-{step < 3 ? (
-  <Button onClick={() => setStep(step + 1)} className="ml-auto">
-    {t('onboarding.next')}  // ← SIN VALIDACIÓN
-  </Button>
+### Que SI reintegrar
+
+**WorkflowSummaryWidget** - Muestra progreso de 5 flujos (Gastos, Clientes, Impuestos, Banco, Riqueza) con barras de progreso y estados. Es información unica y accionable que NO existe en ningún otro componente.
+
+**Ubicacion**: Entre el MonthDetailPanel y el ViewModeToggle, justo donde el usuario ya vio sus números y ahora necesita saber "que hacer".
+
+**CompletenessCard** - Solo mostrarlo cuando hay gastos incompletos (condicional). Si todo esta completo, no se muestra. Evita ocupar espacio innecesario.
+
+**Ubicacion**: Junto al WorkflowSummaryWidget en un grid de 2 columnas (solo en vista clasica).
+
+### Que NO reintegrar
+
+**DashboardHero** - El MonthDetailPanel ya muestra Ingresos/Gastos/Balance del mes seleccionado. Agregar DashboardHero seria duplicar la misma informacion. El saludo personalizado ya lo hace InteractiveWelcome.
+
+### Que consolidar (reducir banners)
+
+Actualmente hay 6 banners/widgets antes del Timeline. Se propone:
+
+1. **Mantener**: NextActionBanner (ya es condicional y compacto)
+2. **Mantener**: ProgressiveOnboarding (solo para nuevos usuarios, desaparece)
+3. **Mantener**: BetaReminderBanner (temporal, desaparecera)
+4. **Mover abajo**: DashboardGamificationWidget - moverlo DESPUES del Timeline, no antes. El usuario llega al dashboard para ver numeros, no gamificacion.
+5. **Mover abajo**: ProfileCompletionNudge - moverlo despues del WorkflowSummaryWidget. Es una invitacion, no urgente.
+6. **Condicional**: InteractiveWelcome ya es condicional (solo primera visita) - OK como esta.
+
+## Estructura Propuesta del Dashboard (Desktop, Vista Clasica)
+
+```text
++--------------------------------------------------+
+| BetaReminderBanner (temporal)                     |
+| NextActionBanner (condicional)                    |
+| ProgressiveOnboarding (solo nuevos usuarios)      |
++--------------------------------------------------+
+| InteractiveWelcome (solo primera visita)          |
++--------------------------------------------------+
+| YearTimelineChart    |  MonthDetailPanel          |
++--------------------------------------------------+
+| WorkflowSummaryWidget | CompletenessCard*         |
+| (* solo si hay incompletos, sino full-width)      |
++--------------------------------------------------+
+| ProfileCompletionNudge (movido aqui)              |
+| DashboardGamificationWidget (movido aqui)         |
++--------------------------------------------------+
+| ViewModeToggle + Export                           |
++--------------------------------------------------+
+| OrganizedDashboard / Vista Clasica                |
++--------------------------------------------------+
 ```
 
-### 2. Falta Validación en el Onboarding Conversacional
-**Gravedad: MEDIA**
+## Cambios Tecnicos
 
-Las preguntas dinámicas (province, work_type) no validan si el país fue seleccionado antes. Si por algún bug el país está vacío, las opciones quedan vacías y el usuario se queda atrapado.
+### Archivo: `src/pages/Dashboard.tsx`
 
-### 3. No Hay Feedback Visual de Campos Requeridos
-**Gravedad: MEDIA**
+**1. Agregar imports:**
+- `WorkflowSummaryWidget` (lazy loaded)
+- `CompletenessCard` (lazy loaded)
 
-El usuario no tiene indicación visual de cuáles campos son obligatorios (*) ni mensajes de error cuando intenta avanzar sin completarlos.
+**2. Mover DashboardGamificationWidget y ProfileCompletionNudge:**
+- Sacarlos de arriba del Timeline
+- Colocarlos despues del nuevo bloque de Workflows
 
-### 4. El Campo `nickname` Nunca Se Captura
-**Gravedad: MEDIA**
-
-Aunque el usuario puede elegir "nickname" como preferencia de nombre, **nunca se le pide escribir el nickname**. El flujo actual solo guarda `preferred_name_type = 'nickname'` pero no hay un Input para que escriba su apodo.
-
-### 5. No Se Pregunta el Nombre Completo
-**Gravedad: MEDIA**
-
-Si el usuario viene de signup social (Google), puede que `full_name` esté vacío. El onboarding no pregunta esto y el sistema asume que el email tiene el nombre.
-
----
-
-## Cambios Propuestos
-
-### Archivo 1: `src/pages/Onboarding.tsx`
-
-**A) Agregar validación antes de avanzar al Step 2:**
+**3. Agregar seccion de Workflows entre Timeline y ViewMode:**
 ```typescript
-const canProceedToStep2 = province.trim() !== '' && workTypes.length > 0;
-
-// En el botón "Siguiente":
-<Button 
-  onClick={() => setStep(step + 1)} 
-  disabled={!canProceedToStep2}  // ← NUEVA VALIDACIÓN
-  className="ml-auto"
->
+{/* Workflow Progress + Completeness (Vista Clasica) */}
+<div className="grid gap-4 lg:grid-cols-2">
+  <Suspense fallback={<Skeleton className="h-[200px]" />}>
+    <WorkflowSummaryWidget />
+  </Suspense>
+  {allExpenses && allExpenses.length > 0 && (
+    <Suspense fallback={<Skeleton className="h-[200px]" />}>
+      <CompletenessCard expenses={allExpenses} isLoading={isLoading} />
+    </Suspense>
+  )}
+</div>
 ```
 
-**B) Agregar indicadores visuales de campos requeridos:**
-```typescript
-<Label className="flex items-center gap-2">
-  📍 {language === 'es' ? 'Provincia / Región' : 'Province / Region'}
-  <span className="text-destructive">*</span>  {/* Indicador requerido */}
-</Label>
-```
+**4. CompletenessCard condicional:**
+- Solo renderizar si `allExpenses?.length > 0`
+- Si no hay gastos incompletos, el WorkflowSummaryWidget ocupa full width
 
-**C) Agregar mensaje de error si no se seleccionaron campos:**
-```typescript
-{!province && step === 1 && (
-  <p className="text-xs text-destructive">
-    {language === 'es' ? 'Por favor selecciona una provincia' : 'Please select a province'}
-  </p>
-)}
-```
+### Resultado
 
----
+- **Menos scroll** antes del contenido real (2 widgets movidos abajo)
+- **Informacion accionable** (WorkflowSummaryWidget) en posicion estrategica
+- **Sin redundancia** (DashboardHero NO se agrega)
+- **Sin caos** (CompletenessCard es condicional)
+- **Orden logico**: Numeros (Timeline) → Que hacer (Workflows) → Motivacion (Gamification) → Herramientas (Control Center)
 
-### Archivo 2: `src/hooks/utils/useConversationalOnboarding.ts`
-
-**A) Agregar pregunta de nombre/nickname después de la preferencia:**
-```typescript
-{
-  id: 'user_name_input',
-  question: {
-    es: '¿Cómo te llamo entonces?',
-    en: 'What should I call you then?'
-  },
-  phoenixIntro: {
-    es: '¡Me encanta! 💫 Escríbeme tu nombre o apodo:',
-    en: 'Love it! 💫 Write your name or nickname:'
-  },
-  options: [], // No options - this is a text input question
-  field: 'display_name',
-  table: 'profile',
-  stage: 'essential',
-  allowCustom: true, // Permite input de texto libre
-  isTextInput: true, // Nueva bandera para indicar que es input de texto
-}
-```
-
-**B) Guardar el nombre ingresado correctamente:**
-```typescript
-// En saveProfile():
-const displayName = responses.display_name as string;
-const namePreference = responses.name_preference as string;
-
-if (displayName) {
-  if (namePreference === 'nickname') {
-    profileUpdate.nickname = displayName;
-  } else {
-    profileUpdate.full_name = displayName;
-  }
-}
-```
-
----
-
-### Archivo 3: `src/components/onboarding/ConversationalOnboarding.tsx`
-
-**A) Agregar soporte para preguntas de texto libre:**
-```typescript
-{/* Text Input for name/nickname */}
-{currentQuestion.isTextInput && (
-  <div className="space-y-2">
-    <Input
-      value={customTextValue}
-      onChange={(e) => setCustomTextValue(e.target.value)}
-      placeholder={lang === 'es' ? 'Escribe aquí...' : 'Type here...'}
-      className="text-lg"
-      autoFocus
-    />
-    <Button 
-      onClick={() => {
-        selectOption(customTextValue);
-        nextStep();
-      }}
-      disabled={!customTextValue.trim()}
-    >
-      {lang === 'es' ? 'Continuar' : 'Continue'}
-    </Button>
-  </div>
-)}
-```
-
----
-
-## Archivos a Modificar
-
-| Archivo | Cambios |
-|---------|---------|
-| `src/pages/Onboarding.tsx` | Agregar validación de campos obligatorios, indicadores visuales (*), mensajes de error |
-| `src/hooks/utils/useConversationalOnboarding.ts` | Agregar pregunta de nombre/nickname, guardar en campo correcto (nickname o full_name) |
-| `src/components/onboarding/ConversationalOnboarding.tsx` | Agregar soporte para preguntas tipo `isTextInput` con Input de texto libre |
-
----
-
-## Resultado Esperado
-
-1. **Formulario tradicional** no permite avanzar sin provincia y work type
-2. **Onboarding conversacional** captura el nombre real/apodo del usuario
-3. **Indicadores visuales** claros de campos requeridos
-4. **Nombre guardado** en el campo correcto (`full_name` o `nickname`)
-5. **UX mejorada** con feedback inmediato al usuario
