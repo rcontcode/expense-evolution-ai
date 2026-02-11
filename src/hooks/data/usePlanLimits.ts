@@ -377,6 +377,7 @@ export function usePlanLimits() {
   };
 
   const canUsePremiumVoice = () => {
+    if (isGodMode) return true;
     const limit = limits.voice_minutes_per_month;
     if (limit === Infinity) return true;
     return currentUsage.voice_minutes_used < limit;
