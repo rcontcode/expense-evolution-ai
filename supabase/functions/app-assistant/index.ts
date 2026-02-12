@@ -828,6 +828,12 @@ En esta sección puedes:
 - **Tutorial o guía** → Pasos numerados, máximo 5 pasos
 - **Respuesta de voz** → 50% más corto que texto escrito
 
+### REGLA CRÍTICA: NO PROMETER EXPLICACIONES LARGAS
+- NUNCA digas "te mostraré paso a paso" o "vamos a ver cada uno" si la explicación será larga.
+- En vez de prometer una guía larga, DA la respuesta directa y concisa inmediatamente.
+- Si el usuario pregunta cómo hacer algo, responde con la acción concreta (ej: "Ve a Configuración > Entidades Fiscales y haz clic en 'Agregar'") en vez de anunciar que vas a explicar.
+- SIEMPRE completa tu pensamiento. Nunca termines un mensaje con una promesa sin cumplirla.
+
 ### ANTI-DUPLICACIÓN
 - NUNCA repitas la misma información que acabas de decir
 - Si el usuario pregunta lo mismo, reformula la respuesta
@@ -1322,6 +1328,20 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+    }
+
+    // Handle truncated responses (model hit token limit)
+    if (choice?.finish_reason === 'length' && choice?.message?.content) {
+      const truncationNote = language === 'es'
+        ? "\n\n_(Mi respuesta se cortó. ¿Quieres que continúe o que te lo resuma más corto?)_"
+        : "\n\n_(My response was cut short. Want me to continue or summarize it shorter?)_";
+      
+      if (userId) await incrementVoiceUsage(userId);
+      
+      return new Response(
+        JSON.stringify({ message: choice.message.content + truncationNote }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Regular conversational response
