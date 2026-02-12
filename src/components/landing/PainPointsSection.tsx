@@ -135,7 +135,7 @@ const getCategories = (language: string) => [
       { before: '🎲 Decisiones por intuición', after: '🧠 Analytics y predicciones Smart' },
       { before: '❓ Net worth desconocido', after: '📊 Tracking de patrimonio' },
       { before: '📚 Sin educación financiera', after: '🎓 Mentoría integrada' },
-      { before: '☁️ Metas abstractas', after: '🔥 FIRE calculator' },
+      { before: '☁️ Metas abstractas', after: '🔥 Calculadora de libertad financiera' },
       { before: '😔 Hábitos inconsistentes', after: '🎮 Gamificación motivadora' },
     ] : [
       { before: '🌫️ No financial clarity', after: '🎯 Dashboard with insights' },

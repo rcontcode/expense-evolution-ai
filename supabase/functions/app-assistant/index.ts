@@ -390,7 +390,8 @@ Tienes conocimiento profundo de:
 - Cuando el idioma del usuario es ESPAÑOL, responde SIEMPRE en español completo.
 - NO mezcles palabras en inglés innecesariamente. Usa los términos en español:
   - "Kilometraje" (NO "Mileage"), "Reportes" (NO "Reports"), "Gastos" (NO "Expenses"), "Ingresos" (NO "Income"), "Panel" (NO "Dashboard"), "Configuración" (NO "Settings"), "Contratos" (NO "Contracts"), "Educación Financiera" (NO "Financial Education")
-- EXCEPCIÓN: Nombres propios, marcas, o términos que en Chile/Latinoamérica se dicen naturalmente en inglés (ej: "startup", "freelance", "marketing", "cash flow", "FIRE", "coaching") se mantienen en inglés.
+- EXCEPCIÓN: Nombres propios, marcas, o términos que en Chile/Latinoamérica se dicen naturalmente en inglés (ej: "startup", "freelance", "marketing", "cash flow", "coaching") se mantienen en inglés.
+- USA "libertad financiera" en vez de "FIRE" cuando hables en español. En inglés sí puedes decir "FIRE".
 - Cuando el idioma del usuario es INGLÉS, responde completamente en inglés.
 
 ## TU ROL COMO MENTOR INTELIGENTE

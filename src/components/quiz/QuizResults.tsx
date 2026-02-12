@@ -129,7 +129,7 @@ const getPersonalizedMessage = (
           default: `${firstName}, ¡felicitaciones por tu disciplina financiera! EvoFinz no es para "arreglarte" – es para **potenciarte**. Automatiza las tareas repetitivas que ya haces bien y libera tu tiempo para lo que realmente importa.`,
         },
         employee: {
-          canada: `${firstName}, ¡tienes una base financiera sólida! Como empleado en Canadá, EvoFinz te ayuda a descubrir **deducciones ocultas** (home office, educación, gastos médicos) que podrías estar perdiendo. Además, nuestro calculador FIRE te muestra exactamente cuándo podrás ser financieramente libre.`,
+          canada: `${firstName}, ¡tienes una base financiera sólida! Como empleado en Canadá, EvoFinz te ayuda a descubrir **deducciones ocultas** (home office, educación, gastos médicos) que podrías estar perdiendo. Además, nuestra calculadora de libertad financiera te muestra exactamente cuándo podrás ser financieramente libre.`,
           chile: `${firstName}, ¡excelente control! Como empleado en Chile, EvoFinz te ayuda a **maximizar tu APV**, optimizar gastos de salud y educación, y visualizar tu camino hacia la libertad financiera.`,
           default: `${firstName}, ¡admirable disciplina! Para alguien con tu nivel de control, EvoFinz es el **copiloto perfecto**: tracking automático de patrimonio neto, proyecciones de jubilación, y análisis de tendencias.`,
         },
@@ -414,7 +414,7 @@ export const QuizResults = ({ result, onRetake, referralInfo, onNavigateToAuth }
         { icon: Zap, text: "Captura gastos con foto, voz o texto" },
         { icon: TrendingUp, text: "Presupuestos inteligentes con alertas" },
         { icon: Target, text: "Optimizador de impuestos Canadá/Chile" },
-        { icon: Flame, text: "Calculador FIRE para libertad financiera" },
+        { icon: Flame, text: "Calculadora de libertad financiera" },
       ],
       whyEvofinz: "¿Por qué EvoFinz para ti?",
       whyItems: [

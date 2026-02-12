@@ -31,8 +31,8 @@ import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 const FIRE_TOOLTIP = {
   es: {
-    title: 'Calculadora FIRE',
-    description: 'Financial Independence, Retire Early - Calcula cuánto necesitas ahorrar para alcanzar la independencia financiera y retirarte temprano.',
+    title: 'Calculadora de Libertad Financiera',
+    description: 'Calcula cuánto necesitas ahorrar para alcanzar la independencia financiera y retirarte anticipadamente.',
     howToUse: 'Ajusta los parámetros según tu situación y ve las proyecciones en tiempo real.',
   },
   en: {
@@ -73,7 +73,7 @@ export function FIRECalculatorCard() {
             </div>
             <div>
             <CardTitle className="text-lg flex items-center gap-2">
-                Calculadora FIRE
+                Libertad Financiera
                 <InfoTooltip content={FIRE_TOOLTIP} />
               </CardTitle>
               <CardDescription>Planifica tu independencia financiera</CardDescription>
@@ -103,12 +103,12 @@ export function FIRECalculatorCard() {
                   <AlertCircle className="h-5 w-5 text-amber-500" />
                 )}
                 <span className="font-medium">
-                  {results.onTrack ? '¡Vas por buen camino!' : 'Necesitas ajustar tu plan'}
+                 {results.onTrack ? '¡Vas por buen camino!' : 'Necesitas ajustar tu plan'}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">
                 {results.onTrack 
-                  ? `A tu ritmo actual, alcanzarás FIRE a los ${results.projectedRetirementAge} años.`
+                  ? `A tu ritmo actual, alcanzarás la libertad financiera a los ${results.projectedRetirementAge} años.`
                   : `Necesitas ahorrar ${formatCurrency(results.monthlySavingsNeeded)}/mes para retirarte a los ${inputs.targetRetirementAge}.`
                 }
               </p>
@@ -232,7 +232,7 @@ export function FIRECalculatorCard() {
           <TabsContent value="results" className="space-y-6 mt-4">
             {/* FIRE Number Display */}
             <div className="text-center p-6 bg-gradient-to-br from-orange-500/10 to-red-500/10 rounded-xl border border-orange-500/20">
-              <div className="text-sm text-muted-foreground mb-1">Tu Número FIRE</div>
+              <div className="text-sm text-muted-foreground mb-1">Tu Meta de Libertad Financiera</div>
               <div className="text-4xl font-bold text-orange-500">
                 {formatCurrency(results.fireNumber)}
               </div>
@@ -244,7 +244,7 @@ export function FIRECalculatorCard() {
             {/* Progress Bar */}
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Progreso hacia FIRE</span>
+                <span>Progreso hacia la libertad financiera</span>
                 <span className="font-medium">{results.progressPercentage}%</span>
               </div>
               <Progress value={results.progressPercentage} className="h-3" />
@@ -259,7 +259,7 @@ export function FIRECalculatorCard() {
               <div className="p-4 bg-muted/30 rounded-lg">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                   <Calendar className="h-4 w-4" />
-                  Tiempo hasta FIRE
+                  Tiempo estimado
                 </div>
                 <div className="text-2xl font-semibold">
                   {formatYears(results.yearsToFIRE)}
@@ -287,22 +287,22 @@ export function FIRECalculatorCard() {
             <div className="space-y-3">
               <h4 className="font-medium flex items-center gap-2">
                 <Target className="h-4 w-4" />
-                Variaciones de FIRE
+                Variaciones del plan
               </h4>
               <div className="grid gap-3 md:grid-cols-3">
                 <div className="p-3 border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <Umbrella className="h-4 w-4 text-blue-500" />
-                    <span className="text-sm font-medium">Lean FIRE</span>
+                    <span className="text-sm font-medium">Frugal</span>
                   </div>
                   <div className="text-lg font-semibold">{formatCurrency(results.leanFIRENumber)}</div>
-                  <div className="text-xs text-muted-foreground">50% de gastos, estilo frugal</div>
+                  <div className="text-xs text-muted-foreground">50% de gastos, estilo austero</div>
                 </div>
 
                 <div className="p-3 border rounded-lg border-orange-500/30 bg-orange-500/5">
                   <div className="flex items-center gap-2 mb-2">
                     <Flame className="h-4 w-4 text-orange-500" />
-                    <span className="text-sm font-medium">FIRE Estándar</span>
+                    <span className="text-sm font-medium">Estándar</span>
                   </div>
                   <div className="text-lg font-semibold">{formatCurrency(results.fireNumber)}</div>
                   <div className="text-xs text-muted-foreground">100% de tus gastos actuales</div>
@@ -311,10 +311,10 @@ export function FIRECalculatorCard() {
                 <div className="p-3 border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <Rocket className="h-4 w-4 text-purple-500" />
-                    <span className="text-sm font-medium">Fat FIRE</span>
+                    <span className="text-sm font-medium">Confortable</span>
                   </div>
                   <div className="text-lg font-semibold">{formatCurrency(results.fatFIRENumber)}</div>
-                  <div className="text-xs text-muted-foreground">150% de gastos, vida lujosa</div>
+                  <div className="text-xs text-muted-foreground">150% de gastos, vida holgada</div>
                 </div>
               </div>
             </div>
@@ -323,15 +323,15 @@ export function FIRECalculatorCard() {
             <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Info className="h-4 w-4 text-blue-500" />
-                <span className="font-medium">Coast FIRE</span>
+                <span className="font-medium">Piloto automático</span>
               </div>
               <p className="text-sm text-muted-foreground mb-2">
                 Si alcanzas {formatCurrency(results.coastFIRENumber)} en ahorros, podrías dejar de contribuir 
-                y el interés compuesto te llevará a FIRE a los 65 años.
+                y el interés compuesto te llevará a la meta a los 65 años.
               </p>
               {inputs.currentSavings >= results.coastFIRENumber ? (
                 <Badge variant="default" className="bg-green-500">
-                  ¡Ya alcanzaste Coast FIRE!
+                  ¡Ya puedes ir en piloto automático!
                 </Badge>
               ) : (
                 <Badge variant="secondary">
@@ -442,7 +442,7 @@ export function FIRECalculatorCard() {
             <div className="p-4 bg-muted/30 rounded-lg">
               <h4 className="font-medium mb-2 flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
-                Consejos para acelerar tu FIRE
+                Consejos para acelerar tu libertad financiera
               </h4>
               <ul className="text-sm text-muted-foreground space-y-2">
                 <li className="flex items-start gap-2">

@@ -217,7 +217,7 @@ const ALL_TIPS: Tip[] = [
   },
   {
     id: 'goal_fire_aggressive',
-    title: 'FIRE: Ahorra agresivamente',
+    title: 'Libertad financiera: Ahorra agresivamente',
     description: 'Para retirarte temprano, apunta a ahorrar 50%+ de tus ingresos e invertir la diferencia.',
     icon: Rocket,
     color: 'text-red-500',
