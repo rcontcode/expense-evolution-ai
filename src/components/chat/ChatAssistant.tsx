@@ -349,15 +349,18 @@ export const ChatAssistant: React.FC = () => {
   // Check if user is asking about the current page
   const isAskingAboutCurrentPage = useCallback((text: string): boolean => {
     const normalizedText = text.toLowerCase().trim();
-    const pageQueries = [
+    // Only match when EXPLICITLY asking about THIS page/screen — never when asking to explain a concept
+    const exactPhrases = [
       'qué es esto', 'que es esto', 'dónde estoy', 'donde estoy', 'qué página es esta', 
-      'que pagina es esta', 'explica esta página', 'explícame', 'explicame', 'qué puedo hacer aquí',
-      'que puedo hacer aqui', 'cómo funciona', 'como funciona', 'ayúdame con esta página',
-      'what is this', 'where am i', 'what page is this', 'explain this page', 
-      'what can i do here', 'how does this work', 'help me with this page',
-      'guíame', 'guiame', 'guide me', 'tutorial', 'ayuda aquí', 'help here'
+      'que pagina es esta', 'explica esta página', 'explica esta pagina', 'qué puedo hacer aquí',
+      'que puedo hacer aqui', 'cómo funciona esta página', 'como funciona esta pagina',
+      'ayúdame con esta página', 'ayudame con esta pagina',
+      'what is this page', 'where am i', 'what page is this', 'explain this page', 
+      'what can i do here', 'help me with this page',
+      'guíame aquí', 'guiame aqui', 'ayuda aquí', 'help here'
     ];
-    return pageQueries.some(q => normalizedText.includes(q));
+    // Must be an exact or near-exact match — NOT a substring of a longer question
+    return exactPhrases.some(q => normalizedText === q || normalizedText === q + '?');
   }, []);
 
   // Handle voice command execution
