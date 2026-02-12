@@ -1,112 +1,84 @@
 
-# Reestructuracion Completa del Asistente Financiero Phoenix
+# Soporte de Moneda Inteligente en el Asistente y TTS
 
-## Problemas Identificados
+## Problema
 
-Despues de revisar exhaustivamente los ~3500 lineas del sistema, identifique **7 problemas criticos**:
+El sistema tiene 3 puntos ciegos respecto a la moneda:
 
-### 1. Duplicacion de Voz (El problema mas grave)
-El sistema tiene **3 sistemas de audio independientes** que se pisan entre si:
-- `useVoiceAssistant` (TTS nativo con sentence queue)
-- `useElevenLabsTTS` (ElevenLabs premium)
-- `useAudioPlayback` (reproductor estilo Spotify)
+1. **TTS siempre dice "dolares"**: La funcion `cleanTextForTTS` convierte `$` a "dolares" sin importar si el usuario opera en pesos chilenos (CLP), dolares canadienses (CAD), u otra moneda.
 
-Cuando el usuario hace clic en "Escuchar" en un mensaje, `audioPlayback.play()` usa TTS nativo directamente, sin pasar por ElevenLabs. Pero si `autoSpeak` esta activo, `speak()` tambien se ejecuta. Resultado: **dos voces hablando a la vez**.
+2. **El Edge Function no sabe la moneda**: `userContext` envia `country` y `province` pero NO la moneda activa (`currentCurrency`). Los mensajes de respuesta de las tools (`executeCreateIncomeTool`, `executeCreateExpenseTool`) hardcodean `$${amount}` sin contexto monetario.
 
-### 2. Stop no detiene todo
-`stopAllVoiceActivity` llama a `elevenLabsTTS.stop()`, `audioPlayback.stop()` y `window.speechSynthesis.cancel()`, pero `audioPlayback` mantiene su propio `SpeechSynthesisUtterance` que no se cancela correctamente porque `audioPlayback.stop()` llama `window.speechSynthesis.cancel()` por separado - hay una race condition.
+3. **Multi-pais sin distincion**: Un usuario con entidades en Chile Y Canada no tiene forma de que el asistente distinga si "$10" son CLP, CAD o USD.
 
-### 3. Karaoke Text no funciona con ElevenLabs
-El componente `KaraokeText` depende de `currentSpeakingText` y `currentSentenceIndex` del hook `useVoiceAssistant`, pero cuando ElevenLabs habla, esos valores nunca se setean porque ElevenLabs tiene su propio flujo de audio. Resultado: cuando ElevenLabs habla, no hay feedback visual.
+## Solucion
 
-### 4. ChatAssistant.tsx es un monolito de 1906 lineas
-Un solo componente maneja: UI, estado, voz, IA, navegacion, tutoriales, highlights, confirmaciones, clarificaciones, memoria de conversacion, etc. Esto hace que cada cambio tenga efectos secundarios impredecibles.
-
-### 5. Voice Preview en Settings no comparte estado con el asistente
-`VoiceSettingsPanel` tiene su propio `audioRef` para previews. Si el usuario previsualize una voz y luego habla con el asistente, ambos audios pueden sonar simultaneamente.
-
-### 6. El autoSpeak causa loops
-Cuando el chat se abre, `speak(welcome)` se ejecuta. Si la voz falla o el usuario interactua rapido, puede causar que se encolen multiples respuestas de bienvenida.
-
-### 7. audioPlayback es redundante
-`useAudioPlayback` reimplementa TTS nativo con controles de Spotify (play/pause/seek), pero `useVoiceAssistant` ya tiene pause/resume. Son dos sistemas paralelos haciendo lo mismo.
-
----
-
-## Plan de Solucion
-
-### Fase 1: Unificar Control de Audio (Critico)
-
-**Archivo: `src/hooks/utils/useVoiceAssistant.ts`**
-
-- Hacer que `speak()` siempre setee `currentSpeakingText` ANTES de intentar ElevenLabs, para que KaraokeText funcione siempre
-- Agregar un flag `isAnyAudioActive` que cubra todos los estados
-- Cuando ElevenLabs habla, actualizar `isSpeaking` del hook padre (no solo `elevenLabsTTS.isSpeaking`)
+### Paso 1: Enviar moneda en el contexto al Edge Function
 
 **Archivo: `src/components/chat/ChatAssistant.tsx`**
 
-- Eliminar `useAudioPlayback` completamente - el boton "Escuchar" en mensajes debe usar `speak()` directamente (que ya maneja ElevenLabs con fallback)
-- Simplificar `stopAllVoiceActivity` a una sola funcion limpia:
-  ```
-  1. window.speechSynthesis.cancel()
-  2. elevenLabsTTS.stop()
-  3. stopSpeaking() del hook
-  ```
-- Eliminar los controles Spotify (seek, progress bar) que son redundantes y confusos
+Agregar al objeto `userContext`:
+- `currency`: moneda activa de la entidad actual (e.g., `"CAD"`, `"CLP"`)
+- `entityName`: nombre de la entidad activa (para referencia)
 
-### Fase 2: Corregir Estado del Preview de Voz
+Esto viene de `useEntity()` que ya provee `currentCurrency`.
 
-**Archivo: `src/components/chat/VoiceSettingsPanel.tsx`**
+### Paso 2: El Edge Function usa la moneda en sus respuestas
 
-- Al abrir el Sheet de settings, detener cualquier audio activo del asistente
-- Al cerrar el Sheet, limpiar cualquier audio de preview
-- Compartir un `stopAllAudio` global que el panel pueda usar
+**Archivo: `supabase/functions/app-assistant/index.ts`**
 
-### Fase 3: Corregir KaraokeText con ElevenLabs
+- Recibir `currency` del `userContext`
+- Crear un mapa de moneda a nombre hablado:
+  - `CAD` -> "dolares canadienses" / "Canadian dollars"
+  - `CLP` -> "pesos chilenos" / "Chilean pesos"  
+  - `USD` -> "dolares" / "dollars"
+  - `EUR` -> "euros"
+- Modificar `executeCreateIncomeTool` y `executeCreateExpenseTool` para usar el nombre de moneda correcto en el mensaje (ej: "Ingreso de 10 dolares canadienses" en vez de "Ingreso de $10")
+- Agregar instruccion al system prompt para que el modelo use la moneda correcta en respuestas libres
+- Cuando el usuario es multi-pais y no especifica moneda, el asistente debe preguntar
 
-**Archivo: `src/hooks/utils/useElevenLabsTTS.ts`**
+### Paso 3: TTS inteligente segun moneda
 
-- Agregar callbacks `onSpeakingTextChange` para que el componente padre pueda mostrar el texto que se esta hablando
-- Exponer `currentText` como estado
+**Archivo: `src/hooks/utils/useElevenLabsTTS.ts` y `src/hooks/utils/useVoiceAssistant.ts`**
 
-**Archivo: `src/components/chat/ChatAssistant.tsx`**
+- Actualizar `cleanTextForTTS` y `cleanTextForSpeech` para recibir la moneda activa como parametro
+- Mapa de conversion:
+  - Si moneda es `CLP`: `$` -> "pesos"
+  - Si moneda es `CAD`: `$` -> "dolares canadienses"
+  - Si moneda es `USD` o default: `$` -> "dolares"
+  - Si moneda es `EUR`: `euro` -> "euros"
+- El hook `useAssistantVoiceControl` ya tiene acceso al `EntityContext`, asi que puede pasar la moneda activa
 
-- Pasar el texto actual al KaraokeText sin importar si es nativo o premium
+### Paso 4: System prompt con contexto monetario
 
-### Fase 4: Simplificar el Flujo de Voz
+Agregar al system prompt una seccion que indique:
+- La moneda principal del usuario
+- Si es multi-pais, las monedas disponibles
+- Instruccion: "Cuando el usuario diga un monto sin especificar moneda, asume {currency}. Si el usuario tiene multiples paises, pregunta en cual moneda si hay ambiguedad."
 
-**Archivo: `src/components/chat/ChatAssistant.tsx`**
+## Detalle Tecnico
 
-- El boton de "Escuchar" en cada mensaje llama `speak(msg.content)` directamente
-- Remover toda la logica de `audioPlayback.isPlaying`, `audioPlayback.isPaused`, etc.
-- Simplificar el render: si `isAnySpeaking`, mostrar boton de Stop. Si no, mostrar Play.
+### Archivos a modificar:
+1. **`src/components/chat/ChatAssistant.tsx`** - Agregar `currency` y `entityName` al `userContext`
+2. **`supabase/functions/app-assistant/index.ts`** - Usar moneda en tool responses y system prompt
+3. **`src/hooks/utils/useElevenLabsTTS.ts`** - `cleanTextForTTS` recibe currency
+4. **`src/hooks/utils/useVoiceAssistant.ts`** - `cleanTextForSpeech` recibe currency
+5. **`src/hooks/utils/useAssistantVoiceControl.ts`** - Pasar currency del EntityContext a las funciones de TTS
 
-### Fase 5: Extraer Logica del Monolito (Mejora de mantenibilidad)
+### Mapa de monedas (constante compartida):
 
-Crear un hook `useAssistantVoiceControl` que encapsule:
-- `speak`, `stop`, `isSpeaking` (unificados)
-- Logica de preview/stop para el panel de settings
-- KaraokeText state management
+```text
+CURRENCY_SPOKEN_NAMES = {
+  CAD: { es: "dolares canadienses", en: "Canadian dollars" },
+  CLP: { es: "pesos chilenos", en: "Chilean pesos" },
+  USD: { es: "dolares", en: "dollars" },
+  EUR: { es: "euros", en: "euros" },
+  MXN: { es: "pesos mexicanos", en: "Mexican pesos" },
+}
+```
 
-Esto reducira ChatAssistant.tsx en ~300 lineas.
-
----
-
-## Detalle Tecnico de Cambios
-
-### Archivos a Modificar:
-1. **`src/hooks/utils/useVoiceAssistant.ts`** - Sincronizar estado con ElevenLabs, siempre setear `currentSpeakingText`
-2. **`src/hooks/utils/useElevenLabsTTS.ts`** - Exponer `currentText`, agregar callback
-3. **`src/components/chat/ChatAssistant.tsx`** - Eliminar `useAudioPlayback`, simplificar controles, crear `useAssistantVoiceControl`
-4. **`src/components/chat/VoiceSettingsPanel.tsx`** - Cleanup de audio al abrir/cerrar
-5. **`src/hooks/utils/useAudioPlayback.ts`** - Eliminar (ya no se usa)
-
-### Archivos Nuevos:
-1. **`src/hooks/utils/useAssistantVoiceControl.ts`** - Hook unificado de control de voz
-
-### Resultado Esperado:
-- Un solo boton de Stop que SIEMPRE detiene todo
-- Sin voces duplicadas nunca
-- Preview de voz funcional en settings
-- KaraokeText visible con cualquier motor de voz
-- Codigo ~400 lineas mas corto y mantenible
+### Resultado esperado:
+- Usuario chileno dice "agrega ingreso de 10" -> "Ingreso de 10 pesos chilenos registrado"
+- Usuario canadiense dice "agrega gasto de 50" -> "Gasto de 50 dolares canadienses registrado"
+- Usuario multi-pais dice "agrega 100" -> "Cual moneda: pesos chilenos o dolares canadienses?"
+- TTS lee correctamente "50 dolares canadienses" en vez de "50 stfstfs"
