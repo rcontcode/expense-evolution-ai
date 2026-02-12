@@ -1176,7 +1176,7 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
         messages: aiMessages,
         tools: ASSISTANT_TOOLS,
         tool_choice: "auto",
-        max_completion_tokens: 1500,
+        max_completion_tokens: 4096,
       }),
     });
 
@@ -1276,7 +1276,7 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
                   content: JSON.stringify({ success: true, args: toolArgs }),
                 },
               ],
-              max_completion_tokens: 800,
+              max_completion_tokens: 2048,
             }),
           });
           
