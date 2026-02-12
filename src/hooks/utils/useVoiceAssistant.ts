@@ -20,6 +20,7 @@ interface UseVoiceAssistantOptions {
   pitch?: number;
   voiceGender?: VoiceGender;
   selectedVoiceName?: string | null;
+  currency?: string;
   premiumSpeak?: (text: string) => Promise<PremiumSpeakResult>;
   isPremiumSpeaking?: boolean;
 }
@@ -281,10 +282,21 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
   // Clean text for speech
   const cleanTextForSpeech = useCallback((text: string): string => {
     const lang = language || 'es';
+    const currency = options.currency;
+    
+    // Determine spoken name for $ based on active currency
+    const dollarName = (() => {
+      if (!currency || currency === 'USD') return lang === 'es' ? ' dólares ' : ' dollars ';
+      if (currency === 'CLP') return lang === 'es' ? ' pesos ' : ' pesos ';
+      if (currency === 'CAD') return lang === 'es' ? ' dólares canadienses ' : ' Canadian dollars ';
+      if (currency === 'MXN') return lang === 'es' ? ' pesos mexicanos ' : ' Mexican pesos ';
+      return lang === 'es' ? ' dólares ' : ' dollars ';
+    })();
+    
     return text
       // Currency symbols → spoken words (BEFORE other replacements)
       .replace(/\$\s*(\d)/g, (_, digit) => (lang === 'es' ? `${digit}` : `${digit}`))
-      .replace(/\$/g, lang === 'es' ? ' dólares ' : ' dollars ')
+      .replace(/\$/g, dollarName)
       .replace(/€\s*(\d)/g, (_, digit) => `${digit}`)
       .replace(/€/g, lang === 'es' ? ' euros ' : ' euros ')
       .replace(/%/g, lang === 'es' ? ' por ciento' : ' percent')
@@ -316,7 +328,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       .replace(/^\s*\d+\.\s*/gm, '')
       .replace(/\s+/g, ' ')
       .trim();
-  }, [language]);
+  }, [language, options.currency]);
 
   // Split text into sentences
   const splitIntoSentences = useCallback((text: string): string[] => {

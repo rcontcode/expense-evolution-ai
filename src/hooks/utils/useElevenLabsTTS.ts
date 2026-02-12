@@ -15,10 +15,19 @@ import { supabase } from '@/integrations/supabase/client';
 /**
  * Clean text for TTS: convert symbols to spoken words
  */
-function cleanTextForTTS(text: string, lang: string): string {
+function cleanTextForTTS(text: string, lang: string, currency?: string): string {
+  // Determine spoken name for $ based on active currency
+  const dollarName = (() => {
+    if (!currency || currency === 'USD') return lang === 'es' ? ' dólares ' : ' dollars ';
+    if (currency === 'CLP') return lang === 'es' ? ' pesos ' : ' pesos ';
+    if (currency === 'CAD') return lang === 'es' ? ' dólares canadienses ' : ' Canadian dollars ';
+    if (currency === 'MXN') return lang === 'es' ? ' pesos mexicanos ' : ' Mexican pesos ';
+    return lang === 'es' ? ' dólares ' : ' dollars ';
+  })();
+
   return text
     .replace(/\$\s*(\d)/g, (_, d) => `${d}`)
-    .replace(/\$/g, lang === 'es' ? ' dólares ' : ' dollars ')
+    .replace(/\$/g, dollarName)
     .replace(/€\s*(\d)/g, (_, d) => `${d}`)
     .replace(/€/g, ' euros ')
     .replace(/%/g, lang === 'es' ? ' por ciento' : ' percent')
@@ -81,6 +90,7 @@ interface UseElevenLabsTTSOptions {
   voiceId?: string;
   voiceGender?: VoiceGender;
   lang?: 'es' | 'en';
+  currency?: string;
   onStart?: () => void;
   onEnd?: () => void;
   onError?: (error: Error) => void;
@@ -223,7 +233,7 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
           body: JSON.stringify({
             // Prepend a brief pause to prevent first-syllable clipping
             // ElevenLabs sometimes clips the very start of audio
-            text: '... ' + cleanTextForTTS(text, options.lang || 'es'),
+            text: '... ' + cleanTextForTTS(text, options.lang || 'es', options.currency),
             voiceId,
             lang: options.lang,
           }),
