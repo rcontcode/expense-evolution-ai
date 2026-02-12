@@ -34,7 +34,11 @@ import {
   Car,
   FileText,
   ArrowRight,
-  Plus
+  Plus,
+  Settings,
+  Info,
+  Zap,
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -237,37 +241,7 @@ export default function Notifications() {
     return format(date, 'PP', { locale: language === 'es' ? es : enUS });
   };
 
-  // Quick actions for empty state
-  const quickActions = [
-    {
-      icon: Receipt,
-      label: language === 'es' ? 'Agregar gasto' : 'Add expense',
-      description: language === 'es' ? 'Registra un gasto para comenzar' : 'Record an expense to get started',
-      path: '/expenses',
-      color: 'text-rose-500 bg-rose-500/10'
-    },
-    {
-      icon: Target,
-      label: language === 'es' ? 'Crear meta' : 'Create goal',
-      description: language === 'es' ? 'Define una meta de ahorro o inversión' : 'Set a savings or investment goal',
-      path: '/net-worth',
-      color: 'text-green-500 bg-green-500/10'
-    },
-    {
-      icon: Car,
-      label: language === 'es' ? 'Registrar viaje' : 'Log trip',
-      description: language === 'es' ? 'Registra un viaje para deducción CRA' : 'Log a trip for CRA deduction',
-      path: '/mileage',
-      color: 'text-indigo-500 bg-indigo-500/10'
-    },
-    {
-      icon: TrendingUp,
-      label: language === 'es' ? 'Ver progreso' : 'View progress',
-      description: language === 'es' ? 'Revisa tu progreso financiero' : 'Check your financial progress',
-      path: '/dashboard',
-      color: 'text-emerald-500 bg-emerald-500/10'
-    },
-  ];
+  const isEs = language === 'es';
 
   return (
     <Layout>
@@ -558,84 +532,151 @@ export default function Notifications() {
                     : (language === 'es' ? 'Sin notificaciones aún' : 'No notifications yet')
                   }
                 </h3>
-                <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
+                <p className="text-muted-foreground text-sm mb-2 max-w-sm mx-auto">
                   {filter === 'unread' 
-                    ? (language === 'es' ? 'Has leído todas tus notificaciones' : "You've read all your notifications")
-                    : (language === 'es' 
-                        ? 'Comienza a usar la app para recibir notificaciones de logros, metas cumplidas, recordatorios y más' 
-                        : 'Start using the app to receive notifications about achievements, completed goals, reminders and more')
+                    ? (isEs ? 'Has leído todas tus notificaciones' : "You've read all your notifications")
+                    : (isEs 
+                        ? 'A medida que uses la app, aquí aparecerán alertas de logros, metas, rachas y más.' 
+                        : 'As you use the app, alerts for achievements, goals, streaks and more will appear here.')
                   }
                 </p>
-
-                {filter === 'all' && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">
-                    {quickActions.map((action, index) => (
-                      <motion.div
-                        key={action.path}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <Button
-                          variant="outline"
-                          className="w-full h-auto p-4 flex items-start gap-3 justify-start hover:bg-muted/50 overflow-hidden"
-                          onClick={() => navigate(action.path)}
-                        >
-                          <div className={cn("p-2 rounded-lg shrink-0", action.color)}>
-                            <action.icon className="h-4 w-4" />
-                          </div>
-                          <div className="text-left min-w-0 flex-1">
-                            <p className="font-medium text-sm truncate">{action.label}</p>
-                            <p className="text-xs text-muted-foreground truncate">{action.description}</p>
-                          </div>
-                          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        </Button>
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
               </motion.div>
             )}
           </CardContent>
         </Card>
 
-        {/* Tips Card */}
-        {(!notifications || notifications.length === 0) && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card className="bg-gradient-to-br from-yellow-500/10 to-amber-500/5 border-yellow-500/20">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Lightbulb className="h-4 w-4 text-yellow-500" />
-                  {language === 'es' ? '¿Cómo ganar notificaciones?' : 'How to earn notifications?'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="text-sm text-muted-foreground space-y-2">
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                    {language === 'es' ? 'Completa metas de ahorro o inversión' : 'Complete savings or investment goals'}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                    {language === 'es' ? 'Sube de nivel registrando actividad financiera' : 'Level up by recording financial activity'}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                    {language === 'es' ? 'Desbloquea logros por hábitos financieros' : 'Unlock achievements for financial habits'}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                    {language === 'es' ? 'Mantén rachas diarias de uso de la app' : 'Maintain daily app usage streaks'}
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
+        {/* Contextual Guide */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-4"
+        >
+          {/* What is this page */}
+          <Card className="border-primary/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Info className="h-4 w-4 text-primary" />
+                {isEs ? '¿Qué es esta página?' : 'What is this page?'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground space-y-2">
+              <p>
+                {isEs 
+                  ? 'Tu centro de notificaciones reúne toda la actividad importante de tu cuenta: logros desbloqueados, metas cumplidas, rachas alcanzadas, alertas fiscales y recordatorios automáticos.'
+                  : 'Your notification center gathers all important account activity: unlocked achievements, completed goals, streaks reached, tax alerts, and automatic reminders.'}
+              </p>
+              <p>
+                {isEs 
+                  ? 'Las notificaciones se generan automáticamente cuando usas la app — no necesitas hacer nada especial. Solo sigue registrando gastos, ingresos y cumpliendo tus metas.'
+                  : "Notifications are generated automatically as you use the app — you don't need to do anything special. Just keep recording expenses, income, and completing your goals."}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* How notifications work */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Zap className="h-4 w-4 text-amber-500" />
+                {isEs ? '¿Cómo funcionan?' : 'How do they work?'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { icon: Trophy, color: 'text-amber-500 bg-amber-500/10', 
+                    title: isEs ? 'Logros y Niveles' : 'Achievements & Levels',
+                    desc: isEs ? 'Al subir de nivel o desbloquear logros por tu actividad financiera' : 'When you level up or unlock achievements through financial activity' },
+                  { icon: Target, color: 'text-green-500 bg-green-500/10',
+                    title: isEs ? 'Metas Cumplidas' : 'Goals Completed', 
+                    desc: isEs ? 'Cuando alcanzas una meta de ahorro o inversión' : 'When you reach a savings or investment goal' },
+                  { icon: Flame, color: 'text-red-500 bg-red-500/10',
+                    title: isEs ? 'Rachas' : 'Streaks',
+                    desc: isEs ? 'Al mantener rachas de 7, 14, 30, 60, 100 o 365 días' : 'When you maintain 7, 14, 30, 60, 100 or 365 day streaks' },
+                  { icon: Calendar, color: 'text-cyan-500 bg-cyan-500/10',
+                    title: isEs ? 'Recordatorios' : 'Reminders',
+                    desc: isEs ? 'Alertas fiscales, vencimientos de contratos y tareas pendientes' : 'Tax alerts, contract expirations, and pending tasks' },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+                    <div className={cn("p-2 rounded-lg shrink-0", item.color)}>
+                      <item.icon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{item.title}</p>
+                      <p className="text-xs text-muted-foreground">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Configuration link */}
+          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/20">
+                    <Settings className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">
+                      {isEs ? 'Personaliza tus notificaciones' : 'Customize your notifications'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {isEs 
+                        ? 'Elige qué tipos de alertas recibir en Configuración → Notificaciones'
+                        : 'Choose which types of alerts to receive in Settings → Notifications'}
+                    </p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  {isEs ? 'Configurar' : 'Settings'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Usage tips */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Shield className="h-4 w-4 text-blue-500" />
+                {isEs ? 'Consejos de uso' : 'Usage tips'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="text-sm text-muted-foreground space-y-2">
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                  {isEs 
+                    ? 'Usa los filtros superiores para ver solo logros, metas o notificaciones sin leer.'
+                    : 'Use the top filters to see only achievements, goals, or unread notifications.'}
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                  {isEs 
+                    ? 'Haz clic en una notificación para ir directamente a la sección relacionada.'
+                    : 'Click a notification to go directly to the related section.'}
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                  {isEs 
+                    ? 'Las notificaciones no leídas se resaltan con un punto azul. Márcalas como leídas con un clic.'
+                    : 'Unread notifications are highlighted with a blue dot. Mark them read with a click.'}
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
+                  {isEs 
+                    ? 'Puedes limpiar todas las notificaciones con el botón "Limpiar" en la esquina superior.'
+                    : 'You can clear all notifications with the "Clear" button in the top corner.'}
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </Layout>
   );
