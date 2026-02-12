@@ -25,7 +25,8 @@ interface UseVoiceAssistantOptions {
 }
 
 // Pause duration before sending accumulated transcript
-const PAUSE_THRESHOLD_MS = 1200;
+// Extended to 2.5s to allow natural pauses between words/phrases
+const PAUSE_THRESHOLD_MS = 2500;
 
 // Cooldown after TTS finishes to prevent self-transcription
 const TTS_COOLDOWN_MS = 2000;
