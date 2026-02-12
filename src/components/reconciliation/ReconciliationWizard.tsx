@@ -42,6 +42,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { useCelebrationSound } from '@/hooks/utils/useCelebrationSound';
+import { useEntity } from '@/contexts/EntityContext';
 
 interface Flow {
   id: string;
@@ -86,6 +87,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
   const matchTransaction = useMatchTransaction();
   const markAsDiscrepancy = useMarkAsDiscrepancy();
   const createExpense = useCreateExpense();
+  const { currentCurrency } = useEntity();
 
   const pendingTransactions = transactions.filter(t => t.status === 'pending');
   const matchedTransactions = transactions.filter(t => t.status === 'matched');
@@ -335,7 +337,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
       notes: data.notes || null,
       client_id: data.client_id === '__none__' ? null : data.client_id || null,
       status: data.status || 'pending',
-      currency: 'CAD',
+      currency: currentCurrency,
     };
 
     try {
@@ -389,7 +391,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
           notes: null,
           client_id: item.client_id,
           status: 'pending' as const,
-          currency: 'CAD',
+          currency: currentCurrency,
         };
 
         const createdExpense = await createExpense.mutateAsync(expenseData as any);
@@ -998,7 +1000,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
               contract_id: null,
               reimbursement_type: 'pending_classification',
               status: 'pending',
-              currency: 'CAD',
+              currency: currentCurrency,
               document_id: null,
               created_at: null,
               updated_at: null,

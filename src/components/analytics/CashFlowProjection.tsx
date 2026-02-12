@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ReferenceLine, Legend
@@ -234,14 +235,7 @@ export function CashFlowProjection() {
     );
   }
   
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(language === 'es' ? 'es-CA' : 'en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  };
+  const { formatCompact: formatCurrency } = useFormatCurrency();
   
   const labels = {
     title: language === 'es' ? 'Proyección de Flujo de Caja' : 'Cash Flow Projection',

@@ -20,23 +20,17 @@ import { useRrspTfsaOptimizer } from '@/hooks/data/useRrspTfsaOptimizer';
 import { useEntity } from '@/contexts/EntityContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 export function RrspTfsaOptimizerCard() {
   const { isAnalyzing, result, error, analyzeOptimalContributions, clearResult } = useRrspTfsaOptimizer();
   const { currentCountry } = useEntity();
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   // RRSP/TFSA are Canada-only programs
   if (currentCountry === 'CL') {
     return null;
   }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
 
   const formatPercent = (rate: number) => {
     return `${(rate * 100).toFixed(1)}%`;

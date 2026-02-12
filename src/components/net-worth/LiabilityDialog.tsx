@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useEntity } from '@/contexts/EntityContext';
 import { Liability, LIABILITY_CATEGORIES, useCreateLiability, useUpdateLiability } from '@/hooks/data/useNetWorth';
 import { Home, Car, GraduationCap, CreditCard, HandCoins, Banknote, Building2, Receipt, BookOpen, TrendingDown, Lightbulb } from 'lucide-react';
 
@@ -22,6 +23,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 export function LiabilityDialog({ open, onOpenChange, editingLiability }: LiabilityDialogProps) {
   const { t } = useLanguage();
+  const { currentCurrency } = useEntity();
   const createLiability = useCreateLiability();
   const updateLiability = useUpdateLiability();
 
@@ -33,7 +35,7 @@ export function LiabilityDialog({ open, onOpenChange, editingLiability }: Liabil
     interest_rate: 0,
     minimum_payment: 0,
     due_date: '',
-    currency: 'CAD',
+    currency: currentCurrency,
     notes: '',
   });
 
@@ -59,7 +61,7 @@ export function LiabilityDialog({ open, onOpenChange, editingLiability }: Liabil
         interest_rate: 0,
         minimum_payment: 0,
         due_date: '',
-        currency: 'CAD',
+        currency: currentCurrency,
         notes: '',
       });
     }

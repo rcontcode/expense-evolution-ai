@@ -9,6 +9,7 @@ import {
   TrendingDown, PiggyBank, Target, AlertCircle
 } from 'lucide-react';
 import { getCategoryLabel } from '@/lib/constants/expense-categories';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface ExpenseSummaryProps {
   expenses: ExtractedExpenseData[];
@@ -124,8 +125,7 @@ export function ExpenseSummary({ expenses, hasClients = false, clientCount = 0 }
   const savingsTips = getSavingsTips(expenses, totals);
   const hasReimbursableExpenses = expenses.some(e => e.typically_reimbursable);
 
-  const formatCurrency = (amount: number) => 
-    new Intl.NumberFormat('es-CA', { style: 'currency', currency: 'CAD' }).format(amount);
+  const { formatCurrency } = useFormatCurrency();
 
   return (
     <Card className="bg-muted/30 border-dashed">

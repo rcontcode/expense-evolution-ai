@@ -22,6 +22,7 @@
    Flame
  } from 'lucide-react';
  import { useLanguage } from '@/contexts/LanguageContext';
+ import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
  import { useProfile } from '@/hooks/data/useProfile';
  import { useCategoryBudgets } from '@/hooks/data/useCategoryBudgets';
  import { useUserSettings, UserPreferences } from '@/hooks/data/useUserSettings';
@@ -265,12 +266,7 @@
      return labels[level];
    };
  
-   const formatCurrency = (amount: number) =>
-     new Intl.NumberFormat(l ? 'es-CA' : 'en-CA', {
-       style: 'currency',
-       currency: 'CAD',
-       maximumFractionDigits: 0,
-     }).format(amount);
+   const { formatCompact: formatCurrency } = useFormatCurrency();
  
    return (
      <div className="space-y-6">

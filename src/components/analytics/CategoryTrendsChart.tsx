@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useExpenses } from "@/hooks/data/useExpenses";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { TrendingUp, TrendingDown, Minus, Filter } from "lucide-react";
@@ -119,14 +120,7 @@ export function CategoryTrendsChart() {
     return { chartData: months, categoryStats, topCategories };
   }, [expenses, language, locale]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(language === "es" ? "es-CA" : "en-CA", {
-      style: "currency",
-      currency: "CAD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  };
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   const getTrendIcon = (trend: number) => {
     if (trend > 5) return <TrendingUp className="h-3 w-3 text-red-500" />;

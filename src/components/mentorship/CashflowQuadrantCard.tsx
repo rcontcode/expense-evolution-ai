@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useCashflowQuadrant, QuadrantType } from '@/hooks/data/useCashflowQuadrant';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Briefcase, User, Building2, TrendingUp, Target, Lightbulb } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
@@ -31,12 +32,7 @@ export function CashflowQuadrantCard() {
     );
   }
 
-  const formatCurrency = (amount: number) => 
-    new Intl.NumberFormat(language === 'es' ? 'es-CA' : 'en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      maximumFractionDigits: 0,
-    }).format(amount);
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   return (
     <Card className="overflow-hidden">

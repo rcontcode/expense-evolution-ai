@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, subMonths } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { 
@@ -134,14 +135,7 @@ export function TransactionTimeline() {
     };
   }, [expenses, income, language, t]);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(language === 'es' ? 'es-CA' : 'en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   const groupedEvents = useMemo(() => {
     const groups = new Map<string, TimelineEvent[]>();

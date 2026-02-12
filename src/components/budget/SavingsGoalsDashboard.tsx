@@ -25,6 +25,7 @@
  import { es, enUS } from 'date-fns/locale';
  import { motion, AnimatePresence } from 'framer-motion';
  import { cn } from '@/lib/utils';
+ import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
  import { Link } from 'react-router-dom';
  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
  import { Input } from '@/components/ui/input';
@@ -81,12 +82,7 @@
      }
    };
  
-   const formatCurrency = (amount: number) =>
-     new Intl.NumberFormat(l ? 'es-CA' : 'en-CA', {
-       style: 'currency',
-       currency: 'CAD',
-       maximumFractionDigits: 0,
-     }).format(amount);
+   const { formatCompact: formatCurrency } = useFormatCurrency();
  
    // Calculate suggested monthly contribution per goal
    const getMonthlyContribution = (goal: typeof activeGoals[0]) => {
