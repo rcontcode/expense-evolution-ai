@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAssets, useLiabilities } from '@/hooks/data/useNetWorth';
 import { ChevronLeft, ChevronRight, Layers, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -81,14 +82,7 @@ export function NetWorthTreemap() {
     return t.categories[category as keyof typeof t.categories] || category;
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(language === 'es' ? 'es-ES' : 'en-US', {
-      style: 'currency',
-      currency: 'CAD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   const { items, totalAssets, totalLiabilities, netWorth } = useMemo(() => {
     const assetsByCategory = assets.reduce((acc, asset) => {

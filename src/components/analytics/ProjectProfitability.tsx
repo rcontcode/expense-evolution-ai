@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useProjects } from '@/hooks/data/useProjects';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
@@ -195,14 +196,7 @@ export function ProjectProfitability() {
     return { totalIncome, totalExpenses, totalMargin, avgRoi, profitableProjects, unprofitableProjects };
   }, [projectMetrics]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(language === 'es' ? 'es-CA' : 'en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  };
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {

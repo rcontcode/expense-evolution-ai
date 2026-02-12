@@ -6,6 +6,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useClients } from '@/hooks/data/useClients';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { 
   Users, 
   ArrowUpDown, 
@@ -134,14 +135,7 @@ export function ClientProfitability() {
     }), { totalIncome: 0, totalExpenses: 0, margin: 0 });
   }, [clientProfits]);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(language === 'es' ? 'es-CA' : 'en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {

@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { useDebtClassification, useUpdateDebtType, ClassifiedDebt } from '@/hooks/data/useDebtClassification';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Scale, ThumbsUp, ThumbsDown, DollarSign, Lightbulb, Edit2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
@@ -45,12 +46,7 @@ export function DebtClassificationCard() {
     );
   }
 
-  const formatCurrency = (amount: number) => 
-    new Intl.NumberFormat(language === 'es' ? 'es-CA' : 'en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      maximumFractionDigits: 0,
-    }).format(amount);
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   const handleUpdateDebt = () => {
     if (editingDebt) {

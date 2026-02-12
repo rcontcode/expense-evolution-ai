@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useSavingsGoals } from '@/hooks/data/useSavingsGoals';
 import { useInvestmentGoals } from '@/hooks/data/useInvestmentGoals';
 import { SMARTGoalWizard } from './SMARTGoalWizard';
@@ -91,12 +92,7 @@ export function SMARTGoalsCard() {
     return score;
   };
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat(language === 'es' ? 'es-CA' : 'en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      maximumFractionDigits: 0,
-    }).format(amount);
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   return (
     <>

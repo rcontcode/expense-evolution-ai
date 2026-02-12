@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { ArrowRight, Wallet, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
@@ -241,14 +242,7 @@ export function CashFlowSankey() {
     };
   }, [income, expenses, t]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(language === 'es' ? 'es-CA' : 'en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  };
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   if (isLoading) {
     return (

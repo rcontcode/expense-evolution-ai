@@ -27,6 +27,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Area, AreaChart } from 'recharts';
 import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 const FIRE_TOOLTIP = {
   es: {
@@ -53,13 +54,7 @@ export function FIRECalculatorCard() {
     }
   }, [actualFinancials.netWorth, actualFinancials.avgMonthlyExpenses]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   const formatYears = (years: number) => {
     const wholeYears = Math.floor(years);

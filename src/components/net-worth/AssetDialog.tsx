@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useProfile } from '@/hooks/data/useProfile';
+import { useEntity } from '@/contexts/EntityContext';
 import { Asset, ASSET_CATEGORIES, ASSET_CATEGORY_GROUPS, useCreateAsset, useUpdateAsset } from '@/hooks/data/useNetWorth';
 import { cn } from '@/lib/utils';
 import { 
@@ -77,6 +78,7 @@ const ASSET_EDUCATION = {
 export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogProps) {
   const { t } = useLanguage();
   const { data: profile } = useProfile();
+  const { currentCurrency } = useEntity();
   const createAsset = useCreateAsset();
   const updateAsset = useUpdateAsset();
 
@@ -86,7 +88,7 @@ export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogPro
     current_value: 0,
     purchase_value: 0,
     purchase_date: '',
-    currency: 'CAD',
+    currency: currentCurrency,
     notes: '',
     is_liquid: false,
   });
@@ -118,7 +120,7 @@ export function AssetDialog({ open, onOpenChange, editingAsset }: AssetDialogPro
         current_value: 0,
         purchase_value: 0,
         purchase_date: '',
-        currency: 'CAD',
+        currency: currentCurrency,
         notes: '',
         is_liquid: false,
       });

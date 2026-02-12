@@ -4,6 +4,7 @@ import { NetWorthSnapshot } from '@/hooks/data/useNetWorth';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface NetWorthSummaryProps {
   totalAssets: number;
@@ -15,17 +16,13 @@ export function NetWorthSummary({ totalAssets, totalLiabilities, snapshots }: Ne
   const isMobile = useIsMobile();
   const netWorth = totalAssets - totalLiabilities;
   
+  const { formatCompact, currentCurrency } = useFormatCurrency();
   const formatCurrency = (value: number) => {
     if (isMobile && Math.abs(value) >= 1000) {
       if (Math.abs(value) >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
       return `$${(value / 1000).toFixed(0)}K`;
     }
-    return new Intl.NumberFormat('es-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
+    return formatCompact(value);
   };
 
   // Calculate month-over-month change

@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useFinancialFreedom } from '@/hooks/data/useFinancialFreedom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Sparkles, TrendingUp, Calendar, DollarSign, Lightbulb, PartyPopper } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
@@ -37,12 +38,7 @@ export function FinancialFreedomCard() {
     );
   }
 
-  const formatCurrency = (amount: number) => 
-    new Intl.NumberFormat(language === 'es' ? 'es-CA' : 'en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      maximumFractionDigits: 0,
-    }).format(amount);
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   const getStatusColor = () => {
     if (isFinanciallyFree) return 'text-primary';

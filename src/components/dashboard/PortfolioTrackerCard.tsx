@@ -23,15 +23,9 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-CA', {
-    style: 'currency',
-    currency: 'CAD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
+// formatCurrency is now provided by useFormatCurrency hook inside the component
 
 const formatPercentage = (value: number) => {
   return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
@@ -67,7 +61,7 @@ const getCategoryLabel = (category: string) => {
 export function PortfolioTrackerCard() {
   const { t } = useLanguage();
   const metrics = usePortfolioTracker();
-
+  const { formatCompact: formatCurrency } = useFormatCurrency();
   const hasAssets = metrics.assets.length > 0;
   const hasDividends = metrics.dividendHistory.length > 0;
 

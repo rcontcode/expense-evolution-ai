@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 interface NetWorthChartProps {
   snapshots: NetWorthSnapshot[];
@@ -109,14 +110,7 @@ export function NetWorthChart({ snapshots, currentNetWorth, currentAssets, curre
     };
   }, [snapshots, currentNetWorth, currentAssets, currentLiabilities]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {

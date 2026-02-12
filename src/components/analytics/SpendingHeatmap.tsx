@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import {
   format,
   startOfMonth,
@@ -94,13 +95,7 @@ export const SpendingHeatmap = memo(({ expenses, isLoading }: SpendingHeatmapPro
 
   const dayLabels = DAY_LABELS[language] || DAY_LABELS.es;
 
-  const formatCurrency = (v: number) =>
-    new Intl.NumberFormat(language === 'es' ? 'es-ES' : 'en-US', {
-      style: 'currency',
-      currency: 'CAD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(v);
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   if (isLoading) {
     return (

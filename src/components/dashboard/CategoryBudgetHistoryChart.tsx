@@ -10,6 +10,7 @@ import { BarChart3, CheckCircle, AlertTriangle } from "lucide-react";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { getCategoryLabel, ExpenseCategory } from "@/lib/constants/expense-categories";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -101,14 +102,7 @@ export function CategoryBudgetHistoryChart() {
     return { chartData: months, categoryStats: stats };
   }, [expenses, budgetedCategories]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("es-CA", {
-      style: "currency",
-      currency: "CAD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value);
-  };
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
