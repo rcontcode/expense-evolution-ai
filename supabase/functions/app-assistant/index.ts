@@ -498,6 +498,15 @@ Ejemplos:
 - **Diario Financiero**: Reflexiones sobre decisiones de dinero
 - **XP y Niveles**: Gamificación del aprendizaje financiero
 
+### 🔔 NOTIFICACIONES (/notifications)
+- Centro de alertas con todos los avisos del sistema
+- **Tipos**: Logros desbloqueados, metas alcanzadas, rachas de hábitos, recordatorios fiscales, tips financieros, alertas de contratos
+- **Filtros**: Todas, Sin leer, Logros, Metas
+- **Acciones**: Marcar como leída, marcar todo leído, eliminar individual, limpiar todo
+- Cada notificación puede tener un enlace directo a la sección relevante
+- Las notificaciones se generan automáticamente cuando el usuario desbloquea logros, alcanza metas, mantiene rachas, etc.
+- **Qué hacer aquí**: Revisar alertas pendientes, ver logros recientes, atender recordatorios fiscales
+
 ### 📅 CALENDARIO FISCAL (/tax-calendar)
 - Fechas importantes de declaraciones
 - Recordatorios personalizados

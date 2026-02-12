@@ -299,8 +299,36 @@ export const ChatAssistant: React.FC = () => {
         en: { name: 'Tax Calendar', desc: 'View your tax deadlines, tax estimates, and tax resources. The app reminds you of important dates based on your country (Canada or Chile) and helps you plan your tax obligations.' },
       },
       '/chaos-inbox': {
-        es: { name: 'Bandeja de Caos', desc: 'Revisa y procesa recibos capturados que necesitan clasificación. Aquí puedes aprobar, rechazar, o editar gastos extraídos de fotos antes de que se agreguen a tu registro oficial.' },
-        en: { name: 'Chaos Inbox', desc: 'Review and process captured receipts that need classification. Here you can approve, reject, or edit expenses extracted from photos before they are added to your official records.' },
+        es: { name: 'Centro de Revisión', desc: 'Revisa y procesa recibos capturados que necesitan clasificación. Aquí puedes aprobar, rechazar, o editar gastos extraídos de fotos antes de que se agreguen a tu registro oficial. Usa el botón de cámara para escanear nuevos recibos, o revisa los pendientes en la cola.' },
+        en: { name: 'Review Center', desc: 'Review and process captured receipts that need classification. Here you can approve, reject, or edit expenses extracted from photos before they are added to your official records. Use the camera button to scan new receipts, or review pending ones in the queue.' },
+      },
+      '/chaos': {
+        es: { name: 'Centro de Revisión', desc: 'Revisa y procesa recibos capturados que necesitan clasificación. Aquí puedes aprobar, rechazar, o editar gastos extraídos de fotos antes de que se agreguen a tu registro oficial. Usa el botón de cámara para escanear nuevos recibos, o revisa los pendientes en la cola.' },
+        en: { name: 'Review Center', desc: 'Review and process captured receipts that need classification. Here you can approve, reject, or edit expenses extracted from photos before they are added to your official records. Use the camera button to scan new receipts, or review pending ones in the queue.' },
+      },
+      '/notifications': {
+        es: { name: 'Notificaciones', desc: 'Este es tu centro de alertas. Aquí ves tus logros desbloqueados, metas alcanzadas, rachas de hábitos financieros, recordatorios de impuestos y tips personalizados. Puedes filtrar por tipo (Todas, Sin leer, Logros, Metas), marcar como leídas con un clic, o limpiar todas. Cada notificación puede llevarte directo a la sección relevante de la app.' },
+        en: { name: 'Notifications', desc: 'This is your alert center. Here you see your unlocked achievements, reached goals, financial habit streaks, tax reminders and personalized tips. You can filter by type (All, Unread, Achievements, Goals), mark as read with a click, or clear all. Each notification can take you directly to the relevant app section.' },
+      },
+      '/reconciliation': {
+        es: { name: 'Conciliación Bancaria', desc: 'Aquí emparejas tus transacciones bancarias con los gastos que ya registraste. Importa un estado de cuenta, y la IA sugiere coincidencias automáticas. Puedes resolver discrepancias, encontrar gastos que olvidaste registrar, y asegurarte de que tu contabilidad esté completa.' },
+        en: { name: 'Bank Reconciliation', desc: 'Here you match your bank transactions with expenses you already recorded. Import a bank statement, and AI suggests automatic matches. You can resolve discrepancies, find expenses you forgot to record, and make sure your accounting is complete.' },
+      },
+      '/tags': {
+        es: { name: 'Etiquetas', desc: 'Crea y organiza etiquetas personalizadas para clasificar tus gastos más allá de las categorías estándar. Puedes asignar colores, agrupar etiquetas, y luego filtrar gastos por etiqueta en la sección de Gastos.' },
+        en: { name: 'Tags', desc: 'Create and organize custom tags to classify your expenses beyond standard categories. You can assign colors, group tags, and then filter expenses by tag in the Expenses section.' },
+      },
+      '/business-profile': {
+        es: { name: 'Perfil de Negocio', desc: 'Configura tu perfil fiscal aquí: país, provincia/región, moneda predeterminada, y datos de negocio. Estos datos se usan para calcular impuestos correctamente, mostrar la moneda adecuada en toda la app, y personalizar las funciones fiscales según tu jurisdicción.' },
+        en: { name: 'Business Profile', desc: 'Set up your tax profile here: country, province/region, default currency, and business data. This data is used to calculate taxes correctly, show the right currency throughout the app, and customize tax features for your jurisdiction.' },
+      },
+      '/capture': {
+        es: { name: 'Captura Rápida', desc: 'Usa la cámara para tomar fotos de recibos rápidamente. La IA extrae automáticamente el monto, fecha, comercio y categoría. Puedes capturar múltiples recibos en secuencia sin salir de esta pantalla.' },
+        en: { name: 'Quick Capture', desc: 'Use the camera to quickly take receipt photos. AI automatically extracts amount, date, merchant and category. You can capture multiple receipts in sequence without leaving this screen.' },
+      },
+      '/adventure': {
+        es: { name: 'Aventura Financiera', desc: 'Un juego interactivo para aprender conceptos financieros mientras te diviertes. Toma decisiones financieras en escenarios simulados y ve cómo afectan tu futuro financiero.' },
+        en: { name: 'Financial Adventure', desc: 'An interactive game to learn financial concepts while having fun. Make financial decisions in simulated scenarios and see how they affect your financial future.' },
       },
     };
 
@@ -878,11 +906,13 @@ export const ChatAssistant: React.FC = () => {
     // LOCAL GUARANTEE: "qué puedo hacer aquí" must always reflect the REAL current page.
     if (isAskingAboutCurrentPage(trimmedText)) {
       const page = getCurrentPageContext();
-      const responseText = language === 'es'
-        ? `${page.description} Si quieres, dime: "agregar" para crear algo, "muéstrame" para navegar, o "abre el cliente NOMBRE" para entrar directo a un cliente.`
-        : `${page.description} If you want, say: "add" to create something, "show" to navigate, or "open client NAME" to jump directly to a client.`;
-      respondLocal(responseText, location.pathname);
-      return;
+      // Send to AI for a rich, contextual response instead of a canned one
+      // Only fall back to local if page description is generic
+      if (page.pageName !== (language === 'es' ? 'Página actual' : 'Current page')) {
+        respondLocal(page.description, location.pathname);
+        return;
+      }
+      // If unknown page, let AI handle it
     }
 
     // LOCAL ACTION: open a client by name (reliable in continuous voice mode)
