@@ -8,6 +8,7 @@
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useExpenses } from '@/hooks/data/useExpenses';
+import { useEntity } from '@/contexts/EntityContext';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useClients } from '@/hooks/data/useClients';
 import { useProjects } from '@/hooks/data/useProjects';
@@ -24,6 +25,15 @@ const PAGE_CHARTS: Record<string, string[]> = {
   '/banking': ['transaction_analysis', 'recurring_payments', 'spending_patterns'],
   '/net-worth': ['assets_breakdown', 'liabilities', 'net_worth_trend'],
   '/mentorship': ['fire_progress', 'savings_rate', 'financial_independence'],
+  '/notifications': [],
+  '/reconciliation': [],
+  '/tax-calendar': ['tax_estimates'],
+  '/chaos': [],
+  '/tags': [],
+  '/contracts': [],
+  '/business-profile': [],
+  '/capture': [],
+  '/adventure': [],
 };
 
 // Acciones disponibles por página
@@ -62,6 +72,60 @@ const PAGE_ACTIONS: Record<string, { es: string; en: string }[]> = {
     { es: 'agregar activo', en: 'add asset' },
     { es: 'agregar pasivo', en: 'add liability' },
     { es: 'ver evolución', en: 'view evolution' },
+  ],
+  '/notifications': [
+    { es: 'marcar todo como leído', en: 'mark all as read' },
+    { es: 'filtrar por tipo', en: 'filter by type' },
+    { es: 'limpiar notificaciones', en: 'clear notifications' },
+  ],
+  '/reconciliation': [
+    { es: 'importar estado bancario', en: 'import bank statement' },
+    { es: 'emparejar transacciones', en: 'match transactions' },
+    { es: 'resolver discrepancias', en: 'resolve discrepancies' },
+  ],
+  '/tax-calendar': [
+    { es: 'ver próximas fechas', en: 'view upcoming dates' },
+    { es: 'estimar impuestos', en: 'estimate taxes' },
+    { es: 'configurar recordatorios', en: 'set reminders' },
+  ],
+  '/mentorship': [
+    { es: 'ver cuadrante Kiyosaki', en: 'view Kiyosaki quadrant' },
+    { es: 'registrar hábito financiero', en: 'log financial habit' },
+    { es: 'explorar biblioteca', en: 'explore library' },
+    { es: 'escribir diario financiero', en: 'write financial journal' },
+  ],
+  '/chaos': [
+    { es: 'revisar documentos pendientes', en: 'review pending documents' },
+    { es: 'escanear recibo', en: 'scan receipt' },
+    { es: 'procesar con IA', en: 'process with AI' },
+  ],
+  '/contracts': [
+    { es: 'subir contrato', en: 'upload contract' },
+    { es: 'ver términos extraídos', en: 'view extracted terms' },
+    { es: 'revisar vencimientos', en: 'review expirations' },
+  ],
+  '/mileage': [
+    { es: 'registrar viaje', en: 'log trip' },
+    { es: 'ver deducciones', en: 'view deductions' },
+    { es: 'exportar reporte', en: 'export report' },
+  ],
+  '/tags': [
+    { es: 'crear etiqueta', en: 'create tag' },
+    { es: 'organizar etiquetas', en: 'organize tags' },
+  ],
+  '/settings': [
+    { es: 'cambiar idioma', en: 'change language' },
+    { es: 'configurar moneda', en: 'configure currency' },
+    { es: 'ajustar presupuestos', en: 'adjust budgets' },
+  ],
+  '/business-profile': [
+    { es: 'actualizar datos fiscales', en: 'update tax data' },
+    { es: 'cambiar país', en: 'change country' },
+    { es: 'configurar entidad', en: 'configure entity' },
+  ],
+  '/capture': [
+    { es: 'tomar foto de recibo', en: 'take receipt photo' },
+    { es: 'captura múltiple', en: 'multi capture' },
   ],
 };
 
@@ -135,6 +199,14 @@ const PAGE_NAMES: Record<string, { es: string; en: string }> = {
   '/settings': { es: 'Configuración', en: 'Settings' },
   '/mentorship': { es: 'Mentoría Financiera', en: 'Financial Mentorship' },
   '/tax-calendar': { es: 'Calendario Fiscal', en: 'Tax Calendar' },
+  '/notifications': { es: 'Notificaciones', en: 'Notifications' },
+  '/reconciliation': { es: 'Conciliación Bancaria', en: 'Bank Reconciliation' },
+  '/chaos': { es: 'Centro de Revisión', en: 'Review Center' },
+  '/tags': { es: 'Etiquetas', en: 'Tags' },
+  '/business-profile': { es: 'Perfil de Negocio', en: 'Business Profile' },
+  '/capture': { es: 'Captura Rápida', en: 'Quick Capture' },
+  '/adventure': { es: 'Aventura Financiera', en: 'Financial Adventure' },
+  '/beta-feedback': { es: 'Feedback Beta', en: 'Beta Feedback' },
 };
 
 const PAGE_DESCRIPTIONS: Record<string, { es: string; en: string }> = {
@@ -166,11 +238,56 @@ const PAGE_DESCRIPTIONS: Record<string, { es: string; en: string }> = {
     es: 'Seguimiento de patrimonio neto con activos, pasivos y evolución histórica.',
     en: 'Net worth tracking with assets, liabilities and historical evolution.',
   },
+  '/notifications': {
+    es: 'Tu centro de alertas: logros desbloqueados, metas alcanzadas, rachas, recordatorios de impuestos y tips financieros. Puedes filtrar por tipo (todas, sin leer, logros, metas), marcar como leídas o limpiar. Cada notificación puede llevarte a la sección relevante.',
+    en: 'Your alert center: unlocked achievements, reached goals, streaks, tax reminders and financial tips. Filter by type (all, unread, achievements, goals), mark as read or clear. Each notification can take you to the relevant section.',
+  },
+  '/reconciliation': {
+    es: 'Empareja transacciones bancarias con tus gastos registrados. Detecta discrepancias y gastos no registrados. Importa estados de cuenta y la IA sugiere coincidencias automáticas.',
+    en: 'Match bank transactions with your recorded expenses. Detect discrepancies and unrecorded expenses. Import statements and AI suggests automatic matches.',
+  },
+  '/tax-calendar': {
+    es: 'Fechas clave de impuestos para tu país (CRA en Canadá, SII en Chile). Recordatorios personalizados, estimación de impuestos a pagar, y configuración de perfil fiscal.',
+    en: 'Key tax dates for your country (CRA in Canada, SII in Chile). Custom reminders, tax payment estimates, and tax profile setup.',
+  },
+  '/mentorship': {
+    es: 'Tu espacio de crecimiento financiero: Cuadrante de Kiyosaki (ESBI), clasificación de deudas, hábitos financieros con rachas, metas SMART, diario financiero, biblioteca educativa y sistema de XP/niveles.',
+    en: 'Your financial growth space: Kiyosaki Quadrant (ESBI), debt classification, financial habits with streaks, SMART goals, financial journal, educational library and XP/level system.',
+  },
+  '/chaos': {
+    es: 'Cola de documentos pendientes de revisar: recibos escaneados, PDFs sin procesar. La IA extrae datos automáticamente. Revisa, corrige y aprueba para enviar a gastos.',
+    en: 'Queue of documents pending review: scanned receipts, unprocessed PDFs. AI extracts data automatically. Review, correct and approve to send to expenses.',
+  },
+  '/contracts': {
+    es: 'Gestión de contratos con clientes. Sube PDFs y la IA extrae términos clave, fechas de vencimiento, valores y políticas de reembolso automáticamente.',
+    en: 'Client contract management. Upload PDFs and AI automatically extracts key terms, expiration dates, values and reimbursement policies.',
+  },
+  '/mileage': {
+    es: 'Registro de viajes de negocios para deducciones fiscales. Distancia, ruta, propósito y cálculo automático según tarifa oficial de tu país.',
+    en: 'Business trip logging for tax deductions. Distance, route, purpose and automatic calculation based on your country official rate.',
+  },
+  '/tags': {
+    es: 'Crea y organiza etiquetas personalizadas para clasificar tus gastos más allá de las categorías estándar.',
+    en: 'Create and organize custom tags to classify your expenses beyond standard categories.',
+  },
+  '/settings': {
+    es: 'Configura tu perfil, idioma, moneda, entidades fiscales, metas de ahorro y presupuestos por categoría.',
+    en: 'Configure your profile, language, currency, tax entities, savings goals and category budgets.',
+  },
+  '/business-profile': {
+    es: 'Configura tu perfil fiscal: país, provincia, moneda predeterminada y datos de negocio para cálculos correctos de impuestos.',
+    en: 'Set up your tax profile: country, province, default currency and business data for correct tax calculations.',
+  },
+  '/capture': {
+    es: 'Captura rápida de recibos con cámara. Toma fotos y la IA extrae automáticamente monto, fecha, comercio y categoría.',
+    en: 'Quick receipt capture with camera. Take photos and AI automatically extracts amount, date, merchant and category.',
+  },
 };
 
 export function useAssistantContext(): AssistantContext {
   const location = useLocation();
   const { language } = useLanguage();
+  const { currentCurrency } = useEntity();
   const { data: expenses } = useExpenses();
   const { data: income } = useIncome();
   const { data: clients } = useClients();
@@ -325,7 +442,7 @@ export function useAssistantContext(): AssistantContext {
     };
 
     return result;
-  }, [location.pathname, expenses, income, clients, projects, stats, profile, language]);
+  }, [location.pathname, expenses, income, clients, projects, stats, profile, language, currentCurrency]);
 
   return context;
 }
@@ -333,14 +450,19 @@ export function useAssistantContext(): AssistantContext {
 /**
  * Serializa el contexto para enviar al backend
  */
-export function serializeContextForAI(context: AssistantContext, language: 'es' | 'en'): string {
+export function serializeContextForAI(context: AssistantContext, language: 'es' | 'en', currency?: string): string {
   const { currentPage, visibleCharts, financialSummary, userContext, availableActions } = context;
 
+  const activeCurrency = currency || 'CAD';
+  const locale = activeCurrency === 'CLP' ? 'es-CL' : (language === 'es' ? 'es-CL' : 'en-CA');
+  const decimals = activeCurrency === 'CLP' ? 0 : 2;
+
   const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat(language === 'es' ? 'es-CL' : 'en-CA', {
+    new Intl.NumberFormat(locale, {
       style: 'currency',
-      currency: 'CAD',
-      minimumFractionDigits: 0,
+      currency: activeCurrency,
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
     }).format(amount);
 
   let contextStr = `
