@@ -13,7 +13,7 @@ import { useVoicePreferences, type VoiceGender } from '@/hooks/utils/useVoicePre
 import { useHighlight, type HighlightColor } from '@/contexts/HighlightContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlanLimits } from '@/hooks/data/usePlanLimits';
-import { useElevenLabsVoices, buildVoiceOptions, type ElevenLabsVoice } from '@/hooks/data/useElevenLabsVoices';
+import { ELEVENLABS_VOICES } from '@/hooks/utils/useElevenLabsTTS';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Mic, Volume2, Bell, Zap, Trash2, Plus, Clock, Calendar, 
@@ -36,17 +36,16 @@ export function VoicePreferencesCard() {
   const highlightCtx = useHighlight();
   const { canUsePremiumVoice, getRemainingVoiceMinutes, isGodMode } = usePlanLimits();
 
-  const elevenLabsVoicesQuery = useElevenLabsVoices();
+  // Use curated premium voices directly - no API call needed
+  const premiumOptionsEs = useMemo(() => ({
+    female: ELEVENLABS_VOICES.es.female.map(v => ({ id: v.id, name: v.name, desc: v.desc })),
+    male: ELEVENLABS_VOICES.es.male.map(v => ({ id: v.id, name: v.name, desc: v.desc })),
+  }), []);
 
-  const premiumOptionsEs = useMemo(() => {
-    const voices = elevenLabsVoicesQuery.data?.voices ?? [];
-    return buildVoiceOptions(voices, 'es');
-  }, [elevenLabsVoicesQuery.data?.voices]);
-
-  const premiumOptionsEn = useMemo(() => {
-    const voices = elevenLabsVoicesQuery.data?.voices ?? [];
-    return buildVoiceOptions(voices, 'en');
-  }, [elevenLabsVoicesQuery.data?.voices]);
+  const premiumOptionsEn = useMemo(() => ({
+    female: ELEVENLABS_VOICES.en.female.map(v => ({ id: v.id, name: v.name, desc: v.desc })),
+    male: ELEVENLABS_VOICES.en.male.map(v => ({ id: v.id, name: v.name, desc: v.desc })),
+  }), []);
 
   const selectedPremiumEs = voicePrefs.getPremiumVoiceId('es');
   const selectedPremiumEn = voicePrefs.getPremiumVoiceId('en');
@@ -55,15 +54,14 @@ export function VoicePreferencesCard() {
 
   // Hard safety: if Spanish has an EN voiceId stored, clear it.
   useEffect(() => {
-    if (!elevenLabsVoicesQuery.data?.voices?.length) return;
-    const validEsIds = new Set([
+    const validEsIds = new Set<string>([
       ...premiumOptionsEs.female.map(v => v.id),
       ...premiumOptionsEs.male.map(v => v.id),
     ]);
     if (selectedPremiumEs && !validEsIds.has(selectedPremiumEs)) {
       voicePrefs.setPremiumVoiceIdForLang('es', null);
     }
-  }, [elevenLabsVoicesQuery.data?.voices?.length, premiumOptionsEs.female, premiumOptionsEs.male, selectedPremiumEs, voicePrefs]);
+  }, [premiumOptionsEs.female, premiumOptionsEs.male, selectedPremiumEs, voicePrefs]);
   
   const [availableVoices, setAvailableVoices] = useState<VoiceInfo[]>([]);
   const [showVoiceList, setShowVoiceList] = useState(false);
@@ -565,18 +563,17 @@ export function VoicePreferencesCard() {
                 <ScrollArea className="h-[280px]">
                   <div className="space-y-3">
                     {(() => {
-                      // Combine voices based on language filter
-                      const getVoicesForLang = (targetLang: 'es' | 'en') => {
+                      type CuratedVoice = { id: string; name: string; desc: string; isFemale: boolean; voiceLang: 'es' | 'en' };
+                      
+                      const getVoicesForLang = (targetLang: 'es' | 'en'): CuratedVoice[] => {
                         const opts = targetLang === 'es' ? premiumOptionsEs : premiumOptionsEn;
-                        const femaleIds = new Set(opts.female.map(v => v.id));
-                        return [...opts.female, ...opts.male].map(v => ({
-                          ...v,
-                          isFemale: femaleIds.has(v.id),
-                          voiceLang: targetLang,
-                        }));
+                        return [
+                          ...opts.female.map(v => ({ ...v, isFemale: true, voiceLang: targetLang as 'es' | 'en' })),
+                          ...opts.male.map(v => ({ ...v, isFemale: false, voiceLang: targetLang as 'es' | 'en' })),
+                        ];
                       };
 
-                      let allVoices: Array<ElevenLabsVoice & { isFemale: boolean; voiceLang: 'es' | 'en' }> = [];
+                      let allVoices: CuratedVoice[] = [];
                       
                       if (voiceFilter.lang === 'all' || voiceFilter.lang === 'es') {
                         allVoices = [...allVoices, ...getVoicesForLang('es')];
@@ -592,20 +589,7 @@ export function VoicePreferencesCard() {
                         );
                       }
 
-                      const getSubtitle = (v: ElevenLabsVoice) =>
-                        v.labels?.accent || v.labels?.description || v.description || '';
-
-                      // Loading state
-                      if (elevenLabsVoicesQuery.isLoading) {
-                        return (
-                          <div className="text-xs text-muted-foreground flex items-center gap-2 justify-center py-8">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            {language === 'es' ? 'Cargando voces…' : 'Loading voices…'}
-                          </div>
-                        );
-                      }
-                      
-                      if (elevenLabsVoicesQuery.isError || allVoices.length === 0) {
+                      if (allVoices.length === 0) {
                         return (
                           <div className="text-xs text-muted-foreground text-center py-8">
                             {language === 'es'
@@ -639,7 +623,7 @@ export function VoicePreferencesCard() {
                               <div className="min-w-0 flex-1">
                                 <p className="text-sm font-medium truncate">{voice.name}</p>
                                 <p className={`text-[10px] ${isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                                  {getSubtitle(voice) || (voice.voiceLang === 'es' ? 'Acento LATAM' : 'English')}
+                                  {voice.desc || (voice.voiceLang === 'es' ? 'Acento LATAM' : 'English')}
                                 </p>
                               </div>
                               {isSelected && <span className="text-xs">✓</span>}
