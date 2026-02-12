@@ -1254,6 +1254,7 @@ export const ChatAssistant: React.FC = () => {
                         language={language as 'es' | 'en'}
                         autoSpeak={autoSpeak}
                         onAutoSpeakChange={setAutoSpeak}
+                        voicePrefs={voiceControl.voicePrefs}
                       />
                     </div>
                   </SheetContent>

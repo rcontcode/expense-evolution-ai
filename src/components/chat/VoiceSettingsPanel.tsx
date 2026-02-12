@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useElevenLabsVoices, buildVoiceOptions, ElevenLabsVoice } from '@/hooks/data/useElevenLabsVoices';
 import { useVoicePreferences, VoiceGender } from '@/hooks/utils/useVoicePreferences';
+import type { useVoicePreferences as UseVoicePreferencesType } from '@/hooks/utils/useVoicePreferences';
 import { useAppSounds } from '@/hooks/utils/useAppSounds';
 import { Flame, Music, Gamepad2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ interface VoiceSettingsPanelProps {
   autoSpeak: boolean;
   onAutoSpeakChange: (value: boolean) => void;
   compact?: boolean;
+  voicePrefs?: ReturnType<typeof useVoicePreferences>;
 }
 
 export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
@@ -26,8 +28,10 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
   autoSpeak,
   onAutoSpeakChange,
   compact = false,
+  voicePrefs: externalVoicePrefs,
 }) => {
-  const voicePrefs = useVoicePreferences();
+  const internalVoicePrefs = useVoicePreferences();
+  const voicePrefs = externalVoicePrefs || internalVoicePrefs;
   const { data: voicesData, isLoading: isLoadingVoices } = useElevenLabsVoices();
    const sounds = useAppSounds();
    const [soundPrefs, setSoundPrefs] = React.useState(sounds.getPreferences());
