@@ -163,8 +163,8 @@ export function expandAcronymsForSpeech(text: string, lang: string): string {
     const spelling = isSpanish ? entry.spellEs : entry.spellEn;
     const fullName = isSpanish ? entry.es : entry.en;
 
-    // Build the spoken version: "ese, i, i... Servicio de Impuestos Internos"
-    const spokenVersion = `${spelling}... ${fullName}`;
+    // Build the spoken version: "ese, i, i, Servicio de Impuestos Internos"
+    const spokenVersion = `${spelling}, ${fullName}`;
 
     // Replace standalone acronym (word boundary match)
     const regex = new RegExp(`\\b${acronym}\\b`, 'g');
