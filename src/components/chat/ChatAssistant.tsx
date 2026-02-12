@@ -54,6 +54,7 @@ import { useLanguageDetection } from '@/hooks/utils/useLanguageDetection';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useEntity } from '@/contexts/EntityContext';
 import { toast } from 'sonner';
 import { AnimatePresence } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -137,6 +138,7 @@ export const ChatAssistant: React.FC = () => {
   const { highlight, clearHighlights, isHighlightEnabled } = useHighlight();
 
   const { user } = useAuth();
+  const { currentEntity, currentCurrency, isMultiEntity, activeEntities } = useEntity();
   const { data: profile } = useProfile();
   const { data: stats } = useDashboardStats();
   const { data: incomeData } = useIncome();
@@ -952,6 +954,11 @@ export const ChatAssistant: React.FC = () => {
         } : null,
         deductibleTotal,
         billableTotal,
+        // Currency context for proper monetary responses
+        currency: currentCurrency,
+        entityName: currentEntity?.name || null,
+        isMultiEntity,
+        availableCurrencies: activeEntities.map(e => e.default_currency || 'CAD').filter((v, i, a) => a.indexOf(v) === i),
         // User profile data
         workTypes: profile?.work_types || [],
         country: profile?.country || 'Canada',

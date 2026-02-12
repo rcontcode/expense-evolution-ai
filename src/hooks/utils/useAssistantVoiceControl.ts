@@ -10,6 +10,7 @@ import { useVoiceAssistant } from './useVoiceAssistant';
 import { useElevenLabsTTS } from './useElevenLabsTTS';
 import { useVoicePreferences } from './useVoicePreferences';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useEntity } from '@/contexts/EntityContext';
 
 interface UseAssistantVoiceControlOptions {
   onTranscript?: (text: string) => void;
@@ -19,6 +20,7 @@ interface UseAssistantVoiceControlOptions {
 
 export function useAssistantVoiceControl(options: UseAssistantVoiceControlOptions = {}) {
   const { language } = useLanguage();
+  const { currentCurrency } = useEntity();
   const voicePrefs = useVoicePreferences();
 
   // Premium voice ID
@@ -27,11 +29,12 @@ export function useAssistantVoiceControl(options: UseAssistantVoiceControlOption
     return voicePrefs.premiumVoiceIdByLang?.[lang] || voicePrefs.premiumVoiceId || undefined;
   }, [language, voicePrefs.premiumVoiceIdByLang, voicePrefs.premiumVoiceId]);
 
-  // ElevenLabs TTS
+  // ElevenLabs TTS - now with currency context
   const elevenLabsTTS = useElevenLabsTTS({
     lang: language as 'es' | 'en',
     voiceGender: voicePrefs.voiceGender === 'auto' ? 'female' : voicePrefs.voiceGender as 'female' | 'male',
     voiceId: currentVoiceId,
+    currency: currentCurrency,
   });
 
   // Native voice assistant with ElevenLabs as premium backend
@@ -41,6 +44,7 @@ export function useAssistantVoiceControl(options: UseAssistantVoiceControlOption
     pitch: voicePrefs.pitch,
     voiceGender: voicePrefs.voiceGender,
     selectedVoiceName: voicePrefs.selectedVoiceName,
+    currency: currentCurrency,
     premiumSpeak: elevenLabsTTS.speak,
     isPremiumSpeaking: elevenLabsTTS.isSpeaking,
     onTranscript: options.onTranscript,

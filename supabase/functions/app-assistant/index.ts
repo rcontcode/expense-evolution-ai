@@ -745,6 +745,12 @@ Kiyosaki: 'Invierte en lo que entiendes'. ¿Quieres trackear en Portfolio?"
 7. **PREGUNTAS NO FINANCIERAS**: Sé gracioso pero redirige amablemente
 8. **USA LOS TOOLS** cuando el usuario pide acciones
 9. **NUNCA des respuestas genéricas** - siempre personaliza y profundiza
+10. **MONEDA**: NUNCA uses el símbolo "$" en tus respuestas. SIEMPRE escribe el nombre completo de la moneda (ej: "50 dólares canadienses", "10 pesos chilenos"). Esto es CRÍTICO para que el TTS pronuncie correctamente.
+5. Sé conversacional pero experto
+6. **PREGUNTAS FINANCIERAS**: Responde con sabiduría REAL + conecta con la app
+7. **PREGUNTAS NO FINANCIERAS**: Sé gracioso pero redirige amablemente
+8. **USA LOS TOOLS** cuando el usuario pide acciones
+9. **NUNCA des respuestas genéricas** - siempre personaliza y profundiza
 
 ## FORMATO DE RESPUESTAS (MUY IMPORTANTE)
 
@@ -809,6 +815,24 @@ async function incrementVoiceUsage(userId: string): Promise<void> {
 }
 
 // ============================================================================
+// CURRENCY HELPERS
+// ============================================================================
+
+const CURRENCY_SPOKEN_MAP: Record<string, { es: string; en: string }> = {
+  CAD: { es: 'dólares canadienses', en: 'Canadian dollars' },
+  CLP: { es: 'pesos chilenos', en: 'Chilean pesos' },
+  USD: { es: 'dólares', en: 'dollars' },
+  EUR: { es: 'euros', en: 'euros' },
+  MXN: { es: 'pesos mexicanos', en: 'Mexican pesos' },
+};
+
+function getCurrencySpokenName(currency: string, language: string): string {
+  const entry = CURRENCY_SPOKEN_MAP[currency];
+  if (entry) return language === 'es' ? entry.es : entry.en;
+  return language === 'es' ? 'dólares' : 'dollars';
+}
+
+// ============================================================================
 // TOOL EXECUTION HELPERS
 // ============================================================================
 
@@ -846,11 +870,14 @@ function executeOpenItemTool(args: { target: string; itemName: string; message: 
   };
 }
 
-function executeCreateExpenseTool(args: { amount: number; vendor?: string; category?: string; description?: string }) {
+function executeCreateExpenseTool(args: { amount: number; vendor?: string; category?: string; description?: string }, currency?: string, language?: string) {
   const hasVendor = !!args.vendor;
   const hasCategory = !!args.category && args.category !== 'other';
   
-  let message = `¡Registrado! Gasto de $${args.amount}${args.vendor ? ` en ${args.vendor}` : ''}.`;
+  // Use spoken currency name instead of $ symbol
+  const currencyName = getCurrencySpokenName(currency || 'CAD', language || 'es');
+  
+  let message = `¡Registrado! Gasto de ${args.amount} ${currencyName}${args.vendor ? ` en ${args.vendor}` : ''}.`;
   
   const missingFields: string[] = [];
   if (!hasVendor) missingFields.push('el vendedor o tienda');
@@ -873,11 +900,14 @@ function executeCreateExpenseTool(args: { amount: number; vendor?: string; categ
   };
 }
 
-function executeCreateIncomeTool(args: { amount: number; source?: string; incomeType?: string; description?: string }) {
+function executeCreateIncomeTool(args: { amount: number; source?: string; incomeType?: string; description?: string }, currency?: string, language?: string) {
   const hasSource = !!args.source;
   const hasType = !!args.incomeType && args.incomeType !== 'other';
   
-  let message = `¡Listo! Ingreso de $${args.amount} registrado${args.source ? ` de ${args.source}` : ''}.`;
+  // Use spoken currency name instead of $ symbol
+  const currencyName = getCurrencySpokenName(currency || 'CAD', language || 'es');
+  
+  let message = `¡Listo! Ingreso de ${args.amount} ${currencyName} registrado${args.source ? ` de ${args.source}` : ''}.`;
   
   // Add conversational follow-up for missing fields
   const missingFields: string[] = [];
@@ -1008,11 +1038,19 @@ Ruta exacta: ${userContext.currentRoute || 'desconocida'}
 
 ### Datos financieros:
 - Usuario: ${userContext.userName || 'Usuario'}
-- Gastos del mes: $${userContext.totalExpenses?.toFixed(2) || '0'}
-- Ingresos del mes: $${userContext.totalIncome?.toFixed(2) || '0'}
-- Balance: $${userContext.balance?.toFixed(2) || '0'}
+- Moneda activa: ${userContext.currency || 'CAD'} (${getCurrencySpokenName(userContext.currency || 'CAD', language)})
+- Entidad activa: ${userContext.entityName || 'Principal'}
+- Multi-país: ${userContext.isMultiEntity ? 'Sí - monedas disponibles: ' + (userContext.availableCurrencies || []).join(', ') : 'No'}
+- Gastos del mes: ${userContext.totalExpenses?.toFixed(2) || '0'} ${getCurrencySpokenName(userContext.currency || 'CAD', language)}
+- Ingresos del mes: ${userContext.totalIncome?.toFixed(2) || '0'} ${getCurrencySpokenName(userContext.currency || 'CAD', language)}
+- Balance: ${userContext.balance?.toFixed(2) || '0'} ${getCurrencySpokenName(userContext.currency || 'CAD', language)}
 - Clientes: ${userContext.clientCount || 0}
 - Proyectos: ${userContext.projectCount || 0}
+
+### Regla de moneda:
+- Cuando el usuario mencione un monto sin especificar moneda, asume ${userContext.currency || 'CAD'} (${getCurrencySpokenName(userContext.currency || 'CAD', language)}).
+${userContext.isMultiEntity ? '- El usuario opera en MÚLTIPLES países. Si hay ambigüedad en la moneda, PREGUNTA en cuál moneda quiere registrar.' : ''}
+- NUNCA uses el símbolo "$" en tus respuestas. Siempre escribe el nombre de la moneda (ej: "50 ${getCurrencySpokenName(userContext.currency || 'CAD', language)}").
 `;
       
       // Add user profile context
@@ -1159,10 +1197,10 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
           actionResponse = executeOpenItemTool(toolArgs, language as 'es' | 'en');
           break;
         case 'create_expense':
-          actionResponse = executeCreateExpenseTool(toolArgs);
+          actionResponse = executeCreateExpenseTool(toolArgs, userContext?.currency, language);
           break;
         case 'create_income':
-          actionResponse = executeCreateIncomeTool(toolArgs);
+          actionResponse = executeCreateIncomeTool(toolArgs, userContext?.currency, language);
           break;
         case 'export_report':
           actionResponse = executeExportTool(toolArgs, language as 'es' | 'en');
