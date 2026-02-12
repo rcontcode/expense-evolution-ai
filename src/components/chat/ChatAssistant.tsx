@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Pause, RotateCcw, RotateCw, Square, AlertTriangle, BookOpen, Settings, Volume1, History, Zap, TrendingUp, ArrowRight, Minimize2 } from 'lucide-react';
+import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Square, AlertTriangle, BookOpen, Settings, Volume1, History, Zap, TrendingUp, ArrowRight, Minimize2 } from 'lucide-react';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,15 +43,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useHighlight, HIGHLIGHTABLE_ELEMENTS } from '@/contexts/HighlightContext';
 import { detectHighlightTargets, getNavigationHighlights } from '@/lib/highlight-detection';
-import { useVoiceAssistant } from '@/hooks/utils/useVoiceAssistant';
-import { useAudioPlayback } from '@/hooks/utils/useAudioPlayback';
+import { useAssistantVoiceControl } from '@/hooks/utils/useAssistantVoiceControl';
 import { useSmartGuidance } from '@/hooks/utils/useSmartGuidance';
-import { useVoicePreferences } from '@/hooks/utils/useVoicePreferences';
 import { useVoiceConfirmation } from '@/hooks/utils/useVoiceConfirmation';
 import { useConversationState } from '@/hooks/utils/useConversationState';
 import { useConversationMemory } from '@/hooks/utils/useConversationMemory';
 import { useVoiceSynthesis } from '@/hooks/utils/useVoiceSynthesis';
-import { useElevenLabsTTS } from '@/hooks/utils/useElevenLabsTTS';
 import { voiceSynthesisManager } from '@/lib/voiceSynthesisManager';
 import { useLanguageDetection } from '@/hooks/utils/useLanguageDetection';
 import { cn } from '@/lib/utils';
@@ -166,9 +163,6 @@ export const ChatAssistant: React.FC = () => {
     getQuickActions 
   } = useSmartGuidance();
 
-  // Voice preferences (speed, volume, sounds, shortcuts, reminders)
-  const voicePrefs = useVoicePreferences();
-
   // Voice confirmation system
   const voiceConfirmation = useVoiceConfirmation();
 
@@ -180,21 +174,6 @@ export const ChatAssistant: React.FC = () => {
 
   // Language detection
   const langDetection = useLanguageDetection();
-
-  // Premium voice synthesis (ElevenLabs)
-  // Get voice ID reactively - must use the actual stored value, not the function
-  const currentVoiceId = useMemo(() => {
-    const lang = language as 'es' | 'en';
-    const id = voicePrefs.premiumVoiceIdByLang?.[lang] || voicePrefs.premiumVoiceId || undefined;
-    console.log('[Voice] Current voice ID for', lang, ':', id);
-    return id;
-  }, [language, voicePrefs.premiumVoiceIdByLang, voicePrefs.premiumVoiceId]);
-  
-  const elevenLabsTTS = useElevenLabsTTS({
-    lang: language as 'es' | 'en',
-    voiceGender: voicePrefs.voiceGender === 'auto' ? 'female' : voicePrefs.voiceGender as 'female' | 'male',
-    voiceId: currentVoiceId,
-  });
 
   // Current detected intent for visual feedback
   const [currentIntent, setCurrentIntent] = useState<{
@@ -250,25 +229,9 @@ export const ChatAssistant: React.FC = () => {
   const userName = profile?.full_name?.split(' ')[0] || 'Usuario'
   const quickQuestions = LOCAL_QUICK_QUESTIONS[language as keyof typeof LOCAL_QUICK_QUESTIONS] || LOCAL_QUICK_QUESTIONS.es;
   
-  // Get personalized frequent actions
-  const frequentActions = useMemo(() => {
-    const topActions = voicePrefs.getTopActions(3);
-    return topActions.map(action => {
-      // Map action names to route/display info
-      const actionMap: Record<string, { route: string; name: { es: string; en: string }; icon: typeof Zap }> = {
-        'voice_input': { route: '', name: { es: 'Entrada de voz', en: 'Voice input' }, icon: Mic },
-        'navigation': { route: '', name: { es: 'Navegación', en: 'Navigation' }, icon: ArrowRight },
-        'query': { route: '', name: { es: 'Consulta de datos', en: 'Data query' }, icon: TrendingUp },
-        'shortcut_expenses': { route: '/expenses', name: { es: 'Gastos', en: 'Expenses' }, icon: Zap },
-        'shortcut_income': { route: '/income', name: { es: 'Ingresos', en: 'Income' }, icon: Zap },
-        'shortcut_dashboard': { route: '/dashboard', name: { es: 'Dashboard', en: 'Dashboard' }, icon: Zap },
-      };
-      return { 
-        ...action, 
-        info: actionMap[action.action] || { route: '', name: { es: action.action, en: action.action }, icon: Zap }
-      };
-    }).filter(a => a.info.route); // Only show navigable actions
-  }, [voicePrefs]);
+  // Get personalized frequent actions - uses voicePrefs which is set after voiceControl hook
+  // Moved to a safe default until voicePrefs is available
+  const frequentActions: { action: string; count: number; info: { route: string; name: { es: string; en: string }; icon: typeof Zap } }[] = [];
 
   // Haptic feedback helper (for mobile)
   const triggerHapticFeedback = useCallback((type: 'light' | 'medium' | 'heavy' = 'medium') => {
@@ -386,34 +349,13 @@ export const ChatAssistant: React.FC = () => {
     }
   }, [navigate, language]);
 
-  // Voice assistant hook - Simplified Push-to-Talk
-  const {
-    isListening,
-    isSpeaking,
-    isSpeechPaused,
-    isSupported: isVoiceSupported,
-    transcript,
-    currentSpeakingText,
-    currentSentenceIndex,
-    toggleListening,
-    speak,
-    pauseSpeech,
-    resumeSpeech,
-    stopSpeaking,
-  } = useVoiceAssistant({
-    speechSpeed: voicePrefs.speechSpeed,
-    volume: voicePrefs.volume,
-    pitch: voicePrefs.pitch,
-    voiceGender: voicePrefs.voiceGender,
-    selectedVoiceName: voicePrefs.selectedVoiceName,
-    premiumSpeak: elevenLabsTTS.speak,
-    isPremiumSpeaking: elevenLabsTTS.isSpeaking,
+  // UNIFIED Voice Control Hook - single source of truth for ALL voice activity
+  const voiceControl = useAssistantVoiceControl({
     onInterimTranscript: (text) => {
-      // Update input field with live transcript
       setInput(text);
     },
     onInterrupted: () => {
-      voicePrefs.playSound('notification');
+      voiceControl.voicePrefs.playSound('notification');
       const msg = language === 'es' ? 'Interrumpido. ¿Qué necesitas?' : 'Interrupted. What do you need?';
       toast.info(msg);
     },
@@ -421,7 +363,7 @@ export const ChatAssistant: React.FC = () => {
       console.log('[ChatAssistant] Received transcript:', text);
       
       // Track action for learning
-      voicePrefs.trackAction('voice_input');
+      voiceControl.voicePrefs.trackAction('voice_input');
 
       // Auto-detect language and switch if needed (non-blocking)
       const langSwitch = langDetection.autoSwitchLanguage(text);
@@ -448,7 +390,6 @@ export const ChatAssistant: React.FC = () => {
       const result = processVoiceCommand(text, processorContext);
       
       if (!result.handled) {
-        // Empty input, ignore
         return;
       }
 
@@ -458,18 +399,17 @@ export const ChatAssistant: React.FC = () => {
         const userMessage: Message = { role: 'user', content: userText };
         const assistantMessage: Message = { role: 'assistant', content: response };
         setMessages(prev => [...prev, userMessage, assistantMessage]);
-        // Only speak if autoSpeak is enabled
         if (autoSpeak) {
-          speak(response);
+          voiceControl.speak(response);
         }
-        if (sound) voicePrefs.playSound(sound);
+        if (sound) voiceControl.voicePrefs.playSound(sound);
       };
 
       // Handle each result type
       switch (result.type) {
         case 'onboarding-mic-test':
           setInput('');
-          speak(result.response);
+          voiceControl.speak(result.response);
           setIsOnboardingMicTest(false);
           return;
 
@@ -483,21 +423,19 @@ export const ChatAssistant: React.FC = () => {
           if (result.response) {
             const confirmMessage: Message = { role: 'assistant', content: result.response };
             setMessages(prev => [...prev, confirmMessage]);
-            speak(result.response);
-            voicePrefs.playSound(result.confirmed ? 'success' : 'notification');
+            voiceControl.speak(result.response);
+            voiceControl.voicePrefs.playSound(result.confirmed ? 'success' : 'notification');
           }
           return;
 
         case 'clarification-response':
           setInput('');
-          // User answered a clarification - execute their choice
           if (result.option) {
             const option = result.option;
             const assistantMsg: Message = { role: 'assistant', content: result.response };
             setMessages(prev => [...prev, assistantMsg]);
-            speak(result.response);
+            voiceControl.speak(result.response);
             
-            // Execute the action based on user's choice
             if (option.action === 'navigate' || option.action === 'both') {
               if (option.route) {
                 triggerHapticFeedback('medium');
@@ -506,7 +444,6 @@ export const ChatAssistant: React.FC = () => {
               }
             }
             if (option.action === 'explain' || option.action === 'both') {
-              // Trigger a tutorial or explanation for the target
               if (option.target) {
                 const tutorial = findTutorial(option.target);
                 if (tutorial) {
@@ -515,36 +452,31 @@ export const ChatAssistant: React.FC = () => {
                 }
               }
             }
-            voicePrefs.playSound('success');
+            voiceControl.voicePrefs.playSound('success');
           }
           return;
 
         case 'stop-command':
-          // Stop all voice activity
           setInput('');
-          window.speechSynthesis.cancel();
-          audioPlayback.stop();
-          elevenLabsTTS.stop();
-          voicePrefs.playSound('notification');
+          voiceControl.stopAll();
+          voiceControl.voicePrefs.playSound('notification');
           return;
 
         case 'ai-fallback':
-          // Send to AI for intelligent response
           setInput('');
           const userMessage: Message = { role: 'user', content: text };
           setMessages(prev => [...prev, userMessage]);
-          sendMessage(text, true); // true = skip adding user message again
+          sendMessage(text, true);
           return;
       }
     },
   });
 
-  // Audio playback hook for Spotify-like controls
-  const audioPlayback = useAudioPlayback({
-    onEnd: () => {
-      // Optionally handle when audio ends
-    },
-  });
+  // Destructure commonly used values for convenience
+  const { isAnySpeaking, isListening, isSupported: isVoiceSupported, transcript, 
+          currentSpeakingText, currentSentenceIndex, isSpeechPaused } = voiceControl;
+  const voicePrefs = voiceControl.voicePrefs;
+  const elevenLabsTTS = voiceControl.elevenLabsTTS;
 
   // Track recording duration
   useEffect(() => {
@@ -571,12 +503,12 @@ export const ChatAssistant: React.FC = () => {
 
   // Update input with live transcript - only when actually listening and NOT speaking
   useEffect(() => {
-    const isOutputtingOrProcessing = isSpeaking || elevenLabsTTS.isSpeaking || isLoading || isProcessingVoice;
+    const isOutputtingOrProcessing = isAnySpeaking || isLoading || isProcessingVoice;
     
     if (transcript && isListening && !isOutputtingOrProcessing) {
       setInput(transcript);
     }
-  }, [transcript, isListening, isSpeaking, elevenLabsTTS.isSpeaking, isLoading, isProcessingVoice]);
+  }, [transcript, isListening, isAnySpeaking, isLoading, isProcessingVoice]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -617,11 +549,11 @@ export const ChatAssistant: React.FC = () => {
       // Speak welcome if autoSpeak enabled
       if (autoSpeak && isVoiceSupported) {
         setTimeout(() => {
-          speak(welcome);
+          voiceControl.speak(welcome);
         }, 500);
       }
     }
-  }, [isOpen, hasShownWelcome, messages.length, getContextualWelcome, getProactiveAlerts, autoSpeak, isVoiceSupported, speak, language]);
+  }, [isOpen, hasShownWelcome, messages.length, getContextualWelcome, getProactiveAlerts, autoSpeak, isVoiceSupported, voiceControl, language]);
 
   // Check voice reminders periodically
   useEffect(() => {
@@ -634,7 +566,7 @@ export const ChatAssistant: React.FC = () => {
           const reminderMsg: Message = { role: 'assistant', content: `🔔 ${reminder}` };
           setMessages(prev => [...prev, reminderMsg]);
           if (autoSpeak) {
-            speak(reminder);
+            voiceControl.speak(reminder);
           }
           voicePrefs.playSound('notification');
         });
@@ -642,7 +574,7 @@ export const ChatAssistant: React.FC = () => {
     }, 60000); // Check every minute
     
     return () => clearInterval(checkInterval);
-  }, [isOpen, isVoiceSupported, language, autoSpeak, speak, voicePrefs]);
+  }, [isOpen, isVoiceSupported, language, autoSpeak, voiceControl, voicePrefs]);
 
   // Check if voice onboarding is needed - use CONSISTENT key with VoiceOnboarding.tsx
   useEffect(() => {
@@ -658,19 +590,16 @@ export const ChatAssistant: React.FC = () => {
   useVoiceKeyboardShortcuts({
     onToggleMic: () => {
       if (isVoiceSupported) {
-        toggleListening();
+        voiceControl.toggleListening();
       }
     },
     onToggleContinuous: () => {
-      // Continuous mode removed - this is now a no-op
-      // The shortcut can toggle regular listening instead
       if (isVoiceSupported) {
-        toggleListening();
+        voiceControl.toggleListening();
       }
     },
     onStopSpeaking: () => {
-      window.speechSynthesis.cancel();
-      stopSpeaking();
+      voiceControl.stopAll();
     },
     onOpenChat: () => {
       setIsOpen(true);
@@ -940,8 +869,7 @@ export const ChatAssistant: React.FC = () => {
 
       if (autoSpeak && isVoiceSupported) {
         window.speechSynthesis.cancel();
-        audioPlayback.stop();
-        speak(responseText);
+        voiceControl.speak(responseText);
       }
     };
 
@@ -1139,8 +1067,7 @@ export const ChatAssistant: React.FC = () => {
       // Auto-speak response if enabled
       if (autoSpeak && isVoiceSupported) {
         window.speechSynthesis.cancel();
-        audioPlayback.stop();
-        speak(responseText);
+        voiceControl.speak(responseText);
       }
     } catch (error) {
       console.error('Chat error:', error);
@@ -1155,7 +1082,7 @@ export const ChatAssistant: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, userName, stats, monthlyIncome, yearlyIncome, balance, clients, projects, messages, language, autoSpeak, isVoiceSupported, speak, audioPlayback, voicePrefs, location.pathname, isHighlightEnabled, highlight, biggestExpense, topCategory, deductibleTotal, billableTotal, executeAIAction]);
+  }, [isLoading, userName, stats, monthlyIncome, yearlyIncome, balance, clients, projects, messages, language, autoSpeak, isVoiceSupported, voiceControl, voicePrefs, location.pathname, isHighlightEnabled, highlight, biggestExpense, topCategory, deductibleTotal, billableTotal, executeAIAction]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1166,32 +1093,10 @@ export const ChatAssistant: React.FC = () => {
     sendMessage(question);
   };
 
-  // Combined speaking state - reflects BOTH native TTS and ElevenLabs
-  const isAnySpeaking = isSpeaking || elevenLabsTTS.isSpeaking;
-
-  // UNIFIED STOP FUNCTION - Stops ALL voice activity
+  // UNIFIED STOP FUNCTION - delegates to voiceControl
   const stopAllVoiceActivity = useCallback(() => {
-    console.log('[Voice] Stopping ALL voice activity');
-    window.speechSynthesis.cancel();
-    audioPlayback.stop();
-    elevenLabsTTS.stop();
-    stopSpeaking();
-    if (isListening) {
-      toggleListening();
-    }
-  }, [audioPlayback, elevenLabsTTS, stopSpeaking, isListening, toggleListening]);
-
-  const handleMicClick = () => {
-    // Cancel ALL speech synthesis first
-    window.speechSynthesis.cancel();
-    audioPlayback.stop();
-    elevenLabsTTS.stop();
-    
-    if (isAnySpeaking) {
-      stopSpeaking();
-    }
-    toggleListening();
-  };
+    voiceControl.stopAll();
+  }, [voiceControl]);
 
   return (
     <>
@@ -1207,10 +1112,10 @@ export const ChatAssistant: React.FC = () => {
           localStorage.setItem('evofinz_voice_onboarding_completed', 'true');
         }}
         isVoiceSupported={isVoiceSupported}
-        onTestVoice={(text) => speak(text)}
+        onTestVoice={(text) => voiceControl.speak(text)}
         onTestMic={() => {
           setIsOnboardingMicTest(true);
-          toggleListening();
+          voiceControl.toggleListening();
         }}
         isListening={isListening}
         isSpeaking={isAnySpeaking}
@@ -1563,43 +1468,24 @@ export const ChatAssistant: React.FC = () => {
                       )}
                     >
                       <p className="whitespace-pre-wrap">{msg.content}</p>
-                      {/* Play button for assistant messages */}
+                      {/* Play button for assistant messages - SIMPLIFIED: always uses unified speak */}
                       {msg.role === 'assistant' && isVoiceSupported && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            // If the mic is currently listening, avoid audioPlayback because it doesn't pause recognition.
-                            // This prevents speaker-echo loops.
-                            if (isListening) {
-                              window.speechSynthesis.cancel();
-                              audioPlayback.stop();
-                              speak(msg.content);
-                              return;
-                            }
-
-                            const isThisPlaying = audioPlayback.isPlaying && audioPlayback.currentMessageIndex === i;
-                            const isThisPaused = audioPlayback.isPaused && audioPlayback.currentMessageIndex === i;
-
-                            if (isThisPlaying && !isThisPaused) {
-                              audioPlayback.pause();
-                            } else if (isThisPaused) {
-                              audioPlayback.resume();
+                            if (isAnySpeaking) {
+                              voiceControl.stopAll();
                             } else {
-                              audioPlayback.play(msg.content, i);
+                              voiceControl.speak(msg.content);
                             }
                           }}
                           className="h-6 px-2 mt-1 text-xs opacity-70 hover:opacity-100"
                         >
-                          {audioPlayback.isPlaying && audioPlayback.currentMessageIndex === i && !audioPlayback.isPaused ? (
+                          {isAnySpeaking ? (
                             <>
-                              <Pause className="h-3 w-3 mr-1" />
-                              {language === 'es' ? 'Pausar' : 'Pause'}
-                            </>
-                          ) : audioPlayback.isPaused && audioPlayback.currentMessageIndex === i ? (
-                            <>
-                              <Play className="h-3 w-3 mr-1" />
-                              {language === 'es' ? 'Reanudar' : 'Resume'}
+                              <Square className="h-3 w-3 mr-1" />
+                              {language === 'es' ? 'Detener' : 'Stop'}
                             </>
                           ) : (
                             <>
@@ -1630,88 +1516,14 @@ export const ChatAssistant: React.FC = () => {
               currentSentenceIndex={currentSentenceIndex}
               isPlaying={isAnySpeaking}
               isPaused={isSpeechPaused}
-              onPause={pauseSpeech}
-              onResume={resumeSpeech}
-              onStop={stopSpeaking}
+              onPause={voiceControl.pauseSpeech}
+              onResume={voiceControl.resumeSpeech}
+              onStop={voiceControl.stopAll}
               className="mx-4 mb-2"
             />
           )}
 
-          {/* Audio Playback Controls - Spotify style */}
-          {(audioPlayback.isPlaying || audioPlayback.isPaused) && !isAnySpeaking && (
-            <div className="px-4 py-3 border-t bg-muted/30">
-              <div className="flex flex-col gap-2">
-                {/* Progress bar */}
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="w-8 text-right font-mono">
-                    {Math.floor(audioPlayback.currentTime / 60)}:{Math.floor(audioPlayback.currentTime % 60).toString().padStart(2, '0')}
-                  </span>
-                  <Progress value={audioPlayback.progress} className="flex-1 h-1.5" />
-                  <span className="w-8 font-mono">
-                    {Math.floor(audioPlayback.duration / 60)}:{Math.floor(audioPlayback.duration % 60).toString().padStart(2, '0')}
-                  </span>
-                </div>
-                
-                {/* Playback controls */}
-                <div className="flex items-center justify-center gap-1">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={audioPlayback.seekBackward}
-                        className="h-8 w-8"
-                      >
-                        <RotateCcw className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{language === 'es' ? 'Retroceder 10s' : 'Rewind 10s'}</TooltipContent>
-                  </Tooltip>
-                  
-                  <Button
-                    variant="default"
-                    size="icon"
-                    onClick={audioPlayback.isPaused ? audioPlayback.resume : audioPlayback.pause}
-                    className="h-10 w-10 rounded-full"
-                  >
-                    {audioPlayback.isPaused ? (
-                      <Play className="h-5 w-5 ml-0.5" />
-                    ) : (
-                      <Pause className="h-5 w-5" />
-                    )}
-                  </Button>
-                  
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={audioPlayback.seekForward}
-                        className="h-8 w-8"
-                      >
-                        <RotateCw className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{language === 'es' ? 'Adelantar 10s' : 'Forward 10s'}</TooltipContent>
-                  </Tooltip>
-                  
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={audioPlayback.stop}
-                        className="h-8 w-8 ml-2"
-                      >
-                        <Square className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{language === 'es' ? 'Detener' : 'Stop'}</TooltipContent>
-                  </Tooltip>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Spotify-style controls removed - unified voice control handles everything */}
 
           {/* Recording Controls */}
           {isListening && (
@@ -1771,7 +1583,7 @@ export const ChatAssistant: React.FC = () => {
               const response = language === 'es' ? 'Entendido' : 'Got it';
               const msg: Message = { role: 'assistant', content: response };
               setMessages(prev => [...prev, msg]);
-              speak(response);
+              voiceControl.speak(response);
               
               // Execute the action
               if (option.action === 'navigate' || option.action === 'both') {
@@ -1791,7 +1603,7 @@ export const ChatAssistant: React.FC = () => {
                     const tutorialResponse = formatTutorialForSpeech(tutorial);
                     const tutorialMsg: Message = { role: 'assistant', content: tutorialResponse };
                     setMessages(prev => [...prev, tutorialMsg]);
-                    speak(tutorialResponse);
+                    voiceControl.speak(tutorialResponse);
                   }
                 }
               }
@@ -1805,7 +1617,7 @@ export const ChatAssistant: React.FC = () => {
                 content: language === 'es' ? 'Cancelado. ¿En qué más puedo ayudarte?' : 'Cancelled. How else can I help?' 
               };
               setMessages(prev => [...prev, cancelMsg]);
-              speak(cancelMsg.content);
+              voiceControl.speak(cancelMsg.content);
             }}
             onQuickResponse={(value) => {
               // Process quick response chip click as if user spoke it
@@ -1842,7 +1654,7 @@ export const ChatAssistant: React.FC = () => {
               } else if (result.fallbackMessage) {
                 const fallbackMsg: Message = { role: 'assistant', content: result.fallbackMessage };
                 setMessages(prev => [...prev, fallbackMsg]);
-                speak(result.fallbackMessage);
+                voiceControl.speak(result.fallbackMessage);
               }
             }}
           />
@@ -1858,7 +1670,7 @@ export const ChatAssistant: React.FC = () => {
                       type="button"
                       variant={isListening ? "default" : "outline"}
                       size="icon"
-                      onClick={handleMicClick}
+                      onClick={voiceControl.handleMicClick}
                       disabled={isLoading}
                       className={cn(
                         "flex-shrink-0 transition-all",

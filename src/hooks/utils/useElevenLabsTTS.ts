@@ -98,6 +98,7 @@ interface UseElevenLabsTTSReturn {
   stop: () => void;
   isSpeaking: boolean;
   isLoading: boolean;
+  currentText: string;
   remainingMinutes: number;
   usagePercentage: number;
   canUsePremium: boolean;
@@ -116,6 +117,7 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
   
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentText, setCurrentText] = useState('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
 
@@ -171,6 +173,9 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
     if (!text?.trim()) {
       return { success: false, error: 'empty_text' };
     }
+    
+    // Set current text for karaoke display
+    setCurrentText(text);
     
     // Stop any current speech
     cleanupAudio();
@@ -247,6 +252,7 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
 
         audio.onended = () => {
           setIsSpeaking(false);
+          setCurrentText('');
           cleanupAudio();
           options.onEnd?.();
           
@@ -284,11 +290,20 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
     setIsLoading(false);
   }, [cleanupAudio]);
 
+  // Clear currentText on stop
+  const stopAndClear = useCallback(() => {
+    cleanupAudio();
+    setIsSpeaking(false);
+    setIsLoading(false);
+    setCurrentText('');
+  }, [cleanupAudio]);
+
   return {
     speak,
-    stop,
+    stop: stopAndClear,
     isSpeaking,
     isLoading: isLoading || isPlanLoading,
+    currentText,
     remainingMinutes: getRemainingVoiceMinutes(),
     usagePercentage: getVoiceMinutesPercentage(),
     canUsePremium: canUsePremiumVoice(),

@@ -465,15 +465,14 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
     accumulatedTextRef.current = '';
     clearPauseTimeout();
 
+    // ALWAYS set the speaking text BEFORE attempting any TTS
+    // This ensures KaraokeText works regardless of which engine speaks
+    setCurrentSpeakingText(text);
+    setCurrentSentenceIndex(0);
+
     // Try premium TTS first
-    // CRITICAL: Premium TTS (ElevenLabs) handles its own audio playback.
-    // Do NOT set isSpeaking/onSpeakStart here - ElevenLabs has its own isSpeaking state.
-    // This prevents voice duplication between ElevenLabs and native TTS.
     if (options.premiumSpeak) {
       console.log('[Voice] Attempting premium TTS');
-      
-      // DON'T call setIsSpeaking or onSpeakStart here!
-      // ElevenLabs manages its own state via elevenLabsTTS.isSpeaking
       
       const result = await options.premiumSpeak(text);
       
