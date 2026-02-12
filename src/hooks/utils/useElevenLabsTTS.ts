@@ -11,6 +11,7 @@ import { usePlanLimits } from '@/hooks/data/usePlanLimits';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { expandAcronymsForSpeech } from '@/lib/acronymExpander';
 
 /**
  * Clean text for TTS: convert symbols to spoken words
@@ -25,7 +26,7 @@ function cleanTextForTTS(text: string, lang: string, currency?: string): string 
     return lang === 'es' ? ' dólares ' : ' dollars ';
   })();
 
-  return text
+  let cleaned = text
     .replace(/\$\s*(\d)/g, (_, d) => `${d}`)
     .replace(/\$/g, dollarName)
     .replace(/€\s*(\d)/g, (_, d) => `${d}`)
@@ -43,6 +44,11 @@ function cleanTextForTTS(text: string, lang: string, currency?: string): string 
     .replace(/#{1,6}\s/g, '')
     .replace(/\s+/g, ' ')
     .trim();
+
+  // Expand acronyms AFTER cleaning but BEFORE final output
+  cleaned = expandAcronymsForSpeech(cleaned, lang);
+
+  return cleaned;
 }
 
 // Curated premium voices from ElevenLabs official library

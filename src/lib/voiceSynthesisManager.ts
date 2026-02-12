@@ -6,6 +6,8 @@
  * Enhanced with priority queue, interruption handling, and smart caching.
  */
 
+import { expandAcronymsForSpeech } from '@/lib/acronymExpander';
+
 type SpeakPriority = 'low' | 'normal' | 'high' | 'critical';
 
 interface SynthesisOptions {
@@ -87,7 +89,7 @@ class VoiceSynthesisManager {
    * Clean text for speech synthesis
    */
   private cleanText(text: string): string {
-    return text
+    const cleaned = text
       .replace(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]/gu, '') // Emojis
       .replace(/\*\*/g, '')
       .replace(/\*/g, '')
@@ -99,6 +101,9 @@ class VoiceSynthesisManager {
       .replace(/^\s*\d+\.\s*/gm, '')
       .replace(/\s+/g, ' ')
       .trim();
+
+    // Expand acronyms for natural speech
+    return expandAcronymsForSpeech(cleaned, 'es');
   }
 
   /**
