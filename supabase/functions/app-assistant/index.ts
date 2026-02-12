@@ -527,15 +527,43 @@ Ejemplos:
 
 ## CONCEPTOS FINANCIEROS QUE DOMINAS
 
-### Impuestos
+### Impuestos Chile (SII - Servicio de Impuestos Internos)
+El SII es la autoridad tributaria de Chile (equivalente al IRS en EE.UU. o CRA en Canadá). Su sitio oficial es sii.cl.
+- **RUT** (Rol Único Tributario): Número de identificación fiscal de personas y empresas en Chile. Es obligatorio para toda actividad económica.
+- **Boletas de honorarios**: Documentos que emiten los trabajadores independientes (a honorarios) por servicios profesionales. Se emiten en el portal del SII (sii.cl). Tienen retención de 13.75% (2025).
+- **Facturas electrónicas**: Documentos tributarios para ventas de bienes y servicios gravados con IVA. Se emiten a través del SII.
+- **IVA** (Impuesto al Valor Agregado): 19% en Chile. Aplica a la venta de bienes y servicios. Se declara mensualmente con el Formulario 29.
+- **Formulario 29** (F29): Declaración mensual de IVA y PPM (Pagos Provisionales Mensuales). Se presenta dentro de los primeros 12 días del mes siguiente.
+- **Formulario 22** (F22): Declaración anual de Renta. Se presenta en abril de cada año. Es donde se calcula el impuesto definitivo.
+- **PPM** (Pagos Provisionales Mensuales): Pagos anticipados de impuesto a la renta que se descuentan de la declaración anual.
+- **Régimen Pro-Pyme General**: Para empresas con ventas anuales ≤ 75.000 UF. Tasa de impuesto de primera categoría: 25%. Tributación en base a flujos de caja (ingresos percibidos menos gastos pagados).
+- **Régimen Pro-Pyme Transparente**: Para micro y pequeñas empresas. NO pagan impuesto de primera categoría. Las utilidades se atribuyen directamente a los socios/dueños que tributan con su impuesto personal (Global Complementario).
+- **Impuesto de Primera Categoría**: Impuesto a las utilidades de las empresas. 27% régimen general, 25% Pro-Pyme.
+- **Impuesto Global Complementario**: Impuesto progresivo a las personas naturales (tramos de 0% a 40%).
+- **Impuesto Único de Segunda Categoría**: Impuesto a los sueldos y salarios, retenido por el empleador.
+- **UF** (Unidad de Fomento): Unidad de cuenta reajustable según la inflación. Se usa para expresar montos tributarios, créditos hipotecarios, etc.
+- **UTM** (Unidad Tributaria Mensual): Unidad de referencia tributaria mensual que se actualiza con el IPC.
+- **APV** (Ahorro Previsional Voluntario): Ahorro adicional para la jubilación con beneficios tributarios:
+  - **Régimen A**: El Estado aporta un 15% de lo ahorrado (tope 6 UTM/año). Ideal para rentas bajas/medias.
+  - **Régimen B**: El monto ahorrado se descuenta de la base imponible (reduce impuestos). Ideal para rentas altas.
+- **AFP** (Administradoras de Fondos de Pensiones): Instituciones que administran los fondos de pensiones obligatorios. Fondos A (más riesgo) a E (más conservador).
+- **ISAPRE**: Instituciones de Salud Previsional (seguro de salud privado).
+- **FONASA**: Fondo Nacional de Salud (seguro de salud público).
+- **Deducciones en Chile**: Gastos necesarios para producir la renta: arriendos de oficina, suministros, honorarios profesionales, depreciación de equipos (tablas SII), gastos de vehículo con respaldo, capacitación.
+- **Gastos rechazados**: Gastos personales o sin respaldo documental. Tributación especial con tasa de 40%.
+- **Inicio de actividades**: Trámite obligatorio en el SII antes de comenzar actividad económica. Se hace online en sii.cl con Clave Única o certificado digital.
+- **Término de giro**: Trámite para cerrar actividades ante el SII. Requiere declarar y pagar impuestos pendientes.
+
+### Impuestos Canadá (CRA - Canada Revenue Agency)
 - **Deducciones**: Gastos que reducen base imponible (home office, transporte, materiales)
-- **RRSP** (Canadá): Cuenta de ahorro para retiro, contribuciones deducibles
-- **TFSA** (Canadá): Cuenta libre de impuestos, ganancias no tributan
-- **APV** (Chile): Ahorro Previsional Voluntario, beneficios tributarios
-- **Formulario T2125** (Canadá): Declaración de ingresos de negocio
-- **Boletas de honorarios** (Chile): Documentos de servicios profesionales
-- **Régimen Pro-Pyme** (Chile): Beneficios para pequeñas empresas
-- **GST/HST** (Canadá): Impuesto a ventas para negocios
+- **RRSP** (Registered Retirement Savings Plan): Cuenta de ahorro para retiro, contribuciones deducibles de impuestos. Límite 18% del ingreso del año anterior (máx ~$31,560 CAD en 2024).
+- **TFSA** (Tax-Free Savings Account): Cuenta libre de impuestos, ganancias e intereses no tributan. Límite anual de contribución ($7,000 CAD en 2024).
+- **Formulario T1**: Declaración anual de impuestos personales. Fecha límite: 30 de abril (15 de junio para auto-empleados).
+- **Formulario T2125**: Declaración de ingresos de negocio/profesionales (parte de T1).
+- **GST/HST** (Goods and Services Tax / Harmonized Sales Tax): Impuesto a ventas para negocios. GST 5% federal + PST provincial variable. Registro obligatorio si ingresos > $30,000 CAD.
+- **CPP** (Canada Pension Plan): Plan de pensiones obligatorio. Contribuciones compartidas empleador/empleado.
+- **EI** (Employment Insurance): Seguro de empleo. Contribuciones obligatorias para empleados.
+- **Business Number (BN)**: Número de 9 dígitos asignado por CRA para identificar negocios.
 
 ### Inversiones
 - **FIRE**: Financial Independence, Retire Early. Regla del 4%, tasa de retiro segura.
