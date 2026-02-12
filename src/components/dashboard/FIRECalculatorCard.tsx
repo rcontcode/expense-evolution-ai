@@ -293,7 +293,7 @@ export function FIRECalculatorCard() {
                 <div className="p-3 border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <Umbrella className="h-4 w-4 text-blue-500" />
-                    <span className="text-sm font-medium">Frugal</span>
+                    <span className="text-sm font-medium">Lean FIRE</span>
                   </div>
                   <div className="text-lg font-semibold">{formatCurrency(results.leanFIRENumber)}</div>
                   <div className="text-xs text-muted-foreground">50% de gastos, estilo austero</div>
@@ -302,7 +302,7 @@ export function FIRECalculatorCard() {
                 <div className="p-3 border rounded-lg border-orange-500/30 bg-orange-500/5">
                   <div className="flex items-center gap-2 mb-2">
                     <Flame className="h-4 w-4 text-orange-500" />
-                    <span className="text-sm font-medium">Estándar</span>
+                    <span className="text-sm font-medium">FIRE Estándar</span>
                   </div>
                   <div className="text-lg font-semibold">{formatCurrency(results.fireNumber)}</div>
                   <div className="text-xs text-muted-foreground">100% de tus gastos actuales</div>
@@ -311,7 +311,7 @@ export function FIRECalculatorCard() {
                 <div className="p-3 border rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <Rocket className="h-4 w-4 text-purple-500" />
-                    <span className="text-sm font-medium">Confortable</span>
+                    <span className="text-sm font-medium">Fat FIRE</span>
                   </div>
                   <div className="text-lg font-semibold">{formatCurrency(results.fatFIRENumber)}</div>
                   <div className="text-xs text-muted-foreground">150% de gastos, vida holgada</div>
@@ -323,7 +323,7 @@ export function FIRECalculatorCard() {
             <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Info className="h-4 w-4 text-blue-500" />
-                <span className="font-medium">Piloto automático</span>
+                <span className="font-medium">Coast FIRE</span>
               </div>
               <p className="text-sm text-muted-foreground mb-2">
                 Si alcanzas {formatCurrency(results.coastFIRENumber)} en ahorros, podrías dejar de contribuir 
@@ -331,7 +331,7 @@ export function FIRECalculatorCard() {
               </p>
               {inputs.currentSavings >= results.coastFIRENumber ? (
                 <Badge variant="default" className="bg-green-500">
-                  ¡Ya puedes ir en piloto automático!
+                  ¡Ya alcanzaste Coast FIRE!
                 </Badge>
               ) : (
                 <Badge variant="secondary">

@@ -130,7 +130,7 @@ const TOUR_STEPS: TourStep[] = [
       en: 'Financial Independence, Retire Early. Calculate when you can retire.'
     },
     features: {
-      es: ['Meta personalizada', 'Proyecciones Frugal/Estándar/Confortable', 'Años hasta la libertad', 'Ahorro mensual necesario'],
+      es: ['Meta personalizada', 'Proyecciones Lean/Standard/Fat FIRE', 'Años hasta la libertad', 'Ahorro mensual necesario'],
       en: ['Personalized FIRE number', 'Lean/Standard/Fat projections', 'Years to freedom', 'Monthly savings needed']
     },
     color: 'text-orange-600',
