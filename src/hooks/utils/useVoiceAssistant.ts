@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { expandAcronymsForSpeech } from '@/lib/acronymExpander';
 
 import type { VoiceGender } from './useVoicePreferences';
 
@@ -293,7 +294,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       return lang === 'es' ? ' dólares ' : ' dollars ';
     })();
     
-    return text
+    const cleaned = text
       // Currency symbols → spoken words (BEFORE other replacements)
       .replace(/\$\s*(\d)/g, (_, digit) => (lang === 'es' ? `${digit}` : `${digit}`))
       .replace(/\$/g, dollarName)
@@ -328,6 +329,9 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       .replace(/^\s*\d+\.\s*/gm, '')
       .replace(/\s+/g, ' ')
       .trim();
+
+    // Expand acronyms for natural speech
+    return expandAcronymsForSpeech(cleaned, lang);
   }, [language, options.currency]);
 
   // Split text into sentences
