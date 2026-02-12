@@ -20,13 +20,15 @@ import { useProfile } from '@/hooks/data/useProfile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { TaxInfoVersionBadge } from '@/components/tax-calendar/TaxInfoVersionBadge';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
+import { useEntity } from '@/contexts/EntityContext';
 import type { CountryCode } from '@/lib/constants/country-tax-config';
 
 export const TaxOptimizerCard = memo(function TaxOptimizerCard() {
   const { t } = useLanguage();
   const { data: profile } = useProfile();
   const { isAnalyzing, result, error, analyzeAndOptimize, clearResult } = useTaxOptimizer();
-  const country = (profile?.country || 'CA') as CountryCode;
+  const { currentCountry } = useEntity();
+  const country = currentCountry;
   const isCL = country === 'CL';
 
   const getInsightIcon = (type: 'success' | 'warning' | 'info') => {

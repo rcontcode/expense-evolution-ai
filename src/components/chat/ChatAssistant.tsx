@@ -961,7 +961,7 @@ export const ChatAssistant: React.FC = () => {
         availableCurrencies: activeEntities.map(e => e.default_currency || 'CAD').filter((v, i, a) => a.indexOf(v) === i),
         // User profile data
         workTypes: profile?.work_types || [],
-        country: profile?.country || 'Canada',
+        country: currentEntity?.country || profile?.country || 'CA',
         province: profile?.province,
         // Financial profile for personalization
         financialProfile: financialProfile ? {

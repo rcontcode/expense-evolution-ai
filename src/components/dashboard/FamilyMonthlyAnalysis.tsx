@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useProfile } from '@/hooks/data/useProfile';
+import { useEntity } from '@/contexts/EntityContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useSavingsGoals } from '@/hooks/data/useSavingsGoals';
@@ -130,7 +130,7 @@ const FAMILY_ACHIEVEMENTS = {
 
 export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProps) {
   const { language } = useLanguage();
-  const { data: profile } = useProfile();
+  const { currentCurrency } = useEntity();
   const { data: savingsGoals } = useSavingsGoals();
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showTrends, setShowTrends] = useState(false);
@@ -171,7 +171,7 @@ export function FamilyMonthlyAnalysis({ year, month }: FamilyMonthlyAnalysisProp
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(language === 'es' ? 'es-CL' : 'en-CA', {
       style: 'currency',
-      currency: profile?.country === 'CL' ? 'CLP' : 'CAD',
+      currency: currentCurrency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);

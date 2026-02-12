@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useExpenses } from './useExpenses';
 import { useProfile } from './useProfile';
+import { useEntityOptional } from '@/contexts/EntityContext';
 import { getTaxDeductionRules } from './useTaxCalculations';
 import { toast } from 'sonner';
 
@@ -28,13 +29,14 @@ export function useTaxOptimizer() {
 
   const { data: expenses } = useExpenses();
   const { data: profile } = useProfile();
+  const entityCtx = useEntityOptional();
 
   const analyzeAndOptimize = async () => {
     setIsAnalyzing(true);
     setError(null);
 
     try {
-      const country = profile?.country || 'CA';
+      const country = entityCtx?.currentCountry || profile?.country || 'CA';
       const taxRules = getTaxDeductionRules(country);
 
       // Aggregate expenses by category
