@@ -1181,7 +1181,7 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5",
+        model: "google/gemini-3-flash-preview",
         messages: aiMessages,
         tools: ASSISTANT_TOOLS,
         tool_choice: "auto",
@@ -1275,7 +1275,7 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              model: "openai/gpt-5",
+              model: "google/gemini-3-flash-preview",
               messages: [
                 ...aiMessages,
                 choice.message,
