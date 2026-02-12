@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useEntity } from '@/contexts/EntityContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
@@ -148,6 +149,7 @@ export function MonthDetailPanel({
   onAddExpense,
 }: MonthDetailPanelProps) {
   const { language } = useLanguage();
+  const { currentCurrency } = useEntity();
   const { data: profile } = useProfile();
   const navigate = useNavigate();
   const [showTools, setShowTools] = useState(false);
@@ -222,7 +224,7 @@ export function MonthDetailPanel({
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(language === 'es' ? 'es-CL' : 'en-CA', {
       style: 'currency',
-      currency: profile?.country === 'CL' ? 'CLP' : 'CAD',
+      currency: currentCurrency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);

@@ -69,7 +69,7 @@ export function TaxEstimator() {
   const { data: income } = useIncome();
   const isEs = language === 'es';
 
-  const country = profile?.country || 'CA';
+  const country = profile?.country || 'CA';  // TaxEstimator: profile is fine here as it reads work_types too
   const isChile = country === 'CL';
   const countryConfig = getCountryConfig(country as 'CA' | 'CL');
   const regions = countryConfig.regions;

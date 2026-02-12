@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useProfile } from '@/hooks/data/useProfile';
+import { useEntity } from '@/contexts/EntityContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { cn } from '@/lib/utils';
@@ -52,7 +52,7 @@ export function YearTimelineChart({
   onYearChange,
 }: YearTimelineChartProps) {
   const { language } = useLanguage();
-  const { data: profile } = useProfile();
+  const { currentCurrency } = useEntity();
   const isTouchDevice = useIsTouchDevice();
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
   
@@ -151,7 +151,7 @@ export function YearTimelineChart({
   const formatCurrency = (amount: number, compact = false) => {
     const options: Intl.NumberFormatOptions = {
       style: 'currency',
-      currency: profile?.country === 'CL' ? 'CLP' : 'CAD',
+      currency: currentCurrency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     };

@@ -21,7 +21,7 @@ export function TaxProfileSetup({ onClose }: TaxProfileSetupProps) {
   const { data: profile } = useProfile();
   const queryClient = useQueryClient();
   const isEs = language === 'es';
-  const isChile = profile?.country === 'CL';
+  const isChile = profile?.country === 'CL';  // TaxProfileSetup: reads from profile which it also writes to
 
   const [workTypes, setWorkTypes] = useState<string[]>(profile?.work_types || []);
   const [fiscalMonth, setFiscalMonth] = useState<string>(

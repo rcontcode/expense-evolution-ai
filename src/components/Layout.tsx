@@ -37,6 +37,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/data/useProfile';
+import { useEntity } from '@/contexts/EntityContext';
 import { useTheme, ThemeStyle } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import {
@@ -205,6 +206,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const { t, language } = useLanguage();
   const { signOut } = useAuth();
   const { data: profile } = useProfile();
+  const { currentCountry } = useEntity();
   const { mode, setMode, setStyle } = useTheme();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -245,7 +247,7 @@ export const Layout = ({ children }: LayoutProps) => {
   };
   
   // Get tax authority badge based on country
-  const taxBadge = profile?.country === 'CL' ? 'SII' : profile?.country === 'CA' ? 'CRA' : null;
+  const taxBadge = currentCountry === 'CL' ? 'SII' : currentCountry === 'CA' ? 'CRA' : null;
   const userInitial = profile?.full_name?.charAt(0)?.toUpperCase() || profile?.email?.charAt(0)?.toUpperCase() || 'U';
 
   // Mobile Layout

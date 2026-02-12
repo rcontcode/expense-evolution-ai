@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useProfile } from '@/hooks/data/useProfile';
+import { useEntity } from '@/contexts/EntityContext';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { cn } from '@/lib/utils';
@@ -108,7 +108,7 @@ interface IncomeAnalyticsDashboardProps {
 
 export function IncomeAnalyticsDashboard({ year, month }: IncomeAnalyticsDashboardProps) {
   const { language } = useLanguage();
-  const { data: profile } = useProfile();
+  const { currentCurrency } = useEntity();
   const [showProjection, setShowProjection] = useState(true);
   const [showQuadrant, setShowQuadrant] = useState(true);
   const [showStreams, setShowStreams] = useState(true);
@@ -137,7 +137,7 @@ export function IncomeAnalyticsDashboard({ year, month }: IncomeAnalyticsDashboa
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(language === 'es' ? 'es-CL' : 'en-CA', {
       style: 'currency',
-      currency: profile?.country === 'CL' ? 'CLP' : 'CAD',
+      currency: currentCurrency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);

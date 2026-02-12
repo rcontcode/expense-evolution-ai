@@ -17,16 +17,16 @@ import {
   Loader2
 } from 'lucide-react';
 import { useRrspTfsaOptimizer } from '@/hooks/data/useRrspTfsaOptimizer';
-import { useProfile } from '@/hooks/data/useProfile';
+import { useEntity } from '@/contexts/EntityContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 export function RrspTfsaOptimizerCard() {
   const { isAnalyzing, result, error, analyzeOptimalContributions, clearResult } = useRrspTfsaOptimizer();
-  const { data: profile } = useProfile();
+  const { currentCountry } = useEntity();
 
   // RRSP/TFSA are Canada-only programs
-  if (profile?.country === 'CL') {
+  if (currentCountry === 'CL') {
     return null;
   }
 

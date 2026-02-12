@@ -63,7 +63,7 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
         userName: profile?.full_name || undefined,
         businessName: profile?.business_name || undefined,
         businessNumber: profile?.business_number || undefined,
-        country: profile?.country || 'CA',
+        country: profile?.country || 'CA',  // ExportDialog uses profile for business info context
       };
 
       if (exportType === 't2125') {
