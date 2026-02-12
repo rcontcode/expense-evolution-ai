@@ -29,7 +29,7 @@ import { cn } from '@/lib/utils';
 // Lazy load heavy sections
 const DataPrivacyCard = lazy(() => import('@/components/settings/DataPrivacyCard').then(m => ({ default: m.DataPrivacyCard })));
 const SampleDataManager = lazy(() => import('@/components/settings/SampleDataManager').then(m => ({ default: m.SampleDataManager })));
-const VoicePreferencesCard = lazy(() => import('@/components/settings/VoicePreferencesCard').then(m => ({ default: m.VoicePreferencesCard })));
+import { VoicePreferencesCard } from '@/components/settings/VoicePreferencesCard';
 
 const SectionSkeleton = () => (
   <div className="space-y-4">
@@ -181,11 +181,9 @@ export default function Settings() {
               icon={Settings2} 
               isMobile={isMobile}
             >
-              <Suspense fallback={<SectionSkeleton />}>
-                <div data-highlight="voice-preferences">
-                  <VoicePreferencesCard />
-                </div>
-              </Suspense>
+              <div data-highlight="voice-preferences">
+                <VoicePreferencesCard />
+              </div>
             </SettingsSection>
  
              {/* Sound Preferences */}
