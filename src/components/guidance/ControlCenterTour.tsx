@@ -124,13 +124,13 @@ const TOUR_STEPS: TourStep[] = [
     id: 'fire',
     tabValue: 'fire',
     icon: <TrendingUp className="h-8 w-8" />,
-    title: { es: '🔥 Calculadora FIRE', en: '🔥 FIRE Calculator' },
+    title: { es: '🔥 Libertad Financiera', en: '🔥 FIRE Calculator' },
     description: { 
-      es: 'Financial Independence, Retire Early. Calcula cuándo podrás retirarte.',
+      es: 'Calcula cuándo podrás alcanzar la independencia financiera y retirarte.',
       en: 'Financial Independence, Retire Early. Calculate when you can retire.'
     },
     features: {
-      es: ['Número FIRE personalizado', 'Proyecciones Lean/Standard/Fat', 'Años hasta la libertad', 'Ahorro mensual necesario'],
+      es: ['Meta personalizada', 'Proyecciones Frugal/Estándar/Confortable', 'Años hasta la libertad', 'Ahorro mensual necesario'],
       en: ['Personalized FIRE number', 'Lean/Standard/Fat projections', 'Years to freedom', 'Monthly savings needed']
     },
     color: 'text-orange-600',

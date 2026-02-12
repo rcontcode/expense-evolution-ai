@@ -57,7 +57,7 @@ const planConfig = {
       'Análisis de contratos con IA',
       'Análisis bancario con IA',
       'Optimizador fiscal',
-      'Calculadora FIRE',
+      'Calculadora de Libertad Financiera',
       'Asistente de voz',
       'Optimizador RRSP/TFSA',
       'Exportar T2125',

@@ -251,7 +251,7 @@ export const ChatAssistant: React.FC = () => {
   const getCurrentPageContext = useCallback((): { pageName: string; description: string } => {
     const pageContexts: Record<string, { es: { name: string; desc: string }; en: { name: string; desc: string } }> = {
       '/dashboard': {
-        es: { name: 'Dashboard', desc: 'Esta es tu página principal donde puedes ver un resumen de tus finanzas: balance general, gastos e ingresos del mes, gráficos de tendencias, y accesos rápidos a las funciones principales. Desde aquí puedes capturar gastos, ver alertas de presupuesto, y acceder a herramientas como el calculador FIRE y el optimizador de impuestos.' },
+        es: { name: 'Dashboard', desc: 'Esta es tu página principal donde puedes ver un resumen de tus finanzas: balance general, gastos e ingresos del mes, gráficos de tendencias, y accesos rápidos a las funciones principales. Desde aquí puedes capturar gastos, ver alertas de presupuesto, y acceder a herramientas como la calculadora de libertad financiera y el optimizador de impuestos.' },
         en: { name: 'Dashboard', desc: 'This is your main page where you can see a summary of your finances: overall balance, monthly expenses and income, trend charts, and quick access to main features. From here you can capture expenses, view budget alerts, and access tools like the FIRE calculator and tax optimizer.' },
       },
       '/expenses': {

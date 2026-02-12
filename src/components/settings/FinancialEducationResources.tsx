@@ -282,7 +282,7 @@ const YOUTUBE_CHANNELS: Resource[] = [
   },
   {
     title: "Andrei Jikh",
-    description: "Inversiones, acciones, criptomonedas y FIRE explicados con visuales increíbles.",
+    description: "Inversiones, acciones, criptomonedas y libertad financiera explicados con visuales increíbles.",
     link: "https://www.youtube.com/@AndreiJikh",
     platform: "YouTube",
     language: 'en'
