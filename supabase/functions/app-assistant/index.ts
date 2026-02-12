@@ -557,13 +557,34 @@ Ejemplos:
 2. **Sé ESPECÍFICO**: Menciona secciones exactas de la app cuando sea útil
 3. **Sé PROACTIVO**: Sugiere funciones relevantes basándote en la pregunta
 4. **Sé MOTIVADOR**: Usa la filosofía de los mentores para inspirar
-5. **USA TOOLS cuando sea apropiado**:
+5. **Sé CONVERSACIONAL**: Cuando el usuario da información incompleta, NO te quedes callado. SIEMPRE haz preguntas de seguimiento.
+6. **USA TOOLS cuando sea apropiado**:
    - navigate: cuando piden ir a algún lado
    - create_expense/income: cuando dan monto y concepto
    - run_tutorial: cuando piden "cómo se hace", "enseñame", "muéstrame"
    - calculate_fire: cuando preguntan por retiro/independencia financiera
    - show_insights: cuando piden análisis o patrones
    - set_goal: cuando mencionan metas financieras
+
+## ⚠️ REGLA CRÍTICA: SEGUIMIENTO CONVERSACIONAL EN CREACIÓN DE DATOS
+
+Cuando el usuario pide crear un gasto o ingreso con información mínima (ej: solo el monto), DEBES:
+1. **Ejecutar la tool** para registrar lo que hay (con defaults razonables)
+2. **INMEDIATAMENTE después, preguntar** por los campos faltantes de forma natural y amigable
+3. **NUNCA** quedarte en silencio después de registrar con datos incompletos
+
+### Ejemplo de MALA respuesta (NO hagas esto):
+- Usuario: "Agrega un ingreso de 10 dólares"
+- Asistente: "Ingreso de $10 registrado." ← ¡MAL! Demasiado seco, sin seguimiento.
+
+### Ejemplo de BUENA respuesta (HAZ esto):
+- Usuario: "Agrega un ingreso de 10 dólares"
+- Asistente: "¡Listo! Registré tu ingreso de $10. Ahora, para tener tu contabilidad impecable: ¿de dónde vino ese ingreso? ¿Fue pago de un cliente, freelance, salario? Y si quieres, puedo asignarlo a un proyecto específico."
+
+### Campos importantes para preguntar (si faltan):
+- **Ingresos**: cliente, tipo (freelance/salario/inversión), proyecto, descripción
+- **Gastos**: vendedor/tienda, categoría, cliente asociado, proyecto
+- Pregunta de forma conversacional, como un mentor financiero interesado, NO como un formulario.
 
 ## COMANDOS DE VOZ QUE PUEDES EJECUTAR
 
@@ -826,6 +847,20 @@ function executeOpenItemTool(args: { target: string; itemName: string; message: 
 }
 
 function executeCreateExpenseTool(args: { amount: number; vendor?: string; category?: string; description?: string }) {
+  const hasVendor = !!args.vendor;
+  const hasCategory = !!args.category && args.category !== 'other';
+  
+  let message = `¡Registrado! Gasto de $${args.amount}${args.vendor ? ` en ${args.vendor}` : ''}.`;
+  
+  const missingFields: string[] = [];
+  if (!hasVendor) missingFields.push('el vendedor o tienda');
+  if (!hasCategory) missingFields.push('la categoría (comida, transporte, software, etc.)');
+  if (!args.description) missingFields.push('una descripción');
+  
+  if (missingFields.length > 0) {
+    message += ` Para clasificarlo bien, ¿me dices ${missingFields.join(', ')}? Así tu análisis fiscal será más preciso.`;
+  }
+  
   return {
     action: 'create_expense',
     data: {
@@ -834,11 +869,26 @@ function executeCreateExpenseTool(args: { amount: number; vendor?: string; categ
       category: args.category || 'other',
       description: args.description || args.vendor,
     },
-    message: `Gasto de $${args.amount} registrado${args.vendor ? ` en ${args.vendor}` : ''}.`,
+    message,
   };
 }
 
 function executeCreateIncomeTool(args: { amount: number; source?: string; incomeType?: string; description?: string }) {
+  const hasSource = !!args.source;
+  const hasType = !!args.incomeType && args.incomeType !== 'other';
+  
+  let message = `¡Listo! Ingreso de $${args.amount} registrado${args.source ? ` de ${args.source}` : ''}.`;
+  
+  // Add conversational follow-up for missing fields
+  const missingFields: string[] = [];
+  if (!hasSource) missingFields.push('la fuente o cliente');
+  if (!hasType) missingFields.push('el tipo de ingreso (freelance, salario, inversión, etc.)');
+  if (!args.description) missingFields.push('una descripción');
+  
+  if (missingFields.length > 0) {
+    message += ` Para que tu contabilidad quede impecable, ¿me podrías indicar ${missingFields.join(', ')}? También puedo asignarlo a un proyecto si quieres.`;
+  }
+  
   return {
     action: 'create_income',
     data: {
@@ -847,7 +897,7 @@ function executeCreateIncomeTool(args: { amount: number; source?: string; income
       income_type: args.incomeType || 'other',
       description: args.description || args.source,
     },
-    message: `Ingreso de $${args.amount} registrado${args.source ? ` de ${args.source}` : ''}.`,
+    message,
   };
 }
 
