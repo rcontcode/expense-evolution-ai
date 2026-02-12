@@ -45,41 +45,63 @@ function cleanTextForTTS(text: string, lang: string, currency?: string): string 
     .trim();
 }
 
-// IMPORTANT: These are verified native speaker voices, NOT English speakers doing Spanish
+// Curated premium voices from ElevenLabs official library
+// Selected for: professional mic quality, warm/clear tone, multilingual v2 compatibility
+// Female: warm, engaging, slightly sensual tone preferred
+// Male: masculine, clear, balanced pace — neither overly enthusiastic nor monotone
 export const ELEVENLABS_VOICES = {
-  // Spanish - Native Latin American speakers (verified clean audio quality)
+  // Spanish — These premade voices render excellent Latin American Spanish via eleven_multilingual_v2
   es: {
     female: [
-      { id: 'cgSgspJ2msm6clMCkdW9', name: 'Jessica', desc: 'Mexicana, clara y profesional' },
-      { id: 'FGY2WhTYpPnrIDTdsKH5', name: 'Laura', desc: 'Latina, suave y clara' },
-      { id: 'XrExE9yKIg1WjnnlVkGX', name: 'Matilda', desc: 'Neutra latina, profesional' },
-      { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah', desc: 'Cálida, versátil' },
+      { id: 'cgSgspJ2msm6clMCkdW9', name: 'Jessica', desc: 'Cálida y juguetona, muy natural' },
+      { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah', desc: 'Confiada, cálida, profesional' },
+      { id: 'FGY2WhTYpPnrIDTdsKH5', name: 'Laura', desc: 'Entusiasta, voz soleada' },
+      { id: 'pFZP5JQG7iQjIQuC4Bku', name: 'Lily', desc: 'Aterciopelada, elegante' },
+      { id: 'XrExE9yKIg1WjnnlVkGX', name: 'Matilda', desc: 'Alto profesional, sofisticada' },
+      { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'Alice', desc: 'Clara, envolvente' },
+      { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', desc: 'Suave, serena, cercana' },
+      { id: 'piTKgcLEGmPE4e6mEKli', name: 'Nicole', desc: 'Dulce, íntima, ASMR' },
+      { id: '9BWtsMINqrJLrRacOk9x', name: 'Aria', desc: 'Calmada con raspado sutil' },
+      { id: 'ThT5KcBeYPX3keUQqHPh', name: 'Dorothy', desc: 'Agradable, juvenil' },
     ],
     male: [
-      { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Alberto', desc: 'Mexicano, narrativo' },
-      { id: 'IKne3meq5aSn9XLyUdCD', name: 'Carlos', desc: 'Latino neutro, confiable' },
-      { id: 'VR6AewLTigWG4xSOukaG', name: 'Fernando', desc: 'Latino, persuasivo' },
-      { id: 'onwK4e9ZLuTAKqWW03F9', name: 'Daniel', desc: 'Neutro, profesional' },
-      { id: 'pNInz6obpgDQGcFmaJgB', name: 'Miguel', desc: 'Colombiano, profundo' },
+      { id: 'nPczCjzI2devNBz1zQrb', name: 'Brian', desc: 'Resonante, confiable' },
+      { id: 'cjVigY5qzO86Huf0OWal', name: 'Eric', desc: 'Tenor suave, versátil' },
+      { id: 'onwK4e9ZLuTAKqWW03F9', name: 'Daniel', desc: 'Fuerte, profesional' },
+      { id: 'iP95p4xoKVk53GoZ742B', name: 'Chris', desc: 'Natural, auténtico' },
+      { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Liam', desc: 'Joven, energético, cálido' },
+      { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', desc: 'Profundo, maduro, narrador' },
+      { id: 'N2lVS1w4EtoT3dr4eOWO', name: 'Callum', desc: 'Grave, presencia fuerte' },
+      { id: 'CwhRBWXzGAHq8TQ4Fs17', name: 'Roger', desc: 'Confiado, medio, claro' },
+      { id: 'bIHbv24MWmeRgasZH58o', name: 'Will', desc: 'Amigable, fresco' },
+      { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Josh', desc: 'Profundo, joven, narrativo' },
     ],
   },
-  // English - Native speakers (verified clean audio)
+  // English — Native speakers, studio-quality recordings
   en: {
     female: [
-      { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah', desc: 'Warm, professional' },
-      { id: 'FGY2WhTYpPnrIDTdsKH5', name: 'Laura', desc: 'Soft, clear' },
-      { id: 'cgSgspJ2msm6clMCkdW9', name: 'Jessica', desc: 'Friendly, natural' },
-      { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'Alice', desc: 'British, confident' },
-      { id: 'pFZP5JQG7iQjIQuC4Bku', name: 'Lily', desc: 'Narrative, smooth' },
-      { id: 'XrExE9yKIg1WjnnlVkGX', name: 'Matilda', desc: 'Warm, articulate' },
+      { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah', desc: 'Warm, confident, professional' },
+      { id: 'cgSgspJ2msm6clMCkdW9', name: 'Jessica', desc: 'Playful, warm, engaging' },
+      { id: 'FGY2WhTYpPnrIDTdsKH5', name: 'Laura', desc: 'Sunny, enthusiastic' },
+      { id: 'pFZP5JQG7iQjIQuC4Bku', name: 'Lily', desc: 'Velvety British, smooth' },
+      { id: 'XrExE9yKIg1WjnnlVkGX', name: 'Matilda', desc: 'Alto, articulate, warm' },
+      { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'Alice', desc: 'Clear, engaging British' },
+      { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', desc: 'Calm, natural, narrator' },
+      { id: 'piTKgcLEGmPE4e6mEKli', name: 'Nicole', desc: 'Soft, intimate, ASMR' },
+      { id: '9BWtsMINqrJLrRacOk9x', name: 'Aria', desc: 'Calm with subtle rasp' },
+      { id: 'ThT5KcBeYPX3keUQqHPh', name: 'Dorothy', desc: 'Pleasant, youthful British' },
     ],
     male: [
-      { id: 'nPczCjzI2devNBz1zQrb', name: 'Brian', desc: 'Professional, clear' },
-      { id: 'cjVigY5qzO86Huf0OWal', name: 'Eric', desc: 'Friendly, dynamic' },
-      { id: 'IKne3meq5aSn9XLyUdCD', name: 'Charlie', desc: 'Natural, confident' },
-      { id: 'JBFqnCBsd6RMkjVDRZzb', name: 'George', desc: 'British, warm' },
-      { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Liam', desc: 'Young, energetic' },
-      { id: 'onwK4e9ZLuTAKqWW03F9', name: 'Daniel', desc: 'Neutral, professional' },
+      { id: 'nPczCjzI2devNBz1zQrb', name: 'Brian', desc: 'Resonant, comforting' },
+      { id: 'cjVigY5qzO86Huf0OWal', name: 'Eric', desc: 'Smooth tenor, versatile' },
+      { id: 'JBFqnCBsd6RMkjVDRZzb', name: 'George', desc: 'Warm British, captivating' },
+      { id: 'onwK4e9ZLuTAKqWW03F9', name: 'Daniel', desc: 'Strong British, broadcast' },
+      { id: 'iP95p4xoKVk53GoZ742B', name: 'Chris', desc: 'Natural, down-to-earth' },
+      { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Liam', desc: 'Young, energetic, warm' },
+      { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', desc: 'Deep, mature narrator' },
+      { id: 'N2lVS1w4EtoT3dr4eOWO', name: 'Callum', desc: 'Gravelly, commanding' },
+      { id: 'CwhRBWXzGAHq8TQ4Fs17', name: 'Roger', desc: 'Confident, clear' },
+      { id: 'IKne3meq5aSn9XLyUdCD', name: 'Charlie', desc: 'Australian, confident' },
     ],
   },
 } as const;
