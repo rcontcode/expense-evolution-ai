@@ -280,7 +280,18 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
 
   // Clean text for speech
   const cleanTextForSpeech = useCallback((text: string): string => {
+    const lang = language || 'es';
     return text
+      // Currency symbols → spoken words (BEFORE other replacements)
+      .replace(/\$\s*(\d)/g, (_, digit) => (lang === 'es' ? `${digit}` : `${digit}`))
+      .replace(/\$/g, lang === 'es' ? ' dólares ' : ' dollars ')
+      .replace(/€\s*(\d)/g, (_, digit) => `${digit}`)
+      .replace(/€/g, lang === 'es' ? ' euros ' : ' euros ')
+      .replace(/%/g, lang === 'es' ? ' por ciento' : ' percent')
+      .replace(/&/g, lang === 'es' ? ' y ' : ' and ')
+      .replace(/\+/g, lang === 'es' ? ' más ' : ' plus ')
+      .replace(/=/g, lang === 'es' ? ' igual ' : ' equals ')
+      // Unicode → ASCII
       .replace(/…/g, '...')
       .replace(/[""]/g, '"')
       .replace(/['']/g, "'")
@@ -291,8 +302,10 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       .replace(/←/g, '')
       .replace(/[©®™]/g, '')
       .replace(/°/g, ' grados ')
+      // Emojis and CJK
       .replace(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]/gu, '')
       .replace(/[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\uFF00-\uFFEF\u4E00-\u9FAF]/g, '')
+      // Markdown
       .replace(/\*\*/g, '')
       .replace(/\*/g, '')
       .replace(/#{1,6}\s/g, '')
@@ -303,7 +316,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}) {
       .replace(/^\s*\d+\.\s*/gm, '')
       .replace(/\s+/g, ' ')
       .trim();
-  }, []);
+  }, [language]);
 
   // Split text into sentences
   const splitIntoSentences = useCallback((text: string): string[] => {

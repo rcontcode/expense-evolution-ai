@@ -12,7 +12,30 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-// ElevenLabs voice IDs - Native Spanish Latin American + North American English
+/**
+ * Clean text for TTS: convert symbols to spoken words
+ */
+function cleanTextForTTS(text: string, lang: string): string {
+  return text
+    .replace(/\$\s*(\d)/g, (_, d) => `${d}`)
+    .replace(/\$/g, lang === 'es' ? ' dólares ' : ' dollars ')
+    .replace(/€\s*(\d)/g, (_, d) => `${d}`)
+    .replace(/€/g, ' euros ')
+    .replace(/%/g, lang === 'es' ? ' por ciento' : ' percent')
+    .replace(/&/g, lang === 'es' ? ' y ' : ' and ')
+    .replace(/\+/g, lang === 'es' ? ' más ' : ' plus ')
+    .replace(/[""]/g, '"')
+    .replace(/['']/g, "'")
+    .replace(/—/g, ', ')
+    .replace(/–/g, ', ')
+    .replace(/…/g, '...')
+    .replace(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]/gu, '')
+    .replace(/\*\*/g, '').replace(/\*/g, '')
+    .replace(/#{1,6}\s/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 // IMPORTANT: These are verified native speaker voices, NOT English speakers doing Spanish
 export const ELEVENLABS_VOICES = {
   // Spanish - Native Latin American speakers (verified clean audio quality)
@@ -198,7 +221,9 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
             'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
-            text,
+            // Prepend a brief pause to prevent first-syllable clipping
+            // ElevenLabs sometimes clips the very start of audio
+            text: '... ' + cleanTextForTTS(text, options.lang || 'es'),
             voiceId,
             lang: options.lang,
           }),
@@ -253,12 +278,31 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
           resolve({ success: false, error: 'playback_error' });
         };
 
-        audio.play().catch((e) => {
-          console.error('[ElevenLabsTTS] Play error:', e);
-          setIsSpeaking(false);
-          cleanupAudio();
-          resolve({ success: false, error: 'play_error' });
-        });
+        // Wait for enough audio to buffer before playing to prevent
+        // the first word/syllable from being clipped
+        audio.preload = 'auto';
+        audio.oncanplaythrough = () => {
+          audio.oncanplaythrough = null; // Only fire once
+          audio.play().catch((e) => {
+            console.error('[ElevenLabsTTS] Play error:', e);
+            setIsSpeaking(false);
+            cleanupAudio();
+            resolve({ success: false, error: 'play_error' });
+          });
+        };
+
+        // Fallback: if canplaythrough doesn't fire within 3s, try playing anyway
+        setTimeout(() => {
+          if (audio.paused && !audio.ended) {
+            audio.oncanplaythrough = null;
+            audio.play().catch((e) => {
+              console.error('[ElevenLabsTTS] Play fallback error:', e);
+              setIsSpeaking(false);
+              cleanupAudio();
+              resolve({ success: false, error: 'play_error' });
+            });
+          }
+        }, 3000);
       });
 
     } catch (error) {
