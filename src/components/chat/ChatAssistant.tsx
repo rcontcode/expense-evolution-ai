@@ -1242,7 +1242,7 @@ export const ChatAssistant: React.FC = () => {
                       <Settings className="h-3.5 w-3.5" />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="right" className="w-[90vw] sm:w-[480px] max-w-[520px] overflow-y-auto">
+                  <SheetContent side="right" className="w-[90vw] sm:w-[480px] sm:max-w-[520px] overflow-y-auto">
                     <SheetHeader>
                       <SheetTitle className="flex items-center gap-2">
                         <Settings className="h-4 w-4 text-primary" />
