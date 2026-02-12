@@ -560,7 +560,7 @@ export function VoicePreferencesCard() {
                 </div>
                 
                 {/* Filtered Voice List */}
-                <ScrollArea className="h-[280px]">
+                <ScrollArea className="h-[320px] [&>[data-radix-scroll-area-viewport]]:!overflow-y-scroll [&_[data-radix-scroll-area-scrollbar]]:opacity-100">
                   <div className="space-y-3">
                     {(() => {
                       type CuratedVoice = { id: string; name: string; desc: string; isFemale: boolean; voiceLang: 'es' | 'en' };
