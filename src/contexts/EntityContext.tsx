@@ -1,5 +1,6 @@
 import { createContext, useContext, ReactNode, useMemo, useState, useCallback } from 'react';
 import { useFiscalEntities, usePrimaryFiscalEntity, type FiscalEntity } from '@/hooks/data/useFiscalEntities';
+import { useProfile } from '@/hooks/data/useProfile';
 import type { CountryCode } from '@/lib/constants/country-tax-config';
 
 interface EntityContextType {
@@ -41,7 +42,7 @@ const EntityContext = createContext<EntityContextType | undefined>(undefined);
 export function EntityProvider({ children }: { children: ReactNode }) {
   const { data: entities = [], isLoading: entitiesLoading } = useFiscalEntities();
   const { data: primaryEntity, isLoading: primaryLoading } = usePrimaryFiscalEntity();
-  
+  const { data: profile } = useProfile();
   // State for view mode and selected entity
   const [showAllEntities, setShowAllEntities] = useState(false);
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
@@ -82,18 +83,22 @@ export function EntityProvider({ children }: { children: ReactNode }) {
       isLoading: entitiesLoading || primaryLoading,
       getEntityById: (id: string) => entities.find(e => e.id === id),
       isMultiEntity: activeEntities.length > 1,
-      currentCurrency: currentEntity?.default_currency || 'CAD',
-      currentCountry: (currentEntity?.country as CountryCode) || 'CA',
+      // Fallback chain: entity currency → profile display_currency → 'CAD'
+      currentCurrency: currentEntity?.default_currency || profile?.display_currency || 'CAD',
+      // Fallback chain: entity country → profile country → 'CA'
+      currentCountry: (currentEntity?.country as CountryCode) || (profile?.country as CountryCode) || 'CA',
       showAllEntities,
       setShowAllEntities,
       selectEntity,
-      // Country-aware properties
-      activeCountries: activeCountries.length > 0 ? activeCountries : ['CA' as CountryCode],
+      // Country-aware properties - also fallback to profile
+      activeCountries: activeCountries.length > 0 
+        ? activeCountries 
+        : (profile?.country ? [profile.country as CountryCode] : ['CA' as CountryCode]),
       isMultiCountry: activeCountries.length > 1,
       getEntitiesForCountry,
       hasCountry,
     };
-  }, [entities, primaryEntity, entitiesLoading, primaryLoading, showAllEntities, selectedEntityId, selectEntity]);
+  }, [entities, primaryEntity, profile, entitiesLoading, primaryLoading, showAllEntities, selectedEntityId, selectEntity]);
 
   return (
     <EntityContext.Provider value={value}>

@@ -35,6 +35,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getCountryConfig, getAvailableCountries, CHILE_TAX_REGIMES, type CountryCode } from '@/lib/constants/country-tax-config';
 import { CountryFlag } from '@/components/ui/country-flag';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 type WorkType = Database['public']['Enums']['work_type'];
 
@@ -54,6 +57,8 @@ export default function BusinessProfile() {
   const { t, language } = useLanguage();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const updateProfile = useUpdateProfile();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   // Form state
   const [country, setCountry] = useState<CountryCode>('CA');
@@ -136,7 +141,7 @@ export default function BusinessProfile() {
     );
   };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     // Validate based on country
     if (country === 'CA' && businessNumber) {
       const validation = validateBusinessNumber(businessNumber);
@@ -164,6 +169,36 @@ export default function BusinessProfile() {
       rut: country === 'CL' ? (rut || null) : null,
       tax_regime: country === 'CL' ? taxRegime : null,
     });
+
+    // Sync primary fiscal entity with the same country/province/currency
+    if (user) {
+      try {
+        const countryConf = getCountryConfig(country);
+        const { data: primaryEntity } = await supabase
+          .from('fiscal_entities')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('is_primary', true)
+          .maybeSingle();
+
+        if (primaryEntity) {
+          await supabase
+            .from('fiscal_entities')
+            .update({
+              country,
+              province: province || null,
+              default_currency: countryConf.currency,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', primaryEntity.id);
+          
+          queryClient.invalidateQueries({ queryKey: ['fiscal-entities'] });
+          queryClient.invalidateQueries({ queryKey: ['fiscal-entity-primary'] });
+        }
+      } catch (err) {
+        console.error('Failed to sync fiscal entity:', err);
+      }
+    }
   };
 
   const isBusinessUser = workTypes.includes('contractor') || workTypes.includes('corporation');
