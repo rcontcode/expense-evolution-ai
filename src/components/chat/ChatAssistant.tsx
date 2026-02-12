@@ -1205,7 +1205,17 @@ export const ChatAssistant: React.FC = () => {
                       ? (language === 'es' ? '🎤 Escuchando...' : '🎤 Listening...')
                       : isAnySpeaking 
                         ? (language === 'es' ? '🔊 Hablando...' : '🔊 Speaking...')
-                        : (language === 'es' ? `Hola ${userName}, ¿en qué te ayudo?` : `Hi ${userName}, how can I help?`)
+                        : (() => {
+                            const currentVoiceName = voiceControl.currentVoiceId 
+                              ? voiceControl.elevenLabsTTS.getVoicesForLang(language as 'es' | 'en').female
+                                  .concat(voiceControl.elevenLabsTTS.getVoicesForLang(language as 'es' | 'en').male)
+                                  .find(v => v.id === voiceControl.currentVoiceId)?.name
+                              : null;
+                            const voiceLabel = currentVoiceName ? ` · 🎙️ ${currentVoiceName}` : '';
+                            return language === 'es' 
+                              ? `Hola ${userName}, ¿en qué te ayudo?${voiceLabel}` 
+                              : `Hi ${userName}, how can I help?${voiceLabel}`;
+                          })()
                   }
                 </p>
               </div>
@@ -1232,7 +1242,7 @@ export const ChatAssistant: React.FC = () => {
                       <Settings className="h-3.5 w-3.5" />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="right" className="w-[400px] sm:w-[440px] overflow-y-auto">
+                  <SheetContent side="right" className="w-[90vw] sm:w-[480px] max-w-[520px] overflow-y-auto">
                     <SheetHeader>
                       <SheetTitle className="flex items-center gap-2">
                         <Settings className="h-4 w-4 text-primary" />

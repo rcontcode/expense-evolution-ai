@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import { Volume2, VolumeX, Play, Pause, Loader2, Sparkles, Speaker, Mic } from 'lucide-react';
+import { Volume2, VolumeX, Play, Pause, Loader2, Sparkles, Speaker, Mic, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
@@ -10,9 +10,9 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useElevenLabsVoices, buildVoiceOptions, ElevenLabsVoice } from '@/hooks/data/useElevenLabsVoices';
 import { useVoicePreferences, VoiceGender } from '@/hooks/utils/useVoicePreferences';
- import { useAppSounds } from '@/hooks/utils/useAppSounds';
- import { Slider as SliderComponent } from '@/components/ui/slider';
- import { Flame, Music, Gamepad2 } from 'lucide-react';
+import { useAppSounds } from '@/hooks/utils/useAppSounds';
+import { Flame, Music, Gamepad2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface VoiceSettingsPanelProps {
   language: 'es' | 'en';
@@ -153,10 +153,11 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
     };
   }, []);
 
-  // Select voice
+  // Select voice with feedback
   const selectVoice = useCallback((voice: ElevenLabsVoice) => {
     voicePrefs.setPremiumVoiceIdForLang(langFilter, voice.id);
-  }, [voicePrefs, langFilter]);
+    toast.success(language === 'es' ? `Voz cambiada a ${voice.name}` : `Voice changed to ${voice.name}`);
+  }, [voicePrefs, langFilter, language]);
 
   // Get voices for current filter
   const filteredVoices = useMemo(() => {
@@ -285,6 +286,15 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium">{language === 'es' ? 'Selección de Voz' : 'Voice Selection'}</span>
+          {currentVoiceId && (() => {
+            const allVoices = [...(organizedVoices[langFilter]?.female || []), ...(organizedVoices[langFilter]?.male || [])];
+            const currentVoice = allVoices.find(v => v.id === currentVoiceId);
+            return currentVoice ? (
+              <Badge variant="secondary" className="text-[10px] h-5 gap-1">
+                🎙️ {currentVoice.name}
+              </Badge>
+            ) : null;
+          })()}
         </div>
 
         {/* Voice Type Tabs */}
@@ -368,33 +378,21 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
                       <div
                         key={voice.id}
                         className={cn(
-                          "flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all",
+                          "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all",
                           isSelected 
-                            ? "border-primary bg-primary/10 shadow-sm" 
-                            : "border-transparent hover:border-muted-foreground/20 hover:bg-muted/50"
+                            ? "border-primary bg-primary/10 shadow-sm ring-1 ring-primary/30" 
+                            : "border-border hover:border-primary/40 hover:bg-muted/50"
                         )}
                         onClick={() => selectVoice(voice)}
                       >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-medium truncate">{voice.name}</span>
-                            {isSelected && (
-                              <Badge variant="default" className="text-[9px] h-4 px-1">
-                                ✓
-                              </Badge>
-                            )}
-                          </div>
-                          {voice.labels?.accent && (
-                            <span className="text-[10px] text-muted-foreground">
-                              {voice.labels.accent}
-                            </span>
-                          )}
-                        </div>
-                        
+                        {/* Play/Pause button - always visible */}
                         <Button
-                          variant="ghost"
+                          variant={isPlaying ? "default" : "outline"}
                           size="icon"
-                          className="h-7 w-7 flex-shrink-0"
+                          className={cn(
+                            "h-8 w-8 flex-shrink-0 rounded-full",
+                            isPlaying && "animate-pulse"
+                          )}
                           onClick={(e) => {
                             e.stopPropagation();
                             if (isPlaying) {
@@ -405,11 +403,28 @@ export const VoiceSettingsPanel: React.FC<VoiceSettingsPanelProps> = ({
                           }}
                         >
                           {isPlaying ? (
-                            <Pause className="h-3.5 w-3.5 text-primary" />
+                            <Pause className="h-3.5 w-3.5" />
                           ) : (
                             <Play className="h-3.5 w-3.5" />
                           )}
                         </Button>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-medium truncate">{voice.name}</span>
+                          </div>
+                          {voice.labels?.accent && (
+                            <span className="text-[11px] text-muted-foreground">
+                              {voice.labels.accent}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {isSelected && (
+                          <div className="flex-shrink-0 h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+                            <Check className="h-3.5 w-3.5 text-primary-foreground" />
+                          </div>
+                        )}
                       </div>
                     );
                   })}
