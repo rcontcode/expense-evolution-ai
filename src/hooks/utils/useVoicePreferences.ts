@@ -92,6 +92,9 @@ const BLOCKED_ES_VOICE_IDS = new Set([
   'LcfcDJNUP1GQjkzn1xUU', // "Daniela" - too slow
   'GBv7mTt0atIp3Br8iCZE', // "Diego" - too slow
   'JBFqnCBsd6RMkjVDRZzb', // George (EN) wrongly used as ES
+  'XB0fDUnXU5powFXDhCwa', // "Carolina" - background noise
+  'pMsXgVXv3BLzUgSXRplE', // "Mariana" - background noise
+  'jBpfuIE2acCO8z3wKNLl', // "Camila" - inconsistent quality
 ]);
 
 export function useVoicePreferences() {

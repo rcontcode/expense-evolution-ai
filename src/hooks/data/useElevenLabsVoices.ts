@@ -64,14 +64,17 @@ function isRecommendedLatamEs(voice: ElevenLabsVoice): boolean {
   return /mexic|chile|latin america|latam|neutral|neutro|colombi|argentin/.test(text);
 }
 
-// Known-bad IDs that were incorrectly mapped as Spanish and sound “gringo” in-app.
+// Known-bad IDs: wrong accent, background noise, poor quality, too slow
 const BLOCKED_SPANISH_VOICE_IDS = new Set<string>([
-  'jsCqWAovK2LkecY7zXl4', // “Sofía” (reported)
-  'z9fAnlkpzviPz146aGWa', // “Valentina” (reported)
-  'oWAxZDx7w5VEj9dCyTzz', // “Isabella” (reported)
-  'LcfcDJNUP1GQjkzn1xUU', // “Daniela” (reported too slow)
-  'GBv7mTt0atIp3Br8iCZE', // “Diego” (reported too slow)
-  'JBFqnCBsd6RMkjVDRZzb', // George (EN) was wrongly used as ES
+  'jsCqWAovK2LkecY7zXl4', // Sofia - gringo accent
+  'z9fAnlkpzviPz146aGWa', // Valentina - gringo accent
+  'oWAxZDx7w5VEj9dCyTzz', // Isabella - gringo accent
+  'LcfcDJNUP1GQjkzn1xUU', // Daniela - too slow
+  'GBv7mTt0atIp3Br8iCZE', // Diego - too slow
+  'JBFqnCBsd6RMkjVDRZzb', // George (EN) wrongly used as ES
+  'XB0fDUnXU5powFXDhCwa', // Carolina - background noise
+  'pMsXgVXv3BLzUgSXRplE', // Mariana - background noise
+  'jBpfuIE2acCO8z3wKNLl', // Camila - inconsistent quality
 ]);
 
 export function useElevenLabsVoices() {
@@ -113,7 +116,7 @@ export function buildVoiceOptions(
   const female = filtered.filter((v) => detectGender(v) === 'female');
   const male = filtered.filter((v) => detectGender(v) === 'male');
 
-  // Prefer “neutral LatAm” for Spanish by default.
+  // Prefer "neutral LatAm" for Spanish by default.
   const femaleRecommended = lang === 'es'
     ? female.filter(isRecommendedLatamEs)
     : female;

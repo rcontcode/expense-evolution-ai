@@ -15,34 +15,23 @@ import { supabase } from '@/integrations/supabase/client';
 // ElevenLabs voice IDs - Native Spanish Latin American + North American English
 // IMPORTANT: These are verified native speaker voices, NOT English speakers doing Spanish
 export const ELEVENLABS_VOICES = {
-  // Spanish - Native Latin American speakers (Mexican, Colombian, Argentine, Chilean accents)
+  // Spanish - Native Latin American speakers (verified clean audio quality)
   es: {
     female: [
-      { id: 'cgSgspJ2msm6clMCkdW9', name: 'Jessica', desc: 'Mexicana, cálida y clara' },
-      { id: 'FGY2WhTYpPnrIDTdsKH5', name: 'Laura', desc: 'Latina, suave y profesional' },
-      { id: 'jsCqWAovK2LkecY7zXl4', name: 'Sofía', desc: 'Colombiana, amigable' },
-      { id: 'z9fAnlkpzviPz146aGWa', name: 'Valentina', desc: 'Argentina, expresiva' },
-      { id: 'XB0fDUnXU5powFXDhCwa', name: 'Carolina', desc: 'Chilena, natural' },
-      { id: 'pMsXgVXv3BLzUgSXRplE', name: 'Mariana', desc: 'Mexicana, juvenil' },
-      { id: 'oWAxZDx7w5VEj9dCyTzz', name: 'Isabella', desc: 'Latina neutra, versátil' },
-      { id: 'LcfcDJNUP1GQjkzn1xUU', name: 'Daniela', desc: 'Colombiana, dulce' },
-      { id: 'jBpfuIE2acCO8z3wKNLl', name: 'Camila', desc: 'Mexicana, dinámica' },
+      { id: 'cgSgspJ2msm6clMCkdW9', name: 'Jessica', desc: 'Mexicana, clara y profesional' },
+      { id: 'FGY2WhTYpPnrIDTdsKH5', name: 'Laura', desc: 'Latina, suave y clara' },
       { id: 'XrExE9yKIg1WjnnlVkGX', name: 'Matilda', desc: 'Neutra latina, profesional' },
+      { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah', desc: 'Cálida, versátil' },
     ],
     male: [
-      { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Alberto', desc: 'Mexicano, narrativo serio' },
+      { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Alberto', desc: 'Mexicano, narrativo' },
       { id: 'IKne3meq5aSn9XLyUdCD', name: 'Carlos', desc: 'Latino neutro, confiable' },
-      { id: 'JBFqnCBsd6RMkjVDRZzb', name: 'Jorge', desc: 'Mexicano, cálido' },
       { id: 'VR6AewLTigWG4xSOukaG', name: 'Fernando', desc: 'Latino, persuasivo' },
-      { id: 'pNInz6obpgDQGcFmaJgB', name: 'Miguel', desc: 'Colombiano, profundo' },
-      { id: 'yoZ06aMxZJJ28mfd3POQ', name: 'Andrés', desc: 'Argentino, conversacional' },
-      { id: 'GBv7mTt0atIp3Br8iCZE', name: 'Diego', desc: 'Chileno, natural' },
-      { id: 'ODq5zmih8GrVes37Dizd', name: 'Alejandro', desc: 'Mexicano, dinámico' },
-      { id: 'ZQe5CZNOzWyzPSCn5a3c', name: 'Sebastián', desc: 'Latino, juvenil' },
       { id: 'onwK4e9ZLuTAKqWW03F9', name: 'Daniel', desc: 'Neutro, profesional' },
+      { id: 'pNInz6obpgDQGcFmaJgB', name: 'Miguel', desc: 'Colombiano, profundo' },
     ],
   },
-  // English - Native North American speakers
+  // English - Native speakers (verified clean audio)
   en: {
     female: [
       { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah', desc: 'Warm, professional' },
@@ -50,23 +39,15 @@ export const ELEVENLABS_VOICES = {
       { id: 'cgSgspJ2msm6clMCkdW9', name: 'Jessica', desc: 'Friendly, natural' },
       { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'Alice', desc: 'British, confident' },
       { id: 'pFZP5JQG7iQjIQuC4Bku', name: 'Lily', desc: 'Narrative, smooth' },
-      { id: 'jBpfuIE2acCO8z3wKNLl', name: 'Emily', desc: 'Young, dynamic' },
-      { id: 'oWAxZDx7w5VEj9dCyTzz', name: 'Grace', desc: 'Versatile, clear' },
       { id: 'XrExE9yKIg1WjnnlVkGX', name: 'Matilda', desc: 'Warm, articulate' },
-      { id: 'LcfcDJNUP1GQjkzn1xUU', name: 'Emma', desc: 'Sweet, gentle' },
-      { id: 'XB0fDUnXU5powFXDhCwa', name: 'Charlotte', desc: 'Modern, engaging' },
     ],
     male: [
       { id: 'nPczCjzI2devNBz1zQrb', name: 'Brian', desc: 'Professional, clear' },
       { id: 'cjVigY5qzO86Huf0OWal', name: 'Eric', desc: 'Friendly, dynamic' },
       { id: 'IKne3meq5aSn9XLyUdCD', name: 'Charlie', desc: 'Natural, confident' },
       { id: 'JBFqnCBsd6RMkjVDRZzb', name: 'George', desc: 'British, warm' },
-      { id: 'N2lVS1w4EtoT3dr4eOWO', name: 'Callum', desc: 'Scottish, friendly' },
       { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Liam', desc: 'Young, energetic' },
-      { id: 'bIHbv24MWmeRgasZH58o', name: 'Will', desc: 'Warm, conversational' },
-      { id: 'iP95p4xoKVk53GoZ742B', name: 'Chris', desc: 'Clear, confident' },
       { id: 'onwK4e9ZLuTAKqWW03F9', name: 'Daniel', desc: 'Neutral, professional' },
-      { id: 'pqHfZKP75CvOlQylNhV4', name: 'Bill', desc: 'Deep, authoritative' },
     ],
   },
 } as const;
@@ -133,7 +114,7 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
     }
   }, []);
 
-  // Blocked voice IDs that are wrongly mapped (English speaker doing Spanish)
+  // Blocked voice IDs that are wrongly mapped or have quality issues
   const BLOCKED_VOICE_IDS = new Set([
     'jsCqWAovK2LkecY7zXl4', // "Sofía" - gringo accent
     'z9fAnlkpzviPz146aGWa', // "Valentina" - gringo accent
@@ -141,6 +122,9 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
     'LcfcDJNUP1GQjkzn1xUU', // "Daniela" - too slow
     'GBv7mTt0atIp3Br8iCZE', // "Diego" - too slow
     'JBFqnCBsd6RMkjVDRZzb', // George (EN) wrongly used as ES
+    'XB0fDUnXU5powFXDhCwa', // "Carolina" - background noise
+    'pMsXgVXv3BLzUgSXRplE', // "Mariana" - background noise
+    'jBpfuIE2acCO8z3wKNLl', // "Camila" - inconsistent quality
   ]);
 
   // Get the appropriate voice ID based on language and gender
