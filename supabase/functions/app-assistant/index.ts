@@ -1063,7 +1063,8 @@ serve(async (req) => {
     if (richContext) {
       // Use the rich context from useAssistantContext
       contextSection = `
-## 🎯 CONTEXTO ACTUAL (MUY IMPORTANTE - USA ESTA INFORMACIÓN)
+## 🎯 CONTEXTO DE UBICACIÓN (solo referencia - NO uses esto como respuesta)
+REGLA CRÍTICA: Si el usuario hace una PREGUNTA DE CONOCIMIENTO (ej: "qué es el SII", "explícame el IVA", "cómo funciona X"), RESPONDE con tu conocimiento experto del system prompt. NUNCA respondas con la descripción de la página actual. La info de abajo es SOLO para saber dónde está el usuario, NO es la respuesta a su pregunta.
 ${richContext}
 `;
     } else if (userContext) {
