@@ -3,14 +3,15 @@
  import { Button } from '@/components/ui/button';
  import { Card, CardContent } from '@/components/ui/card';
  import { Badge } from '@/components/ui/badge';
- import {
-   LayoutDashboard,
-   Target,
-   PiggyBank,
-   TrendingUp,
-   Sparkles,
-   Settings2
- } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Target,
+  PiggyBank,
+  TrendingUp,
+  Sparkles,
+  Settings2,
+  Receipt
+} from 'lucide-react';
  import { useLanguage } from '@/contexts/LanguageContext';
  import { useProfile } from '@/hooks/data/useProfile';
  import { useCategoryBudgets } from '@/hooks/data/useCategoryBudgets';
@@ -24,7 +25,8 @@
  import { CategoryBudgetsCard } from '@/components/dashboard/CategoryBudgetsCard';
  import { BudgetAlertsCard } from '@/components/dashboard/BudgetAlertsCard';
  import { BudgetHistoryChart } from '@/components/dashboard/BudgetHistoryChart';
- import { cn } from '@/lib/utils';
+import { BillsDashboard } from '@/components/bills/BillsDashboard';
+import { cn } from '@/lib/utils';
  
  export function BudgetSection() {
    const { language } = useLanguage();
@@ -91,8 +93,8 @@
        </div>
  
        {/* Main Tabs */}
-       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-         <TabsList className="grid w-full grid-cols-4 h-auto p-1 gap-1">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5 h-auto p-1 gap-1">
            <TabsTrigger 
              value="overview" 
              className={cn(
@@ -126,15 +128,24 @@
                <Badge variant="secondary" className="ml-1 text-xs">{savingsGoals.length}</Badge>
              )}
            </TabsTrigger>
-           <TabsTrigger 
-             value="analytics" 
-             className={cn(
-               "flex items-center gap-2 py-3 data-[state=active]:bg-chart-3 data-[state=active]:text-white"
-             )}
-           >
-             <TrendingUp className="h-4 w-4" />
-             <span className="hidden sm:inline">{l ? 'Análisis' : 'Analytics'}</span>
-           </TabsTrigger>
+            <TabsTrigger 
+              value="bills" 
+              className={cn(
+                "flex items-center gap-2 py-3 data-[state=active]:bg-amber-500 data-[state=active]:text-white"
+              )}
+            >
+              <Receipt className="h-4 w-4" />
+              <span className="hidden sm:inline">{l ? 'Pagos' : 'Bills'}</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="analytics" 
+              className={cn(
+                "flex items-center gap-2 py-3 data-[state=active]:bg-chart-3 data-[state=active]:text-white"
+              )}
+            >
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline">{l ? 'Análisis' : 'Analytics'}</span>
+            </TabsTrigger>
          </TabsList>
  
          {/* Overview Tab */}
@@ -156,10 +167,15 @@
            <SavingsGoalsDashboard />
          </TabsContent>
  
-         {/* Analytics Tab */}
-         <TabsContent value="analytics" className="space-y-6">
-           <BudgetHistoryChart />
-         </TabsContent>
+          {/* Bills Tab */}
+          <TabsContent value="bills" className="space-y-6">
+            <BillsDashboard />
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" className="space-y-6">
+            <BudgetHistoryChart />
+          </TabsContent>
        </Tabs>
  
        {/* Onboarding Dialog */}

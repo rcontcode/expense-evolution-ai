@@ -575,6 +575,60 @@ export type Database = {
         }
         Relationships: []
       }
+      bill_payments: {
+        Row: {
+          amount_paid: number
+          bill_id: string
+          confirmation_number: string | null
+          created_at: string
+          expense_id: string | null
+          id: string
+          notes: string | null
+          paid_date: string
+          payment_method: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_paid: number
+          bill_id: string
+          confirmation_number?: string | null
+          created_at?: string
+          expense_id?: string | null
+          id?: string
+          notes?: string | null
+          paid_date?: string
+          payment_method?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number
+          bill_id?: string
+          confirmation_number?: string | null
+          created_at?: string
+          expense_id?: string | null
+          id?: string
+          notes?: string | null
+          paid_date?: string
+          payment_method?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bill_payments_bill_id_fkey"
+            columns: ["bill_id"]
+            isOneToOne: false
+            referencedRelation: "recurring_bills"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bill_payments_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       category_budgets: {
         Row: {
           alert_threshold: number
@@ -2462,6 +2516,89 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      recurring_bills: {
+        Row: {
+          amount: number
+          auto_pay: boolean | null
+          category: string
+          color: string | null
+          created_at: string
+          currency: string | null
+          description: string | null
+          due_day: number | null
+          entity_id: string | null
+          frequency: string
+          frequency_months: number | null
+          icon: string | null
+          id: string
+          last_paid_date: string | null
+          name: string
+          next_due_date: string
+          notes: string | null
+          priority: string | null
+          reminder_days_before: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          auto_pay?: boolean | null
+          category?: string
+          color?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          due_day?: number | null
+          entity_id?: string | null
+          frequency?: string
+          frequency_months?: number | null
+          icon?: string | null
+          id?: string
+          last_paid_date?: string | null
+          name: string
+          next_due_date: string
+          notes?: string | null
+          priority?: string | null
+          reminder_days_before?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          auto_pay?: boolean | null
+          category?: string
+          color?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          due_day?: number | null
+          entity_id?: string | null
+          frequency?: string
+          frequency_months?: number | null
+          icon?: string | null
+          id?: string
+          last_paid_date?: string | null
+          name?: string
+          next_due_date?: string
+          notes?: string | null
+          priority?: string | null
+          reminder_days_before?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_bills_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "fiscal_entities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       referral_leads: {
         Row: {
