@@ -829,22 +829,31 @@ export const ChatAssistant: React.FC = () => {
             setActiveTutorial(tutorial.id);
             setCurrentTutorialStep(0);
             
-            toast.success(action.message || (language === 'es' ? 'Iniciando tutorial...' : 'Starting tutorial...'));
+            // Format tutorial steps and inject as chat message so user actually SEES the content
+            const tutorialContent = formatTutorialForSpeech(tutorial);
+            const tutorialMsg: Message = { role: 'assistant', content: tutorialContent };
+            setMessages(prev => [...prev, tutorialMsg]);
+            
+            // Navigate to the relevant section if the tutorial has a route action
+            const firstStepAction = tutorial.steps?.[0]?.action;
+            if (firstStepAction && firstStepAction.startsWith('/')) {
+              navigate(firstStepAction);
+            }
+            
+            toast.success(language === 'es' ? '📚 Tutorial iniciado' : '📚 Tutorial started');
           } else {
-            // Fallback: if no tutorial found, try to navigate to related section
+            // Fallback: navigate to related section
             const routeMap: Record<string, string> = {
+              'capture-expense': '/expenses',
               'add_expense': '/expenses',
               'add-expense': '/expenses',
               'add_income': '/income',
               'add-income': '/income',
               'upload_receipt': '/expenses',
-              'upload-receipt': '/expenses',
               'use_ocr': '/expenses',
-              'use-ocr': '/expenses',
               'track_mileage': '/mileage',
-              'track-mileage': '/mileage',
             };
-            const fallbackRoute = routeMap[tutorialId];
+            const fallbackRoute = routeMap[tutorialId] || routeMap[normalizedId];
             if (fallbackRoute) {
               navigate(fallbackRoute);
               toast.success(action.message || (language === 'es' ? 'Te llevo a la sección' : 'Taking you there'));
@@ -1110,11 +1119,15 @@ export const ChatAssistant: React.FC = () => {
         });
       }
 
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: responseText,
-      };
-      setMessages(prev => [...prev, assistantMessage]);
+      // For run_tutorial, the tutorial content is already added inside executeAIAction
+      // so skip adding the vague AI intro message
+      if (aiAction?.action !== 'run_tutorial') {
+        const assistantMessage: Message = {
+          role: 'assistant',
+          content: responseText,
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+      }
       
       // Save assistant response to history
       voicePrefs.addToHistory({ role: 'assistant', content: responseText, page: location.pathname });
