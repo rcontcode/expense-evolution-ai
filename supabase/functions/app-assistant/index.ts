@@ -277,10 +277,8 @@ const ASSISTANT_TOOLS = [
           tutorialId: {
             type: "string",
             enum: [
-              "add_expense", "add_income", "add_client", "add_project", 
-              "upload_receipt", "analyze_bank", "track_mileage", "add_asset",
-              "add_liability", "set_budget", "export_report", "use_ocr",
-              "voice_commands", "fire_calculator", "tax_optimizer"
+              "capture-expense", "setup-client", "tax-deductions", 
+              "banking-analysis", "net-worth", "fire-calculator"
             ],
             description: "ID of the tutorial to run",
           },
@@ -648,10 +646,11 @@ El usuario puede darte comandos de voz. Entiende estas variaciones:
 - "Me pagaron 1000 del cliente X" → create_income(1000, "X", "client_payment")
 
 ### Tutoriales y Ayuda
-- "¿Cómo agrego un gasto?" → run_tutorial(add_expense)
-- "Enseñame a usar el OCR" → run_tutorial(use_ocr)
-- "¿Cómo funciona el kilometraje?" → run_tutorial(track_mileage)
-- "Explícame el FIRE" → explain + navigate(mentorship) si quieren ver más
+- "¿Cómo agrego un gasto?" → run_tutorial(capture-expense)
+- "Enseñame a configurar clientes" → run_tutorial(setup-client)
+- "¿Cómo funciona el patrimonio?" → run_tutorial(net-worth)
+- "Quiero capturar un gasto" → run_tutorial(capture-expense)
+- "Explícame el FIRE" → run_tutorial(fire-calculator)
 
 ### Análisis e Insights
 - "¿Cuánto gasté este mes?" → query_financial_data + respuesta
@@ -668,7 +667,7 @@ Usuario: "Gasté 150 en supermercado"
 Tú: [USAR TOOL create_expense con amount=150, vendor="supermercado", category="groceries"]
 
 Usuario: "¿Cómo subo un recibo?"
-Tú: [USAR TOOL run_tutorial con tutorialId="upload_receipt", message="Te muestro cómo subir un recibo paso a paso"]
+Tú: [USAR TOOL run_tutorial con tutorialId="capture-expense", message="Te muestro cómo capturar gastos ahora mismo"]
 
 Usuario: "¿Cuánto necesito para retirarme?"
 Tú: [USAR TOOL calculate_fire] + explicación de la regla del 4% y número FIRE
@@ -692,10 +691,10 @@ Usuario: "Llévame a gastos"
 Tú: [USAR TOOL navigate con target="expenses", message="Te llevo a la sección de gastos"]
 
 Usuario: "¿Cómo funciona el OCR?"
-Tú: [USAR TOOL run_tutorial con tutorialId="use_ocr", message="Te muestro cómo usar el OCR ahora mismo"]
+Tú: [USAR TOOL run_tutorial con tutorialId="capture-expense", message="Te muestro cómo capturar gastos con OCR"]
 
 Usuario: "Quiero capturar un gasto" / "capturar un gasto"
-Tú: [USAR TOOL navigate con target="expenses", message="Te llevo a Gastos para que registres uno ahora"]
+Tú: [USAR TOOL run_tutorial con tutorialId="capture-expense", message="¡Vamos! Te guío paso a paso para capturar tu gasto"]
 
 Usuario: "No entiendo mis impuestos"
 Tú: "¡Tranquilo! 😊 Los impuestos son simples:

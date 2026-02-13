@@ -817,6 +817,42 @@ export const ChatAssistant: React.FC = () => {
           }
         }
         break;
+
+      case 'run_tutorial': {
+        const tutorialId = action.data?.tutorialId as string;
+        if (tutorialId) {
+          // Normalize ID format: backend sends "add_expense", tutorials use "add-expense"
+          const normalizedId = tutorialId.replace(/_/g, '-');
+          const tutorial = findTutorial(normalizedId) || findTutorial(tutorialId);
+          if (tutorial) {
+            triggerHapticFeedback('medium');
+            setActiveTutorial(tutorial.id);
+            setCurrentTutorialStep(0);
+            
+            toast.success(action.message || (language === 'es' ? 'Iniciando tutorial...' : 'Starting tutorial...'));
+          } else {
+            // Fallback: if no tutorial found, try to navigate to related section
+            const routeMap: Record<string, string> = {
+              'add_expense': '/expenses',
+              'add-expense': '/expenses',
+              'add_income': '/income',
+              'add-income': '/income',
+              'upload_receipt': '/expenses',
+              'upload-receipt': '/expenses',
+              'use_ocr': '/expenses',
+              'use-ocr': '/expenses',
+              'track_mileage': '/mileage',
+              'track-mileage': '/mileage',
+            };
+            const fallbackRoute = routeMap[tutorialId];
+            if (fallbackRoute) {
+              navigate(fallbackRoute);
+              toast.success(action.message || (language === 'es' ? 'Te llevo a la sección' : 'Taking you there'));
+            }
+          }
+        }
+        break;
+      }
         
       default:
         console.log('[AI Action] Unknown action type:', action.action);
