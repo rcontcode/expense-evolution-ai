@@ -118,7 +118,7 @@ export function BillsSummaryCards() {
                   <div className="flex-1">
                     <div className="flex justify-between text-sm">
                       <span>{cfg?.[l ? 'es' : 'en'] || cat}</span>
-                      <span className="font-medium">{formatCurrency(amount)}<span className="text-xs text-muted-foreground">/mo</span></span>
+                      <span className="font-medium">{formatCurrency(amount)}<span className="text-xs text-muted-foreground">/{l ? 'mes' : 'mo'}</span></span>
                     </div>
                     <div className="h-1.5 rounded-full bg-muted overflow-hidden mt-1">
                       <motion.div

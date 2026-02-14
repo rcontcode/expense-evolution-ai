@@ -1,12 +1,14 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useRecurringBills, type RecurringBill } from '@/hooks/data/useRecurringBills';
 import { BILL_CATEGORY_CONFIG, type BillCategory } from '@/lib/constants/bill-categories';
-import { startOfMonth, endOfMonth, eachDayOfInterval, format, parseISO, isSameDay, isToday, isBefore } from 'date-fns';
+import { startOfMonth, endOfMonth, eachDayOfInterval, format, parseISO, isToday, isBefore, addMonths, subMonths, isSameMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
@@ -15,26 +17,29 @@ export function PaymentCalendar() {
   const l = language === 'es';
   const { formatCurrency } = useFormatCurrency();
   const { data: bills } = useRecurringBills();
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  const now = new Date();
-  const monthStart = startOfMonth(now);
-  const monthEnd = endOfMonth(now);
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const now = new Date();
+  const isCurrentMonth = isSameMonth(currentMonth, now);
 
-  // Map bills to their due dates within the current month
+  // Map bills to their due dates within the selected month
   const billsByDay = useMemo(() => {
     const map = new Map<string, RecurringBill[]>();
     if (!bills) return map;
     bills.filter(b => b.status === 'active').forEach(bill => {
       const dueDate = parseISO(bill.next_due_date);
-      const key = format(dueDate, 'yyyy-MM-dd');
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(bill);
+      if (dueDate >= monthStart && dueDate <= monthEnd) {
+        const key = format(dueDate, 'yyyy-MM-dd');
+        if (!map.has(key)) map.set(key, []);
+        map.get(key)!.push(bill);
+      }
     });
     return map;
-  }, [bills]);
+  }, [bills, monthStart, monthEnd]);
 
-  // Calculate totals
   const monthTotal = useMemo(() => {
     let total = 0;
     billsByDay.forEach(dayBills => {
@@ -47,34 +52,41 @@ export function PaymentCalendar() {
     ? ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
     : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-  // Pad start of month to align with day-of-week
-  const startDay = (monthStart.getDay() + 6) % 7; // Monday = 0
+  const startDay = (monthStart.getDay() + 6) % 7;
   const paddedDays = [...Array(startDay).fill(null), ...days];
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2">
-            📅 {l ? 'Calendario de Pagos' : 'Payment Calendar'}
-            <span className="text-sm font-normal text-muted-foreground">
-              — {format(now, 'MMMM yyyy', { locale: l ? es : undefined })}
-            </span>
-          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth(m => subMonths(m, 1))}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <CardTitle className="text-base flex items-center gap-2">
+              📅 {format(currentMonth, 'MMMM yyyy', { locale: l ? es : undefined })}
+            </CardTitle>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth(m => addMonths(m, 1))}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            {!isCurrentMonth && (
+              <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => setCurrentMonth(new Date())}>
+                {l ? 'Hoy' : 'Today'}
+              </Button>
+            )}
+          </div>
           <Badge variant="outline" className="text-xs">
-            {l ? 'Total mes:' : 'Month total:'} {formatCurrency(monthTotal)}
+            {l ? 'Total:' : 'Total:'} {formatCurrency(monthTotal)}
           </Badge>
         </div>
       </CardHeader>
       <CardContent>
-        {/* Day names */}
         <div className="grid grid-cols-7 gap-1 mb-1">
           {dayNames.map(d => (
             <div key={d} className="text-center text-xs font-medium text-muted-foreground py-1">{d}</div>
           ))}
         </div>
 
-        {/* Calendar grid */}
         <div className="grid grid-cols-7 gap-1">
           {paddedDays.map((day, i) => {
             if (!day) return <div key={`pad-${i}`} />;

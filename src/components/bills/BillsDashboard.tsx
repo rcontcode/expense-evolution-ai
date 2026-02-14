@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutGrid, Calendar, KanbanSquare, ListChecks } from 'lucide-react';
+import { LayoutGrid, Calendar, KanbanSquare, ListChecks, TrendingUp } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { BillsSummaryCards } from './BillsSummaryCards';
 import { BillsManager } from './BillsManager';
 import { PaymentCalendar } from './PaymentCalendar';
 import { BillsKanban } from './BillsKanban';
 import { PaymentChecklist } from './PaymentChecklist';
+import { CashFlowProjection } from './CashFlowProjection';
 import { cn } from '@/lib/utils';
 
 export function BillsDashboard() {
@@ -19,7 +20,7 @@ export function BillsDashboard() {
       <BillsSummaryCards />
 
       <Tabs value={view} onValueChange={setView} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 h-auto p-1 gap-1">
+        <TabsList className="grid w-full grid-cols-5 h-auto p-1 gap-1">
           <TabsTrigger value="overview" className={cn("flex items-center gap-2 py-2.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground")}>
             <LayoutGrid className="h-4 w-4" />
             <span className="hidden sm:inline">{l ? 'Lista' : 'List'}</span>
@@ -36,6 +37,10 @@ export function BillsDashboard() {
             <ListChecks className="h-4 w-4" />
             <span className="hidden sm:inline">Checklist</span>
           </TabsTrigger>
+          <TabsTrigger value="projection" className={cn("flex items-center gap-2 py-2.5 text-xs sm:text-sm data-[state=active]:bg-chart-1 data-[state=active]:text-white")}>
+            <TrendingUp className="h-4 w-4" />
+            <span className="hidden sm:inline">{l ? 'Proyección' : 'Projection'}</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -49,6 +54,9 @@ export function BillsDashboard() {
         </TabsContent>
         <TabsContent value="checklist">
           <PaymentChecklist />
+        </TabsContent>
+        <TabsContent value="projection">
+          <CashFlowProjection />
         </TabsContent>
       </Tabs>
     </div>
