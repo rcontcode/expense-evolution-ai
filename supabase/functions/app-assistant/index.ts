@@ -356,6 +356,33 @@ const ASSISTANT_TOOLS = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "highlight_ui",
+      description: "Highlight specific UI elements to visually guide the user. Use ALWAYS when mentioning buttons, sections, or UI elements. Combine with navigate if needed.",
+      parameters: {
+        type: "object",
+        properties: {
+          elements: {
+            type: "array",
+            items: { type: "string" },
+            description: "Element IDs to highlight. Available: add-expense-button, expenses-table, expense-filters, quick-capture, bulk-assign-button, export-button, add-income-button, income-table, add-client-button, clients-grid, add-project-button, projects-grid, assets-section, liabilities-section, net-worth-chart, bank-import-guide, upload-contract-button, contracts-table, mentorship-level, mentorship-tabs, tax-status-cards, tax-tabs, tax-estimator, capture-photo-button, capture-file-button, capture-voice-button, sidebar-nav, entity-selector, chat-assistant, balance-card, control-center, timeline-chart, reimbursement-report",
+          },
+          navigateTo: {
+            type: "string",
+            enum: Object.keys(AVAILABLE_ROUTES),
+            description: "Optional: navigate to a page first before highlighting",
+          },
+          message: {
+            type: "string",
+            description: "Explanation of what the highlighted elements are for",
+          },
+        },
+        required: ["elements", "message"],
+      },
+    },
+  },
 ];
 
 // ============================================================================
@@ -608,6 +635,10 @@ El SII es la autoridad tributaria de Chile (equivalente al IRS en EE.UU. o CRA e
    - calculate_fire: cuando preguntan por retiro/independencia financiera
    - show_insights: cuando piden análisis o patrones
    - set_goal: cuando mencionan metas financieras
+   - **highlight_ui**: SIEMPRE que menciones un botón, sección o elemento de la UI. Esto marca el elemento en naranja para que el usuario lo encuentre fácilmente.
+     Ejemplos: si dices "haz clic en Captura de Gastos" → highlight_ui(["quick-capture"])
+     Si dices "en la tabla de gastos puedes filtrar" → highlight_ui(["expenses-table", "expense-filters"])
+     Si el usuario está en otra página, usa navigateTo para ir primero y luego resaltar.
 
 ## ⚠️ REGLA CRÍTICA: SEGUIMIENTO CONVERSACIONAL EN CREACIÓN DE DATOS
 
@@ -832,6 +863,16 @@ En esta sección puedes:
 - PROHIBIDO responder solo con promesas vagas. Cada respuesta debe contener una ACCIÓN concreta o INFORMACIÓN útil.
 - Si el usuario dice "estoy esperando" o "no pasó nada", significa que fallaste en actuar. Usa la tool correspondiente INMEDIATAMENTE.
 
+### REGLA CRÍTICA: SIEMPRE RESALTA LO QUE MENCIONAS
+- Cuando le dices al usuario "haz clic en X", "ve al botón Y", "mira la sección Z" → USA highlight_ui() para resaltar esos elementos en la pantalla.
+- Esto SIEMPRE debe acompañar a cualquier mención de UI. Ejemplos:
+  - "Presiona el botón verde de Captura" → highlight_ui(["quick-capture"], message="...")
+  - "En la tabla de gastos verás..." → highlight_ui(["expenses-table"], message="...")
+  - "Ve a la sección de filtros" → highlight_ui(["expense-filters"], message="...")
+  - Si el usuario no está en la página correcta → highlight_ui(["expenses-table"], navigateTo="expenses", message="...")
+- Si mencionas MÚLTIPLES elementos → resáltalos todos: highlight_ui(["add-expense-button", "expenses-table"])
+- NUNCA hables de un elemento de la UI sin resaltarlo. El usuario no sabe dónde está lo que describes.
+
 ### ANTI-DUPLICACIÓN
 - NUNCA repitas la misma información que acabas de decir
 - Si el usuario pregunta lo mismo, reformula la respuesta
@@ -1029,6 +1070,18 @@ function executeSetGoalTool(args: { goalType: string; targetAmount?: number; dea
       targetAmount: args.targetAmount,
       deadline: args.deadline,
     },
+    message: args.message,
+  };
+}
+
+function executeHighlightUiTool(args: { elements: string[]; navigateTo?: string; message: string }, language: 'es' | 'en') {
+  const routeInfo = args.navigateTo ? AVAILABLE_ROUTES[args.navigateTo as keyof typeof AVAILABLE_ROUTES] : null;
+  
+  return {
+    action: 'highlight_ui',
+    target: args.navigateTo || null,
+    route: routeInfo?.route || null,
+    data: { elements: args.elements },
     message: args.message,
   };
 }
@@ -1280,6 +1333,9 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
           break;
         case 'set_goal':
           actionResponse = executeSetGoalTool(toolArgs);
+          break;
+        case 'highlight_ui':
+          actionResponse = executeHighlightUiTool(toolArgs, language as 'es' | 'en');
           break;
         case 'explain_chart':
         case 'query_financial_data':

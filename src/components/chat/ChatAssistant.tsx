@@ -797,6 +797,25 @@ export const ChatAssistant: React.FC = () => {
           highlight([{ selector: action.target }]);
         }
         break;
+
+      case 'highlight_ui': {
+        const elements = (action.data?.elements as string[]) || [];
+        
+        // Navigate first if needed
+        if (action.route) {
+          triggerHapticFeedback('medium');
+          navigate(action.route);
+        }
+        
+        // Then highlight the elements after a delay for page render
+        if (elements.length > 0 && isHighlightEnabled) {
+          const highlightDelay = action.route ? 1200 : 300;
+          setTimeout(() => {
+            highlight(elements.map(el => ({ selector: el })));
+          }, highlightDelay);
+        }
+        break;
+      }
         
       case 'both':
         // Navigate + explain (for tutorial-like requests)
