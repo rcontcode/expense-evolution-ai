@@ -87,6 +87,7 @@ const BudgetAlertsCard = lazy(() => import('@/components/dashboard/BudgetAlertsC
 const CategoryYearComparison = lazy(() => import('@/components/analytics/CategoryYearComparison').then(m => ({ default: m.CategoryYearComparison })));
 const WorkflowSummaryWidget = lazy(() => import('@/components/dashboard/WorkflowSummaryWidget').then(m => ({ default: m.WorkflowSummaryWidget })));
 const CompletenessCard = lazy(() => import('@/components/dashboard/CompletenessCard').then(m => ({ default: m.CompletenessCard })));
+const WorkflowVisualizer = lazy(() => import('@/components/guidance/WorkflowVisualizer').then(m => ({ default: m.WorkflowVisualizer })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -306,6 +307,11 @@ export default function Dashboard() {
               />
             </div>
           </div>
+
+          {/* Visual Workflow Guide - "¿Qué flujo necesitas hoy?" */}
+          <Suspense fallback={<Skeleton className="h-[300px]" />}>
+            <WorkflowVisualizer compact={true} />
+          </Suspense>
 
           {/* Workflow Progress + Completeness */}
           <div className="grid gap-4 lg:grid-cols-2">
