@@ -259,9 +259,7 @@ export function useElevenLabsTTS(options: UseElevenLabsTTSOptions = {}): UseElev
             'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
-            // Prepend a brief pause to prevent first-syllable clipping
-            // ElevenLabs sometimes clips the very start of audio
-            text: '... ' + cleanTextForTTS(text, options.lang || 'es', options.currency),
+            text: cleanTextForTTS(text, options.lang || 'es', options.currency),
             voiceId,
             lang: options.lang,
           }),
