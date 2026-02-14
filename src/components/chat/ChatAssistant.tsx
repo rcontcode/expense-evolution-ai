@@ -572,7 +572,7 @@ export const ChatAssistant: React.FC = () => {
           setTimeout(() => {
             const alertMsg: Message = { 
               role: 'assistant', 
-              content: `⚠️ ${highPriorityAlert.message[language as 'es' | 'en']}` 
+              content: highPriorityAlert.message[language as 'es' | 'en']
             };
             setMessages(prev => [...prev, alertMsg]);
           }, 2000);
@@ -596,7 +596,7 @@ export const ChatAssistant: React.FC = () => {
       const dueReminders = voicePrefs.checkReminders(language as 'es' | 'en');
       if (dueReminders.length > 0) {
         dueReminders.forEach(reminder => {
-          const reminderMsg: Message = { role: 'assistant', content: `🔔 ${reminder}` };
+          const reminderMsg: Message = { role: 'assistant', content: reminder };
           setMessages(prev => [...prev, reminderMsg]);
           if (autoSpeak) {
             voiceControl.speak(reminder);
