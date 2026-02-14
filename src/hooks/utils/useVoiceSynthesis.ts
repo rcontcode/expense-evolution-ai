@@ -42,15 +42,22 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
     return text
       // CRITICAL: Convert problematic Unicode to ASCII (prevents "alien" speech)
       .replace(/…/g, '...') // Unicode ellipsis
-      .replace(/[""]/g, '"') // Smart quotes
-      .replace(/['']/g, "'") // Smart apostrophes
-      .replace(/—/g, '-') // Em dash
-      .replace(/–/g, '-') // En dash
-      .replace(/•/g, '-') // Bullet
+      .replace(/[""„«»]/g, '"') // Smart quotes and guillemets
+      .replace(/[''‚‹›]/g, "'") // Smart apostrophes
+      .replace(/—/g, ', ') // Em dash → comma pause
+      .replace(/–/g, ', ') // En dash → comma pause
+      .replace(/•◦▪▸►▹▻⦿⦾/g, ', ') // Bullets → comma pause
       .replace(/→/g, ' a ') // Arrow
-      .replace(/←/g, '') // Left arrow
-      .replace(/©®™/g, '') // Legal symbols
+      .replace(/←↑↓↔↕⇒⇐⇑⇓/g, ' ') // All arrows
+      .replace(/[©®™℠]/g, '') // Legal symbols
       .replace(/°/g, ' grados ') // Degree
+      .replace(/[%]/g, ' por ciento ') // Percentage
+      .replace(/[±∓×÷≈≠≤≥∞∑∏√∫]/g, ' ') // Math symbols
+      .replace(/[✓✔✅☑]/g, 'si') // Check marks
+      .replace(/[✗✘❌☒]/g, 'no') // X marks
+      .replace(/[⚠️⛔🚫❗❓❕❔]/g, '') // Warning/error symbols
+      // Remove ALL emojis (comprehensive)
+      .replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FE0F}]|[\u{200D}]|[\u{20E3}]|[\u{E0020}-\u{E007F}]|[\u{2300}-\u{23FF}]|[\u{2B50}-\u{2BFF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA00}-\u{1FA6F}]|[\u{1FA70}-\u{1FAFF}]|[\u{231A}-\u{231B}]|[\u{2934}-\u{2935}]|[\u{25AA}-\u{25AB}]|[\u{25B6}]|[\u{25C0}]|[\u{25FB}-\u{25FE}]|[\u{2614}-\u{2615}]|[\u{2648}-\u{2653}]|[\u{267F}]|[\u{2693}]|[\u{26A1}]|[\u{26AA}-\u{26AB}]|[\u{26BD}-\u{26BE}]|[\u{26C4}-\u{26C5}]|[\u{26CE}]|[\u{26D4}]|[\u{26EA}]|[\u{26F2}-\u{26F3}]|[\u{26F5}]|[\u{26FA}]|[\u{26FD}]|[\u{2702}]|[\u{2705}]|[\u{2708}-\u{270D}]|[\u{270F}]|[\u{2712}]|[\u{2714}]|[\u{2716}]|[\u{271D}]|[\u{2721}]|[\u{2728}]|[\u{2733}-\u{2734}]|[\u{2744}]|[\u{2747}]|[\u{274C}]|[\u{274E}]|[\u{2753}-\u{2755}]|[\u{2757}]|[\u{2763}-\u{2764}]|[\u{2795}-\u{2797}]|[\u{27A1}]|[\u{27B0}]/gu, '')
       // Remove ALL markdown formatting symbols (critical for TTS)
       .replace(/\*\*\*/g, '') // Bold italic
       .replace(/\*\*/g, '') // Bold
@@ -64,15 +71,15 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
       .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Links
       .replace(/^>\s*/gm, '') // Blockquotes
       .replace(/\|\|/g, '') // Spoiler tags
-      // Emojis
-      .replace(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FE0F}]|[\u{200D}]|[\u{20E3}]|[\u{E0020}-\u{E007F}]/gu, '')
       // CJK and other problematic unicode
       .replace(/[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\uFF00-\uFFEF\u4E00-\u9FAF]/g, '')
       // List markers
-      .replace(/^[\s]*[-•◦▪▸►]\s*/gm, '')
+      .replace(/^[\s]*[-]\s*/gm, ', ')
       .replace(/^\s*\d+\.\s*/gm, '')
       // Parenthetical formatting hints like _(text)_ 
       .replace(/_\(([^)]+)\)_/g, '$1')
+      // Clean up multiple spaces and commas
+      .replace(/,\s*,/g, ',')
       .replace(/\s+/g, ' ')
       .trim();
   }, []);
