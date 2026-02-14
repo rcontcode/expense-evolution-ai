@@ -197,7 +197,7 @@ const WORKFLOWS: Workflow[] = [
     icon: Calculator,
     accentColor: 'text-emerald-600 dark:text-emerald-400',
     bgGradient: 'from-emerald-500/10 via-emerald-500/5 to-transparent',
-    ctaPath: '/dashboard?tab=tax',
+    ctaPath: '/tax-calendar',
     ctaLabel: { es: 'Ir a Impuestos', en: 'Go to Taxes' },
     steps: [
       {
