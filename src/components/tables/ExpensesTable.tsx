@@ -21,7 +21,10 @@ import {
   Ban,
   AlertTriangle,
   FileText,
-  FolderKanban
+  FolderKanban,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import { ReceiptPhotoViewer } from '@/components/ReceiptPhotoViewer';
 import {
@@ -51,6 +54,37 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+
+type SortField = 'date' | 'vendor' | 'category' | 'amount' | 'status';
+type SortDirection = 'asc' | 'desc';
+
+function SortableHeader({ field, label, currentSort, currentDirection, onSort, className }: {
+  field: SortField;
+  label: string;
+  currentSort: SortField | null;
+  currentDirection: SortDirection;
+  onSort: (field: SortField) => void;
+  className?: string;
+}) {
+  const isActive = currentSort === field;
+  return (
+    <button
+      onClick={() => onSort(field)}
+      className={cn(
+        "flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer select-none group",
+        isActive && "text-foreground font-semibold",
+        className
+      )}
+    >
+      <span>{label}</span>
+      {isActive ? (
+        currentDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+      ) : (
+        <ArrowUpDown className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+      )}
+    </button>
+  );
+}
 
 interface ExpensesTableProps {
   expenses: ExpenseWithRelations[];
@@ -354,6 +388,42 @@ export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: E
   const isMobile = useIsMobile();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const deleteMutation = useDeleteExpense();
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
+  const handleSort = useCallback((field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection(field === 'date' ? 'desc' : 'asc');
+    }
+  }, [sortField]);
+
+  const sortedExpenses = useMemo(() => {
+    if (!sortField) return expenses;
+    return [...expenses].sort((a, b) => {
+      let cmp = 0;
+      switch (sortField) {
+        case 'date':
+          cmp = a.date.localeCompare(b.date);
+          break;
+        case 'vendor':
+          cmp = (a.vendor || '').localeCompare(b.vendor || '');
+          break;
+        case 'category':
+          cmp = (a.category || '').localeCompare(b.category || '');
+          break;
+        case 'amount':
+          cmp = Number(a.amount) - Number(b.amount);
+          break;
+        case 'status':
+          cmp = (a.status || '').localeCompare(b.status || '');
+          break;
+      }
+      return sortDirection === 'asc' ? cmp : -cmp;
+    });
+  }, [expenses, sortField, sortDirection]);
 
   const handleDelete = useCallback(() => {
     if (deleteId) {
@@ -387,13 +457,13 @@ export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: E
   }
 
   // Use virtualization only for large lists on desktop
-  const useVirtualization = !isMobile && expenses.length > 50;
+  const useVirtualization = !isMobile && sortedExpenses.length > 50;
   const listHeight = useVirtualization 
-    ? Math.min(TABLE_HEIGHT, expenses.length * ROW_HEIGHT)
-    : expenses.length * ROW_HEIGHT;
+    ? Math.min(TABLE_HEIGHT, sortedExpenses.length * ROW_HEIGHT)
+    : sortedExpenses.length * ROW_HEIGHT;
 
   const rowProps: ExpenseRowCustomProps = {
-    expenses,
+    expenses: sortedExpenses,
     onEdit,
     onDelete: handleSetDeleteId,
     t,
@@ -488,14 +558,24 @@ export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: E
             </TooltipProvider>
           </div>
           <div className="w-[4%] px-1 py-3 text-center">{t('expenses.receipt')}</div>
-          <div className="w-[8%] px-2 py-3">{t('expenses.date')}</div>
-          <div className="w-[14%] px-2 py-3">{t('expenses.vendor')}</div>
-          <div className="w-[9%] px-2 py-3">{t('expenses.category')}</div>
+          <div className="w-[8%] px-2 py-3">
+            <SortableHeader field="date" label={t('expenses.date')} currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
+          </div>
+          <div className="w-[14%] px-2 py-3">
+            <SortableHeader field="vendor" label={t('expenses.vendor')} currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
+          </div>
+          <div className="w-[9%] px-2 py-3">
+            <SortableHeader field="category" label={t('expenses.category')} currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
+          </div>
           <div className="w-[10%] px-2 py-3">{language === 'es' ? 'Reembolso' : 'Reimb.'}</div>
           <div className="w-[14%] px-2 py-3">{language === 'es' ? 'Cliente/Contrato' : 'Client/Contract'}</div>
           <div className="w-[10%] px-2 py-3">{t('expenses.tags')}</div>
-          <div className="w-[8%] px-2 py-3 text-right">{t('expenses.amount')}</div>
-          <div className="w-[12%] px-2 py-3">{t('expenses.status')}</div>
+          <div className="w-[8%] px-2 py-3 text-right">
+            <SortableHeader field="amount" label={t('expenses.amount')} currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} className="justify-end" />
+          </div>
+          <div className="w-[12%] px-2 py-3">
+            <SortableHeader field="status" label={t('expenses.status')} currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
+          </div>
           <div className="w-[6%] px-2 py-3"></div>
         </div>
         
@@ -503,24 +583,24 @@ export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: E
         {useVirtualization ? (
           <List<ExpenseRowCustomProps>
             style={{ height: listHeight, width: '100%' }}
-            rowCount={expenses.length}
+            rowCount={sortedExpenses.length}
             rowHeight={ROW_HEIGHT}
             rowProps={rowProps}
             rowComponent={ExpenseRowComponent}
           />
         ) : (
           <div>
-            {expenses.map((expense, index) => (
+            {sortedExpenses.map((expense, index) => (
               <ExpenseRowComponent
                 key={expense.id}
                 ariaAttributes={{
                   "aria-posinset": index + 1,
-                  "aria-setsize": expenses.length,
+                  "aria-setsize": sortedExpenses.length,
                   role: "listitem",
                 }}
                 index={index}
                 style={{ height: ROW_HEIGHT }}
-                expenses={expenses}
+                expenses={sortedExpenses}
                 onEdit={onEdit}
                 onDelete={handleSetDeleteId}
                 t={t}
