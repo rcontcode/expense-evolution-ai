@@ -39,10 +39,12 @@ const emptyBill: BillInsert = {
 };
 
 function BillStatusBadge({ bill }: { bill: RecurringBill }) {
+  const { language } = useLanguage();
+  const l = language === 'es';
   const daysUntil = differenceInDays(parseISO(bill.next_due_date), new Date());
 
   if (daysUntil < 0)
-    return <Badge variant="destructive" className="text-xs">⚠️ Vencido</Badge>;
+    return <Badge variant="destructive" className="text-xs">⚠️ {l ? 'Vencido' : 'Overdue'}</Badge>;
   if (daysUntil <= 3)
     return <Badge className="bg-orange-500/20 text-orange-600 border-orange-500/30 text-xs">⏰ {daysUntil}d</Badge>;
   if (daysUntil <= 7)
@@ -60,12 +62,14 @@ export function BillsManager() {
   const deleteBill = useDeleteBill();
   const markPaid = useMarkBillPaid();
 
+  const { currentCurrency } = useFormatCurrency();
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBill, setEditingBill] = useState<RecurringBill | null>(null);
-  const [form, setForm] = useState<BillInsert>(emptyBill);
+  const [form, setForm] = useState<BillInsert>({ ...emptyBill, currency: currentCurrency });
   const [filter, setFilter] = useState<string>('all');
 
-  const openNew = () => { setEditingBill(null); setForm(emptyBill); setDialogOpen(true); };
+  const openNew = () => { setEditingBill(null); setForm({ ...emptyBill, currency: currentCurrency }); setDialogOpen(true); };
   const openEdit = (bill: RecurringBill) => {
     setEditingBill(bill);
     setForm({
