@@ -281,16 +281,16 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
 
   return (
     <Card className={cn(
-      "overflow-hidden border-2 h-full flex flex-col",
+      "overflow-hidden border-2",
       "bg-gradient-to-br from-background via-muted/20 to-background",
       className
     )}>
-      {/* Header with gradient */}
-      <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-emerald-500/10 px-4 py-3 border-b">
+      {/* Compact Header */}
+      <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-emerald-500/10 px-4 py-2.5 border-b">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-              <Zap className="h-4 w-4 text-primary-foreground" />
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
+              <Zap className="h-3.5 w-3.5 text-primary-foreground" />
             </div>
             <div>
               <h3 className="font-bold text-sm">
@@ -298,14 +298,13 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
               </h3>
               <p className="text-[10px] text-muted-foreground">
                 {language === 'es' 
-                  ? `${completedWorkflows}/${workflows.length} completados · Toca cada área para avanzar`
-                  : `${completedWorkflows}/${workflows.length} complete · Tap each area to progress`
+                  ? `${completedWorkflows}/${workflows.length} completados`
+                  : `${completedWorkflows}/${workflows.length} complete`
                 }
               </p>
             </div>
           </div>
           
-          {/* Overall progress circle */}
           <div className="flex items-center gap-3">
             {totalActionItems > 0 && (
               <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30 text-xs">
@@ -313,31 +312,31 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
                 {totalActionItems} {language === 'es' ? 'pendientes' : 'pending'}
               </Badge>
             )}
-            <div className="relative w-12 h-12">
-              <svg className="w-12 h-12 transform -rotate-90">
+            <div className="relative w-10 h-10">
+              <svg className="w-10 h-10 transform -rotate-90">
                 <circle
                   className="text-muted"
-                  strokeWidth="3"
+                  strokeWidth="2.5"
                   stroke="currentColor"
                   fill="transparent"
-                  r="20"
-                  cx="24"
-                  cy="24"
+                  r="16"
+                  cx="20"
+                  cy="20"
                 />
                 <circle
                   className="text-primary transition-all duration-500"
-                  strokeWidth="3"
-                  strokeDasharray={125.6}
-                  strokeDashoffset={125.6 - (averageProgress / 100) * 125.6}
+                  strokeWidth="2.5"
+                  strokeDasharray={100.5}
+                  strokeDashoffset={100.5 - (averageProgress / 100) * 100.5}
                   strokeLinecap="round"
                   stroke="currentColor"
                   fill="transparent"
-                  r="20"
-                  cx="24"
-                  cy="24"
+                  r="16"
+                  cx="20"
+                  cy="20"
                 />
               </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-xs font-bold">
+              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold">
                 {averageProgress}%
               </span>
             </div>
@@ -345,91 +344,86 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
         </div>
       </div>
 
-      <CardContent className="p-4 flex-1 flex flex-col">
+      <CardContent className="p-3">
         {/* Celebration banner */}
         {showCelebration && (
-          <div className="mb-3 p-3 rounded-xl bg-gradient-to-r from-success/20 via-primary/20 to-warning/20 border-2 border-success/40 animate-fade-in">
+          <div className="mb-3 p-2.5 rounded-xl bg-gradient-to-r from-success/20 via-primary/20 to-warning/20 border-2 border-success/40 animate-fade-in">
             <div className="flex items-center justify-center gap-2">
-              <PartyPopper className="h-5 w-5 text-success animate-bounce" />
-              <span className="font-bold text-success">
+              <PartyPopper className="h-4 w-4 text-success animate-bounce" />
+              <span className="font-bold text-sm text-success">
                 {language === 'es' 
-                  ? `¡Felicidades! Completaste el flujo de ${getCelebratedWorkflowName()}!`
-                  : `Congratulations! You completed the ${getCelebratedWorkflowName()} workflow!`
+                  ? `¡Completaste ${getCelebratedWorkflowName()}!`
+                  : `Completed ${getCelebratedWorkflowName()}!`
                 }
               </span>
-              <PartyPopper className="h-5 w-5 text-success animate-bounce" />
+              <PartyPopper className="h-4 w-4 text-success animate-bounce" />
             </div>
           </div>
         )}
 
-        {/* Workflow list - vertical for better space usage */}
-        <div className="flex-1 space-y-1.5">
+        {/* Horizontal workflow cards */}
+        <div className="grid grid-cols-5 gap-2">
           {workflows.map(({ config, progress }) => {
             const Icon = config.icon;
             const progressPercent = progress 
               ? Math.round((progress.currentStep / (progress.totalSteps - 1)) * 100)
               : 0;
             const actionItems = progress?.stats.find(s => s.value > 0 && s.type === 'count')?.value || 0;
-            const nextStep = progress?.stats.find(s => s.type === 'count')?.label || '';
             
             return (
               <button
                 key={config.id}
                 onClick={() => navigate(config.path)}
                 className={cn(
-                  "w-full flex items-center gap-3 p-2.5 rounded-lg border transition-all text-left group",
-                  "hover:shadow-sm hover:scale-[1.01]",
-                  progressPercent === 100 
-                    ? "bg-success/5 border-success/20" 
-                    : "bg-muted/20 border-border/50 hover:border-primary/30"
+                  "relative p-2.5 rounded-xl border-2 transition-all text-left group",
+                  "hover:shadow-md hover:scale-[1.03]",
+                  config.borderColor,
+                  progressPercent === 100 && "bg-success/5 border-success/30",
                 )}
               >
-                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", config.bgColor)}>
-                  <Icon className={cn("h-4 w-4", config.color)} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold truncate">{config.title[language]}</span>
-                    <div className="flex items-center gap-1.5">
-                      {actionItems > 0 && (
-                        <Badge variant="outline" className="h-5 px-1.5 text-[10px] bg-warning/10 text-warning border-warning/30">
-                          {actionItems}
-                        </Badge>
-                      )}
-                      <span className={cn(
-                        "text-[10px] font-bold",
-                        progressPercent === 100 ? "text-success" : "text-muted-foreground"
-                      )}>
-                        {progressPercent}%
-                      </span>
-                    </div>
+                {/* Status badge */}
+                {actionItems > 0 && (
+                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-warning flex items-center justify-center shadow-sm z-10">
+                    <span className="text-[10px] font-bold text-warning-foreground">{actionItems > 9 ? '9+' : actionItems}</span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground truncate mt-0.5">
-                    {progressPercent === 100 
-                      ? (language === 'es' ? '✓ Completado' : '✓ Complete')
-                      : config.description[language]
-                    }
-                  </p>
-                  <Progress value={progressPercent} className="h-1 mt-1" />
-                  {actionItems > 0 && progressPercent < 100 && (
-                    <p className="text-[9px] text-primary/70 mt-0.5 truncate italic">
-                      💡 {config.hint[language]}
-                    </p>
-                  )}
+                )}
+                {progressPercent === 100 && actionItems === 0 && (
+                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-success flex items-center justify-center shadow-sm z-10">
+                    <CheckCircle2 className="h-3 w-3 text-success-foreground" />
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={cn(
+                    "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                    config.bgColor
+                  )}>
+                    <Icon className={cn("h-4 w-4", config.color)} />
+                  </div>
+                  <span className="text-xs font-semibold truncate">{config.title[language]}</span>
                 </div>
-                <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                
+                <div className="flex items-center gap-1.5">
+                  <Progress value={progressPercent} className="h-1.5 flex-1" />
+                  <span className={cn(
+                    "text-[10px] font-bold shrink-0",
+                    progressPercent === 100 ? "text-success" : "text-muted-foreground"
+                  )}>
+                    {progressPercent}%
+                  </span>
+                </div>
               </button>
             );
           })}
         </div>
 
-        {/* Quick insight or motivational fill */}
-        <div className="mt-auto pt-3">
+        {/* Bottom insight bar */}
+        <div className="mt-2.5">
           {totalActionItems > 0 ? (
-            <div className="p-2.5 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-primary" />
+                  <TrendingUp className="h-3.5 w-3.5 text-primary" />
                   <p className="text-xs">
                     {language === 'es' 
                       ? `Tienes ${totalActionItems} items que requieren atención`
@@ -440,7 +434,7 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="h-7 text-xs"
+                  className="h-6 text-xs px-2"
                   onClick={() => navigate('/expenses?incomplete=true')}
                 >
                   {language === 'es' ? 'Ver' : 'View'}
@@ -449,9 +443,9 @@ export function WorkflowSummaryWidget({ className }: { className?: string }) {
               </div>
             </div>
           ) : (
-            <div className="p-2.5 rounded-lg bg-gradient-to-r from-success/5 to-success/10 border border-success/20">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-success/5 to-success/10 border border-success/20">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-success" />
+                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
                 <p className="text-xs text-success font-medium">
                   {language === 'es' 
                     ? '¡Todo al día! No hay acciones pendientes.'
