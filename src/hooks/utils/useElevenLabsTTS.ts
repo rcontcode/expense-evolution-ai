@@ -27,6 +27,7 @@ function cleanTextForTTS(text: string, lang: string, currency?: string): string 
   })();
 
   let cleaned = text
+    // Currency symbols
     .replace(/\$\s*(\d)/g, (_, d) => `${d}`)
     .replace(/\$/g, dollarName)
     .replace(/€\s*(\d)/g, (_, d) => `${d}`)
@@ -34,14 +35,35 @@ function cleanTextForTTS(text: string, lang: string, currency?: string): string 
     .replace(/%/g, lang === 'es' ? ' por ciento' : ' percent')
     .replace(/&/g, lang === 'es' ? ' y ' : ' and ')
     .replace(/\+/g, lang === 'es' ? ' más ' : ' plus ')
-    .replace(/[""]/g, '"')
-    .replace(/['']/g, "'")
+    // Smart quotes and dashes to plain ASCII
+    .replace(/[""„«»]/g, '"')
+    .replace(/[''‚‹›]/g, "'")
     .replace(/—/g, ', ')
     .replace(/–/g, ', ')
     .replace(/…/g, '...')
-    .replace(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]/gu, '')
-    .replace(/\*\*/g, '').replace(/\*/g, '')
+    .replace(/°/g, lang === 'es' ? ' grados ' : ' degrees ')
+    // Bullets and arrows to pauses
+    .replace(/[•◦▪▸►▹▻⦿⦾→←↑↓↔↕⇒⇐⇑⇓]/g, ', ')
+    // Legal and math symbols
+    .replace(/[©®™℠±∓×÷≈≠≤≥∞∑∏√∫]/g, '')
+    // Check/X marks
+    .replace(/[✓✔✅☑]/g, lang === 'es' ? 'si' : 'yes')
+    .replace(/[✗✘❌☒]/g, 'no')
+    // Remove ALL emojis (comprehensive Unicode ranges)
+    .replace(/[\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FE0F}]|[\u{200D}]|[\u{20E3}]|[\u{E0020}-\u{E007F}]|[\u{2300}-\u{23FF}]|[\u{2B50}-\u{2BFF}]|[\u{231A}-\u{231B}]|[\u{2934}-\u{2935}]|[\u{25AA}-\u{25AB}]|[\u{25B6}]|[\u{25C0}]|[\u{25FB}-\u{25FE}]|[\u{2614}-\u{2615}]|[\u{2648}-\u{2653}]|[\u{267F}]|[\u{2693}]|[\u{26A1}]|[\u{26AA}-\u{26AB}]|[\u{26BD}-\u{26BE}]|[\u{26C4}-\u{26C5}]|[\u{26CE}]|[\u{26D4}]|[\u{26EA}]|[\u{26F2}-\u{26F3}]|[\u{26F5}]|[\u{26FA}]|[\u{26FD}]|[\u{2702}]|[\u{2705}]|[\u{2708}-\u{270D}]|[\u{270F}]|[\u{2712}]|[\u{2714}]|[\u{2716}]|[\u{271D}]|[\u{2721}]|[\u{2728}]|[\u{2733}-\u{2734}]|[\u{2744}]|[\u{2747}]|[\u{274C}]|[\u{274E}]|[\u{2753}-\u{2755}]|[\u{2757}]|[\u{2763}-\u{2764}]|[\u{2795}-\u{2797}]|[\u{27A1}]|[\u{27B0}]|[\u{FE0E}\u{FE0F}]|[\u{200B}-\u{200F}]|[\u{2028}-\u{202F}]|[\u{2060}-\u{206F}]/gu, '')
+    // Remove ALL markdown formatting
+    .replace(/\*\*\*/g, '').replace(/\*\*/g, '').replace(/\*/g, '')
     .replace(/#{1,6}\s/g, '')
+    .replace(/__/g, '').replace(/~~/g, '')
+    .replace(/```[\s\S]*?```/g, '').replace(/`([^`]+)`/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/^>\s*/gm, '')
+    // CJK characters that cause alien sounds
+    .replace(/[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\uFF00-\uFFEF\u4E00-\u9FAF]/g, '')
+    // Warning/error symbols
+    .replace(/[⚠⛔🚫❗❓❕❔]/g, '')
+    // Clean up
+    .replace(/,\s*,/g, ',')
     .replace(/\s+/g, ' ')
     .trim();
 
