@@ -824,6 +824,21 @@ export const ChatAssistant: React.FC = () => {
           // Normalize ID format: backend sends "add_expense", tutorials use "add-expense"
           const normalizedId = tutorialId.replace(/_/g, '-');
           const tutorial = findTutorial(normalizedId) || findTutorial(tutorialId);
+          
+          // GUARD: If this exact tutorial is already active, don't re-trigger it
+          if (tutorial && (activeTutorial === tutorial.id || activeTutorial === normalizedId)) {
+            console.log('[Tutorial] Already active, skipping re-trigger:', tutorial.id);
+            // Instead of repeating, send a helpful follow-up message
+            const followUpMsg: Message = { 
+              role: 'assistant', 
+              content: language === 'es' 
+                ? '¡Ya tienes el tutorial activo! 👆 Sigue los pasos que te mostré arriba. Si necesitas que te explique algo específico, pregúntame directamente.' 
+                : 'The tutorial is already active! 👆 Follow the steps I showed you above. If you need help with something specific, just ask.'
+            };
+            setMessages(prev => [...prev, followUpMsg]);
+            break;
+          }
+          
           if (tutorial) {
             triggerHapticFeedback('medium');
             setActiveTutorial(tutorial.id);
@@ -1053,6 +1068,8 @@ export const ChatAssistant: React.FC = () => {
           preferredIncomeType: financialProfile.preferred_income_type,
           timeAvailability: financialProfile.time_availability,
         } : null,
+        // Active tutorial context - prevents AI from re-triggering the same tutorial
+        activeTutorialId: activeTutorial || null,
       };
 
 

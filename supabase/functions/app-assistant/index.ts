@@ -1158,6 +1158,19 @@ ${userContext.isMultiEntity ? '- El usuario opera en MÚLTIPLES países. Si hay 
 - Da ejemplos personalizados usando sus datos reales
 `;
       }
+      
+      // Add active tutorial context to prevent re-triggering
+      if (userContext.activeTutorialId) {
+        contextSection += `
+## ⚠️ TUTORIAL ACTIVO: "${userContext.activeTutorialId}"
+El usuario YA tiene un tutorial activo en pantalla. **NO vuelvas a llamar run_tutorial con el mismo ID.**
+Si el usuario dice "continúa", "sí", "okay", "adelante", "sigue" → Responde CONVERSACIONALMENTE:
+- Pregunta si ya completó los pasos
+- Ofrece ayuda con un paso específico
+- Sugiere probar la acción descrita en el tutorial
+- Si piden algo DIFERENTE, puedes usar otras tools normalmente
+`;
+      }
     }
 
     // Add conversation history for context
