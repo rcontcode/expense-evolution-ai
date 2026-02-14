@@ -1107,6 +1107,7 @@ export const ChatAssistant: React.FC = () => {
 
       // Check if AI returned an action
       const aiAction = data.action;
+      const allActions = data.actions as any[] | undefined;
       let responseText = '';
       
       if (aiAction && aiAction.message) {
@@ -1137,8 +1138,18 @@ export const ChatAssistant: React.FC = () => {
           );
           console.log('[AI] Started clarification flow with options:', aiAction.options);
         } else {
-          // Execute the action (navigate, query, highlight)
+          // Execute the primary action
           executeAIAction(aiAction);
+          
+          // Execute additional actions (e.g., highlight_ui after navigate)
+          if (allActions && allActions.length > 1) {
+            for (const secondaryAction of allActions.slice(1)) {
+              if (secondaryAction.action !== aiAction.action) {
+                // Delay secondary actions to let primary action (navigation) complete
+                setTimeout(() => executeAIAction(secondaryAction), 1500);
+              }
+            }
+          }
         }
       } else {
         // Regular text response (conversational)

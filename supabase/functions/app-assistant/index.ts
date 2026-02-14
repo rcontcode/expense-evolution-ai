@@ -691,41 +691,39 @@ El usuario puede darte comandos de voz. Entiende estas variaciones:
 
 ## EJEMPLOS DE RESPUESTAS EXPERTAS
 
-Usuario: "¿Cómo puedo ahorrar más?"
-Tú: "¡Gran pregunta! Te sugiero el método 'Págate primero' de los mentores financieros: antes de pagar cualquier gasto, destina un % fijo a ahorro. En la app, ve a Configuración > Metas de Ahorro para establecer un objetivo. También puedes activar el seguimiento de Hábitos Financieros en la sección de Mentoría para crear una racha de ahorro diario. ¿Quieres que te lleve a alguna de estas secciones?"
+Usuario: "Como puedo ahorrar mas?"
+Tu: "Gran pregunta! Te sugiero el metodo 'Pagate primero': antes de pagar cualquier gasto, destina un porcentaje fijo a ahorro." + [USAR TOOL highlight_ui con elements=["sidebar-nav"], navigateTo="settings", message="Ve a Configuracion, Metas de Ahorro"]
 
-Usuario: "Gasté 150 en supermercado"
-Tú: [USAR TOOL create_expense con amount=150, vendor="supermercado", category="groceries"]
+Usuario: "Gaste 150 en supermercado"
+Tu: [USAR TOOL create_expense con amount=150, vendor="supermercado", category="groceries"]
 
-Usuario: "¿Cómo subo un recibo?"
-Tú: [USAR TOOL run_tutorial con tutorialId="capture-expense", message="Te muestro cómo capturar gastos ahora mismo"]
+Usuario: "Como subo un recibo?" / "como ingreso un gasto?" / "como capturo un gasto?"
+Tu: [USAR TOOL navigate con target="expenses", message="Te llevo a Gastos"] + [USAR TOOL highlight_ui con elements=["add-expense-button", "quick-capture"], message="Tienes dos opciones: el boton Agregar Gasto para registrar manualmente, o Captura Rapida para escanear un recibo con la camara."]
 
-Usuario: "¿Cuánto necesito para retirarme?"
-Tú: [USAR TOOL calculate_fire] + explicación de la regla del 4% y número FIRE
+Usuario: "Cuanto necesito para retirarme?"
+Tu: [USAR TOOL calculate_fire] + explicacion de la regla del 4 porciento
 
-Usuario: "Analiza en qué gasto más"
-Tú: [USAR TOOL show_insights con insightType="category_breakdown"] + insights basados en contexto
+Usuario: "Analiza en que gasto mas"
+Tu: [USAR TOOL show_insights con insightType="category_breakdown"] + insights basados en contexto
 
-Usuario: "¿Qué es el cuadrante de Kiyosaki?"
-Tú: "El Cuadrante ESBI de Kiyosaki:
+Usuario: "Que es el cuadrante de Kiyosaki?"
+Tu: "El Cuadrante ESBI de Kiyosaki tiene 4 cuadrantes:
 
-• **E** (Empleado): Trabajas por sueldo, intercambias tiempo por dinero
-• **S** (Self-employed): Eres tu propio jefe, pero sigues vendiendo tu tiempo  
-• **B** (Business owner): Sistemas y personas trabajan para ti
-• **I** (Investor): Tu dinero trabaja para ti
+- E (Empleado): Trabajas por sueldo, intercambias tiempo por dinero
+- S (Self-employed): Eres tu propio jefe, pero sigues vendiendo tu tiempo  
+- B (Business owner): Sistemas y personas trabajan para ti
+- I (Investor): Tu dinero trabaja para ti
 
-La libertad está en el lado derecho (B-I) donde generas ingresos pasivos.
+La libertad esta en el lado derecho donde generas ingresos pasivos. En la app tenemos esta herramienta en Mentoria. Te llevo?"
 
-En la app tenemos esta herramienta en Mentoría. ¿Te llevo?"
+Usuario: "Llevame a gastos"
+Tu: [USAR TOOL navigate con target="expenses", message="Te llevo a Gastos"] + [USAR TOOL highlight_ui con elements=["add-expense-button", "expenses-table"], message="Aqui ves tu tabla de gastos y puedes agregar nuevos"]
 
-Usuario: "Llévame a gastos"
-Tú: [USAR TOOL navigate con target="expenses", message="Te llevo a la sección de gastos"]
-
-Usuario: "¿Cómo funciona el OCR?"
-Tú: [USAR TOOL run_tutorial con tutorialId="capture-expense", message="Te muestro cómo capturar gastos con OCR"]
+Usuario: "Como funciona el OCR?"
+Tu: [USAR TOOL navigate con target="expenses", message="Te llevo a Gastos"] + [USAR TOOL highlight_ui con elements=["quick-capture"], message="Presiona el boton verde de Captura Rapida que te marque. Ahi puedes tomar foto de un recibo y la IA extrae los datos automaticamente."]
 
 Usuario: "Quiero capturar un gasto" / "capturar un gasto"
-Tú: [USAR TOOL run_tutorial con tutorialId="capture-expense", message="¡Vamos! Te guío paso a paso para capturar tu gasto"]
+Tu: [USAR TOOL navigate con target="expenses", message="Vamos a Gastos"] + [USAR TOOL highlight_ui con elements=["quick-capture", "add-expense-button"], message="Tienes el boton de Captura Rapida para foto de recibo, o Agregar Gasto para ingreso manual. Cual prefieres?"]
 
 Usuario: "No entiendo mis impuestos"
 Tú: "¡Tranquilo! 😊 Los impuestos son simples:
@@ -824,44 +822,50 @@ Kiyosaki: 'Invierte en lo que entiendes'. ¿Quieres trackear en Portfolio?"
 
 ## FORMATO DE RESPUESTAS (MUY IMPORTANTE)
 
-Tus respuestas deben ser **LEGIBLES y ESTRUCTURADAS**, no un muro de texto:
+REGLA CRITICA DE FORMATO PARA VOZ: NUNCA uses simbolos de markdown en tus respuestas. Nada de **, ##, *, _, ~~, >, ni backticks. Estas respuestas se leen en voz alta y los simbolos se pronuncian como ruido ininteligible. Usa texto plano solamente. Para listas usa "- " o numeros "1. 2. 3.".
 
-1. **RESPIRA entre ideas** - Deja líneas en blanco entre párrafos
-2. **Párrafos ULTRA cortos** - Máximo 1-2 oraciones por párrafo
-3. **Listas con viñetas** - Para enumerar CUALQUIER cosa (opciones, pasos, características)
-4. **Un tema a la vez** - No mezcles múltiples conceptos en un párrafo
-5. **Máximo 3-4 conceptos por respuesta** - Si hay más, pregunta antes de continuar
-6. **Respuestas de voz** - Sé 50% más conciso que en texto
-7. **Pausas naturales** - Añade puntos suspensivos ("...") para pausas dramáticas ocasionales
-8. **Confirma ubicación** - Si mencionas una sección, asegúrate que coincida con donde está el usuario
+Tus respuestas deben ser LEGIBLES y ESTRUCTURADAS, no un muro de texto:
 
-### Ejemplo de respuesta MALA ❌:
-"El patrimonio neto es la diferencia entre tus activos y pasivos los activos son todo lo que tienes de valor como dinero inversiones propiedades y los pasivos son tus deudas préstamos hipotecas etc puedes agregar activos con el botón verde y pasivos con el botón rojo..."
+1. RESPIRA entre ideas - Deja lineas en blanco entre parrafos
+2. Parrafos ULTRA cortos - Maximo 1-2 oraciones por parrafo
+3. Listas con guiones - Para enumerar CUALQUIER cosa (opciones, pasos, caracteristicas)
+4. Un tema a la vez - No mezcles multiples conceptos en un parrafo
+5. Maximo 3-4 conceptos por respuesta - Si hay mas, pregunta antes de continuar
+6. Respuestas de voz - Se 50% mas conciso que en texto
+7. Pausas naturales - Usa puntos suspensivos ("...") para pausas dramaticas ocasionales
+8. Confirma ubicacion - Si mencionas una seccion, asegurate que coincida con donde esta el usuario
 
-### Ejemplo de respuesta BUENA ✅:
-"Tu patrimonio neto es simple: **lo que tienes** menos **lo que debes**.
+Ejemplo de respuesta MALA:
+"El patrimonio neto es la diferencia entre tus activos y pasivos los activos son todo lo que tienes de valor como dinero inversiones propiedades y los pasivos son tus deudas prestamos hipotecas etc puedes agregar activos con el boton verde y pasivos con el boton rojo..."
 
-En esta sección puedes:
-• Agregar **activos** (dinero, inversiones, propiedades)
-• Registrar **pasivos** (deudas, préstamos)
+Ejemplo de respuesta BUENA:
+"Tu patrimonio neto es simple: lo que tienes menos lo que debes.
 
-¿Quieres que te ayude a agregar algo?"
+En esta seccion puedes:
+- Agregar activos (dinero, inversiones, propiedades)
+- Registrar pasivos (deudas, prestamos)
 
-### Longitud de respuestas:
-- **Pregunta simple** → 1-2 oraciones
-- **Explicación de concepto** → 3-4 oraciones + lista si aplica
-- **Tutorial o guía** → Pasos numerados, máximo 5 pasos
-- **Respuesta de voz** → 50% más corto que texto escrito
+Quieres que te ayude a agregar algo?"
+
+Longitud de respuestas:
+- Pregunta simple: 1-2 oraciones
+- Explicacion de concepto: 3-4 oraciones + lista si aplica
+- Tutorial o guia: Pasos numerados, maximo 5 pasos
+- Respuesta de voz: 50% mas corto que texto escrito
 
 ### REGLA CRÍTICA: ACCIÓN > PALABRAS
 - NUNCA digas "te mostraré", "te enseñaré", "vamos paso a paso" como respuesta final. Eso NO es una respuesta útil.
-- Si el usuario quiere HACER algo (capturar gasto, subir recibo, etc.) → USA UNA TOOL inmediatamente:
-  - "capturar un gasto" → navigate(expenses) o run_tutorial(add_expense)
-  - "enseñame" / "muéstrame cómo" → run_tutorial() con el tutorialId apropiado
-  - "quiero ir a X" → navigate(X)
-- Si NO hay tool apropiada, da instrucciones concretas en 3 pasos máximo (ej: "1. Ve a Gastos  2. Haz clic en '+Agregar'  3. Llena el monto").
+- Si el usuario quiere IR a algún lado o ver algo → USA navigate() PRIMERO, luego explica brevemente.
+  - "llévame a gastos" → navigate(expenses) con un mensaje breve
+  - "muéstrame los clientes" → navigate(clients)
+  - "quiero ver mis ingresos" → navigate(income)
+- Si el usuario quiere APRENDER cómo hacer algo → USA navigate() para llevarlo a la sección + highlight_ui() para mostrarle los botones. NO uses run_tutorial a menos que sea la PRIMERA vez que preguntan.
+  - "cómo ingreso un gasto" → navigate(expenses) + highlight_ui(["add-expense-button", "quick-capture"]) + explicación breve de 2-3 pasos
+  - "cómo capturo un recibo" → navigate(expenses) + highlight_ui(["quick-capture"]) + "Presiona el botón verde que te marqué"
+- run_tutorial SOLO se usa cuando el usuario dice literalmente "tutorial", "paso a paso completo", o es su primera interacción pidiendo ayuda con una función.
+- Si NO hay tool apropiada, da instrucciones concretas en 3 pasos máximo.
 - PROHIBIDO responder solo con promesas vagas. Cada respuesta debe contener una ACCIÓN concreta o INFORMACIÓN útil.
-- Si el usuario dice "estoy esperando" o "no pasó nada", significa que fallaste en actuar. Usa la tool correspondiente INMEDIATAMENTE.
+- Si el usuario dice "estoy esperando", "no pasó nada", "hazlo ya" → USA navigate() + highlight_ui() INMEDIATAMENTE. NO repitas texto.
 
 ### REGLA CRÍTICA: SIEMPRE RESALTA LO QUE MENCIONAS
 - Cuando le dices al usuario "haz clic en X", "ve al botón Y", "mira la sección Z" → USA highlight_ui() para resaltar esos elementos en la pantalla.
@@ -1298,99 +1302,128 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
 
     // Check if AI wants to use a tool
     if (choice?.finish_reason === 'tool_calls' && choice?.message?.tool_calls) {
-      const toolCall = choice.message.tool_calls[0];
-      const toolName = toolCall.function.name;
-      const toolArgs = JSON.parse(toolCall.function.arguments);
+      const toolCalls = choice.message.tool_calls;
+      console.log('[Assistant] Tool calls count:', toolCalls.length);
       
-      console.log('[Assistant] Tool call:', toolName, toolArgs);
+      // Process ALL tool calls (AI may call navigate + highlight_ui together)
+      const actionResponses: any[] = [];
+      let conversationalFollowUp: string | null = null;
+      
+      for (const toolCall of toolCalls) {
+        const toolName = toolCall.function.name;
+        let toolArgs: any;
+        try {
+          toolArgs = JSON.parse(toolCall.function.arguments);
+        } catch {
+          console.error('[Assistant] Failed to parse tool args:', toolCall.function.arguments);
+          continue;
+        }
+        
+        console.log('[Assistant] Tool call:', toolName, toolArgs);
 
-      let actionResponse: any = null;
+        let actionResponse: any = null;
 
-      switch (toolName) {
-        case 'navigate':
-          actionResponse = executeNavigateTool(toolArgs, language as 'es' | 'en');
-          break;
-        case 'open_item':
-          actionResponse = executeOpenItemTool(toolArgs, language as 'es' | 'en');
-          break;
-        case 'create_expense':
-          actionResponse = executeCreateExpenseTool(toolArgs, userContext?.currency, language);
-          break;
-        case 'create_income':
-          actionResponse = executeCreateIncomeTool(toolArgs, userContext?.currency, language);
-          break;
-        case 'export_report':
-          actionResponse = executeExportTool(toolArgs, language as 'es' | 'en');
-          break;
-        case 'run_tutorial':
-          actionResponse = executeRunTutorialTool(toolArgs);
-          break;
-        case 'calculate_fire':
-          actionResponse = executeCalculateFireTool(toolArgs, language as 'es' | 'en');
-          break;
-        case 'show_insights':
-          actionResponse = executeShowInsightsTool(toolArgs);
-          break;
-        case 'set_goal':
-          actionResponse = executeSetGoalTool(toolArgs);
-          break;
-        case 'highlight_ui':
-          actionResponse = executeHighlightUiTool(toolArgs, language as 'es' | 'en');
-          break;
-        case 'explain_chart':
-        case 'query_financial_data':
-        case 'set_filter':
-          // These are handled conversationally - the AI should provide the explanation
-          // We need to call the AI again to get the response
-          const followUpResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${LOVABLE_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: "google/gemini-3-flash-preview",
-              messages: [
-                ...aiMessages,
-                choice.message,
-                {
-                  role: "tool",
-                  tool_call_id: toolCall.id,
-                  content: JSON.stringify({ success: true, args: toolArgs }),
-                },
-              ],
-              max_completion_tokens: 2048,
-            }),
-          });
-          
-          if (followUpResponse.ok) {
-            const followUpData = await followUpResponse.json();
-            const followUpMessage = followUpData.choices?.[0]?.message?.content;
-            if (followUpMessage) {
-              // Increment usage
-              if (userId) {
-                await incrementVoiceUsage(userId);
-              }
-              
-              return new Response(
-                JSON.stringify({ message: followUpMessage }),
-                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-              );
+        switch (toolName) {
+          case 'navigate':
+            actionResponse = executeNavigateTool(toolArgs, language as 'es' | 'en');
+            break;
+          case 'open_item':
+            actionResponse = executeOpenItemTool(toolArgs, language as 'es' | 'en');
+            break;
+          case 'create_expense':
+            actionResponse = executeCreateExpenseTool(toolArgs, userContext?.currency, language);
+            break;
+          case 'create_income':
+            actionResponse = executeCreateIncomeTool(toolArgs, userContext?.currency, language);
+            break;
+          case 'export_report':
+            actionResponse = executeExportTool(toolArgs, language as 'es' | 'en');
+            break;
+          case 'run_tutorial':
+            actionResponse = executeRunTutorialTool(toolArgs);
+            break;
+          case 'calculate_fire':
+            actionResponse = executeCalculateFireTool(toolArgs, language as 'es' | 'en');
+            break;
+          case 'show_insights':
+            actionResponse = executeShowInsightsTool(toolArgs);
+            break;
+          case 'set_goal':
+            actionResponse = executeSetGoalTool(toolArgs);
+            break;
+          case 'highlight_ui':
+            actionResponse = executeHighlightUiTool(toolArgs, language as 'es' | 'en');
+            break;
+          case 'explain_chart':
+          case 'query_financial_data':
+          case 'set_filter': {
+            // These need a follow-up AI call for conversational response
+            const followUpResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "google/gemini-3-flash-preview",
+                messages: [
+                  ...aiMessages,
+                  choice.message,
+                  {
+                    role: "tool",
+                    tool_call_id: toolCall.id,
+                    content: JSON.stringify({ success: true, args: toolArgs }),
+                  },
+                ],
+                max_completion_tokens: 2048,
+              }),
+            });
+            
+            if (followUpResponse.ok) {
+              const followUpData = await followUpResponse.json();
+              conversationalFollowUp = followUpData.choices?.[0]?.message?.content || null;
             }
+            break;
           }
-          break;
+        }
+        
+        if (actionResponse) {
+          actionResponses.push(actionResponse);
+        }
+      }
+      
+      // If we got a conversational follow-up (query/chart/filter), return that
+      if (conversationalFollowUp) {
+        if (userId) await incrementVoiceUsage(userId);
+        return new Response(
+          JSON.stringify({ message: conversationalFollowUp }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
-      if (actionResponse) {
-        // Increment usage
-        if (userId) {
-          await incrementVoiceUsage(userId);
+      // Merge multiple action responses (e.g., navigate + highlight_ui)
+      if (actionResponses.length > 0) {
+        if (userId) await incrementVoiceUsage(userId);
+        
+        // Primary action is the first non-highlight action, or the first one
+        const primaryAction = actionResponses.find(a => a.action !== 'highlight_ui') || actionResponses[0];
+        const highlightAction = actionResponses.find(a => a.action === 'highlight_ui');
+        
+        // Merge highlight data into primary action
+        if (highlightAction && primaryAction !== highlightAction) {
+          primaryAction.data = { ...primaryAction.data, ...highlightAction.data };
+          // Combine messages
+          primaryAction.message = primaryAction.message + ' ' + highlightAction.message;
+          // Add secondary actions array for the frontend to process
+          primaryAction.secondaryActions = [highlightAction];
         }
         
         return new Response(
           JSON.stringify({ 
-            message: actionResponse.message,
-            action: actionResponse,
+            message: primaryAction.message,
+            action: primaryAction,
+            // Also send all actions for the frontend to process
+            actions: actionResponses,
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );

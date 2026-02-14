@@ -51,19 +51,28 @@ export function useVoiceSynthesis(options: UseVoiceSynthesisOptions = {}) {
       .replace(/←/g, '') // Left arrow
       .replace(/©®™/g, '') // Legal symbols
       .replace(/°/g, ' grados ') // Degree
+      // Remove ALL markdown formatting symbols (critical for TTS)
+      .replace(/\*\*\*/g, '') // Bold italic
+      .replace(/\*\*/g, '') // Bold
+      .replace(/\*/g, '') // Italic
+      .replace(/__/g, '') // Bold underscores
+      .replace(/(?<!\w)_([^_]+)_(?!\w)/g, '$1') // Italic underscores
+      .replace(/~~/g, '') // Strikethrough
+      .replace(/#{1,6}\s/g, '') // Headers
+      .replace(/```[\s\S]*?```/g, '') // Code blocks
+      .replace(/`([^`]+)`/g, '$1') // Inline code
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Links
+      .replace(/^>\s*/gm, '') // Blockquotes
+      .replace(/\|\|/g, '') // Spoiler tags
       // Emojis
-      .replace(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]/gu, '')
+      .replace(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FE0F}]|[\u{200D}]|[\u{20E3}]|[\u{E0020}-\u{E007F}]/gu, '')
       // CJK and other problematic unicode
       .replace(/[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\uFF00-\uFFEF\u4E00-\u9FAF]/g, '')
-      // Markdown
-      .replace(/\*\*/g, '')
-      .replace(/\*/g, '')
-      .replace(/#{1,6}\s/g, '')
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-      .replace(/`([^`]+)`/g, '$1')
-      .replace(/```[\s\S]*?```/g, '')
+      // List markers
       .replace(/^[\s]*[-•◦▪▸►]\s*/gm, '')
       .replace(/^\s*\d+\.\s*/gm, '')
+      // Parenthetical formatting hints like _(text)_ 
+      .replace(/_\(([^)]+)\)_/g, '$1')
       .replace(/\s+/g, ' ')
       .trim();
   }, []);
