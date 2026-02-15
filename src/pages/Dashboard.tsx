@@ -398,18 +398,18 @@ export default function Dashboard() {
                           PRO
                         </span>
                       </div>
-                      <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 shadow-sm shadow-blue-500/20">
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
                           📊 {language === 'es' ? 'Gráficos' : 'Charts'}
                         </span>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-sm shadow-purple-500/20">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">
                           🎯 {language === 'es' ? 'Análisis' : 'Analytics'}
                         </span>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-sm shadow-amber-500/20">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
                           🎓 {language === 'es' ? 'Mentoría' : 'Mentorship'}
                         </span>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm shadow-emerald-500/20">
-                          💰 {language === 'es' ? 'Más' : 'More'}
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          +6 {language === 'es' ? 'herramientas' : 'tools'}
                         </span>
                       </div>
                     </div>
@@ -451,7 +451,7 @@ export default function Dashboard() {
                     </CardHeader>
                     <CardContent className="pt-0">
                       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                        <TabsList className="flex flex-wrap gap-2 h-auto bg-gradient-to-br from-muted/80 via-muted/50 to-primary/10 p-3 rounded-2xl border-2 border-primary/20 shadow-inner">
+                        <TabsList className="flex flex-wrap gap-1.5 h-auto bg-gradient-to-br from-muted/80 via-muted/50 to-primary/10 p-2.5 rounded-2xl border-2 border-primary/20 shadow-inner">
                           {/* Charts Tab */}
                           <TabsTrigger 
                             value="charts" 
@@ -506,98 +506,149 @@ export default function Dashboard() {
                             {language === 'es' ? 'Mentoría' : 'Mentorship'}
                           </TabsTrigger>
                           
-                          {/* More dropdown for less-used tabs */}
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="px-5 py-3 h-auto text-sm font-bold rounded-xl transition-all duration-300 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 hover:from-emerald-500/20 hover:to-teal-500/20 hover:scale-105 hover:shadow-lg hover:shadow-emerald-500/20"
-                              >
-                                <div className="p-1.5 rounded-lg bg-emerald-500/20 mr-2">
-                                  <MoreHorizontal className="h-4 w-4 text-emerald-500" />
-                                </div>
-                                <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent font-bold">
-                                  {language === 'es' ? 'Más' : 'More'}
-                                </span>
-                                <span className="ml-2 px-2 py-0.5 text-[10px] font-black bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-full shadow-lg shadow-rose-500/40 animate-pulse">+6</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 p-2 border-2 border-primary/20 bg-gradient-to-br from-card to-accent/5">
-                              <DropdownMenuItem onClick={() => setActiveTab('goals')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-emerald-500/10 hover:to-green-500/10 cursor-pointer transition-all">
-                                <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500/20 to-green-500/20">
-                                  <Target className="h-4 w-4 text-emerald-500" />
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">🎯 {language === 'es' ? 'Metas de Ahorro' : 'Savings Goals'}</span>
-                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Define tus objetivos' : 'Set your targets'}</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('tax')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-green-500/10 hover:to-lime-500/10 cursor-pointer transition-all">
-                                <div className="p-2 rounded-lg bg-gradient-to-br from-green-500/20 to-lime-500/20">
-                                  <Receipt className="h-4 w-4 text-green-500" />
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="font-semibold text-green-600 dark:text-green-400">💰 {language === 'es' ? 'Impuestos' : 'Taxes'}</span>
-                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Optimiza deducciones' : 'Optimize deductions'}</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('mileage')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-cyan-500/10 cursor-pointer transition-all">
-                                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20">
-                                  <MapPin className="h-4 w-4 text-blue-500" />
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="font-semibold text-blue-600 dark:text-blue-400">🚗 {language === 'es' ? 'Kilometraje' : 'Mileage'}</span>
-                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Viajes deducibles' : 'Deductible trips'}</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('subscriptions')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-violet-500/10 hover:to-purple-500/10 cursor-pointer transition-all">
-                                <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20">
-                                  <RefreshCw className="h-4 w-4 text-violet-500" />
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="font-semibold text-violet-600 dark:text-violet-400">🔄 {language === 'es' ? 'Suscripciones' : 'Subscriptions'}</span>
-                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Detecta recurrentes' : 'Detect recurring'}</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('fire')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-orange-500/10 hover:to-red-500/10 cursor-pointer transition-all">
-                                <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500/20 to-red-500/20">
-                                  <span className="text-lg">🔥</span>
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="font-semibold text-orange-600 dark:text-orange-400">🔥 FIRE Calculator</span>
-                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Libertad financiera' : 'Financial freedom'}</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('debt')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-red-500/10 hover:to-rose-500/10 cursor-pointer transition-all">
-                                <div className="p-2 rounded-lg bg-gradient-to-br from-red-500/20 to-rose-500/20">
-                                  <Landmark className="h-4 w-4 text-red-500" />
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="font-semibold text-red-600 dark:text-red-400">🏦 {language === 'es' ? 'Deudas' : 'Debt'}</span>
-                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Avalancha/Bola de nieve' : 'Avalanche/Snowball'}</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('portfolio')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-indigo-500/10 hover:to-blue-500/10 cursor-pointer transition-all">
-                                <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500/20 to-blue-500/20">
-                                  <Briefcase className="h-4 w-4 text-indigo-500" />
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">📈 Portfolio</span>
-                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Rastrea inversiones' : 'Track investments'}</span>
-                                </div>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setActiveTab('education')} className="gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-amber-500/10 hover:to-yellow-500/10 cursor-pointer transition-all">
-                                <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/20 to-yellow-500/20">
-                                  <GraduationCap className="h-4 w-4 text-amber-500" />
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="font-semibold text-amber-600 dark:text-amber-400">📚 {language === 'es' ? 'Educación' : 'Education'}</span>
-                                  <span className="text-xs text-muted-foreground">{language === 'es' ? 'Aprende finanzas' : 'Learn finance'}</span>
-                                </div>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          {/* Goals Tab */}
+                          <TabsTrigger 
+                            value="goals" 
+                            className={cn(
+                              "px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap",
+                              "data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600 data-[state=active]:to-green-500",
+                              "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-emerald-500/50 data-[state=active]:scale-105",
+                              "data-[state=active]:ring-2 data-[state=active]:ring-emerald-400/50",
+                              "hover:bg-emerald-500/20 hover:text-emerald-400",
+                              "bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                            )}
+                          >
+                            <div className="p-1 rounded-lg bg-emerald-500/20">
+                              <Target className="h-3.5 w-3.5" />
+                            </div>
+                            🎯 {language === 'es' ? 'Metas' : 'Goals'}
+                          </TabsTrigger>
+
+                          {/* Tax Tab */}
+                          <TabsTrigger 
+                            value="tax" 
+                            className={cn(
+                              "px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap",
+                              "data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-lime-500",
+                              "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-green-500/50 data-[state=active]:scale-105",
+                              "data-[state=active]:ring-2 data-[state=active]:ring-green-400/50",
+                              "hover:bg-green-500/20 hover:text-green-400",
+                              "bg-green-500/5 text-green-600 dark:text-green-400 border border-green-500/20"
+                            )}
+                          >
+                            <div className="p-1 rounded-lg bg-green-500/20">
+                              <Receipt className="h-3.5 w-3.5" />
+                            </div>
+                            💰 {language === 'es' ? 'Impuestos' : 'Taxes'}
+                          </TabsTrigger>
+
+                          {/* Mileage Tab */}
+                          <TabsTrigger 
+                            value="mileage" 
+                            className={cn(
+                              "px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap",
+                              "data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-500",
+                              "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-blue-500/50 data-[state=active]:scale-105",
+                              "data-[state=active]:ring-2 data-[state=active]:ring-blue-400/50",
+                              "hover:bg-blue-500/20 hover:text-blue-400",
+                              "bg-blue-500/5 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                            )}
+                          >
+                            <div className="p-1 rounded-lg bg-blue-500/20">
+                              <MapPin className="h-3.5 w-3.5" />
+                            </div>
+                            🚗 {language === 'es' ? 'Km' : 'Mileage'}
+                          </TabsTrigger>
+
+                          {/* Subscriptions Tab */}
+                          <TabsTrigger 
+                            value="subscriptions" 
+                            className={cn(
+                              "px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap",
+                              "data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-purple-500",
+                              "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-violet-500/50 data-[state=active]:scale-105",
+                              "data-[state=active]:ring-2 data-[state=active]:ring-violet-400/50",
+                              "hover:bg-violet-500/20 hover:text-violet-400",
+                              "bg-violet-500/5 text-violet-600 dark:text-violet-400 border border-violet-500/20"
+                            )}
+                          >
+                            <div className="p-1 rounded-lg bg-violet-500/20">
+                              <RefreshCw className="h-3.5 w-3.5" />
+                            </div>
+                            🔄 {language === 'es' ? 'Suscrip.' : 'Subs'}
+                          </TabsTrigger>
+
+                          {/* FIRE Tab */}
+                          <TabsTrigger 
+                            value="fire" 
+                            className={cn(
+                              "px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap",
+                              "data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-red-500",
+                              "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-orange-500/50 data-[state=active]:scale-105",
+                              "data-[state=active]:ring-2 data-[state=active]:ring-orange-400/50",
+                              "hover:bg-orange-500/20 hover:text-orange-400",
+                              "bg-orange-500/5 text-orange-600 dark:text-orange-400 border border-orange-500/20"
+                            )}
+                          >
+                            <div className="p-1 rounded-lg bg-orange-500/20">
+                              <span className="text-sm">🔥</span>
+                            </div>
+                            FIRE
+                          </TabsTrigger>
+
+                          {/* Debt Tab */}
+                          <TabsTrigger 
+                            value="debt" 
+                            className={cn(
+                              "px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap",
+                              "data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-rose-500",
+                              "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-red-500/50 data-[state=active]:scale-105",
+                              "data-[state=active]:ring-2 data-[state=active]:ring-red-400/50",
+                              "hover:bg-red-500/20 hover:text-red-400",
+                              "bg-red-500/5 text-red-600 dark:text-red-400 border border-red-500/20"
+                            )}
+                          >
+                            <div className="p-1 rounded-lg bg-red-500/20">
+                              <Landmark className="h-3.5 w-3.5" />
+                            </div>
+                            🏦 {language === 'es' ? 'Deudas' : 'Debt'}
+                          </TabsTrigger>
+
+                          {/* Portfolio Tab */}
+                          <TabsTrigger 
+                            value="portfolio" 
+                            className={cn(
+                              "px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap",
+                              "data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-blue-500",
+                              "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-indigo-500/50 data-[state=active]:scale-105",
+                              "data-[state=active]:ring-2 data-[state=active]:ring-indigo-400/50",
+                              "hover:bg-indigo-500/20 hover:text-indigo-400",
+                              "bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+                            )}
+                          >
+                            <div className="p-1 rounded-lg bg-indigo-500/20">
+                              <Briefcase className="h-3.5 w-3.5" />
+                            </div>
+                            📈 Portfolio
+                          </TabsTrigger>
+
+                          {/* Education Tab */}
+                          <TabsTrigger 
+                            value="education" 
+                            className={cn(
+                              "px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap",
+                              "data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-500",
+                              "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-amber-500/50 data-[state=active]:scale-105",
+                              "data-[state=active]:ring-2 data-[state=active]:ring-amber-400/50",
+                              "hover:bg-amber-500/20 hover:text-amber-400",
+                              "bg-amber-500/5 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                            )}
+                          >
+                            <div className="p-1 rounded-lg bg-amber-500/20">
+                              <GraduationCap className="h-3.5 w-3.5" />
+                            </div>
+                            📚 {language === 'es' ? 'Educación' : 'Education'}
+                          </TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="charts" className="space-y-4">
