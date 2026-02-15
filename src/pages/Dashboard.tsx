@@ -80,6 +80,7 @@ const SavingsGoalsSection = lazy(() => import('@/components/settings/SavingsGoal
 const GlobalLearningChart = lazy(() => import('@/components/mentorship/GlobalLearningChart').then(m => ({ default: m.GlobalLearningChart })));
 const ReadingReminderSettings = lazy(() => import('@/components/mentorship/ReadingReminderSettings').then(m => ({ default: m.ReadingReminderSettings })));
 const ReadingPaceComparison = lazy(() => import('@/components/mentorship/ReadingPaceComparison').then(m => ({ default: m.ReadingPaceComparison })));
+const MonthlyPlanCard = lazy(() => import('@/components/budget/MonthlyPlanCard').then(m => ({ default: m.MonthlyPlanCard })));
 const GlobalBudgetCard = lazy(() => import('@/components/dashboard/GlobalBudgetCard').then(m => ({ default: m.GlobalBudgetCard })));
 const BudgetHistoryChart = lazy(() => import('@/components/dashboard/BudgetHistoryChart').then(m => ({ default: m.BudgetHistoryChart })));
 const CategoryBudgetsCard = lazy(() => import('@/components/dashboard/CategoryBudgetsCard').then(m => ({ default: m.CategoryBudgetsCard })));
@@ -720,6 +721,7 @@ export default function Dashboard() {
                           {activeTab === 'budgets' && (
                             <Suspense fallback={<AnalyticsSkeleton />}>
                               <div className="space-y-6">
+                                <MonthlyPlanCard />
                                 <div className="grid gap-6 lg:grid-cols-2">
                                   <GlobalBudgetCard />
                                   <BudgetHistoryChart />
