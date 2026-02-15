@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useMonthlyPlanData } from "@/hooks/data/useMonthlyPlanData";
@@ -7,15 +7,22 @@ import { useExpenses } from "@/hooks/data/useExpenses";
 import { useRecurringBills, useCreateBill, useUpdateBill, type RecurringBill, type BillInsert } from "@/hooks/data/useRecurringBills";
 import { EXPENSE_CATEGORY_TRANSLATIONS, ExpenseCategory } from "@/lib/constants/expense-categories";
 import { BILL_CATEGORY_CONFIG, BillCategory } from "@/lib/constants/bill-categories";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Plus, Settings2, Upload, CreditCard } from "lucide-react";
-import { format, startOfMonth, endOfMonth, differenceInDays, parseISO } from "date-fns";
+import { Plus, Settings2, Upload, CreditCard } from "lucide-react";
+import { format, startOfMonth, endOfMonth, differenceInDays, parseISO, subMonths } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+
+// Family sub-components
+import { CollapsibleSection } from "./family/CollapsibleSection";
+import { MiniCard } from "./family/MiniCard";
+import { EmptyState } from "./family/EmptyState";
+import { SpendingDonut } from "./family/SpendingDonut";
+import { SmartInsights } from "./family/SmartInsights";
+import { FamilyFAB } from "./family/FamilyFAB";
 
 // Family-specific dialogs
 import { FamilyExpenseDialog } from "./FamilyExpenseDialog";
@@ -62,22 +69,6 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
   const [showBillDialog, setShowBillDialog] = useState(false);
   const [editingBill, setEditingBill] = useState<RecurringBill | null>(null);
 
-  // Section states
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    resumen: true,
-    pagos: false,
-    categorias: false,
-    alertas: false,
-    proyecciones: false,
-    suscripciones: false,
-    banking: false,
-    gastos: false,
-    negocio: false,
-  });
-
-  const toggle = (key: string) =>
-    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
-
   const isUnified = budgetMode === "unified";
   const monthLabel = format(now, "MMMM yyyy", { locale: l ? es : enUS });
 
@@ -113,14 +104,21 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
     ? (l ? "Cuidado, ajusta tus gastos" : "Careful, adjust your spending")
     : (l ? "Estás en rojo, revisa tus gastos" : "You're in the red, review spending");
 
-  // Expenses split
+  // Current month expenses
   const monthStart = startOfMonth(now);
   const monthEnd = endOfMonth(now);
   const { data: allExpenses } = useExpenses({ dateRange: { start: monthStart, end: monthEnd } });
+
+  // Previous month expenses for comparison
+  const prevMonthStart = startOfMonth(subMonths(now, 1));
+  const prevMonthEnd = endOfMonth(subMonths(now, 1));
+  const { data: prevExpenses } = useExpenses({ dateRange: { start: prevMonthStart, end: prevMonthEnd } });
+
   const familyExpenses = (allExpenses || []).filter(e => !e.entity_id);
   const businessExpenses = (allExpenses || []).filter(e => e.entity_id);
   const familyTotal = familyExpenses.reduce((s, e) => s + Number(e.amount), 0);
   const businessTotal = businessExpenses.reduce((s, e) => s + Number(e.amount), 0);
+  const prevFamilyTotal = (prevExpenses || []).filter(e => !e.entity_id).reduce((s, e) => s + Number(e.amount), 0);
 
   // Group family expenses by category
   const familyCatMap: Record<string, number> = {};
@@ -142,10 +140,21 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
     .sort(([, a], [, b]) => b - a)
     .map(([cat, spent]) => ({ cat, spent, ...getCatInfo(cat, l ? 'es' : 'en') }));
 
+  // Month-over-month trends
+  const spentTrend = prevFamilyTotal > 0
+    ? ((familyTotal - prevFamilyTotal) / prevFamilyTotal) * 100
+    : 0;
+
+  const topCategory = familyCategories.length > 0 ? familyCategories[0] : undefined;
+
   return (
-    <div className="space-y-4 max-w-2xl mx-auto">
+    <div className="space-y-4 max-w-2xl mx-auto pb-24">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             🏠 {l ? "Mi Presupuesto" : "My Budget"}
@@ -156,13 +165,13 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
           <Settings2 className="h-3.5 w-3.5" />
           {l ? "Modo" : "Mode"}
         </Button>
-      </div>
+      </motion.div>
 
       {/* ===== 1. RESUMEN RÁPIDO ===== */}
       <CollapsibleSection
         emoji="📊"
         title={l ? "Resumen del Mes" : "Monthly Summary"}
-        defaultOpen={openSections.resumen}
+        defaultOpen={true}
       >
         <div className="space-y-4">
           {/* Health indicator */}
@@ -178,11 +187,40 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
 
           {/* Key numbers */}
           <div className="grid grid-cols-2 gap-3">
-            <MiniCard emoji="💰" label={l ? "Ingresos" : "Income"} value={fc(plan.totalIncome)} color="text-emerald-600 dark:text-emerald-400" missing={!plan.hasIncome} missingAction={() => setShowIncomeDialog(true)} missingLabel={l ? "+ Agregar" : "+ Add"} />
-            <MiniCard emoji="🏦" label={l ? "Pagos Fijos" : "Fixed Payments"} value={fc(plan.totalFixed)} color="text-red-500 dark:text-red-400" missing={!plan.hasBills} missingAction={() => setShowBillDialog(true)} missingLabel={l ? "+ Agregar" : "+ Add"} />
-            <MiniCard emoji="🛒" label={l ? "Gastado" : "Spent"} value={fc(isUnified ? familyTotal + businessTotal : familyTotal)} color="text-amber-600 dark:text-amber-400" />
-            <MiniCard emoji="🐷" label={l ? "Libre" : "Free"} value={fc(plan.freeMoney - plan.totalSpent)} color={plan.freeMoney - plan.totalSpent >= 0 ? "text-blue-600 dark:text-blue-400" : "text-red-500"} />
+            <MiniCard
+              emoji="💰" label={l ? "Ingresos" : "Income"} value={fc(plan.totalIncome)}
+              color="text-emerald-600 dark:text-emerald-400"
+              missing={!plan.hasIncome} missingAction={() => setShowIncomeDialog(true)}
+              missingLabel={l ? "+ Agregar" : "+ Add"}
+            />
+            <MiniCard
+              emoji="🏦" label={l ? "Pagos Fijos" : "Fixed Payments"} value={fc(plan.totalFixed)}
+              color="text-red-500 dark:text-red-400"
+              missing={!plan.hasBills} missingAction={() => setShowBillDialog(true)}
+              missingLabel={l ? "+ Agregar" : "+ Add"}
+            />
+            <MiniCard
+              emoji="🛒" label={l ? "Gastado" : "Spent"}
+              value={fc(isUnified ? familyTotal + businessTotal : familyTotal)}
+              color="text-amber-600 dark:text-amber-400"
+              trend={prevFamilyTotal > 0 ? { value: -spentTrend, label: l ? "vs mes ant." : "vs last mo." } : undefined}
+            />
+            <MiniCard
+              emoji="🐷" label={l ? "Libre" : "Free"}
+              value={fc(plan.freeMoney - plan.totalSpent)}
+              color={plan.freeMoney - plan.totalSpent >= 0 ? "text-blue-600 dark:text-blue-400" : "text-red-500"}
+            />
           </div>
+
+          {/* Donut chart */}
+          {familyCategories.length > 0 && (
+            <SpendingDonut
+              categories={familyCategories}
+              total={familyTotal}
+              freeLabel={l ? "Libre" : "Free"}
+              freeMoney={Math.max(0, plan.freeMoney - plan.totalSpent)}
+            />
+          )}
 
           {/* Daily budget */}
           {plan.dailyBudget > 0 && (
@@ -217,12 +255,33 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         </div>
       </CollapsibleSection>
 
-      {/* ===== 2. PAGOS FIJOS ===== */}
+      {/* ===== 2. INSIGHTS INTELIGENTES ===== */}
+      <CollapsibleSection
+        emoji="🧠"
+        title={l ? "Insights Inteligentes" : "Smart Insights"}
+        subtitle={l ? "Consejos personalizados" : "Personalized tips"}
+        defaultOpen={true}
+      >
+        <SmartInsights data={{
+          totalIncome: plan.totalIncome,
+          totalSpent: familyTotal,
+          totalFixed: plan.totalFixed,
+          freeMoney: plan.freeMoney,
+          pace: plan.pace,
+          dailyBudget: plan.dailyBudget,
+          daysRemaining: plan.daysRemaining,
+          topCategory: topCategory ? { label: topCategory.label, spent: topCategory.spent, icon: topCategory.icon } : undefined,
+          prevMonthSpent: prevFamilyTotal,
+        }} />
+      </CollapsibleSection>
+
+      {/* ===== 3. PAGOS FIJOS ===== */}
       <CollapsibleSection
         emoji="🏦"
         title={l ? "Pagos Fijos" : "Fixed Payments"}
         subtitle={`${activeBills.length} ${l ? "activos" : "active"} · ${fc(plan.totalFixed)}`}
         alert={unpaidBills.length > 0}
+        badge={unpaidBills.length > 0 ? `${unpaidBills.length} ${l ? "pronto" : "soon"}` : undefined}
       >
         <div className="space-y-3">
           {activeBills.length > 0 ? (
@@ -233,11 +292,12 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
                 const isUrgent = daysUntil <= 3;
                 const catInfo = getCatInfo(bill.category, l ? 'es' : 'en');
                 return (
-                  <div
+                  <motion.div
                     key={bill.id}
+                    whileTap={{ scale: 0.98 }}
                     className={cn(
                       "flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-muted/60 transition-colors",
-                      isUrgent ? "bg-red-500/10 border border-red-500/20" : "bg-muted/30"
+                      isUrgent ? "bg-destructive/10 border border-destructive/20" : "bg-muted/30"
                     )}
                     onClick={() => { setEditingBill(bill); setShowBillDialog(true); }}
                   >
@@ -252,11 +312,11 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold">{fc(bill.amount)}</p>
-                      <p className={cn("text-[11px]", isUrgent ? "text-red-500 font-medium" : "text-muted-foreground")}>
+                      <p className={cn("text-[11px]", isUrgent ? "text-destructive font-medium" : "text-muted-foreground")}>
                         {isUrgent && "⚠️ "}{format(due, "dd MMM", { locale: l ? es : enUS })}
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
               {activeBills.length > 8 && (
@@ -275,7 +335,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         </div>
       </CollapsibleSection>
 
-      {/* ===== 3. GASTOS POR CATEGORÍA ===== */}
+      {/* ===== 4. GASTOS POR CATEGORÍA ===== */}
       <CollapsibleSection
         emoji="🛒"
         title={l ? "Gastos por Categoría" : "Spending by Category"}
@@ -311,7 +371,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         )}
       </CollapsibleSection>
 
-      {/* ===== 4. PRESUPUESTOS POR CATEGORÍA (editable) ===== */}
+      {/* ===== 5. PRESUPUESTOS POR CATEGORÍA (editable) ===== */}
       <CollapsibleSection
         emoji="📏"
         title={l ? "Límites de Categoría" : "Category Budgets"}
@@ -320,7 +380,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         <CategoryBudgetsCard />
       </CollapsibleSection>
 
-      {/* ===== 5. ALERTAS INTELIGENTES ===== */}
+      {/* ===== 6. ALERTAS INTELIGENTES ===== */}
       <CollapsibleSection
         emoji="🔔"
         title={l ? "Alertas" : "Alerts"}
@@ -329,7 +389,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         <BudgetAlertsCard />
       </CollapsibleSection>
 
-      {/* ===== 6. PROYECCIONES ===== */}
+      {/* ===== 7. PROYECCIONES ===== */}
       <CollapsibleSection
         emoji="🔮"
         title={l ? "Proyecciones" : "Projections"}
@@ -355,7 +415,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         </div>
       </CollapsibleSection>
 
-      {/* ===== 7. SUSCRIPCIONES ===== */}
+      {/* ===== 8. SUSCRIPCIONES ===== */}
       <CollapsibleSection
         emoji="🔄"
         title={l ? "Suscripciones Detectadas" : "Detected Subscriptions"}
@@ -364,7 +424,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         <SubscriptionTracker />
       </CollapsibleSection>
 
-      {/* ===== 8. ANÁLISIS BANCARIO ===== */}
+      {/* ===== 9. ANÁLISIS BANCARIO ===== */}
       <CollapsibleSection
         emoji="🏧"
         title={l ? "Análisis Bancario" : "Bank Analysis"}
@@ -389,7 +449,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         </div>
       </CollapsibleSection>
 
-      {/* ===== 9. GASTOS DEL NEGOCIO (solo modo unificado) ===== */}
+      {/* ===== 10. GASTOS DEL NEGOCIO (solo modo unificado) ===== */}
       {isUnified && (
         <CollapsibleSection
           emoji="💼"
@@ -417,25 +477,13 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         </CollapsibleSection>
       )}
 
-      {/* ===== ACCIONES RÁPIDAS ===== */}
-      <div className="grid grid-cols-2 gap-2 pt-2">
-        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowExpenseDialog(true)}>
-          <Plus className="h-3.5 w-3.5" />
-          {l ? "Gasto" : "Expense"}
-        </Button>
-        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowIncomeDialog(true)}>
-          <Plus className="h-3.5 w-3.5" />
-          {l ? "Ingreso" : "Income"}
-        </Button>
-        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setEditingBill(null); setShowBillDialog(true); }}>
-          <CreditCard className="h-3.5 w-3.5" />
-          {l ? "Pago Fijo" : "Fixed Bill"}
-        </Button>
-        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate("/mobile-capture")}>
-          <Upload className="h-3.5 w-3.5" />
-          {l ? "Boleta" : "Receipt"}
-        </Button>
-      </div>
+      {/* FAB */}
+      <FamilyFAB
+        onExpense={() => setShowExpenseDialog(true)}
+        onIncome={() => setShowIncomeDialog(true)}
+        onBill={() => { setEditingBill(null); setShowBillDialog(true); }}
+        onReceipt={() => navigate("/mobile-capture")}
+      />
 
       {/* Dialogs */}
       <FamilyExpenseDialog open={showExpenseDialog} onClose={() => setShowExpenseDialog(false)} />
@@ -446,88 +494,6 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         editingBill={editingBill}
         onSave={handleSaveBill}
       />
-    </div>
-  );
-}
-
-// ---- Sub-components ----
-
-function CollapsibleSection({
-  emoji,
-  title,
-  subtitle,
-  defaultOpen = false,
-  children,
-  alert,
-}: {
-  emoji: string;
-  title: string;
-  subtitle?: string;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
-  alert?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-
-  return (
-    <Collapsible open={open} onOpenChange={setOpen}>
-      <Card className={cn(alert && "border-red-500/30")}>
-        <CollapsibleTrigger asChild>
-          <button className="w-full p-4 flex items-center gap-3 hover:bg-muted/30 transition-colors rounded-t-xl">
-            <span className="text-xl">{emoji}</span>
-            <div className="flex-1 text-left">
-              <p className="text-sm font-semibold flex items-center gap-2">
-                {title}
-                {alert && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
-              </p>
-              {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
-            </div>
-            <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} />
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <CardContent className="pt-0 pb-4 px-4">
-            {children}
-          </CardContent>
-        </CollapsibleContent>
-      </Card>
-    </Collapsible>
-  );
-}
-
-function MiniCard({
-  emoji, label, value, color, missing, missingAction, missingLabel,
-}: {
-  emoji: string; label: string; value: string; color: string;
-  missing?: boolean; missingAction?: () => void; missingLabel?: string;
-}) {
-  return (
-    <div
-      className={cn("p-3 rounded-xl bg-muted/40 space-y-1", missing && "border border-dashed border-muted-foreground/20 cursor-pointer hover:bg-muted/60")}
-      onClick={missing ? missingAction : undefined}
-    >
-      <div className="flex items-center gap-1.5">
-        <span className="text-base">{emoji}</span>
-        <span className="text-xs text-muted-foreground">{label}</span>
-      </div>
-      {missing ? (
-        <p className="text-sm text-primary font-medium">{missingLabel}</p>
-      ) : (
-        <p className={cn("text-lg font-bold", color)}>{value}</p>
-      )}
-    </div>
-  );
-}
-
-function EmptyState({ emoji, text, actionLabel, onAction }: { emoji: string; text: string; actionLabel: string; onAction: () => void; }) {
-  return (
-    <div className="text-center py-6 space-y-3">
-      <span className="text-3xl">{emoji}</span>
-      <p className="text-sm text-muted-foreground">{text}</p>
-      <Button size="sm" variant="outline" onClick={onAction} className="gap-1.5">
-        <Plus className="h-3.5 w-3.5" />
-        {actionLabel}
-      </Button>
     </div>
   );
 }
