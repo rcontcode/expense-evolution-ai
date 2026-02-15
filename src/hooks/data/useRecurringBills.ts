@@ -25,6 +25,13 @@ export interface RecurringBill {
   notes: string | null;
   reminder_days_before: number;
   entity_id: string | null;
+  payment_method_type: string;
+  bank_account: string | null;
+  bank_name: string | null;
+  payment_details: string | null;
+  payee_name: string | null;
+  payee_account: string | null;
+  beneficiary: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -87,7 +94,7 @@ export function useCreateBill() {
     mutationFn: async (bill: BillInsert) => {
       const { data, error } = await supabase
         .from('recurring_bills')
-        .insert({ ...bill, user_id: user!.id })
+        .insert({ ...bill, user_id: user!.id } as any)
         .select()
         .single();
       if (error) throw error;
@@ -111,7 +118,7 @@ export function useUpdateBill() {
     mutationFn: async ({ id, ...updates }: BillUpdate & { id: string }) => {
       const { data, error } = await supabase
         .from('recurring_bills')
-        .update(updates)
+        .update(updates as any)
         .eq('id', id)
         .select()
         .single();

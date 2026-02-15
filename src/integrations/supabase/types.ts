@@ -2521,6 +2521,9 @@ export type Database = {
         Row: {
           amount: number
           auto_pay: boolean | null
+          bank_account: string | null
+          bank_name: string | null
+          beneficiary: string | null
           category: string
           color: string | null
           created_at: string
@@ -2536,6 +2539,10 @@ export type Database = {
           name: string
           next_due_date: string
           notes: string | null
+          payee_account: string | null
+          payee_name: string | null
+          payment_details: string | null
+          payment_method_type: string
           priority: string | null
           reminder_days_before: number | null
           status: string
@@ -2545,6 +2552,9 @@ export type Database = {
         Insert: {
           amount?: number
           auto_pay?: boolean | null
+          bank_account?: string | null
+          bank_name?: string | null
+          beneficiary?: string | null
           category?: string
           color?: string | null
           created_at?: string
@@ -2560,6 +2570,10 @@ export type Database = {
           name: string
           next_due_date: string
           notes?: string | null
+          payee_account?: string | null
+          payee_name?: string | null
+          payment_details?: string | null
+          payment_method_type?: string
           priority?: string | null
           reminder_days_before?: number | null
           status?: string
@@ -2569,6 +2583,9 @@ export type Database = {
         Update: {
           amount?: number
           auto_pay?: boolean | null
+          bank_account?: string | null
+          bank_name?: string | null
+          beneficiary?: string | null
           category?: string
           color?: string | null
           created_at?: string
@@ -2584,6 +2601,10 @@ export type Database = {
           name?: string
           next_due_date?: string
           notes?: string | null
+          payee_account?: string | null
+          payee_name?: string | null
+          payment_details?: string | null
+          payment_method_type?: string
           priority?: string | null
           reminder_days_before?: number | null
           status?: string
