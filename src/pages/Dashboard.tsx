@@ -88,6 +88,7 @@ const CategoryYearComparison = lazy(() => import('@/components/analytics/Categor
 const WorkflowSummaryWidget = lazy(() => import('@/components/dashboard/WorkflowSummaryWidget').then(m => ({ default: m.WorkflowSummaryWidget })));
 const CompletenessCard = lazy(() => import('@/components/dashboard/CompletenessCard').then(m => ({ default: m.CompletenessCard })));
 const WorkflowVisualizer = lazy(() => import('@/components/guidance/WorkflowVisualizer').then(m => ({ default: m.WorkflowVisualizer })));
+const MonthlyBillsWidget = lazy(() => import('@/components/dashboard/MonthlyBillsWidget').then(m => ({ default: m.MonthlyBillsWidget })));
 
 // Skeleton fallback for lazy loaded components
 const ChartsSkeleton = () => (
@@ -318,12 +319,17 @@ export default function Dashboard() {
             <Suspense fallback={<Skeleton className="h-[200px]" />}>
               <WorkflowSummaryWidget />
             </Suspense>
-            {allExpenses && allExpenses.length > 0 && (
-              <Suspense fallback={<Skeleton className="h-[200px]" />}>
-                <CompletenessCard expenses={allExpenses} isLoading={isLoading} />
-              </Suspense>
-            )}
+            <Suspense fallback={<Skeleton className="h-[200px]" />}>
+              <MonthlyBillsWidget />
+            </Suspense>
           </div>
+
+          {/* Completeness */}
+          {allExpenses && allExpenses.length > 0 && (
+            <Suspense fallback={<Skeleton className="h-[200px]" />}>
+              <CompletenessCard expenses={allExpenses} isLoading={isLoading} />
+            </Suspense>
+          )}
 
           {/* Profile Completion Nudge + Gamification (moved below timeline) */}
           <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
