@@ -1,23 +1,39 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useMonthlyPlanData } from "@/hooks/data/useMonthlyPlanData";
-import { useUserSettings, UserPreferences, BudgetMode } from "@/hooks/data/useUserSettings";
-import { useCategoryBudgets } from "@/hooks/data/useCategoryBudgets";
+import { useUserSettings, BudgetMode } from "@/hooks/data/useUserSettings";
 import { useExpenses } from "@/hooks/data/useExpenses";
+import { useRecurringBills, useCreateBill, useUpdateBill, type RecurringBill, type BillInsert } from "@/hooks/data/useRecurringBills";
 import { EXPENSE_CATEGORY_TRANSLATIONS, ExpenseCategory } from "@/lib/constants/expense-categories";
 import { BILL_CATEGORY_CONFIG, BillCategory } from "@/lib/constants/bill-categories";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Plus, Settings2, TrendingUp, AlertTriangle } from "lucide-react";
-import { format, startOfMonth, endOfMonth } from "date-fns";
+import { ChevronDown, Plus, Settings2, Upload, CreditCard } from "lucide-react";
+import { format, startOfMonth, endOfMonth, differenceInDays, parseISO } from "date-fns";
 import { es, enUS } from "date-fns/locale";
-import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
+
+// Family-specific dialogs
 import { FamilyExpenseDialog } from "./FamilyExpenseDialog";
 import { FamilyIncomeDialog } from "./FamilyIncomeDialog";
+
+// Full-power components reused
+import { BillFormDialog } from "@/components/bills/BillFormDialog";
+import { BudgetAlertsCard } from "@/components/dashboard/BudgetAlertsCard";
+import { CategoryBudgetsCard } from "@/components/dashboard/CategoryBudgetsCard";
+import { SubscriptionTracker } from "@/components/subscriptions/SubscriptionTracker";
+
+// Lazy-loaded heavy charts
+const BudgetProjectionChart = lazy(() =>
+  import("@/components/analytics/BudgetProjectionChart").then(m => ({ default: m.BudgetProjectionChart }))
+);
+const CashFlowProjection = lazy(() =>
+  import("@/components/analytics/CashFlowProjection").then(m => ({ default: m.CashFlowProjection }))
+);
 
 function getCatInfo(cat: string, lang: 'es' | 'en') {
   const billCfg = BILL_CATEGORY_CONFIG[cat as BillCategory];
@@ -37,15 +53,25 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
   const l = language === "es";
   const { formatCurrency: fc } = useFormatCurrency();
   const plan = useMonthlyPlanData();
+  const navigate = useNavigate();
   const now = new Date();
+
+  // Dialog states
   const [showExpenseDialog, setShowExpenseDialog] = useState(false);
   const [showIncomeDialog, setShowIncomeDialog] = useState(false);
+  const [showBillDialog, setShowBillDialog] = useState(false);
+  const [editingBill, setEditingBill] = useState<RecurringBill | null>(null);
 
+  // Section states
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     resumen: true,
-    gastos: false,
     pagos: false,
     categorias: false,
+    alertas: false,
+    proyecciones: false,
+    suscripciones: false,
+    banking: false,
+    gastos: false,
     negocio: false,
   });
 
@@ -55,11 +81,31 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
   const isUnified = budgetMode === "unified";
   const monthLabel = format(now, "MMMM yyyy", { locale: l ? es : enUS });
 
+  // Bills data
+  const { data: bills } = useRecurringBills();
+  const createBill = useCreateBill();
+  const updateBill = useUpdateBill();
+
+  const handleSaveBill = async (bill: BillInsert, editId?: string) => {
+    if (editId) {
+      await updateBill.mutateAsync({ id: editId, ...bill });
+    } else {
+      await createBill.mutateAsync(bill);
+    }
+    setShowBillDialog(false);
+    setEditingBill(null);
+  };
+
+  const activeBills = (bills || []).filter(b => b.status === 'active');
+  const unpaidBills = activeBills.filter(b => {
+    const due = parseISO(b.next_due_date);
+    return differenceInDays(due, now) <= 7;
+  });
+
   // Spending health
   const spendingHealth = plan.totalIncome > 0
     ? ((plan.totalIncome - plan.totalSpent - plan.totalFixed) / plan.totalIncome) * 100
     : 0;
-
   const healthEmoji = spendingHealth >= 20 ? "🟢" : spendingHealth >= 5 ? "🟡" : "🔴";
   const healthText = spendingHealth >= 20
     ? (l ? "¡Vas muy bien!" : "You're doing great!")
@@ -67,11 +113,10 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
     ? (l ? "Cuidado, ajusta tus gastos" : "Careful, adjust your spending")
     : (l ? "Estás en rojo, revisa tus gastos" : "You're in the red, review spending");
 
-  // Split expenses into family vs business (by entity_id presence)
+  // Expenses split
   const monthStart = startOfMonth(now);
   const monthEnd = endOfMonth(now);
   const { data: allExpenses } = useExpenses({ dateRange: { start: monthStart, end: monthEnd } });
-  
   const familyExpenses = (allExpenses || []).filter(e => !e.entity_id);
   const businessExpenses = (allExpenses || []).filter(e => e.entity_id);
   const familyTotal = familyExpenses.reduce((s, e) => s + Number(e.amount), 0);
@@ -117,8 +162,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
       <CollapsibleSection
         emoji="📊"
         title={l ? "Resumen del Mes" : "Monthly Summary"}
-        open={openSections.resumen}
-        onToggle={() => toggle("resumen")}
+        defaultOpen={openSections.resumen}
       >
         <div className="space-y-4">
           {/* Health indicator */}
@@ -134,36 +178,10 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
 
           {/* Key numbers */}
           <div className="grid grid-cols-2 gap-3">
-            <MiniCard
-              emoji="💰"
-              label={l ? "Ingresos" : "Income"}
-              value={fc(plan.totalIncome)}
-              color="text-emerald-600 dark:text-emerald-400"
-              missing={!plan.hasIncome}
-              missingAction={() => setShowIncomeDialog(true)}
-              missingLabel={l ? "+ Agregar" : "+ Add"}
-            />
-            <MiniCard
-              emoji="🏦"
-              label={l ? "Pagos Fijos" : "Fixed Payments"}
-              value={fc(plan.totalFixed)}
-              color="text-red-500 dark:text-red-400"
-              missing={!plan.hasBills}
-              missingAction={() => {}}
-              missingLabel={l ? "+ Agregar" : "+ Add"}
-            />
-            <MiniCard
-              emoji="🛒"
-              label={l ? "Gastado" : "Spent"}
-              value={fc(isUnified ? familyTotal + businessTotal : familyTotal)}
-              color="text-amber-600 dark:text-amber-400"
-            />
-            <MiniCard
-              emoji="🐷"
-              label={l ? "Libre" : "Free"}
-              value={fc(plan.freeMoney - plan.totalSpent)}
-              color={plan.freeMoney - plan.totalSpent >= 0 ? "text-blue-600 dark:text-blue-400" : "text-red-500"}
-            />
+            <MiniCard emoji="💰" label={l ? "Ingresos" : "Income"} value={fc(plan.totalIncome)} color="text-emerald-600 dark:text-emerald-400" missing={!plan.hasIncome} missingAction={() => setShowIncomeDialog(true)} missingLabel={l ? "+ Agregar" : "+ Add"} />
+            <MiniCard emoji="🏦" label={l ? "Pagos Fijos" : "Fixed Payments"} value={fc(plan.totalFixed)} color="text-red-500 dark:text-red-400" missing={!plan.hasBills} missingAction={() => setShowBillDialog(true)} missingLabel={l ? "+ Agregar" : "+ Add"} />
+            <MiniCard emoji="🛒" label={l ? "Gastado" : "Spent"} value={fc(isUnified ? familyTotal + businessTotal : familyTotal)} color="text-amber-600 dark:text-amber-400" />
+            <MiniCard emoji="🐷" label={l ? "Libre" : "Free"} value={fc(plan.freeMoney - plan.totalSpent)} color={plan.freeMoney - plan.totalSpent >= 0 ? "text-blue-600 dark:text-blue-400" : "text-red-500"} />
           </div>
 
           {/* Daily budget */}
@@ -199,13 +217,69 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         </div>
       </CollapsibleSection>
 
-      {/* ===== 2. GASTOS POR CATEGORÍA (FAMILIA) ===== */}
+      {/* ===== 2. PAGOS FIJOS ===== */}
       <CollapsibleSection
-        emoji="👨‍👩‍👧‍👦"
-        title={l ? "Gastos Familiares" : "Family Expenses"}
+        emoji="🏦"
+        title={l ? "Pagos Fijos" : "Fixed Payments"}
+        subtitle={`${activeBills.length} ${l ? "activos" : "active"} · ${fc(plan.totalFixed)}`}
+        alert={unpaidBills.length > 0}
+      >
+        <div className="space-y-3">
+          {activeBills.length > 0 ? (
+            <div className="space-y-2">
+              {activeBills.slice(0, 8).map((bill) => {
+                const due = parseISO(bill.next_due_date);
+                const daysUntil = differenceInDays(due, now);
+                const isUrgent = daysUntil <= 3;
+                const catInfo = getCatInfo(bill.category, l ? 'es' : 'en');
+                return (
+                  <div
+                    key={bill.id}
+                    className={cn(
+                      "flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-muted/60 transition-colors",
+                      isUrgent ? "bg-red-500/10 border border-red-500/20" : "bg-muted/30"
+                    )}
+                    onClick={() => { setEditingBill(bill); setShowBillDialog(true); }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{catInfo.icon}</span>
+                      <div>
+                        <p className="text-sm font-medium">{bill.name}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {bill.auto_pay ? "🔄 " : ""}{catInfo.label}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold">{fc(bill.amount)}</p>
+                      <p className={cn("text-[11px]", isUrgent ? "text-red-500 font-medium" : "text-muted-foreground")}>
+                        {isUrgent && "⚠️ "}{format(due, "dd MMM", { locale: l ? es : enUS })}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+              {activeBills.length > 8 && (
+                <p className="text-xs text-muted-foreground text-center">
+                  +{activeBills.length - 8} {l ? "más" : "more"}
+                </p>
+              )}
+            </div>
+          ) : (
+            <EmptyState emoji="🏦" text={l ? "No tienes pagos fijos configurados" : "No fixed payments set up"} actionLabel={l ? "Agregar pago" : "Add payment"} onAction={() => setShowBillDialog(true)} />
+          )}
+          <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => { setEditingBill(null); setShowBillDialog(true); }}>
+            <Plus className="h-3.5 w-3.5" />
+            {l ? "Nuevo Pago Fijo" : "New Fixed Payment"}
+          </Button>
+        </div>
+      </CollapsibleSection>
+
+      {/* ===== 3. GASTOS POR CATEGORÍA ===== */}
+      <CollapsibleSection
+        emoji="🛒"
+        title={l ? "Gastos por Categoría" : "Spending by Category"}
         subtitle={`${familyCategories.length} ${l ? "categorías" : "categories"} · ${fc(familyTotal)}`}
-        open={openSections.gastos}
-        onToggle={() => toggle("gastos")}
       >
         {familyCategories.length > 0 ? (
           <div className="space-y-2">
@@ -233,58 +307,94 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
             })}
           </div>
         ) : (
-          <EmptyState
-            emoji="🛒"
-            text={l ? "No hay gastos familiares este mes" : "No family expenses this month"}
-            actionLabel={l ? "Agregar gasto" : "Add expense"}
-            onAction={() => setShowExpenseDialog(true)}
-          />
+          <EmptyState emoji="🛒" text={l ? "No hay gastos este mes" : "No expenses this month"} actionLabel={l ? "Agregar gasto" : "Add expense"} onAction={() => setShowExpenseDialog(true)} />
         )}
       </CollapsibleSection>
 
-      {/* ===== 3. PAGOS PENDIENTES ===== */}
-      {plan.unpaidBills.length > 0 && (
-        <CollapsibleSection
-          emoji="⏰"
-          title={l ? "Pagos Pendientes" : "Pending Payments"}
-          subtitle={`${plan.unpaidBills.length} ${l ? "pendiente(s)" : "pending"}`}
-          open={openSections.pagos}
-          onToggle={() => toggle("pagos")}
-          alert
-        >
-          <div className="space-y-2">
-            {plan.unpaidBills.map((bill, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "flex items-center justify-between p-3 rounded-lg",
-                  bill.overdue ? "bg-red-500/10 border border-red-500/20" : "bg-muted/30"
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  {bill.overdue && <span className="text-sm">🔴</span>}
-                  <span className="text-sm font-medium">{bill.name}</span>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold">{fc(bill.amount)}</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {format(new Date(bill.nextDue), "dd MMM", { locale: l ? es : enUS })}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CollapsibleSection>
-      )}
+      {/* ===== 4. PRESUPUESTOS POR CATEGORÍA (editable) ===== */}
+      <CollapsibleSection
+        emoji="📏"
+        title={l ? "Límites de Categoría" : "Category Budgets"}
+        subtitle={l ? "Configura límites mensuales" : "Set monthly limits"}
+      >
+        <CategoryBudgetsCard />
+      </CollapsibleSection>
 
-      {/* ===== 4. GASTOS DEL NEGOCIO (solo modo unificado) ===== */}
+      {/* ===== 5. ALERTAS INTELIGENTES ===== */}
+      <CollapsibleSection
+        emoji="🔔"
+        title={l ? "Alertas" : "Alerts"}
+        subtitle={l ? "Avisos y recomendaciones" : "Warnings & recommendations"}
+      >
+        <BudgetAlertsCard />
+      </CollapsibleSection>
+
+      {/* ===== 6. PROYECCIONES ===== */}
+      <CollapsibleSection
+        emoji="🔮"
+        title={l ? "Proyecciones" : "Projections"}
+        subtitle={`${l ? "Ahorro anual" : "Annual savings"}: ${fc(plan.annualProjectedSavings)}`}
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 rounded-lg bg-emerald-500/10 text-center">
+              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{fc(plan.projectedSavings)}</p>
+              <p className="text-xs text-muted-foreground">{l ? "Ahorro este mes" : "Savings this month"}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-blue-500/10 text-center">
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{fc(plan.annualProjectedSavings)}</p>
+              <p className="text-xs text-muted-foreground">{l ? "Proyección anual" : "Annual projection"}</p>
+            </div>
+          </div>
+          <Suspense fallback={<div className="h-48 animate-pulse bg-muted/30 rounded-lg" />}>
+            <BudgetProjectionChart />
+          </Suspense>
+          <Suspense fallback={<div className="h-48 animate-pulse bg-muted/30 rounded-lg" />}>
+            <CashFlowProjection />
+          </Suspense>
+        </div>
+      </CollapsibleSection>
+
+      {/* ===== 7. SUSCRIPCIONES ===== */}
+      <CollapsibleSection
+        emoji="🔄"
+        title={l ? "Suscripciones Detectadas" : "Detected Subscriptions"}
+        subtitle={l ? "Cobros recurrentes automáticos" : "Automatic recurring charges"}
+      >
+        <SubscriptionTracker />
+      </CollapsibleSection>
+
+      {/* ===== 8. ANÁLISIS BANCARIO ===== */}
+      <CollapsibleSection
+        emoji="🏧"
+        title={l ? "Análisis Bancario" : "Bank Analysis"}
+        subtitle={l ? "Sube extractos y boletas" : "Upload statements & receipts"}
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            {l
+              ? "Sube tus extractos bancarios o boletas para que la app analice tus gastos, detecte duplicados y encuentre suscripciones ocultas."
+              : "Upload your bank statements or receipts so the app can analyze your spending, detect duplicates, and find hidden subscriptions."}
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate("/banking")}>
+              <CreditCard className="h-3.5 w-3.5" />
+              {l ? "Ir a Banca" : "Go to Banking"}
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate("/mobile-capture")}>
+              <Upload className="h-3.5 w-3.5" />
+              {l ? "Subir Boleta" : "Upload Receipt"}
+            </Button>
+          </div>
+        </div>
+      </CollapsibleSection>
+
+      {/* ===== 9. GASTOS DEL NEGOCIO (solo modo unificado) ===== */}
       {isUnified && (
         <CollapsibleSection
           emoji="💼"
           title={l ? "Gastos del Negocio" : "Business Expenses"}
           subtitle={businessTotal > 0 ? fc(businessTotal) : (l ? "Sin gastos" : "No expenses")}
-          open={openSections.negocio}
-          onToggle={() => toggle("negocio")}
         >
           {businessCategories.length > 0 ? (
             <div className="space-y-2">
@@ -302,65 +412,40 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
               </div>
             </div>
           ) : (
-            <EmptyState
-              emoji="💼"
-              text={l ? "No hay gastos de negocio este mes" : "No business expenses this month"}
-            actionLabel={l ? "Agregar gasto" : "Add expense"}
-            onAction={() => setShowExpenseDialog(true)}
-            />
+            <EmptyState emoji="💼" text={l ? "No hay gastos de negocio este mes" : "No business expenses this month"} actionLabel={l ? "Agregar gasto" : "Add expense"} onAction={() => setShowExpenseDialog(true)} />
           )}
-          <p className="text-[11px] text-muted-foreground mt-2">
-            💡 {l
-              ? "Los gastos del negocio se registran igual que los familiares, solo asócialos a tu entidad fiscal."
-              : "Business expenses are recorded the same way, just associate them with your fiscal entity."}
-          </p>
         </CollapsibleSection>
       )}
 
-      {/* ===== 5. PROYECCIÓN ===== */}
-      <CollapsibleSection
-        emoji="🔮"
-        title={l ? "Proyección" : "Projection"}
-        subtitle={`${l ? "Ahorro anual" : "Annual savings"}: ${fc(plan.annualProjectedSavings)}`}
-        open={false}
-        onToggle={() => {}}
-      >
-        <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 rounded-lg bg-emerald-500/10 text-center">
-            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{fc(plan.projectedSavings)}</p>
-            <p className="text-xs text-muted-foreground">{l ? "Ahorro este mes" : "Savings this month"}</p>
-          </div>
-          <div className="p-3 rounded-lg bg-blue-500/10 text-center">
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{fc(plan.annualProjectedSavings)}</p>
-            <p className="text-xs text-muted-foreground">{l ? "Proyección anual" : "Annual projection"}</p>
-          </div>
-        </div>
-      </CollapsibleSection>
-
-      <div className="flex gap-2 pt-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex-1 gap-1.5"
-          onClick={() => setShowExpenseDialog(true)}
-        >
+      {/* ===== ACCIONES RÁPIDAS ===== */}
+      <div className="grid grid-cols-2 gap-2 pt-2">
+        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowExpenseDialog(true)}>
           <Plus className="h-3.5 w-3.5" />
-          {l ? "Agregar Gasto" : "Add Expense"}
+          {l ? "Gasto" : "Expense"}
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex-1 gap-1.5"
-          onClick={() => setShowIncomeDialog(true)}
-        >
+        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowIncomeDialog(true)}>
           <Plus className="h-3.5 w-3.5" />
-          {l ? "Agregar Ingreso" : "Add Income"}
+          {l ? "Ingreso" : "Income"}
+        </Button>
+        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => { setEditingBill(null); setShowBillDialog(true); }}>
+          <CreditCard className="h-3.5 w-3.5" />
+          {l ? "Pago Fijo" : "Fixed Bill"}
+        </Button>
+        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate("/mobile-capture")}>
+          <Upload className="h-3.5 w-3.5" />
+          {l ? "Boleta" : "Receipt"}
         </Button>
       </div>
 
       {/* Dialogs */}
       <FamilyExpenseDialog open={showExpenseDialog} onClose={() => setShowExpenseDialog(false)} />
       <FamilyIncomeDialog open={showIncomeDialog} onClose={() => setShowIncomeDialog(false)} />
+      <BillFormDialog
+        open={showBillDialog}
+        onOpenChange={(open) => { setShowBillDialog(open); if (!open) setEditingBill(null); }}
+        editingBill={editingBill}
+        onSave={handleSaveBill}
+      />
     </div>
   );
 }
@@ -371,27 +456,21 @@ function CollapsibleSection({
   emoji,
   title,
   subtitle,
-  open: defaultOpen,
-  onToggle,
+  defaultOpen = false,
   children,
   alert,
 }: {
   emoji: string;
   title: string;
   subtitle?: string;
-  open: boolean;
-  onToggle: () => void;
+  defaultOpen?: boolean;
   children: React.ReactNode;
   alert?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const handleToggle = () => {
-    setOpen(!open);
-    onToggle();
-  };
 
   return (
-    <Collapsible open={open} onOpenChange={handleToggle}>
+    <Collapsible open={open} onOpenChange={setOpen}>
       <Card className={cn(alert && "border-red-500/30")}>
         <CollapsibleTrigger asChild>
           <button className="w-full p-4 flex items-center gap-3 hover:bg-muted/30 transition-colors rounded-t-xl">
@@ -417,28 +496,14 @@ function CollapsibleSection({
 }
 
 function MiniCard({
-  emoji,
-  label,
-  value,
-  color,
-  missing,
-  missingAction,
-  missingLabel,
+  emoji, label, value, color, missing, missingAction, missingLabel,
 }: {
-  emoji: string;
-  label: string;
-  value: string;
-  color: string;
-  missing?: boolean;
-  missingAction?: () => void;
-  missingLabel?: string;
+  emoji: string; label: string; value: string; color: string;
+  missing?: boolean; missingAction?: () => void; missingLabel?: string;
 }) {
   return (
     <div
-      className={cn(
-        "p-3 rounded-xl bg-muted/40 space-y-1",
-        missing && "border border-dashed border-muted-foreground/20 cursor-pointer hover:bg-muted/60"
-      )}
+      className={cn("p-3 rounded-xl bg-muted/40 space-y-1", missing && "border border-dashed border-muted-foreground/20 cursor-pointer hover:bg-muted/60")}
       onClick={missing ? missingAction : undefined}
     >
       <div className="flex items-center gap-1.5">
@@ -454,17 +519,7 @@ function MiniCard({
   );
 }
 
-function EmptyState({
-  emoji,
-  text,
-  actionLabel,
-  onAction,
-}: {
-  emoji: string;
-  text: string;
-  actionLabel: string;
-  onAction: () => void;
-}) {
+function EmptyState({ emoji, text, actionLabel, onAction }: { emoji: string; text: string; actionLabel: string; onAction: () => void; }) {
   return (
     <div className="text-center py-6 space-y-3">
       <span className="text-3xl">{emoji}</span>
