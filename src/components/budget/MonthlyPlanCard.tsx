@@ -19,6 +19,10 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   Cell,
+  LineChart,
+  Line,
+  Area,
+  AreaChart,
 } from "recharts";
 import {
   AlertTriangle,
@@ -31,14 +35,20 @@ import {
   ChevronUp,
   CreditCard,
   ExternalLink,
+  Heart,
   Info,
   Landmark,
   PiggyBank,
+  Plus,
+  Receipt,
+  Scale,
   ShieldAlert,
   ShieldCheck,
+  Target,
   TrendingUp,
   Wallet,
   XCircle,
+  Zap,
 } from "lucide-react";
 
 // Category label map
@@ -68,6 +78,7 @@ export function MonthlyPlanCard() {
   const [showProjection, setShowProjection] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
   const [showUnpaidBills, setShowUnpaidBills] = useState(false);
+  const [showDailyChart, setShowDailyChart] = useState(false);
 
   const alertIcon = (type: string) => {
     switch (type) {
@@ -506,6 +517,171 @@ export function MonthlyPlanCard() {
             </AnimatePresence>
           </div>
         )}
+
+        {/* ---- DAILY SPENDING CHART (Actual vs Ideal) ---- */}
+        {plan.cumulativeData.length > 1 && plan.variableBudget > 0 && (
+          <div>
+            <button
+              onClick={() => setShowDailyChart(!showDailyChart)}
+              className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors w-full py-1"
+            >
+              {showDailyChart ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              📈 {l ? "Gasto Diario vs Ideal" : "Daily Spending vs Ideal"}
+            </button>
+            <AnimatePresence>
+              {showDailyChart && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="h-40 mt-2">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={plan.cumulativeData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="day" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                        <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={45} />
+                        <RechartsTooltip
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--popover))",
+                            borderColor: "hsl(var(--border))",
+                            borderRadius: 8,
+                            fontSize: 11,
+                          }}
+                          formatter={(value: number) => fc(value)}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="ideal"
+                          name={l ? "Ideal" : "Ideal"}
+                          stroke="hsl(142, 71%, 45%)"
+                          fill="hsl(142, 71%, 45%)"
+                          fillOpacity={0.1}
+                          strokeDasharray="5 5"
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="spent"
+                          name={l ? "Real" : "Actual"}
+                          stroke="hsl(25, 95%, 53%)"
+                          fill="hsl(25, 95%, 53%)"
+                          fillOpacity={0.15}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+
+        {/* ---- HEALTH SCORE + QUICK ACTIONS ---- */}
+        <div className="grid gap-3 md:grid-cols-2">
+          {/* Health Score */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            className="p-3 rounded-xl border bg-muted/30 space-y-2"
+          >
+            <div className="flex items-center gap-2">
+              <Heart className={cn(
+                "h-4 w-4",
+                plan.healthScore >= 80 ? "text-emerald-500" :
+                plan.healthScore >= 60 ? "text-blue-500" :
+                plan.healthScore >= 40 ? "text-amber-500" : "text-red-500"
+              )} />
+              <span className="text-xs font-medium">{l ? "Salud Financiera" : "Financial Health"}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="relative w-14 h-14">
+                <svg viewBox="0 0 36 36" className="w-14 h-14 -rotate-90">
+                  <path
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="hsl(var(--muted))"
+                    strokeWidth="3"
+                  />
+                  <path
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke={plan.healthScore >= 80 ? "hsl(142, 71%, 45%)" : plan.healthScore >= 60 ? "hsl(217, 91%, 60%)" : plan.healthScore >= 40 ? "hsl(38, 92%, 50%)" : "hsl(0, 84%, 60%)"}
+                    strokeWidth="3"
+                    strokeDasharray={`${plan.healthScore}, 100`}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-sm font-bold">
+                  {plan.healthScore}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <p className={cn(
+                  "text-sm font-bold",
+                  plan.healthScore >= 80 ? "text-emerald-600 dark:text-emerald-400" :
+                  plan.healthScore >= 60 ? "text-blue-600 dark:text-blue-400" :
+                  plan.healthScore >= 40 ? "text-amber-600 dark:text-amber-400" :
+                  "text-red-600 dark:text-red-400"
+                )}>
+                  {plan.healthLabel}
+                </p>
+                {plan.topCategory && (
+                  <p className="text-[10px] text-muted-foreground">
+                    {l ? "Mayor gasto:" : "Top spending:"} {getCatLabel(plan.topCategory.category)} ({fc(plan.topCategory.spent)})
+                  </p>
+                )}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Quick Actions */}
+          <div className="p-3 rounded-xl border bg-muted/30 space-y-2">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-amber-500" />
+              <span className="text-xs font-medium">{l ? "Acciones Rápidas" : "Quick Actions"}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-[10px] justify-start gap-1.5"
+                onClick={() => navigate("/expenses")}
+              >
+                <Receipt className="h-3 w-3" />
+                {l ? "Nuevo gasto" : "Add expense"}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-[10px] justify-start gap-1.5"
+                onClick={() => navigate("/income")}
+              >
+                <Plus className="h-3 w-3" />
+                {l ? "Nuevo ingreso" : "Add income"}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-[10px] justify-start gap-1.5"
+                onClick={() => navigate("/net-worth")}
+              >
+                <Scale className="h-3 w-3" />
+                {l ? "Patrimonio" : "Net Worth"}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-[10px] justify-start gap-1.5"
+                onClick={() => navigate("/dashboard?tab=goals")}
+              >
+                <Target className="h-3 w-3" />
+                {l ? "Metas" : "Goals"}
+              </Button>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
