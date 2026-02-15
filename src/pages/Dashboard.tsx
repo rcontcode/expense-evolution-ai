@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Upload, Receipt, Users, Download, Scale, MapPin, RefreshCw, Landmark, Briefcase, BarChart3, GraduationCap, ChevronDown, ChevronUp, MoreHorizontal, Target } from 'lucide-react';
+import { Upload, Receipt, Users, Download, Scale, MapPin, RefreshCw, Landmark, Briefcase, BarChart3, GraduationCap, ChevronDown, ChevronUp, MoreHorizontal, Target, Wallet } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useSubscription } from '@/hooks/data/useSubscription';
@@ -487,6 +487,24 @@ export default function Dashboard() {
                             </div>
                             {language === 'es' ? 'Análisis' : 'Analytics'}
                           </TabsTrigger>
+
+                          {/* Budget Tab */}
+                          <TabsTrigger 
+                            value="budgets" 
+                            className={cn(
+                              "px-4 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap",
+                              "data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-teal-500",
+                              "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-cyan-500/50 data-[state=active]:scale-105",
+                              "data-[state=active]:ring-2 data-[state=active]:ring-cyan-400/50",
+                              "hover:bg-cyan-500/20 hover:text-cyan-400",
+                              "bg-cyan-500/5 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20"
+                            )}
+                          >
+                            <div className="p-1 rounded-lg bg-cyan-500/20">
+                              <Wallet className="h-3.5 w-3.5" />
+                            </div>
+                            💳 {language === 'es' ? 'Presupuesto' : 'Budget'}
+                          </TabsTrigger>
                           
                           {/* Mentorship Tab */}
                           <TabsTrigger 
@@ -668,14 +686,6 @@ export default function Dashboard() {
                           {activeTab === 'analytics' && (
                             <Suspense fallback={<AnalyticsSkeleton />}>
                               <div className="space-y-6">
-                                <div className="grid gap-6 lg:grid-cols-2">
-                                  <GlobalBudgetCard />
-                                  <BudgetHistoryChart />
-                                </div>
-                                <div className="grid gap-6 lg:grid-cols-2">
-                                  <BudgetAlertsCard />
-                                  <CategoryBudgetsCard />
-                                </div>
                                 <IncomeVsExpensesChart />
                                 <div className="grid gap-6 lg:grid-cols-2">
                                   <SavingsRateChart />
@@ -683,14 +693,9 @@ export default function Dashboard() {
                                 </div>
                                 <div className="grid gap-6 lg:grid-cols-2">
                                   <CategoryTrendsChart />
-                                  <BudgetProjectionChart />
-                                </div>
-                                <ExpensePredictions expenses={allExpenses || []} isLoading={isLoading} />
-                                <CashFlowProjection />
-                                <div className="grid gap-6 lg:grid-cols-2">
                                   <FinancialHealthRadar />
-                                  <CashFlowSankey />
                                 </div>
+                                <CashFlowSankey />
                                 <div className="grid gap-6 lg:grid-cols-2">
                                   <ProjectProfitability />
                                   <ClientProfitability />
@@ -705,6 +710,28 @@ export default function Dashboard() {
                                   <SeasonalityChart expenses={allExpenses || []} isLoading={isLoading} />
                                   <MonthComparisonChart expenses={allExpenses || []} isLoading={isLoading} />
                                 </div>
+                              </div>
+                            </Suspense>
+                          )}
+                        </TabsContent>
+
+                        <TabsContent value="budgets" className="space-y-4">
+                          {activeTab === 'budgets' && (
+                            <Suspense fallback={<AnalyticsSkeleton />}>
+                              <div className="space-y-6">
+                                <div className="grid gap-6 lg:grid-cols-2">
+                                  <GlobalBudgetCard />
+                                  <BudgetHistoryChart />
+                                </div>
+                                <div className="grid gap-6 lg:grid-cols-2">
+                                  <BudgetAlertsCard />
+                                  <CategoryBudgetsCard />
+                                </div>
+                                <div className="grid gap-6 lg:grid-cols-2">
+                                  <BudgetProjectionChart />
+                                  <ExpensePredictions expenses={allExpenses || []} isLoading={isLoading} />
+                                </div>
+                                <CashFlowProjection />
                               </div>
                             </Suspense>
                           )}
