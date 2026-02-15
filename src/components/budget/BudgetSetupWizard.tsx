@@ -1,0 +1,177 @@
+import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useUpdateUserPreferences } from "@/hooks/data/useUserSettings";
+import { useFiscalEntities } from "@/hooks/data/useFiscalEntities";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Users, Building2, Home, ArrowRight, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+
+export type BudgetMode = "unified" | "separated" | "family_only";
+
+interface BudgetSetupWizardProps {
+  onComplete: (mode: BudgetMode) => void;
+}
+
+export function BudgetSetupWizard({ onComplete }: BudgetSetupWizardProps) {
+  const { language } = useLanguage();
+  const l = language === "es";
+  const [selected, setSelected] = useState<BudgetMode | null>(null);
+  const updatePrefs = useUpdateUserPreferences();
+  const { data: entities } = useFiscalEntities();
+
+  const hasEntities = (entities?.length ?? 0) > 0;
+
+  const modes = [
+    {
+      id: "family_only" as BudgetMode,
+      icon: Home,
+      title: l ? "Solo Familiar" : "Family Only",
+      subtitle: l ? "Presupuesto personal y del hogar" : "Personal & household budget",
+      description: l
+        ? "Ideal para empleados, asalariados o cualquier persona que quiera controlar sus gastos familiares. Interfaz simple y directa."
+        : "Ideal for employees or anyone wanting to manage household expenses. Simple and direct interface.",
+      recommended: !hasEntities,
+      color: "from-emerald-500 to-teal-500",
+      bgColor: "bg-emerald-50 dark:bg-emerald-950/30",
+      borderColor: "border-emerald-300 dark:border-emerald-700",
+    },
+    {
+      id: "unified" as BudgetMode,
+      icon: Users,
+      title: l ? "Unificado" : "Unified",
+      subtitle: l ? "Una sola bolsa de dinero" : "One pool of money",
+      description: l
+        ? "Personal + negocio juntos en un solo presupuesto. Perfecto para freelancers, sole proprietorship o trabajadores independientes."
+        : "Personal + business in one budget. Perfect for freelancers, sole proprietors, or independent workers.",
+      recommended: false,
+      color: "from-amber-500 to-orange-500",
+      bgColor: "bg-amber-50 dark:bg-amber-950/30",
+      borderColor: "border-amber-300 dark:border-amber-700",
+    },
+    {
+      id: "separated" as BudgetMode,
+      icon: Building2,
+      title: l ? "Separado" : "Separated",
+      subtitle: l ? "Un presupuesto por entidad" : "One budget per entity",
+      description: l
+        ? "Familia aparte de cada empresa (Inc, SA, Ltd, etc). Ideal para quienes tienen empresas formalmente constituidas."
+        : "Family separate from each company (Inc, SA, Ltd, etc). Ideal for formally incorporated businesses.",
+      recommended: hasEntities,
+      color: "from-blue-500 to-indigo-500",
+      bgColor: "bg-blue-50 dark:bg-blue-950/30",
+      borderColor: "border-blue-300 dark:border-blue-700",
+    },
+  ];
+
+  const handleConfirm = () => {
+    if (!selected) return;
+    updatePrefs.mutate({ budget_mode: selected }, {
+      onSuccess: () => onComplete(selected),
+    });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-3xl mx-auto space-y-6"
+    >
+      {/* Header */}
+      <div className="text-center space-y-3">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+          <Sparkles className="h-4 w-4" />
+          {l ? "Configuración inicial" : "Initial setup"}
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-bold">
+          {l ? "¿Cómo quieres manejar tu presupuesto?" : "How do you want to manage your budget?"}
+        </h2>
+        <p className="text-muted-foreground max-w-lg mx-auto">
+          {l
+            ? "Elige el modo que mejor se adapte a tu situación. Puedes cambiarlo después en configuración."
+            : "Choose the mode that best fits your situation. You can change it later in settings."}
+        </p>
+      </div>
+
+      {/* Mode Cards */}
+      <div className="grid gap-4">
+        {modes.map((mode) => {
+          const Icon = mode.icon;
+          const isSelected = selected === mode.id;
+
+          return (
+            <motion.div
+              key={mode.id}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+            >
+              <Card
+                className={cn(
+                  "cursor-pointer transition-all duration-200 border-2",
+                  isSelected
+                    ? `${mode.borderColor} ${mode.bgColor} shadow-lg`
+                    : "border-transparent hover:border-muted-foreground/20"
+                )}
+                onClick={() => setSelected(mode.id)}
+              >
+                <CardContent className="flex items-start gap-4 p-5">
+                  <div className={cn(
+                    "flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br text-white shadow-lg",
+                    mode.color
+                  )}>
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-lg">{mode.title}</h3>
+                      {mode.recommended && (
+                        <Badge variant="secondary" className="text-xs">
+                          {l ? "Recomendado" : "Recommended"}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm font-medium text-muted-foreground mt-0.5">
+                      {mode.subtitle}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {mode.description}
+                    </p>
+                  </div>
+                  <div className={cn(
+                    "flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center mt-1 transition-colors",
+                    isSelected ? "border-primary bg-primary" : "border-muted-foreground/30"
+                  )}>
+                    {isSelected && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-2.5 h-2.5 rounded-full bg-primary-foreground"
+                      />
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Confirm Button */}
+      <div className="flex justify-center pt-2">
+        <Button
+          size="lg"
+          disabled={!selected || updatePrefs.isPending}
+          onClick={handleConfirm}
+          className="gap-2 px-8"
+        >
+          {updatePrefs.isPending
+            ? (l ? "Guardando..." : "Saving...")
+            : (l ? "Continuar" : "Continue")}
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </motion.div>
+  );
+}

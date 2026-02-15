@@ -3,9 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
+export type BudgetMode = "unified" | "separated" | "family_only";
+
 export interface UserPreferences {
   global_monthly_budget?: number;
   global_budget_alert_threshold?: number;
+  budget_mode?: BudgetMode;
 }
 
 export function useUserSettings() {

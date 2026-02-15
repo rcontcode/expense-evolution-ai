@@ -9,21 +9,31 @@ export interface CategoryBudget {
   category: string;
   monthly_budget: number;
   alert_threshold: number;
+  entity_id: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export function useCategoryBudgets() {
+export function useCategoryBudgets(entityId?: string | null) {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["category-budgets", user?.id],
+    queryKey: ["category-budgets", user?.id, entityId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("category_budgets")
         .select("*")
         .order("category");
 
+      if (entityId === null) {
+        // Family / no entity
+        query = query.is("entity_id", null);
+      } else if (entityId) {
+        query = query.eq("entity_id", entityId);
+      }
+      // If entityId is undefined, return all (unified mode)
+
+      const { data, error } = await query;
       if (error) throw error;
       return data as CategoryBudget[];
     },
@@ -36,7 +46,7 @@ export function useUpsertCategoryBudget() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (data: { category: string; monthly_budget: number; alert_threshold?: number }) => {
+    mutationFn: async (data: { category: string; monthly_budget: number; alert_threshold?: number; entity_id?: string | null }) => {
       if (!user) throw new Error("Not authenticated");
 
       const { error } = await supabase
@@ -46,7 +56,8 @@ export function useUpsertCategoryBudget() {
           category: data.category,
           monthly_budget: data.monthly_budget,
           alert_threshold: data.alert_threshold || 80,
-        }, { onConflict: "user_id,category" });
+          entity_id: data.entity_id ?? null,
+        }, { onConflict: "user_id,category,entity_id" });
 
       if (error) throw error;
     },

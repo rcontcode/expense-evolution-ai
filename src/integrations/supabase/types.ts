@@ -634,6 +634,7 @@ export type Database = {
           alert_threshold: number
           category: string
           created_at: string | null
+          entity_id: string | null
           id: string
           monthly_budget: number
           updated_at: string | null
@@ -643,6 +644,7 @@ export type Database = {
           alert_threshold?: number
           category: string
           created_at?: string | null
+          entity_id?: string | null
           id?: string
           monthly_budget?: number
           updated_at?: string | null
@@ -652,12 +654,21 @@ export type Database = {
           alert_threshold?: number
           category?: string
           created_at?: string | null
+          entity_id?: string | null
           id?: string
           monthly_budget?: number
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "category_budgets_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "fiscal_entities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       clients: {
         Row: {

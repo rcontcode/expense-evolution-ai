@@ -190,6 +190,11 @@ const getMobileNavItems = (language: string) => [
     type: 'fab' as const
   },
   { 
+    icon: Wallet, 
+    path: '/budget',
+    type: 'nav' as const
+  },
+  { 
     icon: Users, 
     path: '/clients',
     type: 'nav' as const
