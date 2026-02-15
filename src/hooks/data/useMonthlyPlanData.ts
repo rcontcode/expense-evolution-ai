@@ -37,6 +37,13 @@ export interface MonthlyPlanData {
   alerts: Array<{ type: "danger" | "warning" | "info" | "success"; message: string; action?: string; link?: string }>;
   // Category breakdown
   categorySpending: Array<{ category: string; spent: number; budget: number; percentage: number }>;
+  // Financial health score (0-100)
+  healthScore: number;
+  healthLabel: string;
+  // Top spending category
+  topCategory: { category: string; spent: number } | null;
+  // Cumulative savings for the month chart
+  cumulativeData: Array<{ day: number; spent: number; ideal: number }>;
 }
 
 export function useMonthlyPlanData(): MonthlyPlanData {
@@ -229,6 +236,44 @@ export function useMonthlyPlanData(): MonthlyPlanData {
       });
     }
 
+    // Financial Health Score (0-100)
+    let healthScore = 50; // base
+    if (totalIncome > 0) healthScore += 10;
+    if (activeBills.length > 0) healthScore += 5;
+    if (globalBudget > 0 || catBudgetTotal > 0) healthScore += 10;
+    if (savingsRate >= 20) healthScore += 15;
+    else if (savingsRate >= 10) healthScore += 8;
+    else if (savingsRate > 0) healthScore += 3;
+    if (pace <= 100 && pace > 0) healthScore += 10;
+    else if (pace > 120) healthScore -= 15;
+    if (overdueBills.length > 0) healthScore -= 10 * overdueBills.length;
+    if (categoriesOverBudget.length > 0) healthScore -= 5 * categoriesOverBudget.length;
+    healthScore = Math.max(0, Math.min(100, healthScore));
+
+    const healthLabel = healthScore >= 80
+      ? (l ? "Excelente" : "Excellent")
+      : healthScore >= 60
+      ? (l ? "Bueno" : "Good")
+      : healthScore >= 40
+      ? (l ? "Regular" : "Fair")
+      : (l ? "Necesita atención" : "Needs attention");
+
+    // Top spending category
+    const topCategory = categorySpending.length > 0
+      ? { category: categorySpending[0].category, spent: categorySpending[0].spent }
+      : null;
+
+    // Cumulative daily spending vs ideal
+    const cumulativeData: MonthlyPlanData["cumulativeData"] = [];
+    const sortedExpenses = [...(expenses || [])].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const idealDailySpend = variableBudget > 0 ? variableBudget / daysInMonth : 0;
+    let cumSpent = 0;
+    for (let d = 1; d <= daysPassed; d++) {
+      const dayExpenses = sortedExpenses.filter((e) => new Date(e.date).getDate() === d);
+      cumSpent += dayExpenses.reduce((s, e) => s + Number(e.amount), 0);
+      cumulativeData.push({ day: d, spent: Math.round(cumSpent), ideal: Math.round(idealDailySpend * d) });
+    }
+
     return {
       totalIncome,
       totalFixed,
@@ -254,6 +299,10 @@ export function useMonthlyPlanData(): MonthlyPlanData {
       monthlyProjection,
       alerts,
       categorySpending,
+      healthScore,
+      healthLabel,
+      topCategory,
+      cumulativeData,
     };
   }, [incomeData, bills, expenses, categoryBudgets, globalBudget, monthStart, monthEnd, daysInMonth, daysPassed, daysRemaining, l, now]);
 }

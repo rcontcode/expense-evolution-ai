@@ -412,11 +412,15 @@ export const translations = {
       taxCalendar: 'Calendario Fiscal',
       mentorship: 'Mentoría Financiera',
       notifications: 'Notificaciones',
+      budget: 'Presupuesto',
       capture: 'Captura',
       config: 'Config',
       menu: 'Menú',
       badgeNew: 'Nuevo',
       badgeSmart: 'Smart',
+    },
+    budget: {
+      pageDescription: 'Controla tu plan mensual, presupuestos por categoría, alertas y proyecciones',
     },
     income: {
       title: 'Ingresos',
@@ -1370,11 +1374,15 @@ export const translations = {
       taxCalendar: 'Tax Calendar',
       mentorship: 'Financial Mentorship',
       notifications: 'Notifications',
+      budget: 'Budget',
       capture: 'Capture',
       config: 'Config',
       menu: 'Menu',
       badgeNew: 'New',
       badgeSmart: 'Smart',
+    },
+    budget: {
+      pageDescription: 'Control your monthly plan, category budgets, alerts and projections',
     },
     // Income
     income: {

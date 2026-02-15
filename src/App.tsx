@@ -57,6 +57,7 @@ const MobileCapture = lazyWithRetry(() => import("./pages/MobileCapture"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 const NetWorth = lazyWithRetry(() => import("./pages/NetWorth"));
 const Banking = lazyWithRetry(() => import("./pages/Banking"));
+const BudgetPage = lazyWithRetry(() => import("./pages/Budget"));
 const Notifications = lazyWithRetry(() => import("./pages/Notifications"));
 const Mentorship = lazyWithRetry(() => import("./pages/Mentorship"));
 const TaxCalendar = lazyWithRetry(() => import("./pages/TaxCalendar"));
@@ -217,7 +218,7 @@ const App = () => (
                         <Route path="/admin/leads" element={<AdminRoute><LeadsManagementAdmin /></AdminRoute>} />
                         <Route path="/beta-feedback" element={<ProtectedRoute><BetaFeedback /></ProtectedRoute>} />
                         <Route path="/adventure" element={<ProtectedRoute><FinancialAdventure /></ProtectedRoute>} />
-                        <Route path="/budget" element={<ProtectedRoute><Navigate to="/dashboard?tab=budget" replace /></ProtectedRoute>} />
+                        <Route path="/budget" element={<ProtectedRoute><BudgetPage /></ProtectedRoute>} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
