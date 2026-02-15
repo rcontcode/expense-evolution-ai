@@ -29,7 +29,7 @@ export function DebtClassificationCard() {
     netMonthlyCostBadDebt,
     recommendations,
     isLoading,
-  } = useDebtClassification();
+  } = useDebtClassification(language);
 
   const updateDebtType = useUpdateDebtType();
 

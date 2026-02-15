@@ -1,10 +1,14 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Scale, ArrowUpRight, ArrowDownRight, Target, HelpCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Scale, ArrowUpRight, ArrowDownRight, Target, HelpCircle, ArrowRightLeft } from 'lucide-react';
 import { NetWorthSnapshot } from '@/hooks/data/useNetWorth';
+import { useIncome } from '@/hooks/data/useIncome';
+import { useExpenses } from '@/hooks/data/useExpenses';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { startOfMonth, endOfMonth } from 'date-fns';
 
 interface NetWorthSummaryProps {
   totalAssets: number;
@@ -14,7 +18,22 @@ interface NetWorthSummaryProps {
 
 export function NetWorthSummary({ totalAssets, totalLiabilities, snapshots }: NetWorthSummaryProps) {
   const isMobile = useIsMobile();
+  const { language } = useLanguage();
   const netWorth = totalAssets - totalLiabilities;
+
+  // Monthly cash flow data
+  const now = new Date();
+  const monthStart = startOfMonth(now);
+  const monthEnd = endOfMonth(now);
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  
+  const { data: incomeData } = useIncome({ year: currentYear, month: currentMonth });
+  const { data: expensesData } = useExpenses({ dateRange: { start: monthStart, end: monthEnd } });
+  
+  const monthlyIncome = incomeData?.reduce((sum, i) => sum + Number(i.amount), 0) || 0;
+  const monthlyExpenses = expensesData?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+  const monthlyCashFlow = monthlyIncome - monthlyExpenses;
   
   const { formatCompact, currentCurrency } = useFormatCurrency();
   const formatCurrency = (value: number) => {
@@ -42,7 +61,7 @@ export function NetWorthSummary({ totalAssets, totalLiabilities, snapshots }: Ne
   const debtToAssetRatio = totalAssets > 0 ? (totalLiabilities / totalAssets) * 100 : 0;
 
   return (
-    <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-4">
+    <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-5">
       {/* Net Worth Card */}
       <Card className={cn(
         "col-span-2 sm:col-span-1",
@@ -140,6 +159,32 @@ export function NetWorthSummary({ totalAssets, totalLiabilities, snapshots }: Ne
           </div>
           <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">
             {debtToAssetRatio <= 30 ? '✓ Saludable' : debtToAssetRatio <= 50 ? '⚠ Moderado' : '⚠ Alto'}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Monthly Cash Flow Card */}
+      <Card className={cn(
+        "col-span-2 sm:col-span-1",
+        monthlyCashFlow >= 0 ? 'border-primary/30 bg-primary/5' : 'border-destructive/30 bg-destructive/5'
+      )}>
+        <CardContent className="p-3 sm:pt-6 sm:px-6">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+            <ArrowRightLeft className={cn("h-4 w-4 sm:h-5 sm:w-5", monthlyCashFlow >= 0 ? 'text-primary' : 'text-destructive')} />
+            <span className="text-xs sm:text-sm font-medium text-muted-foreground">
+              {language === 'es' ? 'Flujo Mensual' : 'Monthly Flow'}
+            </span>
+          </div>
+          <div className={cn(
+            "text-lg sm:text-2xl font-bold",
+            monthlyCashFlow >= 0 ? 'text-primary' : 'text-destructive'
+          )}>
+            {monthlyCashFlow >= 0 ? '+' : ''}{formatCurrency(monthlyCashFlow)}
+          </div>
+          <div className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+            {language === 'es' 
+              ? `${formatCurrency(monthlyIncome)} ing. - ${formatCurrency(monthlyExpenses)} gast.`
+              : `${formatCurrency(monthlyIncome)} inc. - ${formatCurrency(monthlyExpenses)} exp.`}
           </div>
         </CardContent>
       </Card>

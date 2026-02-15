@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useIncome } from './useIncome';
 import { useExpenses } from './useExpenses';
 import { useAuth } from '@/contexts/AuthContext';
+import { startOfYear, endOfYear } from 'date-fns';
 
 export interface FinancialFreedomResult {
   passiveIncomeMonthly: number;
@@ -27,13 +28,19 @@ const PASSIVE_INCOME_TYPES = [
   'passive_royalties',
 ];
 
-export function useFinancialFreedom(): FinancialFreedomResult {
+export function useFinancialFreedom(language: 'es' | 'en' = 'es'): FinancialFreedomResult {
   const { user } = useAuth();
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   
   const { data: incomeData, isLoading: incomeLoading } = useIncome({ year: currentYear });
-  const { data: expensesData, isLoading: expensesLoading } = useExpenses({});
+  
+  // Fix: filter expenses by current year to avoid distorted calculations
+  const yearStart = startOfYear(new Date());
+  const yearEnd = endOfYear(new Date());
+  const { data: expensesData, isLoading: expensesLoading } = useExpenses({
+    dateRange: { start: yearStart, end: yearEnd },
+  });
 
   const result = useMemo(() => {
     // Calculate passive vs active income
@@ -79,15 +86,13 @@ export function useFinancialFreedom(): FinancialFreedomResult {
     let estimatedFreedomDate: Date | null = null;
 
     if (passiveIncomeMonthly > 0 && gapToFreedom > 0) {
-      // Using compound growth formula: FV = PV * (1 + r)^n
-      // We need: passiveIncomeMonthly * (1 + monthlyRate)^n >= monthlyExpenses
       const monthlyGrowthRate = Math.pow(1 + annualGrowthRate, 1/12) - 1;
       
       if (monthlyGrowthRate > 0) {
         const targetRatio = monthlyExpenses / passiveIncomeMonthly;
         monthsToFreedom = Math.ceil(Math.log(targetRatio) / Math.log(1 + monthlyGrowthRate));
         
-        if (monthsToFreedom > 0 && monthsToFreedom < 600) { // Cap at 50 years
+        if (monthsToFreedom > 0 && monthsToFreedom < 600) {
           estimatedFreedomDate = new Date();
           estimatedFreedomDate.setMonth(estimatedFreedomDate.getMonth() + monthsToFreedom);
         }
@@ -99,24 +104,44 @@ export function useFinancialFreedom(): FinancialFreedomResult {
 
     const isFinanciallyFree = freedomPercentage >= 100;
 
-    // Generate recommendations
+    // Generate bilingual recommendations
     const recommendations: string[] = [];
 
     if (freedomPercentage < 10) {
-      recommendations.push('Kiyosaki: "La libertad financiera es cuando tus ingresos pasivos superan tus gastos"');
-      recommendations.push('Comienza invirtiendo al menos 10% de tu ingreso en activos que generen flujo de efectivo');
+      recommendations.push(language === 'es' 
+        ? 'Kiyosaki: "La libertad financiera es cuando tus ingresos pasivos superan tus gastos"'
+        : 'Kiyosaki: "Financial freedom is when your passive income exceeds your expenses"');
+      recommendations.push(language === 'es'
+        ? 'Comienza invirtiendo al menos 10% de tu ingreso en activos que generen flujo de efectivo'
+        : 'Start investing at least 10% of your income in cash-flow generating assets');
     } else if (freedomPercentage < 25) {
-      recommendations.push('Buen inicio. Enfócate en aumentar tus inversiones en activos productivos');
-      recommendations.push('Considera inversiones en dividendos, bienes raíces o negocios pasivos');
+      recommendations.push(language === 'es'
+        ? 'Buen inicio. Enfócate en aumentar tus inversiones en activos productivos'
+        : 'Good start. Focus on increasing your investments in productive assets');
+      recommendations.push(language === 'es'
+        ? 'Considera inversiones en dividendos, bienes raíces o negocios pasivos'
+        : 'Consider investments in dividends, real estate, or passive businesses');
     } else if (freedomPercentage < 50) {
-      recommendations.push('¡Excelente progreso! Estás a mitad de camino hacia la libertad');
-      recommendations.push('Reinvierte todas las ganancias para acelerar tu progreso');
+      recommendations.push(language === 'es'
+        ? '¡Excelente progreso! Estás a mitad de camino hacia la libertad'
+        : 'Excellent progress! You\'re halfway to freedom');
+      recommendations.push(language === 'es'
+        ? 'Reinvierte todas las ganancias para acelerar tu progreso'
+        : 'Reinvest all earnings to accelerate your progress');
     } else if (freedomPercentage < 100) {
-      recommendations.push('¡Casi libre! Mantén el rumbo y no aumentes tus gastos');
-      recommendations.push(`Te faltan $${gapToFreedom.toFixed(0)} mensuales en ingresos pasivos`);
+      recommendations.push(language === 'es'
+        ? '¡Casi libre! Mantén el rumbo y no aumentes tus gastos'
+        : 'Almost free! Stay on course and don\'t increase your expenses');
+      recommendations.push(language === 'es'
+        ? `Te faltan $${gapToFreedom.toFixed(0)} mensuales en ingresos pasivos`
+        : `You need $${gapToFreedom.toFixed(0)} more monthly in passive income`);
     } else {
-      recommendations.push('¡FELICIDADES! Has alcanzado la libertad financiera');
-      recommendations.push('Ahora puedes elegir trabajar por pasión, no por necesidad');
+      recommendations.push(language === 'es'
+        ? '¡FELICIDADES! Has alcanzado la libertad financiera'
+        : 'CONGRATULATIONS! You\'ve achieved financial freedom');
+      recommendations.push(language === 'es'
+        ? 'Ahora puedes elegir trabajar por pasión, no por necesidad'
+        : 'Now you can choose to work for passion, not necessity');
     }
 
     return {
@@ -132,7 +157,7 @@ export function useFinancialFreedom(): FinancialFreedomResult {
       isFinanciallyFree,
       recommendations,
     };
-  }, [incomeData, expensesData, currentMonth]);
+  }, [incomeData, expensesData, currentMonth, language]);
 
   return {
     ...result,

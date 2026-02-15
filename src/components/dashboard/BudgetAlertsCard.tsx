@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, AlertCircle, CheckCircle, TrendingUp, Wallet } from "lucide-react";
+import { AlertTriangle, AlertCircle, CheckCircle, TrendingUp, Wallet, PiggyBank } from "lucide-react";
 import { useExpenses } from "@/hooks/data/useExpenses";
+import { useIncome } from "@/hooks/data/useIncome";
 import { useCategoryBudgets } from "@/hooks/data/useCategoryBudgets";
 import { useUserSettings, UserPreferences } from "@/hooks/data/useUserSettings";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
@@ -32,6 +33,11 @@ export function BudgetAlertsCard() {
     dateRange: { start: monthStart, end: monthEnd },
   });
 
+  // Get income for savings rate calculation
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  const { data: incomeData } = useIncome({ year: currentYear, month: currentMonth });
+
   const { data: budgets } = useCategoryBudgets();
   const { data: settings } = useUserSettings();
 
@@ -41,6 +47,10 @@ export function BudgetAlertsCard() {
 
   // Calculate total spending
   const totalSpent = expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+
+  // Calculate monthly income and savings rate
+  const totalMonthlyIncome = incomeData?.reduce((sum, inc) => sum + Number(inc.amount), 0) || 0;
+  const savingsRate = totalMonthlyIncome > 0 ? ((totalMonthlyIncome - totalSpent) / totalMonthlyIncome) * 100 : 0;
 
   // Calculate spending by category
   const spendingByCategory: Record<string, number> = {};
@@ -134,6 +144,22 @@ export function BudgetAlertsCard() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
+        {/* Savings Rate Indicator */}
+        {totalMonthlyIncome > 0 && (
+          <div className={`flex items-center gap-2 p-2 rounded-lg text-sm ${
+            savingsRate >= 20 ? 'bg-green-500/10 text-green-700 dark:text-green-400' 
+            : savingsRate >= 0 ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400'
+            : 'bg-destructive/10 text-destructive'
+          }`}>
+            <PiggyBank className="h-4 w-4 shrink-0" />
+            <span className="font-medium">
+              {language === 'es' ? 'Tasa de ahorro' : 'Savings rate'}: {savingsRate.toFixed(0)}%
+            </span>
+            <span className="text-xs text-muted-foreground ml-auto">
+              {fc(totalMonthlyIncome - totalSpent)} {language === 'es' ? 'disponible' : 'available'}
+            </span>
+          </div>
+        )}
         {alerts.map((alert) => (
           <Alert
             key={alert.category}

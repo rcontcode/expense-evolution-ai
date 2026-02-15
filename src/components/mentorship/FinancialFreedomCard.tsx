@@ -24,7 +24,7 @@ export function FinancialFreedomCard() {
     isFinanciallyFree,
     recommendations,
     isLoading,
-  } = useFinancialFreedom();
+  } = useFinancialFreedom(language);
 
   const { formatCompact: formatCurrency } = useFormatCurrency();
 
