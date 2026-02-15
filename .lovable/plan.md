@@ -1,88 +1,71 @@
 
 
-## Plan: Presupuesto Multi-Entidad con Onboarding Inteligente
+## Plan: Vista Familiar Completa - Mismas herramientas, interfaz simple
 
-### El Problema Actual
-- Los presupuestos por categoria (`category_budgets`) NO tienen `entity_id` - son globales por usuario
-- No hay forma de separar presupuesto familiar vs empresarial
-- La seccion de Presupuesto esta en el sidebar pero no es lo suficientemente prominente
-- No hay onboarding que explique como funciona ni pregunte al usuario que necesita
+### Problema Actual
+La `FamilyBudgetView` es una version recortada que:
+- NO permite agregar pagos fijos (bills) - el boton no hace nada
+- NO tiene graficos de proyecciones
+- NO tiene alertas inteligentes
+- NO tiene gestion de presupuestos por categoria
+- NO tiene analisis de banco ni deteccion de suscripciones
+- Es basicamente un resumen estatico sin funcionalidad real
 
-### La Solucion: 3 Modos de Presupuesto
+### Solucion: Reutilizar los componentes existentes dentro de la interfaz familiar
 
-```text
-+---------------------------------------------+
-|  Como quieres manejar tu presupuesto?       |
-+---------------------------------------------+
-|                                             |
-|  [1] UNIFICADO (Sole Proprietorship)        |
-|      Una sola bolsa de dinero               |
-|      Personal + Negocio juntos              |
-|      Ideal para freelancers                 |
-|                                             |
-|  [2] SEPARADO (Empresa constituida)         |
-|      Un presupuesto por entidad             |
-|      Familia aparte de Inc/SA/Ltd           |
-|      Ideal para empresas formales           |
-|                                             |
-|  [3] SOLO FAMILIAR                          |
-|      Presupuesto personal/hogar             |
-|      Sin componente empresarial             |
-|      Ideal para empleados asalariados       |
-|                                             |
-+---------------------------------------------+
-```
+En lugar de crear todo desde cero, la vista familiar va a **integrar los mismos componentes potentes** que ya existen (MonthlyPlanCard, CategoryBudgetsCard, BudgetAlertsCard, BillFormDialog, SubscriptionTracker, proyecciones) pero envueltos en la interfaz amigable con emojis y secciones colapsables.
 
-### Cambios en Base de Datos
+### Cambios Concretos
 
-1. **Agregar `entity_id` a `category_budgets`**: Para poder asignar presupuestos por entidad
-2. **Agregar `budget_mode` a tabla `user_settings`** (o en `preferences` JSON): Para guardar la preferencia del usuario (`unified`, `separated`, `family_only`)
+#### 1. `FamilyBudgetView.tsx` - Reconstruccion completa
 
-### Cambios en el Frontend
+Secciones colapsables con toda la funcionalidad:
 
-#### 1. Onboarding de Presupuesto (`BudgetSetupWizard`)
-- Aparece la primera vez que el usuario entra a `/budget`
-- Tarjetas grandes con iconos y explicaciones claras de cada modo
-- Detecta automaticamente las entidades existentes y sugiere el modo apropiado
-- Se puede cambiar despues desde configuracion
+| Seccion | Emoji | Componentes que integra |
+|---------|-------|------------------------|
+| Resumen del Mes | 📊 | Health score, KPIs, ritmo de gasto (mantener lo actual) |
+| Pagos Fijos | 🏦 | Lista de bills + **boton que abre BillFormDialog** directamente |
+| Gastos por Categoria | 🛒 | CategoryBudgetsCard simplificado (barras de progreso + edicion de limites inline) |
+| Alertas | 🔔 | BudgetAlertsCard (reutilizado directamente) |
+| Proyecciones | 🔮 | BudgetProjectionChart + CashFlowProjection (los mismos graficos de Recharts) |
+| Suscripciones | 🔄 | SubscriptionTracker (reutilizado) |
+| Analisis Bancario | 🏧 | Link/boton para ir a Banking con contexto, o integrar el mini-resumen |
+| Negocio (solo Unified) | 💼 | Resumen de gastos con entity_id (mantener lo actual) |
 
-#### 2. Presupuesto mas Prominente en Navegacion
-- Mover "Presupuesto" mas arriba en el sidebar con icono mas grande y un indicador visual (badge pulsante o barra de progreso mini)
-- En mobile, reemplazar uno de los iconos del bottom bar (o agregar Wallet al grid)
-- Agregar un banner/card en el Dashboard que invite a configurar el presupuesto si no esta hecho
+#### 2. Integracion del `BillFormDialog` existente
 
-#### 3. Selector de Entidad en la Pagina de Presupuesto
-- Si modo es `separated`: mostrar tabs o selector para cambiar entre "Familia", "Mi Empresa Inc", etc.
-- Si modo es `unified`: todo junto, sin selector
-- Si modo es `family_only`: interfaz simplificada enfocada en hogar
+- El boton "Agregar Pago" en la seccion de Pagos Fijos abrira directamente el `BillFormDialog` que ya existe y funciona perfecto
+- Se importa el componente y se maneja con estado local (`showBillDialog`)
+- Se conecta con `useRecurringBills` y sus mutaciones de crear/editar
 
-#### 4. Filtrado por Entidad en `useMonthlyPlanData`
-- El hook recibe `entityId` opcional
-- Filtra gastos, ingresos, pagos fijos y presupuestos por la entidad seleccionada
-- En modo unificado, no filtra (muestra todo)
+#### 3. Integracion de componentes de analisis
+
+- Los graficos de proyeccion (`BudgetProjectionChart`, `CashFlowProjection`) se cargan con lazy loading dentro de secciones colapsables
+- `CategoryBudgetsCard` se muestra en una seccion colapsable para editar limites por categoria
+- `SubscriptionTracker` se integra como seccion para detectar cobros recurrentes
+
+#### 4. Acciones rapidas mejoradas
+
+La barra inferior de acciones se expande:
+- Agregar Gasto (FamilyExpenseDialog - ya existe)
+- Agregar Ingreso (FamilyIncomeDialog - ya existe)  
+- Agregar Pago Fijo (BillFormDialog - ya existe, solo se importa)
+- Subir Boleta/Extracto (link a /mobile-capture o /banking)
 
 ### Detalle Tecnico
 
-**Migracion SQL:**
-- `ALTER TABLE category_budgets ADD COLUMN entity_id uuid REFERENCES fiscal_entities(id) ON DELETE SET NULL`
-- El constraint unico cambia de `(user_id, category)` a `(user_id, category, entity_id)` para permitir presupuestos por categoria por entidad
+**Archivos a modificar:**
+- `src/components/budget/FamilyBudgetView.tsx` - Reconstruccion completa integrando componentes existentes
 
-**Archivos a modificar/crear:**
-- `supabase/migrations/` - Nueva migracion para `entity_id` en `category_budgets`
-- `src/components/budget/BudgetSetupWizard.tsx` - Nuevo: wizard de configuracion inicial
-- `src/components/budget/BudgetEntitySelector.tsx` - Nuevo: selector de entidad dentro de presupuesto
-- `src/hooks/data/useCategoryBudgets.ts` - Agregar soporte para `entity_id`
-- `src/hooks/data/useMonthlyPlanData.ts` - Filtrar por entidad
-- `src/hooks/data/useUserSettings.ts` - Agregar `budget_mode` a preferences
-- `src/pages/Budget.tsx` - Integrar wizard, selector, y hacer la pagina mas explicativa
-- `src/components/Layout.tsx` - Hacer presupuesto mas prominente en sidebar y mobile
-- `src/components/budget/MonthlyPlanCard.tsx` - Adaptar al modo seleccionado
+**Archivos que se REUTILIZAN sin cambios:**
+- `src/components/bills/BillFormDialog.tsx` - Se importa directamente
+- `src/components/dashboard/BudgetAlertsCard.tsx` - Se usa como esta
+- `src/components/dashboard/CategoryBudgetsCard.tsx` - Se usa como esta
+- `src/components/analytics/BudgetProjectionChart.tsx` - Lazy loaded
+- `src/components/analytics/CashFlowProjection.tsx` - Lazy loaded
+- `src/components/subscriptions/SubscriptionTracker.tsx` - Se integra
+- `src/components/budget/FamilyExpenseDialog.tsx` - Se mantiene
+- `src/components/budget/FamilyIncomeDialog.tsx` - Se mantiene
 
-**Flujo del usuario:**
-1. Usuario entra a Presupuesto por primera vez
-2. Ve el wizard con las 3 opciones explicadas visualmente
-3. Selecciona su modo (ej: "Solo Familiar")
-4. El sistema configura la vista apropiada
-5. Si tiene multiples entidades y elige "Separado", ve tabs para cambiar entre ellas
-6. Cada entidad tiene su propio conjunto de presupuestos por categoria, pagos fijos, y proyecciones
+**Principio clave:** No recrear funcionalidad. Reutilizar componentes existentes envueltos en la UI familiar con emojis y secciones colapsables. Asi la vista familiar tiene EXACTAMENTE las mismas capacidades que la empresarial, solo que presentadas de forma mas amigable y organizada.
 
