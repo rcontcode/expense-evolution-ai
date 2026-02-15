@@ -4,6 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { useFinancialFreedom } from '@/hooks/data/useFinancialFreedom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { Button } from '@/components/ui/button';
 import { Sparkles, TrendingUp, Calendar, DollarSign, Lightbulb, PartyPopper } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
@@ -25,6 +26,8 @@ export function FinancialFreedomCard() {
     isLoading,
   } = useFinancialFreedom();
 
+  const { formatCompact: formatCurrency } = useFormatCurrency();
+
   if (isLoading) {
     return (
       <Card>
@@ -38,7 +41,38 @@ export function FinancialFreedomCard() {
     );
   }
 
-  const { formatCompact: formatCurrency } = useFormatCurrency();
+  if (monthlyExpenses === 0 && passiveIncomeMonthly === 0) {
+    return (
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Sparkles className="h-5 w-5 text-primary" />
+            {language === 'es' ? 'Libertad Financiera' : 'Financial Freedom'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
+              <DollarSign className="h-8 w-8 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium">
+                {language === 'es' ? 'Sin datos suficientes' : 'Not enough data'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {language === 'es' 
+                  ? 'Agrega gastos e ingresos para calcular tu porcentaje de libertad financiera' 
+                  : 'Add expenses and income to calculate your financial freedom percentage'}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => window.location.href = '/expenses'}>
+              {language === 'es' ? '→ Registrar Gastos' : '→ Record Expenses'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const getStatusColor = () => {
     if (isFinanciallyFree) return 'text-primary';

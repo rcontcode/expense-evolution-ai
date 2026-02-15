@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Slider } from '@/components/ui/slider';
 import { usePayYourselfFirst, useUpdatePayYourselfFirst, useRecordPayment } from '@/hooks/data/usePayYourselfFirst';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { PiggyBank, Flame, Trophy, Settings, Plus, Check, Lightbulb } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
@@ -49,12 +50,7 @@ export function PayYourselfFirstCard() {
     );
   }
 
-  const formatCurrency = (amount: number) => 
-    new Intl.NumberFormat(language === 'es' ? 'es-CA' : 'en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      maximumFractionDigits: 0,
-    }).format(amount);
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   const handleSaveSettings = () => {
     updateSettings.mutate({ target_percentage: targetPercentage });

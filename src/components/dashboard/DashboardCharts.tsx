@@ -24,7 +24,7 @@ interface MonthlyTrend {
 
 interface DashboardChartsProps {
   categoryBreakdown: CategoryStats[];
-  clientBreakdown: ClientStats[];
+  clientBreakdown?: ClientStats[];
   monthlyTrends: MonthlyTrend[];
   isLoading: boolean;
 }
@@ -97,7 +97,7 @@ export const DashboardCharts = memo(({
           <CardContent>
             {isLoading ? (
               <Skeleton className="h-[300px] w-full" />
-            ) : clientBreakdown.length === 0 ? (
+            ) : !clientBreakdown || clientBreakdown.length === 0 ? (
               <div className="h-[300px] flex items-center justify-center text-muted-foreground">
                 {t('taxAnalysis.noDataAvailable')}
               </div>

@@ -4,8 +4,10 @@ import { AlertTriangle, AlertCircle, CheckCircle, TrendingUp, Wallet } from "luc
 import { useExpenses } from "@/hooks/data/useExpenses";
 import { useCategoryBudgets } from "@/hooks/data/useCategoryBudgets";
 import { useUserSettings, UserPreferences } from "@/hooks/data/useUserSettings";
+import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { startOfMonth, endOfMonth, format } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS } from "date-fns/locale";
 import { Progress } from "@/components/ui/progress";
 import { getCategoryLabel, ExpenseCategory } from "@/lib/constants/expense-categories";
 
@@ -20,6 +22,8 @@ interface BudgetAlert {
 }
 
 export function BudgetAlertsCard() {
+  const { language } = useLanguage();
+  const { formatCurrency: fc } = useFormatCurrency();
   const now = new Date();
   const monthStart = startOfMonth(now);
   const monthEnd = endOfMonth(now);
@@ -107,12 +111,14 @@ export function BudgetAlertsCard() {
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
             <CheckCircle className="h-5 w-5 text-green-500" />
-            Presupuestos bajo control
+            {language === 'es' ? 'Presupuestos bajo control' : 'Budgets under control'}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Todos tus presupuestos están dentro del límite para {format(now, "MMMM", { locale: es })}.
+            {language === 'es' 
+              ? `Todos tus presupuestos están dentro del límite para ${format(now, "MMMM", { locale: es })}.`
+              : `All your budgets are within limits for ${format(now, "MMMM", { locale: enUS })}.`}
           </p>
         </CardContent>
       </Card>
@@ -124,7 +130,7 @@ export function BudgetAlertsCard() {
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
           <AlertTriangle className="h-5 w-5 text-amber-500" />
-          Alertas de Presupuesto
+          {language === 'es' ? 'Alertas de Presupuesto' : 'Budget Alerts'}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -150,13 +156,15 @@ export function BudgetAlertsCard() {
               )}
               <div className="flex-1 space-y-2">
                 <AlertTitle className="text-sm font-medium">
-                  {alert.isGlobal ? "Presupuesto Global" : getCategoryLabel(alert.category as ExpenseCategory)}
+                  {alert.isGlobal 
+                    ? (language === 'es' ? 'Presupuesto Global' : 'Global Budget')
+                    : getCategoryLabel(alert.category as ExpenseCategory)}
                 </AlertTitle>
                 <AlertDescription className="text-xs">
                   {alert.status === "exceeded" ? (
-                    <>Excediste tu presupuesto por ${(alert.spent - alert.budget).toFixed(2)}</>
+                    <>{language === 'es' ? 'Excediste tu presupuesto por' : 'You exceeded your budget by'} {fc(alert.spent - alert.budget)}</>
                   ) : (
-                    <>Has gastado ${alert.spent.toFixed(2)} de ${alert.budget.toFixed(2)}</>
+                    <>{language === 'es' ? 'Has gastado' : 'You spent'} {fc(alert.spent)} {language === 'es' ? 'de' : 'of'} {fc(alert.budget)}</>
                   )}
                 </AlertDescription>
                 <div className="space-y-1">
@@ -165,7 +173,7 @@ export function BudgetAlertsCard() {
                     className="h-2"
                   />
                   <p className="text-xs text-muted-foreground text-right">
-                    {alert.percentage.toFixed(0)}% utilizado
+                    {alert.percentage.toFixed(0)}% {language === 'es' ? 'utilizado' : 'used'}
                   </p>
                 </div>
               </div>

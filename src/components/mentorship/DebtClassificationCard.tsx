@@ -33,6 +33,8 @@ export function DebtClassificationCard() {
 
   const updateDebtType = useUpdateDebtType();
 
+  const { formatCompact: formatCurrency } = useFormatCurrency();
+
   if (isLoading) {
     return (
       <Card>
@@ -46,7 +48,38 @@ export function DebtClassificationCard() {
     );
   }
 
-  const { formatCompact: formatCurrency } = useFormatCurrency();
+  if (totalDebt === 0) {
+    return (
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Scale className="h-5 w-5 text-primary" />
+            {language === 'es' ? 'Deuda Buena vs Mala' : 'Good vs Bad Debt'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-green-500/10 flex items-center justify-center">
+              <ThumbsUp className="h-8 w-8 text-green-500" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-green-600">
+                {language === 'es' ? '¡Sin deudas registradas!' : 'No debts recorded!'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {language === 'es' 
+                  ? 'Agrega pasivos en Patrimonio Neto para clasificar tu deuda' 
+                  : 'Add liabilities in Net Worth to classify your debt'}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => window.location.href = '/net-worth'}>
+              {language === 'es' ? '→ Ir a Patrimonio' : '→ Go to Net Worth'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const handleUpdateDebt = () => {
     if (editingDebt) {
