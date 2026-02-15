@@ -49,10 +49,10 @@ const BOOKS: Resource[] = [
     language: 'es'
   },
   {
-    title: "Los Secretos de la Mente Millonaria",
-    author: "T. Harv Eker",
-    description: "Cómo dominar el juego interior de la riqueza y cambiar tu programación financiera.",
-    link: "https://www.amazon.com/secretos-mente-millonaria-Spanish-Harv/dp/8478086080",
+    title: "Principios",
+    author: "Ray Dalio",
+    description: "Los principios de vida y trabajo del fundador del fondo de inversión más grande del mundo.",
+    link: "https://www.amazon.com/dp/8423431797",
     platform: "Amazon",
     language: 'es'
   },

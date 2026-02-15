@@ -38,9 +38,9 @@ export const MENTOR_QUOTES = [
     category: "mindset"
   },
   {
-    quote: "Tu mentalidad es el software de tu éxito financiero.",
-    author: "T. Harv Eker",
-    book: "Los Secretos de la Mente Millonaria",
+    quote: "Tu éxito financiero depende de tus principios, no de tus predicciones.",
+    author: "Ray Dalio",
+    book: "Principios",
     category: "mindset"
   },
   // Investing
