@@ -170,6 +170,7 @@ export default function Dashboard() {
     const allowedTabs = [
       'charts',
       'analytics',
+      'budget',
       'mentorship',
       'goals',
       'tax',
