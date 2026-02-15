@@ -2,10 +2,9 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Plus, Trash2, Target, Edit2, Check, X, Sparkles, RefreshCw, TrendingUp, Rocket } from "lucide-react";
+import { Plus, Trash2, Target, Edit2, Check, X, Sparkles, RefreshCw, Rocket, BarChart3 } from "lucide-react";
 import { useCategoryBudgets, useUpsertCategoryBudget, useDeleteCategoryBudget } from "@/hooks/data/useCategoryBudgets";
 import { useExpenses } from "@/hooks/data/useExpenses";
 import { useBudgetSuggestions, getCategorySuggestion } from "@/hooks/data/useBudgetSuggestions";
@@ -14,13 +13,14 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { EXPENSE_CATEGORIES, getCategoryLabel, ExpenseCategory } from "@/lib/constants/expense-categories";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { startOfMonth, endOfMonth, format } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS } from "date-fns/locale";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export function CategoryBudgetsCard() {
   const { language } = useLanguage();
+  const l = language === 'es';
   const { formatCompact: fc } = useFormatCurrency();
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -41,7 +41,6 @@ export function CategoryBudgetsCard() {
     dateRange: { start: monthStart, end: monthEnd },
   });
 
-  // Calculate spending by category
   const spendingByCategory: Record<string, number> = {};
   expenses?.forEach((expense) => {
     if (expense.category) {
@@ -49,17 +48,24 @@ export function CategoryBudgetsCard() {
     }
   });
 
-  // Get available categories (not already budgeted)
   const budgetedCategories = new Set(budgets?.map((b) => b.category) || []);
   const availableCategories = EXPENSE_CATEGORIES.filter((cat) => !budgetedCategories.has(cat.value));
+
+  // Find top unbudgeted spending categories
+  const topUnbudgetedSpending = Object.entries(spendingByCategory)
+    .filter(([cat]) => !budgetedCategories.has(cat))
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3);
 
   const handleSuggestForCategory = (category: string) => {
     const suggestion = getCategorySuggestion(budgetSuggestions, category);
     if (suggestion && suggestion.suggestedBudget > 0) {
       setNewBudget(suggestion.suggestedBudget.toString());
-      toast.success(`Sugerido: $${suggestion.suggestedBudget} (promedio $${Math.round(suggestion.averageSpent)} + 10%)`);
+      toast.success(l 
+        ? `Sugerido: ${fc(suggestion.suggestedBudget)} (promedio ${fc(Math.round(suggestion.averageSpent))} + 10%)`
+        : `Suggested: ${fc(suggestion.suggestedBudget)} (avg ${fc(Math.round(suggestion.averageSpent))} + 10%)`);
     } else {
-      toast.info("No hay suficiente historial para esta categoría");
+      toast.info(l ? "No hay suficiente historial para esta categoría" : "Not enough history for this category");
     }
   };
 
@@ -79,9 +85,11 @@ export function CategoryBudgetsCard() {
     });
     
     if (updated > 0) {
-      toast.success(`${updated} presupuestos ajustados automáticamente`);
+      toast.success(l 
+        ? `${updated} presupuestos ajustados automáticamente`
+        : `${updated} budgets adjusted automatically`);
     } else {
-      toast.info("No hay suficiente historial para ajustar");
+      toast.info(l ? "No hay suficiente historial para ajustar" : "Not enough history to adjust");
     }
   };
 
@@ -112,7 +120,7 @@ export function CategoryBudgetsCard() {
     );
   };
 
-  const startEdit = (budget: number) => {
+  const startEditBudget = (budget: number) => {
     setEditBudget(budget.toString());
   };
 
@@ -136,7 +144,6 @@ export function CategoryBudgetsCard() {
 
   return (
     <Card className="relative overflow-hidden">
-      {/* Gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 via-cyan-500/5 to-transparent" />
       
       <CardHeader className="flex flex-row items-center justify-between pb-2 relative">
@@ -148,9 +155,11 @@ export function CategoryBudgetsCard() {
             <Target className="h-5 w-5 text-white" />
           </motion.div>
           <div>
-            <span className="text-teal-700 dark:text-teal-400 font-bold">Metas por Categoría</span>
+            <span className="text-teal-700 dark:text-teal-400 font-bold">
+              {l ? 'Metas por Categoría' : 'Category Goals'}
+            </span>
             <p className="text-xs text-muted-foreground font-normal">
-              {format(now, "MMMM yyyy", { locale: es })}
+              {format(now, "MMMM yyyy", { locale: l ? es : enUS })}
             </p>
           </div>
         </CardTitle>
@@ -164,7 +173,7 @@ export function CategoryBudgetsCard() {
                   </Button>
                 </motion.div>
               </TooltipTrigger>
-              <TooltipContent>Ajustar todos automáticamente</TooltipContent>
+              <TooltipContent>{l ? 'Ajustar todos automáticamente' : 'Auto-adjust all'}</TooltipContent>
             </Tooltip>
           )}
           {!isAdding && availableCategories.length > 0 && (
@@ -175,7 +184,7 @@ export function CategoryBudgetsCard() {
                 className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white"
               >
                 <Plus className="h-4 w-4 mr-1" />
-                Agregar
+                {l ? 'Agregar' : 'Add'}
               </Button>
             </motion.div>
           )}
@@ -191,7 +200,9 @@ export function CategoryBudgetsCard() {
               className="flex gap-2 items-end p-4 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-950/50 dark:to-cyan-950/50 rounded-xl border border-teal-200 dark:border-teal-800 flex-wrap"
             >
               <div className="flex-1 min-w-[120px] space-y-1">
-                <label className="text-xs text-muted-foreground font-medium">Categoría</label>
+                <label className="text-xs text-muted-foreground font-medium">
+                  {l ? 'Categoría' : 'Category'}
+                </label>
                 <Select value={newCategory} onValueChange={(val) => {
                   setNewCategory(val);
                   const suggestion = getCategorySuggestion(budgetSuggestions, val);
@@ -200,7 +211,7 @@ export function CategoryBudgetsCard() {
                   }
                 }}>
                   <SelectTrigger className="h-9 border-teal-200 dark:border-teal-800">
-                    <SelectValue placeholder="Seleccionar" />
+                    <SelectValue placeholder={l ? "Seleccionar" : "Select"} />
                   </SelectTrigger>
                   <SelectContent>
                     {availableCategories.map((cat) => (
@@ -213,7 +224,9 @@ export function CategoryBudgetsCard() {
               </div>
               <div className="w-32 space-y-1">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs text-muted-foreground font-medium">Presupuesto</label>
+                  <label className="text-xs text-muted-foreground font-medium">
+                    {l ? 'Presupuesto' : 'Budget'}
+                  </label>
                   {newCategory && (
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -226,13 +239,13 @@ export function CategoryBudgetsCard() {
                           <Sparkles className="h-3 w-3" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>Sugerir basado en historial</TooltipContent>
+                      <TooltipContent>{l ? 'Sugerir basado en historial' : 'Suggest based on history'}</TooltipContent>
                     </Tooltip>
                   )}
                 </div>
                 <Input
                   type="number"
-                  placeholder="$0.00"
+                  placeholder="0.00"
                   value={newBudget}
                   onChange={(e) => setNewBudget(e.target.value)}
                   className="h-9 border-teal-200 dark:border-teal-800"
@@ -256,24 +269,65 @@ export function CategoryBudgetsCard() {
         {isLoading ? (
           <div className="flex items-center gap-3 py-4">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-400 animate-pulse" />
-            <p className="text-sm text-muted-foreground">Cargando...</p>
+            <p className="text-sm text-muted-foreground">{l ? 'Cargando...' : 'Loading...'}</p>
           </div>
         ) : !budgets || budgets.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-6"
+            className="space-y-4 py-4"
           >
-            <motion.div 
-              animate={{ y: [0, -5, 0] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20 flex items-center justify-center"
-            >
-              <Rocket className="h-8 w-8 text-teal-600" />
-            </motion.div>
-            <p className="text-sm text-muted-foreground">
-              No tienes metas configuradas. Agrega una para comenzar a controlar tus gastos por categoría.
-            </p>
+            <div className="text-center">
+              <motion.div 
+                animate={{ y: [0, -5, 0] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-teal-500/20 to-cyan-500/20 flex items-center justify-center"
+              >
+                <Rocket className="h-8 w-8 text-teal-600" />
+              </motion.div>
+              <p className="text-sm font-medium mb-1">
+                {l ? 'Aún no tienes metas por categoría' : 'No category goals yet'}
+              </p>
+              <p className="text-xs text-muted-foreground mb-4">
+                {l 
+                  ? 'Agrega metas para controlar tu gasto por categoría y recibir alertas inteligentes.'
+                  : 'Add goals to control spending by category and get smart alerts.'}
+              </p>
+            </div>
+
+            {/* Suggest based on spending */}
+            {topUnbudgetedSpending.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                  <BarChart3 className="h-3 w-3" />
+                  {l ? 'Basado en tu gasto actual:' : 'Based on your current spending:'}
+                </p>
+                {topUnbudgetedSpending.map(([cat, spent]) => (
+                  <div key={cat} className="flex items-center justify-between p-2.5 rounded-lg bg-teal-500/5 border border-teal-500/10">
+                    <div>
+                      <p className="text-xs font-medium">{getCategoryLabel(cat as ExpenseCategory)}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {fc(spent)} {l ? 'este mes' : 'this month'}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs border-teal-500/30 hover:bg-teal-500/10"
+                      onClick={() => {
+                        setNewCategory(cat);
+                        const suggestion = getCategorySuggestion(budgetSuggestions, cat);
+                        setNewBudget(suggestion?.suggestedBudget?.toString() || Math.ceil(spent * 1.1).toString());
+                        setIsAdding(true);
+                      }}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      {l ? 'Crear meta' : 'Create goal'}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </motion.div>
         ) : (
           <div className="space-y-3">
@@ -330,7 +384,7 @@ export function CategoryBudgetsCard() {
                               `bg-gradient-to-r ${styles.gradient} text-white border-0`
                             )}
                           >
-                            ${fc(spent)} / ${fc(budget.monthly_budget)}
+                            {fc(spent)} / {fc(budget.monthly_budget)}
                           </Badge>
                           <Button
                             size="icon"
@@ -338,7 +392,7 @@ export function CategoryBudgetsCard() {
                             className="h-7 w-7 hover:bg-teal-100 dark:hover:bg-teal-900/30"
                             onClick={() => {
                               setEditingId(budget.id);
-                              startEdit(budget.monthly_budget);
+                              startEditBudget(budget.monthly_budget);
                             }}
                           >
                             <Edit2 className="h-3 w-3" />
@@ -367,11 +421,11 @@ export function CategoryBudgetsCard() {
                     />
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="font-medium">{percentage.toFixed(0)}% {language === 'es' ? 'utilizado' : 'used'}</span>
+                    <span className="font-medium">{percentage.toFixed(0)}% {l ? 'utilizado' : 'used'}</span>
                     <span className={cn("font-medium", styles.text)}>
                       {remaining >= 0
-                        ? `${fc(remaining)} ${language === 'es' ? 'disponible' : 'available'}`
-                        : `${fc(Math.abs(remaining))} ${language === 'es' ? 'excedido' : 'exceeded'}`}
+                        ? `${fc(remaining)} ${l ? 'disponible' : 'available'}`
+                        : `${fc(Math.abs(remaining))} ${l ? 'excedido' : 'exceeded'}`}
                     </span>
                   </div>
                 </motion.div>
