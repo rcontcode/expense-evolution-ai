@@ -71,24 +71,24 @@ const DOCUMENTARIES: Resource[] = [
     title: "Inside Job",
     author: "Charles Ferguson",
     description: "Documental ganador del Oscar sobre la crisis financiera de 2008.",
-    link: "https://www.youtube.com/watch?v=T2IaJwkqgPk",
-    platform: "YouTube",
+    link: "https://www.imdb.com/title/tt1645089/",
+    platform: "IMDB",
     language: 'en'
   },
   {
     title: "Becoming Warren Buffett",
     author: "HBO",
     description: "La vida y filosofía de inversión del Oráculo de Omaha.",
-    link: "https://www.youtube.com/watch?v=PB5krSvFAPY",
-    platform: "YouTube",
+    link: "https://www.imdb.com/title/tt6438096/",
+    platform: "IMDB",
     language: 'en'
   },
   {
     title: "The Ascent of Money",
     author: "Niall Ferguson",
     description: "Historia del dinero y los sistemas financieros desde sus orígenes.",
-    link: "https://www.youtube.com/watch?v=fsrtB5lp60s",
-    platform: "YouTube",
+    link: "https://www.imdb.com/title/tt1298480/",
+    platform: "IMDB",
     language: 'en'
   },
   {
