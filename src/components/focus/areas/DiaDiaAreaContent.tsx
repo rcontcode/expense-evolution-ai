@@ -14,14 +14,13 @@
  
    return (
      <div className="space-y-6">
-       <Suspense fallback={<Skeleton className="h-[200px]" />}>
-         <DashboardCharts
-           categoryBreakdown={stats?.categoryBreakdown || []}
-           clientBreakdown={[]}
-           monthlyTrends={stats?.monthlyTrends || []}
-           isLoading={isLoading}
-         />
-       </Suspense>
+        <Suspense fallback={<Skeleton className="h-[200px]" />}>
+          <DashboardCharts
+            categoryBreakdown={stats?.categoryBreakdown || []}
+            monthlyTrends={stats?.monthlyTrends || []}
+            isLoading={isLoading}
+          />
+        </Suspense>
        <div className="flex gap-2 flex-wrap">
          <Button variant="outline" size="sm" onClick={() => navigate('/chaos')}>
            {language === 'es' ? '→ Chaos Inbox' : '→ Chaos Inbox'}

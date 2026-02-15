@@ -4,6 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { useCashflowQuadrant, QuadrantType } from '@/hooks/data/useCashflowQuadrant';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { Button } from '@/components/ui/button';
 import { Briefcase, User, Building2, TrendingUp, Target, Lightbulb } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
@@ -19,6 +20,8 @@ export function CashflowQuadrantCard() {
   const { language } = useLanguage();
   const { quadrants, totalIncome, dominantQuadrant, progressToI, recommendations, isLoading } = useCashflowQuadrant();
 
+  const { formatCompact: formatCurrency } = useFormatCurrency();
+
   if (isLoading) {
     return (
       <Card>
@@ -32,7 +35,38 @@ export function CashflowQuadrantCard() {
     );
   }
 
-  const { formatCompact: formatCurrency } = useFormatCurrency();
+  if (totalIncome === 0) {
+    return (
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Target className="h-5 w-5 text-primary" />
+            {language === 'es' ? 'Cuadrante del Flujo de Dinero' : 'Cashflow Quadrant'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
+              <TrendingUp className="h-8 w-8 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium">
+                {language === 'es' ? 'Sin ingresos registrados' : 'No income recorded'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {language === 'es' 
+                  ? 'Registra tus ingresos para ver tu posición en el cuadrante E-S-B-I' 
+                  : 'Record your income to see your E-S-B-I quadrant position'}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => window.location.href = '/income'}>
+              {language === 'es' ? '→ Agregar Ingresos' : '→ Add Income'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="overflow-hidden">

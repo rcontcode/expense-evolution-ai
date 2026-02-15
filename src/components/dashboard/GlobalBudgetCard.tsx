@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Wallet, Edit2, Check, X, AlertTriangle, CheckCircle, Sparkles, TrendingUp, TrendingDown, PiggyBank } from "lucide-react";
 import { useUserSettings, useUpdateUserPreferences, UserPreferences } from "@/hooks/data/useUserSettings";
+import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useExpenses } from "@/hooks/data/useExpenses";
 import { useBudgetSuggestions } from "@/hooks/data/useBudgetSuggestions";
 import { startOfMonth, endOfMonth, format } from "date-fns";
@@ -16,6 +18,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export function GlobalBudgetCard() {
+  const { language } = useLanguage();
+  const { formatCurrency: fc, formatCompact } = useFormatCurrency();
   const [isEditing, setIsEditing] = useState(false);
   const [budgetValue, setBudgetValue] = useState("");
   const [thresholdValue, setThresholdValue] = useState("");
@@ -222,10 +226,10 @@ export function GlobalBudgetCard() {
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                    ${totalSpent.toFixed(2)}
+                    {fc(totalSpent)}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    de <span className="font-medium text-foreground">${globalBudget.toFixed(2)}</span> presupuestado
+                    {language === 'es' ? 'de' : 'of'} <span className="font-medium text-foreground">{fc(globalBudget)}</span> {language === 'es' ? 'presupuestado' : 'budgeted'}
                   </p>
                 </div>
                 <motion.div whileHover={{ scale: 1.05 }}>
@@ -253,14 +257,14 @@ export function GlobalBudgetCard() {
                   />
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="font-medium">{percentage.toFixed(0)}% utilizado</span>
+                  <span className="font-medium">{percentage.toFixed(0)}% {language === 'es' ? 'utilizado' : 'used'}</span>
                   <span className={cn(
                     "font-medium",
                     remaining >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
                   )}>
                     {remaining >= 0
-                      ? `$${remaining.toFixed(2)} disponible`
-                      : `$${Math.abs(remaining).toFixed(2)} excedido`}
+                      ? `${fc(remaining)} ${language === 'es' ? 'disponible' : 'available'}`
+                      : `${fc(Math.abs(remaining))} ${language === 'es' ? 'excedido' : 'exceeded'}`}
                   </span>
                 </div>
               </div>

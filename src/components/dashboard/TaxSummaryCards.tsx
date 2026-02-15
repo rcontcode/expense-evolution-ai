@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExternalLink, Calculator, TrendingDown, TrendingUp, AlertCircle, Receipt, BadgeDollarSign } from 'lucide-react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { Button } from '@/components/ui/button';
 import { TaxSummary, TAX_DEDUCTION_RULES } from '@/hooks/data/useTaxCalculations';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,6 +13,32 @@ interface TaxSummaryCardsProps {
 
 export const TaxSummaryCards = memo(({ taxSummary }: TaxSummaryCardsProps) => {
   const { t, language } = useLanguage();
+  const { formatCurrency: fc } = useFormatCurrency();
+
+  if (taxSummary.totalExpenses === 0) {
+    return (
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="py-8">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Receipt className="h-8 w-8 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium">
+                {language === 'es' ? 'Sin gastos registrados' : 'No expenses recorded'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {language === 'es' 
+                  ? 'Agrega gastos para ver tu análisis fiscal y deducciones potenciales' 
+                  : 'Add expenses to see your tax analysis and potential deductions'}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {/* Resumen General */}
@@ -23,7 +50,7 @@ export const TaxSummaryCards = memo(({ taxSummary }: TaxSummaryCardsProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-chart-1">
-              ${taxSummary.deductibleAmount.toFixed(2)}
+              {fc(taxSummary.deductibleAmount)}
             </div>
             <p className="text-xs text-muted-foreground">
               {taxSummary.totalExpenses > 0 ? ((taxSummary.deductibleAmount / taxSummary.totalExpenses) * 100).toFixed(1) : '0.0'}% {t('taxAnalysis.ofTotal')}
@@ -38,7 +65,7 @@ export const TaxSummaryCards = memo(({ taxSummary }: TaxSummaryCardsProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-chart-2">
-              ${taxSummary.reimbursableAmount.toFixed(2)}
+              {fc(taxSummary.reimbursableAmount)}
             </div>
             <p className="text-xs text-muted-foreground">
               {taxSummary.totalExpenses > 0 ? ((taxSummary.reimbursableAmount / taxSummary.totalExpenses) * 100).toFixed(1) : '0.0'}% {t('taxAnalysis.ofTotal')}
@@ -53,7 +80,7 @@ export const TaxSummaryCards = memo(({ taxSummary }: TaxSummaryCardsProps) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${taxSummary.nonDeductibleAmount.toFixed(2)}
+              {fc(taxSummary.nonDeductibleAmount)}
             </div>
             <p className="text-xs text-muted-foreground">
               {taxSummary.totalExpenses > 0 ? ((taxSummary.nonDeductibleAmount / taxSummary.totalExpenses) * 100).toFixed(1) : '0.0'}% {t('taxAnalysis.ofTotal')}
@@ -78,11 +105,11 @@ export const TaxSummaryCards = memo(({ taxSummary }: TaxSummaryCardsProps) => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">{t('taxAnalysis.totalHstGstPaid')}</span>
-                <span className="font-semibold">${taxSummary.hstGstPaid.toFixed(2)}</span>
+                <span className="font-semibold">{fc(taxSummary.hstGstPaid)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">{t('taxAnalysis.itcClaimable')}</span>
-                <span className="font-bold text-chart-4 text-lg">${taxSummary.itcClaimable.toFixed(2)}</span>
+                <span className="font-bold text-chart-4 text-lg">{fc(taxSummary.itcClaimable)}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">{t('taxAnalysis.itcRate')}</span>
@@ -113,7 +140,7 @@ export const TaxSummaryCards = memo(({ taxSummary }: TaxSummaryCardsProps) => {
                   <div key={item.category} className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">{getCategoryLabelByLanguage(item.category as ExpenseCategory, language)}</span>
                     <div className="text-right">
-                      <span className="font-medium">${item.itc.toFixed(2)}</span>
+                      <span className="font-medium">{fc(item.itc)}</span>
                       <span className="text-xs text-muted-foreground ml-2">
                         ({(item.rate * 100).toFixed(0)}% {t('taxAnalysis.eligible')})
                       </span>
@@ -151,9 +178,9 @@ export const TaxSummaryCards = memo(({ taxSummary }: TaxSummaryCardsProps) => {
                       </p>
                     </div>
                     <div className="text-right ml-4">
-                      <div className="font-bold">${item.deductible.toFixed(2)}</div>
+                      <div className="font-bold">{fc(item.deductible)}</div>
                       <div className="text-sm text-muted-foreground">
-                        de ${item.total.toFixed(2)}
+                        {language === 'es' ? 'de' : 'of'} {fc(item.total)}
                       </div>
                     </div>
                   </div>

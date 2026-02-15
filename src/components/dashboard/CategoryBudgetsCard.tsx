@@ -9,6 +9,8 @@ import { Plus, Trash2, Target, Edit2, Check, X, Sparkles, RefreshCw, TrendingUp,
 import { useCategoryBudgets, useUpsertCategoryBudget, useDeleteCategoryBudget } from "@/hooks/data/useCategoryBudgets";
 import { useExpenses } from "@/hooks/data/useExpenses";
 import { useBudgetSuggestions, getCategorySuggestion } from "@/hooks/data/useBudgetSuggestions";
+import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { EXPENSE_CATEGORIES, getCategoryLabel, ExpenseCategory } from "@/lib/constants/expense-categories";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { startOfMonth, endOfMonth, format } from "date-fns";
@@ -18,6 +20,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export function CategoryBudgetsCard() {
+  const { language } = useLanguage();
+  const { formatCompact: fc } = useFormatCurrency();
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState("");
@@ -326,7 +330,7 @@ export function CategoryBudgetsCard() {
                               `bg-gradient-to-r ${styles.gradient} text-white border-0`
                             )}
                           >
-                            ${spent.toFixed(0)} / ${budget.monthly_budget.toFixed(0)}
+                            ${fc(spent)} / ${fc(budget.monthly_budget)}
                           </Badge>
                           <Button
                             size="icon"
@@ -363,11 +367,11 @@ export function CategoryBudgetsCard() {
                     />
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="font-medium">{percentage.toFixed(0)}% utilizado</span>
+                    <span className="font-medium">{percentage.toFixed(0)}% {language === 'es' ? 'utilizado' : 'used'}</span>
                     <span className={cn("font-medium", styles.text)}>
                       {remaining >= 0
-                        ? `$${remaining.toFixed(0)} disponible`
-                        : `$${Math.abs(remaining).toFixed(0)} excedido`}
+                        ? `${fc(remaining)} ${language === 'es' ? 'disponible' : 'available'}`
+                        : `${fc(Math.abs(remaining))} ${language === 'es' ? 'excedido' : 'exceeded'}`}
                     </span>
                   </div>
                 </motion.div>
