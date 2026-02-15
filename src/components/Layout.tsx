@@ -165,37 +165,45 @@ const getNavSections = (language: string) => [
   },
 ];
 
-// Strategic mobile navigation - optimized for thumb zones and common actions
+// Mobile navigation - all key tools visible, no hidden items
 const getMobileNavItems = (language: string) => [
   { 
     icon: LayoutDashboard, 
-    labelKey: 'nav.dashboard', 
     path: '/dashboard',
     type: 'nav' as const
   },
   { 
     icon: Receipt, 
-    labelKey: language === 'es' ? 'Dinero' : 'Money', 
-    paths: ['/expenses', '/income'],
-    currentPath: '/expenses',
-    type: 'tabbed' as const
+    path: '/expenses',
+    type: 'nav' as const
+  },
+  { 
+    icon: TrendingUp, 
+    path: '/income',
+    type: 'nav' as const
   },
   { 
     icon: Camera, 
-    labelKey: '', 
     path: '/mobile-capture', 
     type: 'fab' as const
   },
   { 
+    icon: Users, 
+    path: '/clients',
+    type: 'nav' as const
+  },
+  { 
     icon: Scale, 
-    labelKey: language === 'es' ? 'Tools' : 'Tools', 
-    paths: ['/net-worth', '/mileage', '/banking', '/reconciliation'],
-    currentPath: '/net-worth',
-    type: 'menu' as const
+    path: '/net-worth',
+    type: 'nav' as const
+  },
+  { 
+    icon: Building2, 
+    path: '/banking',
+    type: 'nav' as const
   },
   { 
     icon: Menu, 
-    labelKey: language === 'es' ? 'Más' : 'More', 
     type: 'drawer' as const
   },
 ];
@@ -448,7 +456,7 @@ export const Layout = ({ children }: LayoutProps) => {
           {children}
         </main>
 
-        {/* Mobile Bottom Navigation - Professional Native-Level */}
+        {/* Mobile Bottom Navigation - All tools visible, icon-only compact */}
         <nav className="mobile-bottom-nav">
           <div className="flex items-center justify-around h-full max-h-16">
             {MOBILE_NAV_ITEMS.map((item, index) => {
@@ -463,49 +471,13 @@ export const Layout = ({ children }: LayoutProps) => {
                     className="mobile-bottom-nav-fab"
                   >
                     <div className="mobile-bottom-nav-fab-button">
-                      <Icon className="h-6 w-6" />
+                      <Icon className="h-5 w-5" />
                     </div>
                   </button>
                 );
               }
               
-              // Tabbed navigation (Money: Expenses/Income)
-              if (item.type === 'tabbed') {
-                const isActive = item.paths?.some(p => location.pathname === p);
-                return (
-                  <button
-                    key={`tabbed-${index}`}
-                    onClick={() => navigate(item.currentPath || item.paths![0])}
-                    className={cn(
-                      "mobile-bottom-nav-item",
-                      isActive && "active"
-                    )}
-                  >
-                    <Icon className={cn("h-5 w-5", isActive && "text-primary")} />
-                    <span className={cn("text-[10px] mt-0.5", isActive && "font-medium")}>{item.labelKey}</span>
-                  </button>
-                );
-              }
-              
-              // Menu button (Tools)
-              if (item.type === 'menu') {
-                const isActive = item.paths?.some(p => location.pathname === p);
-                return (
-                  <button
-                    key={`menu-${index}`}
-                    onClick={() => navigate(item.currentPath || '/net-worth')}
-                    className={cn(
-                      "mobile-bottom-nav-item",
-                      isActive && "active"
-                    )}
-                  >
-                    <Icon className={cn("h-5 w-5", isActive && "text-primary")} />
-                    <span className={cn("text-[10px] mt-0.5", isActive && "font-medium")}>{item.labelKey}</span>
-                  </button>
-                );
-              }
-              
-              // Drawer button (More)
+              // Drawer button (settings & less-used)
               if (item.type === 'drawer') {
                 return (
                   <button
@@ -514,12 +486,11 @@ export const Layout = ({ children }: LayoutProps) => {
                     className="mobile-bottom-nav-item"
                   >
                     <Icon className="h-5 w-5" />
-                    <span className="text-[10px] mt-0.5">{item.labelKey}</span>
                   </button>
                 );
               }
               
-              // Standard navigation item
+              // Standard navigation item - icon only, no text
               const isActive = location.pathname === item.path;
               return (
                 <button
@@ -531,7 +502,6 @@ export const Layout = ({ children }: LayoutProps) => {
                   )}
                 >
                   <Icon className={cn("h-5 w-5", isActive && "text-primary")} />
-                  <span className={cn("text-[10px] mt-0.5", isActive && "font-medium")}>{item.labelKey}</span>
                 </button>
               );
             })}
