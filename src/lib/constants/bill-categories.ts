@@ -17,6 +17,9 @@ export type BillCategory =
   | 'gifts'
   | 'pharmacy'
   | 'pets'
+  | 'hobbies'
+  | 'family_outings'
+  | 'scheduled_purchases'
   | 'other';
 
 export type BillFrequency =
@@ -63,25 +66,28 @@ export const COMMON_BANKS = [
 ];
 
 export const BILL_CATEGORY_CONFIG: Record<BillCategory, { es: string; en: string; icon: string; color: string }> = {
-  housing:            { es: 'Vivienda',            en: 'Housing',            icon: '🏠', color: 'hsl(220, 70%, 55%)' },
-  utilities:          { es: 'Servicios Básicos',   en: 'Utilities',          icon: '💡', color: 'hsl(45, 90%, 50%)' },
-  insurance:          { es: 'Seguros',             en: 'Insurance',          icon: '🛡️', color: 'hsl(260, 60%, 55%)' },
-  transportation:     { es: 'Transporte',          en: 'Transportation',     icon: '🚗', color: 'hsl(200, 70%, 50%)' },
-  telecommunications: { es: 'Telecomunicaciones',  en: 'Telecom',            icon: '📱', color: 'hsl(170, 60%, 45%)' },
-  education:          { es: 'Educación',           en: 'Education',          icon: '📚', color: 'hsl(280, 60%, 55%)' },
-  childcare:          { es: 'Cuidado Infantil',    en: 'Childcare',          icon: '👶', color: 'hsl(310, 55%, 55%)' },
-  health:             { es: 'Salud',               en: 'Health',             icon: '🏥', color: 'hsl(0, 70%, 55%)' },
-  food:               { es: 'Alimentación',        en: 'Food & Groceries',   icon: '🛒', color: 'hsl(130, 55%, 45%)' },
-  entertainment:      { es: 'Ocio / Entretenimiento', en: 'Entertainment',   icon: '🎬', color: 'hsl(330, 65%, 55%)' },
-  subscriptions:      { es: 'Suscripciones',       en: 'Subscriptions',      icon: '📦', color: 'hsl(25, 80%, 55%)' },
-  debt_payments:      { es: 'Pagos de Deuda',      en: 'Debt Payments',      icon: '💳', color: 'hsl(0, 60%, 45%)' },
-  investments:        { es: 'Inversiones',         en: 'Investments',        icon: '📈', color: 'hsl(150, 70%, 40%)' },
-  legal_financial:    { es: 'Legal / Financiero',  en: 'Legal / Financial',  icon: '⚖️', color: 'hsl(210, 50%, 50%)' },
-  clothing:           { es: 'Ropa',                en: 'Clothing',           icon: '👕', color: 'hsl(300, 50%, 55%)' },
-  gifts:              { es: 'Regalos / Fechas',    en: 'Gifts / Events',     icon: '🎁', color: 'hsl(350, 70%, 55%)' },
-  pharmacy:           { es: 'Farmacia',            en: 'Pharmacy',           icon: '💊', color: 'hsl(180, 50%, 45%)' },
-  pets:               { es: 'Mascotas',            en: 'Pets',               icon: '🐾', color: 'hsl(30, 60%, 50%)' },
-  other:              { es: 'Otros',               en: 'Other',              icon: '📋', color: 'hsl(0, 0%, 50%)' },
+  housing:             { es: 'Vivienda',              en: 'Housing',              icon: '🏠', color: 'hsl(220, 70%, 55%)' },
+  utilities:           { es: 'Servicios Básicos',     en: 'Utilities',            icon: '💡', color: 'hsl(45, 90%, 50%)' },
+  insurance:           { es: 'Seguros',               en: 'Insurance',            icon: '🛡️', color: 'hsl(260, 60%, 55%)' },
+  transportation:      { es: 'Transporte',            en: 'Transportation',       icon: '🚗', color: 'hsl(200, 70%, 50%)' },
+  telecommunications:  { es: 'Telecomunicaciones',    en: 'Telecom',              icon: '📱', color: 'hsl(170, 60%, 45%)' },
+  education:           { es: 'Educación',             en: 'Education',            icon: '📚', color: 'hsl(280, 60%, 55%)' },
+  childcare:           { es: 'Cuidado Infantil',      en: 'Childcare',            icon: '👶', color: 'hsl(310, 55%, 55%)' },
+  health:              { es: 'Salud',                 en: 'Health',               icon: '🏥', color: 'hsl(0, 70%, 55%)' },
+  food:                { es: 'Alimentación',          en: 'Food & Groceries',     icon: '🛒', color: 'hsl(130, 55%, 45%)' },
+  entertainment:       { es: 'Ocio / Entretenimiento', en: 'Entertainment',       icon: '🎬', color: 'hsl(330, 65%, 55%)' },
+  subscriptions:       { es: 'Suscripciones',         en: 'Subscriptions',        icon: '📦', color: 'hsl(25, 80%, 55%)' },
+  debt_payments:       { es: 'Pagos de Deuda',        en: 'Debt Payments',        icon: '💳', color: 'hsl(0, 60%, 45%)' },
+  investments:         { es: 'Inversiones',           en: 'Investments',          icon: '📈', color: 'hsl(150, 70%, 40%)' },
+  legal_financial:     { es: 'Legal / Financiero',    en: 'Legal / Financial',    icon: '⚖️', color: 'hsl(210, 50%, 50%)' },
+  clothing:            { es: 'Ropa',                  en: 'Clothing',             icon: '👕', color: 'hsl(300, 50%, 55%)' },
+  gifts:               { es: 'Regalos / Cumpleaños',  en: 'Gifts / Birthdays',    icon: '🎁', color: 'hsl(350, 70%, 55%)' },
+  pharmacy:            { es: 'Farmacia',              en: 'Pharmacy',             icon: '💊', color: 'hsl(180, 50%, 45%)' },
+  pets:                { es: 'Mascotas',              en: 'Pets',                 icon: '🐾', color: 'hsl(30, 60%, 50%)' },
+  hobbies:             { es: 'Hobbies / Pasatiempos', en: 'Hobbies',              icon: '🎨', color: 'hsl(270, 65%, 60%)' },
+  family_outings:      { es: 'Salidas Familiares',    en: 'Family Outings',       icon: '👨‍👩‍👧‍👦', color: 'hsl(190, 65%, 50%)' },
+  scheduled_purchases: { es: 'Compras Programadas',   en: 'Scheduled Purchases',  icon: '🛍️', color: 'hsl(340, 60%, 55%)' },
+  other:               { es: 'Otros',                 en: 'Other',                icon: '📋', color: 'hsl(0, 0%, 50%)' },
 };
 
 export const BILL_FREQUENCY_CONFIG: Record<BillFrequency, { es: string; en: string; months: number }> = {

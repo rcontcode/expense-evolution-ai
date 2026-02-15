@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useMonthlyPlanData } from "@/hooks/data/useMonthlyPlanData";
+import { BILL_CATEGORY_CONFIG, BillCategory } from "@/lib/constants/bill-categories";
+import { EXPENSE_CATEGORY_TRANSLATIONS, ExpenseCategory } from "@/lib/constants/expense-categories";
 import { format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -51,21 +53,14 @@ import {
   Zap,
 } from "lucide-react";
 
-// Category label map
-const CATEGORY_LABELS: Record<string, { es: string; en: string }> = {
-  meals: { es: "Comidas", en: "Meals" },
-  travel: { es: "Viajes", en: "Travel" },
-  equipment: { es: "Equipamiento", en: "Equipment" },
-  software: { es: "Software", en: "Software" },
-  mileage: { es: "Kilometraje", en: "Mileage" },
-  home_office: { es: "Oficina en Casa", en: "Home Office" },
-  professional_services: { es: "Servicios Prof.", en: "Prof. Services" },
-  office_supplies: { es: "Suministros", en: "Supplies" },
-  utilities: { es: "Servicios Básicos", en: "Utilities" },
-  fuel: { es: "Combustible", en: "Fuel" },
-  other: { es: "Otros", en: "Other" },
-};
-
+// Get category label with emoji from bill or expense configs
+function getCatInfo(cat: string, lang: 'es' | 'en'): { label: string; icon: string; color: string } {
+  const billCfg = BILL_CATEGORY_CONFIG[cat as BillCategory];
+  if (billCfg) return { label: billCfg[lang], icon: billCfg.icon, color: billCfg.color };
+  const expCfg = EXPENSE_CATEGORY_TRANSLATIONS[cat as ExpenseCategory];
+  if (expCfg) return { label: expCfg[lang], icon: expCfg.icon, color: expCfg.color };
+  return { label: cat, icon: '📋', color: 'hsl(0, 0%, 50%)' };
+}
 export function MonthlyPlanCard() {
   const { language } = useLanguage();
   const l = language === "es";
@@ -160,8 +155,8 @@ export function MonthlyPlanCard() {
   ];
 
   const getCatLabel = (cat: string) => {
-    const label = CATEGORY_LABELS[cat];
-    return label ? (l ? label.es : label.en) : cat;
+    const info = getCatInfo(cat, l ? 'es' : 'en');
+    return info;
   };
 
   return (
@@ -472,9 +467,18 @@ export function MonthlyPlanCard() {
                 >
                   <div className="space-y-2 mt-2">
                     {plan.categorySpending.map((cat, i) => (
-                      <div key={cat.category} className="space-y-1">
+                      <motion.div
+                        key={cat.category}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                        className="space-y-1"
+                      >
                         <div className="flex items-center justify-between text-xs">
-                          <span className="font-medium">{getCatLabel(cat.category)}</span>
+                          <span className="font-medium flex items-center gap-1.5">
+                            <span className="text-sm">{getCatLabel(cat.category).icon}</span>
+                            {getCatLabel(cat.category).label}
+                          </span>
                           <div className="flex items-center gap-2">
                             <span className="text-muted-foreground">{fc(cat.spent)}</span>
                             {cat.budget > 0 && (
@@ -509,7 +513,7 @@ export function MonthlyPlanCard() {
                             />
                           </div>
                         )}
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 </motion.div>
@@ -629,7 +633,7 @@ export function MonthlyPlanCard() {
                 </p>
                 {plan.topCategory && (
                   <p className="text-[10px] text-muted-foreground">
-                    {l ? "Mayor gasto:" : "Top spending:"} {getCatLabel(plan.topCategory.category)} ({fc(plan.topCategory.spent)})
+                    {l ? "Mayor gasto:" : "Top spending:"} {getCatLabel(plan.topCategory.category).icon} {getCatLabel(plan.topCategory.category).label} ({fc(plan.topCategory.spent)})
                   </p>
                 )}
               </div>
