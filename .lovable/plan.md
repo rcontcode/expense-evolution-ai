@@ -1,35 +1,82 @@
 
 
-# Acelerar el Asistente Phoenix (Version Simple)
+# Revision Legal: Simplificar y Proteger sin Intimidar
 
-## Que vamos a hacer
+## Problema Identificado
 
-Cambiar el modelo de inteligencia artificial de `openai/gpt-5` a `google/gemini-3-flash-preview` en el backend. Es literalmente cambiar el nombre del modelo en 2 lineas de codigo.
+La pagina legal actual tiene lenguaje excesivamente agresivo y corporativo que **no corresponde** a lo que EvoFinz realmente es: una herramienta educativa de organizacion financiera personal. Especificamente:
 
-## Por que esto funciona
+1. **"Tribunales competentes"** - Mencionar tribunales y procedimientos legales es innecesario e intimidante para una app educativa gratuita/de bajo costo
+2. **Indemnizacion agresiva** - Pedir a usuarios que "indemnicen y defiendan" suena a contrato corporativo, no a app de ayuda
+3. **Tono general** - Demasiado legalista para el publico objetivo (personas con nivel bajo de educacion financiera)
 
-| | gpt-5 (actual) | gemini-3-flash (nuevo) |
-|---|---|---|
-| Velocidad | Lento | 3-5x mas rapido |
-| Costo | El mas caro | Mucho mas barato |
-| Inteligencia | Excelente | Muy buena (suficiente para Phoenix) |
-| Tool calling | Si | Si |
-| Riesgo de error | - | Cero (mismo formato de API) |
+## Riesgos Latentes Reales (los que SI importan)
 
-## Que NO cambia
+| Riesgo | Estado Actual | Solucion |
+|--------|--------------|----------|
+| Usuario toma decision financiera mala basandose en la app | Disclaimer existe pero podria ser mas claro | Reforzar que es herramienta de ORGANIZACION, no de consejo |
+| Contenido de autores (Kiyosaki, etc.) genera reclamo de copyright | Atribucion existe, Fair Use mencionado | Agregar que las citas son breves y con fines educativos transformativos |
+| IA (Phoenix) da informacion incorrecta | Disclaimer de IA existe | Reforzar que el asistente es orientativo, no profesional |
+| Usuario menor de edad | Requisito 18+ existe | OK, esta bien |
+| Datos personales financieros | Politica de privacidad existe | Aclarar mejor que los datos son del usuario y puede eliminarlos |
 
-- La interfaz del chat sigue igual
-- Los comandos de voz siguen igual  
-- Las herramientas (crear gasto, navegar, etc.) siguen igual
-- El historial de conversacion sigue igual
-- Nada se rompe porque la API es compatible
+## Que Vamos a Cambiar
 
-## Detalle tecnico
+### 1. Eliminar seccion "Jurisdiccion/Tribunales"
+Reemplazar con una seccion simple de **"Resolucion de Dudas"** que diga: si tienes un problema, contactanos primero. Sin mencionar tribunales, abogados, ni procedimientos legales.
 
-Un solo archivo cambia: `supabase/functions/app-assistant/index.ts`
+### 2. Suavizar la seccion "Indemnizacion"  
+Reemplazarla con **"Responsabilidad del Usuario"** - un texto amigable que simplemente diga: tu eres responsable de tus decisiones financieras, esta app te ayuda a organizar informacion, no te dice que hacer.
 
-- Linea 1184: cambiar `"openai/gpt-5"` por `"google/gemini-3-flash-preview"`
-- Linea 1278: cambiar `"openai/gpt-5"` por `"google/gemini-3-flash-preview"`
+### 3. Reforzar la identidad correcta de la app
+En el disclaimer principal, cambiar el enfoque de "NO somos asesores" (negativo) a "SOMOS una herramienta de organizacion y educacion" (positivo). Dejar claro que:
+- Organiza gastos, ingresos y documentos
+- Ofrece contenido educativo inspirado en expertos
+- Proporciona estimaciones aproximadas como referencia
+- NO reemplaza a un profesional
 
-Eso es todo. Dos lineas. Si no te gusta el resultado, se cambia de vuelta en 10 segundos.
+### 4. Simplificar el lenguaje general
+- Quitar jerga legal innecesaria ("en la maxima medida permitida por la ley aplicable")
+- Usar lenguaje accesible para el publico objetivo
+- Mantener la proteccion legal real pero con palabras simples
+
+### 5. Agregar seccion de "Contacto"
+Una seccion simple con email de contacto para que los usuarios tengan un canal directo si hay algun problema, en vez de amenazar con tribunales.
+
+## Seccion Tecnica
+
+### Archivo a modificar
+- `src/pages/Legal.tsx` - Reescribir las secciones problematicas
+
+### Cambios especificos en secciones:
+
+**Eliminar completamente:**
+- Seccion `jurisdiction` (tribunales/ley aplicable)
+- Seccion `indemnification` (indemnizacion agresiva)
+
+**Reemplazar con:**
+- Seccion `user-responsibility` - "Tu eres responsable de tus decisiones. Esta app organiza informacion, no da ordenes."
+- Seccion `contact` - "Si tienes alguna duda o problema, escribenos a [email]"
+
+**Modificar:**
+- Seccion `disclaimer` - Cambiar tono de "NO hacemos X" a "Somos una herramienta de organizacion y educacion"
+- Seccion `liability` - Simplificar lenguaje, quitar jerga legal
+- Seccion `terms` - Simplificar, hacerlo mas conversacional
+
+**Mantener sin cambios:**
+- Seccion `ai-content` - Esta bien
+- Seccion `tax` - Esta bien  
+- Seccion `investment` - Esta bien
+- Seccion `education` / atribuciones - Esta bien
+- Seccion `age` - Esta bien
+- Seccion `privacy` - Esta bien
+- Checkbox de aceptacion en signup - Ya existe y funciona correctamente
+
+### Iconos a ajustar
+- Quitar `Gavel` (martillo de juez) y `MapPin` de los imports
+- Agregar `Mail` o `MessageCircle` para la seccion de contacto
+- Cambiar `ShieldAlert` por algo menos agresivo
+
+## Resultado Final
+Una pagina legal que **protege a EvoFinz** de responsabilidad real pero con un tono **amigable y accesible**, acorde con una app que busca **ayudar** a personas con poca educacion financiera a organizarse mejor.
 
