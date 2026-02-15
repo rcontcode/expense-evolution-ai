@@ -16,7 +16,8 @@ import { format, startOfMonth, endOfMonth } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
+import { FamilyExpenseDialog } from "./FamilyExpenseDialog";
+import { FamilyIncomeDialog } from "./FamilyIncomeDialog";
 
 function getCatInfo(cat: string, lang: 'es' | 'en') {
   const billCfg = BILL_CATEGORY_CONFIG[cat as BillCategory];
@@ -35,9 +36,10 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
   const { language } = useLanguage();
   const l = language === "es";
   const { formatCurrency: fc } = useFormatCurrency();
-  const navigate = useNavigate();
   const plan = useMonthlyPlanData();
   const now = new Date();
+  const [showExpenseDialog, setShowExpenseDialog] = useState(false);
+  const [showIncomeDialog, setShowIncomeDialog] = useState(false);
 
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     resumen: true,
@@ -138,7 +140,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
               value={fc(plan.totalIncome)}
               color="text-emerald-600 dark:text-emerald-400"
               missing={!plan.hasIncome}
-              missingAction={() => navigate("/income")}
+              missingAction={() => setShowIncomeDialog(true)}
               missingLabel={l ? "+ Agregar" : "+ Add"}
             />
             <MiniCard
@@ -147,7 +149,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
               value={fc(plan.totalFixed)}
               color="text-red-500 dark:text-red-400"
               missing={!plan.hasBills}
-              missingAction={() => navigate("/banking")}
+              missingAction={() => {}}
               missingLabel={l ? "+ Agregar" : "+ Add"}
             />
             <MiniCard
@@ -235,7 +237,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
             emoji="🛒"
             text={l ? "No hay gastos familiares este mes" : "No family expenses this month"}
             actionLabel={l ? "Agregar gasto" : "Add expense"}
-            onAction={() => navigate("/expenses")}
+            onAction={() => setShowExpenseDialog(true)}
           />
         )}
       </CollapsibleSection>
@@ -303,8 +305,8 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
             <EmptyState
               emoji="💼"
               text={l ? "No hay gastos de negocio este mes" : "No business expenses this month"}
-              actionLabel={l ? "Agregar gasto" : "Add expense"}
-              onAction={() => navigate("/expenses")}
+            actionLabel={l ? "Agregar gasto" : "Add expense"}
+            onAction={() => setShowExpenseDialog(true)}
             />
           )}
           <p className="text-[11px] text-muted-foreground mt-2">
@@ -335,13 +337,12 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         </div>
       </CollapsibleSection>
 
-      {/* Quick actions */}
       <div className="flex gap-2 pt-2">
         <Button
           variant="outline"
           size="sm"
           className="flex-1 gap-1.5"
-          onClick={() => navigate("/expenses")}
+          onClick={() => setShowExpenseDialog(true)}
         >
           <Plus className="h-3.5 w-3.5" />
           {l ? "Agregar Gasto" : "Add Expense"}
@@ -350,12 +351,16 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
           variant="outline"
           size="sm"
           className="flex-1 gap-1.5"
-          onClick={() => navigate("/income")}
+          onClick={() => setShowIncomeDialog(true)}
         >
           <Plus className="h-3.5 w-3.5" />
           {l ? "Agregar Ingreso" : "Add Income"}
         </Button>
       </div>
+
+      {/* Dialogs */}
+      <FamilyExpenseDialog open={showExpenseDialog} onClose={() => setShowExpenseDialog(false)} />
+      <FamilyIncomeDialog open={showIncomeDialog} onClose={() => setShowIncomeDialog(false)} />
     </div>
   );
 }
