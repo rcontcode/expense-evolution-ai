@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ import { differenceInDays, parseISO, startOfMonth, endOfMonth, isWithinInterval,
 import { es } from 'date-fns/locale';
 import {
   Receipt, AlertTriangle, CheckCircle2, ArrowRight, Wallet,
-  Clock, Zap, CalendarDays, PiggyBank, TrendingDown, ShieldCheck, Target
+  Clock, Zap, CalendarDays, PiggyBank, Target, TrendingDown, ShieldAlert, BanknoteIcon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -56,10 +56,16 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
     // Overdue
     const overdue = active.filter(b => differenceInDays(parseISO(b.next_due_date), now) < 0);
 
-    // Due in next 7 days
+    // Due in next 7 days (not overdue)
     const dueSoon = active.filter(b => {
       const days = differenceInDays(parseISO(b.next_due_date), now);
       return days >= 0 && days <= 7;
+    }).sort((a, b) => a.next_due_date.localeCompare(b.next_due_date));
+
+    // Due today
+    const dueToday = active.filter(b => {
+      const days = differenceInDays(parseISO(b.next_due_date), now);
+      return days === 0;
     });
 
     // Income vs bills
@@ -70,24 +76,30 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
 
     const paidAmount = paidThisMonth.reduce((s, b) => s + Number(b.amount), 0);
     const pendingAmount = thisMonth.reduce((s, b) => s + Number(b.amount), 0) - paidAmount;
+    const overdueAmount = overdue.reduce((s, b) => s + Number(b.amount), 0);
     const progress = thisMonth.length > 0 ? (paidThisMonth.length / thisMonth.length) * 100 : 100;
 
     // Autopay stats
     const autopayCount = active.filter(b => b.auto_pay).length;
+    const manualCount = active.length - autopayCount;
 
-    // Category breakdown (top 3)
-    const catMap: Record<string, number> = {};
-    active.forEach(b => {
-      const monthly = getMonthlyEquivalent(Number(b.amount), b.frequency, b.frequency_months || undefined);
-      catMap[b.category] = (catMap[b.category] || 0) + monthly;
+    // Projected balance after each upcoming payment
+    let runningBalance = netAfterBills;
+    const upcomingWithBalance = dueSoon.slice(0, 5).map(bill => {
+      const amount = Number(bill.amount);
+      runningBalance -= amount;
+      return {
+        ...bill,
+        balanceAfter: runningBalance + amount, // balance BEFORE this payment (net minus previous)
+        balanceAfterPayment: runningBalance,
+      };
     });
-    const topCategories = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 3);
 
-    // Next payment
-    const nextBill = active
-      .filter(b => differenceInDays(parseISO(b.next_due_date), now) >= 0)
-      .sort((a, b) => a.next_due_date.localeCompare(b.next_due_date))[0] || null;
-    const daysToNext = nextBill ? differenceInDays(parseISO(nextBill.next_due_date), now) : null;
+    // Severity level for the whole widget
+    const severity: 'critical' | 'warning' | 'ok' | 'perfect' =
+      overdue.length > 0 ? 'critical' :
+      dueToday.length > 0 ? 'warning' :
+      progress === 100 && thisMonth.length > 0 ? 'perfect' : 'ok';
 
     return {
       monthlyTotal,
@@ -98,19 +110,21 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
       totalThisMonth: thisMonth.length,
       paidCount: paidThisMonth.length,
       overdueCount: overdue.length,
+      overdueAmount,
       dueSoonCount: dueSoon.length,
+      dueTodayCount: dueToday.length,
+      dueToday,
       paidAmount,
       pendingAmount,
       progress,
-      topUpcoming: dueSoon.slice(0, 3),
-      topOverdue: overdue.slice(0, 2),
+      topUpcoming: upcomingWithBalance,
+      topOverdue: overdue.slice(0, 3),
       autopayCount,
+      manualCount,
       totalActive: active.length,
-      topCategories,
-      nextBill,
-      daysToNext,
+      severity,
     };
-  }, [bills, stats, now]);
+  }, [bills, stats]);
 
   if (!analysis) {
     return (
@@ -129,40 +143,107 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
     );
   }
 
-  // Is payment pace ahead or behind?
-  const paymentPctDone = analysis.progress;
-  const paceStatus = paymentPctDone >= monthPctElapsed ? 'ahead' : 'behind';
+  const severityStyles = {
+    critical: 'border-destructive/50 shadow-destructive/20 shadow-md',
+    warning: 'border-amber-500/50 shadow-amber-500/10 shadow-sm',
+    ok: '',
+    perfect: 'border-emerald-500/30',
+  };
+
+  const paceStatus = analysis.progress >= monthPctElapsed ? 'ahead' : 'behind';
 
   return (
-    <Card className={className}>
+    <Card className={`${className} transition-all ${severityStyles[analysis.severity]}`}>
+      {/* ═══ CRITICAL BANNER: Overdue ═══ */}
+      <AnimatePresence>
+        {analysis.severity === 'critical' && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="bg-destructive text-destructive-foreground"
+          >
+            <motion.div
+              animate={{ opacity: [1, 0.7, 1] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="flex items-center gap-2 px-4 py-2.5"
+            >
+              <ShieldAlert className="h-4 w-4 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs font-bold">
+                  🚨 {analysis.overdueCount} {l ? 'pago(s) vencido(s)' : 'overdue payment(s)'}
+                  {' · '}{formatCurrency(analysis.overdueAmount)}
+                </p>
+                <div className="flex gap-1 mt-0.5 flex-wrap">
+                  {analysis.topOverdue.map(b => (
+                    <span key={b.id} className="text-[10px] opacity-90">
+                      {BILL_CATEGORY_CONFIG[b.category as BillCategory]?.icon} {b.name} ({formatCurrency(b.amount)})
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <Button size="sm" variant="secondary" className="h-6 text-[10px] shrink-0"
+                onClick={() => navigate('/budget?tab=bills')}>
+                {l ? 'Pagar' : 'Pay'}
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══ TODAY'S PAYMENTS BANNER ═══ */}
+      <AnimatePresence>
+        {analysis.dueTodayCount > 0 && analysis.severity !== 'critical' && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="bg-amber-500/15 border-b border-amber-500/20"
+          >
+            <motion.div
+              animate={{ scale: [1, 1.01, 1] }}
+              transition={{ repeat: Infinity, duration: 3 }}
+              className="flex items-center gap-2 px-4 py-2"
+            >
+              <Clock className="h-4 w-4 text-amber-600 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+                  {l ? `¡${analysis.dueTodayCount} pago(s) vence(n) HOY!` : `${analysis.dueTodayCount} payment(s) due TODAY!`}
+                </p>
+                <div className="flex gap-1.5 mt-0.5 flex-wrap">
+                  {analysis.dueToday.map(b => (
+                    <Badge key={b.id} className="text-[10px] h-4 bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30">
+                      {BILL_CATEGORY_CONFIG[b.category as BillCategory]?.icon} {b.name}: {formatCurrency(b.amount)}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
             <Wallet className="h-4 w-4 text-primary" />
             {l ? 'Pagos del Mes' : 'Monthly Bills'}
           </CardTitle>
-          <div className="flex items-center gap-1.5">
-            {analysis.nextBill && (
-              <Badge variant="outline" className="text-[10px] gap-0.5">
-                <Clock className="h-3 w-3" />
-                {analysis.daysToNext === 0 ? (l ? 'Hoy' : 'Today') : `${analysis.daysToNext}d`}
-              </Badge>
-            )}
-            <Button variant="ghost" size="sm" className="h-6 text-xs text-muted-foreground hover:text-primary"
-              onClick={() => navigate('/budget?tab=bills')}>
-              <ArrowRight className="h-3 w-3" />
-            </Button>
-          </div>
+          <Button variant="ghost" size="sm" className="h-6 text-xs text-muted-foreground hover:text-primary"
+            onClick={() => navigate('/budget?tab=bills')}>
+            {l ? 'Ver todo' : 'View all'} <ArrowRight className="ml-1 h-3 w-3" />
+          </Button>
         </div>
       </CardHeader>
+
       <CardContent className="space-y-3">
-        {/* Progress with pace comparison */}
+        {/* ═══ PROGRESS WITH PACE ═══ */}
         <div className="space-y-1.5">
           <div className="flex justify-between text-xs">
             <span className="text-muted-foreground">
               {analysis.paidCount}/{analysis.totalThisMonth} {l ? 'pagados' : 'paid'}
-              <span className={`ml-1 text-[10px] ${paceStatus === 'ahead' ? 'text-emerald-500' : 'text-amber-500'}`}>
-                {paceStatus === 'ahead' ? (l ? '• Al día' : '• On track') : (l ? '• Atrasado' : '• Behind')}
+              <span className={`ml-1 text-[10px] font-medium ${paceStatus === 'ahead' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                {paceStatus === 'ahead' ? (l ? '• Al día ✓' : '• On track ✓') : (l ? '• Atrasado ⚠' : '• Behind ⚠')}
               </span>
             </span>
             <span className="font-medium text-xs">
@@ -171,124 +252,120 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
           </div>
           <div className="relative">
             <Progress value={analysis.progress} className="h-2.5" />
-            {/* Month elapsed marker */}
             <div
-              className="absolute top-0 h-2.5 w-0.5 bg-foreground/40 rounded"
+              className="absolute top-0 h-2.5 w-0.5 bg-foreground/50 rounded"
               style={{ left: `${monthPctElapsed}%` }}
-              title={l ? `Día ${dayOfMonth} de ${daysInMonth}` : `Day ${dayOfMonth} of ${daysInMonth}`}
+              title={l ? `Día ${dayOfMonth}/${daysInMonth}` : `Day ${dayOfMonth}/${daysInMonth}`}
             />
           </div>
-          <p className="text-[10px] text-muted-foreground">
-            {l ? `Día ${dayOfMonth}/${daysInMonth} del mes` : `Day ${dayOfMonth}/${daysInMonth} of month`}
-            {' · '}
-            {analysis.pendingAmount > 0
-              ? (l ? `${formatCurrency(analysis.pendingAmount)} pendiente` : `${formatCurrency(analysis.pendingAmount)} pending`)
-              : (l ? '¡Todo pagado!' : 'All paid!')}
-          </p>
         </div>
 
-        {/* Net balance: 3-column compact */}
+        {/* ═══ NET BALANCE: 3 COLUMNS ═══ */}
         <div className="grid grid-cols-3 gap-1.5">
-          <div className="p-1.5 rounded-lg bg-emerald-500/10 text-center">
-            <p className="text-[9px] text-muted-foreground">{l ? 'Ingreso' : 'Income'}</p>
+          <div className="p-2 rounded-lg bg-emerald-500/10 text-center">
+            <p className="text-[9px] text-muted-foreground uppercase">{l ? 'Ingreso' : 'Income'}</p>
             <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(analysis.monthlyIncome)}</p>
           </div>
-          <div className="p-1.5 rounded-lg bg-red-500/10 text-center">
-            <p className="text-[9px] text-muted-foreground">{l ? 'Fijos' : 'Fixed'}</p>
+          <div className="p-2 rounded-lg bg-red-500/10 text-center">
+            <p className="text-[9px] text-muted-foreground uppercase">{l ? 'Fijos' : 'Fixed'}</p>
             <p className="text-xs font-bold text-red-600 dark:text-red-400">{formatCurrency(analysis.monthlyTotal)}</p>
           </div>
-          <div className={`p-1.5 rounded-lg text-center ${analysis.netAfterBills >= 0 ? 'bg-blue-500/10' : 'bg-destructive/10'}`}>
-            <p className="text-[9px] text-muted-foreground">{l ? 'Libre' : 'Free'}</p>
+          <div className={`p-2 rounded-lg text-center ${analysis.netAfterBills >= 0 ? 'bg-blue-500/10' : 'bg-destructive/10'}`}>
+            <p className="text-[9px] text-muted-foreground uppercase">{l ? 'Libre' : 'Free'}</p>
             <p className={`text-xs font-bold ${analysis.netAfterBills >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-destructive'}`}>
               {formatCurrency(analysis.netAfterBills)}
             </p>
           </div>
         </div>
 
-        {/* Quick stats row */}
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground px-1">
+        {/* ═══ QUICK STATS ═══ */}
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground px-0.5">
           <span className="flex items-center gap-1">
             <Target className="h-3 w-3" /> {analysis.totalActive} {l ? 'activos' : 'active'}
           </span>
           <span className="flex items-center gap-1">
-            <Zap className="h-3 w-3" /> {analysis.autopayCount} {l ? 'auto' : 'autopay'}
+            <Zap className="h-3 w-3" /> {analysis.autopayCount} auto / {analysis.manualCount} {l ? 'manual' : 'manual'}
           </span>
           <span className="flex items-center gap-1">
-            <CalendarDays className="h-3 w-3" /> {analysis.dueSoonCount} {l ? 'próximos' : 'upcoming'}
+            <CalendarDays className="h-3 w-3" /> {l ? `Día ${dayOfMonth}/${daysInMonth}` : `Day ${dayOfMonth}/${daysInMonth}`}
           </span>
         </div>
 
-        {/* Alerts: Overdue */}
-        {analysis.overdueCount > 0 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="flex items-center gap-2 p-2 rounded-lg bg-destructive/10 border border-destructive/20">
-            <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-destructive">
-                {analysis.overdueCount} {l ? 'vencido(s)' : 'overdue'}
-              </p>
-              <div className="flex gap-1 mt-0.5 flex-wrap">
-                {analysis.topOverdue.map(b => (
-                  <Badge key={b.id} variant="destructive" className="text-[10px] h-4">
-                    {BILL_CATEGORY_CONFIG[b.category as BillCategory]?.icon} {b.name}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
+        <Separator />
 
-        {/* Upcoming bills */}
+        {/* ═══ UPCOMING WITH PROJECTED BALANCE ═══ */}
         {analysis.topUpcoming.length > 0 && (
-          <div className="space-y-1">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
-              {l ? 'Próximos 7 días' : 'Next 7 days'}
+          <div className="space-y-1.5">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium flex items-center gap-1">
+              <TrendingDown className="h-3 w-3" />
+              {l ? 'Próximos pagos y saldo proyectado' : 'Upcoming payments & projected balance'}
             </p>
             {analysis.topUpcoming.map((bill, i) => {
               const cat = BILL_CATEGORY_CONFIG[bill.category as BillCategory];
               const days = differenceInDays(parseISO(bill.next_due_date), now);
+              const isToday = days === 0;
+              const isTomorrow = days === 1;
+              const balanceNegative = bill.balanceAfterPayment < 0;
+
               return (
-                <motion.div key={bill.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }} className="flex items-center gap-2 py-1">
-                  <span className="text-sm">{cat?.icon || '📋'}</span>
-                  <span className="text-xs flex-1 truncate">{bill.name}</span>
-                  <Badge variant={days === 0 ? 'default' : 'outline'} className="text-[10px] h-4 shrink-0">
-                    {days === 0 ? (l ? '¡Hoy!' : 'Today!') : `${days}d`}
-                  </Badge>
-                  <span className="text-xs font-semibold">{formatCurrency(bill.amount)}</span>
+                <motion.div
+                  key={bill.id}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className={`flex items-center gap-2 p-2 rounded-lg border transition-all ${
+                    isToday ? 'bg-amber-500/10 border-amber-500/30' :
+                    isTomorrow ? 'bg-amber-500/5 border-amber-500/15' :
+                    'bg-muted/30 border-transparent'
+                  }`}
+                >
+                  <span className="text-base">{cat?.icon || '📋'}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-medium truncate">{bill.name}</span>
+                      {bill.auto_pay && (
+                        <Badge variant="outline" className="text-[8px] h-3.5 px-1">
+                          <Zap className="h-2 w-2 mr-0.5" />Auto
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <span>{format(parseISO(bill.next_due_date), 'dd MMM', { locale: l ? es : undefined })}</span>
+                      <span>·</span>
+                      <Badge variant={isToday ? 'default' : 'outline'} className="text-[9px] h-3.5 px-1">
+                        {isToday ? (l ? '¡HOY!' : 'TODAY!') : isTomorrow ? (l ? 'Mañana' : 'Tomorrow') : `${days}d`}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs font-bold">-{formatCurrency(bill.amount)}</p>
+                    <p className={`text-[9px] flex items-center gap-0.5 justify-end ${balanceNegative ? 'text-destructive font-semibold' : 'text-muted-foreground'}`}>
+                      <BanknoteIcon className="h-2.5 w-2.5" />
+                      {l ? 'Saldo:' : 'Bal:'} {formatCurrency(bill.balanceAfterPayment)}
+                      {balanceNegative && ' ⚠️'}
+                    </p>
+                  </div>
                 </motion.div>
               );
             })}
           </div>
         )}
 
-        {/* Top categories mini */}
-        {analysis.topCategories.length > 0 && (
-          <div className="space-y-1">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
-              {l ? 'Top categorías' : 'Top categories'}
-            </p>
-            <div className="flex gap-1.5 flex-wrap">
-              {analysis.topCategories.map(([cat, amount]) => {
-                const cfg = BILL_CATEGORY_CONFIG[cat as BillCategory];
-                return (
-                  <Badge key={cat} variant="secondary" className="text-[10px] gap-1">
-                    {cfg?.icon} {cfg?.[l ? 'es' : 'en'] || cat}: {formatCurrency(amount)}
-                  </Badge>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* All paid celebration */}
-        {analysis.progress === 100 && analysis.totalThisMonth > 0 && (
-          <div className="text-center py-1.5 rounded-lg bg-emerald-500/10">
-            <CheckCircle2 className="h-5 w-5 mx-auto text-emerald-500 mb-0.5" />
-            <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+        {/* ═══ ALL PAID CELEBRATION ═══ */}
+        {analysis.severity === 'perfect' && (
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="text-center py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20"
+          >
+            <CheckCircle2 className="h-6 w-6 mx-auto text-emerald-500 mb-1" />
+            <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
               {l ? '¡Todos los pagos al día! 🎉' : 'All bills paid! 🎉'}
             </p>
-          </div>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              {l ? `Próximo ciclo: ${formatCurrency(analysis.monthlyTotal)}` : `Next cycle: ${formatCurrency(analysis.monthlyTotal)}`}
+            </p>
+          </motion.div>
         )}
       </CardContent>
     </Card>
