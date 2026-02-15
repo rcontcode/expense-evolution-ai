@@ -8,6 +8,7 @@ import { PaymentCalendar } from './PaymentCalendar';
 import { BillsKanban } from './BillsKanban';
 import { PaymentChecklist } from './PaymentChecklist';
 import { CashFlowProjection } from './CashFlowProjection';
+import { NetCashFlowCard } from './NetCashFlowCard';
 import { cn } from '@/lib/utils';
 
 export function BillsDashboard() {
@@ -18,6 +19,7 @@ export function BillsDashboard() {
   return (
     <div className="space-y-6">
       <BillsSummaryCards />
+      <NetCashFlowCard />
 
       <Tabs value={view} onValueChange={setView} className="space-y-4">
         <TabsList className="grid w-full grid-cols-5 h-auto p-1 gap-1">
