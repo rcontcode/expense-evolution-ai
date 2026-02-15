@@ -18,7 +18,7 @@ const QUADRANT_ICONS: Record<QuadrantType, React.ReactNode> = {
 
 export function CashflowQuadrantCard() {
   const { language } = useLanguage();
-  const { quadrants, totalIncome, dominantQuadrant, progressToI, recommendations, isLoading } = useCashflowQuadrant();
+  const { quadrants, totalIncome, dominantQuadrant, progressToI, recommendations, isLoading } = useCashflowQuadrant(language);
 
   const { formatCompact: formatCurrency } = useFormatCurrency();
 

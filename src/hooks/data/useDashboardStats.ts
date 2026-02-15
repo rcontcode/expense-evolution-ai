@@ -29,6 +29,8 @@ interface MonthlyTrend {
 
 interface DashboardStats {
   monthlyTotal: number;
+  monthlyIncome: number;
+  savingsRate: number;
   pendingDocs: number;
   billableExpenses: number;
   totalExpenses: number;
@@ -62,6 +64,7 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
       // Execute all queries in parallel for better performance
       const [
         monthlyExpensesResult,
+        monthlyIncomeResult,
         pendingCountResult,
         billableCountResult,
         totalCountResult,
@@ -83,6 +86,14 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
           if (entityFilter) query = query.eq('entity_id', entityFilter);
           return query;
         })(),
+
+        // Monthly income query
+        supabase
+          .from('income')
+          .select('amount')
+          .eq('user_id', user.id)
+          .gte('date', format(firstDayThisMonth, 'yyyy-MM-dd'))
+          .lte('date', format(lastDayThisMonth, 'yyyy-MM-dd')),
         
         // Pending documents count
         supabase
@@ -151,6 +162,12 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
         })(),
       ]);
 
+      // Process monthly income
+      const monthlyIncome = monthlyIncomeResult.data?.reduce(
+        (sum, inc) => sum + parseFloat(inc.amount.toString()),
+        0
+      ) || 0;
+
       // Process monthly total
       const monthlyTotal = monthlyExpensesResult.data?.reduce(
         (sum, exp) => sum + parseFloat(exp.amount.toString()),
@@ -214,8 +231,15 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
         });
       }
 
+      // Calculate savings rate
+      const savingsRate = monthlyIncome > 0 
+        ? ((monthlyIncome - monthlyTotal) / monthlyIncome) * 100 
+        : 0;
+
       return {
         monthlyTotal,
+        monthlyIncome,
+        savingsRate,
         pendingDocs: pendingCountResult.count || 0,
         billableExpenses: billableCountResult.count || 0,
         totalExpenses: totalCountResult.count || 0,

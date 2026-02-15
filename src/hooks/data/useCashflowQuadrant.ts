@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useIncome } from './useIncome';
-import { useExpenses } from './useExpenses';
 import { useAuth } from '@/contexts/AuthContext';
 
 export type QuadrantType = 'E' | 'S' | 'B' | 'I';
@@ -28,27 +27,19 @@ export interface CashflowQuadrantResult {
 
 // Map income types to quadrants based on Kiyosaki's model
 const INCOME_TO_QUADRANT: Record<string, QuadrantType> = {
-  // E - Employee
   salary: 'E',
   bonus: 'E',
-  
-  // S - Self-Employed
   freelance: 'S',
   client_payment: 'S',
   online_business: 'S',
-  
-  // B - Business Owner (systems-based income)
-  // Note: We'll consider passive royalties and some online businesses as B
   passive_royalties: 'B',
-  
-  // I - Investor
   investment_stocks: 'I',
   investment_crypto: 'I',
   investment_funds: 'I',
   passive_rental: 'I',
-  gift: 'E', // Default to E
-  refund: 'E', // Not really income
-  other: 'S', // Default to S
+  gift: 'E',
+  refund: 'E',
+  other: 'S',
 };
 
 const QUADRANT_INFO: Record<QuadrantType, Omit<QuadrantData, 'amount' | 'percentage'>> = {
@@ -90,7 +81,7 @@ const QUADRANT_INFO: Record<QuadrantType, Omit<QuadrantData, 'amount' | 'percent
   },
 };
 
-export function useCashflowQuadrant(): CashflowQuadrantResult {
+export function useCashflowQuadrant(language: 'es' | 'en' = 'es'): CashflowQuadrantResult {
   const { user } = useAuth();
   const currentYear = new Date().getFullYear();
   const { data: incomeData, isLoading } = useIncome({ year: currentYear });
@@ -107,13 +98,16 @@ export function useCashflowQuadrant(): CashflowQuadrantResult {
         dominantQuadrant: 'E' as QuadrantType,
         progressToI: 0,
         recommendations: [
-          'Comienza registrando tus ingresos para ver tu cuadrante actual',
-          'El objetivo es mover más ingresos hacia el cuadrante I (Inversor)',
+          language === 'es'
+            ? 'Comienza registrando tus ingresos para ver tu cuadrante actual'
+            : 'Start recording your income to see your current quadrant',
+          language === 'es'
+            ? 'El objetivo es mover más ingresos hacia el cuadrante I (Inversor)'
+            : 'The goal is to move more income toward the I (Investor) quadrant',
         ],
       };
     }
 
-    // Calculate income by quadrant
     const quadrantTotals: Record<QuadrantType, number> = { E: 0, S: 0, B: 0, I: 0 };
     
     incomeData.forEach(income => {
@@ -123,47 +117,67 @@ export function useCashflowQuadrant(): CashflowQuadrantResult {
 
     const totalIncome = Object.values(quadrantTotals).reduce((a, b) => a + b, 0);
 
-    // Build quadrant data
     const quadrants: QuadrantData[] = (['E', 'S', 'B', 'I'] as QuadrantType[]).map(type => ({
       ...QUADRANT_INFO[type],
       amount: quadrantTotals[type],
       percentage: totalIncome > 0 ? (quadrantTotals[type] / totalIncome) * 100 : 0,
     }));
 
-    // Find dominant quadrant
     const dominantQuadrant = (Object.entries(quadrantTotals)
       .sort((a, b) => b[1] - a[1])[0]?.[0] || 'E') as QuadrantType;
 
-    // Calculate progress to I (percentage of income from investments)
     const progressToI = totalIncome > 0 ? (quadrantTotals.I / totalIncome) * 100 : 0;
 
-    // Generate recommendations based on current position
     const recommendations: string[] = [];
     
     if (quadrantTotals.E > quadrantTotals.I) {
-      recommendations.push('Kiyosaki: "Los ricos no trabajan por dinero, hacen que el dinero trabaje para ellos"');
+      recommendations.push(language === 'es'
+        ? 'Kiyosaki: "Los ricos no trabajan por dinero, hacen que el dinero trabaje para ellos"'
+        : 'Kiyosaki: "The rich don\'t work for money, they make money work for them"');
     }
     
     if (dominantQuadrant === 'E') {
-      recommendations.push('Considera desarrollar habilidades de freelance o invertir parte de tu salario');
-      recommendations.push('Destina al menos 10% de tu ingreso a inversiones para comenzar a moverte al cuadrante I');
+      recommendations.push(language === 'es'
+        ? 'Considera desarrollar habilidades de freelance o invertir parte de tu salario'
+        : 'Consider developing freelance skills or investing part of your salary');
+      recommendations.push(language === 'es'
+        ? 'Destina al menos 10% de tu ingreso a inversiones para comenzar a moverte al cuadrante I'
+        : 'Allocate at least 10% of your income to investments to start moving to quadrant I');
     } else if (dominantQuadrant === 'S') {
-      recommendations.push('Busca formas de sistematizar tu negocio para moverte al cuadrante B');
-      recommendations.push('Invierte en activos que generen ingresos pasivos');
+      recommendations.push(language === 'es'
+        ? 'Busca formas de sistematizar tu negocio para moverte al cuadrante B'
+        : 'Find ways to systemize your business to move to quadrant B');
+      recommendations.push(language === 'es'
+        ? 'Invierte en activos que generen ingresos pasivos'
+        : 'Invest in assets that generate passive income');
     } else if (dominantQuadrant === 'B') {
-      recommendations.push('¡Excelente! Ahora enfócate en invertir las ganancias de tu negocio');
-      recommendations.push('Diversifica en diferentes tipos de inversiones');
+      recommendations.push(language === 'es'
+        ? '¡Excelente! Ahora enfócate en invertir las ganancias de tu negocio'
+        : 'Excellent! Now focus on investing your business profits');
+      recommendations.push(language === 'es'
+        ? 'Diversifica en diferentes tipos de inversiones'
+        : 'Diversify across different types of investments');
     } else if (dominantQuadrant === 'I') {
-      recommendations.push('¡Felicidades! Estás en el cuadrante de la libertad financiera');
-      recommendations.push('Continúa diversificando y reinvirtiendo tus ganancias');
+      recommendations.push(language === 'es'
+        ? '¡Felicidades! Estás en el cuadrante de la libertad financiera'
+        : 'Congratulations! You\'re in the financial freedom quadrant');
+      recommendations.push(language === 'es'
+        ? 'Continúa diversificando y reinvirtiendo tus ganancias'
+        : 'Continue diversifying and reinvesting your earnings');
     }
 
     if (progressToI < 10) {
-      recommendations.push('Meta: Lograr que al menos 10% de tus ingresos sean del cuadrante I');
+      recommendations.push(language === 'es'
+        ? 'Meta: Lograr que al menos 10% de tus ingresos sean del cuadrante I'
+        : 'Goal: Get at least 10% of your income from quadrant I');
     } else if (progressToI < 25) {
-      recommendations.push('Buen progreso. Meta: Lograr 25% de ingresos del cuadrante I');
+      recommendations.push(language === 'es'
+        ? 'Buen progreso. Meta: Lograr 25% de ingresos del cuadrante I'
+        : 'Good progress. Goal: Reach 25% income from quadrant I');
     } else if (progressToI < 50) {
-      recommendations.push('¡Vas muy bien! Meta: 50% de ingresos pasivos');
+      recommendations.push(language === 'es'
+        ? '¡Vas muy bien! Meta: 50% de ingresos pasivos'
+        : 'Doing great! Goal: 50% passive income');
     }
 
     return {
@@ -173,7 +187,7 @@ export function useCashflowQuadrant(): CashflowQuadrantResult {
       progressToI,
       recommendations,
     };
-  }, [incomeData]);
+  }, [incomeData, language]);
 
   return {
     ...result,

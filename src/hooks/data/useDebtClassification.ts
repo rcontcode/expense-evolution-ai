@@ -14,8 +14,8 @@ export interface ClassifiedDebt {
   generates_income: boolean;
   monthly_income_generated: number;
   category: string;
-  netCost: number; // Monthly cost minus income generated
-  roi: number; // Return on investment (for good debt)
+  netCost: number;
+  roi: number;
 }
 
 export interface DebtClassificationData {
@@ -31,7 +31,7 @@ export interface DebtClassificationData {
   isLoading: boolean;
 }
 
-export function useDebtClassification(): DebtClassificationData {
+export function useDebtClassification(language: 'es' | 'en' = 'es'): DebtClassificationData {
   const { user } = useAuth();
 
   const { data: liabilities, isLoading } = useQuery({
@@ -63,8 +63,12 @@ export function useDebtClassification(): DebtClassificationData {
         totalMonthlyFromGoodDebt: 0,
         netMonthlyCostBadDebt: 0,
         recommendations: [
-          'No tienes deudas registradas. ¡Excelente posición!',
-          'Si tienes deudas, agrégalas para clasificarlas como buenas o malas',
+          language === 'es' 
+            ? 'No tienes deudas registradas. ¡Excelente posición!'
+            : 'No debts registered. Excellent position!',
+          language === 'es'
+            ? 'Si tienes deudas, agrégalas para clasificarlas como buenas o malas'
+            : 'If you have debts, add them to classify as good or bad',
         ],
       };
     }
@@ -75,7 +79,6 @@ export function useDebtClassification(): DebtClassificationData {
       const netCost = monthlyPayment - monthlyIncomeGenerated;
       const isGoodDebt = liability.debt_type === 'good' || liability.generates_income;
       
-      // Calculate ROI for good debt
       let roi = 0;
       if (isGoodDebt && monthlyPayment > 0) {
         roi = ((monthlyIncomeGenerated - monthlyPayment) / monthlyPayment) * 100;
@@ -107,31 +110,42 @@ export function useDebtClassification(): DebtClassificationData {
     const totalMonthlyFromGoodDebt = goodDebt.reduce((sum, d) => sum + d.monthly_income_generated, 0);
     const netMonthlyCostBadDebt = badDebt.reduce((sum, d) => sum + (d.minimum_payment || 0), 0);
 
-    // Generate recommendations based on Kiyosaki's principles
     const recommendations: string[] = [];
 
     if (totalBadDebt > totalGoodDebt) {
-      recommendations.push('Kiyosaki: "La deuda mala te hace más pobre, la buena te hace más rico"');
-      recommendations.push('Prioriza pagar la deuda mala antes de adquirir más deuda');
+      recommendations.push(language === 'es'
+        ? 'Kiyosaki: "La deuda mala te hace más pobre, la buena te hace más rico"'
+        : 'Kiyosaki: "Bad debt makes you poorer, good debt makes you richer"');
+      recommendations.push(language === 'es'
+        ? 'Prioriza pagar la deuda mala antes de adquirir más deuda'
+        : 'Prioritize paying off bad debt before acquiring more debt');
     }
 
     if (badDebt.length > 0) {
       const highestInterestBad = badDebt.sort((a, b) => (b.interest_rate || 0) - (a.interest_rate || 0))[0];
       if (highestInterestBad) {
-        recommendations.push(`Paga primero "${highestInterestBad.name}" (${highestInterestBad.interest_rate}% interés)`);
+        recommendations.push(language === 'es'
+          ? `Paga primero "${highestInterestBad.name}" (${highestInterestBad.interest_rate}% interés)`
+          : `Pay off "${highestInterestBad.name}" first (${highestInterestBad.interest_rate}% interest)`);
       }
     }
 
     if (goodDebt.length > 0 && totalMonthlyFromGoodDebt > 0) {
-      recommendations.push(`Tu deuda buena genera $${totalMonthlyFromGoodDebt.toFixed(0)}/mes en ingresos`);
+      recommendations.push(language === 'es'
+        ? `Tu deuda buena genera $${totalMonthlyFromGoodDebt.toFixed(0)}/mes en ingresos`
+        : `Your good debt generates $${totalMonthlyFromGoodDebt.toFixed(0)}/mo in income`);
     }
 
     if (goodDebtRatio < 50 && totalDebt > 0) {
-      recommendations.push('Meta: Convierte tu estructura de deuda a más de 50% deuda buena');
+      recommendations.push(language === 'es'
+        ? 'Meta: Convierte tu estructura de deuda a más de 50% deuda buena'
+        : 'Goal: Convert your debt structure to more than 50% good debt');
     }
 
     if (netMonthlyCostBadDebt > 0) {
-      recommendations.push(`Estás pagando $${netMonthlyCostBadDebt.toFixed(0)}/mes en deuda que no genera ingresos`);
+      recommendations.push(language === 'es'
+        ? `Estás pagando $${netMonthlyCostBadDebt.toFixed(0)}/mes en deuda que no genera ingresos`
+        : `You're paying $${netMonthlyCostBadDebt.toFixed(0)}/mo on non-income-generating debt`);
     }
 
     return {
@@ -145,7 +159,7 @@ export function useDebtClassification(): DebtClassificationData {
       netMonthlyCostBadDebt,
       recommendations,
     };
-  }, [liabilities]);
+  }, [liabilities, language]);
 
   return {
     ...result,
