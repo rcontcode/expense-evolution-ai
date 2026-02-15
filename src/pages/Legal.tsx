@@ -16,9 +16,8 @@ import {
   Building2,
   Bot,
   UserCheck,
-  Gavel,
-  MapPin,
-  ShieldAlert
+  Mail,
+  Heart
 } from 'lucide-react';
 
 export default function Legal() {
@@ -28,100 +27,132 @@ export default function Legal() {
   const sections = [
     {
       id: 'disclaimer',
-      icon: AlertTriangle,
-      title: isEs ? 'Descargo de Responsabilidad' : 'Disclaimer',
-      color: 'text-amber-500',
+      icon: Heart,
+      title: isEs ? '¿Qué es EvoFinz?' : 'What is EvoFinz?',
+      color: 'text-emerald-500',
       content: isEs ? (
         <>
           <p className="mb-4">
-            <strong>AVISO IMPORTANTE:</strong> La información, herramientas y cálculos proporcionados por EvoFinz son 
-            únicamente con <strong>fines educativos e informativos</strong>. Esta aplicación NO proporciona:
+            EvoFinz es una <strong>herramienta de organización financiera personal y educación</strong>. 
+            Fue creada para ayudarte a:
           </p>
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>Asesoría financiera personalizada</li>
-            <li>Asesoría fiscal o tributaria</li>
-            <li>Asesoría legal</li>
-            <li>Recomendaciones de inversión</li>
-            <li>Planificación de jubilación profesional</li>
+            <li>📊 Organizar tus gastos, ingresos y documentos en un solo lugar</li>
+            <li>📚 Aprender sobre finanzas personales con contenido inspirado en expertos reconocidos</li>
+            <li>📈 Ver estimaciones aproximadas que te sirvan como referencia para planificar</li>
+            <li>🤖 Usar un asistente de IA que te orienta (pero no te dice qué hacer)</li>
           </ul>
+          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 mb-4">
+            <p className="text-sm">
+              💡 <strong>En resumen:</strong> EvoFinz te ayuda a organizar información y aprender. 
+              No te da órdenes ni reemplaza a un profesional. Las decisiones financieras siempre son tuyas, 
+              y para temas importantes te recomendamos consultar con un contador o asesor certificado (CPA, CFP).
+            </p>
+          </div>
+        </>
+      ) : (
+        <>
           <p className="mb-4">
-            Las estimaciones fiscales, proyecciones de inversión, y cálculos de ahorro son <strong>aproximados</strong> y 
-            basados en supuestos generales. Cada situación financiera es única y requiere evaluación profesional.
+            EvoFinz is a <strong>personal financial organization and education tool</strong>. 
+            It was created to help you:
           </p>
-          <p className="font-medium">
-            SIEMPRE consulte con profesionales certificados (CPA, CFP, abogados) antes de tomar decisiones 
-            financieras importantes. EvoFinz y sus creadores no se hacen responsables de las decisiones 
-            tomadas basándose en la información proporcionada por esta aplicación.
+          <ul className="list-disc pl-6 mb-4 space-y-2">
+            <li>📊 Organize your expenses, income, and documents in one place</li>
+            <li>📚 Learn about personal finance with content inspired by recognized experts</li>
+            <li>📈 See approximate estimates as a reference for planning</li>
+            <li>🤖 Use an AI assistant that guides you (but doesn't tell you what to do)</li>
+          </ul>
+          <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 mb-4">
+            <p className="text-sm">
+              💡 <strong>In short:</strong> EvoFinz helps you organize information and learn. 
+              It doesn't give you orders or replace a professional. Financial decisions are always yours, 
+              and for important matters we recommend consulting a certified accountant or advisor (CPA, CFP).
+            </p>
+          </div>
+        </>
+      ),
+    },
+    {
+      id: 'user-responsibility',
+      icon: Shield,
+      title: isEs ? 'Tu Responsabilidad' : 'Your Responsibility',
+      color: 'text-blue-500',
+      content: isEs ? (
+        <>
+          <p className="mb-4">
+            Queremos ser claros y honestos contigo: <strong>tú eres quien toma las decisiones sobre tu dinero</strong>. 
+            EvoFinz es como una libreta inteligente que organiza tu información, pero no decide por ti.
+          </p>
+          <ul className="list-disc pl-6 mb-4 space-y-2">
+            <li>Los cálculos y estimaciones son <strong>aproximados</strong> y te sirven como guía, no como verdad absoluta</li>
+            <li>Si necesitas tomar una decisión financiera importante (impuestos, inversiones, deudas grandes), 
+            busca ayuda de un profesional certificado</li>
+            <li>La información que ingresas es tu responsabilidad — mientras más precisa sea, mejores serán las estimaciones</li>
+            <li>No uses EvoFinz como único criterio para decisiones que afecten significativamente tu situación financiera</li>
+          </ul>
+          <p className="text-sm text-muted-foreground">
+            Nuestro objetivo es ayudarte a entender mejor tus finanzas y organizarte. El resto depende de ti. 🙌
           </p>
         </>
       ) : (
         <>
           <p className="mb-4">
-            <strong>IMPORTANT NOTICE:</strong> The information, tools, and calculations provided by EvoFinz are 
-            for <strong>educational and informational purposes only</strong>. This application does NOT provide:
+            We want to be clear and honest with you: <strong>you are the one who makes decisions about your money</strong>. 
+            EvoFinz is like a smart notebook that organizes your information, but doesn't decide for you.
           </p>
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>Personalized financial advice</li>
-            <li>Tax or fiscal advice</li>
-            <li>Legal advice</li>
-            <li>Investment recommendations</li>
-            <li>Professional retirement planning</li>
+            <li>Calculations and estimates are <strong>approximate</strong> and serve as a guide, not absolute truth</li>
+            <li>If you need to make an important financial decision (taxes, investments, large debts), 
+            seek help from a certified professional</li>
+            <li>The information you enter is your responsibility — the more accurate it is, the better the estimates</li>
+            <li>Don't use EvoFinz as your sole criterion for decisions that significantly affect your financial situation</li>
           </ul>
-          <p className="mb-4">
-            Tax estimates, investment projections, and savings calculations are <strong>approximate</strong> and 
-            based on general assumptions. Each financial situation is unique and requires professional evaluation.
-          </p>
-          <p className="font-medium">
-            ALWAYS consult with certified professionals (CPA, CFP, attorneys) before making important 
-            financial decisions. EvoFinz and its creators are not responsible for decisions made based 
-            on the information provided by this application.
+          <p className="text-sm text-muted-foreground">
+            Our goal is to help you better understand your finances and get organized. The rest is up to you. 🙌
           </p>
         </>
       ),
     },
     {
       id: 'liability',
-      icon: ShieldAlert,
-      title: isEs ? 'Limitación de Responsabilidad' : 'Limitation of Liability',
-      color: 'text-red-500',
+      icon: AlertTriangle,
+      title: isEs ? 'Sobre Nuestra Responsabilidad' : 'About Our Responsibility',
+      color: 'text-amber-500',
       content: isEs ? (
         <>
           <p className="mb-4">
-            <strong>EN LA MÁXIMA MEDIDA PERMITIDA POR LA LEY APLICABLE:</strong>
+            EvoFinz es una herramienta gratuita/de bajo costo creada con buenas intenciones, pero como toda 
+            herramienta, tiene limitaciones:
           </p>
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>EvoFinz, sus creadores, desarrolladores, colaboradores y afiliados <strong>no serán responsables</strong> por 
-            daños directos, indirectos, incidentales, especiales, consecuentes o punitivos de ningún tipo.</li>
-            <li>Esto incluye, sin limitación: pérdidas financieras, pérdida de datos, pérdida de beneficios, 
-            o cualquier daño derivado del uso o la imposibilidad de uso de la aplicación.</li>
-            <li>La responsabilidad total acumulada de EvoFinz por cualquier reclamación no excederá el monto 
-            pagado por el usuario en los últimos 12 meses por el uso del servicio, o $100 USD, lo que sea menor.</li>
-            <li>El usuario reconoce que utiliza EvoFinz <strong>bajo su propio riesgo</strong> y que es el único 
-            responsable de las decisiones financieras que tome.</li>
+            <li>No podemos garantizar que todos los cálculos sean 100% exactos — son estimaciones basadas en 
+            información general y en los datos que tú proporcionas</li>
+            <li>No nos hacemos responsables de decisiones financieras que tomes basándote únicamente en la app</li>
+            <li>Si algo no funciona como esperabas o encuentras un error, por favor avísanos para que podamos mejorarlo</li>
+            <li>Hacemos nuestro mejor esfuerzo para mantener la información actualizada, pero las leyes fiscales 
+            y tasas cambian frecuentemente</li>
           </ul>
           <p className="text-sm text-muted-foreground">
-            Esta limitación se aplica independientemente de la teoría legal bajo la cual se presente la reclamación 
-            (contrato, agravio, negligencia, responsabilidad objetiva u otra).
+            En cualquier caso, si hubiese alguna reclamación, nuestra responsabilidad se limita al monto que 
+            hayas pagado por usar el servicio en los últimos 12 meses.
           </p>
         </>
       ) : (
         <>
           <p className="mb-4">
-            <strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:</strong>
+            EvoFinz is a free/low-cost tool created with good intentions, but like any tool, 
+            it has limitations:
           </p>
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>EvoFinz, its creators, developers, contributors, and affiliates <strong>shall not be liable</strong> for 
-            any direct, indirect, incidental, special, consequential, or punitive damages of any kind.</li>
-            <li>This includes, without limitation: financial losses, data loss, loss of profits, 
-            or any damages arising from the use or inability to use the application.</li>
-            <li>EvoFinz's total cumulative liability for any claim shall not exceed the amount 
-            paid by the user in the last 12 months for the service, or $100 USD, whichever is less.</li>
-            <li>The user acknowledges that they use EvoFinz <strong>at their own risk</strong> and are solely 
-            responsible for any financial decisions they make.</li>
+            <li>We can't guarantee that all calculations are 100% accurate — they're estimates based on 
+            general information and the data you provide</li>
+            <li>We are not responsible for financial decisions you make based solely on the app</li>
+            <li>If something doesn't work as expected or you find an error, please let us know so we can improve it</li>
+            <li>We do our best to keep information up to date, but tax laws and rates change frequently</li>
           </ul>
           <p className="text-sm text-muted-foreground">
-            This limitation applies regardless of the legal theory under which the claim is brought 
-            (contract, tort, negligence, strict liability, or otherwise).
+            In any case, if there were any claims, our liability is limited to the amount you've 
+            paid for using the service in the last 12 months.
           </p>
         </>
       ),
@@ -421,59 +452,51 @@ export default function Legal() {
       content: isEs ? (
         <>
           <p className="mb-4 font-medium">
-            EvoFinz toma la privacidad de sus datos seriamente. Esta sección describe cómo recopilamos, 
-            usamos y protegemos su información.
+            Tus datos son tuyos. Así de simple. Aquí te explicamos cómo los manejamos:
           </p>
           
           <p className="font-medium text-sm mb-2">Datos que recopilamos:</p>
           <ul className="list-disc pl-6 mb-4 space-y-1">
             <li>Información de cuenta (email, nombre)</li>
-            <li>Datos financieros que usted ingresa voluntariamente (ingresos, gastos, activos, deudas)</li>
-            <li>Documentos que sube para procesamiento (facturas, recibos)</li>
+            <li>Datos financieros que tú ingresas voluntariamente (ingresos, gastos, activos, deudas)</li>
+            <li>Documentos que subes para procesamiento (facturas, recibos)</li>
             <li>Datos de uso y navegación dentro de la aplicación</li>
           </ul>
 
-          <p className="font-medium text-sm mb-2">Cómo usamos sus datos:</p>
+          <p className="font-medium text-sm mb-2">Cómo usamos tus datos:</p>
           <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>Para proporcionar las funcionalidades de la aplicación</li>
-            <li>Para procesamiento por IA (OCR, asistente, análisis) — sus datos pueden ser enviados a 
-            proveedores de IA de terceros para procesamiento, sujetos a sus políticas de privacidad</li>
+            <li>Para que la app funcione y te muestre tu información organizada</li>
+            <li>Para procesamiento por IA (OCR, asistente, análisis) — tus datos pueden ser enviados a 
+            proveedores de IA para procesamiento</li>
             <li>Para mejorar la experiencia del usuario y el servicio</li>
-            <li>Para comunicaciones relacionadas con el servicio</li>
           </ul>
 
           <p className="font-medium text-sm mb-2">Protección de datos:</p>
           <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>Sus datos financieros se almacenan de forma segura y encriptada</li>
-            <li>No vendemos su información personal a terceros</li>
-            <li>No compartimos datos personales identificables para fines publicitarios</li>
-            <li>Usted puede exportar o solicitar eliminación de sus datos en cualquier momento</li>
+            <li>Tus datos financieros se almacenan de forma segura y encriptada</li>
+            <li><strong>No vendemos</strong> tu información personal a terceros</li>
+            <li>No compartimos datos personales para fines publicitarios</li>
+            <li>Puedes exportar o solicitar eliminación de tus datos en cualquier momento</li>
           </ul>
 
-          <p className="font-medium text-sm mb-2">Cookies y tecnologías similares:</p>
+          <p className="font-medium text-sm mb-2">Cookies:</p>
           <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>Utilizamos cookies esenciales para el funcionamiento de la aplicación (sesión, autenticación)</li>
-            <li>Podemos utilizar cookies analíticas para entender patrones de uso</li>
-            <li>No utilizamos cookies de seguimiento publicitario de terceros</li>
+            <li>Usamos cookies esenciales para que la app funcione (sesión, autenticación)</li>
+            <li>Podemos usar cookies analíticas para entender cómo se usa la app</li>
+            <li>No usamos cookies de seguimiento publicitario</li>
           </ul>
 
-          <p className="font-medium text-sm mb-2">Retención de datos:</p>
+          <p className="font-medium text-sm mb-2">Si quieres irte:</p>
           <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>Los datos de su cuenta se retienen mientras mantenga una cuenta activa</li>
-            <li>Al eliminar su cuenta, sus datos serán eliminados dentro de 30 días</li>
-            <li>Podemos retener datos anonimizados y agregados para análisis estadístico</li>
+            <li>Puedes eliminar tu cuenta cuando quieras</li>
+            <li>Al eliminar tu cuenta, tus datos se borran dentro de 30 días</li>
+            <li>Podemos retener datos anónimos y agregados para estadísticas generales</li>
           </ul>
-
-          <p className="text-sm text-muted-foreground">
-            Al usar EvoFinz, usted acepta estos términos y reconoce que la aplicación es una herramienta 
-            educativa, no un sustituto del asesoramiento profesional.
-          </p>
         </>
       ) : (
         <>
           <p className="mb-4 font-medium">
-            EvoFinz takes your data privacy seriously. This section describes how we collect, 
-            use, and protect your information.
+            Your data is yours. It's that simple. Here's how we handle it:
           </p>
           
           <p className="font-medium text-sm mb-2">Data we collect:</p>
@@ -486,82 +509,33 @@ export default function Legal() {
 
           <p className="font-medium text-sm mb-2">How we use your data:</p>
           <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>To provide application functionality</li>
+            <li>To make the app work and show you your organized information</li>
             <li>For AI processing (OCR, assistant, analysis) — your data may be sent to 
-            third-party AI providers for processing, subject to their privacy policies</li>
+            AI providers for processing</li>
             <li>To improve user experience and service</li>
-            <li>For service-related communications</li>
           </ul>
 
           <p className="font-medium text-sm mb-2">Data protection:</p>
           <ul className="list-disc pl-6 mb-4 space-y-1">
             <li>Your financial data is stored securely and encrypted</li>
-            <li>We do not sell your personal information to third parties</li>
-            <li>We do not share personally identifiable data for advertising purposes</li>
+            <li><strong>We do not sell</strong> your personal information to third parties</li>
+            <li>We do not share personal data for advertising purposes</li>
             <li>You can export or request deletion of your data at any time</li>
           </ul>
 
-          <p className="font-medium text-sm mb-2">Cookies and similar technologies:</p>
+          <p className="font-medium text-sm mb-2">Cookies:</p>
           <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>We use essential cookies for application functionality (session, authentication)</li>
-            <li>We may use analytical cookies to understand usage patterns</li>
-            <li>We do not use third-party advertising tracking cookies</li>
+            <li>We use essential cookies for app functionality (session, authentication)</li>
+            <li>We may use analytical cookies to understand how the app is used</li>
+            <li>We do not use advertising tracking cookies</li>
           </ul>
 
-          <p className="font-medium text-sm mb-2">Data retention:</p>
+          <p className="font-medium text-sm mb-2">If you want to leave:</p>
           <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>Your account data is retained while you maintain an active account</li>
+            <li>You can delete your account whenever you want</li>
             <li>Upon account deletion, your data will be deleted within 30 days</li>
-            <li>We may retain anonymized and aggregated data for statistical analysis</li>
+            <li>We may retain anonymized and aggregated data for general statistics</li>
           </ul>
-
-          <p className="text-sm text-muted-foreground">
-            By using EvoFinz, you accept these terms and acknowledge that the application is an 
-            educational tool, not a substitute for professional advice.
-          </p>
-        </>
-      ),
-    },
-    {
-      id: 'indemnification',
-      icon: Gavel,
-      title: isEs ? 'Indemnización' : 'Indemnification',
-      color: 'text-rose-500',
-      content: isEs ? (
-        <>
-          <p className="mb-4">
-            Usted acepta indemnizar, defender y mantener indemne a EvoFinz, sus creadores, desarrolladores, 
-            directores, empleados y agentes de y contra cualquier reclamación, demanda, daño, pérdida, 
-            costo o gasto (incluyendo honorarios razonables de abogados) que surja de:
-          </p>
-          <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>Su uso de la aplicación</li>
-            <li>Decisiones financieras tomadas basándose en información proporcionada por EvoFinz</li>
-            <li>Su violación de estos Términos de Uso</li>
-            <li>Su violación de cualquier ley o regulación aplicable</li>
-            <li>Cualquier contenido o datos que usted proporcione a través de la aplicación</li>
-          </ul>
-          <p className="text-sm text-muted-foreground">
-            Esta obligación de indemnización sobrevivirá la terminación de su cuenta y su uso de EvoFinz.
-          </p>
-        </>
-      ) : (
-        <>
-          <p className="mb-4">
-            You agree to indemnify, defend, and hold harmless EvoFinz, its creators, developers, 
-            directors, employees, and agents from and against any claims, demands, damages, losses, 
-            costs, or expenses (including reasonable attorney fees) arising from:
-          </p>
-          <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>Your use of the application</li>
-            <li>Financial decisions made based on information provided by EvoFinz</li>
-            <li>Your violation of these Terms of Use</li>
-            <li>Your violation of any applicable law or regulation</li>
-            <li>Any content or data you provide through the application</li>
-          </ul>
-          <p className="text-sm text-muted-foreground">
-            This indemnification obligation will survive the termination of your account and your use of EvoFinz.
-          </p>
         </>
       ),
     },
@@ -573,88 +547,88 @@ export default function Legal() {
       content: isEs ? (
         <>
           <p className="mb-4">
-            Al utilizar EvoFinz, usted acepta que:
+            Al usar EvoFinz aceptas estas reglas sencillas:
           </p>
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>Utilizará la aplicación únicamente con fines personales y educativos</li>
-            <li>Comprende que toda la información es aproximada y educativa</li>
-            <li>Consultará profesionales certificados antes de tomar decisiones financieras importantes</li>
-            <li>No responsabilizará a EvoFinz ni a sus creadores por decisiones financieras tomadas</li>
-            <li>Proporcionará información precisa para obtener estimaciones más útiles</li>
-            <li>No utilizará la aplicación para actividades ilegales o fraudulentas</li>
-            <li>No intentará acceder a datos de otros usuarios o vulnerar la seguridad del sistema</li>
+            <li>Usarás la app para organizar tus finanzas personales y aprender — no para actividades ilegales</li>
+            <li>Entiendes que toda la información es aproximada y educativa</li>
+            <li>Para decisiones financieras importantes, consultarás con un profesional</li>
+            <li>La información que ingreses será lo más precisa posible para que las estimaciones sean útiles</li>
+            <li>No intentarás acceder a datos de otros usuarios ni vulnerar la seguridad del sistema</li>
           </ul>
-          <p className="font-medium text-sm">
-            EvoFinz se reserva el derecho de modificar estos términos en cualquier momento. Los cambios 
-            significativos serán notificados. El uso continuado de la aplicación después de los cambios 
-            constituye la aceptación de los términos modificados.
+          <p className="text-sm text-muted-foreground">
+            Podemos actualizar estos términos de vez en cuando. Si hacemos cambios importantes, te avisaremos. 
+            Seguir usando la app después de un cambio significa que los aceptas.
           </p>
         </>
       ) : (
         <>
           <p className="mb-4">
-            By using EvoFinz, you agree that:
+            By using EvoFinz you agree to these simple rules:
           </p>
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>You will use the application only for personal and educational purposes</li>
+            <li>You'll use the app to organize your personal finances and learn — not for illegal activities</li>
             <li>You understand that all information is approximate and educational</li>
-            <li>You will consult certified professionals before making important financial decisions</li>
-            <li>You will not hold EvoFinz or its creators responsible for financial decisions made</li>
-            <li>You will provide accurate information to obtain more useful estimates</li>
-            <li>You will not use the application for illegal or fraudulent activities</li>
-            <li>You will not attempt to access other users' data or breach system security</li>
+            <li>For important financial decisions, you'll consult with a professional</li>
+            <li>The information you enter will be as accurate as possible so estimates are useful</li>
+            <li>You won't try to access other users' data or breach system security</li>
           </ul>
-          <p className="font-medium text-sm">
-            EvoFinz reserves the right to modify these terms at any time. Significant changes 
-            will be notified. Continued use of the application after changes constitutes 
-            acceptance of the modified terms.
+          <p className="text-sm text-muted-foreground">
+            We may update these terms from time to time. If we make important changes, we'll let you know. 
+            Continuing to use the app after a change means you accept them.
           </p>
         </>
       ),
     },
     {
-      id: 'jurisdiction',
-      icon: MapPin,
-      title: isEs ? 'Ley Aplicable y Jurisdicción' : 'Governing Law & Jurisdiction',
-      color: 'text-slate-500',
+      id: 'contact',
+      icon: Mail,
+      title: isEs ? 'Resolución de Dudas y Contacto' : 'Questions & Contact',
+      color: 'text-violet-500',
       content: isEs ? (
         <>
           <p className="mb-4">
-            Estos Términos de Uso se regirán e interpretarán de acuerdo con las leyes de <strong>Canadá</strong>, 
-            sin tener en cuenta sus disposiciones sobre conflictos de leyes.
+            Si tienes alguna duda, problema o sugerencia, queremos escucharte. No necesitas abogados ni 
+            procedimientos complicados — simplemente escríbenos:
           </p>
+          <div className="p-4 rounded-lg bg-violet-500/10 border border-violet-500/20 mb-4">
+            <p className="text-sm font-medium mb-2">📧 Contáctanos:</p>
+            <p className="text-sm">
+              Email: <a href="mailto:soporte@evofinz.com" className="underline underline-offset-2 hover:text-foreground transition-colors">soporte@evofinz.com</a>
+            </p>
+          </div>
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>Cualquier disputa que surja de estos términos o del uso de EvoFinz se someterá a la 
-            jurisdicción exclusiva de los tribunales competentes de la provincia de residencia del 
-            operador de EvoFinz en Canadá.</li>
-            <li>Antes de iniciar cualquier procedimiento legal, las partes acuerdan intentar resolver 
-            la disputa de buena fe mediante negociación directa durante un período mínimo de 30 días.</li>
-            <li>Si la disputa no se resuelve por negociación, las partes pueden acordar someterse a 
-            mediación antes de recurrir a los tribunales.</li>
+            <li>Intentaremos responder lo antes posible</li>
+            <li>Si encontraste un error, cuéntanos los detalles para que podamos solucionarlo</li>
+            <li>Si tienes una sugerencia, nos encantaría escucharla</li>
+            <li>Si quieres eliminar tu cuenta o tus datos, escríbenos y lo haremos</li>
           </ul>
           <p className="text-sm text-muted-foreground">
-            Si alguna disposición de estos términos se considera inválida o inaplicable, las disposiciones 
-            restantes permanecerán en pleno vigor y efecto.
+            Creemos que la mejor forma de resolver cualquier situación es hablando directamente. 
+            Estamos aquí para ayudar. 💬
           </p>
         </>
       ) : (
         <>
           <p className="mb-4">
-            These Terms of Use shall be governed by and construed in accordance with the laws of <strong>Canada</strong>, 
-            without regard to its conflict of law provisions.
+            If you have any questions, problems, or suggestions, we want to hear from you. You don't need 
+            lawyers or complicated procedures — just write to us:
           </p>
+          <div className="p-4 rounded-lg bg-violet-500/10 border border-violet-500/20 mb-4">
+            <p className="text-sm font-medium mb-2">📧 Contact us:</p>
+            <p className="text-sm">
+              Email: <a href="mailto:support@evofinz.com" className="underline underline-offset-2 hover:text-foreground transition-colors">support@evofinz.com</a>
+            </p>
+          </div>
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>Any dispute arising from these terms or the use of EvoFinz shall be subject to the 
-            exclusive jurisdiction of the competent courts in the province of residence of the 
-            EvoFinz operator in Canada.</li>
-            <li>Before initiating any legal proceedings, the parties agree to attempt to resolve 
-            the dispute in good faith through direct negotiation for a minimum period of 30 days.</li>
-            <li>If the dispute is not resolved by negotiation, the parties may agree to submit to 
-            mediation before resorting to the courts.</li>
+            <li>We'll try to respond as soon as possible</li>
+            <li>If you found an error, tell us the details so we can fix it</li>
+            <li>If you have a suggestion, we'd love to hear it</li>
+            <li>If you want to delete your account or data, write to us and we'll do it</li>
           </ul>
           <p className="text-sm text-muted-foreground">
-            If any provision of these terms is found to be invalid or unenforceable, the remaining 
-            provisions shall remain in full force and effect.
+            We believe the best way to resolve any situation is by talking directly. 
+            We're here to help. 💬
           </p>
         </>
       ),
@@ -682,20 +656,20 @@ export default function Legal() {
                 {isEs ? 'Información Legal' : 'Legal Information'}
               </h1>
               <p className="text-muted-foreground">
-                {isEs ? 'Términos, privacidad y descargos de responsabilidad' : 'Terms, privacy, and disclaimers'}
+                {isEs ? 'Cómo funciona EvoFinz y qué debes saber' : 'How EvoFinz works and what you should know'}
               </p>
             </div>
           </div>
 
           {/* Quick Summary */}
-          <Card className="bg-amber-500/10 border-amber-500/30">
+          <Card className="bg-emerald-500/10 border-emerald-500/30">
             <CardContent className="pt-4">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                <Heart className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
                 <p className="text-sm">
                   {isEs 
-                    ? 'EvoFinz es una herramienta educativa. Toda la información, cálculos y proyecciones son aproximados y no constituyen asesoría profesional. Consulte siempre con profesionales certificados (CPA, CFP, abogados) para decisiones financieras importantes.'
-                    : 'EvoFinz is an educational tool. All information, calculations, and projections are approximate and do not constitute professional advice. Always consult certified professionals (CPA, CFP, attorneys) for important financial decisions.'
+                    ? 'EvoFinz es una herramienta que te ayuda a organizar tu información financiera y aprender sobre finanzas personales. No somos asesores financieros ni fiscales — somos tu compañero de organización. Para decisiones importantes, siempre consulta con un profesional certificado.'
+                    : 'EvoFinz is a tool that helps you organize your financial information and learn about personal finance. We are not financial or tax advisors — we are your organization companion. For important decisions, always consult with a certified professional.'
                   }
                 </p>
               </div>
