@@ -1,82 +1,83 @@
 
 
-# Revision Legal: Simplificar y Proteger sin Intimidar
+# Auditoria de Herramientas Avanzadas: Problemas y Mejoras
 
-## Problema Identificado
+## Problemas Encontrados
 
-La pagina legal actual tiene lenguaje excesivamente agresivo y corporativo que **no corresponde** a lo que EvoFinz realmente es: una herramienta educativa de organizacion financiera personal. Especificamente:
+### 1. Estados Vacios Sin Mensaje Util (CRITICO)
+Los siguientes componentes muestran contenido vacio o con valores "0.0%" / "$0" sin ningun mensaje guia cuando el usuario no tiene datos, lo cual es confuso:
 
-1. **"Tribunales competentes"** - Mencionar tribunales y procedimientos legales es innecesario e intimidante para una app educativa gratuita/de bajo costo
-2. **Indemnizacion agresiva** - Pedir a usuarios que "indemnicen y defiendan" suena a contrato corporativo, no a app de ayuda
-3. **Tono general** - Demasiado legalista para el publico objetivo (personas con nivel bajo de educacion financiera)
+| Componente | Problema |
+|-----------|----------|
+| **CashflowQuadrantCard** | Muestra 4 cuadrantes con $0 y 0.0% sin ningun aviso de que falta agregar ingresos |
+| **FinancialFreedomCard** | Muestra "0.0% hacia la libertad financiera" sin indicar que hacer |
+| **DebtClassificationCard** | Muestra barra 0%/100% vacia sin aviso de que no hay deudas registradas |
+| **TaxSummaryCards** | Muestra $0.00 en las 3 tarjetas sin indicar que faltan gastos |
+| **DashboardCharts** (clientBreakdown vacio en DiaDia) | Se pasa clientBreakdown como array vacio `[]` intencionalmente, mostrando solo "No hay datos" |
 
-## Riesgos Latentes Reales (los que SI importan)
+### 2. Moneda Hardcodeada (BUG)
+- **PayYourselfFirstCard** (linea 52-57): Usa `currency: 'CAD'` hardcodeado en vez del hook `useFormatCurrency`. Esto rompe la experiencia para usuarios chilenos.
+- **TaxSummaryCards** (multiples lineas): Usa `$` hardcodeado con `.toFixed(2)` en vez del hook de formato. No respeta CLP ni otros formatos.
+- **BudgetAlertsCard** (lineas 157-159): Usa `$` hardcodeado con `.toFixed(2)`.
+- **GlobalBudgetCard** (lineas 224-228): Usa `$` hardcodeado.
+- **CategoryBudgetsCard** (linea 329): Usa `$` hardcodeado.
 
-| Riesgo | Estado Actual | Solucion |
-|--------|--------------|----------|
-| Usuario toma decision financiera mala basandose en la app | Disclaimer existe pero podria ser mas claro | Reforzar que es herramienta de ORGANIZACION, no de consejo |
-| Contenido de autores (Kiyosaki, etc.) genera reclamo de copyright | Atribucion existe, Fair Use mencionado | Agregar que las citas son breves y con fines educativos transformativos |
-| IA (Phoenix) da informacion incorrecta | Disclaimer de IA existe | Reforzar que el asistente es orientativo, no profesional |
-| Usuario menor de edad | Requisito 18+ existe | OK, esta bien |
-| Datos personales financieros | Politica de privacidad existe | Aclarar mejor que los datos son del usuario y puede eliminarlos |
+### 3. Texto Solo en Espanol (sin bilingue)
+- **FIRECalculatorCard**: Todo el contenido esta solo en espanol ("Libertad Financiera", "Calculadora", "anos", etc.) sin usar el sistema de idiomas.
 
-## Que Vamos a Cambiar
+### 4. DashboardCharts: Datos Incorrectos en DiaDia
+- En `DiaDiaAreaContent`, se pasa `clientBreakdown={[]}` (vacio forzado). Esto hace que el grafico de "Gastos por Cliente" siempre muestre "No hay datos" en esa area. Deberia ocultarse o mostrar otro grafico mas relevante.
 
-### 1. Eliminar seccion "Jurisdiccion/Tribunales"
-Reemplazar con una seccion simple de **"Resolucion de Dudas"** que diga: si tienes un problema, contactanos primero. Sin mencionar tribunales, abogados, ni procedimientos legales.
+## Plan de Mejoras
 
-### 2. Suavizar la seccion "Indemnizacion"  
-Reemplazarla con **"Responsabilidad del Usuario"** - un texto amigable que simplemente diga: tu eres responsable de tus decisiones financieras, esta app te ayuda a organizar informacion, no te dice que hacer.
+### Fase 1: Estados Vacios Informativos
+Agregar estados vacios con mensaje + accion en cada componente que actualmente muestra datos en blanco:
 
-### 3. Reforzar la identidad correcta de la app
-En el disclaimer principal, cambiar el enfoque de "NO somos asesores" (negativo) a "SOMOS una herramienta de organizacion y educacion" (positivo). Dejar claro que:
-- Organiza gastos, ingresos y documentos
-- Ofrece contenido educativo inspirado en expertos
-- Proporciona estimaciones aproximadas como referencia
-- NO reemplaza a un profesional
+- **CashflowQuadrantCard**: Cuando `totalIncome === 0`, mostrar un estado vacio con icono, mensaje "Registra ingresos para ver tu posicion en el cuadrante" y boton hacia /income
+- **FinancialFreedomCard**: Cuando `monthlyExpenses === 0 && passiveIncomeMonthly === 0`, mostrar estado vacio con "Agrega gastos e ingresos para calcular tu porcentaje de libertad" y boton hacia /expenses
+- **DebtClassificationCard**: Cuando `totalDebt === 0`, mostrar estado vacio con "No tienes deudas registradas. Agrega pasivos en Patrimonio" y boton hacia /net-worth
+- **TaxSummaryCards**: Cuando `taxSummary.totalExpenses === 0`, mostrar un banner informativo en vez de 3 tarjetas con $0.00
 
-### 4. Simplificar el lenguaje general
-- Quitar jerga legal innecesaria ("en la maxima medida permitida por la ley aplicable")
-- Usar lenguaje accesible para el publico objetivo
-- Mantener la proteccion legal real pero con palabras simples
+### Fase 2: Corregir Moneda Hardcodeada
+Reemplazar formateo manual por `useFormatCurrency` en:
+- PayYourselfFirstCard (eliminar formatCurrency local, usar hook)
+- TaxSummaryCards (reemplazar `$${value.toFixed(2)}` por hook)
+- BudgetAlertsCard (reemplazar `$` hardcodeado)
+- GlobalBudgetCard (reemplazar `$` hardcodeado)
+- CategoryBudgetsCard (reemplazar `$` hardcodeado)
 
-### 5. Agregar seccion de "Contacto"
-Una seccion simple con email de contacto para que los usuarios tengan un canal directo si hay algun problema, en vez de amenazar con tribunales.
+### Fase 3: Fix DiaDia Charts
+En `DiaDiaAreaContent`, no pasar el componente `DashboardCharts` completo (que incluye un grafico de clientes irrelevante). En su lugar, mostrar solo los graficos relevantes para el dia a dia: gastos por categoria y tendencia mensual.
 
 ## Seccion Tecnica
 
-### Archivo a modificar
-- `src/pages/Legal.tsx` - Reescribir las secciones problematicas
+### Archivos a modificar:
 
-### Cambios especificos en secciones:
+1. **`src/components/mentorship/CashflowQuadrantCard.tsx`** - Agregar estado vacio cuando totalIncome === 0 con icono, mensaje y boton de accion
+2. **`src/components/mentorship/FinancialFreedomCard.tsx`** - Agregar estado vacio cuando no hay datos
+3. **`src/components/mentorship/DebtClassificationCard.tsx`** - Agregar estado vacio cuando totalDebt === 0
+4. **`src/components/dashboard/TaxSummaryCards.tsx`** - Agregar estado vacio y reemplazar `$` hardcodeado por useFormatCurrency
+5. **`src/components/mentorship/PayYourselfFirstCard.tsx`** - Reemplazar formatCurrency local (lineas 52-57) por useFormatCurrency hook
+6. **`src/components/dashboard/BudgetAlertsCard.tsx`** - Reemplazar `$` hardcodeado por useFormatCurrency
+7. **`src/components/dashboard/GlobalBudgetCard.tsx`** - Reemplazar `$` hardcodeado por useFormatCurrency
+8. **`src/components/dashboard/CategoryBudgetsCard.tsx`** - Reemplazar `$` hardcodeado por useFormatCurrency
+9. **`src/components/focus/areas/DiaDiaAreaContent.tsx`** - Pasar solo categoria y tendencias, no el clientBreakdown vacio
 
-**Eliminar completamente:**
-- Seccion `jurisdiction` (tribunales/ley aplicable)
-- Seccion `indemnification` (indemnizacion agresiva)
+### Patron de estado vacio a implementar:
+```text
++----------------------------------+
+|          [Icono grande]          |
+|                                  |
+|   Mensaje explicativo breve      |
+|   que indica que falta           |
+|                                  |
+|   [Boton: Ir a agregar datos]    |
++----------------------------------+
+```
 
-**Reemplazar con:**
-- Seccion `user-responsibility` - "Tu eres responsable de tus decisiones. Esta app organiza informacion, no da ordenes."
-- Seccion `contact` - "Si tienes alguna duda o problema, escribenos a [email]"
-
-**Modificar:**
-- Seccion `disclaimer` - Cambiar tono de "NO hacemos X" a "Somos una herramienta de organizacion y educacion"
-- Seccion `liability` - Simplificar lenguaje, quitar jerga legal
-- Seccion `terms` - Simplificar, hacerlo mas conversacional
-
-**Mantener sin cambios:**
-- Seccion `ai-content` - Esta bien
-- Seccion `tax` - Esta bien  
-- Seccion `investment` - Esta bien
-- Seccion `education` / atribuciones - Esta bien
-- Seccion `age` - Esta bien
-- Seccion `privacy` - Esta bien
-- Checkbox de aceptacion en signup - Ya existe y funciona correctamente
-
-### Iconos a ajustar
-- Quitar `Gavel` (martillo de juez) y `MapPin` de los imports
-- Agregar `Mail` o `MessageCircle` para la seccion de contacto
-- Cambiar `ShieldAlert` por algo menos agresivo
-
-## Resultado Final
-Una pagina legal que **protege a EvoFinz** de responsabilidad real pero con un tono **amigable y accesible**, acorde con una app que busca **ayudar** a personas con poca educacion financiera a organizarse mejor.
+Cada estado vacio incluira:
+- Icono relevante (el mismo del componente pero mas grande)
+- Mensaje bilingue explicando que falta
+- Boton que lleva a la pagina donde se pueden agregar datos
+- Tono positivo y motivacional
 
