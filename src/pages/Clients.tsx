@@ -428,13 +428,44 @@ export default function Clients() {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>{t('clients.deleteConfirm')}</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {t('clients.deleteWarning')}
+                <AlertDialogDescription asChild>
+                  <div className="space-y-2">
+                    <p>{t('clients.deleteWarning')}</p>
+                    {deleteId && (() => {
+                      const contractCount = contracts?.filter(c => c.client_id === deleteId).length || 0;
+                      const expenseCount = expenses?.filter(e => e.client_id === deleteId).length || 0;
+                      const incomeCount = income?.filter(i => i.client_id === deleteId).length || 0;
+                      const mileageCount = mileage?.filter(m => m.client_id === deleteId).length || 0;
+                      const hasData = contractCount + expenseCount + incomeCount + mileageCount > 0;
+                      if (!hasData) return null;
+                      return (
+                        <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm space-y-1">
+                          <p className="font-medium text-destructive">
+                            {language === 'es' ? '⚠️ Datos que se verán afectados:' : '⚠️ Data that will be affected:'}
+                          </p>
+                          {contractCount > 0 && (
+                            <p>• {contractCount} {language === 'es' ? `contrato${contractCount > 1 ? 's' : ''} (se eliminarán permanentemente)` : `contract${contractCount > 1 ? 's' : ''} (will be permanently deleted)`}</p>
+                          )}
+                          {expenseCount > 0 && (
+                            <p>• {expenseCount} {language === 'es' ? `gasto${expenseCount > 1 ? 's' : ''} (quedarán sin cliente)` : `expense${expenseCount > 1 ? 's' : ''} (will become unassigned)`}</p>
+                          )}
+                          {incomeCount > 0 && (
+                            <p>• {incomeCount} {language === 'es' ? `ingreso${incomeCount > 1 ? 's' : ''} (quedarán sin cliente)` : `income record${incomeCount > 1 ? 's' : ''} (will become unassigned)`}</p>
+                          )}
+                          {mileageCount > 0 && (
+                            <p>• {mileageCount} {language === 'es' ? `viaje${mileageCount > 1 ? 's' : ''} (quedarán sin cliente)` : `trip${mileageCount > 1 ? 's' : ''} (will become unassigned)`}</p>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>{t('common.delete')}</AlertDialogAction>
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  {t('common.delete')}
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
