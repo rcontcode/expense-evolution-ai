@@ -1,71 +1,41 @@
 
 
-## Plan: Vista Familiar Completa - Mismas herramientas, interfaz simple
+## Plan: Corregir país del perfil y asegurar coherencia jurisdiccional
 
-### Problema Actual
-La `FamilyBudgetView` es una version recortada que:
-- NO permite agregar pagos fijos (bills) - el boton no hace nada
-- NO tiene graficos de proyecciones
-- NO tiene alertas inteligentes
-- NO tiene gestion de presupuestos por categoria
-- NO tiene analisis de banco ni deteccion de suscripciones
-- Es basicamente un resumen estatico sin funcionalidad real
+### Problema
+Tu perfil tiene `country = 'CL'` (Chile) pero toda tu información indica que estás en Canadá (British Columbia, CAD). No tienes entidades fiscales creadas, así que el sistema cae al fallback del perfil y muestra Chile incorrectamente.
 
-### Solucion: Reutilizar los componentes existentes dentro de la interfaz familiar
+### Cambios necesarios
 
-En lugar de crear todo desde cero, la vista familiar va a **integrar los mismos componentes potentes** que ya existen (MonthlyPlanCard, CategoryBudgetsCard, BudgetAlertsCard, BillFormDialog, SubscriptionTracker, proyecciones) pero envueltos en la interfaz amigable con emojis y secciones colapsables.
+#### 1. Corregir dato en base de datos
+- Actualizar `profiles.country` de `'CL'` a `'CA'` para tu usuario
 
-### Cambios Concretos
+#### 2. Agregar validación de coherencia en BudgetContextBar
+- Detectar si `country` y `province` no coinciden y mostrar un aviso sutil
+- Si el país es CL pero la provincia es de Canadá (o viceversa), alertar al usuario
 
-#### 1. `FamilyBudgetView.tsx` - Reconstruccion completa
+#### 3. Hacer el país editable desde el BudgetContextBar
+- Agregar un selector de país (CA/CL) clickeable junto al chip de moneda que ya es editable
+- Al cambiar país, actualizar `profiles.country` y ajustar automáticamente la moneda por defecto (CA->CAD, CL->CLP)
 
-Secciones colapsables con toda la funcionalidad:
+#### 4. Mejorar el fallback en EntityContext
+- Si no hay entidades fiscales Y el perfil tiene un país incoherente con la provincia, usar la provincia como fuente de verdad para inferir el país correcto
+- Agregar un log de advertencia en consola cuando se detecta inconsistencia
 
-| Seccion | Emoji | Componentes que integra |
-|---------|-------|------------------------|
-| Resumen del Mes | 📊 | Health score, KPIs, ritmo de gasto (mantener lo actual) |
-| Pagos Fijos | 🏦 | Lista de bills + **boton que abre BillFormDialog** directamente |
-| Gastos por Categoria | 🛒 | CategoryBudgetsCard simplificado (barras de progreso + edicion de limites inline) |
-| Alertas | 🔔 | BudgetAlertsCard (reutilizado directamente) |
-| Proyecciones | 🔮 | BudgetProjectionChart + CashFlowProjection (los mismos graficos de Recharts) |
-| Suscripciones | 🔄 | SubscriptionTracker (reutilizado) |
-| Analisis Bancario | 🏧 | Link/boton para ir a Banking con contexto, o integrar el mini-resumen |
-| Negocio (solo Unified) | 💼 | Resumen de gastos con entity_id (mantener lo actual) |
+### Secciones técnicas
 
-#### 2. Integracion del `BillFormDialog` existente
+**Base de datos:**
+- SQL: `UPDATE profiles SET country = 'CA' WHERE id = '...' AND country = 'CL'`
 
-- El boton "Agregar Pago" en la seccion de Pagos Fijos abrira directamente el `BillFormDialog` que ya existe y funciona perfecto
-- Se importa el componente y se maneja con estado local (`showBillDialog`)
-- Se conecta con `useRecurringBills` y sus mutaciones de crear/editar
+**BudgetContextBar.tsx:**
+- Agregar `Popover` para selector de país similar al de moneda existente
+- Al cambiar país: actualizar `profiles.country` + `profiles.display_currency` en cascada
 
-#### 3. Integracion de componentes de analisis
+**EntityContext.tsx:**
+- Agregar validación cruzada `province` vs `country` en el `useMemo`
+- Log warning si hay discrepancia
 
-- Los graficos de proyeccion (`BudgetProjectionChart`, `CashFlowProjection`) se cargan con lazy loading dentro de secciones colapsables
-- `CategoryBudgetsCard` se muestra en una seccion colapsable para editar limites por categoria
-- `SubscriptionTracker` se integra como seccion para detectar cobros recurrentes
-
-#### 4. Acciones rapidas mejoradas
-
-La barra inferior de acciones se expande:
-- Agregar Gasto (FamilyExpenseDialog - ya existe)
-- Agregar Ingreso (FamilyIncomeDialog - ya existe)  
-- Agregar Pago Fijo (BillFormDialog - ya existe, solo se importa)
-- Subir Boleta/Extracto (link a /mobile-capture o /banking)
-
-### Detalle Tecnico
-
-**Archivos a modificar:**
-- `src/components/budget/FamilyBudgetView.tsx` - Reconstruccion completa integrando componentes existentes
-
-**Archivos que se REUTILIZAN sin cambios:**
-- `src/components/bills/BillFormDialog.tsx` - Se importa directamente
-- `src/components/dashboard/BudgetAlertsCard.tsx` - Se usa como esta
-- `src/components/dashboard/CategoryBudgetsCard.tsx` - Se usa como esta
-- `src/components/analytics/BudgetProjectionChart.tsx` - Lazy loaded
-- `src/components/analytics/CashFlowProjection.tsx` - Lazy loaded
-- `src/components/subscriptions/SubscriptionTracker.tsx` - Se integra
-- `src/components/budget/FamilyExpenseDialog.tsx` - Se mantiene
-- `src/components/budget/FamilyIncomeDialog.tsx` - Se mantiene
-
-**Principio clave:** No recrear funcionalidad. Reutilizar componentes existentes envueltos en la UI familiar con emojis y secciones colapsables. Asi la vista familiar tiene EXACTAMENTE las mismas capacidades que la empresarial, solo que presentadas de forma mas amigable y organizada.
-
+### Resultado esperado
+- Verás 🇨🇦 Canada en la barra de contexto
+- Podrás cambiar país y moneda directamente desde la vista de presupuesto
+- Si hay inconsistencia entre país y provincia, el sistema te avisará
