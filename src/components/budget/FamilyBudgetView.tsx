@@ -171,20 +171,41 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="space-y-3"
       >
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            🏠 {l ? "Mi Presupuesto" : "My Budget"}
-          </h1>
-          <p className="text-sm text-muted-foreground capitalize">
-            {monthLabel} — {l ? `Día ${plan.daysPassed} de ${plan.daysInMonth}` : `Day ${plan.daysPassed} of ${plan.daysInMonth}`}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              {isUnified ? "🏠💼" : "🏠"} {l ? "Mi Presupuesto" : "My Budget"}
+            </h1>
+            <p className="text-sm text-muted-foreground capitalize">
+              {monthLabel} — {l ? `Día ${plan.daysPassed} de ${plan.daysInMonth}` : `Day ${plan.daysPassed} of ${plan.daysInMonth}`}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] px-2.5 py-1 rounded-full bg-primary/10 text-primary font-medium">
+              {isUnified
+                ? (l ? "🔗 Modo Unificado" : "🔗 Unified Mode")
+                : (l ? "🏡 Solo Familiar" : "🏡 Family Only")}
+            </span>
+            <Button variant="ghost" size="sm" onClick={onChangeMode} className="text-xs text-muted-foreground gap-1">
+              <Settings2 className="h-3.5 w-3.5" />
+              {l ? "Cambiar" : "Change"}
+            </Button>
+          </div>
+        </div>
+        {/* Contextual guide */}
+        <div className="p-3 rounded-lg bg-muted/40 border border-border/50">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {isUnified
+              ? (l
+                ? "💡 Modo Unificado: Gastos personales y de negocio se gestionan en un solo lugar. Ideal para freelancers o trabajadores independientes. Verás una sección adicional de gastos del negocio al final."
+                : "💡 Unified Mode: Personal and business expenses are managed in one place. Ideal for freelancers or independent workers. You'll see an additional business expenses section below.")
+              : (l
+                ? "💡 Modo Familiar: Enfocado exclusivamente en tus finanzas del hogar. Registra ingresos, gastos variables, pagos fijos y controla tu presupuesto diario para lograr tus metas de ahorro."
+                : "💡 Family Mode: Focused exclusively on your household finances. Track income, variable expenses, fixed payments, and control your daily budget to reach your savings goals.")}
           </p>
         </div>
-        <Button variant="ghost" size="sm" onClick={onChangeMode} className="text-xs text-muted-foreground gap-1">
-          <Settings2 className="h-3.5 w-3.5" />
-          {l ? "Modo" : "Mode"}
-        </Button>
       </motion.div>
 
       {/* ===== ROW 1: SALUD + INSIGHTS (side by side on desktop) ===== */}

@@ -78,20 +78,31 @@ export default function Budget() {
           <h1 className="text-2xl font-bold">{t('nav.budget')}</h1>
           <p className="text-sm text-muted-foreground">
             {t('budget.pageDescription')}
-            <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-muted">
-              {modeLabels[budgetMode]?.[l ? "es" : "en"]}
-            </span>
           </p>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-1.5 text-xs text-muted-foreground"
-          onClick={() => setShowWizard(true)}
-        >
-          <Settings2 className="h-3.5 w-3.5" />
-          {l ? "Cambiar modo" : "Change mode"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] px-2.5 py-1 rounded-full bg-primary/10 text-primary font-medium">
+            🏢 {modeLabels[budgetMode]?.[l ? "es" : "en"]}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-xs text-muted-foreground"
+            onClick={() => setShowWizard(true)}
+          >
+            <Settings2 className="h-3.5 w-3.5" />
+            {l ? "Cambiar modo" : "Change mode"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Contextual guide for separated mode */}
+      <div className="p-3 rounded-lg bg-muted/40 border border-border/50">
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {l
+            ? "💡 Modo Separado: Cada entidad (familia, empresa) tiene su propio presupuesto independiente. Selecciona una entidad abajo para ver y gestionar su presupuesto, categorías y proyecciones de forma aislada."
+            : "💡 Separated Mode: Each entity (family, company) has its own independent budget. Select an entity below to view and manage its budget, categories, and projections independently."}
+        </p>
       </div>
 
       <BudgetEntitySelector
