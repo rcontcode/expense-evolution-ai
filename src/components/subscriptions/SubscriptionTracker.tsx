@@ -7,7 +7,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { 
   RefreshCw, 
   DollarSign, 
-  TrendingDown, 
   Calendar, 
   ChevronDown, 
   ChevronUp,
@@ -21,12 +20,19 @@ import {
   ShoppingBag,
   Dumbbell,
   Newspaper,
-  HelpCircle
+  HelpCircle,
+  ArrowRightLeft,
+  Check,
+  Building2
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
+import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { useSubscriptionDetector, DetectedSubscription } from '@/hooks/data/useSubscriptionDetector';
-import { format, parseISO } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { format, parseISO, addMonths } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
@@ -44,7 +50,6 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 function getCategoryIcon(category: string | null): React.ReactNode {
   if (!category) return CATEGORY_ICONS.default;
   const lowerCategory = category.toLowerCase();
-  
   for (const [key, icon] of Object.entries(CATEGORY_ICONS)) {
     if (lowerCategory.includes(key)) return icon;
   }
@@ -53,11 +58,32 @@ function getCategoryIcon(category: string | null): React.ReactNode {
 
 function getFrequencyColor(frequency: DetectedSubscription['frequency']): string {
   switch (frequency) {
-    case 'weekly': return 'bg-red-500/10 text-red-600 border-red-500/20';
-    case 'monthly': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
-    case 'quarterly': return 'bg-green-500/10 text-green-600 border-green-500/20';
-    case 'yearly': return 'bg-purple-500/10 text-purple-600 border-purple-500/20';
+    case 'weekly': return 'bg-destructive/10 text-destructive border-destructive/20';
+    case 'monthly': return 'bg-primary/10 text-primary border-primary/20';
+    case 'quarterly': return 'bg-chart-2/10 text-chart-2 border-chart-2/20';
+    case 'yearly': return 'bg-chart-4/10 text-chart-4 border-chart-4/20';
     default: return 'bg-muted text-muted-foreground';
+  }
+}
+
+function getSourceBadge(source: DetectedSubscription['source'], language: string) {
+  switch (source) {
+    case 'bank':
+      return (
+        <Badge variant="outline" className="text-xs bg-chart-1/10 text-chart-1 border-chart-1/20">
+          <Building2 className="h-3 w-3 mr-1" />
+          {language === 'es' ? 'Banco' : 'Bank'}
+        </Badge>
+      );
+    case 'both':
+      return (
+        <Badge variant="outline" className="text-xs bg-chart-3/10 text-chart-3 border-chart-3/20">
+          <ArrowRightLeft className="h-3 w-3 mr-1" />
+          {language === 'es' ? 'Verificado' : 'Verified'}
+        </Badge>
+      );
+    default:
+      return null;
   }
 }
 
@@ -65,9 +91,11 @@ interface SubscriptionCardProps {
   subscription: DetectedSubscription;
   language: string;
   getFrequencyLabel: (frequency: DetectedSubscription['frequency'], language: string) => string;
+  onConvertToBill: (subscription: DetectedSubscription) => void;
+  isConverted: boolean;
 }
 
-function SubscriptionCard({ subscription, language, getFrequencyLabel }: SubscriptionCardProps) {
+function SubscriptionCard({ subscription, language, getFrequencyLabel, onConvertToBill, isConverted }: SubscriptionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -82,10 +110,11 @@ function SubscriptionCard({ subscription, language, getFrequencyLabel }: Subscri
                 </div>
                 <div>
                   <h4 className="font-medium">{subscription.vendor}</h4>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
                     <Badge variant="outline" className={getFrequencyColor(subscription.frequency)}>
                       {getFrequencyLabel(subscription.frequency, language)}
                     </Badge>
+                    {getSourceBadge(subscription.source, language)}
                     <span>•</span>
                     <span>{subscription.occurrences} {language === 'es' ? 'pagos' : 'payments'}</span>
                   </div>
@@ -129,6 +158,25 @@ function SubscriptionCard({ subscription, language, getFrequencyLabel }: Subscri
                 <Progress value={subscription.confidence} className="h-2 w-24" />
                 <span className="text-sm font-medium">{subscription.confidence.toFixed(0)}%</span>
               </div>
+              {/* Convert to Recurring Bill */}
+              <div className="pt-2">
+                {isConverted ? (
+                  <Button variant="outline" size="sm" disabled className="w-full">
+                    <Check className="h-4 w-4 mr-2" />
+                    {language === 'es' ? 'Agregado como gasto fijo' : 'Added as recurring bill'}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full"
+                    onClick={(e) => { e.stopPropagation(); onConvertToBill(subscription); }}
+                  >
+                    <ArrowRightLeft className="h-4 w-4 mr-2" />
+                    {language === 'es' ? 'Convertir en gasto fijo' : 'Convert to recurring bill'}
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </CollapsibleContent>
@@ -139,13 +187,59 @@ function SubscriptionCard({ subscription, language, getFrequencyLabel }: Subscri
 
 export function SubscriptionTracker() {
   const { language } = useLanguage();
-  const { data: expenses, isLoading } = useExpenses();
+  const { data: expenses, isLoading: expensesLoading } = useExpenses();
+  const { data: bankTransactions, isLoading: bankLoading } = useBankTransactions();
+  const queryClient = useQueryClient();
+  const [convertedVendors, setConvertedVendors] = useState<Set<string>>(new Set());
+
   const { 
     subscriptions, 
     totalAnnualSubscriptionCost, 
     totalMonthlySubscriptionCost,
     getFrequencyLabel 
-  } = useSubscriptionDetector(expenses || []);
+  } = useSubscriptionDetector(expenses || [], bankTransactions || []);
+
+  const isLoading = expensesLoading || bankLoading;
+
+  const handleConvertToBill = async (sub: DetectedSubscription) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const frequencyMap: Record<string, string> = {
+        weekly: 'weekly',
+        monthly: 'monthly',
+        quarterly: 'quarterly',
+        yearly: 'yearly',
+      };
+
+      const nextDue = addMonths(parseISO(sub.lastDate), sub.frequency === 'quarterly' ? 3 : sub.frequency === 'yearly' ? 12 : 1);
+
+      const { error } = await supabase.from('recurring_bills').insert({
+        user_id: user.id,
+        name: sub.vendor,
+        amount: Math.round(sub.averageAmount * 100) / 100,
+        frequency: frequencyMap[sub.frequency] || 'monthly',
+        category: sub.category || 'subscriptions',
+        is_active: true,
+        auto_pay: false,
+        next_due_date: format(nextDue, 'yyyy-MM-dd'),
+      });
+
+      if (error) throw error;
+
+      setConvertedVendors(prev => new Set(prev).add(sub.vendor));
+      queryClient.invalidateQueries({ queryKey: ['recurring-bills'] });
+      toast.success(
+        language === 'es'
+          ? `"${sub.vendor}" agregado como gasto fijo recurrente`
+          : `"${sub.vendor}" added as a recurring bill`
+      );
+    } catch (err) {
+      console.error('Error converting to bill:', err);
+      toast.error(language === 'es' ? 'Error al crear gasto fijo' : 'Error creating recurring bill');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -159,6 +253,8 @@ export function SubscriptionTracker() {
       </Card>
     );
   }
+
+  const bankCount = subscriptions.filter(s => s.source === 'bank' || s.source === 'both').length;
 
   return (
     <div className="space-y-6">
@@ -174,7 +270,10 @@ export function SubscriptionTracker() {
           <CardContent>
             <div className="text-3xl font-bold">{subscriptions.length}</div>
             <p className="text-xs text-muted-foreground">
-              {language === 'es' ? 'Gastos recurrentes identificados' : 'Recurring expenses identified'}
+              {bankCount > 0
+                ? (language === 'es' ? `${bankCount} desde extractos bancarios` : `${bankCount} from bank statements`)
+                : (language === 'es' ? 'Gastos recurrentes identificados' : 'Recurring expenses identified')
+              }
             </p>
           </CardContent>
         </Card>
@@ -212,15 +311,15 @@ export function SubscriptionTracker() {
 
       {/* Optimization Tip */}
       {subscriptions.length > 0 && totalAnnualSubscriptionCost > 500 && (
-        <Card className="border-amber-500/30 bg-amber-50/50 dark:bg-amber-900/10">
+        <Card className="border-accent/30 bg-accent/5">
           <CardContent className="py-4">
             <div className="flex items-start gap-3">
-              <Sparkles className="h-5 w-5 text-amber-600 mt-0.5" />
+              <Sparkles className="h-5 w-5 text-accent-foreground mt-0.5" />
               <div>
-                <h4 className="font-medium text-amber-800 dark:text-amber-200">
+                <h4 className="font-medium">
                   {language === 'es' ? 'Oportunidad de Ahorro' : 'Savings Opportunity'}
                 </h4>
-                <p className="text-sm text-amber-700 dark:text-amber-300">
+                <p className="text-sm text-muted-foreground">
                   {language === 'es' 
                     ? `Estás gastando $${totalAnnualSubscriptionCost.toFixed(0)} al año en suscripciones recurrentes. Revisa cuáles realmente usas y considera cancelar las que no aprovechas.`
                     : `You're spending $${totalAnnualSubscriptionCost.toFixed(0)} per year on recurring subscriptions. Review which ones you actually use and consider canceling those you don't.`
@@ -241,8 +340,8 @@ export function SubscriptionTracker() {
           </CardTitle>
           <CardDescription>
             {language === 'es' 
-              ? 'Basado en el análisis de tus gastos históricos'
-              : 'Based on analysis of your historical expenses'
+              ? 'Basado en tus gastos y extractos bancarios'
+              : 'Based on your expenses and bank statements'
             }
           </CardDescription>
         </CardHeader>
@@ -258,8 +357,8 @@ export function SubscriptionTracker() {
               </p>
               <p className="text-sm mt-2">
                 {language === 'es'
-                  ? 'Agrega más gastos para que podamos detectar patrones de suscripción'
-                  : 'Add more expenses so we can detect subscription patterns'
+                  ? 'Agrega más gastos o importa extractos bancarios para detectar patrones'
+                  : 'Add more expenses or import bank statements to detect patterns'
                 }
               </p>
             </div>
@@ -271,6 +370,8 @@ export function SubscriptionTracker() {
                   subscription={subscription}
                   language={language}
                   getFrequencyLabel={getFrequencyLabel}
+                  onConvertToBill={handleConvertToBill}
+                  isConverted={convertedVendors.has(subscription.vendor)}
                 />
               ))}
             </div>
@@ -280,18 +381,18 @@ export function SubscriptionTracker() {
 
       {/* High-Cost Alert */}
       {subscriptions.filter(s => s.frequency === 'weekly').length > 0 && (
-        <Card className="border-red-500/30 bg-red-50/50 dark:bg-red-900/10">
+        <Card className="border-destructive/30 bg-destructive/5">
           <CardContent className="py-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
+              <AlertTriangle className="h-5 w-5 text-destructive mt-0.5" />
               <div>
-                <h4 className="font-medium text-red-800 dark:text-red-200">
+                <h4 className="font-medium">
                   {language === 'es' ? 'Atención: Gastos Semanales Detectados' : 'Attention: Weekly Expenses Detected'}
                 </h4>
-                <p className="text-sm text-red-700 dark:text-red-300">
+                <p className="text-sm text-muted-foreground">
                   {language === 'es' 
-                    ? 'Tienes gastos que se repiten semanalmente. Estos pueden acumularse rápidamente. Considera si son realmente necesarios.'
-                    : 'You have expenses that repeat weekly. These can add up quickly. Consider if they are truly necessary.'
+                    ? 'Tienes gastos que se repiten semanalmente. Estos pueden acumularse rápidamente.'
+                    : 'You have expenses that repeat weekly. These can add up quickly.'
                   }
                 </p>
               </div>
