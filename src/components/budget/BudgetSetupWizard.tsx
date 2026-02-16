@@ -11,15 +11,16 @@ import { cn } from "@/lib/utils";
 
 const FEATURES: Array<{ label: { es: string; en: string }; family: boolean; unified: boolean; separated: boolean }> = [
   { label: { es: "Control diario de gastos", en: "Daily expense tracking" }, family: true, unified: true, separated: true },
+  { label: { es: "Registro de ingresos", en: "Income tracking" }, family: true, unified: true, separated: true },
   { label: { es: "Pagos fijos (arriendo, servicios)", en: "Fixed payments (rent, utilities)" }, family: true, unified: true, separated: true },
   { label: { es: "Alertas inteligentes", en: "Smart alerts" }, family: true, unified: true, separated: true },
   { label: { es: "Metas de ahorro", en: "Savings goals" }, family: true, unified: true, separated: true },
+  { label: { es: "Proyecciones financieras", en: "Financial projections" }, family: true, unified: true, separated: true },
   { label: { es: "Sección gastos de negocio", en: "Business expenses section" }, family: false, unified: true, separated: true },
-  { label: { es: "Ingresos por entidad", en: "Income per entity" }, family: false, unified: false, separated: true },
+  { label: { es: "Vista consolidada hogar + negocio", en: "Consolidated home + business view" }, family: false, unified: true, separated: false },
   { label: { es: "Presupuesto independiente por empresa", en: "Independent budget per company" }, family: false, unified: false, separated: true },
   { label: { es: "Selector de entidad fiscal", en: "Fiscal entity selector" }, family: false, unified: false, separated: true },
-  { label: { es: "Proyecciones por entidad", en: "Projections per entity" }, family: false, unified: true, separated: true },
-  { label: { es: "Vista consolidada hogar + negocio", en: "Consolidated home + business view" }, family: false, unified: true, separated: false },
+  { label: { es: "Ingresos y proyecciones por entidad", en: "Income & projections per entity" }, family: false, unified: false, separated: true },
 ];
 
 export type BudgetMode = "unified" | "separated" | "family_only";
