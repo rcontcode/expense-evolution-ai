@@ -260,66 +260,72 @@ export const Layout = ({ children }: LayoutProps) => {
       <div className="flex flex-col min-h-screen bg-background relative">
         <ThemeBackground />
         {/* Mobile Header */}
-        <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border/50 px-4 py-2.5">
+        <header className="sticky top-0 z-50 backdrop-blur-2xl border-b border-border/30 px-4 py-2" style={{ background: 'hsl(var(--background) / 0.98)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <PhoenixLogo variant="mini" />
-              <span className="text-lg font-bold bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">EvoFinz</span>
+              <span className="text-base font-bold bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">EvoFinz</span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <TooltipProvider>
-                <SyncStatusIndicator />
-                <AuthStatusIndicator compact />
-              </TooltipProvider>
-              
+            <div className="flex items-center gap-1">
               {/* Global Search Button - Mobile */}
               <Button 
                 variant="ghost" 
                 size="icon"
+                className="h-9 w-9"
                 onClick={() => setGlobalSearchOpen(true)}
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-4.5 w-4.5" />
               </Button>
               
               {/* Notification Bell - Mobile */}
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="relative"
+                className="relative h-9 w-9"
                 onClick={() => navigate('/notifications')}
               >
-                <Bell className="h-5 w-5" />
+                <Bell className="h-4.5 w-4.5" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-medium">
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center font-bold">
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
               </Button>
 
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[280px] p-0 flex flex-col border-0 shadow-2xl bg-background">
-                {/* Header - Clean & Pro */}
+              <SheetContent side="right" className="w-[300px] p-0 flex flex-col border-0 shadow-2xl bg-background">
+                {/* Header with status indicators moved here from header */}
                 <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-primary/5 to-transparent">
                   <div className="flex items-center gap-2.5">
                     <PhoenixLogo variant="mini" />
                     <span className="font-bold text-base bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">EvoFinz</span>
                   </div>
-                  <SheetClose asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full hover:bg-muted">
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </SheetClose>
+                  <div className="flex items-center gap-1.5">
+                    <TooltipProvider>
+                      <SyncStatusIndicator />
+                      <AuthStatusIndicator compact />
+                    </TooltipProvider>
+                    <SheetClose asChild>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full hover:bg-muted">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </SheetClose>
+                  </div>
                 </div>
                 
-                {/* Entity Selector - Prominent */}
+                {/* Entity Selector */}
                 <div className="px-3 py-2 border-b border-border/20">
                   <MobileMenuEntitySelector onNavigate={() => setMobileMenuOpen(false)} />
+                </div>
+                
+                {/* Theme Toggle */}
+                <div className="px-3 py-2 border-b border-border/20 flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">{language === 'es' ? 'Tema' : 'Theme'}</span>
+                  <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2.5" onClick={toggleTheme}>
+                    {mode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                    <span className="text-xs">{mode === 'dark' ? (language === 'es' ? 'Claro' : 'Light') : (language === 'es' ? 'Oscuro' : 'Dark')}</span>
+                  </Button>
                 </div>
                 
                 {/* Quick Access Grid - 4 columns with vibrant 3D icons */}
@@ -378,20 +384,20 @@ export const Layout = ({ children }: LayoutProps) => {
                         )}
                       >
                         {/* Section Header with icon accent */}
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-1.5">
                           <div className={cn(
-                            "w-5 h-5 rounded-md flex items-center justify-center text-[10px]",
+                            "w-6 h-6 rounded-lg flex items-center justify-center text-xs",
                             theme.iconWrapper
                           )}>
                             <span className="drop-shadow-sm">{section.emoji}</span>
                           </div>
-                          <span className={cn("text-[11px] font-bold uppercase tracking-wider", theme.text)}>
+                          <span className={cn("text-xs font-bold uppercase tracking-wider", theme.text)}>
                             {t(section.titleKey).replace(/^[^\s]+\s/, '')}
                           </span>
                         </div>
                         
-                        {/* Items Grid - 2 columns with vibrant icons */}
-                        <div className="grid grid-cols-2 gap-1.5">
+                {/* Items - single column for full text visibility */}
+                        <div className="space-y-0.5">
                           {section.items.map((item) => {
                             const Icon = item.icon;
                             const isActive = location.pathname === item.path;
@@ -401,20 +407,20 @@ export const Layout = ({ children }: LayoutProps) => {
                                 key={item.path}
                                 onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
                                 className={cn(
-                                  "flex items-center gap-2 px-2 py-2 rounded-lg transition-all text-left group",
+                                  "flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all text-left group w-full",
                                   isActive 
                                     ? cn("bg-background shadow-md border", theme.border)
                                     : "hover:bg-background/80 bg-background/40"
                                 )}
                               >
                                 <div className={cn(
-                                  "w-6 h-6 rounded-md flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                                  "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
                                   theme.iconWrapper
                                 )}>
-                                  <Icon className="h-3.5 w-3.5 text-white drop-shadow-sm" />
+                                  <Icon className="h-4 w-4 text-white drop-shadow-sm" />
                                 </div>
                                 <span className={cn(
-                                  "text-[11px] font-semibold truncate transition-colors",
+                                  "text-sm font-medium transition-colors",
                                   isActive ? theme.text : "text-foreground/80 group-hover:text-foreground"
                                 )}>
                                   {t(item.label)}
@@ -500,7 +506,9 @@ export const Layout = ({ children }: LayoutProps) => {
                     isActive && "active"
                   )}
                 >
-                  <Icon className={cn("h-5 w-5", isActive ? "text-primary" : "")} />
+                  <div className="mobile-bottom-nav-icon-wrap">
+                    <Icon className={cn("h-5 w-5", isActive ? "text-primary" : "")} />
+                  </div>
                   <span className="mobile-bottom-nav-label">{item.label}</span>
                 </button>
               );

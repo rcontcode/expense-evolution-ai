@@ -284,36 +284,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
         )}
       </AnimatePresence>
       
-      {/* FAB container - positioned above bottom nav */}
-      <div className="mobile-fab-container flex flex-col gap-2">
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
-        >
-          <Button
-            size="icon"
-            className="mobile-fab-secondary bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30"
-            onClick={onQuickCapture}
-          >
-            <Camera className="h-5 w-5" />
-          </Button>
-        </motion.div>
-        
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.3, type: 'spring', stiffness: 300 }}
-        >
-          <Button
-            size="icon"
-            className="mobile-fab"
-            onClick={() => navigate('/expenses')}
-          >
-            <Plus className="h-6 w-6" />
-          </Button>
-        </motion.div>
-      </div>
+      {/* FABs removed - Capture is in bottom nav, + is redundant */}
     </div>
   );
 }

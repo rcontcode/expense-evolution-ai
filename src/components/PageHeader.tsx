@@ -148,29 +148,33 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
       </div>
       )}
       
-      {/* Mobile: Large native title */}
-      {isMobile && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0">
-            {showBack && canGoBack && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={handleBack}
-                className="h-9 w-9 shrink-0 -ml-2"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-            )}
-            <h1 className="text-xl font-bold tracking-tight truncate">{title}</h1>
-          </div>
-          {children && (
-            <div className="flex items-center gap-1.5 shrink-0">
-              {children}
+      {/* Mobile: Large native title - hide back on main routes */}
+      {isMobile && (() => {
+        const mainRoutes = ['/dashboard', '/expenses', '/budget', '/income', '/clients'];
+        const isMainRoute = mainRoutes.includes(currentPath);
+        return (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 min-w-0">
+              {showBack && canGoBack && !isMainRoute && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={handleBack}
+                  className="h-8 w-8 shrink-0 -ml-1.5"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+              )}
+              <h1 className="text-xl font-bold tracking-tight truncate">{title}</h1>
             </div>
-          )}
-        </div>
-      )}
+            {children && (
+              <div className="flex items-center gap-1.5 shrink-0">
+                {children}
+              </div>
+            )}
+          </div>
+        );
+      })()}
       
       {/* Desktop: Title and Description */}
       {!isMobile && (
