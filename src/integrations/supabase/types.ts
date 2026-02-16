@@ -723,6 +723,7 @@ export type Database = {
           country: string | null
           created_at: string | null
           currency: string | null
+          deleted_at: string | null
           entity_id: string | null
           id: string
           industry: string | null
@@ -746,6 +747,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           currency?: string | null
+          deleted_at?: string | null
           entity_id?: string | null
           id?: string
           industry?: string | null
@@ -769,6 +771,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           currency?: string | null
+          deleted_at?: string | null
           entity_id?: string | null
           id?: string
           industry?: string | null
@@ -806,6 +809,7 @@ export type Database = {
           client_id: string | null
           contract_type: string | null
           created_at: string | null
+          deleted_at: string | null
           description: string | null
           end_date: string | null
           entity_id: string | null
@@ -831,6 +835,7 @@ export type Database = {
           client_id?: string | null
           contract_type?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           description?: string | null
           end_date?: string | null
           entity_id?: string | null
@@ -856,6 +861,7 @@ export type Database = {
           client_id?: string | null
           contract_type?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           description?: string | null
           end_date?: string | null
           entity_id?: string | null
@@ -1245,6 +1251,7 @@ export type Database = {
           created_at: string | null
           currency: string | null
           date: string
+          deleted_at: string | null
           description: string | null
           document_id: string | null
           entity_id: string | null
@@ -1267,6 +1274,7 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           date: string
+          deleted_at?: string | null
           description?: string | null
           document_id?: string | null
           entity_id?: string | null
@@ -1289,6 +1297,7 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           date?: string
+          deleted_at?: string | null
           description?: string | null
           document_id?: string | null
           entity_id?: string | null
@@ -1707,6 +1716,7 @@ export type Database = {
           created_at: string | null
           currency: string | null
           date: string
+          deleted_at: string | null
           description: string | null
           entity_id: string | null
           exchange_rate_used: number | null
@@ -1728,6 +1738,7 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           date: string
+          deleted_at?: string | null
           description?: string | null
           entity_id?: string | null
           exchange_rate_used?: number | null
@@ -1749,6 +1760,7 @@ export type Database = {
           created_at?: string | null
           currency?: string | null
           date?: string
+          deleted_at?: string | null
           description?: string | null
           entity_id?: string | null
           exchange_rate_used?: number | null
@@ -2437,6 +2449,7 @@ export type Database = {
           client_id: string | null
           color: string | null
           created_at: string | null
+          deleted_at: string | null
           description: string | null
           end_date: string | null
           entity_id: string | null
@@ -2452,6 +2465,7 @@ export type Database = {
           client_id?: string | null
           color?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           description?: string | null
           end_date?: string | null
           entity_id?: string | null
@@ -2467,6 +2481,7 @@ export type Database = {
           client_id?: string | null
           color?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           description?: string | null
           end_date?: string | null
           entity_id?: string | null

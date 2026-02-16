@@ -16,6 +16,7 @@ export function useProjects(status?: string) {
           *,
           client:clients(id, name)
         `)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (status) {
@@ -114,7 +115,7 @@ export function useDeleteProject() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('projects').delete().eq('id', id);
+      const { error } = await supabase.from('projects').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -124,7 +125,7 @@ export function useDeleteProject() {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       queryClient.invalidateQueries({ queryKey: ['income'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      toast.success('Proyecto eliminado');
+      toast.success('Proyecto movido a la papelera');
     },
     onError: (error) => {
       toast.error('Error al eliminar proyecto');

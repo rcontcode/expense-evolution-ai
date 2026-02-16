@@ -26,6 +26,7 @@ export function useIncome(filters?: IncomeFilters) {
           client:clients(id, name),
           project:projects(id, name, color)
         `)
+        .is('deleted_at', null)
         .order('date', { ascending: false });
 
       if (filters?.year) {
@@ -157,14 +158,14 @@ export function useDeleteIncome() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('income').delete().eq('id', id);
+      const { error } = await supabase.from('income').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['income'] });
       queryClient.invalidateQueries({ queryKey: ['income-summary'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      toast.success('Ingreso eliminado');
+      toast.success('Ingreso movido a la papelera');
     },
     onError: (error) => {
       toast.error('Error al eliminar ingreso');
@@ -186,6 +187,7 @@ export function useIncomeSummary(year?: number) {
       const { data, error } = await supabase
         .from('income')
         .select('amount, income_type, date, is_taxable')
+        .is('deleted_at', null)
         .gte('date', startDate)
         .lte('date', endDate);
 

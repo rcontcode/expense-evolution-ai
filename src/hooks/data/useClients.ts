@@ -19,6 +19,7 @@ export function useClients() {
       const { data, error } = await supabase
         .from('clients')
         .select('*')
+        .is('deleted_at', null)
         .order('name', { ascending: true });
       
       if (error) throw error;
@@ -98,7 +99,7 @@ export function useDeleteClient() {
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('clients')
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .eq('id', id);
       
       if (error) throw error;
@@ -112,7 +113,7 @@ export function useDeleteClient() {
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['income-summary'] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
-      toast.success('Cliente eliminado');
+      toast.success('Cliente movido a la papelera');
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Error al eliminar cliente');
