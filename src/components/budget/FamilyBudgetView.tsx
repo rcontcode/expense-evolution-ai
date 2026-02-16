@@ -29,6 +29,10 @@ import { MonthlyHeatmap } from "./family/MonthlyHeatmap";
 import { DebtSnapshot } from "./family/DebtSnapshot";
 import { GamificationStreak } from "./family/GamificationStreak";
 import { BudgetOnboarding } from "./family/BudgetOnboarding";
+import { CumulativeSpendingChart } from "./family/CumulativeSpendingChart";
+import { BudgetVsActualChart } from "./family/BudgetVsActualChart";
+import { UpcomingReminders } from "./family/UpcomingReminders";
+import { MonthComparisonChart } from "./family/MonthComparisonChart";
 
 // Family-specific dialogs
 import { FamilyExpenseDialog } from "./FamilyExpenseDialog";
@@ -314,7 +318,61 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
             </CollapsibleSection>
           </div>
 
-          {/* ===== SECTION 3: GASTOS + PAGOS FIJOS ===== */}
+          {/* ===== SECTION 3: RITMO DIARIO + COMPARACIÓN ===== */}
+          <div className="grid gap-5 lg:grid-cols-2">
+            <CollapsibleSection
+              emoji="📈"
+              title={l ? "Ritmo de Gasto Diario" : "Daily Spending Pace"}
+              subtitle={l ? "Gasto acumulado vs ritmo ideal" : "Cumulative spending vs ideal pace"}
+              defaultOpen={true}
+            >
+              <CumulativeSpendingChart
+                data={plan.cumulativeData}
+                dailyBudget={plan.dailyBudget}
+                daysInMonth={plan.daysInMonth}
+                daysPassed={plan.daysPassed}
+              />
+            </CollapsibleSection>
+
+            <CollapsibleSection
+              emoji="📊"
+              title={l ? "Comparación Mensual" : "Monthly Comparison"}
+              subtitle={l ? "Últimos 3 meses" : "Last 3 months"}
+              defaultOpen={true}
+            >
+              <MonthComparisonChart />
+            </CollapsibleSection>
+          </div>
+
+          {/* ===== SECTION 4: PRESUPUESTO VS REAL + RECORDATORIOS ===== */}
+          <div className="grid gap-5 lg:grid-cols-2">
+            <CollapsibleSection
+              emoji="🎯"
+              title={l ? "Presupuesto vs Real" : "Budget vs Actual"}
+              subtitle={l ? "Por categoría" : "By category"}
+              defaultOpen={plan.hasCategoryBudgets}
+            >
+              <BudgetVsActualChart
+                categories={plan.categorySpending.map(c => {
+                  const info = getCatInfo(c.category, l ? 'es' : 'en');
+                  return { ...c, label: info.label, icon: info.icon };
+                })}
+              />
+            </CollapsibleSection>
+
+            <CollapsibleSection
+              emoji="⏰"
+              title={l ? "Próximos Pagos" : "Upcoming Payments"}
+              subtitle={l ? "Recordatorios y vencimientos" : "Reminders & due dates"}
+              alert={overdueBills.length > 0}
+              badge={overdueBills.length > 0 ? `${overdueBills.length} ${l ? "vencido" : "overdue"}` : undefined}
+              defaultOpen={true}
+            >
+              <UpcomingReminders />
+            </CollapsibleSection>
+          </div>
+
+          {/* ===== SECTION 5: GASTOS + PAGOS FIJOS ===== */}
           <div className="grid gap-5 lg:grid-cols-2">
             <CollapsibleSection
               emoji="🍩"
@@ -403,7 +461,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
             </CollapsibleSection>
           </div>
 
-          {/* ===== SECTION 4: CATEGORÍAS + CALENDARIO (secondary) ===== */}
+          {/* ===== SECTION 6: CATEGORÍAS + CALENDARIO ===== */}
           <div className="grid gap-5 lg:grid-cols-2">
             <CollapsibleSection
               emoji="🛒"
@@ -460,7 +518,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
             </CollapsibleSection>
           </div>
 
-          {/* ===== SECTION 5: LÍMITES + ALERTAS ===== */}
+          {/* ===== SECTION 7: LÍMITES + ALERTAS ===== */}
           <div className="grid gap-5 lg:grid-cols-2">
             <CollapsibleSection
               emoji="📏"
@@ -483,7 +541,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
             </CollapsibleSection>
           </div>
 
-          {/* ===== SECTION 6: PROYECCIONES (full width) ===== */}
+          {/* ===== SECTION 8: PROYECCIONES (full width) ===== */}
           <CollapsibleSection
             emoji="🔮"
             title={l ? "Proyecciones" : "Projections"}
@@ -519,7 +577,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
             </div>
           </CollapsibleSection>
 
-          {/* ===== SECTION 7: EXTRAS (compact row) ===== */}
+          {/* ===== SECTION 9: EXTRAS (compact row) ===== */}
           <div className="grid gap-5 lg:grid-cols-3">
             <CollapsibleSection
               emoji="💳"
@@ -546,7 +604,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
             </CollapsibleSection>
           </div>
 
-          {/* ===== SECTION 8: BANKING + BUSINESS ===== */}
+          {/* ===== SECTION 10: BANKING + BUSINESS ===== */}
           {isUnified && (
             <CollapsibleSection
               emoji="💼"
