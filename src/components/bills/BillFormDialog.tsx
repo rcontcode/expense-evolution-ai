@@ -120,6 +120,11 @@ export function BillFormDialog({ open, onOpenChange, editingBill, onSave }: Bill
           {/* Step 0: Basic */}
           {step === 0 && (
             <>
+              <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-xs text-blue-700 dark:text-blue-300">
+                💡 {l
+                  ? 'Paso 1 de 3: Describe el pago. Los 3 pasos construyen UN SOLO pago recurrente — primero los datos básicos, luego cómo lo pagas, y finalmente detalles opcionales.'
+                  : 'Step 1 of 3: Describe the bill. The 3 steps build ONE recurring payment — first the basics, then how you pay it, and finally optional details.'}
+              </div>
               <div>
                 <Label>{l ? 'Nombre *' : 'Name *'}</Label>
                 <Input
@@ -202,6 +207,11 @@ export function BillFormDialog({ open, onOpenChange, editingBill, onSave }: Bill
           {/* Step 1: Payment Method */}
           {step === 1 && (
             <>
+              <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-xs text-blue-700 dark:text-blue-300">
+                💳 {l
+                  ? 'Paso 2 de 3: ¿Cómo pagas esta cuenta? Elige el método y opcionalmente indica desde qué banco se paga. Esto te ayudará a rastrear tus pagos.'
+                  : 'Step 2 of 3: How do you pay this bill? Pick the method and optionally note which bank pays it. This helps you track your payments.'}
+              </div>
               <div>
                 <Label className="text-sm font-semibold mb-2 block">{l ? 'Método de Pago' : 'Payment Method'}</Label>
                 <div className="grid grid-cols-2 gap-2">
@@ -285,6 +295,11 @@ export function BillFormDialog({ open, onOpenChange, editingBill, onSave }: Bill
           {/* Step 2: Details */}
           {step === 2 && (
             <>
+              <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-xs text-blue-700 dark:text-blue-300">
+                ⚙️ {l
+                  ? 'Paso 3 de 3: Detalles opcionales. Agrega recordatorios, instrucciones de pago o notas personales. Todo es opcional — puedes crear el pago ahora y completar esto después.'
+                  : 'Step 3 of 3: Optional details. Add reminders, payment instructions, or personal notes. Everything here is optional — you can create the bill now and fill this in later.'}
+              </div>
               <div>
                 <Label>{l ? 'Descripción' : 'Description'}</Label>
                 <Input

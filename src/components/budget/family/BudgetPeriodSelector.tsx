@@ -29,6 +29,11 @@ export function BudgetPeriodSelector({ period, onPeriodChange, rolloverEnabled, 
 
   return (
     <div className="space-y-3">
+      <p className="text-xs text-muted-foreground">
+        {l
+          ? '📅 Elige cómo dividir tu presupuesto: mensual (30 días), quincenal (15 días) o semanal (7 días). Activa "Rollover" para que lo que no gastes pase al siguiente período.'
+          : '📅 Choose how to split your budget: monthly (30 days), biweekly (15 days), or weekly (7 days). Enable "Rollover" to carry unspent money to the next period.'}
+      </p>
       <div className="space-y-2">
         <Label className="text-xs flex items-center gap-1.5">
           <Calendar className="h-3.5 w-3.5" />
