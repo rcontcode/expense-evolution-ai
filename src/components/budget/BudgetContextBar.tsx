@@ -22,10 +22,10 @@ const AVAILABLE_COUNTRIES = [
   { code: "CL", emoji: "⭐" },
 ];
 
-const CURRENCY_CONFIG: Record<string, { emoji: string; gradient: string; shadow: string }> = {
-  CAD: { emoji: "🇨🇦", gradient: "from-red-500/20 to-red-600/10", shadow: "shadow-red-500/20" },
-  CLP: { emoji: "🇨🇱", gradient: "from-blue-500/20 to-red-500/10", shadow: "shadow-blue-500/20" },
-  USD: { emoji: "🇺🇸", gradient: "from-emerald-500/20 to-emerald-600/10", shadow: "shadow-emerald-500/20" },
+const CURRENCY_CONFIG: Record<string, { countryCode: string; gradient: string; shadow: string }> = {
+  CAD: { countryCode: "CA", gradient: "from-red-500/20 to-red-600/10", shadow: "shadow-red-500/20" },
+  CLP: { countryCode: "CL", gradient: "from-blue-500/20 to-red-500/10", shadow: "shadow-blue-500/20" },
+  USD: { countryCode: "US", gradient: "from-emerald-500/20 to-emerald-600/10", shadow: "shadow-emerald-500/20" },
 };
 
 const AVAILABLE_CURRENCIES = [
@@ -137,9 +137,8 @@ export function BudgetContextBar() {
             <motion.span
               animate={{ rotate: [0, -8, 8, 0] }}
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-              className="text-sm"
             >
-              {currencyStyle.emoji}
+              <CountryFlag code={currencyStyle.countryCode} size="xs" />
             </motion.span>
             <span className="font-bold text-amber-700 dark:text-amber-400">{currentCurrency}</span>
             <ChevronDown className="h-3 w-3 text-muted-foreground" />
@@ -158,7 +157,7 @@ export function BudgetContextBar() {
                 disabled={saving}
                 className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs hover:bg-muted/80 transition-colors text-left"
               >
-                <span className="text-base">{cfg.emoji}</span>
+                <CountryFlag code={cfg.countryCode} size="sm" />
                 <span className="flex-1 font-medium">{c.label}</span>
                 {c.code === currentCurrency && <Check className="h-4 w-4 text-primary" />}
               </button>
