@@ -136,6 +136,7 @@ export function FamilyExpenseDialog({ open, onClose }: FamilyExpenseDialogProps)
                 {l ? "💰 ¿Cuánto?" : "💰 How much?"}
               </label>
               <div className="flex items-center justify-center gap-1">
+                <span className="text-xs font-medium text-muted-foreground mr-1 bg-muted px-1.5 py-0.5 rounded">{currentCurrency}</span>
                 <span className="text-2xl font-bold text-muted-foreground">$</span>
                 <Input
                   type="number"
