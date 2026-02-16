@@ -34,6 +34,7 @@ import { FamilyIncomeDialog } from "./FamilyIncomeDialog";
 
 // Full-power components reused
 import { BillFormDialog } from "@/components/bills/BillFormDialog";
+import { QuickCaptureDialog } from "@/components/dialogs/QuickCaptureDialog";
 import { BudgetAlertsCard } from "@/components/dashboard/BudgetAlertsCard";
 import { CategoryBudgetsCard } from "@/components/dashboard/CategoryBudgetsCard";
 import { SubscriptionTracker } from "@/components/subscriptions/SubscriptionTracker";
@@ -72,6 +73,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
   const [showIncomeDialog, setShowIncomeDialog] = useState(false);
   const [showBillDialog, setShowBillDialog] = useState(false);
   const [editingBill, setEditingBill] = useState<RecurringBill | null>(null);
+  const [showSmartTextDialog, setShowSmartTextDialog] = useState(false);
 
   const isUnified = budgetMode === "unified";
   const monthLabel = format(now, "MMMM yyyy", { locale: l ? es : enUS });
@@ -582,6 +584,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         onIncome={() => setShowIncomeDialog(true)}
         onBill={() => { setEditingBill(null); setShowBillDialog(true); }}
         onReceipt={() => navigate("/mobile-capture")}
+        onSmartText={() => setShowSmartTextDialog(true)}
       />
 
       {/* Dialogs */}
@@ -592,6 +595,11 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         onOpenChange={(open) => { setShowBillDialog(open); if (!open) setEditingBill(null); }}
         editingBill={editingBill}
         onSave={handleSaveBill}
+      />
+      <QuickCaptureDialog
+        open={showSmartTextDialog}
+        onClose={() => setShowSmartTextDialog(false)}
+        defaultTab="text"
       />
     </div>
   );
