@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCreateExpense } from "@/hooks/data/useExpenses";
+import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 
 const FAMILY_CATEGORIES = [
@@ -33,6 +35,8 @@ export function FamilyExpenseDialog({ open, onClose }: FamilyExpenseDialogProps)
   const l = language === "es";
   const { user } = useAuth();
   const { toast } = useToast();
+  const { currentCurrency } = useFormatCurrency();
+  const queryClient = useQueryClient();
   const createMutation = useCreateExpense();
 
   const [amount, setAmount] = useState("");
@@ -67,11 +71,14 @@ export function FamilyExpenseDialog({ open, onClose }: FamilyExpenseDialogProps)
         vendor: description || undefined,
         description: description || undefined,
         date: new Date().toISOString().split("T")[0],
-        currency: "CLP",
+        currency: currentCurrency,
         status: "approved",
         reimbursement_type: "non_reimbursable",
         user_id: user.id,
       } as any);
+
+      // Ensure budget view data refreshes
+      queryClient.invalidateQueries({ queryKey: ["monthly-plan"] });
 
       toast({
         title: l ? "✅ ¡Gasto registrado!" : "✅ Expense recorded!",

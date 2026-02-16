@@ -176,6 +176,21 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
   // Determine if user is in "empty" onboarding state
   const hasAnyData = plan.hasIncome || familyExpenses.length > 0 || activeBills.length > 0;
 
+  const SECTION_IDS = [
+    { id: 'budget-summary', label: l ? 'Resumen' : 'Summary', emoji: '💰' },
+    { id: 'budget-health', label: l ? 'Salud' : 'Health', emoji: '📊' },
+    { id: 'budget-pace', label: l ? 'Ritmo' : 'Pace', emoji: '📈' },
+    { id: 'budget-payments', label: l ? 'Pagos' : 'Payments', emoji: '⏰' },
+    { id: 'budget-categories', label: l ? 'Categorías' : 'Categories', emoji: '🛒' },
+    { id: 'budget-goals', label: l ? 'Metas' : 'Goals', emoji: '🎯' },
+    { id: 'budget-projections', label: l ? 'Proyecciones' : 'Projections', emoji: '🔮' },
+    { id: 'budget-tools', label: l ? 'Herramientas' : 'Tools', emoji: '⚡' },
+  ];
+
+  const scrollToSection = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <div className="space-y-5 pb-24">
       {/* Header */}
@@ -215,6 +230,23 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         </div>
       </motion.div>
 
+      {/* Section scroll nav */}
+      {hasAnyData && (
+        <div className="overflow-x-auto scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
+          <div className="flex gap-1.5 min-w-max pb-1">
+            {SECTION_IDS.map(s => (
+              <button
+                key={s.id}
+                onClick={() => scrollToSection(s.id)}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-muted/50 hover:bg-primary/10 hover:text-primary transition-colors whitespace-nowrap border border-transparent hover:border-primary/20"
+              >
+                <span>{s.emoji}</span> {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ONBOARDING: Show guided steps when no data */}
       {!hasAnyData ? (
         <BudgetOnboarding
@@ -229,7 +261,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
       ) : (
         <>
           {/* ===== SECTION 1: RESUMEN RÁPIDO (summary strip) ===== */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}>
+          <motion.div id="budget-summary" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}>
             <Card className="p-4">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <MiniCard
@@ -271,7 +303,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
           </motion.div>
 
           {/* ===== SECTION 2: SALUD + INSIGHTS ===== */}
-          <div className="grid gap-5 lg:grid-cols-2">
+          <div id="budget-health" className="grid gap-5 lg:grid-cols-2">
             <CollapsibleSection
               emoji="📊"
               title={l ? "Salud Financiera" : "Financial Health"}
@@ -331,7 +363,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
 
           {/* ===== SECTION 3: RITMO + COMPARACIÓN (only if has expenses) ===== */}
           {familyExpenses.length > 0 && (
-            <div className="grid gap-5 lg:grid-cols-2">
+            <div id="budget-pace" className="grid gap-5 lg:grid-cols-2">
               <CollapsibleSection
                 emoji="📈"
                 title={l ? "Ritmo de Gasto Diario" : "Daily Spending Pace"}
@@ -363,7 +395,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
           )}
 
           {/* ===== SECTION 4: COMPARACIÓN MENSUAL + RECORDATORIOS ===== */}
-          <div className="grid gap-5 lg:grid-cols-2">
+          <div id="budget-payments" className="grid gap-5 lg:grid-cols-2">
             <CollapsibleSection
               emoji="📊"
               title={l ? "Comparación Mensual" : "Monthly Comparison"}
@@ -478,7 +510,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
 
           {/* ===== SECTION 6: CATEGORÍAS + CALENDARIO (only if has expenses) ===== */}
           {familyExpenses.length > 0 && (
-            <div className="grid gap-5 lg:grid-cols-2">
+            <div id="budget-categories" className="grid gap-5 lg:grid-cols-2">
               <CollapsibleSection
                 emoji="🛒"
                 title={l ? "Detalle por Categoría" : "Category Breakdown"}
@@ -555,6 +587,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
           </div>
 
           {/* ===== SECTION 8: PROYECCIONES (full width) ===== */}
+          <div id="budget-projections">
           <CollapsibleSection
             emoji="🔮"
             title={l ? "Proyecciones" : "Projections"}
@@ -589,9 +622,10 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
               </div>
             </div>
           </CollapsibleSection>
+          </div>
 
           {/* ===== SECTION 8b: METAS DE AHORRO + COMPARACIÓN ANUAL ===== */}
-          <div className="grid gap-5 lg:grid-cols-2">
+          <div id="budget-goals" className="grid gap-5 lg:grid-cols-2">
             <CollapsibleSection
               emoji="🎯"
               title={l ? "Metas de Ahorro" : "Savings Goals"}
@@ -611,7 +645,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
           </div>
 
           {/* ===== SECTION 8c: REGLAS + HISTORIAL + EXPORTAR ===== */}
-          <div className="grid gap-5 lg:grid-cols-3">
+          <div id="budget-tools" className="grid gap-5 lg:grid-cols-3">
             <CollapsibleSection
               emoji="⚡"
               title={l ? "Reglas Automáticas" : "Automatic Rules"}

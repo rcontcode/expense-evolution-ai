@@ -39,6 +39,7 @@ const ROUTE_CONFIG: Record<string, { labelEs: string; labelEn: string; parent?: 
   '/settings': { labelEs: 'Configuración', labelEn: 'Settings', parent: '/dashboard' },
   '/business-profile': { labelEs: 'Perfil de Negocio', labelEn: 'Business Profile', parent: '/settings' },
   '/capture': { labelEs: 'Captura Rápida', labelEn: 'Quick Capture', parent: '/expenses' },
+  '/budget': { labelEs: 'Presupuesto', labelEn: 'Budget', parent: '/dashboard' },
 };
 
 export function PageHeader({ title, description, showBack = true, children }: PageHeaderProps) {

@@ -8,6 +8,9 @@ import { BudgetEntitySelector } from "@/components/budget/BudgetEntitySelector";
 import { FamilyBudgetView } from "@/components/budget/FamilyBudgetView";
 import { Button } from "@/components/ui/button";
 import { Settings2 } from "lucide-react";
+import { Layout } from "@/components/Layout";
+import { PageHeader } from "@/components/PageHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function BudgetSkeleton() {
   return (
@@ -30,6 +33,7 @@ const modeLabels: Record<BudgetMode, { es: string; en: string }> = {
 export default function Budget() {
   const { t, language } = useLanguage();
   const l = language === 'es';
+  const isMobile = useIsMobile();
   const { data: settings, isLoading: settingsLoading } = useUserSettings();
   const preferences = (settings?.preferences as UserPreferences) || {};
   const budgetMode = preferences.budget_mode as BudgetMode | undefined;
@@ -39,52 +43,82 @@ export default function Budget() {
 
   if (settingsLoading) {
     return (
-      <div className="page-container">
-        <BudgetSkeleton />
-      </div>
+      <Layout>
+        <div className="page-container">
+          <PageHeader
+            title={l ? '💰 Presupuesto' : '💰 Budget'}
+            description={!isMobile ? (l ? 'Control integral de tus finanzas' : 'Comprehensive financial control') : undefined}
+          />
+          <BudgetSkeleton />
+        </div>
+      </Layout>
     );
   }
 
   if (!budgetMode || showWizard) {
     return (
-      <div className="page-container py-8">
-        <BudgetSetupWizard onComplete={() => setShowWizard(false)} />
-      </div>
+      <Layout>
+        <div className="page-container py-8">
+          <PageHeader
+            title={l ? '💰 Presupuesto' : '💰 Budget'}
+            description={!isMobile ? (l ? 'Configura tu modo de presupuesto' : 'Set up your budget mode') : undefined}
+          />
+          <BudgetSetupWizard onComplete={() => setShowWizard(false)} />
+        </div>
+      </Layout>
     );
   }
 
   // Family-only mode: null entity = family data only
   if (budgetMode === "family_only") {
     return (
-      <BudgetEntityProvider entityId={null}>
-        <div className="page-container py-4">
-          <FamilyBudgetView budgetMode={budgetMode} onChangeMode={() => setShowWizard(true)} />
-        </div>
-      </BudgetEntityProvider>
+      <Layout>
+        <BudgetEntityProvider entityId={null}>
+          <div className="page-container py-4">
+            <PageHeader
+              title={l ? '💰 Presupuesto' : '💰 Budget'}
+              description={!isMobile ? (l ? 'Control integral de tus finanzas familiares' : 'Comprehensive family financial control') : undefined}
+            />
+            <FamilyBudgetView budgetMode={budgetMode} onChangeMode={() => setShowWizard(true)} />
+          </div>
+        </BudgetEntityProvider>
+      </Layout>
     );
   }
 
   // Unified mode: undefined entity = show all data
   if (budgetMode === "unified") {
     return (
-      <BudgetEntityProvider entityId={undefined}>
-        <div className="page-container py-4">
-          <FamilyBudgetView budgetMode={budgetMode} onChangeMode={() => setShowWizard(true)} />
-        </div>
-      </BudgetEntityProvider>
+      <Layout>
+        <BudgetEntityProvider entityId={undefined}>
+          <div className="page-container py-4">
+            <PageHeader
+              title={l ? '💰 Presupuesto' : '💰 Budget'}
+              description={!isMobile ? (l ? 'Vista unificada: hogar + negocio' : 'Unified view: home + business') : undefined}
+            />
+            <FamilyBudgetView budgetMode={budgetMode} onChangeMode={() => setShowWizard(true)} />
+          </div>
+        </BudgetEntityProvider>
+      </Layout>
     );
   }
 
   // Full separated view for companies — selectedEntityId null means "Family"
   return (
-    <BudgetEntityProvider entityId={selectedEntityId}>
-      <div className="page-container space-y-4">
-        <BudgetEntitySelector
-          selectedEntityId={selectedEntityId}
-          onSelect={setSelectedEntityId}
-        />
-        <FamilyBudgetView budgetMode={budgetMode} onChangeMode={() => setShowWizard(true)} />
-      </div>
-    </BudgetEntityProvider>
+    <Layout>
+      <BudgetEntityProvider entityId={selectedEntityId}>
+        <div className="page-container space-y-4">
+          <PageHeader
+            title={l ? '💰 Presupuesto' : '💰 Budget'}
+            description={!isMobile ? (l ? 'Separado por entidad fiscal' : 'Separated by fiscal entity') : undefined}
+          />
+          <BudgetEntitySelector
+            selectedEntityId={selectedEntityId}
+            onSelect={setSelectedEntityId}
+          />
+          <FamilyBudgetView budgetMode={budgetMode} onChangeMode={() => setShowWizard(true)} />
+        </div>
+      </BudgetEntityProvider>
+    </Layout>
   );
 }
