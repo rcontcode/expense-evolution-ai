@@ -1,128 +1,124 @@
 
-# Auditoria de Sincronizacion: Problemas Encontrados
+# Auditoria de Responsive Movil: Plan de Mejora
 
-## Diagnostico
+## Diagnostico Visual
 
-Tras revisar los 55 archivos que usan `invalidateQueries`, encontre que `useInvalidateRelated` se usa correctamente en los hooks principales (expenses, income, clients, projects, contracts, bills, entities, budgets, settings, trash), pero hay **11 hooks y componentes** que siguen usando invalidacion manual directa (`queryClient.invalidateQueries`) sin pasar por el sistema centralizado, lo que crea puntos ciegos de sincronizacion.
-
----
-
-## Problemas Identificados
-
-### 1. `useMileage` -- NO usa `useInvalidateRelated`
-- Las 3 mutations (create/update/delete) usan `queryClient.invalidateQueries` directo
-- Solo invalidan `mileage`, `mileage-summary`, `dashboard-stats`
-- **Falta**: `data-health`, `income-summary` (el kilometraje afecta deducciones)
-- **Falta**: No escribe en `audit_log`
-- **Falta**: No tiene soft delete (usa `.delete()` permanente)
-
-### 2. `useSavingsGoals` -- NO usa `useInvalidateRelated`
-- Las 4 mutations usan `queryClient.invalidateQueries` directo
-- Solo invalidan `savings-goals` y `savings-contributions`
-- **Falta**: `dashboard-stats` (las metas de ahorro afectan el patrimonio)
-- **Falta**: No tiene soft delete
-
-### 3. `useNetWorth` (assets/liabilities) -- NO usa `useInvalidateRelated`
-- Las 6 mutations (create/update/delete x2) usan `queryClient.invalidateQueries` directo
-- Solo invalidan `assets` o `liabilities` individualmente
-- **Falta**: `net-worth-snapshots`, `dashboard-stats` (el patrimonio neto no se recalcula al agregar/eliminar activos o pasivos)
-- **Falta**: No tiene soft delete
-
-### 4. `useTags` -- NO usa `useInvalidateRelated`
-- Las 4 mutations usan `queryClient.invalidateQueries` directo
-- Invalida `tags`, `tags-with-expense-count`, `expenses`
-- **Falta**: `dashboard-stats`, `data-health`
-
-### 5. `useFinancialHabits` -- NO usa `useInvalidateRelated`
-- Solo invalida `financial-habits`
-- Menor impacto, pero rompe consistencia del patron
-
-### 6. `useFinancialJournal` -- NO usa `useInvalidateRelated`
-- Solo invalida `financial-journal` y `financial-journal-stats`
-- Menor impacto
-
-### 7. `FamilyExpenseDialog` / `FamilyIncomeDialog` / `IncomeListWidget` -- Invalidacion manual parcial
-- Estos componentes llaman a mutations de `useCreateExpense`/`useCreateIncome` (que SI usan `useInvalidateRelated`)
-- PERO ademas agregan manualmente `queryClient.invalidateQueries({ queryKey: ["monthly-plan"] })`
-- **Problema**: `monthly-plan` NO esta en `afterExpense()` ni `afterIncome()` del helper centralizado
-- El "Plan Mensual" del presupuesto familiar no se actualiza cuando se crean gastos/ingresos desde OTRAS secciones (no desde el presupuesto)
-
-### 8. `BulkMileageEntry` / `MileageImportDialog` -- Invalidacion manual
-- Invalidan `mileage` y `mileage-summary` directamente
-- **Falta**: `dashboard-stats`, `data-health`
-
-### 9. `SubscriptionTracker` -- Invalidacion manual
-- Al convertir suscripcion a pago recurrente, solo invalida `recurring-bills`
-- **Falta**: `bill-payments`, `dashboard-stats`, `income-summary` (todo lo que hace `afterBill()`)
-
-### 10. `useExpensesRealtime` -- NO usa `useInvalidateRelated`
-- Invalida manualmente `expenses`, `dashboard-stats`, `income-summary`, `data-health`
-- **Falta**: `category-budgets` (que SI esta en `afterExpense()`)
-- **Falta**: `monthly-plan`
-
-### 11. `afterBill()` -- Incompleto
-- No invalida `monthly-plan` (el centro de pagos afecta el plan mensual)
-- No invalida `data-health`
+Tras revisar la app en viewport 390x844 (iPhone 14), identifico estos problemas criticos:
 
 ---
 
-## Plan de Correccion
+## Problemas Encontrados
 
-### A. Ampliar `useInvalidateRelated` con claves faltantes
+### 1. Header demasiado alto y denso
+- El header tiene demasiados elementos (logo + nombre + sync + auth + search + bell + hamburger = 7 items) comprimidos en una sola linea
+- El logo Phoenix es grande (44x44px aprox) y compite con el nombre "EvoFinz"
+- Los iconos de SyncStatus y AuthStatus no son necesarios en el header visible - solo confunden
 
-Agregar al helper centralizado:
+**Solucion**: Reducir header a 3 elementos: Logo+nombre (izq), Search (centro-der), Bell con badge (der). Mover sync/auth al menu lateral.
 
-| Funcion | Agregar claves |
-|---------|---------------|
-| `afterExpense` | `monthly-plan` |
-| `afterIncome` | `monthly-plan` |
-| `afterBill` | `monthly-plan`, `data-health` |
-| Nuevo: `afterMileage` | `mileage`, `mileage-summary`, `dashboard-stats`, `data-health` |
-| Nuevo: `afterSavings` | `savings-goals`, `savings-contributions`, `dashboard-stats` |
-| Nuevo: `afterNetWorth` | `assets`, `liabilities`, `net-worth-snapshots`, `dashboard-stats` |
-| Nuevo: `afterTag` | `tags`, `tags-with-expense-count`, `expenses`, `data-health` |
-| Nuevo: `afterHabit` | `financial-habits` |
-| Nuevo: `afterJournal` | `financial-journal`, `financial-journal-stats` |
+### 2. Barra de navegacion inferior NO destaca la ruta activa visualmente
+- El texto "Budget" se muestra en azul pero el contraste es muy sutil
+- No hay indicador visual fuerte (barra, fondo, etc.) para saber donde estas
+- El FAB central de camara se pierde en el diseno
 
-### B. Migrar hooks a `useInvalidateRelated`
+**Solucion**: Agregar barra indicadora superior en el item activo (como iOS/Android nativo), fondo sutil en el item activo, y hacer el FAB mas prominente con animacion de entrada.
 
-Refactorizar estos archivos para eliminar `queryClient.invalidateQueries` directo:
-1. `useMileage.ts` -- usar `afterMileage()`
-2. `useSavingsGoals.ts` -- usar `afterSavings()`
-3. `useNetWorth.ts` -- usar `afterNetWorth()`
-4. `useTags.ts` -- usar `afterTag()`
-5. `useFinancialHabits.ts` -- usar `afterHabit()`
-6. `useFinancialJournal.ts` -- usar `afterJournal()`
+### 3. PageHeader con boton "back" redundante
+- El boton de "back" (<) aparece en TODAS las paginas incluso Dashboard
+- Ocupa espacio horizontal valioso junto al titulo
+- En apps nativas, el back lo maneja el OS, no un boton explicito en cada pagina
 
-### C. Migrar componentes con invalidacion manual
+**Solucion**: Ocultar boton back cuando la ruta actual es una de las 5 rutas principales del bottom nav (dashboard, expenses, budget, etc). Solo mostrarlo en sub-paginas.
 
-Eliminar los `queryClient.invalidateQueries` manuales de:
-1. `FamilyExpenseDialog.tsx` -- ya no necesario (afterExpense incluira monthly-plan)
-2. `FamilyIncomeDialog.tsx` -- ya no necesario
-3. `IncomeListWidget.tsx` -- ya no necesario
-4. `BulkMileageEntry.tsx` -- ya no necesario
-5. `MileageImportDialog.tsx` -- ya no necesario
-6. `SubscriptionTracker.tsx` -- usar `afterBill()` via hook
+### 4. Chips/filtros no son horizontalmente scrollables en todas las paginas
+- En Budget, los tabs (Summary, Health, Pace, Payments) se ven comprimidos
+- En Expenses, los filtros (Incomplete, All..., All clients) estan apretados
+- No hay indicador visual de que se puede hacer scroll horizontal
 
-### D. Migrar `useExpensesRealtime` al helper
+**Solucion**: Aplicar la clase `.chips-scroll` de forma consistente con gradiente de fade en los bordes para indicar scroll disponible.
 
-Reemplazar las 4 llamadas manuales por `afterExpense()` importando desde `useInvalidateRelated`.
+### 5. Cards de estadisticas del Dashboard muy espaciadas
+- Las 4 tarjetas (Income, Expenses, Balance, Savings) en el MobileDashboard tienen buen diseno pero los valores "$0" se ven desproporcionados cuando son cero
+- El Year Overview ocupa demasiado espacio vertical con el grafico de barras
+- Los botones de accion (Capture, +Expense, +Income, View All) deberian ser mas prominentes
 
-### E. Agregar soft delete a Mileage
+**Solucion**: Hacer las stat cards mas compactas cuando los valores son 0, reducir padding del grafico anual, y convertir los action buttons en un grid 2x2 con iconos mas visibles.
 
-La tabla `mileage` es la unica tabla principal que todavia usa eliminacion permanente. Agregar `deleted_at` y filtro `.is('deleted_at', null)`.
+### 6. Menu lateral (Sheet) tiene truncamiento de texto
+- "Contracts..." y "Reconcili..." se cortan en la cuadricula 2-col del menu
+- Los iconos de seccion son muy pequenos (w-5 h-5 con emoji dentro) y dificiles de leer
+- La seccion "SYSTEM" queda cortada debajo del fold
+
+**Solucion**: Hacer los items de menu con texto completo (usar 1 columna para nombres largos), aumentar iconos a w-7 h-7, y agregar scroll indicator.
+
+### 7. CSS global force de min-height en TODOS los botones
+- La regla `button, [role="button"] { min-height: 44px; min-width: 44px; }` en el media query movil afecta TODOS los botones incluyendo badges, chips, tags y botones inline
+- Esto infla elementos que no deberian ser tan grandes (como los tags "Pending", "Unclassified" en expenses)
+
+**Solucion**: Remover la regla global y aplicar `.touch-target-min` solo a botones de accion primarios, no a chips/badges/tags.
+
+### 8. FABs flotantes obstruyen contenido
+- Los FABs de Camera y "+" en el Dashboard estan posicionados sobre contenido scrollable
+- Cuando scrolleas hasta abajo, los FABs tapan los ultimos elementos
+
+**Solucion**: Agregar padding-bottom extra al contenido cuando los FABs estan visibles, o mover los FABs al bottom-nav integrado.
+
+### 9. Tipografia inconsistente entre paginas
+- Dashboard: titulo no visible (MobileDashboard no usa PageHeader)
+- Expenses: "Expenses" con font-bold text-xl
+- Income: "Income" con font-bold text-xl
+- Budget: "Budget" con emoji + font-bold
+- Inconsistencia en si llevan emoji o no, si llevan descripcion o no
+
+**Solucion**: Estandarizar todos los titulos moviles con el mismo patron: emoji + titulo + descripcion opcional debajo.
+
+### 10. Espaciado vertical excesivo
+- Hay demasiado espacio entre secciones en varias paginas
+- El gap entre el header y el primer contenido es muy grande
+- Los cards tienen padding interior excesivo para movil
+
+**Solucion**: Reducir `--mobile-section-gap` de 0.875rem a 0.75rem, reducir padding top del main content area.
 
 ---
 
-## Resumen de Impacto
+## Plan de Implementacion
 
-| Seccion afectada | Problema actual | Despues de fix |
-|-----------------|----------------|----------------|
-| Presupuesto Familiar | No se actualiza al crear gastos desde otras secciones | Se actualiza automaticamente |
-| Dashboard | No refleja cambios en activos/pasivos/metas | Se actualiza automaticamente |
-| Health Check | No detecta cambios en mileage/tags | Detecta todo |
-| Patrimonio Neto | Agregar activo no actualiza snapshots | Se sincroniza |
-| Centro de Pagos | Pagar factura no actualiza plan mensual | Se sincroniza |
-| Realtime | Gasto externo no actualiza presupuestos | Se sincroniza |
+### A. Optimizar Header Movil (Layout.tsx)
+- Reducir a: PhoenixLogo mini + "EvoFinz" (izq) | Search + Bell (der)
+- Mover SyncStatus y AuthStatus al menu lateral Sheet
+- Reducir height del header de py-2.5 a py-2
+- Eliminar el hamburger del header (ya esta en bottom nav como "More")
 
-**Total: 17 archivos a modificar, 1 migracion SQL (soft delete mileage).**
+### B. Mejorar Bottom Nav (index.css + Layout.tsx)
+- Agregar barra indicadora de 3px en la parte superior del item activo
+- Agregar fondo sutil (bg-primary/10) al item activo
+- Hacer el FAB central mas grande (w-13 h-13) con sombra mas pronunciada
+- Agregar haptic-like animation (scale bounce) al tap
+
+### C. Corregir regla CSS global de touch targets (index.css)
+- Remover `button, [role="button"] { min-height: 44px }` del media query global
+- Crear clase `.btn-touch` para botones que SI necesitan 44px
+- Agregar excepciones para badges, chips, tags con `.badge, .chip, [data-slot="badge"] { min-height: auto; min-width: auto; }`
+
+### D. Mejorar Menu Lateral Sheet (Layout.tsx)
+- Cambiar grid de items a 1 columna para nombres largos
+- Agregar SyncStatus y AuthStatus aqui (movidos del header)
+- Mostrar el tema oscuro/claro toggle aqui
+- Iconos de seccion mas grandes
+
+### E. Estandarizar PageHeader movil (PageHeader.tsx)
+- Ocultar back button en rutas principales del bottom nav
+- Consistencia: todos los titulos con mismo estilo
+- Reducir margen inferior
+
+### F. Dashboard Movil (MobileDashboard.tsx)
+- Reducir padding de stat cards
+- Eliminar FABs flotantes redundantes (ya hay Capture en bottom nav)
+- Comprimir Year Overview chart en altura
+- Mejorar action buttons grid
+
+### G. Chips y Filtros scroll (index.css)
+- Agregar gradiente de fade en los bordes de `.chips-scroll`
+- Aplicar patron consistente en Budget tabs, Expense filters, etc.
+
+**Total: 7 archivos a modificar, 0 migraciones SQL.**
