@@ -41,6 +41,17 @@ export function TaxKnowledgeQuiz({ onClose, onComplete }: TaxKnowledgeQuizProps)
   const isChile = profile?.country === 'CL';
   const workTypes = profile?.work_types || [];
   const hasBusiness = workTypes.includes('contractor') || workTypes.includes('corporation');
+  const isSoleProp = workTypes.includes('contractor') && !workTypes.includes('corporation');
+  const isCorp = workTypes.includes('corporation');
+
+  // Human-friendly business type labels  
+  const bizLabel = (() => {
+    if (isCorp && isChile) return { es: 'tu empresa (SpA, SRL, Sociedad)', en: 'your company (SpA, SRL, Partnership)' };
+    if (isCorp) return { es: 'tu corporación (Inc., Ltd., Corp.)', en: 'your corporation (Inc., Ltd., Corp.)' };
+    if (isSoleProp && isChile) return { es: 'tu actividad independiente (Persona Natural con Giro)', en: 'your self-employment (Natural Person with Business Activity)' };
+    if (isSoleProp) return { es: 'tu Sole Proprietorship (negocio unipersonal / autónomo)', en: 'your Sole Proprietorship (one-person business / self-employed)' };
+    return { es: 'tu negocio', en: 'your business' };
+  })();
 
   const [answers, setAnswers] = useState<Record<string, any>>(() => {
     if (existing) {
@@ -189,22 +200,32 @@ export function TaxKnowledgeQuiz({ onClose, onComplete }: TaxKnowledgeQuizProps)
         },
         conditionalOn: (a) => a.switched_from_employee === true,
       },
-      // Q8: Business registration/incorporation date
+      // Q8: Business type education + registration date
       {
         id: 'business_registration_date',
         field: 'business_registration_date',
         type: 'open',
-        question: {
-          es: '¿Cuándo registraste o incorporaste tu empresa oficialmente? (fecha exacta o aproximada)',
-          en: 'When did you officially register or incorporate your business? (exact or approximate date)'
-        },
-        helpText: {
-          es: 'Ejemplo: "15 de marzo de 2023" o "creo que fue a principios de 2024"',
-          en: 'Example: "March 15, 2023" or "I think it was early 2024"'
-        },
-        whereToFind: isChile
-          ? { es: 'Revisa tu Inicio de Actividades en SII → Consultas → Inicio de Actividades', en: 'Check your Activity Start in SII → Queries → Activity Start', link: 'https://www.sii.cl' }
-          : { es: 'Busca tu Articles of Incorporation o el certificado de registro provincial. También en CRA My Business Account.', en: 'Find your Articles of Incorporation or provincial registration certificate. Also in CRA My Business Account.', link: 'https://www.canada.ca/en/revenue-agency/services/e-services/e-services-businesses/business-account.html' },
+        question: isSoleProp
+          ? (isChile
+            ? { es: `Tu perfil indica que trabajas como ${bizLabel.es}. ¿Cuándo hiciste tu Inicio de Actividades en el SII?`, en: `Your profile shows you work as ${bizLabel.en}. When did you do your Activity Start in SII?` }
+            : { es: `Tu perfil indica que tienes ${bizLabel.es}. ¿Cuándo registraste tu negocio? (Nota: un Sole Proprietorship NO requiere Articles of Incorporation — se registra con tu nombre o un "trade name" en tu provincia)`, en: `Your profile shows you have ${bizLabel.en}. When did you register your business? (Note: a Sole Proprietorship does NOT require Articles of Incorporation — it's registered under your name or a "trade name" in your province)` })
+          : (isChile
+            ? { es: `Tu perfil indica que tienes ${bizLabel.es}. ¿Cuándo se constituyó legalmente? (escritura + inscripción en SII)`, en: `Your profile shows you have ${bizLabel.en}. When was it legally established? (deed + SII registration)` }
+            : { es: `Tu perfil indica que tienes ${bizLabel.es}. ¿Cuándo se incorporó? (fecha en los Articles of Incorporation)`, en: `Your profile shows you have ${bizLabel.en}. When was it incorporated? (date on Articles of Incorporation)` }),
+        helpText: isSoleProp
+          ? (isChile
+            ? { es: 'Como Persona Natural con Giro, tu "registro" es tu Inicio de Actividades en el SII. Ejemplo: "creo que fue en marzo 2024"', en: 'As a Natural Person with Business Activity, your "registration" is your Activity Start in SII.' }
+            : { es: 'Como Sole Proprietor, tu registro puede ser: (1) registro del nombre comercial ("Business Name Registration") en tu provincia, o (2) cuando abriste tu cuenta de CRA con Business Number. Ejemplo: "registré el nombre en Ontario en julio 2023"', en: 'As a Sole Proprietor, your registration may be: (1) Business Name Registration in your province, or (2) when you opened your CRA account with a Business Number. Example: "registered the name in Ontario in July 2023"' })
+          : (isChile
+            ? { es: 'Ejemplo: "la escritura se firmó en enero 2023" o "no recuerdo, un abogado hizo todo"', en: 'Example: "the deed was signed in January 2023" or "I don\'t remember, a lawyer did everything"' }
+            : { es: 'Ejemplo: "se incorporó en septiembre 2023" o "mi abogado la creó, no recuerdo la fecha exacta"', en: 'Example: "incorporated in September 2023" or "my lawyer created it, I don\'t remember the exact date"' }),
+        whereToFind: isSoleProp
+          ? (isChile
+            ? { es: 'Revisa en SII → Mi Información → Inicio de Actividades', en: 'Check in SII → My Information → Activity Start', link: 'https://www.sii.cl' }
+            : { es: 'Busca tu certificado de "Business Name Registration" de tu provincia (ej. Ontario: ServiceOntario, BC: BC Registry). Si no registraste nombre, busca la carta de CRA con tu Business Number (BN).', en: 'Find your provincial "Business Name Registration" certificate (e.g., Ontario: ServiceOntario, BC: BC Registry). If you didn\'t register a name, look for CRA\'s letter with your Business Number (BN).', link: 'https://www.canada.ca/en/revenue-agency/services/e-services/e-services-businesses/business-account.html' })
+          : (isChile
+            ? { es: 'Busca tu escritura de constitución o revisa tu inicio de actividades en SII', en: 'Check your incorporation deed or activity start in SII', link: 'https://www.sii.cl' }
+            : { es: 'Busca tu Articles of Incorporation o la carta de confirmación de CRA con tu Business Number', en: 'Find your Articles of Incorporation or CRA confirmation letter with your Business Number', link: 'https://www.canada.ca/en/revenue-agency/services/e-services/e-services-businesses/business-account.html' }),
         conditionalOn: () => hasBusiness,
       },
       // Q9: Business legal name
@@ -212,14 +233,14 @@ export function TaxKnowledgeQuiz({ onClose, onComplete }: TaxKnowledgeQuizProps)
         id: 'business_legal_name',
         field: 'business_legal_name',
         type: 'open',
-        question: {
-          es: '¿Cuál es el nombre legal registrado de tu empresa o negocio?',
-          en: 'What is the registered legal name of your business?'
-        },
-        helpText: {
-          es: 'Ejemplo: "Evolaris SpA" o "John Doe Consulting" o "solo uso mi nombre personal"',
-          en: 'Example: "Evolaris Inc." or "John Doe Consulting" or "I just use my personal name"'
-        },
+        question: isSoleProp
+          ? { es: `¿Registraste un nombre comercial (trade name) para ${bizLabel.es}, o usas tu nombre personal?`, en: `Did you register a trade name for ${bizLabel.en}, or do you use your personal name?` }
+          : { es: `¿Cuál es el nombre legal registrado de ${bizLabel.es}?`, en: `What is the registered legal name of ${bizLabel.en}?` },
+        helpText: isSoleProp
+          ? (isChile
+            ? { es: 'Ejemplo: "uso mi nombre, Juan Pérez" o "registré el nombre Evolaris" — como Persona Natural puedes operar con tu nombre o un nombre de fantasía', en: 'Example: "I use my name, Juan Pérez" or "I registered the name Evolaris"' }
+            : { es: 'Ejemplo: "Evolaris" (trade name registrado) o "solo uso mi nombre legal John Doe" — como Sole Proprietor puedes operar con tu nombre personal o un nombre comercial registrado', en: 'Example: "Evolaris" (registered trade name) or "I just use my legal name John Doe" — as a Sole Proprietor you can operate under your personal name or a registered trade name' })
+          : { es: 'Ejemplo: "Evolaris SpA" o "Evolaris Inc."', en: 'Example: "Evolaris SpA" or "Evolaris Inc."' },
         conditionalOn: () => hasBusiness,
       },
       // Q10: First revenue date
@@ -228,8 +249,8 @@ export function TaxKnowledgeQuiz({ onClose, onComplete }: TaxKnowledgeQuizProps)
         field: 'first_business_revenue_date',
         type: 'open',
         question: {
-          es: '¿Cuándo recibiste tu primer ingreso como independiente o empresa?',
-          en: 'When did you receive your first income as self-employed or business?'
+          es: `¿Cuándo recibiste tu primer ingreso a través de ${bizLabel.es}?`,
+          en: `When did you receive your first income through ${bizLabel.en}?`
         },
         helpText: {
           es: 'Ejemplo: "mi primera factura fue en junio 2024" o "empecé a cobrar en enero"',
@@ -240,23 +261,23 @@ export function TaxKnowledgeQuiz({ onClose, onComplete }: TaxKnowledgeQuizProps)
           : { es: 'Revisa tu primera factura o tu primer depósito por servicios', en: 'Check your first invoice or first service deposit' },
         conditionalOn: () => hasBusiness,
       },
-      // Q11: Business start notes
+      // Q11: Business start notes (corporation only - sole prop already covered above)
       {
         id: 'business_start_date_notes',
         field: 'business_start_date_notes',
         type: 'open',
         question: {
-          es: '¿Cómo y cuándo creaste tu negocio/empresa? Cuéntanos lo que sepas.',
-          en: 'How and when did you create your business? Tell us what you know.'
+          es: `¿Cómo creaste ${bizLabel.es}? ¿Usaste un abogado, contador, o lo hiciste tú mismo online?`,
+          en: `How did you create ${bizLabel.en}? Did you use a lawyer, accountant, or did it yourself online?`
         },
-        helpText: {
-          es: 'Si no recuerdas la fecha exacta, indica lo que recuerdes. Ejemplo: "la registré en el SII en 2023" o "me incorporé con un abogado en septiembre"',
-          en: 'If you don\'t remember the exact date, write what you recall. Example: "registered with CRA in 2023" or "incorporated with a lawyer in September"'
-        },
-        whereToFind: isChile
-          ? { es: 'Busca tu escritura de constitución o revisa tu inicio de actividades en SII', en: 'Check your incorporation deed or activity start in SII', link: 'https://www.sii.cl' }
-          : { es: 'Busca tu Articles of Incorporation o la carta de confirmación de CRA con tu Business Number', en: 'Find your Articles of Incorporation or CRA confirmation letter with your Business Number', link: 'https://www.canada.ca/en/revenue-agency/services/e-services/e-services-businesses/business-account.html' },
-        conditionalOn: () => workTypes.includes('corporation'),
+        helpText: isSoleProp
+          ? (isChile
+            ? { es: 'Ejemplo: "hice el inicio de actividades yo mismo en el SII" o "un contador me ayudó"', en: 'Example: "I did the activity start myself in SII" or "an accountant helped me"' }
+            : { es: 'Ejemplo: "registré el nombre en ServiceOntario online" o "solo abrí la cuenta de CRA, no registré nombre" o "un contador me ayudó"', en: 'Example: "I registered the name on ServiceOntario online" or "I just opened the CRA account, didn\'t register a name" or "an accountant helped me"' })
+          : (isChile
+            ? { es: 'Ejemplo: "un abogado hizo la escritura" o "usé una plataforma online"', en: 'Example: "a lawyer did the deed" or "I used an online platform"' }
+            : { es: 'Ejemplo: "un abogado incorporó la empresa" o "usé Ownr/BizPal online"', en: 'Example: "a lawyer incorporated it" or "I used Ownr/BizPal online"' }),
+        conditionalOn: () => hasBusiness,
       },
       // Q12: Separate business bank account
       {
