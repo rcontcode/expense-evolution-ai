@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
 import { useMissionTracker } from './useMissions';
 
@@ -132,7 +132,6 @@ export const useMileageSummary = (year?: number) => {
 
 export const useCreateMileage = (defaultEntityId?: string) => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const { trackAction } = useMissionTracker();
 
   return useMutation({
@@ -158,26 +157,18 @@ export const useCreateMileage = (defaultEntityId?: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mileage'] });
       queryClient.invalidateQueries({ queryKey: ['mileage-summary'] });
-      // Track mission progress
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       trackAction('add_mileage', 1);
-      toast({
-        title: 'Viaje registrado',
-        description: 'El kilometraje se ha guardado correctamente.',
-      });
+      toast.success('Viaje registrado');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Error al registrar viaje');
     },
   });
 };
 
 export const useUpdateMileage = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async ({ id, ...data }: MileageUpdate & { id: string }) => {
@@ -194,24 +185,17 @@ export const useUpdateMileage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mileage'] });
       queryClient.invalidateQueries({ queryKey: ['mileage-summary'] });
-      toast({
-        title: 'Viaje actualizado',
-        description: 'Los cambios se han guardado correctamente.',
-      });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      toast.success('Viaje actualizado');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Error al actualizar viaje');
     },
   });
 };
 
 export const useDeleteMileage = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -221,17 +205,11 @@ export const useDeleteMileage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mileage'] });
       queryClient.invalidateQueries({ queryKey: ['mileage-summary'] });
-      toast({
-        title: 'Viaje eliminado',
-        description: 'El registro de kilometraje se ha eliminado.',
-      });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      toast.success('Viaje eliminado');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Error al eliminar viaje');
     },
   });
 };

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tag, TagInsert } from '@/types/expense.types';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { DEFAULT_TAGS } from '@/lib/constants/default-tags';
 
 export function useTags() {
@@ -21,7 +21,6 @@ export function useTags() {
 
 export function useCreateTag() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (tag: TagInsert) => {
@@ -39,24 +38,17 @@ export function useCreateTag() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
-      toast({
-        title: 'Tag created',
-        description: 'The tag has been created successfully.',
-      });
+      queryClient.invalidateQueries({ queryKey: ['tags-with-expense-count'] });
+      toast.success('Etiqueta creada');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Error al crear etiqueta');
     },
   });
 }
 
 export function useUpdateTag() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<TagInsert> }) => {
@@ -72,24 +64,18 @@ export function useUpdateTag() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
-      toast({
-        title: 'Tag updated',
-        description: 'The tag has been updated successfully.',
-      });
+      queryClient.invalidateQueries({ queryKey: ['tags-with-expense-count'] });
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      toast.success('Etiqueta actualizada');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Error al actualizar etiqueta');
     },
   });
 }
 
 export function useDeleteTag() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -102,17 +88,12 @@ export function useDeleteTag() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
-      toast({
-        title: 'Tag deleted',
-        description: 'The tag has been deleted successfully.',
-      });
+      queryClient.invalidateQueries({ queryKey: ['tags-with-expense-count'] });
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      toast.success('Etiqueta eliminada');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Error al eliminar etiqueta');
     },
   });
 }
@@ -124,7 +105,6 @@ export function useTagsWithExpenseCount() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Get all tags
       const { data: tags, error: tagsError } = await supabase
         .from('tags')
         .select('*')
@@ -133,14 +113,12 @@ export function useTagsWithExpenseCount() {
       
       if (tagsError) throw tagsError;
 
-      // Get expense counts per tag
       const { data: expenseTags, error: etError } = await supabase
         .from('expense_tags')
         .select('tag_id');
 
       if (etError) throw etError;
 
-      // Count expenses per tag
       const countMap: Record<string, number> = {};
       expenseTags?.forEach(et => {
         countMap[et.tag_id] = (countMap[et.tag_id] || 0) + 1;
@@ -156,14 +134,12 @@ export function useTagsWithExpenseCount() {
 
 export function useSeedDefaultTags() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Check if user already has tags
       const { data: existingTags } = await supabase
         .from('tags')
         .select('id')
@@ -174,7 +150,6 @@ export function useSeedDefaultTags() {
         throw new Error('Tags already exist');
       }
 
-      // Insert default tags
       const tagsToInsert = DEFAULT_TAGS.map(tag => ({
         name: tag.name,
         color: tag.color,
@@ -191,18 +166,12 @@ export function useSeedDefaultTags() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
-      toast({
-        title: 'Etiquetas creadas',
-        description: 'Se han creado las etiquetas predeterminadas.',
-      });
+      queryClient.invalidateQueries({ queryKey: ['tags-with-expense-count'] });
+      toast.success('Etiquetas predeterminadas creadas');
     },
     onError: (error: Error) => {
       if (error.message !== 'Tags already exist') {
-        toast({
-          title: 'Error',
-          description: error.message,
-          variant: 'destructive',
-        });
+        toast.error(error.message || 'Error al crear etiquetas');
       }
     },
   });
