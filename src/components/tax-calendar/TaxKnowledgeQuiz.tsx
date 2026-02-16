@@ -13,9 +13,13 @@ import { useProfile } from "@/hooks/data/useProfile";
 import { useTaxKnowledge, useUpsertTaxKnowledge } from "@/hooks/data/useTaxKnowledge";
 import { 
   X, ChevronRight, ChevronLeft, CheckCircle2, HelpCircle, 
-  Lightbulb, ExternalLink, BookOpen, MessageSquare, AlertTriangle
+  Lightbulb, ExternalLink, BookOpen, MessageSquare, AlertTriangle,
+  Sparkles, PartyPopper, Trophy
 } from "lucide-react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import { QuizFlowDiagram } from "./QuizFlowDiagram";
+import { cn } from "@/lib/utils";
 
 interface TaxKnowledgeQuizProps {
   onClose: () => void;
@@ -645,167 +649,319 @@ export function TaxKnowledgeQuiz({ onClose, onComplete }: TaxKnowledgeQuizProps)
     en: ['Nothing', 'Very little', 'Some', 'Good', 'Expert'],
   };
 
+  // Question type emojis
+  const typeEmoji = (type: string) => {
+    switch(type) {
+      case 'boolean': return '🤔';
+      case 'open': return '✍️';
+      case 'scale': return '📊';
+      case 'date': return '📅';
+      default: return '💬';
+    }
+  };
+
+  // Milestone messages
+  const getMilestone = () => {
+    const pct = progress;
+    if (pct >= 100) return { emoji: '🏆', text: isEs ? '¡Último paso!' : 'Last step!' };
+    if (pct >= 75) return { emoji: '🔥', text: isEs ? '¡Ya casi terminas!' : 'Almost done!' };
+    if (pct >= 50) return { emoji: '⚡', text: isEs ? '¡Vas a la mitad!' : 'Halfway there!' };
+    if (pct >= 25) return { emoji: '🚀', text: isEs ? '¡Buen ritmo!' : 'Good pace!' };
+    return null;
+  };
+
+  const milestone = getMilestone();
+
   if (!currentQ) return null;
 
   return (
-    <Card className="border-primary/30 overflow-hidden">
-      <CardHeader className="flex flex-row items-start justify-between pb-2 bg-gradient-to-r from-primary/5 to-transparent">
-        <div>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <BookOpen className="h-5 w-5 text-primary" />
-            {isEs ? "Evaluación de Conocimiento Fiscal" : "Tax Knowledge Assessment"}
-          </CardTitle>
-          <CardDescription>
-            {isEs 
-              ? "Responde con lo que sepas. Si no sabes algo, te diremos dónde encontrarlo."
-              : "Answer with what you know. If you don't know something, we'll tell you where to find it."
-            }
-          </CardDescription>
+    <Card className="border-primary/30 overflow-hidden shadow-2xl shadow-primary/10 relative">
+      {/* Animated gradient border glow */}
+      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 blur-xl opacity-30 pointer-events-none animate-pulse" />
+      
+      <CardHeader className="relative pb-3 bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 border-b border-primary/10">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <span className="relative">
+                <BookOpen className="h-5 w-5 text-primary" />
+                <Sparkles className="h-3 w-3 text-primary absolute -top-1 -right-1 animate-pulse" />
+              </span>
+              {isEs ? "🧭 Evaluación de Conocimiento Fiscal" : "🧭 Tax Knowledge Assessment"}
+            </CardTitle>
+            <CardDescription className="flex items-center gap-2">
+              <span className="inline-block animate-[pulse_3s_ease-in-out_infinite]">✨</span>
+              {isEs 
+                ? "Responde con lo que sepas. Si no sabes algo, te diremos dónde encontrarlo."
+                : "Answer with what you know. If you don't know something, we'll tell you where to find it."
+              }
+            </CardDescription>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-destructive/10 hover:text-destructive transition-colors">
+            <X className="h-4 w-4" />
+          </Button>
         </div>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </Button>
       </CardHeader>
       
-      <CardContent className="space-y-6 pt-4">
-        {/* Progress */}
-        <div className="space-y-1">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{currentIdx + 1} / {questions.length}</span>
-            <span>{Math.round(progress)}%</span>
+      <CardContent className="space-y-5 pt-4 relative">
+        {/* Flow Diagram */}
+        <QuizFlowDiagram
+          currentIdx={currentIdx}
+          totalQuestions={questions.length}
+          questionIds={questions.map(q => q.id)}
+          answeredFields={answers}
+          onJumpTo={(idx) => setCurrentIdx(idx)}
+        />
+
+        {/* Progress with milestone */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-muted-foreground font-medium">
+              {typeEmoji(currentQ.type)} {currentIdx + 1} / {questions.length}
+            </span>
+            <div className="flex items-center gap-2">
+              {milestone && (
+                <motion.span
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-xs font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+                >
+                  {milestone.emoji} {milestone.text}
+                </motion.span>
+              )}
+              <Badge variant="outline" className="text-[10px] font-bold bg-primary/5 border-primary/20">
+                {Math.round(progress)}%
+              </Badge>
+            </div>
           </div>
-          <Progress value={progress} className="h-1.5" />
+          <div className="relative">
+            <Progress value={progress} className="h-2.5 bg-muted/50" />
+            {/* Glowing progress tip */}
+            <motion.div
+              className="absolute top-0 h-2.5 w-2 rounded-full bg-primary shadow-lg shadow-primary/50"
+              style={{ left: `calc(${Math.min(progress, 98)}% - 4px)` }}
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+          </div>
         </div>
 
-        {/* Question */}
-        <div className="space-y-4 min-h-[200px]">
-          <Label className="text-base font-semibold leading-relaxed block">
-            <MessageSquare className="h-4 w-4 inline mr-2 text-primary" />
-            {currentQ.question[isEs ? 'es' : 'en']}
-          </Label>
+        {/* Question with animation */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentQ.id}
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -30 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="space-y-4 min-h-[220px]"
+          >
+            {/* Question label with gradient */}
+            <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 border border-primary/10">
+              <Label className="text-base font-semibold leading-relaxed block">
+                <span className="inline-flex items-center gap-2">
+                  <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-sm">
+                    {typeEmoji(currentQ.type)}
+                  </span>
+                  <span>{currentQ.question[isEs ? 'es' : 'en']}</span>
+                </span>
+              </Label>
+            </div>
 
-          {/* Help text */}
-          {currentQ.helpText && (
-            <p className="text-sm text-muted-foreground italic">
-              💡 {currentQ.helpText[isEs ? 'es' : 'en']}
-            </p>
-          )}
+            {/* Help text with glow */}
+            {currentQ.helpText && (
+              <motion.div
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="flex items-start gap-2 p-3 rounded-lg bg-accent/5 border border-accent/10"
+              >
+                <Lightbulb className="h-4 w-4 text-accent mt-0.5 flex-shrink-0 animate-pulse" />
+                <p className="text-sm text-muted-foreground italic">
+                  {currentQ.helpText[isEs ? 'es' : 'en']}
+                </p>
+              </motion.div>
+            )}
 
-          {/* Answer input based on type */}
-          {currentQ.type === 'boolean' && (
-            <RadioGroup
-              value={answers[currentQ.field] === true ? 'yes' : answers[currentQ.field] === false ? 'no' : ''}
-              onValueChange={(v) => setAnswer(currentQ.field, v === 'yes')}
-              className="space-y-2"
-            >
-              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-                <RadioGroupItem value="yes" id={`${currentQ.id}-yes`} />
-                <Label htmlFor={`${currentQ.id}-yes`} className="flex-1 cursor-pointer">
-                  {isEs ? "Sí" : "Yes"}
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-                <RadioGroupItem value="no" id={`${currentQ.id}-no`} />
-                <Label htmlFor={`${currentQ.id}-no`} className="flex-1 cursor-pointer">
-                  {isEs ? "No / No estoy seguro" : "No / I'm not sure"}
-                </Label>
-              </div>
-            </RadioGroup>
-          )}
-
-          {currentQ.type === 'open' && (
-            <Textarea
-              placeholder={isEs ? "Escribe lo que sepas, o 'no sé' si no estás seguro..." : "Write what you know, or 'I don't know' if unsure..."}
-              value={answers[currentQ.field] || ''}
-              onChange={(e) => setAnswer(currentQ.field, e.target.value)}
-              className="min-h-[100px]"
-            />
-          )}
-
-          {currentQ.type === 'date' && (
-            <Input
-              type="date"
-              value={answers[currentQ.field] || ''}
-              onChange={(e) => setAnswer(currentQ.field, e.target.value)}
-            />
-          )}
-
-          {currentQ.type === 'scale' && (
-            <div className="space-y-3">
+            {/* Answer inputs with enhanced styling */}
+            {currentQ.type === 'boolean' && (
               <RadioGroup
-                value={(answers[currentQ.field] || 1).toString()}
-                onValueChange={(v) => setAnswer(currentQ.field, parseInt(v))}
+                value={answers[currentQ.field] === true ? 'yes' : answers[currentQ.field] === false ? 'no' : ''}
+                onValueChange={(v) => setAnswer(currentQ.field, v === 'yes')}
                 className="space-y-2"
               >
-                {[1, 2, 3, 4, 5].map((level) => (
-                  <div key={level} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value={level.toString()} id={`scale-${level}`} />
-                    <Label htmlFor={`scale-${level}`} className="flex-1 cursor-pointer flex items-center gap-2">
-                      <Badge variant={level <= 2 ? "destructive" : level <= 3 ? "secondary" : "default"} className="text-xs">
-                        {level}
-                      </Badge>
-                      {scaleLabels[isEs ? 'es' : 'en'][level - 1]}
+                <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                  <div className={cn(
+                    "flex items-center space-x-3 p-4 border-2 rounded-xl cursor-pointer transition-all duration-300",
+                    answers[currentQ.field] === true
+                      ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
+                      : "border-border hover:border-primary/30 hover:bg-muted/30"
+                  )}>
+                    <RadioGroupItem value="yes" id={`${currentQ.id}-yes`} />
+                    <Label htmlFor={`${currentQ.id}-yes`} className="flex-1 cursor-pointer flex items-center gap-2">
+                      <span className="text-lg">👍</span>
+                      {isEs ? "Sí" : "Yes"}
                     </Label>
+                    {answers[currentQ.field] === true && <CheckCircle2 className="h-4 w-4 text-primary" />}
                   </div>
-                ))}
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                  <div className={cn(
+                    "flex items-center space-x-3 p-4 border-2 rounded-xl cursor-pointer transition-all duration-300",
+                    answers[currentQ.field] === false
+                      ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
+                      : "border-border hover:border-primary/30 hover:bg-muted/30"
+                  )}>
+                    <RadioGroupItem value="no" id={`${currentQ.id}-no`} />
+                    <Label htmlFor={`${currentQ.id}-no`} className="flex-1 cursor-pointer flex items-center gap-2">
+                      <span className="text-lg">🤷</span>
+                      {isEs ? "No / No estoy seguro" : "No / I'm not sure"}
+                    </Label>
+                    {answers[currentQ.field] === false && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                  </div>
+                </motion.div>
               </RadioGroup>
-            </div>
-          )}
+            )}
 
-          {/* Where to find info */}
-          {currentQ.whereToFind && answers[currentQ.field] === false && (
-            <Alert className="bg-blue-500/10 border-blue-500/30 mt-4">
-              <Lightbulb className="h-4 w-4 text-blue-500" />
-              <AlertDescription className="text-sm space-y-2">
-                <p className="font-medium">
-                  {isEs ? "📍 Dónde encontrar esta información:" : "📍 Where to find this information:"}
-                </p>
-                <p>{currentQ.whereToFind[isEs ? 'es' : 'en']}</p>
-                {currentQ.whereToFind.link && (
-                  <Button variant="link" size="sm" className="h-auto p-0" asChild>
-                    <a href={currentQ.whereToFind.link} target="_blank" rel="noopener">
-                      <ExternalLink className="h-3 w-3 mr-1" />
-                      {isEs ? "Abrir sitio web" : "Open website"}
-                    </a>
-                  </Button>
-                )}
-              </AlertDescription>
-            </Alert>
-          )}
+            {currentQ.type === 'open' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+                <Textarea
+                  placeholder={isEs ? "✍️ Escribe lo que sepas, o 'no sé' si no estás seguro..." : "✍️ Write what you know, or 'I don't know' if unsure..."}
+                  value={answers[currentQ.field] || ''}
+                  onChange={(e) => setAnswer(currentQ.field, e.target.value)}
+                  className="min-h-[100px] border-2 focus:border-primary/50 transition-colors bg-card/50 text-sm"
+                />
+              </motion.div>
+            )}
 
-          {/* Skip note */}
-          <p className="text-xs text-muted-foreground">
-            {isEs 
-              ? "💬 Puedes dejar en blanco si no sabes. La app te ayudará a encontrar la respuesta."
-              : "💬 You can leave blank if you don't know. The app will help you find the answer."
-            }
-          </p>
-        </div>
+            {currentQ.type === 'date' && (
+              <Input
+                type="date"
+                value={answers[currentQ.field] || ''}
+                onChange={(e) => setAnswer(currentQ.field, e.target.value)}
+                className="border-2 focus:border-primary/50"
+              />
+            )}
 
-        {/* Navigation */}
-        <div className="flex justify-between pt-2 border-t">
+            {currentQ.type === 'scale' && (
+              <div className="space-y-2">
+                <RadioGroup
+                  value={(answers[currentQ.field] || 1).toString()}
+                  onValueChange={(v) => setAnswer(currentQ.field, parseInt(v))}
+                  className="space-y-2"
+                >
+                  {[1, 2, 3, 4, 5].map((level) => {
+                    const scaleEmojis = ['😵', '😟', '🤔', '😊', '🧠'];
+                    const isSelected = (answers[currentQ.field] || 1) === level;
+                    return (
+                      <motion.div key={level} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                        <div className={cn(
+                          "flex items-center space-x-3 p-3.5 border-2 rounded-xl cursor-pointer transition-all duration-300",
+                          isSelected
+                            ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
+                            : "border-border hover:border-primary/30 hover:bg-muted/30"
+                        )}>
+                          <RadioGroupItem value={level.toString()} id={`scale-${level}`} />
+                          <Label htmlFor={`scale-${level}`} className="flex-1 cursor-pointer flex items-center gap-3">
+                            <span className="text-xl">{scaleEmojis[level - 1]}</span>
+                            <Badge 
+                              variant={level <= 2 ? "destructive" : level <= 3 ? "secondary" : "default"} 
+                              className="text-xs font-bold min-w-[24px] justify-center"
+                            >
+                              {level}
+                            </Badge>
+                            <span className="font-medium">{scaleLabels[isEs ? 'es' : 'en'][level - 1]}</span>
+                          </Label>
+                          {isSelected && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </RadioGroup>
+              </div>
+            )}
+
+            {/* Where to find info - Enhanced */}
+            {currentQ.whereToFind && answers[currentQ.field] === false && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Alert className="bg-accent/10 border-accent/30 mt-3 shadow-lg shadow-accent/5">
+                  <Lightbulb className="h-4 w-4 text-accent animate-[pulse_2s_ease-in-out_infinite]" />
+                  <AlertDescription className="text-sm space-y-2">
+                    <p className="font-semibold flex items-center gap-1">
+                      📍 {isEs ? "Dónde encontrar esta información:" : "Where to find this information:"}
+                    </p>
+                    <p className="text-muted-foreground">{currentQ.whereToFind[isEs ? 'es' : 'en']}</p>
+                    {currentQ.whereToFind.link && (
+                      <Button variant="outline" size="sm" className="h-auto py-1.5 px-3 gap-1.5 bg-accent/5 border-accent/20 hover:bg-accent/10 transition-all hover:-translate-y-0.5" asChild>
+                        <a href={currentQ.whereToFind.link} target="_blank" rel="noopener">
+                          <ExternalLink className="h-3 w-3" />
+                          {isEs ? "🌐 Abrir sitio web" : "🌐 Open website"}
+                        </a>
+                      </Button>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              </motion.div>
+            )}
+
+            {/* Skip note */}
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5 opacity-70">
+              <span className="animate-[pulse_3s_ease-in-out_infinite]">💬</span>
+              {isEs 
+                ? "Puedes dejar en blanco si no sabes. La app te ayudará a encontrar la respuesta."
+                : "You can leave blank if you don't know. The app will help you find the answer."
+              }
+            </p>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Navigation with enhanced buttons */}
+        <div className="flex justify-between pt-3 border-t border-primary/10">
           <Button
             variant="ghost"
             onClick={() => setCurrentIdx(Math.max(0, currentIdx - 1))}
             disabled={currentIdx === 0}
+            className="gap-1 hover:bg-muted/50 transition-all"
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
+            <ChevronLeft className="h-4 w-4" />
             {isEs ? "Anterior" : "Back"}
           </Button>
           
           {currentIdx < questions.length - 1 ? (
-            <Button onClick={() => setCurrentIdx(currentIdx + 1)}>
-              {isEs ? "Siguiente" : "Next"}
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Button 
+                onClick={() => setCurrentIdx(currentIdx + 1)}
+                className="gap-1 shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-primary/80 hover:shadow-xl hover:shadow-primary/30 transition-all"
+              >
+                {isEs ? "Siguiente" : "Next"}
+                <ChevronRight className="h-4 w-4" />
+                <span className="animate-[pulse_2s_ease-in-out_infinite]">✨</span>
+              </Button>
+            </motion.div>
           ) : (
-            <Button onClick={handleSave} disabled={upsert.isPending}>
-              <CheckCircle2 className="h-4 w-4 mr-1" />
-              {upsert.isPending 
-                ? (isEs ? "Guardando..." : "Saving...") 
-                : (isEs ? "Completar" : "Complete")
-              }
-            </Button>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Button 
+                onClick={handleSave} 
+                disabled={upsert.isPending}
+                className="gap-1.5 shadow-lg shadow-primary/20 bg-gradient-to-r from-primary via-accent to-primary hover:shadow-xl transition-all"
+              >
+                {upsert.isPending ? (
+                  <>
+                    <span className="animate-spin">⏳</span>
+                    {isEs ? "Guardando..." : "Saving..."}
+                  </>
+                ) : (
+                  <>
+                    <PartyPopper className="h-4 w-4" />
+                    {isEs ? "🎉 Completar" : "🎉 Complete"}
+                  </>
+                )}
+              </Button>
+            </motion.div>
           )}
         </div>
       </CardContent>
