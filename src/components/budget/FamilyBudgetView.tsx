@@ -350,7 +350,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
               emoji="🎯"
               title={l ? "Presupuesto vs Real" : "Budget vs Actual"}
               subtitle={l ? "Por categoría" : "By category"}
-              defaultOpen={plan.hasCategoryBudgets}
+              defaultOpen={true}
             >
               <BudgetVsActualChart
                 categories={plan.categorySpending.map(c => {
@@ -380,7 +380,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
               subtitle={familyCategories.length > 0
                 ? `${familyCategories.length} ${l ? "categorías" : "categories"} · ${fc(familyTotal)}`
                 : (l ? "Sin gastos registrados" : "No expenses recorded")}
-              defaultOpen={familyCategories.length > 0}
+              defaultOpen={true}
             >
               {familyCategories.length > 0 ? (
                 <SpendingDonut
@@ -404,7 +404,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
                 : unpaidBills.length > 0
                 ? `${unpaidBills.length} ${l ? "pronto" : "soon"}`
                 : undefined}
-              defaultOpen={activeBills.length > 0}
+              defaultOpen={true}
             >
               <div className="space-y-3">
                 {activeBills.length > 0 ? (
