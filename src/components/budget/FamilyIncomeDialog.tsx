@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateIncome } from "@/hooks/data/useIncome";
+import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ export function FamilyIncomeDialog({ open, onClose }: FamilyIncomeDialogProps) {
   const l = language === "es";
   const { user } = useAuth();
   const { toast } = useToast();
+  const { currentCurrency } = useFormatCurrency();
   const queryClient = useQueryClient();
   const createIncome = useCreateIncome();
 
@@ -66,6 +68,7 @@ export function FamilyIncomeDialog({ open, onClose }: FamilyIncomeDialogProps) {
         source: source || (l ? typeInfo?.es : typeInfo?.en) || "Income",
         description: source || null,
         date: new Date().toISOString().split("T")[0],
+        currency: currentCurrency,
         user_id: user.id,
       } as any);
 
@@ -126,6 +129,7 @@ export function FamilyIncomeDialog({ open, onClose }: FamilyIncomeDialogProps) {
                 {l ? "💰 ¿Cuánto recibiste?" : "💰 How much did you receive?"}
               </label>
               <div className="flex items-center justify-center gap-1">
+                <span className="text-xs font-medium text-muted-foreground mr-1 bg-muted px-1.5 py-0.5 rounded">{currentCurrency}</span>
                 <span className="text-2xl font-bold text-muted-foreground">$</span>
                 <Input
                   type="number"

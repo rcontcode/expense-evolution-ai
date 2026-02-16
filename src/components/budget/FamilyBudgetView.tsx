@@ -39,6 +39,8 @@ import { BudgetAuditLogWidget } from "./family/BudgetAuditLogWidget";
 import { YearComparisonChart } from "./family/YearComparisonChart";
 import { BudgetExportWidget } from "./family/BudgetExportWidget";
 import { BudgetPeriodSelector, type BudgetPeriod } from "./family/BudgetPeriodSelector";
+import { BudgetContextBar } from "./BudgetContextBar";
+import { IncomeListWidget } from "./family/IncomeListWidget";
 
 // Family-specific dialogs
 import { FamilyExpenseDialog } from "./FamilyExpenseDialog";
@@ -228,6 +230,9 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
             </Button>
           </div>
         </div>
+
+        {/* Context bar: country, currency, language */}
+        <BudgetContextBar />
       </motion.div>
 
       {/* Section scroll nav */}
@@ -301,6 +306,16 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
               )}
             </Card>
           </motion.div>
+
+          {/* ===== INCOME LIST: Edit/Delete ===== */}
+          <CollapsibleSection
+            emoji="💰"
+            title={l ? "Ingresos del Mes" : "Monthly Income"}
+            subtitle={l ? "Edita o elimina ingresos registrados" : "Edit or delete recorded income"}
+            defaultOpen={false}
+          >
+            <IncomeListWidget />
+          </CollapsibleSection>
 
           {/* ===== SECTION 2: SALUD + INSIGHTS ===== */}
           <div id="budget-health" className="grid gap-5 lg:grid-cols-2">
