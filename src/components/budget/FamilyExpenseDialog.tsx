@@ -42,12 +42,14 @@ export function FamilyExpenseDialog({ open, onClose }: FamilyExpenseDialogProps)
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
   const [step, setStep] = useState<1 | 2>(1);
 
   const reset = () => {
     setAmount("");
     setDescription("");
     setCategory("");
+    setCustomCategory("");
     setStep(1);
   };
 
@@ -57,7 +59,18 @@ export function FamilyExpenseDialog({ open, onClose }: FamilyExpenseDialogProps)
   };
 
   const handleCategorySelect = (cat: string) => {
+    if (cat === "other") {
+      setCategory("other");
+      // Don't advance yet — wait for custom input
+      return;
+    }
     setCategory(cat);
+    setCustomCategory("");
+    setStep(2);
+  };
+
+  const handleCustomCategoryConfirm = () => {
+    if (!customCategory.trim()) return;
     setStep(2);
   };
 
@@ -67,7 +80,7 @@ export function FamilyExpenseDialog({ open, onClose }: FamilyExpenseDialogProps)
     try {
       await createMutation.mutateAsync({
         amount: parseFloat(amount),
-        category,
+        category: category === "other" && customCategory.trim() ? customCategory.trim() : category,
         vendor: description || undefined,
         description: description || undefined,
         date: new Date().toISOString().split("T")[0],
@@ -80,9 +93,13 @@ export function FamilyExpenseDialog({ open, onClose }: FamilyExpenseDialogProps)
       // Ensure budget view data refreshes
       queryClient.invalidateQueries({ queryKey: ["monthly-plan"] });
 
+      const catLabel = category === "other" && customCategory.trim()
+        ? `📋 ${customCategory.trim()}`
+        : `${FAMILY_CATEGORIES.find(c => c.value === category)?.icon} ${amount}`;
+
       toast({
         title: l ? "✅ ¡Gasto registrado!" : "✅ Expense recorded!",
-        description: `${FAMILY_CATEGORIES.find(c => c.value === category)?.icon} ${amount}`,
+        description: catLabel,
       });
       handleClose();
     } catch {
@@ -95,6 +112,9 @@ export function FamilyExpenseDialog({ open, onClose }: FamilyExpenseDialogProps)
   };
 
   const selectedCat = FAMILY_CATEGORIES.find(c => c.value === category);
+  const displayTitle = category === "other" && customCategory.trim()
+    ? `📋 ${customCategory.trim()}`
+    : `${selectedCat?.icon} ${l ? selectedCat?.es : selectedCat?.en}`;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -103,30 +123,54 @@ export function FamilyExpenseDialog({ open, onClose }: FamilyExpenseDialogProps)
           <DialogTitle className="text-center text-lg">
             {step === 1
               ? (l ? "🛒 ¿En qué gastaste?" : "🛒 What did you spend on?")
-              : `${selectedCat?.icon} ${l ? selectedCat?.es : selectedCat?.en}`
+              : displayTitle
             }
           </DialogTitle>
         </DialogHeader>
 
         {step === 1 ? (
-          <div className="grid grid-cols-3 gap-2 py-2">
-            {FAMILY_CATEGORIES.map((cat) => (
-              <button
-                key={cat.value}
-                onClick={() => handleCategorySelect(cat.value)}
-                className={cn(
-                  "flex flex-col items-center gap-1 p-3 rounded-xl",
-                  "bg-muted/50 hover:bg-primary/10 hover:scale-105",
-                  "transition-all duration-150 active:scale-95",
-                  "border border-transparent hover:border-primary/20"
-                )}
-              >
-                <span className="text-2xl">{cat.icon}</span>
-                <span className="text-[11px] font-medium text-muted-foreground">
-                  {l ? cat.es : cat.en}
-                </span>
-              </button>
-            ))}
+          <div className="space-y-3 py-2">
+            <div className="grid grid-cols-3 gap-2">
+              {FAMILY_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.value}
+                  onClick={() => handleCategorySelect(cat.value)}
+                  className={cn(
+                    "flex flex-col items-center gap-1 p-3 rounded-xl",
+                    "bg-muted/50 hover:bg-primary/10 hover:scale-105",
+                    "transition-all duration-150 active:scale-95",
+                    "border border-transparent hover:border-primary/20",
+                    cat.value === "other" && category === "other" && "border-primary/30 bg-primary/10 ring-1 ring-primary/20"
+                  )}
+                >
+                  <span className="text-2xl">{cat.icon}</span>
+                  <span className="text-[11px] font-medium text-muted-foreground">
+                    {l ? cat.es : cat.en}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Custom category input — shown when "Otros" is selected */}
+            {category === "other" && (
+              <div className="flex gap-2 items-center px-1">
+                <Input
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value.slice(0, 50))}
+                  placeholder={l ? "Ej: Veterinario, Peluquería..." : "E.g: Vet, Haircut..."}
+                  className="text-sm flex-1"
+                  autoFocus
+                  onKeyDown={(e) => e.key === "Enter" && handleCustomCategoryConfirm()}
+                />
+                <Button
+                  size="sm"
+                  disabled={!customCategory.trim()}
+                  onClick={handleCustomCategoryConfirm}
+                >
+                  {l ? "Continuar →" : "Continue →"}
+                </Button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-4 py-2">
