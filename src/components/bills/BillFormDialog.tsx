@@ -125,7 +125,7 @@ export function BillFormDialog({ open, onOpenChange, editingBill, onSave }: Bill
                 <Input
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder={l ? 'Ej: Agua Potable, Daycare, Trustee' : 'E.g. Water Bill, Daycare, Trustee'}
+                  placeholder={l ? 'Ej: Agua Potable, Internet, Guardería' : 'E.g. Water Bill, Internet, Daycare'}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
