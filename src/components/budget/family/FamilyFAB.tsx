@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, X, Receipt, DollarSign, CreditCard, Camera } from "lucide-react";
+import { Plus, X, Receipt, DollarSign, CreditCard, Camera, MessageSquareText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -9,14 +9,16 @@ interface FamilyFABProps {
   onIncome: () => void;
   onBill: () => void;
   onReceipt: () => void;
+  onSmartText?: () => void;
 }
 
-export function FamilyFAB({ onExpense, onIncome, onBill, onReceipt }: FamilyFABProps) {
+export function FamilyFAB({ onExpense, onIncome, onBill, onReceipt, onSmartText }: FamilyFABProps) {
   const [open, setOpen] = useState(false);
   const { language } = useLanguage();
   const l = language === "es";
 
   const actions = [
+    ...(onSmartText ? [{ icon: MessageSquareText, label: l ? "Texto Libre" : "Free Text", color: "bg-violet-500", action: onSmartText }] : []),
     { icon: Receipt, label: l ? "Gasto" : "Expense", color: "bg-amber-500", action: onExpense },
     { icon: DollarSign, label: l ? "Ingreso" : "Income", color: "bg-emerald-500", action: onIncome },
     { icon: CreditCard, label: l ? "Pago Fijo" : "Fixed Bill", color: "bg-blue-500", action: onBill },
