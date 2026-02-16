@@ -119,10 +119,33 @@ IMPORTANT: Always respond with a valid JSON object with this exact structure:
         { "name": "GST", "rate": 5, "amount": number },
         { "name": "PST", "rate": 7, "amount": number }
       ],
-      "payment_method": "VISA, Mastercard, Debit, Cash, etc. if visible"
+      "payment_method": "VISA, Mastercard, Debit, Cash, etc. if visible",
+      "is_recurring_candidate": true/false,
+      "recurring_bill_data": {
+        "name": "Bill name (e.g., 'Electricity - Hydro One', 'Water Bill', 'Internet - Bell')",
+        "frequency": "monthly|bimonthly|quarterly|annual",
+        "category": "utilities|insurance|subscriptions|housing|transportation|debt|childcare|other",
+        "auto_pay": false,
+        "next_due_date": "YYYY-MM-DD (estimated next due date based on billing period)"
+      }
     }
   ]
 }
+
+RECURRING BILL DETECTION - VERY IMPORTANT:
+Set "is_recurring_candidate" to TRUE if the receipt/bill is from any of these:
+- Utility companies: electricity, water, gas (natural gas), sewer, garbage collection, internet, phone, cable TV
+- Insurance: health, car, home, life, dental
+- Subscriptions: gym, streaming services, software subscriptions
+- Housing: rent receipts, condo fees, HOA
+- Loan/debt payments: mortgage, car payment, credit card statement
+- Recurring services: cleaning, lawn care, security monitoring
+
+When is_recurring_candidate is true, fill in "recurring_bill_data" with:
+- name: A clean descriptive name like "Electricity - [Company]" or "Internet - [Provider]"
+- frequency: Usually "monthly" for utilities, check the billing period on the receipt
+- category: Map to the appropriate category
+- next_due_date: Calculate from the due date shown on the bill (add one billing cycle)
 
 CRITICAL FOR LINE ITEMS:
 - Extract EVERY visible line item from the receipt, not just the total
@@ -315,12 +338,19 @@ Extract expense information and return a JSON object with expenses array. If mul
         cra_deduction_rate: exp.cra_deduction_rate || 100,
         typically_reimbursable: exp.typically_reimbursable || false,
         receipt_index: exp.receipt_index || index + 1,
-        // Include line items, taxes, and payment details
         line_items: exp.line_items || [],
         subtotal: exp.subtotal || null,
         taxes: exp.taxes || [],
         payment_method: exp.payment_method || null,
         decoded_from: exp.decoded_from || null,
+        is_recurring_candidate: exp.is_recurring_candidate || false,
+        recurring_bill_data: exp.is_recurring_candidate ? {
+          name: exp.recurring_bill_data?.name || exp.vendor || "Unknown Bill",
+          frequency: exp.recurring_bill_data?.frequency || "monthly",
+          category: exp.recurring_bill_data?.category || "utilities",
+          auto_pay: exp.recurring_bill_data?.auto_pay || false,
+          next_due_date: exp.recurring_bill_data?.next_due_date || null,
+        } : null,
       }))
     };
 

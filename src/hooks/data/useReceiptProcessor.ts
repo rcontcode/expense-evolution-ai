@@ -35,6 +35,14 @@ export interface ExtractedExpenseData {
   subtotal?: number;
   taxes?: TaxItem[];
   payment_method?: string;
+  is_recurring_candidate?: boolean;
+  recurring_bill_data?: {
+    name: string;
+    frequency: string;
+    category: string;
+    auto_pay: boolean;
+    next_due_date: string | null;
+  } | null;
 }
 
 export interface ProcessReceiptResult {

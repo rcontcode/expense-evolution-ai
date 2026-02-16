@@ -9,11 +9,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Mic, MicOff, Loader2, Sparkles, Check, X, ImageIcon, ChevronLeft, ChevronRight, 
   Trash2, AlertCircle, CheckCircle, Save, Building2, Landmark, User, AlertTriangle,
-  Utensils, Plane, Monitor, Code, Paperclip, Briefcase, Zap, Home, Car, HelpCircle
+  Utensils, Plane, Monitor, Code, Paperclip, Briefcase, Zap, Home, Car, HelpCircle,
+  CreditCard, RefreshCw
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useEntity } from '@/contexts/EntityContext';
 import { useVoiceInput } from '@/hooks/utils/useVoiceInput';
 import { useReceiptProcessor, ExtractedExpenseData } from '@/hooks/data/useReceiptProcessor';
 import { useCreateExpense } from '@/hooks/data/useExpenses';
@@ -59,10 +61,12 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
   const [showCategoryTextInput, setShowCategoryTextInput] = useState(false);
   const [savedDocumentId, setSavedDocumentId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-
+  const [creatingBill, setCreatingBill] = useState(false);
+  const [billCreatedForIndex, setBillCreatedForIndex] = useState<Set<number>>(new Set());
   const { processReceipt, isProcessing } = useReceiptProcessor();
   const createExpense = useCreateExpense();
   const { data: clients = [] } = useClients();
+  const { currentEntity } = useEntity();
 
   const { isListening, transcript, isSupported: voiceSupported, toggleListening, setTranscript } = useVoiceInput({ onResult: () => {} });
   const { isListening: isCategoryListening, isSupported: categoryVoiceSupported, toggleListening: toggleCategoryListening, setTranscript: setCategoryTranscript } = useVoiceInput({
@@ -268,6 +272,34 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
     setTranscript(''); 
     setShowCategoryTextInput(false); 
     setSavedDocumentId(null);
+    setBillCreatedForIndex(new Set());
+  };
+
+  const handleCreateRecurringBill = async (expense: ExtractedExpenseData) => {
+    if (!user || !expense.recurring_bill_data) return;
+    setCreatingBill(true);
+    try {
+      const billData = expense.recurring_bill_data;
+      const { error } = await supabase.from('recurring_bills').insert({
+        user_id: user.id,
+        name: billData.name,
+        amount: expense.amount,
+        category: billData.category || 'utilities',
+        frequency: billData.frequency || 'monthly',
+        next_due_date: billData.next_due_date || expense.date,
+        auto_pay: billData.auto_pay || false,
+        is_active: true,
+        currency: currentEntity?.default_currency || expense.currency || 'CAD',
+      });
+      if (error) throw error;
+      setBillCreatedForIndex(prev => new Set(prev).add(currentIndex));
+      toast.success(language === 'es' ? '🔄 Pago fijo creado exitosamente' : '🔄 Recurring bill created successfully');
+    } catch (err) {
+      console.error('Error creating recurring bill:', err);
+      toast.error(language === 'es' ? 'Error al crear pago fijo' : 'Error creating recurring bill');
+    } finally {
+      setCreatingBill(false);
+    }
   };
 
   // Get category icon for current expense
@@ -398,6 +430,48 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
                     <CheckCircle className="h-4 w-4" />
                     <AlertDescription>
                       Este gasto puede ser reembolsable según tu acuerdo con el cliente. Verifica las políticas específicas de reembolso.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Recurring Bill Detection Banner */}
+                {currentExpense.is_recurring_candidate && currentExpense.recurring_bill_data && (
+                  <Alert className="border-blue-300 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 text-blue-800 dark:text-blue-300">
+                    <RefreshCw className="h-4 w-4" />
+                    <AlertDescription>
+                      <div className="space-y-2">
+                        <p className="font-medium">
+                          {language === 'es' 
+                            ? '🔄 ¡Detectamos un pago recurrente!' 
+                            : '🔄 Recurring payment detected!'}
+                        </p>
+                        <p className="text-xs">
+                          {language === 'es'
+                            ? `"${currentExpense.recurring_bill_data.name}" parece ser un pago ${currentExpense.recurring_bill_data.frequency === 'monthly' ? 'mensual' : currentExpense.recurring_bill_data.frequency}. ¿Quieres crear un pago fijo para que te recuerde cada período?`
+                            : `"${currentExpense.recurring_bill_data.name}" looks like a ${currentExpense.recurring_bill_data.frequency} payment. Want to create a recurring bill so you'll be reminded each period?`}
+                        </p>
+                        {billCreatedForIndex.has(currentIndex) ? (
+                          <Badge variant="default" className="bg-emerald-600">
+                            <Check className="h-3 w-3 mr-1" />
+                            {language === 'es' ? 'Pago fijo creado' : 'Bill created'}
+                          </Badge>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="mt-1"
+                            onClick={() => handleCreateRecurringBill(currentExpense)}
+                            disabled={creatingBill}
+                          >
+                            {creatingBill ? (
+                              <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                            ) : (
+                              <CreditCard className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            {language === 'es' ? 'Crear Pago Fijo' : 'Create Recurring Bill'}
+                          </Button>
+                        )}
+                      </div>
                     </AlertDescription>
                   </Alert>
                 )}
