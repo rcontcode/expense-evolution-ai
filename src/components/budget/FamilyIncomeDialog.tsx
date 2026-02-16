@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useCreateIncome } from "@/hooks/data/useIncome";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -31,12 +31,12 @@ export function FamilyIncomeDialog({ open, onClose }: FamilyIncomeDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const createIncome = useCreateIncome();
 
   const [amount, setAmount] = useState("");
   const [source, setSource] = useState("");
   const [incomeType, setIncomeType] = useState("");
   const [step, setStep] = useState<1 | 2>(1);
-  const [saving, setSaving] = useState(false);
 
   const reset = () => {
     setAmount("");
@@ -57,22 +57,19 @@ export function FamilyIncomeDialog({ open, onClose }: FamilyIncomeDialogProps) {
 
   const handleSubmit = async () => {
     if (!amount || !incomeType || !user) return;
-    setSaving(true);
 
     try {
       const typeInfo = INCOME_TYPES.find(t => t.value === incomeType);
-      const { error } = await supabase.from("income").insert({
+      await createIncome.mutateAsync({
         amount: parseFloat(amount),
         income_type: incomeType as any,
         source: source || (l ? typeInfo?.es : typeInfo?.en) || "Income",
         description: source || null,
         date: new Date().toISOString().split("T")[0],
         user_id: user.id,
-      });
+      } as any);
 
-      if (error) throw error;
-
-      queryClient.invalidateQueries({ queryKey: ["income"] });
+      // Ensure budget data refreshes
       queryClient.invalidateQueries({ queryKey: ["monthly-plan"] });
 
       toast({
@@ -86,8 +83,6 @@ export function FamilyIncomeDialog({ open, onClose }: FamilyIncomeDialogProps) {
         description: l ? "No se pudo guardar" : "Could not save",
         variant: "destructive",
       });
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -165,9 +160,9 @@ export function FamilyIncomeDialog({ open, onClose }: FamilyIncomeDialogProps) {
               <Button
                 className="flex-1 gap-1.5"
                 onClick={handleSubmit}
-                disabled={!amount || saving}
+                disabled={!amount || createIncome.isPending}
               >
-                {saving
+                {createIncome.isPending
                   ? (l ? "Guardando..." : "Saving...")
                   : (l ? "✅ Guardar" : "✅ Save")
                 }
