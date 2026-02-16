@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Calendar, CalendarDays, Clock, AlertTriangle, CheckCircle2, Info, ExternalLink, Building2, User, Briefcase, HelpCircle, BookOpen, Calculator, Lightbulb, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 import { useProfile } from "@/hooks/data/useProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format, addMonths, differenceInDays, isAfter } from "date-fns";
@@ -22,10 +23,12 @@ import { TaxEstimator } from "@/components/tax-calendar/TaxEstimator";
 import { TaxInfoVersionBadge } from "@/components/tax-calendar/TaxInfoVersionBadge";
 import { TaxKnowledgeQuiz } from "@/components/tax-calendar/TaxKnowledgeQuiz";
 import { TaxContextBanner } from "@/components/tax-calendar/TaxContextBanner";
+import { FiscalCenterFlow } from "@/components/tax-calendar/FiscalCenterFlow";
 import { useCountryContext } from "@/hooks/utils/useCountryContext";
 import { CountrySelector } from "@/components/country";
 import { CountryFlag } from "@/components/ui/country-flag";
 import type { CountryCode } from "@/lib/constants/country-tax-config";
+import { cn } from "@/lib/utils";
 
 export default function TaxCalendar() {
   const { data: profile } = useProfile();
@@ -50,6 +53,7 @@ export default function TaxCalendar() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showWizard, setShowWizard] = useState(false);
   const [showKnowledgeQuiz, setShowKnowledgeQuiz] = useState(false);
+  const [activeTab, setActiveTab] = useState("timeline");
 
   // Determine user's business type from profile
   const workTypes = profile?.work_types || [];
@@ -80,11 +84,10 @@ export default function TaxCalendar() {
   return (
     <Layout>
       <PageHeader
-        title={pageTitle}
+        title={`${effectiveCountry === 'CL' ? '🇨🇱' : '🇨🇦'} ${pageTitle}`}
         description={pageDescription}
       >
         <div className="flex items-center gap-3">
-          {/* Multi-country selector */}
           {isMultiCountry && (
             <CountrySelector
               value={effectiveCountry}
@@ -97,153 +100,191 @@ export default function TaxCalendar() {
       </PageHeader>
 
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Profile Status Alert */}
+        {/* Profile Status Alert - Enhanced */}
         {!profileComplete && (
-          <Alert variant="destructive" className="border-amber-500/50 bg-amber-500/10">
-            <AlertTriangle className="h-4 w-4 text-amber-500" />
-            <AlertTitle className="text-amber-500">
-              {language === 'es' ? "Configuración Requerida" : "Setup Required"}
-            </AlertTitle>
-            <AlertDescription className="text-amber-400">
-              {language === 'es' 
-                ? "Para mostrarte información personalizada, necesitamos conocer tu situación fiscal. Usa el asistente de configuración."
-                : "To show you personalized information, we need to know your tax situation. Use the setup wizard."
-              }
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="ml-2 mt-2"
-                onClick={() => setShowWizard(true)}
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                {language === 'es' ? "Configurar Ahora" : "Configure Now"}
-              </Button>
-            </AlertDescription>
-          </Alert>
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+            <Alert variant="destructive" className="border-amber-500/50 bg-gradient-to-r from-amber-500/10 to-orange-500/10 shadow-lg shadow-amber-500/5">
+              <AlertTriangle className="h-4 w-4 text-amber-500 animate-pulse" />
+              <AlertTitle className="text-amber-500 flex items-center gap-2">
+                ⚠️ {language === 'es' ? "Configuración Requerida" : "Setup Required"}
+              </AlertTitle>
+              <AlertDescription className="text-amber-400">
+                {language === 'es' 
+                  ? "Para mostrarte información personalizada, necesitamos conocer tu situación fiscal."
+                  : "To show you personalized information, we need to know your tax situation."
+                }
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="ml-2 mt-2 bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20 shadow-md hover:-translate-y-0.5 transition-all"
+                  onClick={() => setShowWizard(true)}
+                >
+                  <Sparkles className="h-4 w-4 mr-2 animate-pulse" />
+                  ✨ {language === 'es' ? "Configurar Ahora" : "Configure Now"}
+                </Button>
+              </AlertDescription>
+            </Alert>
+          </motion.div>
         )}
 
-        {/* First Tax Year Alert */}
+        {/* First Tax Year Alert - Enhanced */}
         {isFirstTaxYear && profileComplete && (
-          <Alert className="border-blue-500/50 bg-blue-500/10">
-            <Info className="h-4 w-4 text-blue-500" />
-            <AlertTitle className="text-blue-500">
-              {language === 'es' ? "Primer Año Fiscal" : "First Tax Year"}
-            </AlertTitle>
-            <AlertDescription className="text-blue-400">
-              {language === 'es' 
-                ? `Tu negocio comenzó en ${format(new Date(businessStartDate!), "MMMM yyyy", { locale })}. Tu primera declaración cubrirá solo desde esa fecha. Las fechas mostradas aplican desde tu siguiente año fiscal completo.`
-                : `Your business started in ${format(new Date(businessStartDate!), "MMMM yyyy", { locale })}. Your first return will cover only from that date. Dates shown apply from your next full fiscal year.`
-              }
-            </AlertDescription>
-          </Alert>
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <Alert className="border-blue-500/50 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 shadow-lg shadow-blue-500/5">
+              <Info className="h-4 w-4 text-blue-500" />
+              <AlertTitle className="text-blue-500 flex items-center gap-2">
+                🆕 {language === 'es' ? "Primer Año Fiscal" : "First Tax Year"}
+              </AlertTitle>
+              <AlertDescription className="text-blue-400">
+                {language === 'es' 
+                  ? `Tu negocio comenzó en ${format(new Date(businessStartDate!), "MMMM yyyy", { locale })}. Tu primera declaración cubrirá solo desde esa fecha.`
+                  : `Your business started in ${format(new Date(businessStartDate!), "MMMM yyyy", { locale })}. Your first return will cover only from that date.`
+                }
+              </AlertDescription>
+            </Alert>
+          </motion.div>
         )}
 
-        {/* Tax Context Banner - shows user's fiscal profile summary */}
+        {/* Tax Context Banner */}
         {profileComplete && (
-          <TaxContextBanner 
-            country={effectiveCountry} 
-            onOpenQuiz={() => setShowKnowledgeQuiz(true)} 
-          />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
+            <TaxContextBanner 
+              country={effectiveCountry} 
+              onOpenQuiz={() => setShowKnowledgeQuiz(true)} 
+            />
+          </motion.div>
         )}
 
         {/* Tax Knowledge Quiz */}
         {showKnowledgeQuiz && (
-          <TaxKnowledgeQuiz 
-            onClose={() => setShowKnowledgeQuiz(false)}
-            onComplete={() => setShowKnowledgeQuiz(false)}
-          />
+          <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}>
+            <TaxKnowledgeQuiz 
+              onClose={() => setShowKnowledgeQuiz(false)}
+              onComplete={() => setShowKnowledgeQuiz(false)}
+            />
+          </motion.div>
         )}
 
-        {/* Quick Status Cards */}
+        {/* 🗺️ Fiscal Center Flow Diagram */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+          <FiscalCenterFlow
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            profileComplete={profileComplete}
+          />
+        </motion.div>
+
+        {/* Quick Status Cards - Enhanced with animations */}
         <div className="grid gap-4 md:grid-cols-4" data-highlight="tax-status-cards">
-          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-primary" />
-                {language === 'es' ? "Tipo de Negocio" : "Business Type"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-1">
-                {hasCorporation && <Badge variant="secondary">Corporation</Badge>}
-                {hasContractor && <Badge variant="secondary">Sole Proprietor</Badge>}
-                {hasEmployee && <Badge variant="outline">Employee</Badge>}
-                {!profileComplete && (
-                  <Badge variant="destructive">
-                    {language === 'es' ? "Sin configurar" : "Not configured"}
-                  </Badge>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-transparent">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-blue-500" />
-                {language === 'es' ? "Fin de Año Fiscal" : "Fiscal Year End"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-lg font-semibold">
-                {hasCorporation && fiscalYearEnd 
-                  ? format(new Date(fiscalYearEnd), "MMMM d", { locale })
-                  : (language === 'es' ? "Diciembre 31" : "December 31")
-                }
-              </p>
-              {!hasCorporation && (
-                <p className="text-xs text-muted-foreground">
-                  {language === 'es' ? "(Año calendario)" : "(Calendar year)"}
+          {[
+            {
+              emoji: '🏢',
+              icon: <Building2 className="h-4 w-4" />,
+              title: language === 'es' ? "Tipo de Negocio" : "Business Type",
+              gradient: 'from-primary/10 via-primary/5 to-transparent',
+              borderColor: 'border-primary/30',
+              shadowColor: 'shadow-primary/5',
+              content: (
+                <div className="flex flex-wrap gap-1.5">
+                  {hasCorporation && <Badge className="bg-purple-500/10 text-purple-700 border-purple-500/30 hover:bg-purple-500/20 transition-colors">🏛️ Corporation</Badge>}
+                  {hasContractor && <Badge className="bg-amber-500/10 text-amber-700 border-amber-500/30 hover:bg-amber-500/20 transition-colors">💼 Sole Proprietor</Badge>}
+                  {hasEmployee && <Badge variant="outline" className="hover:bg-muted/50 transition-colors">👤 Employee</Badge>}
+                  {!profileComplete && <Badge variant="destructive" className="animate-pulse">⚠️ {language === 'es' ? "Sin configurar" : "Not configured"}</Badge>}
+                </div>
+              ),
+            },
+            {
+              emoji: '📅',
+              icon: <CalendarDays className="h-4 w-4 text-blue-500" />,
+              title: language === 'es' ? "Fin de Año Fiscal" : "Fiscal Year End",
+              gradient: 'from-blue-500/10 via-blue-500/5 to-transparent',
+              borderColor: 'border-blue-500/30',
+              shadowColor: 'shadow-blue-500/5',
+              content: (
+                <>
+                  <p className="text-lg font-bold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
+                    {hasCorporation && fiscalYearEnd 
+                      ? format(new Date(fiscalYearEnd), "MMMM d", { locale })
+                      : (language === 'es' ? "Diciembre 31" : "December 31")
+                    }
+                  </p>
+                  {!hasCorporation && (
+                    <p className="text-xs text-muted-foreground">📆 {language === 'es' ? "(Año calendario)" : "(Calendar year)"}</p>
+                  )}
+                </>
+              ),
+            },
+            {
+              emoji: '⏰',
+              icon: <Clock className="h-4 w-4 text-green-500" />,
+              title: language === 'es' ? "Próxima Fecha Límite" : "Next Deadline",
+              gradient: 'from-green-500/10 via-green-500/5 to-transparent',
+              borderColor: 'border-green-500/30',
+              shadowColor: 'shadow-green-500/5',
+              content: (
+                <NextDeadlineDisplay 
+                  workTypes={workTypes} 
+                  fiscalYearEnd={fiscalYearEnd}
+                  language={language}
+                  country={effectiveCountry}
+                />
+              ),
+            },
+            {
+              emoji: effectiveCountry === 'CL' ? '🧾' : '💲',
+              icon: <Calculator className="h-4 w-4 text-purple-500" />,
+              title: effectiveCountry === 'CL' ? "IVA" : (language === 'es' ? "GST/HST" : "GST/HST Status"),
+              gradient: 'from-purple-500/10 via-purple-500/5 to-transparent',
+              borderColor: 'border-purple-500/30',
+              shadowColor: 'shadow-purple-500/5',
+              content: (
+                <p className="text-lg font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+                  {effectiveCountry === 'CL'
+                    ? (profile?.tax_regime 
+                        ? (profile.tax_regime === 'general' ? '📋 Régimen General' : 
+                           profile.tax_regime === 'pyme' ? '🏪 PyME' : '🚀 Pro PyME')
+                        : (language === 'es' ? "⚠️ Sin configurar" : "⚠️ Not configured"))
+                    : (profile?.gst_hst_registered 
+                        ? (language === 'es' ? "✅ Registrado" : "✅ Registered")
+                        : (language === 'es' ? "❌ No registrado" : "❌ Not Registered"))
+                  }
                 </p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="border-green-500/20 bg-gradient-to-br from-green-500/5 to-transparent">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Clock className="h-4 w-4 text-green-500" />
-                {language === 'es' ? "Próxima Fecha Límite" : "Next Deadline"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <NextDeadlineDisplay 
-                workTypes={workTypes} 
-                fiscalYearEnd={fiscalYearEnd}
-                language={language}
-                country={effectiveCountry}
-              />
-            </CardContent>
-          </Card>
-
-          <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Calculator className="h-4 w-4 text-purple-500" />
-                {effectiveCountry === 'CL' ? "IVA" : (language === 'es' ? "GST/HST" : "GST/HST Status")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-lg font-semibold">
-                {effectiveCountry === 'CL'
-                  ? (profile?.tax_regime 
-                      ? (profile.tax_regime === 'general' ? 'Régimen General' : 
-                         profile.tax_regime === 'pyme' ? 'PyME' : 'Pro PyME')
-                      : (language === 'es' ? "Sin configurar" : "Not configured"))
-                  : (profile?.gst_hst_registered 
-                      ? (language === 'es' ? "Registrado" : "Registered")
-                      : (language === 'es' ? "No registrado" : "Not Registered"))
-                }
-              </p>
-            </CardContent>
-          </Card>
+              ),
+            },
+          ].map((card, idx) => (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * idx + 0.25 }}
+            >
+              <Card className={cn(
+                "bg-gradient-to-br transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:scale-[0.98]",
+                card.gradient, card.borderColor, `shadow-md ${card.shadowColor}`
+              )}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <span className="text-base">{card.emoji}</span>
+                    {card.icon}
+                    {card.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>{card.content}</CardContent>
+              </Card>
+            </motion.div>
+          ))}
         </div>
 
-        {/* Year Selector & Config Button */}
-        <div className="flex items-center gap-4 flex-wrap">
-          <Label>{language === 'es' ? "Año Fiscal:" : "Tax Year:"}</Label>
+        {/* Year Selector & Config Button - Enhanced */}
+        <motion.div 
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+          className="flex items-center gap-4 flex-wrap p-3 rounded-xl bg-muted/30 border border-border/50"
+        >
+          <Label className="flex items-center gap-1.5 font-semibold">
+            📆 {language === 'es' ? "Año Fiscal:" : "Tax Year:"}
+          </Label>
           <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-32 border-2 border-primary/20 bg-card/80 font-bold shadow-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -252,14 +293,19 @@ export default function TaxCalendar() {
               ))}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm" onClick={() => setShowWizard(true)}>
-            <HelpCircle className="h-4 w-4 mr-2" />
-            {language === 'es' 
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowWizard(true)}
+            className="gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all bg-card/80 border-2 border-primary/20"
+          >
+            <HelpCircle className="h-4 w-4" />
+            🧙‍♂️ {language === 'es' 
               ? (profileComplete ? "Actualizar Configuración" : "Asistente de Configuración")
               : (profileComplete ? "Update Configuration" : "Setup Wizard")
             }
           </Button>
-        </div>
+        </motion.div>
 
         {/* Tax Situation Wizard */}
         {showWizard && (
@@ -269,69 +315,66 @@ export default function TaxCalendar() {
           />
         )}
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="timeline" className="space-y-4" data-highlight="tax-tabs">
-          <TabsList className="grid w-full grid-cols-5" data-highlight="tax-tab-list">
-            <TabsTrigger value="timeline" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span className="hidden sm:inline">Timeline</span>
-            </TabsTrigger>
-            <TabsTrigger value="deadlines" className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              <span className="hidden sm:inline">
-                {language === 'es' ? "Fechas" : "Deadlines"}
-              </span>
-            </TabsTrigger>
-            <TabsTrigger value="estimator" className="flex items-center gap-2">
-              <Calculator className="h-4 w-4" />
-              <span className="hidden sm:inline">
-                {language === 'es' ? "Estimador" : "Estimator"}
-              </span>
-            </TabsTrigger>
-            <TabsTrigger value="guide" className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4" />
-              <span className="hidden sm:inline">
-                {language === 'es' ? "Guía" : "Guide"}
-              </span>
-            </TabsTrigger>
-            <TabsTrigger value="resources" className="flex items-center gap-2">
-              <ExternalLink className="h-4 w-4" />
-              <span className="hidden sm:inline">
-                {language === 'es' ? "Recursos" : "Resources"}
-              </span>
-            </TabsTrigger>
+        {/* Main Content Tabs - Enhanced */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4" data-highlight="tax-tabs">
+          <TabsList className="grid w-full grid-cols-5 bg-muted/50 border border-border/50 p-1 rounded-xl shadow-sm" data-highlight="tax-tab-list">
+            {[
+              { value: 'timeline', icon: <Calendar className="h-4 w-4" />, emoji: '📅', label: 'Timeline' },
+              { value: 'deadlines', icon: <Clock className="h-4 w-4" />, emoji: '⏰', label: language === 'es' ? 'Fechas' : 'Deadlines' },
+              { value: 'estimator', icon: <Calculator className="h-4 w-4" />, emoji: '🧮', label: language === 'es' ? 'Estimador' : 'Estimator' },
+              { value: 'guide', icon: <BookOpen className="h-4 w-4" />, emoji: '📖', label: language === 'es' ? 'Guía' : 'Guide' },
+              { value: 'resources', icon: <ExternalLink className="h-4 w-4" />, emoji: '🔗', label: language === 'es' ? 'Recursos' : 'Resources' },
+            ].map(tab => (
+              <TabsTrigger 
+                key={tab.value} 
+                value={tab.value} 
+                className="flex items-center gap-1.5 rounded-lg data-[state=active]:shadow-md data-[state=active]:bg-background transition-all"
+              >
+                <span className="text-sm">{tab.emoji}</span>
+                {tab.icon}
+                <span className="hidden sm:inline text-xs font-medium">{tab.label}</span>
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           <TabsContent value="timeline" className="space-y-4">
-            <TaxDeadlineTimeline 
-              year={selectedYear}
-              workTypes={workTypes}
-              fiscalYearEnd={fiscalYearEnd}
-              country={effectiveCountry}
-            />
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <TaxDeadlineTimeline 
+                year={selectedYear}
+                workTypes={workTypes}
+                fiscalYearEnd={fiscalYearEnd}
+                country={effectiveCountry}
+              />
+            </motion.div>
           </TabsContent>
 
           <TabsContent value="deadlines" className="space-y-4">
-            <TaxDeadlineCards 
-              year={selectedYear}
-              workTypes={workTypes}
-              fiscalYearEnd={fiscalYearEnd}
-              country={effectiveCountry}
-            />
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <TaxDeadlineCards 
+                year={selectedYear}
+                workTypes={workTypes}
+                fiscalYearEnd={fiscalYearEnd}
+                country={effectiveCountry}
+              />
+            </motion.div>
           </TabsContent>
 
           <TabsContent value="estimator" className="space-y-4">
-            <div data-highlight="tax-estimator">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} data-highlight="tax-estimator">
               <TaxEstimator />
-            </div>
+            </motion.div>
           </TabsContent>
 
           <TabsContent value="guide" className="space-y-4">
-            <TaxGuideContent language={language} country={effectiveCountry} />
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <TaxGuideContent language={language} country={effectiveCountry} />
+            </motion.div>
           </TabsContent>
 
           <TabsContent value="resources" className="space-y-4">
-            <TaxResources language={language} country={effectiveCountry} />
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <TaxResources language={language} country={effectiveCountry} />
+            </motion.div>
           </TabsContent>
         </Tabs>
       </div>
@@ -429,20 +472,27 @@ function NextDeadlineDisplay({
   }, [workTypes, fiscalYearEnd, language, country]);
 
   if (!nextDeadline) {
-    return <p className="text-muted-foreground">{language === 'es' ? "No hay fechas próximas" : "No upcoming dates"}</p>;
+    return <p className="text-muted-foreground text-sm">😌 {language === 'es' ? "No hay fechas próximas" : "No upcoming dates"}</p>;
   }
 
   const daysUntil = differenceInDays(nextDeadline.date, new Date());
   const isUrgent = daysUntil <= 30;
+  const urgencyEmoji = daysUntil <= 7 ? '🔴' : daysUntil <= 30 ? '🟠' : daysUntil <= 60 ? '🟡' : '🟢';
 
   return (
-    <div>
-      <p className={`text-lg font-semibold ${isUrgent ? 'text-amber-500' : ''}`}>
-        {format(nextDeadline.date, "MMM d, yyyy")}
+    <div className="space-y-1">
+      <p className={cn("text-lg font-bold", isUrgent && "animate-pulse")}>
+        {urgencyEmoji} {format(nextDeadline.date, "MMM d, yyyy")}
       </p>
       <p className="text-sm text-muted-foreground">{nextDeadline.name}</p>
-      <Badge variant={isUrgent ? "destructive" : "secondary"} className="mt-1">
-        {daysUntil} {language === 'es' ? "días" : "days"}
+      <Badge 
+        variant={isUrgent ? "destructive" : "secondary"} 
+        className={cn(
+          "mt-1 font-bold transition-all",
+          isUrgent && "animate-pulse shadow-md shadow-destructive/20"
+        )}
+      >
+        ⏳ {daysUntil} {language === 'es' ? "días" : "days"}
       </Badge>
     </div>
   );
