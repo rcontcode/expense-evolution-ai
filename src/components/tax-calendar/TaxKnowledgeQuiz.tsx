@@ -74,6 +74,14 @@ export function TaxKnowledgeQuiz({ onClose, onComplete }: TaxKnowledgeQuizProps)
         has_tax_debts: e.has_tax_debts,
         tax_debts_details: e.tax_debts_details || '',
         has_employees: e.has_employees,
+        gst_registration_date: e.gst_registration_date || '',
+        iva_registration_date: e.iva_registration_date || '',
+        gst_filing_frequency: e.gst_filing_frequency || '',
+        iva_filing_frequency: e.iva_filing_frequency || '',
+        revenue_pattern: e.revenue_pattern || '',
+        revenue_range: e.revenue_range || '',
+        business_tax_id: e.business_tax_id || '',
+        knows_personal_tax_deadline: e.knows_personal_tax_deadline,
       };
     }
     return {};
@@ -426,7 +434,7 @@ export function TaxKnowledgeQuiz({ onClose, onComplete }: TaxKnowledgeQuizProps)
           : { es: 'Está en tu Articles of Incorporation o en la carta de CRA. También en CRA My Business Account.', en: 'It\'s in your Articles of Incorporation or CRA letter. Also in CRA My Business Account.', link: 'https://www.canada.ca/en/revenue-agency/services/e-services/e-services-businesses/business-account.html' },
         conditionalOn: () => workTypes.includes('corporation'),
       },
-      // Q11: GST/HST or Tax regime knowledge
+      // GST/HST or Tax regime knowledge
       ...(isChile ? [{
         id: 'knows_tax_regime',
         field: 'knows_tax_regime',
@@ -442,6 +450,100 @@ export function TaxKnowledgeQuiz({ onClose, onComplete }: TaxKnowledgeQuizProps)
         whereToFind: { es: 'Revisa CRA My Business Account o tu carta de registro RT', en: 'Check CRA My Business Account or your RT registration letter', link: 'https://www.canada.ca/en/revenue-agency/services/e-services/e-services-businesses/business-account.html' },
         conditionalOn: () => hasBusiness,
       }]),
+      // GST/IVA registration date
+      ...(isChile ? [{
+        id: 'iva_registration_date',
+        field: 'iva_registration_date',
+        type: 'open' as const,
+        question: { es: '¿Desde cuándo estás registrado como contribuyente de IVA? (fecha de inicio de actividades)', en: 'Since when are you registered as a VAT taxpayer? (activity start date)' },
+        helpText: { es: 'Ejemplo: "desde enero 2023" o "no recuerdo la fecha exacta"', en: 'Example: "since January 2023" or "I don\'t remember the exact date"' },
+        whereToFind: { es: 'Revisa en SII → Mi Información → Inicio de Actividades', en: 'Check in SII → My Information → Activity Start', link: 'https://www.sii.cl' },
+        conditionalOn: () => hasBusiness,
+      }] : [{
+        id: 'gst_registration_date',
+        field: 'gst_registration_date',
+        type: 'open' as const,
+        question: { es: '¿Desde cuándo estás registrado para GST/HST? (fecha de registro efectiva)', en: 'Since when have you been registered for GST/HST? (effective registration date)' },
+        helpText: { es: 'Ejemplo: "desde marzo 2024" o "no estoy seguro si estoy registrado"', en: 'Example: "since March 2024" or "I\'m not sure if I\'m registered"' },
+        whereToFind: { es: 'Revisa tu carta de confirmación de registro RT de CRA o CRA My Business Account → GST/HST Account', en: 'Check your CRA RT registration confirmation letter or CRA My Business Account → GST/HST Account', link: 'https://www.canada.ca/en/revenue-agency/services/e-services/e-services-businesses/business-account.html' },
+        conditionalOn: () => hasBusiness,
+      }]),
+      // GST/IVA filing frequency
+      ...(isChile ? [{
+        id: 'iva_filing_frequency',
+        field: 'iva_filing_frequency',
+        type: 'open' as const,
+        question: { es: '¿Cada cuánto declaras IVA (F29)? ¿Mensual?', en: 'How often do you file VAT (F29)? Monthly?' },
+        helpText: { es: 'En Chile generalmente es mensual (F29 cada mes). Si no sabes, escríbelo.', en: 'In Chile it\'s usually monthly (F29 each month). If unsure, write it.' },
+        conditionalOn: () => hasBusiness,
+      }] : [{
+        id: 'gst_filing_frequency',
+        field: 'gst_filing_frequency',
+        type: 'open' as const,
+        question: { es: '¿Cada cuánto declaras GST/HST? ¿Anual, trimestral o mensual?', en: 'How often do you file GST/HST? Annually, quarterly, or monthly?' },
+        helpText: { es: 'Ejemplo: "anualmente" o "no estoy seguro, creo que trimestral"', en: 'Example: "annually" or "I\'m not sure, I think quarterly"' },
+        whereToFind: { es: 'Revisa CRA My Business Account → GST/HST → Filing frequency', en: 'Check CRA My Business Account → GST/HST → Filing frequency', link: 'https://www.canada.ca/en/revenue-agency/services/e-services/e-services-businesses/business-account.html' },
+        conditionalOn: () => hasBusiness,
+      }]),
+      // Revenue pattern/seasonality
+      {
+        id: 'revenue_pattern',
+        field: 'revenue_pattern',
+        type: 'open',
+        question: {
+          es: '¿Cómo son tus ingresos? ¿Regulares cada mes, irregulares, por proyecto, estacionales?',
+          en: 'What are your income patterns? Regular monthly, irregular, per-project, seasonal?'
+        },
+        helpText: {
+          es: 'Ejemplo: "facturo mensual a 2 clientes fijos" o "varía mucho, a veces 3 meses sin ingreso"',
+          en: 'Example: "I invoice monthly to 2 fixed clients" or "it varies a lot, sometimes 3 months without income"'
+        },
+        conditionalOn: () => hasBusiness,
+      },
+      // Average monthly revenue range
+      {
+        id: 'revenue_range',
+        field: 'revenue_range',
+        type: 'open',
+        question: {
+          es: '¿En qué rango están tus ingresos brutos mensuales aproximados? (no tiene que ser exacto)',
+          en: 'What range are your approximate gross monthly revenues? (doesn\'t have to be exact)'
+        },
+        helpText: {
+          es: 'Ejemplo: "entre $1M y $3M CLP" o "entre $3,000 y $5,000 CAD" o "muy variable"',
+          en: 'Example: "between $3,000 and $5,000 CAD" or "very variable, sometimes $0"'
+        },
+        conditionalOn: () => hasBusiness,
+      },
+      // Business number / RUT
+      ...(isChile ? [{
+        id: 'business_tax_id',
+        field: 'business_tax_id',
+        type: 'open' as const,
+        question: { es: '¿Cuál es el RUT de tu empresa? (si es diferente a tu RUT personal)', en: 'What is your business RUT? (if different from your personal RUT)' },
+        helpText: { es: 'Si operas como persona natural con giro, usa tu RUT personal. Si tienes SpA/SRL/etc, indica el RUT de la empresa.', en: 'If you operate as a natural person with business activity, use your personal RUT.' },
+        conditionalOn: () => hasBusiness,
+      }] : [{
+        id: 'business_tax_id',
+        field: 'business_tax_id',
+        type: 'open' as const,
+        question: { es: '¿Cuál es tu Business Number (BN) de CRA? (los 9 dígitos)', en: 'What is your CRA Business Number (BN)? (the 9 digits)' },
+        helpText: { es: 'Ejemplo: "123456789" — si no lo sabes, escribe "no lo sé"', en: 'Example: "123456789" — if you don\'t know, write "I don\'t know"' },
+        whereToFind: { es: 'Está en la carta de confirmación de CRA o en CRA My Business Account', en: 'It\'s in the CRA confirmation letter or CRA My Business Account', link: 'https://www.canada.ca/en/revenue-agency/services/e-services/e-services-businesses/business-account.html' },
+        conditionalOn: () => hasBusiness,
+      }]),
+      // Personal tax filing deadline awareness
+      {
+        id: 'knows_personal_tax_deadline',
+        field: 'knows_personal_tax_deadline',
+        type: 'boolean',
+        question: isChile
+          ? { es: '¿Sabes cuándo es la fecha límite para tu Declaración de Renta (F22)?', en: 'Do you know the deadline for your Income Tax Return (F22)?' }
+          : { es: '¿Sabes cuándo es la fecha límite para declarar tu T1 personal?', en: 'Do you know the deadline for filing your personal T1?' },
+        whereToFind: isChile
+          ? { es: 'Generalmente es en abril. Revisa SII para la fecha exacta de este año.', en: 'Usually in April. Check SII for this year\'s exact date.', link: 'https://www.sii.cl' }
+          : { es: 'Para empleados: 30 de abril. Para self-employed: 15 de junio (pero el pago vence el 30 de abril).', en: 'For employees: April 30. For self-employed: June 15 (but payment is due April 30).', link: 'https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/important-dates-individuals.html' },
+      },
       // Q12: Tax software
       {
         id: 'tax_software_used',

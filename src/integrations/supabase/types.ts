@@ -2949,6 +2949,7 @@ export type Database = {
           business_registration_date: string | null
           business_start_date_notes: string | null
           business_structure_knowledge: number | null
+          business_tax_id: string | null
           completed_at: string | null
           country: string
           created_at: string
@@ -2958,6 +2959,8 @@ export type Database = {
           filing_deadlines_knowledge: number | null
           first_business_revenue_date: string | null
           general_tax_knowledge: number | null
+          gst_filing_frequency: string | null
+          gst_registration_date: string | null
           has_accountant: boolean | null
           has_employees: boolean | null
           has_filed_before: boolean | null
@@ -2967,13 +2970,18 @@ export type Database = {
           home_office_details: string | null
           id: string
           international_income_details: string | null
+          iva_filing_frequency: string | null
+          iva_registration_date: string | null
           knowledge_gaps: Json | null
           knows_fiscal_year_end: boolean | null
           knows_gst_hst_status: boolean | null
+          knows_personal_tax_deadline: boolean | null
           knows_tax_regime: boolean | null
           pays_tax_installments: boolean | null
           previous_filings_notes: string | null
           record_keeping_method: string | null
+          revenue_pattern: string | null
+          revenue_range: string | null
           switched_from_employee: boolean | null
           tax_debts_details: string | null
           tax_software_used: string | null
@@ -2989,6 +2997,7 @@ export type Database = {
           business_registration_date?: string | null
           business_start_date_notes?: string | null
           business_structure_knowledge?: number | null
+          business_tax_id?: string | null
           completed_at?: string | null
           country?: string
           created_at?: string
@@ -2998,6 +3007,8 @@ export type Database = {
           filing_deadlines_knowledge?: number | null
           first_business_revenue_date?: string | null
           general_tax_knowledge?: number | null
+          gst_filing_frequency?: string | null
+          gst_registration_date?: string | null
           has_accountant?: boolean | null
           has_employees?: boolean | null
           has_filed_before?: boolean | null
@@ -3007,13 +3018,18 @@ export type Database = {
           home_office_details?: string | null
           id?: string
           international_income_details?: string | null
+          iva_filing_frequency?: string | null
+          iva_registration_date?: string | null
           knowledge_gaps?: Json | null
           knows_fiscal_year_end?: boolean | null
           knows_gst_hst_status?: boolean | null
+          knows_personal_tax_deadline?: boolean | null
           knows_tax_regime?: boolean | null
           pays_tax_installments?: boolean | null
           previous_filings_notes?: string | null
           record_keeping_method?: string | null
+          revenue_pattern?: string | null
+          revenue_range?: string | null
           switched_from_employee?: boolean | null
           tax_debts_details?: string | null
           tax_software_used?: string | null
@@ -3029,6 +3045,7 @@ export type Database = {
           business_registration_date?: string | null
           business_start_date_notes?: string | null
           business_structure_knowledge?: number | null
+          business_tax_id?: string | null
           completed_at?: string | null
           country?: string
           created_at?: string
@@ -3038,6 +3055,8 @@ export type Database = {
           filing_deadlines_knowledge?: number | null
           first_business_revenue_date?: string | null
           general_tax_knowledge?: number | null
+          gst_filing_frequency?: string | null
+          gst_registration_date?: string | null
           has_accountant?: boolean | null
           has_employees?: boolean | null
           has_filed_before?: boolean | null
@@ -3047,13 +3066,18 @@ export type Database = {
           home_office_details?: string | null
           id?: string
           international_income_details?: string | null
+          iva_filing_frequency?: string | null
+          iva_registration_date?: string | null
           knowledge_gaps?: Json | null
           knows_fiscal_year_end?: boolean | null
           knows_gst_hst_status?: boolean | null
+          knows_personal_tax_deadline?: boolean | null
           knows_tax_regime?: boolean | null
           pays_tax_installments?: boolean | null
           previous_filings_notes?: string | null
           record_keeping_method?: string | null
+          revenue_pattern?: string | null
+          revenue_range?: string | null
           switched_from_employee?: boolean | null
           tax_debts_details?: string | null
           tax_software_used?: string | null
