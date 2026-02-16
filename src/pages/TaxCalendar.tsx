@@ -259,17 +259,28 @@ export default function TaxCalendar() {
               transition={{ delay: 0.1 * idx + 0.25 }}
             >
               <Card className={cn(
-                "bg-gradient-to-br transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:scale-[0.98]",
-                card.gradient, card.borderColor, `shadow-md ${card.shadowColor}`
+                "bg-gradient-to-br transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 active:scale-[0.97] border-2 relative overflow-hidden group",
+                card.gradient, card.borderColor, `shadow-lg ${card.shadowColor}`
               )}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <span className="text-base">{card.emoji}</span>
+                {/* Glow effect on hover */}
+                <div className={cn(
+                  "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none",
+                  `bg-gradient-to-br ${card.gradient}`
+                )} style={{ filter: 'blur(20px)' }} />
+                <CardHeader className="pb-2 relative">
+                  <CardTitle className="text-sm font-bold flex items-center gap-2">
+                    <motion.span 
+                      className="text-xl"
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                    >
+                      {card.emoji}
+                    </motion.span>
                     {card.icon}
                     {card.title}
                   </CardTitle>
                 </CardHeader>
-                <CardContent>{card.content}</CardContent>
+                <CardContent className="relative">{card.content}</CardContent>
               </Card>
             </motion.div>
           ))}
@@ -278,13 +289,13 @@ export default function TaxCalendar() {
         {/* Year Selector & Config Button - Enhanced */}
         <motion.div 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-          className="flex items-center gap-4 flex-wrap p-3 rounded-xl bg-muted/30 border border-border/50"
+          className="flex items-center gap-4 flex-wrap p-4 rounded-2xl bg-gradient-to-r from-muted/50 via-muted/30 to-muted/50 border-2 border-primary/15 shadow-lg shadow-primary/5"
         >
-          <Label className="flex items-center gap-1.5 font-semibold">
+          <Label className="flex items-center gap-1.5 font-bold text-sm">
             📆 {language === 'es' ? "Año Fiscal:" : "Tax Year:"}
           </Label>
           <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
-            <SelectTrigger className="w-32 border-2 border-primary/20 bg-card/80 font-bold shadow-sm">
+            <SelectTrigger className="w-32 border-2 border-primary/30 bg-card/80 font-black shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all rounded-xl">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -293,18 +304,20 @@ export default function TaxCalendar() {
               ))}
             </SelectContent>
           </Select>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setShowWizard(true)}
-            className="gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all bg-card/80 border-2 border-primary/20"
-          >
-            <HelpCircle className="h-4 w-4" />
-            🧙‍♂️ {language === 'es' 
-              ? (profileComplete ? "Actualizar Configuración" : "Asistente de Configuración")
-              : (profileComplete ? "Update Configuration" : "Setup Wizard")
-            }
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowWizard(true)}
+              className="gap-2 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all bg-gradient-to-r from-primary/10 to-accent/10 border-2 border-primary/30 font-bold rounded-xl"
+            >
+              <Sparkles className="h-4 w-4 animate-pulse" />
+              🧙‍♂️ {language === 'es' 
+                ? (profileComplete ? "Actualizar Configuración" : "Asistente de Configuración")
+                : (profileComplete ? "Update Configuration" : "Setup Wizard")
+              }
+            </Button>
+          </motion.div>
         </motion.div>
 
         {/* Tax Situation Wizard */}
@@ -317,22 +330,26 @@ export default function TaxCalendar() {
 
         {/* Main Content Tabs - Enhanced */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4" data-highlight="tax-tabs">
-          <TabsList className="grid w-full grid-cols-5 bg-muted/50 border border-border/50 p-1 rounded-xl shadow-sm" data-highlight="tax-tab-list">
+          <TabsList className="grid w-full grid-cols-5 bg-gradient-to-r from-muted/60 via-muted/40 to-muted/60 border-2 border-primary/15 p-1.5 rounded-2xl shadow-lg shadow-primary/5" data-highlight="tax-tab-list">
             {[
-              { value: 'timeline', icon: <Calendar className="h-4 w-4" />, emoji: '📅', label: 'Timeline' },
-              { value: 'deadlines', icon: <Clock className="h-4 w-4" />, emoji: '⏰', label: language === 'es' ? 'Fechas' : 'Deadlines' },
-              { value: 'estimator', icon: <Calculator className="h-4 w-4" />, emoji: '🧮', label: language === 'es' ? 'Estimador' : 'Estimator' },
-              { value: 'guide', icon: <BookOpen className="h-4 w-4" />, emoji: '📖', label: language === 'es' ? 'Guía' : 'Guide' },
-              { value: 'resources', icon: <ExternalLink className="h-4 w-4" />, emoji: '🔗', label: language === 'es' ? 'Recursos' : 'Resources' },
+              { value: 'timeline', icon: <Calendar className="h-4 w-4" />, emoji: '📅', label: 'Timeline', activeColor: 'data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-blue-500/30' },
+              { value: 'deadlines', icon: <Clock className="h-4 w-4" />, emoji: '⏰', label: language === 'es' ? 'Fechas' : 'Deadlines', activeColor: 'data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-amber-500/30' },
+              { value: 'estimator', icon: <Calculator className="h-4 w-4" />, emoji: '🧮', label: language === 'es' ? 'Estimador' : 'Estimator', activeColor: 'data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-500 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-emerald-500/30' },
+              { value: 'guide', icon: <BookOpen className="h-4 w-4" />, emoji: '📖', label: language === 'es' ? 'Guía' : 'Guide', activeColor: 'data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-rose-500/30' },
+              { value: 'resources', icon: <ExternalLink className="h-4 w-4" />, emoji: '🔗', label: language === 'es' ? 'Recursos' : 'Resources', activeColor: 'data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-indigo-500/30' },
             ].map(tab => (
               <TabsTrigger 
                 key={tab.value} 
                 value={tab.value} 
-                className="flex items-center gap-1.5 rounded-lg data-[state=active]:shadow-md data-[state=active]:bg-background transition-all"
+                className={cn(
+                  "flex items-center gap-1.5 rounded-xl font-bold transition-all duration-300 hover:scale-105 active:scale-95",
+                  "data-[state=active]:ring-2 data-[state=active]:ring-white/20 data-[state=active]:-translate-y-0.5",
+                  tab.activeColor
+                )}
               >
-                <span className="text-sm">{tab.emoji}</span>
+                <span className="text-base">{tab.emoji}</span>
                 {tab.icon}
-                <span className="hidden sm:inline text-xs font-medium">{tab.label}</span>
+                <span className="hidden sm:inline text-xs font-bold">{tab.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>
