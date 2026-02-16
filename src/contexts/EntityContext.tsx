@@ -64,6 +64,23 @@ export function EntityProvider({ children }: { children: ReactNode }) {
       currentEntity = primaryEntity || activeEntities[0] || null;
     }
     
+    // Province-country coherence: detect Canadian provinces to infer country
+    const CANADIAN_PROVINCES = [
+      'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick',
+      'Newfoundland and Labrador', 'Nova Scotia', 'Ontario', 'Prince Edward Island',
+      'Quebec', 'Saskatchewan', 'Northwest Territories', 'Nunavut', 'Yukon'
+    ];
+    
+    let inferredCountry: CountryCode | null = null;
+    if (!currentEntity && profile) {
+      const profileCountry = profile.country as CountryCode;
+      const profileProvince = profile.province;
+      if (profileProvince && CANADIAN_PROVINCES.includes(profileProvince) && profileCountry !== 'CA') {
+        console.warn(`[EntityContext] Country-province mismatch: country=${profileCountry}, province=${profileProvince}. Inferring CA.`);
+        inferredCountry = 'CA';
+      }
+    }
+    
     // Extract unique countries from active entities
     const activeCountries = [...new Set(
       activeEntities.map(e => e.country as CountryCode)
@@ -76,6 +93,11 @@ export function EntityProvider({ children }: { children: ReactNode }) {
     const hasCountry = (country: CountryCode) => 
       activeCountries.includes(country);
     
+    const resolvedCountry: CountryCode = (currentEntity?.country as CountryCode) 
+      || inferredCountry 
+      || (profile?.country as CountryCode) 
+      || 'CA';
+    
     return {
       currentEntity,
       entities,
@@ -83,14 +105,11 @@ export function EntityProvider({ children }: { children: ReactNode }) {
       isLoading: entitiesLoading || primaryLoading,
       getEntityById: (id: string) => entities.find(e => e.id === id),
       isMultiEntity: activeEntities.length > 1,
-      // Fallback chain: entity currency → profile display_currency → 'CAD'
       currentCurrency: currentEntity?.default_currency || profile?.display_currency || 'CAD',
-      // Fallback chain: entity country → profile country → 'CA'
-      currentCountry: (currentEntity?.country as CountryCode) || (profile?.country as CountryCode) || 'CA',
+      currentCountry: resolvedCountry,
       showAllEntities,
       setShowAllEntities,
       selectEntity,
-      // Country-aware properties - also fallback to profile
       activeCountries: activeCountries.length > 0 
         ? activeCountries 
         : (profile?.country ? [profile.country as CountryCode] : ['CA' as CountryCode]),
