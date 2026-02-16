@@ -27,7 +27,8 @@ export function useIncome(filters?: IncomeFilters) {
           project:projects(id, name, color)
         `)
         .is('deleted_at', null)
-        .order('date', { ascending: false });
+        .order('date', { ascending: false })
+        .limit(500);
 
       if (filters?.year) {
         const startDate = `${filters.year}-01-01`;
@@ -95,6 +96,16 @@ export function useCreateIncome() {
       if (error) throw error;
       
       await triggers.income(currentCount);
+
+      // Audit log
+      await supabase.from('audit_log' as any).insert({
+        user_id: user.id,
+        action: 'create',
+        entity_type: 'income',
+        entity_id: newIncome.id,
+        entity_name: data.source || data.description || null,
+        new_values: { amount: data.amount, source: data.source, income_type: data.income_type },
+      } as any);
       
       return newIncome;
     },
@@ -158,8 +169,18 @@ export function useDeleteIncome() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      const { data: existing } = await supabase.from('income').select('source, amount').eq('id', id).single();
       const { error } = await supabase.from('income').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
+
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        await supabase.from('audit_log' as any).insert({
+          user_id: userData.user.id, action: 'delete', entity_type: 'income', entity_id: id,
+          entity_name: existing?.source || null,
+          old_values: existing ? { source: existing.source, amount: existing.amount } : null,
+        } as any);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['income'] });
@@ -189,7 +210,8 @@ export function useIncomeSummary(year?: number) {
         .select('amount, income_type, date, is_taxable')
         .is('deleted_at', null)
         .gte('date', startDate)
-        .lte('date', endDate);
+        .lte('date', endDate)
+        .limit(500);
 
       if (error) throw error;
 

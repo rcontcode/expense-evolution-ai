@@ -121,6 +121,42 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          entity_id: string | null
+          entity_name: string | null
+          entity_type: string
+          id: string
+          new_values: Json | null
+          old_values: Json | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          entity_id?: string | null
+          entity_name?: string | null
+          entity_type: string
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_name?: string | null
+          entity_type?: string
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       bank_transactions: {
         Row: {
           amount: number
@@ -3496,7 +3532,17 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      data_health_check: {
+        Row: {
+          detail: string | null
+          entity_type: string | null
+          issue_type: string | null
+          record_date: string | null
+          record_id: string | null
+          record_name: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       activate_beta_tester: {

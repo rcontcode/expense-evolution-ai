@@ -6,6 +6,8 @@ import { useMissionTracker } from './useMissions';
 import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
 import { useAuth } from '@/contexts/AuthContext';
 
+const QUERY_LIMIT = 500;
+
 export function useExpenses(filters?: ExpenseFilters) {
   return useQuery({
     queryKey: ['expenses', filters],
@@ -111,7 +113,7 @@ export function useExpenses(filters?: ExpenseFilters) {
         }
       }
       
-      const { data, error } = await query.order('date', { ascending: false });
+      const { data, error } = await query.order('date', { ascending: false }).limit(QUERY_LIMIT);
       
       if (error) throw error;
       
@@ -146,6 +148,16 @@ export function useCreateExpense() {
       
       await triggers.expense(currentCount);
       
+      // Log audit
+      await supabase.from('audit_log' as any).insert({
+        user_id: userData.user.id,
+        action: 'create',
+        entity_type: 'expense',
+        entity_id: data.id,
+        entity_name: (expense as any).vendor || null,
+        new_values: { amount: (expense as any).amount, vendor: (expense as any).vendor, category: (expense as any).category },
+      } as any);
+
       return data;
     },
     onSuccess: () => {
@@ -195,12 +207,27 @@ export function useDeleteExpense() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      // Get name for audit before soft-deleting
+      const { data: existing } = await supabase.from('expenses').select('vendor, amount').eq('id', id).single();
+      
       const { error } = await supabase
         .from('expenses')
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', id);
       
       if (error) throw error;
+
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        await supabase.from('audit_log' as any).insert({
+          user_id: userData.user.id,
+          action: 'delete',
+          entity_type: 'expense',
+          entity_id: id,
+          entity_name: existing?.vendor || null,
+          old_values: existing ? { vendor: existing.vendor, amount: existing.amount } : null,
+        } as any);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
