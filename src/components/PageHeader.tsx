@@ -148,54 +148,46 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
       </div>
       )}
       
-      {/* Mobile: Back button + Title inline */}
-      {isMobile && showBack && canGoBack && (
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={handleBack}
-            className="h-8 w-8 shrink-0"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <h1 className="text-lg font-bold truncate">{title}</h1>
+      {/* Mobile: Large native title */}
+      {isMobile && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
+            {showBack && canGoBack && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleBack}
+                className="h-9 w-9 shrink-0 -ml-2"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+            )}
+            <h1 className="text-xl font-bold tracking-tight truncate">{title}</h1>
+          </div>
+          {children && (
+            <div className="flex items-center gap-1.5 shrink-0">
+              {children}
+            </div>
+          )}
         </div>
       )}
       
-      {/* Title and Description */}
-      <div className={cn(
-        "flex flex-col gap-3",
-        !isMobile && "sm:flex-row sm:items-start justify-between"
-      )}>
-        {/* Only show title block if not already shown in mobile back button row */}
-        {!(isMobile && showBack && canGoBack) && (
+      {/* Desktop: Title and Description */}
+      {!isMobile && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start justify-between">
           <div className="min-w-0">
-            <h1 className={cn(
-              "font-bold truncate",
-              isMobile ? "text-lg" : "text-xl sm:text-2xl lg:text-3xl"
-            )}>{title}</h1>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">{title}</h1>
             {description && (
-              <p className={cn(
-                "text-muted-foreground mt-0.5 line-clamp-1",
-                isMobile ? "text-xs" : "text-sm"
-              )}>{description}</p>
+              <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{description}</p>
             )}
           </div>
-        )}
-        {/* Description for mobile when title is in back button row */}
-        {isMobile && showBack && canGoBack && description && (
-          <p className="text-xs text-muted-foreground line-clamp-1">{description}</p>
-        )}
-        {children && (
-          <div className={cn(
-            "flex items-center gap-1.5 shrink-0 flex-wrap",
-            isMobile ? "justify-start" : "sm:gap-2 justify-start sm:justify-end"
-          )}>
-            {children}
-          </div>
-        )}
-      </div>
+          {children && (
+            <div className="flex items-center gap-2 shrink-0 flex-wrap justify-start sm:justify-end">
+              {children}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

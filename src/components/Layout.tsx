@@ -171,50 +171,35 @@ const getNavSections = (language: string) => [
   },
 ];
 
-// Mobile navigation - all key tools visible, no hidden items
+// Mobile navigation - 5 core items + FAB for native feel
 const getMobileNavItems = (language: string) => [
   { 
     icon: LayoutDashboard, 
+    label: language === 'es' ? 'Inicio' : 'Home',
     path: '/dashboard',
     type: 'nav' as const
   },
   { 
     icon: Receipt, 
+    label: language === 'es' ? 'Gastos' : 'Expenses',
     path: '/expenses',
     type: 'nav' as const
   },
   { 
-    icon: TrendingUp, 
-    path: '/income',
-    type: 'nav' as const
-  },
-  { 
     icon: Camera, 
+    label: '',
     path: '/mobile-capture', 
     type: 'fab' as const
   },
   { 
     icon: Wallet, 
+    label: language === 'es' ? 'Budget' : 'Budget',
     path: '/budget',
     type: 'nav' as const
   },
   { 
-    icon: Users, 
-    path: '/clients',
-    type: 'nav' as const
-  },
-  { 
-    icon: Scale, 
-    path: '/net-worth',
-    type: 'nav' as const
-  },
-  { 
-    icon: Building2, 
-    path: '/banking',
-    type: 'nav' as const
-  },
-  { 
     icon: Menu, 
+    label: language === 'es' ? 'Más' : 'More',
     type: 'drawer' as const
   },
 ];
@@ -275,7 +260,7 @@ export const Layout = ({ children }: LayoutProps) => {
       <div className="flex flex-col min-h-screen bg-background relative">
         <ThemeBackground />
         {/* Mobile Header */}
-        <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b px-4 py-3">
+        <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border/50 px-4 py-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <PhoenixLogo variant="mini" />
@@ -462,9 +447,10 @@ export const Layout = ({ children }: LayoutProps) => {
           </div>
         </header>
 
-        {/* Main content */}
-        <main className="flex-1 overflow-auto pb-20">
-          {children}
+        <main className="flex-1 overflow-auto pb-20 overscroll-y-contain">
+          <div className="min-h-full">
+            {children}
+          </div>
         </main>
 
         {/* Mobile Bottom Navigation - All tools visible, icon-only compact */}
@@ -488,7 +474,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 );
               }
               
-              // Drawer button (settings & less-used)
+              // Drawer button
               if (item.type === 'drawer') {
                 return (
                   <button
@@ -497,12 +483,14 @@ export const Layout = ({ children }: LayoutProps) => {
                     className="mobile-bottom-nav-item"
                   >
                     <Icon className="h-5 w-5" />
+                    <span className="mobile-bottom-nav-label">{item.label}</span>
                   </button>
                 );
               }
               
-              // Standard navigation item - icon only, no text
-              const isActive = location.pathname === item.path;
+              // Standard navigation item with label
+              const isActive = location.pathname === item.path || 
+                (item.path && item.path !== '/dashboard' && location.pathname.startsWith(item.path));
               return (
                 <button
                   key={item.path}
@@ -512,7 +500,8 @@ export const Layout = ({ children }: LayoutProps) => {
                     isActive && "active"
                   )}
                 >
-                  <Icon className={cn("h-5 w-5", isActive && "text-primary")} />
+                  <Icon className={cn("h-5 w-5", isActive ? "text-primary" : "")} />
+                  <span className="mobile-bottom-nav-label">{item.label}</span>
                 </button>
               );
             })}
