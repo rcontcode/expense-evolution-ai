@@ -62,6 +62,11 @@ export function BudgetRulesWidget() {
 
   return (
     <div className="space-y-3">
+      <p className="text-xs text-muted-foreground">
+        {l
+          ? '⚡ Crea reglas para recibir alertas cuando tus gastos superen cierto monto, se acerquen al límite de una categoría, o el gasto diario sea excesivo. Actívalas o desactívalas en cualquier momento.'
+          : '⚡ Create rules to get alerts when spending exceeds an amount, approaches a category limit, or daily spending is too high. Toggle them on/off anytime.'}
+      </p>
       <AnimatePresence mode="popLayout">
         {(rules || []).map((rule) => {
           const catInfo = rule.category ? EXPENSE_CATEGORY_TRANSLATIONS[rule.category as ExpenseCategory] : null;

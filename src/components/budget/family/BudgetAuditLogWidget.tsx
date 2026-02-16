@@ -31,7 +31,13 @@ export function BudgetAuditLogWidget() {
   }
 
   return (
-    <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
+    <div className="space-y-2">
+      <p className="text-xs text-muted-foreground">
+        {l
+          ? '📝 Historial automático de todos los cambios en tu presupuesto: creaciones, ediciones y eliminaciones. Útil para rastrear quién cambió qué y cuándo.'
+          : '📝 Automatic log of all budget changes: creations, edits, and deletions. Useful to track who changed what and when.'}
+      </p>
+      <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
       {logs.map((entry) => {
         const config = ACTION_CONFIG[entry.action] || ACTION_CONFIG.update;
         const timeAgo = formatDistanceToNow(parseISO(entry.created_at), {
@@ -62,6 +68,7 @@ export function BudgetAuditLogWidget() {
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

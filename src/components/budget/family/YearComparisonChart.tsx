@@ -83,6 +83,11 @@ export function YearComparisonChart() {
 
   return (
     <div className="space-y-3">
+      <p className="text-xs text-muted-foreground">
+        {l
+          ? '📊 Compara tus gastos de los últimos 6 meses contra el mismo período del año anterior. El porcentaje indica si estás gastando más (+) o menos (-) que antes.'
+          : '📊 Compare your spending for the last 6 months against the same period last year. The percentage shows if you\'re spending more (+) or less (-) than before.'}
+      </p>
       {/* Summary */}
       <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
         <div className="text-xs text-muted-foreground">

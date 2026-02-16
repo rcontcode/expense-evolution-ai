@@ -58,6 +58,11 @@ export function SavingsGoalsWidget() {
 
   return (
     <div className="space-y-3">
+      <p className="text-xs text-muted-foreground">
+        {l
+          ? '🎯 Define metas de ahorro (vacaciones, emergencias, compras grandes) y registra aportes. La barra de progreso se actualiza automáticamente con cada contribución.'
+          : '🎯 Set savings goals (vacation, emergency, big purchases) and log contributions. The progress bar updates automatically with each contribution.'}
+      </p>
       {/* Summary */}
       {activeGoals.length > 0 && (
         <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
