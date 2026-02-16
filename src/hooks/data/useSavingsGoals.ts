@@ -1,9 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
 import { useMissionTracker } from './useMissions';
+import { useInvalidateRelated } from './useInvalidateRelated';
 
 type SavingsGoal = Database['public']['Tables']['savings_goals']['Row'];
 type SavingsGoalInsert = Database['public']['Tables']['savings_goals']['Insert'];
@@ -38,8 +39,8 @@ export function useSavingsGoals() {
 }
 
 export function useCreateSavingsGoal() {
-  const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { afterSavings } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (data: SavingsGoalFormData) => {
@@ -66,7 +67,7 @@ export function useCreateSavingsGoal() {
       return newGoal;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['savings-goals'] });
+      afterSavings();
       toast.success('Meta de ahorro creada');
     },
     onError: (error: Error) => {
@@ -77,7 +78,7 @@ export function useCreateSavingsGoal() {
 }
 
 export function useUpdateSavingsGoal() {
-  const queryClient = useQueryClient();
+  const { afterSavings } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<SavingsGoalFormData> }) => {
@@ -91,7 +92,6 @@ export function useUpdateSavingsGoal() {
         status: data.status,
       };
 
-      // Remove undefined values
       Object.keys(updateData).forEach(key => {
         if (updateData[key as keyof SavingsGoalUpdate] === undefined) {
           delete updateData[key as keyof SavingsGoalUpdate];
@@ -106,7 +106,7 @@ export function useUpdateSavingsGoal() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['savings-goals'] });
+      afterSavings();
       toast.success('Meta actualizada');
     },
     onError: (error: Error) => {
@@ -117,7 +117,7 @@ export function useUpdateSavingsGoal() {
 }
 
 export function useDeleteSavingsGoal() {
-  const queryClient = useQueryClient();
+  const { afterSavings } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -129,7 +129,7 @@ export function useDeleteSavingsGoal() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['savings-goals'] });
+      afterSavings();
       toast.success('Meta eliminada');
     },
     onError: (error: Error) => {
@@ -140,7 +140,7 @@ export function useDeleteSavingsGoal() {
 }
 
 export function useAddToSavingsGoal() {
-  const queryClient = useQueryClient();
+  const { afterSavings } = useInvalidateRelated();
   const { trackAction } = useMissionTracker();
 
   return useMutation({
@@ -148,7 +148,6 @@ export function useAddToSavingsGoal() {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!authUser) throw new Error('Not authenticated');
 
-      // Insert contribution (trigger auto-updates current_amount)
       const { error } = await supabase
         .from('savings_contributions' as any)
         .insert({ goal_id: id, amount, notes, user_id: authUser.id } as any);
@@ -156,8 +155,7 @@ export function useAddToSavingsGoal() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['savings-goals'] });
-      queryClient.invalidateQueries({ queryKey: ['savings-contributions'] });
+      afterSavings();
       trackAction('add_savings', 1);
       toast.success('Cantidad agregada');
     },

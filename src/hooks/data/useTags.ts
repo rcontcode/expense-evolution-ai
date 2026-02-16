@@ -1,8 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tag, TagInsert } from '@/types/expense.types';
 import { toast } from 'sonner';
 import { DEFAULT_TAGS } from '@/lib/constants/default-tags';
+import { useInvalidateRelated } from './useInvalidateRelated';
 
 export function useTags() {
   return useQuery({
@@ -20,7 +21,7 @@ export function useTags() {
 }
 
 export function useCreateTag() {
-  const queryClient = useQueryClient();
+  const { afterTag } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (tag: TagInsert) => {
@@ -37,8 +38,7 @@ export function useCreateTag() {
       return data as Tag;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tags'] });
-      queryClient.invalidateQueries({ queryKey: ['tags-with-expense-count'] });
+      afterTag();
       toast.success('Etiqueta creada');
     },
     onError: (error: Error) => {
@@ -48,7 +48,7 @@ export function useCreateTag() {
 }
 
 export function useUpdateTag() {
-  const queryClient = useQueryClient();
+  const { afterTag } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<TagInsert> }) => {
@@ -63,9 +63,7 @@ export function useUpdateTag() {
       return data as Tag;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tags'] });
-      queryClient.invalidateQueries({ queryKey: ['tags-with-expense-count'] });
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      afterTag();
       toast.success('Etiqueta actualizada');
     },
     onError: (error: Error) => {
@@ -75,7 +73,7 @@ export function useUpdateTag() {
 }
 
 export function useDeleteTag() {
-  const queryClient = useQueryClient();
+  const { afterTag } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -87,9 +85,7 @@ export function useDeleteTag() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tags'] });
-      queryClient.invalidateQueries({ queryKey: ['tags-with-expense-count'] });
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      afterTag();
       toast.success('Etiqueta eliminada');
     },
     onError: (error: Error) => {
@@ -133,7 +129,7 @@ export function useTagsWithExpenseCount() {
 }
 
 export function useSeedDefaultTags() {
-  const queryClient = useQueryClient();
+  const { afterTag } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async () => {
@@ -165,8 +161,7 @@ export function useSeedDefaultTags() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tags'] });
-      queryClient.invalidateQueries({ queryKey: ['tags-with-expense-count'] });
+      afterTag();
       toast.success('Etiquetas predeterminadas creadas');
     },
     onError: (error: Error) => {

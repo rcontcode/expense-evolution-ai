@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQueryClient } from '@tanstack/react-query';
+import { useInvalidateRelated } from '@/hooks/data/useInvalidateRelated';
 import { Upload, FileSpreadsheet, MapPin, Zap, Download, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
@@ -39,7 +39,7 @@ export const MileageImportDialog = ({ open, onClose }: MileageImportDialogProps)
   const { toast } = useToast();
   const { language } = useLanguage();
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { afterMileage } = useInvalidateRelated();
   
   const [activeTab, setActiveTab] = useState('csv');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -374,8 +374,7 @@ export const MileageImportDialog = ({ open, onClose }: MileageImportDialogProps)
         title: `${tripsToImport.length} ${texts.successMessage}`,
       });
 
-      queryClient.invalidateQueries({ queryKey: ['mileage'] });
-      queryClient.invalidateQueries({ queryKey: ['mileage-summary'] });
+      afterMileage();
       
       setImportStep('complete');
       setTimeout(() => {

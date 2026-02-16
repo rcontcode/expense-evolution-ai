@@ -15,12 +15,12 @@ export function useInvalidateRelated() {
 
   /** After any expense mutation */
   const afterExpense = useCallback(() => {
-    invalidate('expenses', 'dashboard-stats', 'income-summary', 'data-health', 'category-budgets');
+    invalidate('expenses', 'dashboard-stats', 'income-summary', 'data-health', 'category-budgets', 'monthly-plan');
   }, [invalidate]);
 
   /** After any income mutation */
   const afterIncome = useCallback(() => {
-    invalidate('income', 'income-summary', 'dashboard-stats', 'data-health');
+    invalidate('income', 'income-summary', 'dashboard-stats', 'data-health', 'monthly-plan');
   }, [invalidate]);
 
   /** After any client mutation */
@@ -30,7 +30,7 @@ export function useInvalidateRelated() {
 
   /** After deleting a client (cascades to contracts, affects expenses/income) */
   const afterClientDelete = useCallback(() => {
-    invalidate('clients', 'expenses', 'income', 'mileage', 'contracts', 'dashboard-stats', 'income-summary', 'projects', 'projects-with-clients', 'client-projects', 'data-health');
+    invalidate('clients', 'expenses', 'income', 'mileage', 'contracts', 'dashboard-stats', 'income-summary', 'projects', 'projects-with-clients', 'client-projects', 'data-health', 'monthly-plan');
   }, [invalidate]);
 
   /** After any project mutation */
@@ -40,7 +40,7 @@ export function useInvalidateRelated() {
 
   /** After deleting a project (expenses/income lose project_id) */
   const afterProjectDelete = useCallback(() => {
-    invalidate('projects', 'projects-with-clients', 'client-projects', 'expenses', 'income', 'dashboard-stats', 'income-summary', 'data-health');
+    invalidate('projects', 'projects-with-clients', 'client-projects', 'expenses', 'income', 'dashboard-stats', 'income-summary', 'data-health', 'monthly-plan');
   }, [invalidate]);
 
   /** After any contract mutation */
@@ -50,12 +50,12 @@ export function useInvalidateRelated() {
 
   /** After any recurring bill mutation */
   const afterBill = useCallback(() => {
-    invalidate('recurring-bills', 'bill-payments', 'dashboard-stats', 'income-summary');
+    invalidate('recurring-bills', 'bill-payments', 'dashboard-stats', 'income-summary', 'monthly-plan', 'data-health');
   }, [invalidate]);
 
   /** After any fiscal entity mutation */
   const afterEntity = useCallback(() => {
-    invalidate('fiscal-entities', 'fiscal-entity-primary', 'expenses', 'income', 'clients', 'recurring-bills', 'contracts', 'projects', 'category-budgets', 'dashboard-stats', 'income-summary', 'data-health');
+    invalidate('fiscal-entities', 'fiscal-entity-primary', 'expenses', 'income', 'clients', 'recurring-bills', 'contracts', 'projects', 'category-budgets', 'dashboard-stats', 'income-summary', 'data-health', 'monthly-plan');
   }, [invalidate]);
 
   /** After any category budget mutation */
@@ -70,7 +70,37 @@ export function useInvalidateRelated() {
 
   /** After trash operations (restore/purge) */
   const afterTrash = useCallback(() => {
-    invalidate('expenses', 'income', 'clients', 'projects', 'contracts', 'dashboard-stats', 'income-summary', 'data-health', 'projects-with-clients', 'client-projects');
+    invalidate('expenses', 'income', 'clients', 'projects', 'contracts', 'mileage', 'mileage-summary', 'dashboard-stats', 'income-summary', 'data-health', 'projects-with-clients', 'client-projects', 'monthly-plan');
+  }, [invalidate]);
+
+  /** After any mileage mutation */
+  const afterMileage = useCallback(() => {
+    invalidate('mileage', 'mileage-summary', 'dashboard-stats', 'data-health');
+  }, [invalidate]);
+
+  /** After any savings goal mutation */
+  const afterSavings = useCallback(() => {
+    invalidate('savings-goals', 'savings-contributions', 'dashboard-stats');
+  }, [invalidate]);
+
+  /** After any net worth mutation (assets/liabilities) */
+  const afterNetWorth = useCallback(() => {
+    invalidate('assets', 'liabilities', 'net-worth-snapshots', 'dashboard-stats');
+  }, [invalidate]);
+
+  /** After any tag mutation */
+  const afterTag = useCallback(() => {
+    invalidate('tags', 'tags-with-expense-count', 'expenses', 'data-health');
+  }, [invalidate]);
+
+  /** After any financial habit mutation */
+  const afterHabit = useCallback(() => {
+    invalidate('financial-habits', 'financial-habits-stats');
+  }, [invalidate]);
+
+  /** After any financial journal mutation */
+  const afterJournal = useCallback(() => {
+    invalidate('financial-journal', 'financial-journal-stats');
   }, [invalidate]);
 
   return {
@@ -87,5 +117,11 @@ export function useInvalidateRelated() {
     afterBudget,
     afterSettings,
     afterTrash,
+    afterMileage,
+    afterSavings,
+    afterNetWorth,
+    afterTag,
+    afterHabit,
+    afterJournal,
   };
 }

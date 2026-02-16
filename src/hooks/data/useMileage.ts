@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
 import { useMissionTracker } from './useMissions';
+import { useInvalidateRelated } from './useInvalidateRelated';
 
 export type Mileage = Database['public']['Tables']['mileage']['Row'];
 export type MileageInsert = Database['public']['Tables']['mileage']['Insert'];
@@ -10,9 +11,9 @@ export type MileageUpdate = Database['public']['Tables']['mileage']['Update'];
 
 // CRA Mileage Rates 2024
 export const CRA_MILEAGE_RATES = {
-  first5000: 0.70, // $0.70/km for first 5,000 km
-  after5000: 0.64, // $0.64/km after 5,000 km
-  territoryBonus: 0.04, // Additional $0.04/km for Yukon, NWT, Nunavut
+  first5000: 0.70,
+  after5000: 0.64,
+  territoryBonus: 0.04,
 };
 
 export interface MileageWithClient extends Mileage {
@@ -38,17 +39,13 @@ export function calculateMileageDeduction(
   let deductible = 0;
   const { first5000, after5000 } = CRA_MILEAGE_RATES;
 
-  // Calculate how much of this trip falls into each tier
   const totalAfterTrip = yearToDateKm + kilometers;
   
   if (yearToDateKm >= 5000) {
-    // All km are at the lower rate
     deductible = kilometers * after5000;
   } else if (totalAfterTrip <= 5000) {
-    // All km are at the higher rate
     deductible = kilometers * first5000;
   } else {
-    // Split between rates
     const kmAtHighRate = 5000 - yearToDateKm;
     const kmAtLowRate = kilometers - kmAtHighRate;
     deductible = (kmAtHighRate * first5000) + (kmAtLowRate * after5000);
@@ -68,6 +65,7 @@ export const useMileage = (year?: number) => {
           *,
           client:clients(id, name)
         `)
+        .is('deleted_at', null)
         .order('date', { ascending: false });
 
       if (year) {
@@ -77,7 +75,6 @@ export const useMileage = (year?: number) => {
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
       return data as MileageWithClient[];
     },
@@ -93,6 +90,7 @@ export const useMileageSummary = (year?: number) => {
       const { data, error } = await supabase
         .from('mileage')
         .select('kilometers, date')
+        .is('deleted_at', null)
         .gte('date', `${currentYear}-01-01`)
         .lte('date', `${currentYear}-12-31`)
         .order('date', { ascending: true });
@@ -111,12 +109,10 @@ export const useMileageSummary = (year?: number) => {
         runningKm += km;
       });
 
-      // Calculate ITC (HST on mileage expenses like gas - estimated at 13% of deduction)
-      // Note: Actual ITC depends on actual fuel receipts, this is an estimate
-      const estimatedFuelPortion = totalDeductible * 0.4; // ~40% of mileage cost is fuel
+      const estimatedFuelPortion = totalDeductible * 0.4;
       const hstRate = 0.13;
       const hstGstPaid = estimatedFuelPortion - (estimatedFuelPortion / (1 + hstRate));
-      const itcClaimable = hstGstPaid; // 100% of fuel HST is claimable
+      const itcClaimable = hstGstPaid;
 
       return {
         totalKilometers: totalKm,
@@ -131,7 +127,7 @@ export const useMileageSummary = (year?: number) => {
 };
 
 export const useCreateMileage = (defaultEntityId?: string) => {
-  const queryClient = useQueryClient();
+  const { afterMileage } = useInvalidateRelated();
   const { trackAction } = useMissionTracker();
 
   return useMutation({
@@ -155,9 +151,7 @@ export const useCreateMileage = (defaultEntityId?: string) => {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['mileage'] });
-      queryClient.invalidateQueries({ queryKey: ['mileage-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      afterMileage();
       trackAction('add_mileage', 1);
       toast.success('Viaje registrado');
     },
@@ -168,7 +162,7 @@ export const useCreateMileage = (defaultEntityId?: string) => {
 };
 
 export const useUpdateMileage = () => {
-  const queryClient = useQueryClient();
+  const { afterMileage } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, ...data }: MileageUpdate & { id: string }) => {
@@ -183,9 +177,7 @@ export const useUpdateMileage = () => {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['mileage'] });
-      queryClient.invalidateQueries({ queryKey: ['mileage-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      afterMileage();
       toast.success('Viaje actualizado');
     },
     onError: (error: Error) => {
@@ -195,17 +187,19 @@ export const useUpdateMileage = () => {
 };
 
 export const useDeleteMileage = () => {
-  const queryClient = useQueryClient();
+  const { afterMileage } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('mileage').delete().eq('id', id);
+      // Soft delete
+      const { error } = await supabase
+        .from('mileage')
+        .update({ deleted_at: new Date().toISOString() } as any)
+        .eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['mileage'] });
-      queryClient.invalidateQueries({ queryKey: ['mileage-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      afterMileage();
       toast.success('Viaje eliminado');
     },
     onError: (error: Error) => {
