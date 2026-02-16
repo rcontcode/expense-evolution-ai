@@ -10,6 +10,7 @@ import { useExpenses } from "@/hooks/data/useExpenses";
 import { useBudgetSuggestions, getCategorySuggestion } from "@/hooks/data/useBudgetSuggestions";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBudgetEntity } from "@/contexts/BudgetEntityContext";
 import { EXPENSE_CATEGORIES, getCategoryLabel, ExpenseCategory } from "@/lib/constants/expense-categories";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { startOfMonth, endOfMonth, format } from "date-fns";
@@ -28,10 +29,11 @@ export function CategoryBudgetsCard() {
   const [newBudget, setNewBudget] = useState("");
   const [editBudget, setEditBudget] = useState("");
 
-  const { data: budgets, isLoading } = useCategoryBudgets();
+  const { data: budgets, isLoading } = useCategoryBudgets(useBudgetEntity());
   const upsertBudget = useUpsertCategoryBudget();
   const deleteBudget = useDeleteCategoryBudget();
   const budgetSuggestions = useBudgetSuggestions();
+  const budgetEntityId = useBudgetEntity();
 
   const now = new Date();
   const monthStart = startOfMonth(now);
@@ -39,6 +41,8 @@ export function CategoryBudgetsCard() {
 
   const { data: expenses } = useExpenses({
     dateRange: { start: monthStart, end: monthEnd },
+    entityId: budgetEntityId ?? undefined,
+    showAllEntities: budgetEntityId === undefined,
   });
 
   const spendingByCategory: Record<string, number> = {};

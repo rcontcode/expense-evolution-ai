@@ -10,6 +10,7 @@ import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useExpenses } from "@/hooks/data/useExpenses";
 import { useBudgetSuggestions } from "@/hooks/data/useBudgetSuggestions";
+import { useBudgetEntity } from "@/contexts/BudgetEntityContext";
 import { startOfMonth, endOfMonth, format, differenceInDays } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { toast } from "sonner";
@@ -35,8 +36,12 @@ export function GlobalBudgetCard() {
   const daysPassed = differenceInDays(now, monthStart) + 1;
   const daysRemaining = daysInMonth - daysPassed;
 
+  const budgetEntityId = useBudgetEntity();
+
   const { data: expenses } = useExpenses({
     dateRange: { start: monthStart, end: monthEnd },
+    entityId: budgetEntityId ?? undefined,
+    showAllEntities: budgetEntityId === undefined,
   });
 
   const preferences = (settings?.preferences as UserPreferences) || {};

@@ -6,6 +6,7 @@ import { useExpenses } from "@/hooks/data/useExpenses";
 import { useRecurringBills } from "@/hooks/data/useRecurringBills";
 import { useUserSettings, UserPreferences } from "@/hooks/data/useUserSettings";
 import { useCategoryBudgets } from "@/hooks/data/useCategoryBudgets";
+import { useBudgetEntity } from "@/contexts/BudgetEntityContext";
 import { startOfMonth, endOfMonth, differenceInDays } from "date-fns";
 
 export interface MonthlyPlanData {
@@ -49,6 +50,7 @@ export interface MonthlyPlanData {
 export function useMonthlyPlanData(): MonthlyPlanData {
   const { language } = useLanguage();
   const l = language === "es";
+  const budgetEntityId = useBudgetEntity();
 
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -59,18 +61,36 @@ export function useMonthlyPlanData(): MonthlyPlanData {
   const daysPassed = differenceInDays(now, monthStart) + 1;
   const daysRemaining = daysInMonth - daysPassed;
 
-  const { data: incomeData } = useIncome({ year: currentYear, month: currentMonth });
-  const { data: expenses } = useExpenses({ dateRange: { start: monthStart, end: monthEnd } });
+  const { data: incomeData } = useIncome({
+    year: currentYear,
+    month: currentMonth,
+    entityId: budgetEntityId ?? undefined,
+    showAllEntities: budgetEntityId === undefined,
+  });
+  const { data: expenses } = useExpenses({
+    dateRange: { start: monthStart, end: monthEnd },
+    entityId: budgetEntityId ?? undefined,
+    showAllEntities: budgetEntityId === undefined,
+  });
   const { data: bills } = useRecurringBills();
   const { data: settings } = useUserSettings();
-  const { data: categoryBudgets } = useCategoryBudgets();
+  const { data: categoryBudgets } = useCategoryBudgets(budgetEntityId);
 
   const preferences = (settings?.preferences as UserPreferences) || {};
   const globalBudget = preferences.global_monthly_budget || 0;
 
   return useMemo(() => {
     const totalIncome = incomeData?.reduce((s, i) => s + Number(i.amount), 0) || 0;
-    const activeBills = (bills || []).filter((b) => b.status === "active");
+    
+    // Filter bills by entity context
+    const allActiveBills = (bills || []).filter((b) => b.status === "active");
+    const activeBills = budgetEntityId === undefined
+      ? allActiveBills // unified: all bills
+      : allActiveBills.filter((b) =>
+          budgetEntityId === null
+            ? !b.entity_id // family: no entity
+            : b.entity_id === budgetEntityId // specific entity
+        );
 
     const totalFixed = activeBills.reduce((s, b) => {
       const freq = b.frequency;
@@ -304,5 +324,5 @@ export function useMonthlyPlanData(): MonthlyPlanData {
       topCategory,
       cumulativeData,
     };
-  }, [incomeData, bills, expenses, categoryBudgets, globalBudget, monthStart, monthEnd, daysInMonth, daysPassed, daysRemaining, l, now]);
+  }, [incomeData, bills, expenses, categoryBudgets, globalBudget, budgetEntityId, monthStart, monthEnd, daysInMonth, daysPassed, daysRemaining, l, now]);
 }
