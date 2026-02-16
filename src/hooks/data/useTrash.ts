@@ -118,6 +118,17 @@ export function useRestoreItem() {
         .eq('id', id);
       
       if (error) throw error;
+
+      // Log restore action
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        await supabase.from('audit_log' as any).insert({
+          user_id: userData.user.id,
+          action: 'restore',
+          entity_type: type,
+          entity_id: id,
+        } as any);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trash-items'] });

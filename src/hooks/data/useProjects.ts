@@ -17,7 +17,8 @@ export function useProjects(status?: string) {
           client:clients(id, name)
         `)
         .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(500);
 
       if (status) {
         query = query.eq('status', status);
@@ -56,6 +57,13 @@ export function useCreateProject(defaultEntityId?: string) {
         .single();
 
       if (error) throw error;
+
+      // Audit
+      await supabase.from('audit_log' as any).insert({
+        user_id: user!.id, action: 'create', entity_type: 'project', entity_id: newProject.id,
+        entity_name: data.name, new_values: { name: data.name, status: data.status },
+      } as any);
+
       return newProject;
     },
     onSuccess: () => {
@@ -115,8 +123,17 @@ export function useDeleteProject() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      const { data: existing } = await supabase.from('projects').select('name').eq('id', id).single();
       const { error } = await supabase.from('projects').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
+
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        await supabase.from('audit_log' as any).insert({
+          user_id: userData.user.id, action: 'delete', entity_type: 'project', entity_id: id,
+          entity_name: existing?.name || null,
+        } as any);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });

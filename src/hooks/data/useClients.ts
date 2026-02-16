@@ -20,7 +20,8 @@ export function useClients() {
         .from('clients')
         .select('*')
         .is('deleted_at', null)
-        .order('name', { ascending: true });
+        .order('name', { ascending: true })
+        .limit(500);
       
       if (error) throw error;
       return data as Client[];
@@ -52,6 +53,12 @@ export function useCreateClient(defaultEntityId?: string) {
       if (error) throw error;
       
       await triggers.client(currentCount);
+
+      // Audit log
+      await supabase.from('audit_log' as any).insert({
+        user_id: user.id, action: 'create', entity_type: 'client', entity_id: data.id,
+        entity_name: client.name, new_values: { name: client.name },
+      } as any);
       
       return data as Client;
     },
@@ -97,12 +104,21 @@ export function useDeleteClient() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      const { data: existing } = await supabase.from('clients').select('name').eq('id', id).single();
       const { error } = await supabase
         .from('clients')
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', id);
       
       if (error) throw error;
+
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        await supabase.from('audit_log' as any).insert({
+          user_id: userData.user.id, action: 'delete', entity_type: 'client', entity_id: id,
+          entity_name: existing?.name || null,
+        } as any);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });

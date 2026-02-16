@@ -33,6 +33,7 @@ import {
   Search,
   Wallet,
   Trash2,
+  HeartPulse,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -165,6 +166,7 @@ const getNavSections = (language: string) => [
       { icon: Sparkles, label: 'nav.notifications', path: '/notifications', badge: null, tooltipKey: 'dashboard' as const },
       { icon: Settings, label: 'nav.config', path: '/settings', badge: null, tooltipKey: 'dashboard' as const },
       { icon: Trash2, label: language === 'es' ? 'Papelera' : 'Trash', path: '/trash', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: HeartPulse, label: language === 'es' ? 'Salud de Datos' : 'Data Health', path: '/data-health', badge: null, tooltipKey: 'dashboard' as const },
     ]
   },
 ];
