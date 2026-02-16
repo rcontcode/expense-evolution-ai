@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+
 import { cn } from "@/lib/utils";
 
 const FAMILY_CATEGORIES = [
@@ -36,7 +36,7 @@ export function FamilyExpenseDialog({ open, onClose }: FamilyExpenseDialogProps)
   const { user } = useAuth();
   const { toast } = useToast();
   const { currentCurrency } = useFormatCurrency();
-  const queryClient = useQueryClient();
+  
   const createMutation = useCreateExpense();
 
   const [amount, setAmount] = useState("");
@@ -90,8 +90,6 @@ export function FamilyExpenseDialog({ open, onClose }: FamilyExpenseDialogProps)
         user_id: user.id,
       } as any);
 
-      // Ensure budget view data refreshes
-      queryClient.invalidateQueries({ queryKey: ["monthly-plan"] });
 
       const catLabel = category === "other" && customCategory.trim()
         ? `📋 ${customCategory.trim()}`

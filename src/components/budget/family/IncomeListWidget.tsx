@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useIncome, useUpdateIncome, useDeleteIncome } from "@/hooks/data/useIncome";
-import { useQueryClient } from "@tanstack/react-query";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -32,7 +32,7 @@ export function IncomeListWidget() {
   const { language } = useLanguage();
   const l = language === "es";
   const { formatCurrency: fc } = useFormatCurrency();
-  const queryClient = useQueryClient();
+  
   const now = new Date();
 
   const { data: incomes } = useIncome({
@@ -62,13 +62,12 @@ export function IncomeListWidget() {
         source: editSource || undefined,
       } as any,
     });
-    queryClient.invalidateQueries({ queryKey: ["monthly-plan"] });
     setEditingId(null);
   };
 
   const confirmDelete = async (id: string) => {
     await deleteIncome.mutateAsync(id);
-    queryClient.invalidateQueries({ queryKey: ["monthly-plan"] });
+    
     setDeleteConfirmId(null);
   };
 

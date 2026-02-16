@@ -2063,6 +2063,7 @@ export type Database = {
           client_id: string | null
           created_at: string | null
           date: string
+          deleted_at: string | null
           end_address: string | null
           end_lat: number | null
           end_lng: number | null
@@ -2085,6 +2086,7 @@ export type Database = {
           client_id?: string | null
           created_at?: string | null
           date: string
+          deleted_at?: string | null
           end_address?: string | null
           end_lat?: number | null
           end_lng?: number | null
@@ -2107,6 +2109,7 @@ export type Database = {
           client_id?: string | null
           created_at?: string | null
           date?: string
+          deleted_at?: string | null
           end_address?: string | null
           end_lat?: number | null
           end_lng?: number | null

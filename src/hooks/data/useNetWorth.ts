@@ -1,8 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useInvalidateRelated } from './useInvalidateRelated';
 
 export interface Asset {
   id: string;
@@ -267,7 +268,7 @@ export function useNetWorthSnapshots() {
 }
 
 export function useCreateAsset() {
-  const queryClient = useQueryClient();
+  const { afterNetWorth } = useInvalidateRelated();
   const { user } = useAuth();
   const { t } = useLanguage();
 
@@ -293,7 +294,7 @@ export function useCreateAsset() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      afterNetWorth();
       toast.success(t('netWorth.assetAdded') || 'Activo agregado');
     },
     onError: (error) => {
@@ -303,7 +304,7 @@ export function useCreateAsset() {
 }
 
 export function useUpdateAsset() {
-  const queryClient = useQueryClient();
+  const { afterNetWorth } = useInvalidateRelated();
   const { t } = useLanguage();
 
   return useMutation({
@@ -319,7 +320,7 @@ export function useUpdateAsset() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      afterNetWorth();
       toast.success(t('netWorth.assetUpdated') || 'Activo actualizado');
     },
     onError: (error) => {
@@ -329,7 +330,7 @@ export function useUpdateAsset() {
 }
 
 export function useDeleteAsset() {
-  const queryClient = useQueryClient();
+  const { afterNetWorth } = useInvalidateRelated();
   const { t } = useLanguage();
 
   return useMutation({
@@ -338,7 +339,7 @@ export function useDeleteAsset() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      afterNetWorth();
       toast.success(t('netWorth.assetDeleted') || 'Activo eliminado');
     },
     onError: (error) => {
@@ -348,7 +349,7 @@ export function useDeleteAsset() {
 }
 
 export function useCreateLiability() {
-  const queryClient = useQueryClient();
+  const { afterNetWorth } = useInvalidateRelated();
   const { user } = useAuth();
   const { t } = useLanguage();
 
@@ -375,7 +376,7 @@ export function useCreateLiability() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['liabilities'] });
+      afterNetWorth();
       toast.success(t('netWorth.liabilityAdded') || 'Pasivo agregado');
     },
     onError: (error) => {
@@ -385,7 +386,7 @@ export function useCreateLiability() {
 }
 
 export function useUpdateLiability() {
-  const queryClient = useQueryClient();
+  const { afterNetWorth } = useInvalidateRelated();
   const { t } = useLanguage();
 
   return useMutation({
@@ -401,7 +402,7 @@ export function useUpdateLiability() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['liabilities'] });
+      afterNetWorth();
       toast.success(t('netWorth.liabilityUpdated') || 'Pasivo actualizado');
     },
     onError: (error) => {
@@ -411,7 +412,7 @@ export function useUpdateLiability() {
 }
 
 export function useDeleteLiability() {
-  const queryClient = useQueryClient();
+  const { afterNetWorth } = useInvalidateRelated();
   const { t } = useLanguage();
 
   return useMutation({
@@ -420,7 +421,7 @@ export function useDeleteLiability() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['liabilities'] });
+      afterNetWorth();
       toast.success(t('netWorth.liabilityDeleted') || 'Pasivo eliminado');
     },
     onError: (error) => {
@@ -430,7 +431,7 @@ export function useDeleteLiability() {
 }
 
 export function useCreateSnapshot() {
-  const queryClient = useQueryClient();
+  const { afterNetWorth } = useInvalidateRelated();
   const { user } = useAuth();
 
   return useMutation({
@@ -473,7 +474,7 @@ export function useCreateSnapshot() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['net-worth-snapshots'] });
+      afterNetWorth();
     },
   });
 }

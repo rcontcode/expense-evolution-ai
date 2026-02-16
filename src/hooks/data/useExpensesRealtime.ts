@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useInvalidateRelated } from './useInvalidateRelated';
 
 export function useExpensesRealtime() {
-  const queryClient = useQueryClient();
+  const { afterExpense } = useInvalidateRelated();
   const { user } = useAuth();
   const { language } = useLanguage();
 
@@ -27,14 +27,8 @@ export function useExpensesRealtime() {
         },
         (payload) => {
           console.log('[Realtime] New expense received:', payload);
+          afterExpense();
           
-          // Invalidate queries to refetch data
-          queryClient.invalidateQueries({ queryKey: ['expenses'] });
-          queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-          queryClient.invalidateQueries({ queryKey: ['income-summary'] });
-          queryClient.invalidateQueries({ queryKey: ['data-health'] });
-          
-          // Show toast notification
           const expense = payload.new as any;
           toast.success(
             language === 'es' 
@@ -56,11 +50,8 @@ export function useExpensesRealtime() {
           table: 'expenses',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
-          console.log('[Realtime] Expense updated:', payload);
-          queryClient.invalidateQueries({ queryKey: ['expenses'] });
-          queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-          queryClient.invalidateQueries({ queryKey: ['income-summary'] });
+        () => {
+          afterExpense();
         }
       )
       .on(
@@ -71,11 +62,8 @@ export function useExpensesRealtime() {
           table: 'expenses',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
-          console.log('[Realtime] Expense deleted:', payload);
-          queryClient.invalidateQueries({ queryKey: ['expenses'] });
-          queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-          queryClient.invalidateQueries({ queryKey: ['income-summary'] });
+        () => {
+          afterExpense();
         }
       )
       .subscribe((status) => {
@@ -86,5 +74,5 @@ export function useExpensesRealtime() {
       console.log('[Realtime] Unsubscribing from expenses changes...');
       supabase.removeChannel(channel);
     };
-  }, [user?.id, queryClient, language]);
+  }, [user?.id, afterExpense, language]);
 }

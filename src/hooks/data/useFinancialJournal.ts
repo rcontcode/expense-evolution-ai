@@ -1,7 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useInvalidateRelated } from './useInvalidateRelated';
 
 export interface FinancialJournalEntry {
   id: string;
@@ -71,13 +72,11 @@ export function useJournalStats() {
       const entries = data || [];
       const totalEntries = entries.length;
       
-      // Count by type
       const byType = entries.reduce((acc, entry) => {
         acc[entry.entry_type] = (acc[entry.entry_type] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
 
-      // Calculate streak
       const today = new Date();
       const sortedDates = [...new Set(entries.map(e => e.entry_date))].sort().reverse();
       let streak = 0;
@@ -94,7 +93,6 @@ export function useJournalStats() {
         }
       }
 
-      // Entries this month
       const currentMonth = today.getMonth();
       const currentYear = today.getFullYear();
       const entriesThisMonth = entries.filter(e => {
@@ -116,7 +114,7 @@ export function useJournalStats() {
 
 export function useCreateJournalEntry() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { afterJournal } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (data: FinancialJournalFormData) => {
@@ -133,8 +131,7 @@ export function useCreateJournalEntry() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['financial-journal'] });
-      queryClient.invalidateQueries({ queryKey: ['financial-journal-stats'] });
+      afterJournal();
       toast.success('Entrada de diario guardada');
     },
   });
@@ -142,7 +139,7 @@ export function useCreateJournalEntry() {
 
 export function useDeleteJournalEntry() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { afterJournal } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -157,8 +154,7 @@ export function useDeleteJournalEntry() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['financial-journal'] });
-      queryClient.invalidateQueries({ queryKey: ['financial-journal-stats'] });
+      afterJournal();
       toast.success('Entrada eliminada');
     },
   });

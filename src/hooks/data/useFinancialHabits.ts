@@ -1,7 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useInvalidateRelated } from './useInvalidateRelated';
 
 export interface FinancialHabit {
   id: string;
@@ -76,7 +77,6 @@ export function useFinancialHabits() {
     queryFn: async () => {
       if (!user) return [];
 
-      // Get habits
       const { data: habits, error } = await supabase
         .from('financial_habits')
         .select('*')
@@ -86,7 +86,6 @@ export function useFinancialHabits() {
 
       if (error) throw error;
 
-      // Get today's logs
       const today = new Date().toISOString().split('T')[0];
       const weekStart = new Date();
       weekStart.setDate(weekStart.getDate() - weekStart.getDay());
@@ -105,7 +104,6 @@ export function useFinancialHabits() {
         logsMap.get(log.habit_id)!.push(log as FinancialHabitLog);
       });
 
-      // Enrich habits with completion data
       return (habits || []).map(habit => {
         const habitLogs = logsMap.get(habit.id) || [];
         const completedToday = habitLogs.some(log => 
@@ -159,7 +157,7 @@ export function useHabitStats() {
 
 export function useCreateHabit() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { afterHabit } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (data: { habit_name: string; frequency?: string; habit_description?: string }) => {
@@ -177,7 +175,7 @@ export function useCreateHabit() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['financial-habits'] });
+      afterHabit();
       toast.success('Hábito creado');
     },
   });
@@ -185,13 +183,12 @@ export function useCreateHabit() {
 
 export function useCompleteHabit() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { afterHabit } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ habitId, notes }: { habitId: string; notes?: string }) => {
       if (!user) throw new Error('No user');
 
-      // Log the completion
       const { error: logError } = await supabase
         .from('financial_habit_logs')
         .insert({
@@ -202,7 +199,6 @@ export function useCompleteHabit() {
 
       if (logError) throw logError;
 
-      // Update streak
       const { data: habit } = await supabase
         .from('financial_habits')
         .select('current_streak, best_streak, last_completed_at')
@@ -237,7 +233,7 @@ export function useCompleteHabit() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['financial-habits'] });
+      afterHabit();
       toast.success('¡Hábito completado! +XP');
     },
   });
@@ -245,7 +241,7 @@ export function useCompleteHabit() {
 
 export function useInitializeDefaultHabits() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { afterHabit } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async () => {
@@ -263,7 +259,7 @@ export function useInitializeDefaultHabits() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['financial-habits'] });
+      afterHabit();
       toast.success('Hábitos predeterminados creados');
     },
   });

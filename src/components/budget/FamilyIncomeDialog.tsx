@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateIncome } from "@/hooks/data/useIncome";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
-import { useQueryClient } from "@tanstack/react-query";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,7 @@ export function FamilyIncomeDialog({ open, onClose }: FamilyIncomeDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { currentCurrency } = useFormatCurrency();
-  const queryClient = useQueryClient();
+  
   const createIncome = useCreateIncome();
 
   const [amount, setAmount] = useState("");
@@ -72,8 +72,6 @@ export function FamilyIncomeDialog({ open, onClose }: FamilyIncomeDialogProps) {
         user_id: user.id,
       } as any);
 
-      // Ensure budget data refreshes
-      queryClient.invalidateQueries({ queryKey: ["monthly-plan"] });
 
       toast({
         title: l ? "✅ ¡Ingreso registrado!" : "✅ Income recorded!",

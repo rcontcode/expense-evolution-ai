@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQueryClient } from '@tanstack/react-query';
+import { useInvalidateRelated } from '@/hooks/data/useInvalidateRelated';
 import { Plus, Trash2, Save, Loader2, Calendar } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -39,7 +39,7 @@ export const BulkMileageEntry = ({ onComplete }: BulkMileageEntryProps) => {
   const { toast } = useToast();
   const { language } = useLanguage();
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { afterMileage } = useInvalidateRelated();
   
   const [entries, setEntries] = useState<TripEntry[]>([
     createEmptyEntry(),
@@ -149,8 +149,7 @@ export const BulkMileageEntry = ({ onComplete }: BulkMileageEntryProps) => {
         title: `${validEntries.length} ${texts.successMessage}`,
       });
 
-      queryClient.invalidateQueries({ queryKey: ['mileage'] });
-      queryClient.invalidateQueries({ queryKey: ['mileage-summary'] });
+      afterMileage();
       
       onComplete();
 

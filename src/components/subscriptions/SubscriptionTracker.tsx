@@ -30,7 +30,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { useSubscriptionDetector, DetectedSubscription } from '@/hooks/data/useSubscriptionDetector';
 import { supabase } from '@/integrations/supabase/client';
-import { useQueryClient } from '@tanstack/react-query';
+import { useInvalidateRelated } from '@/hooks/data/useInvalidateRelated';
 import { toast } from 'sonner';
 import { format, parseISO, addMonths } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -189,7 +189,7 @@ export function SubscriptionTracker() {
   const { language } = useLanguage();
   const { data: expenses, isLoading: expensesLoading } = useExpenses();
   const { data: bankTransactions, isLoading: bankLoading } = useBankTransactions();
-  const queryClient = useQueryClient();
+  const { afterBill } = useInvalidateRelated();
   const [convertedVendors, setConvertedVendors] = useState<Set<string>>(new Set());
 
   const { 
@@ -229,7 +229,7 @@ export function SubscriptionTracker() {
       if (error) throw error;
 
       setConvertedVendors(prev => new Set(prev).add(sub.vendor));
-      queryClient.invalidateQueries({ queryKey: ['recurring-bills'] });
+      afterBill();
       toast.success(
         language === 'es'
           ? `"${sub.vendor}" agregado como gasto fijo recurrente`
