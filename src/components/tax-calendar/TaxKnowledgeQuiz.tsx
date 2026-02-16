@@ -44,22 +44,36 @@ export function TaxKnowledgeQuiz({ onClose, onComplete }: TaxKnowledgeQuizProps)
 
   const [answers, setAnswers] = useState<Record<string, any>>(() => {
     if (existing) {
+      const e = existing as any;
       return {
-        has_filed_before: existing.has_filed_before,
-        has_accountant: existing.has_accountant,
-        accountant_info: existing.accountant_info || '',
-        switched_from_employee: existing.switched_from_employee,
-        employee_end_date: existing.employee_end_date || '',
-        employment_transition_notes: existing.employment_transition_notes || '',
-        first_business_revenue_date: existing.first_business_revenue_date || '',
-        business_start_date_notes: existing.business_start_date_notes || '',
-        previous_filings_notes: existing.previous_filings_notes || '',
-        knows_fiscal_year_end: existing.knows_fiscal_year_end,
-        knows_gst_hst_status: existing.knows_gst_hst_status,
-        knows_tax_regime: existing.knows_tax_regime,
-        tax_software_used: existing.tax_software_used || '',
-        general_tax_knowledge: existing.general_tax_knowledge || 1,
-        additional_notes: existing.additional_notes || '',
+        has_filed_before: e.has_filed_before,
+        has_accountant: e.has_accountant,
+        accountant_info: e.accountant_info || '',
+        switched_from_employee: e.switched_from_employee,
+        employee_end_date: e.employee_end_date || '',
+        employment_transition_notes: e.employment_transition_notes || '',
+        first_business_revenue_date: e.first_business_revenue_date || '',
+        business_start_date_notes: e.business_start_date_notes || '',
+        previous_filings_notes: e.previous_filings_notes || '',
+        knows_fiscal_year_end: e.knows_fiscal_year_end,
+        knows_gst_hst_status: e.knows_gst_hst_status,
+        knows_tax_regime: e.knows_tax_regime,
+        tax_software_used: e.tax_software_used || '',
+        general_tax_knowledge: e.general_tax_knowledge || 1,
+        additional_notes: e.additional_notes || '',
+        business_registration_date: e.business_registration_date || '',
+        business_legal_name: e.business_legal_name || '',
+        has_separate_bank_account: e.has_separate_bank_account,
+        uses_home_office: e.uses_home_office,
+        home_office_details: e.home_office_details || '',
+        uses_vehicle_for_business: e.uses_vehicle_for_business,
+        has_international_income: e.has_international_income,
+        international_income_details: e.international_income_details || '',
+        pays_tax_installments: e.pays_tax_installments,
+        record_keeping_method: e.record_keeping_method || '',
+        has_tax_debts: e.has_tax_debts,
+        tax_debts_details: e.tax_debts_details || '',
+        has_employees: e.has_employees,
       };
     }
     return {};
@@ -167,7 +181,40 @@ export function TaxKnowledgeQuiz({ onClose, onComplete }: TaxKnowledgeQuizProps)
         },
         conditionalOn: (a) => a.switched_from_employee === true,
       },
-      // Q8: First revenue date
+      // Q8: Business registration/incorporation date
+      {
+        id: 'business_registration_date',
+        field: 'business_registration_date',
+        type: 'open',
+        question: {
+          es: '¿Cuándo registraste o incorporaste tu empresa oficialmente? (fecha exacta o aproximada)',
+          en: 'When did you officially register or incorporate your business? (exact or approximate date)'
+        },
+        helpText: {
+          es: 'Ejemplo: "15 de marzo de 2023" o "creo que fue a principios de 2024"',
+          en: 'Example: "March 15, 2023" or "I think it was early 2024"'
+        },
+        whereToFind: isChile
+          ? { es: 'Revisa tu Inicio de Actividades en SII → Consultas → Inicio de Actividades', en: 'Check your Activity Start in SII → Queries → Activity Start', link: 'https://www.sii.cl' }
+          : { es: 'Busca tu Articles of Incorporation o el certificado de registro provincial. También en CRA My Business Account.', en: 'Find your Articles of Incorporation or provincial registration certificate. Also in CRA My Business Account.', link: 'https://www.canada.ca/en/revenue-agency/services/e-services/e-services-businesses/business-account.html' },
+        conditionalOn: () => hasBusiness,
+      },
+      // Q9: Business legal name
+      {
+        id: 'business_legal_name',
+        field: 'business_legal_name',
+        type: 'open',
+        question: {
+          es: '¿Cuál es el nombre legal registrado de tu empresa o negocio?',
+          en: 'What is the registered legal name of your business?'
+        },
+        helpText: {
+          es: 'Ejemplo: "Evolaris SpA" o "John Doe Consulting" o "solo uso mi nombre personal"',
+          en: 'Example: "Evolaris Inc." or "John Doe Consulting" or "I just use my personal name"'
+        },
+        conditionalOn: () => hasBusiness,
+      },
+      // Q10: First revenue date
       {
         id: 'first_business_revenue_date',
         field: 'first_business_revenue_date',
@@ -185,7 +232,7 @@ export function TaxKnowledgeQuiz({ onClose, onComplete }: TaxKnowledgeQuizProps)
           : { es: 'Revisa tu primera factura o tu primer depósito por servicios', en: 'Check your first invoice or first service deposit' },
         conditionalOn: () => hasBusiness,
       },
-      // Q9: Business start notes
+      // Q11: Business start notes
       {
         id: 'business_start_date_notes',
         field: 'business_start_date_notes',
@@ -203,7 +250,170 @@ export function TaxKnowledgeQuiz({ onClose, onComplete }: TaxKnowledgeQuizProps)
           : { es: 'Busca tu Articles of Incorporation o la carta de confirmación de CRA con tu Business Number', en: 'Find your Articles of Incorporation or CRA confirmation letter with your Business Number', link: 'https://www.canada.ca/en/revenue-agency/services/e-services/e-services-businesses/business-account.html' },
         conditionalOn: () => workTypes.includes('corporation'),
       },
-      // Q10: Knows fiscal year end?
+      // Q12: Separate business bank account
+      {
+        id: 'has_separate_bank_account',
+        field: 'has_separate_bank_account',
+        type: 'boolean',
+        question: {
+          es: '¿Tienes una cuenta bancaria separada para tu negocio?',
+          en: 'Do you have a separate bank account for your business?'
+        },
+        helpText: {
+          es: 'Tener cuentas separadas facilita mucho la contabilidad y declaración de impuestos.',
+          en: 'Having separate accounts makes accounting and tax filing much easier.'
+        },
+        conditionalOn: () => hasBusiness,
+      },
+      // Q13: Home office
+      {
+        id: 'uses_home_office',
+        field: 'uses_home_office',
+        type: 'boolean',
+        question: {
+          es: '¿Usas parte de tu hogar como oficina o espacio de trabajo para tu negocio?',
+          en: 'Do you use part of your home as an office or workspace for your business?'
+        },
+        helpText: {
+          es: 'Si trabajas desde casa, podrías deducir una parte proporcional de arriendo, servicios, internet, etc.',
+          en: 'If you work from home, you may be able to deduct a proportional share of rent, utilities, internet, etc.'
+        },
+        conditionalOn: () => hasBusiness,
+      },
+      // Q14: Home office details
+      {
+        id: 'home_office_details',
+        field: 'home_office_details',
+        type: 'open',
+        question: {
+          es: '¿Qué porcentaje de tu hogar usas para trabajar? ¿Sabes cómo calcularlo?',
+          en: 'What percentage of your home do you use for work? Do you know how to calculate it?'
+        },
+        helpText: {
+          es: 'Ejemplo: "uso una pieza de 4, así que creo que es 25%" o "no sé cómo calcularlo"',
+          en: 'Example: "I use 1 room out of 4, so I think it\'s 25%" or "I don\'t know how to calculate it"'
+        },
+        whereToFind: isChile
+          ? { es: 'Calcula los metros cuadrados de tu espacio de trabajo vs el total de tu vivienda', en: 'Calculate the square meters of your workspace vs total home' }
+          : { es: 'CRA permite el método de área (m²) o de habitaciones. Busca formulario T2125, Parte 7.', en: 'CRA allows area (sq ft) or room method. See form T2125, Part 7.', link: 'https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/sole-proprietorships-partnerships/business-expenses/work-space-home-expenses.html' },
+        conditionalOn: (a) => a.uses_home_office === true,
+      },
+      // Q15: Vehicle for business
+      {
+        id: 'uses_vehicle_for_business',
+        field: 'uses_vehicle_for_business',
+        type: 'boolean',
+        question: {
+          es: '¿Usas un vehículo para fines de tu negocio?',
+          en: 'Do you use a vehicle for business purposes?'
+        },
+        helpText: {
+          es: 'Si usas tu auto para visitar clientes, entregas, etc., podrías deducir gastos relacionados.',
+          en: 'If you use your car to visit clients, make deliveries, etc., you may be able to deduct related expenses.'
+        },
+        conditionalOn: () => hasBusiness,
+      },
+      // Q16: International clients/income
+      {
+        id: 'has_international_income',
+        field: 'has_international_income',
+        type: 'boolean',
+        question: {
+          es: '¿Recibes ingresos de clientes o fuentes en otros países?',
+          en: 'Do you receive income from clients or sources in other countries?'
+        },
+        helpText: {
+          es: 'El ingreso internacional puede tener implicaciones especiales en impuestos y tipo de cambio.',
+          en: 'International income may have special tax implications and exchange rate considerations.'
+        },
+        conditionalOn: () => hasBusiness,
+      },
+      // Q17: International income details
+      {
+        id: 'international_income_details',
+        field: 'international_income_details',
+        type: 'open',
+        question: {
+          es: '¿De qué países recibes ingresos y en qué moneda te pagan?',
+          en: 'From which countries do you receive income and in what currency are you paid?'
+        },
+        helpText: {
+          es: 'Ejemplo: "clientes en USA que me pagan en USD por Paypal" o "una empresa en España que paga en EUR"',
+          en: 'Example: "US clients who pay me in USD via Paypal" or "a company in Spain that pays in EUR"'
+        },
+        conditionalOn: (a) => a.has_international_income === true,
+      },
+      // Q18: Tax installments
+      {
+        id: 'pays_tax_installments',
+        field: 'pays_tax_installments',
+        type: 'boolean',
+        question: isChile
+          ? { es: '¿Pagas PPM (Pagos Provisionales Mensuales)?', en: 'Do you pay PPM (Monthly Provisional Payments)?' }
+          : { es: '¿Pagas cuotas trimestrales de impuestos (tax installments) a CRA?', en: 'Do you pay quarterly tax installments to CRA?' },
+        helpText: isChile
+          ? { es: 'Los PPM son pagos anticipados mensuales de impuestos que deben hacer algunos contribuyentes.', en: 'PPM are monthly advance tax payments required from some taxpayers.' }
+          : { es: 'CRA puede requerir pagos trimestrales si debes más de $3,000 en impuestos al año.', en: 'CRA may require quarterly payments if you owe more than $3,000 in taxes per year.' },
+        whereToFind: isChile
+          ? { es: 'Revisa en SII → Servicios Online → Declaración y Pago de PPM (F29)', en: 'Check in SII → Online Services → PPM Declaration and Payment (F29)', link: 'https://www.sii.cl' }
+          : { es: 'Revisa en CRA My Account si tienes un reminder de installments o busca la carta que CRA envía', en: 'Check CRA My Account for installment reminders or look for CRA\'s letter', link: 'https://www.canada.ca/en/revenue-agency/services/payments-cra/individual-payments/income-tax-instalments.html' },
+        conditionalOn: () => hasBusiness,
+      },
+      // Q19: Record keeping
+      {
+        id: 'record_keeping_method',
+        field: 'record_keeping_method',
+        type: 'open',
+        question: {
+          es: '¿Cómo llevas el registro de tus ingresos y gastos actualmente?',
+          en: 'How do you currently keep track of your income and expenses?'
+        },
+        helpText: {
+          es: 'Ejemplo: "en un Excel", "no llevo registro", "uso QuickBooks", "guardo las boletas en una caja"',
+          en: 'Example: "in a spreadsheet", "I don\'t keep records", "I use QuickBooks", "I keep receipts in a box"'
+        },
+      },
+      // Q20: Tax debts or issues
+      {
+        id: 'has_tax_debts',
+        field: 'has_tax_debts',
+        type: 'boolean',
+        question: {
+          es: '¿Tienes deudas pendientes, multas o problemas anteriores con el organismo fiscal?',
+          en: 'Do you have any outstanding debts, penalties, or previous issues with the tax authority?'
+        },
+        helpText: {
+          es: 'No te preocupes, es más común de lo que crees. Saber esto nos ayuda a orientarte mejor.',
+          en: "Don't worry, it's more common than you think. Knowing this helps us guide you better."
+        },
+      },
+      // Q21: Tax debts details
+      {
+        id: 'tax_debts_details',
+        field: 'tax_debts_details',
+        type: 'open',
+        question: {
+          es: 'Cuéntanos sobre la situación. ¿Qué tipo de deuda o problema y desde cuándo?',
+          en: 'Tell us about the situation. What kind of debt or issue and since when?'
+        },
+        conditionalOn: (a) => a.has_tax_debts === true,
+      },
+      // Q22: Has employees or contractors
+      {
+        id: 'has_employees',
+        field: 'has_employees',
+        type: 'boolean',
+        question: {
+          es: '¿Tienes empleados o contratas a otras personas para tu negocio?',
+          en: 'Do you have employees or hire other people for your business?'
+        },
+        helpText: {
+          es: 'Esto incluye empleados con contrato, subcontratistas o freelancers que trabajan para ti.',
+          en: 'This includes contracted employees, subcontractors, or freelancers who work for you.'
+        },
+        conditionalOn: () => hasBusiness,
+      },
+      // Q23: Knows fiscal year end?
       {
         id: 'knows_fiscal_year_end',
         field: 'knows_fiscal_year_end',
@@ -290,6 +500,10 @@ export function TaxKnowledgeQuiz({ onClose, onComplete }: TaxKnowledgeQuizProps)
     if (answers.knows_gst_hst_status === false) gaps.push('unknown_gst_status');
     if (answers.knows_tax_regime === false) gaps.push('unknown_tax_regime');
     if ((answers.general_tax_knowledge || 1) <= 2) gaps.push('low_tax_knowledge');
+    if (answers.has_separate_bank_account === false) gaps.push('no_separate_bank');
+    if (!answers.business_registration_date && hasBusiness) gaps.push('unknown_registration_date');
+    if (answers.has_tax_debts === true) gaps.push('has_tax_debts');
+    if (!answers.record_keeping_method || answers.record_keeping_method.toLowerCase().includes('no ')) gaps.push('poor_record_keeping');
 
     await upsert.mutateAsync({
       country: profile?.country || 'CA',

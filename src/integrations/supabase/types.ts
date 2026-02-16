@@ -2945,6 +2945,8 @@ export type Database = {
         Row: {
           accountant_info: string | null
           additional_notes: string | null
+          business_legal_name: string | null
+          business_registration_date: string | null
           business_start_date_notes: string | null
           business_structure_knowledge: number | null
           completed_at: string | null
@@ -2957,21 +2959,34 @@ export type Database = {
           first_business_revenue_date: string | null
           general_tax_knowledge: number | null
           has_accountant: boolean | null
+          has_employees: boolean | null
           has_filed_before: boolean | null
+          has_international_income: boolean | null
+          has_separate_bank_account: boolean | null
+          has_tax_debts: boolean | null
+          home_office_details: string | null
           id: string
+          international_income_details: string | null
           knowledge_gaps: Json | null
           knows_fiscal_year_end: boolean | null
           knows_gst_hst_status: boolean | null
           knows_tax_regime: boolean | null
+          pays_tax_installments: boolean | null
           previous_filings_notes: string | null
+          record_keeping_method: string | null
           switched_from_employee: boolean | null
+          tax_debts_details: string | null
           tax_software_used: string | null
           updated_at: string
           user_id: string
+          uses_home_office: boolean | null
+          uses_vehicle_for_business: boolean | null
         }
         Insert: {
           accountant_info?: string | null
           additional_notes?: string | null
+          business_legal_name?: string | null
+          business_registration_date?: string | null
           business_start_date_notes?: string | null
           business_structure_knowledge?: number | null
           completed_at?: string | null
@@ -2984,21 +2999,34 @@ export type Database = {
           first_business_revenue_date?: string | null
           general_tax_knowledge?: number | null
           has_accountant?: boolean | null
+          has_employees?: boolean | null
           has_filed_before?: boolean | null
+          has_international_income?: boolean | null
+          has_separate_bank_account?: boolean | null
+          has_tax_debts?: boolean | null
+          home_office_details?: string | null
           id?: string
+          international_income_details?: string | null
           knowledge_gaps?: Json | null
           knows_fiscal_year_end?: boolean | null
           knows_gst_hst_status?: boolean | null
           knows_tax_regime?: boolean | null
+          pays_tax_installments?: boolean | null
           previous_filings_notes?: string | null
+          record_keeping_method?: string | null
           switched_from_employee?: boolean | null
+          tax_debts_details?: string | null
           tax_software_used?: string | null
           updated_at?: string
           user_id: string
+          uses_home_office?: boolean | null
+          uses_vehicle_for_business?: boolean | null
         }
         Update: {
           accountant_info?: string | null
           additional_notes?: string | null
+          business_legal_name?: string | null
+          business_registration_date?: string | null
           business_start_date_notes?: string | null
           business_structure_knowledge?: number | null
           completed_at?: string | null
@@ -3011,17 +3039,28 @@ export type Database = {
           first_business_revenue_date?: string | null
           general_tax_knowledge?: number | null
           has_accountant?: boolean | null
+          has_employees?: boolean | null
           has_filed_before?: boolean | null
+          has_international_income?: boolean | null
+          has_separate_bank_account?: boolean | null
+          has_tax_debts?: boolean | null
+          home_office_details?: string | null
           id?: string
+          international_income_details?: string | null
           knowledge_gaps?: Json | null
           knows_fiscal_year_end?: boolean | null
           knows_gst_hst_status?: boolean | null
           knows_tax_regime?: boolean | null
+          pays_tax_installments?: boolean | null
           previous_filings_notes?: string | null
+          record_keeping_method?: string | null
           switched_from_employee?: boolean | null
+          tax_debts_details?: string | null
           tax_software_used?: string | null
           updated_at?: string
           user_id?: string
+          uses_home_office?: boolean | null
+          uses_vehicle_for_business?: boolean | null
         }
         Relationships: [
           {
