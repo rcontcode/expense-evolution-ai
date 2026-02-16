@@ -1,10 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ExpenseWithRelations, ExpenseInsert, ExpenseUpdate, ExpenseFilters } from '@/types/expense.types';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useMissionTracker } from './useMissions';
 import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
 import { useAuth } from '@/contexts/AuthContext';
+
 export function useExpenses(filters?: ExpenseFilters) {
   return useQuery({
     queryKey: ['expenses', filters],
@@ -65,9 +66,7 @@ export function useExpenses(filters?: ExpenseFilters) {
       }
 
       // Filter for incomplete expenses (for reports)
-      // Incomplete = pending_classification OR (client_reimbursable without client/contract)
       if (filters?.onlyIncomplete) {
-        // Get expenses that are pending classification OR missing required data
         query = query.or(
           'reimbursement_type.eq.pending_classification,' +
           'and(reimbursement_type.eq.client_reimbursable,client_id.is.null),' +
@@ -77,7 +76,6 @@ export function useExpenses(filters?: ExpenseFilters) {
       }
       
       if (filters?.tagIds?.length) {
-        // First get expense IDs that have the selected tags
         const { data: expenseTagData } = await supabase
           .from('expense_tags')
           .select('expense_id, tag_id')
@@ -86,7 +84,6 @@ export function useExpenses(filters?: ExpenseFilters) {
         const tagFilterMode = filters.tagFilterMode || 'OR';
         
         if (tagFilterMode === 'AND') {
-          // AND mode: expense must have ALL selected tags
           const expenseTagCounts = new Map<string, Set<string>>();
           expenseTagData?.forEach(et => {
             const tags = expenseTagCounts.get(et.expense_id) || new Set();
@@ -104,7 +101,6 @@ export function useExpenses(filters?: ExpenseFilters) {
             return [];
           }
         } else {
-          // OR mode: expense must have ANY of the selected tags
           const expenseIds = [...new Set(expenseTagData?.map(et => et.expense_id) || [])];
           if (expenseIds.length > 0) {
             query = query.in('id', expenseIds);
@@ -118,7 +114,6 @@ export function useExpenses(filters?: ExpenseFilters) {
       
       if (error) throw error;
       
-      // Transform the nested tags structure
       return (data || []).map(expense => ({
         ...expense,
         tags: expense.expense_tags?.map((et: any) => et.tag).filter(Boolean) || [],
@@ -129,18 +124,15 @@ export function useExpenses(filters?: ExpenseFilters) {
 
 export function useCreateExpense() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const { user } = useAuth();
   const { trackAction } = useMissionTracker();
   const { triggers } = useGamificationTriggers();
 
   return useMutation({
-    // user_id is added automatically, so we don't require it from the caller
     mutationFn: async (expense: Omit<ExpenseInsert, 'user_id'>) => {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('Not authenticated');
 
-      // Get current count BEFORE creating
       const currentCount = await getTableCount('expenses', userData.user.id);
 
       const { data, error } = await supabase
@@ -151,36 +143,28 @@ export function useCreateExpense() {
       
       if (error) throw error;
       
-      // Trigger gamification with current count
       await triggers.expense(currentCount);
       
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['income-summary'] });
       queryClient.invalidateQueries({ queryKey: ['user-level'] });
       queryClient.invalidateQueries({ queryKey: ['user-achievements'] });
-      // Track mission progress
       trackAction('add_expense', 1);
       trackAction('categorize_expense', 1);
-      toast({
-        title: 'Expense created',
-        description: 'The expense has been created successfully.',
-      });
+      toast.success('Gasto registrado');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Error al registrar gasto');
     },
   });
 }
 
 export function useUpdateExpense() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: ExpenseUpdate }) => {
@@ -196,24 +180,17 @@ export function useUpdateExpense() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      toast({
-        title: 'Expense updated',
-        description: 'The expense has been updated successfully.',
-      });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      toast.success('Gasto actualizado');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Error al actualizar gasto');
     },
   });
 }
 
 export function useDeleteExpense() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -226,17 +203,12 @@ export function useDeleteExpense() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      toast({
-        title: 'Expense deleted',
-        description: 'The expense has been deleted successfully.',
-      });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['income-summary'] });
+      toast.success('Gasto eliminado');
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(error.message || 'Error al eliminar gasto');
     },
   });
 }
@@ -246,13 +218,11 @@ export function useAddExpenseTags() {
 
   return useMutation({
     mutationFn: async ({ expenseId, tagIds }: { expenseId: string; tagIds: string[] }) => {
-      // First, remove existing tags
       await supabase
         .from('expense_tags')
         .delete()
         .eq('expense_id', expenseId);
       
-      // Then add new tags
       if (tagIds.length > 0) {
         const { error } = await supabase
           .from('expense_tags')

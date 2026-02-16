@@ -98,6 +98,8 @@ export function useUpdateProject() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['projects-with-clients'] });
+      queryClient.invalidateQueries({ queryKey: ['client-projects'] });
       toast.success('Proyecto actualizado');
     },
     onError: (error) => {
@@ -118,6 +120,10 @@ export function useDeleteProject() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['projects-with-clients'] });
+      queryClient.invalidateQueries({ queryKey: ['client-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['income'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       toast.success('Proyecto eliminado');
     },
     onError: (error) => {
@@ -133,7 +139,6 @@ export function useDuplicateProject() {
 
   return useMutation({
     mutationFn: async (projectId: string) => {
-      // First, get the project to duplicate
       const { data: originalProject, error: fetchError } = await supabase
         .from('projects')
         .select('*')
@@ -142,7 +147,6 @@ export function useDuplicateProject() {
 
       if (fetchError) throw fetchError;
 
-      // Create the duplicate with a new name
       const { data: newProject, error: insertError } = await supabase
         .from('projects')
         .insert({
@@ -152,7 +156,7 @@ export function useDuplicateProject() {
           status: 'active',
           client_id: originalProject.client_id,
           budget: originalProject.budget,
-          start_date: null, // Reset dates for new project
+          start_date: null,
           end_date: null,
           color: originalProject.color,
         })
@@ -161,7 +165,6 @@ export function useDuplicateProject() {
 
       if (insertError) throw insertError;
 
-      // Copy project_clients relationships
       const { data: projectClients, error: pcFetchError } = await supabase
         .from('project_clients')
         .select('client_id, role')

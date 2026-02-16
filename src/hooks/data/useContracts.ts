@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ContractFormData, ContractWithClient, ContractStatus } from '@/types/contract.types';
 
 export const useContracts = () => {
@@ -23,14 +23,12 @@ export const useContracts = () => {
 
 export const useCreateContract = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (data: ContractFormData) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Upload all files to storage
       const uploadedFiles: { fileName: string; filePath: string; fileType: string }[] = [];
       
       for (const file of data.files) {
@@ -50,7 +48,6 @@ export const useCreateContract = () => {
         });
       }
 
-      // Create contract records for each file
       const contracts = [];
       for (const uploadedFile of uploadedFiles) {
         const { data: contract, error: insertError } = await supabase
@@ -83,17 +80,10 @@ export const useCreateContract = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
-      toast({
-        title: 'Contrato subido',
-        description: 'El contrato se ha subido exitosamente',
-      });
+      toast.success('Contrato subido exitosamente');
     },
     onError: (error) => {
-      toast({
-        title: 'Error',
-        description: 'No se pudo subir el contrato',
-        variant: 'destructive',
-      });
+      toast.error('No se pudo subir el contrato');
       console.error('Error uploading contract:', error);
     },
   });
@@ -101,7 +91,6 @@ export const useCreateContract = () => {
 
 export const useUpdateContract = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; client_id?: string; status?: ContractStatus }) => {
@@ -117,28 +106,19 @@ export const useUpdateContract = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
-      toast({
-        title: 'Contrato actualizado',
-        description: 'Los cambios se han guardado correctamente',
-      });
+      toast.success('Contrato actualizado');
     },
     onError: () => {
-      toast({
-        title: 'Error',
-        description: 'No se pudo actualizar el contrato',
-        variant: 'destructive',
-      });
+      toast.error('No se pudo actualizar el contrato');
     },
   });
 };
 
 export const useDeleteContract = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      // Get contract to delete file from storage
       const { data: contract } = await supabase
         .from('contracts')
         .select('file_path')
@@ -154,17 +134,10 @@ export const useDeleteContract = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
-      toast({
-        title: 'Contrato eliminado',
-        description: 'El contrato se ha eliminado correctamente',
-      });
+      toast.success('Contrato eliminado');
     },
     onError: () => {
-      toast({
-        title: 'Error',
-        description: 'No se pudo eliminar el contrato',
-        variant: 'destructive',
-      });
+      toast.error('No se pudo eliminar el contrato');
     },
   });
 };
@@ -177,7 +150,7 @@ export const useContractUrl = (filePath: string | null) => {
       
       const { data } = await supabase.storage
         .from('contracts')
-        .createSignedUrl(filePath, 3600); // 1 hour expiry
+        .createSignedUrl(filePath, 3600);
 
       return data?.signedUrl || null;
     },

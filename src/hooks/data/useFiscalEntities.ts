@@ -121,6 +121,10 @@ export function useDeleteFiscalEntity() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fiscal-entities'] });
       queryClient.invalidateQueries({ queryKey: ['fiscal-entity-primary'] });
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['income'] });
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       toast.success(language === 'es' ? 'Entidad eliminada' : 'Entity deleted');
     },
     onError: (error: Error) => {
