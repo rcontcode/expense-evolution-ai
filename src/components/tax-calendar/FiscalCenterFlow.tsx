@@ -172,11 +172,10 @@ export function FiscalCenterFlow({ activeTab, onTabChange, profileComplete }: Fi
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="overflow-hidden"
           >
-            <div className="px-5 pb-5 space-y-4">
+            <div className="px-5 pb-5 pt-2 space-y-4">
               {/* Desktop: Horizontal Flow */}
-              <div className="hidden md:flex items-start gap-0">
+              <div className="hidden md:flex items-start gap-0 pt-4">
                 {FLOW_STEPS.map((step, idx) => {
                   const status = getStepStatus(step, idx);
                   const isActive = status === 'active';
