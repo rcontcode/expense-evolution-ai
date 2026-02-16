@@ -33,6 +33,12 @@ import { CumulativeSpendingChart } from "./family/CumulativeSpendingChart";
 import { BudgetVsActualChart } from "./family/BudgetVsActualChart";
 import { UpcomingReminders } from "./family/UpcomingReminders";
 import { MonthComparisonChart } from "./family/MonthComparisonChart";
+import { SavingsGoalsWidget } from "./family/SavingsGoalsWidget";
+import { BudgetRulesWidget } from "./family/BudgetRulesWidget";
+import { BudgetAuditLogWidget } from "./family/BudgetAuditLogWidget";
+import { YearComparisonChart } from "./family/YearComparisonChart";
+import { BudgetExportWidget } from "./family/BudgetExportWidget";
+import { BudgetPeriodSelector, type BudgetPeriod } from "./family/BudgetPeriodSelector";
 
 // Family-specific dialogs
 import { FamilyExpenseDialog } from "./FamilyExpenseDialog";
@@ -578,6 +584,53 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
               </div>
             </div>
           </CollapsibleSection>
+
+          {/* ===== SECTION 8b: METAS DE AHORRO + COMPARACIÓN ANUAL ===== */}
+          <div className="grid gap-5 lg:grid-cols-2">
+            <CollapsibleSection
+              emoji="🎯"
+              title={l ? "Metas de Ahorro" : "Savings Goals"}
+              subtitle={l ? "Define y rastrea tus objetivos" : "Define and track your objectives"}
+              defaultOpen={true}
+            >
+              <SavingsGoalsWidget />
+            </CollapsibleSection>
+
+            <CollapsibleSection
+              emoji="📅"
+              title={l ? "Comparación Año vs Año" : "Year vs Year"}
+              subtitle={l ? "Mismos meses, diferente año" : "Same months, different year"}
+            >
+              <YearComparisonChart />
+            </CollapsibleSection>
+          </div>
+
+          {/* ===== SECTION 8c: REGLAS + HISTORIAL + EXPORTAR ===== */}
+          <div className="grid gap-5 lg:grid-cols-3">
+            <CollapsibleSection
+              emoji="⚡"
+              title={l ? "Reglas Automáticas" : "Automatic Rules"}
+              subtitle={l ? "Alertas personalizadas" : "Custom alerts"}
+            >
+              <BudgetRulesWidget />
+            </CollapsibleSection>
+
+            <CollapsibleSection
+              emoji="📝"
+              title={l ? "Historial de Cambios" : "Change History"}
+              subtitle={l ? "Auditoría del presupuesto" : "Budget audit trail"}
+            >
+              <BudgetAuditLogWidget />
+            </CollapsibleSection>
+
+            <CollapsibleSection
+              emoji="📥"
+              title={l ? "Exportar Presupuesto" : "Export Budget"}
+              subtitle={l ? "PDF y Excel" : "PDF & Excel"}
+            >
+              <BudgetExportWidget />
+            </CollapsibleSection>
+          </div>
 
           {/* ===== SECTION 9: EXTRAS (compact row) ===== */}
           <div className="grid gap-5 lg:grid-cols-3">
