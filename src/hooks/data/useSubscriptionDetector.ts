@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { ExpenseWithRelations } from '@/types/expense.types';
+import { BankTransaction } from '@/hooks/data/useBankTransactions';
 import { differenceInDays, format, parseISO } from 'date-fns';
 
 export interface DetectedSubscription {
@@ -13,6 +14,7 @@ export interface DetectedSubscription {
   category: string | null;
   expenses: ExpenseWithRelations[];
   confidence: number; // 0-100 confidence score
+  source: 'expenses' | 'bank' | 'both';
 }
 
 interface GroupedExpense {
@@ -74,72 +76,88 @@ function getFrequencyLabel(frequency: DetectedSubscription['frequency'], languag
   return labels[frequency]?.[language as 'en' | 'es'] || labels[frequency]?.en || frequency;
 }
 
-export function useSubscriptionDetector(expenses: ExpenseWithRelations[]) {
+export function useSubscriptionDetector(expenses: ExpenseWithRelations[], bankTransactions?: BankTransaction[]) {
   const subscriptions = useMemo(() => {
-    if (!expenses || expenses.length === 0) return [];
-
-    // Group expenses by vendor (normalized)
-    const grouped: Record<string, GroupedExpense> = {};
-
-    expenses.forEach((expense) => {
-      if (!expense.vendor) return;
-      
-      const normalizedVendor = expense.vendor.toLowerCase().trim();
-      
-      if (!grouped[normalizedVendor]) {
-        grouped[normalizedVendor] = {
-          vendor: expense.vendor,
-          expenses: [],
-          amounts: [],
-          dates: [],
-        };
-      }
-
-      grouped[normalizedVendor].expenses.push(expense);
-      grouped[normalizedVendor].amounts.push(Number(expense.amount));
-      grouped[normalizedVendor].dates.push(parseISO(expense.date));
-    });
-
-    // Detect recurring patterns
     const detected: DetectedSubscription[] = [];
 
-    Object.values(grouped).forEach((group) => {
-      // Need at least 2 occurrences to detect a pattern
-      if (group.expenses.length < 2) return;
+    // ── Analyze expenses ──
+    if (expenses && expenses.length > 0) {
+      const grouped: Record<string, GroupedExpense> = {};
 
-      // Check if amounts are consistent (within 10% variance)
-      const avgAmount = group.amounts.reduce((a, b) => a + b, 0) / group.amounts.length;
-      const amountVariance = group.amounts.every(
-        (amt) => Math.abs(amt - avgAmount) / avgAmount <= 0.1
-      );
-
-      if (!amountVariance) return;
-
-      // Detect frequency
-      const { frequency, confidence } = calculateFrequency(group.dates);
-      
-      if (!frequency || confidence < 50) return;
-
-      const totalSpent = group.amounts.reduce((a, b) => a + b, 0);
-      const sortedDates = group.dates.sort((a, b) => b.getTime() - a.getTime());
-
-      detected.push({
-        vendor: group.vendor,
-        averageAmount: avgAmount,
-        frequency,
-        occurrences: group.expenses.length,
-        lastDate: format(sortedDates[0], 'yyyy-MM-dd'),
-        totalSpent,
-        annualizedCost: calculateAnnualizedCost(avgAmount, frequency),
-        category: group.expenses[0]?.category || null,
-        expenses: group.expenses,
-        confidence,
+      expenses.forEach((expense) => {
+        if (!expense.vendor) return;
+        const normalizedVendor = expense.vendor.toLowerCase().trim();
+        if (!grouped[normalizedVendor]) {
+          grouped[normalizedVendor] = { vendor: expense.vendor, expenses: [], amounts: [], dates: [] };
+        }
+        grouped[normalizedVendor].expenses.push(expense);
+        grouped[normalizedVendor].amounts.push(Number(expense.amount));
+        grouped[normalizedVendor].dates.push(parseISO(expense.date));
       });
-    });
 
-    // Sort by annualized cost (highest first)
+      Object.values(grouped).forEach((group) => {
+        if (group.expenses.length < 2) return;
+        const avgAmount = group.amounts.reduce((a, b) => a + b, 0) / group.amounts.length;
+        const amountVariance = group.amounts.every((amt) => Math.abs(amt - avgAmount) / avgAmount <= 0.1);
+        if (!amountVariance) return;
+        const { frequency, confidence } = calculateFrequency(group.dates);
+        if (!frequency || confidence < 50) return;
+        const totalSpent = group.amounts.reduce((a, b) => a + b, 0);
+        const sortedDates = group.dates.sort((a, b) => b.getTime() - a.getTime());
+        detected.push({
+          vendor: group.vendor, averageAmount: avgAmount, frequency,
+          occurrences: group.expenses.length, lastDate: format(sortedDates[0], 'yyyy-MM-dd'),
+          totalSpent, annualizedCost: calculateAnnualizedCost(avgAmount, frequency),
+          category: group.expenses[0]?.category || null, expenses: group.expenses,
+          confidence, source: 'expenses',
+        });
+      });
+    }
+
+    // ── Analyze bank transactions ──
+    if (bankTransactions && bankTransactions.length > 0) {
+      const bankGrouped: Record<string, { description: string; amounts: number[]; dates: Date[] }> = {};
+
+      bankTransactions.forEach((tx) => {
+        if (!tx.description) return;
+        const key = tx.description.toLowerCase().trim();
+        if (!bankGrouped[key]) {
+          bankGrouped[key] = { description: tx.description, amounts: [], dates: [] };
+        }
+        bankGrouped[key].amounts.push(Math.abs(Number(tx.amount)));
+        bankGrouped[key].dates.push(parseISO(tx.transaction_date));
+      });
+
+      // Check which vendors are already detected from expenses
+      const existingVendors = new Set(detected.map(d => d.vendor.toLowerCase().trim()));
+
+      Object.values(bankGrouped).forEach((group) => {
+        if (group.amounts.length < 2) return;
+        // Skip if already found in expenses
+        if (existingVendors.has(group.description.toLowerCase().trim())) {
+          // Upgrade source to 'both'
+          const existing = detected.find(d => d.vendor.toLowerCase().trim() === group.description.toLowerCase().trim());
+          if (existing) existing.source = 'both';
+          return;
+        }
+        const avgAmount = group.amounts.reduce((a, b) => a + b, 0) / group.amounts.length;
+        const amountVariance = group.amounts.every((amt) => Math.abs(amt - avgAmount) / avgAmount <= 0.15);
+        if (!amountVariance) return;
+        const { frequency, confidence } = calculateFrequency(group.dates);
+        if (!frequency || confidence < 40) return;
+        const totalSpent = group.amounts.reduce((a, b) => a + b, 0);
+        const sortedDates = group.dates.sort((a, b) => b.getTime() - a.getTime());
+        detected.push({
+          vendor: group.description, averageAmount: avgAmount, frequency,
+          occurrences: group.amounts.length, lastDate: format(sortedDates[0], 'yyyy-MM-dd'),
+          totalSpent, annualizedCost: calculateAnnualizedCost(avgAmount, frequency),
+          category: null, expenses: [], confidence, source: 'bank',
+        });
+      });
+    }
+
     return detected.sort((a, b) => b.annualizedCost - a.annualizedCost);
-  }, [expenses]);
+  }, [expenses, bankTransactions]);
 
   const totalAnnualSubscriptionCost = useMemo(() => {
     return subscriptions.reduce((sum, sub) => sum + sub.annualizedCost, 0);
