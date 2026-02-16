@@ -13,6 +13,7 @@ export const useContracts = () => {
           *,
           client:clients(id, name)
         `)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -129,12 +130,12 @@ export const useDeleteContract = () => {
         await supabase.storage.from('contracts').remove([contract.file_path]);
       }
 
-      const { error } = await supabase.from('contracts').delete().eq('id', id);
+      const { error } = await supabase.from('contracts').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contracts'] });
-      toast.success('Contrato eliminado');
+      toast.success('Contrato movido a la papelera');
     },
     onError: () => {
       toast.error('No se pudo eliminar el contrato');

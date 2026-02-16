@@ -1007,6 +1007,7 @@ export function ReconciliationWizard({ onExitWizard }: { onExitWizard: () => voi
               entity_id: null,
               original_currency: null,
               exchange_rate_used: null,
+              deleted_at: null,
               client: null,
               tags: []
             } : undefined}

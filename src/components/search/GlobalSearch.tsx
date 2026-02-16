@@ -30,6 +30,7 @@ import {
   Plus,
   Trophy,
   Loader2,
+  Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useGlobalSearch } from '@/hooks/utils/useGlobalSearch';
@@ -150,6 +151,12 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     label: { es: 'Configuración', en: 'Settings' }, 
     path: '/settings',
     keywords: ['settings', 'configuracion', 'preferencias', 'preferences', 'opciones']
+  },
+  { 
+    icon: Trash2, 
+    label: { es: 'Papelera', en: 'Trash' }, 
+    path: '/trash',
+    keywords: ['trash', 'papelera', 'eliminar', 'delete', 'restaurar', 'restore', 'reciclar']
   },
 ];
 

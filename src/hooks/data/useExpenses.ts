@@ -16,7 +16,8 @@ export function useExpenses(filters?: ExpenseFilters) {
           *,
           client:clients(*),
           expense_tags(tag:tags(*))
-        `);
+        `)
+        .is('deleted_at', null);
       
       // Apply filters
       if (filters?.dateRange) {
@@ -196,7 +197,7 @@ export function useDeleteExpense() {
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('expenses')
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .eq('id', id);
       
       if (error) throw error;
@@ -205,7 +206,7 @@ export function useDeleteExpense() {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['income-summary'] });
-      toast.success('Gasto eliminado');
+      toast.success('Gasto movido a la papelera');
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Error al eliminar gasto');
