@@ -197,6 +197,24 @@ const ASSISTANT_TOOLS = [
   {
     type: "function",
     function: {
+      name: "create_recurring_bill",
+      description: "Create a new recurring/fixed bill. Use when user says something like 'pago $15.99 de Netflix mensual', 'my rent is $800 monthly', 'arriendo $500 mensual', 'internet $50 al mes'.",
+      parameters: {
+        type: "object",
+        properties: {
+          amount: { type: "number", description: "Bill amount" },
+          name: { type: "string", description: "Bill name (e.g., Netflix, Rent, Internet)" },
+          category: { type: "string", enum: ["utilities", "insurance", "subscriptions", "housing", "transportation", "debt", "childcare", "other"], description: "Bill category" },
+          frequency: { type: "string", enum: ["monthly", "bimonthly", "quarterly", "semi_annual", "annual", "weekly", "biweekly"], description: "How often this bill recurs (default: monthly)" },
+          auto_pay: { type: "boolean", description: "Whether this bill is on auto-pay" },
+        },
+        required: ["amount", "name"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "query_financial_data",
       description: "Query specific financial data. Use when user asks about their finances.",
       parameters: {
@@ -705,6 +723,10 @@ El usuario puede darte comandos de voz. Entiende estas variaciones:
 - "Pagué 200 en Amazon" → create_expense(200, "Amazon")
 - "Recibí 5000 de trabajo" → create_income(5000, "trabajo", "freelance")
 - "Me pagaron 1000 del cliente X" → create_income(1000, "X", "client_payment")
+- "Netflix 15.99 mensual" → create_recurring_bill(15.99, "Netflix", "subscriptions", "monthly")
+- "Pago arriendo 800 al mes" → create_recurring_bill(800, "Arriendo", "housing", "monthly")
+- "Internet $50 mensual" → create_recurring_bill(50, "Internet", "utilities", "monthly")
+- "Seguro auto $120 mensual" → create_recurring_bill(120, "Seguro Auto", "insurance", "monthly")
 
 ### Tutoriales y Ayuda
 - "¿Cómo agrego un gasto?" → run_tutorial(capture-expense)
@@ -1036,6 +1058,43 @@ function executeCreateIncomeTool(args: { amount: number; source?: string; income
   };
 }
 
+function executeCreateRecurringBillTool(args: { amount: number; name?: string; category?: string; frequency?: string; auto_pay?: boolean }, currency?: string, language?: string) {
+  const currencyName = getCurrencySpokenName(currency || 'CAD', language || 'es');
+  
+  const freqMap: Record<string, string> = {
+    monthly: language === 'es' ? 'mensual' : 'monthly',
+    bimonthly: language === 'es' ? 'bimensual' : 'bimonthly', 
+    quarterly: language === 'es' ? 'trimestral' : 'quarterly',
+    semi_annual: language === 'es' ? 'semestral' : 'semi-annual',
+    annual: language === 'es' ? 'anual' : 'annual',
+    weekly: language === 'es' ? 'semanal' : 'weekly',
+    biweekly: language === 'es' ? 'quincenal' : 'biweekly',
+  };
+  const freqLabel = freqMap[args.frequency || 'monthly'] || args.frequency || 'mensual';
+  
+  let message = language === 'es'
+    ? `¡Pago fijo creado! ${args.name || 'Sin nombre'} de ${args.amount} ${currencyName} ${freqLabel}.`
+    : `Recurring bill created! ${args.name || 'Unnamed'} of ${args.amount} ${currencyName} ${freqLabel}.`;
+  
+  if (!args.name) {
+    message += language === 'es'
+      ? ' ¿Me dices el nombre del servicio o proveedor?'
+      : ' What is the service or provider name?';
+  }
+  
+  return {
+    action: 'create_recurring_bill',
+    data: {
+      amount: args.amount,
+      name: args.name || 'Sin nombre',
+      category: args.category || 'other',
+      frequency: args.frequency || 'monthly',
+      auto_pay: args.auto_pay || false,
+    },
+    message,
+  };
+}
+
 function executeExportTool(args: { reportType: string; format?: string; period?: string }, language: 'es' | 'en') {
   return {
     action: 'export',
@@ -1342,6 +1401,9 @@ ${conversationHistory.slice(-5).map((msg: { role: string; content: string }) =>
             break;
           case 'create_income':
             actionResponse = executeCreateIncomeTool(toolArgs, userContext?.currency, language);
+            break;
+          case 'create_recurring_bill':
+            actionResponse = executeCreateRecurringBillTool(toolArgs, userContext?.currency, language);
             break;
           case 'export_report':
             actionResponse = executeExportTool(toolArgs, language as 'es' | 'en');
