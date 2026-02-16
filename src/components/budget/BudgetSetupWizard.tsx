@@ -31,8 +31,11 @@ export function BudgetSetupWizard({ onComplete }: BudgetSetupWizardProps) {
       title: l ? "Solo Familiar" : "Family Only",
       subtitle: l ? "Presupuesto personal y del hogar" : "Personal & household budget",
       description: l
-        ? "Ideal para empleados, asalariados o cualquier persona que quiera controlar sus gastos familiares. Interfaz simple y directa."
-        : "Ideal for employees or anyone wanting to manage household expenses. Simple and direct interface.",
+        ? "Ideal para empleados, asalariados o cualquier persona que quiera controlar sus gastos familiares. Interfaz simple y directa. Incluye: control diario de gastos, pagos fijos (arriendo, servicios), alertas inteligentes y metas de ahorro."
+        : "Ideal for employees or anyone wanting to manage household expenses. Simple and direct interface. Includes: daily expense tracking, fixed payments (rent, utilities), smart alerts, and savings goals.",
+      examples: l
+        ? "Ej: Empleado, jubilado, estudiante, ama/o de casa"
+        : "E.g.: Employee, retiree, student, homemaker",
       recommended: !hasEntities,
       color: "from-emerald-500 to-teal-500",
       bgColor: "bg-emerald-50 dark:bg-emerald-950/30",
@@ -44,8 +47,11 @@ export function BudgetSetupWizard({ onComplete }: BudgetSetupWizardProps) {
       title: l ? "Unificado" : "Unified",
       subtitle: l ? "Una sola bolsa de dinero" : "One pool of money",
       description: l
-        ? "Personal + negocio juntos en un solo presupuesto. Perfecto para freelancers, sole proprietorship o trabajadores independientes."
-        : "Personal + business in one budget. Perfect for freelancers, sole proprietors, or independent workers.",
+        ? "Personal + negocio juntos en un solo presupuesto. Perfecto para freelancers, sole proprietorship o trabajadores independientes. Verás una sección extra de gastos del negocio dentro de la misma vista."
+        : "Personal + business in one budget. Perfect for freelancers, sole proprietors, or independent workers. You'll see an extra business expenses section within the same view.",
+      examples: l
+        ? "Ej: Freelancer, consultor independiente, conductor de app"
+        : "E.g.: Freelancer, independent consultant, app driver",
       recommended: false,
       color: "from-amber-500 to-orange-500",
       bgColor: "bg-amber-50 dark:bg-amber-950/30",
@@ -57,8 +63,11 @@ export function BudgetSetupWizard({ onComplete }: BudgetSetupWizardProps) {
       title: l ? "Separado" : "Separated",
       subtitle: l ? "Un presupuesto por entidad" : "One budget per entity",
       description: l
-        ? "Familia aparte de cada empresa (Inc, SA, Ltd, etc). Ideal para quienes tienen empresas formalmente constituidas."
-        : "Family separate from each company (Inc, SA, Ltd, etc). Ideal for formally incorporated businesses.",
+        ? "Familia aparte de cada empresa (Inc, SA, Ltd, etc). Ideal para quienes tienen empresas formalmente constituidas. Cada entidad tiene su propio presupuesto, categorías y proyecciones independientes."
+        : "Family separate from each company (Inc, SA, Ltd, etc). Ideal for formally incorporated businesses. Each entity has its own budget, categories, and independent projections.",
+      examples: l
+        ? "Ej: Dueño de SPA/SA/Inc, múltiples negocios registrados"
+        : "E.g.: Owner of LLC/Inc/Ltd, multiple registered businesses",
       recommended: hasEntities,
       color: "from-blue-500 to-indigo-500",
       bgColor: "bg-blue-50 dark:bg-blue-950/30",
@@ -138,6 +147,11 @@ export function BudgetSetupWizard({ onComplete }: BudgetSetupWizardProps) {
                     <p className="text-sm text-muted-foreground mt-2">
                       {mode.description}
                     </p>
+                    {mode.examples && (
+                      <p className="text-xs text-primary/70 mt-1.5 italic">
+                        {mode.examples}
+                      </p>
+                    )}
                   </div>
                   <div className={cn(
                     "flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center mt-1 transition-colors",
