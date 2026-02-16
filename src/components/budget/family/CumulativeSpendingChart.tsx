@@ -13,7 +13,7 @@ interface CumulativeSpendingChartProps {
 export function CumulativeSpendingChart({ data, dailyBudget, daysInMonth, daysPassed }: CumulativeSpendingChartProps) {
   const { language } = useLanguage();
   const l = language === "es";
-  const { formatCurrency: fc } = useFormatCurrency();
+  const { formatCurrency: fc, formatCompact } = useFormatCurrency();
 
   if (data.length === 0 || dailyBudget <= 0) {
     return (
@@ -83,19 +83,19 @@ export function CumulativeSpendingChart({ data, dailyBudget, daysInMonth, daysPa
             />
             <YAxis
               tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-              tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
-              width={40}
+              tickFormatter={(v) => formatCompact(v)}
+              width={50}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area
               type="monotone"
               dataKey="ideal"
               name={l ? "Ideal" : "Ideal"}
-              stroke="hsl(var(--muted-foreground))"
+              stroke="hsl(var(--primary) / 0.5)"
               fill="none"
-              strokeWidth={1.5}
-              strokeDasharray="4 4"
-              connectNulls={false}
+              strokeWidth={2}
+              strokeDasharray="6 4"
+              connectNulls
             />
             <Area
               type="monotone"
@@ -104,7 +104,7 @@ export function CumulativeSpendingChart({ data, dailyBudget, daysInMonth, daysPa
               stroke={isOnTrack ? "hsl(var(--chart-2))" : "hsl(var(--destructive))"}
               fill="url(#spentGrad)"
               strokeWidth={2}
-              connectNulls={false}
+              connectNulls
             />
             <ReferenceLine
               x={daysPassed}

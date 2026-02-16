@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
@@ -58,6 +59,7 @@ interface PredictionResult {
 export function ExpensePredictions({ expenses, isLoading }: ExpensePredictionsProps) {
   const { language, t } = useLanguage();
   const { toast } = useToast();
+  const { formatCurrency: fc, formatCompact } = useFormatCurrency();
   const [predictions, setPredictions] = useState<PredictionResult | null>(null);
   const [isPredicting, setIsPredicting] = useState(false);
 
@@ -253,13 +255,13 @@ export function ExpensePredictions({ expenses, isLoading }: ExpensePredictionsPr
               />
               <YAxis 
                 className="text-xs fill-muted-foreground"
-                tickFormatter={(value) => `$${(value / 1000).toFixed(1)}k`}
+                tickFormatter={(value) => formatCompact(value)}
               />
               <Tooltip 
-                formatter={(value: number) => [`$${value?.toFixed(2) || '0'}`, '']}
+                formatter={(value: number) => [fc(value), '']}
                 labelFormatter={(label) => label}
                 contentStyle={{ 
-                  backgroundColor: 'hsl(var(--background))',
+                  backgroundColor: 'hsl(var(--popover))',
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '8px'
                 }}
@@ -362,7 +364,7 @@ export function ExpensePredictions({ expenses, isLoading }: ExpensePredictionsPr
                     <span>{language === 'es' ? 'Próximo Mes' : 'Next Month'}</span>
                   </div>
                   <p className="text-lg font-semibold">
-                    ${predictions.predictions[0].predictedTotal.toFixed(2)}
+                    {fc(predictions.predictions[0].predictedTotal)}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {(predictions.predictions[0].confidence * 100).toFixed(0)}% 
@@ -378,11 +380,11 @@ export function ExpensePredictions({ expenses, isLoading }: ExpensePredictionsPr
                     <span>{language === 'es' ? 'En 3 Meses' : 'In 3 Months'}</span>
                   </div>
                   <p className="text-lg font-semibold">
-                    ${predictions.predictions[2].predictedTotal.toFixed(2)}
+                    {fc(predictions.predictions[2].predictedTotal)}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {language === 'es' ? 'Rango: ' : 'Range: '}
-                    ${predictions.predictions[2].range.min.toFixed(0)} - ${predictions.predictions[2].range.max.toFixed(0)}
+                    {formatCompact(predictions.predictions[2].range.min)} - {formatCompact(predictions.predictions[2].range.max)}
                   </p>
                 </Card>
               )}

@@ -2,8 +2,9 @@ import { memo, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
-import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, Tooltip } from 'recharts';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
@@ -36,6 +37,7 @@ export const DashboardCharts = memo(({
   isLoading 
 }: DashboardChartsProps) => {
   const { t, language } = useLanguage();
+  const { formatCurrency: fc, formatCompact } = useFormatCurrency();
 
   const totalLabel = language === 'es' ? 'Total' : 'Total';
 
@@ -76,13 +78,20 @@ export const DashboardCharts = memo(({
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
-                    label
+                    label={({ category, percent }) => `${category} ${(percent * 100).toFixed(0)}%`}
                   >
                     {categoryBreakdown.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Tooltip
+                    formatter={(value: number) => [fc(value), '']}
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--popover))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
                 </PieChart>
               </ChartContainer>
             )}
@@ -105,10 +114,17 @@ export const DashboardCharts = memo(({
               <ChartContainer config={clientChartConfig} className="h-[300px] w-full">
                 <BarChart data={clientBreakdown}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="client_name" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="total" fill="hsl(var(--chart-1))" />
+                  <XAxis dataKey="client_name" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 11 }} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => formatCompact(v)} tick={{ fontSize: 11 }} />
+                  <Tooltip
+                    formatter={(value: number) => [fc(value), '']}
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--popover))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Bar dataKey="total" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ChartContainer>
             )}
@@ -126,12 +142,19 @@ export const DashboardCharts = memo(({
           {isLoading ? (
             <Skeleton className="h-[300px] w-full" />
           ) : (
-            <ChartContainer config={trendChartConfig} className="h-[300px] w-full">
+              <ChartContainer config={trendChartConfig} className="h-[300px] w-full">
               <LineChart data={monthlyTrends}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 11 }} />
+                <YAxis stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => formatCompact(v)} tick={{ fontSize: 11 }} />
+                <Tooltip
+                  formatter={(value: number) => [fc(value), '']}
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--popover))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                  }}
+                />
                 <Line type="monotone" dataKey="total" stroke="hsl(var(--chart-1))" strokeWidth={2} />
               </LineChart>
             </ChartContainer>

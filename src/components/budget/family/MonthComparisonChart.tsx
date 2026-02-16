@@ -3,6 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useExpenses } from "@/hooks/data/useExpenses";
 import { useIncome } from "@/hooks/data/useIncome";
+import { useBudgetEntity } from "@/contexts/BudgetEntityContext";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell } from "recharts";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
@@ -12,8 +13,9 @@ import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 export function MonthComparisonChart() {
   const { language } = useLanguage();
   const l = language === "es";
-  const { formatCurrency: fc } = useFormatCurrency();
+  const { formatCurrency: fc, formatCompact } = useFormatCurrency();
   const locale = l ? es : enUS;
+  const entityId = useBudgetEntity();
 
   const now = new Date();
   const months = [2, 1, 0].map(i => {
@@ -26,14 +28,16 @@ export function MonthComparisonChart() {
     };
   });
 
-  const { data: exp0 } = useExpenses({ dateRange: { start: months[0].start, end: months[0].end } });
-  const { data: exp1 } = useExpenses({ dateRange: { start: months[1].start, end: months[1].end } });
-  const { data: exp2 } = useExpenses({ dateRange: { start: months[2].start, end: months[2].end } });
+  // Filter by entity when in separated mode
+  const entityFilter = entityId !== undefined ? { entityId: entityId ?? undefined, showAllEntities: entityId === undefined } : {};
 
-  const yr = now.getFullYear();
-  const { data: inc0 } = useIncome({ year: months[0].start.getFullYear(), month: months[0].start.getMonth() + 1 });
-  const { data: inc1 } = useIncome({ year: months[1].start.getFullYear(), month: months[1].start.getMonth() + 1 });
-  const { data: inc2 } = useIncome({ year: yr, month: now.getMonth() + 1 });
+  const { data: exp0 } = useExpenses({ dateRange: { start: months[0].start, end: months[0].end }, ...entityFilter });
+  const { data: exp1 } = useExpenses({ dateRange: { start: months[1].start, end: months[1].end }, ...entityFilter });
+  const { data: exp2 } = useExpenses({ dateRange: { start: months[2].start, end: months[2].end }, ...entityFilter });
+
+  const { data: inc0 } = useIncome({ year: months[0].start.getFullYear(), month: months[0].start.getMonth() + 1, ...entityFilter });
+  const { data: inc1 } = useIncome({ year: months[1].start.getFullYear(), month: months[1].start.getMonth() + 1, ...entityFilter });
+  const { data: inc2 } = useIncome({ year: now.getFullYear(), month: now.getMonth() + 1, ...entityFilter });
 
   const chartData = useMemo(() => {
     const sum = (arr: any[] | undefined) => (arr || []).reduce((s, e) => s + Number(e.amount), 0);
@@ -95,7 +99,7 @@ export function MonthComparisonChart() {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
             <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-            <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} width={40} />
+            <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => formatCompact(v)} width={50} />
             <Tooltip content={<CustomTooltip />} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             <Bar dataKey="income" name={l ? "Ingresos" : "Income"} fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} barSize={20} />

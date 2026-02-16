@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -7,6 +7,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useExpenses } from "@/hooks/data/useExpenses";
 import { useIncome } from "@/hooks/data/useIncome";
+import { useUserSettings, UserPreferences } from "@/hooks/data/useUserSettings";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { Calculator, Target, TrendingUp, AlertTriangle, CheckCircle, Wallet } from "lucide-react";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, differenceInDays, getDaysInMonth } from "date-fns";
@@ -65,10 +66,17 @@ export function BudgetProjectionChart() {
   
   const { data: expenses = [], isLoading: expensesLoading } = useExpenses();
   const { data: income = [], isLoading: incomeLoading } = useIncome();
+  const { data: settings, isLoading: settingsLoading } = useUserSettings();
 
-  const isLoading = expensesLoading || incomeLoading;
+  const isLoading = expensesLoading || incomeLoading || settingsLoading;
 
-  // Calculate average monthly income for default budget
+  // Use global_monthly_budget from settings if available
+  const globalBudget = useMemo(() => {
+    const prefs = settings?.preferences as UserPreferences | undefined;
+    return prefs?.global_monthly_budget || 0;
+  }, [settings]);
+
+  // Calculate average monthly income for fallback budget
   const avgMonthlyIncome = useMemo(() => {
     const last6Months: number[] = [];
     for (let i = 5; i >= 0; i--) {
@@ -88,7 +96,13 @@ export function BudgetProjectionChart() {
       : 5000;
   }, [income]);
 
-  const [budget, setBudget] = useState(Math.round(avgMonthlyIncome * 0.7 / 100) * 100);
+  const defaultBudget = globalBudget > 0 ? globalBudget : Math.round(avgMonthlyIncome * 0.7 / 100) * 100;
+  const [budget, setBudget] = useState(defaultBudget);
+
+  // Sync budget when settings load
+  useEffect(() => {
+    if (globalBudget > 0) setBudget(globalBudget);
+  }, [globalBudget]);
 
   const { chartData, currentMonthStats, projections } = useMemo(() => {
     const now = new Date();
@@ -182,7 +196,7 @@ export function BudgetProjectionChart() {
     return { chartData, currentMonthStats, projections };
   }, [expenses, budget, locale]);
 
-  const { formatCompact: formatCurrency } = useFormatCurrency();
+  const { formatCompact: formatCurrency, formatCurrency: fc } = useFormatCurrency();
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -316,15 +330,15 @@ export function BudgetProjectionChart() {
           </div>
           <Slider
             value={[budget]}
-            min={1000}
-            max={20000}
+            min={Math.max(100, Math.round(defaultBudget * 0.2 / 100) * 100)}
+            max={Math.max(5000, Math.round(defaultBudget * 3 / 100) * 100)}
             step={100}
             onValueChange={(value) => setBudget(value[0])}
             className="w-full"
           />
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>$1,000</span>
-            <span>$20,000</span>
+            <span>{formatCurrency(Math.max(100, Math.round(defaultBudget * 0.2 / 100) * 100))}</span>
+            <span>{formatCurrency(Math.max(5000, Math.round(defaultBudget * 3 / 100) * 100))}</span>
           </div>
         </div>
 
@@ -349,7 +363,7 @@ export function BudgetProjectionChart() {
               />
               <YAxis 
                 tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                tickFormatter={(value) => formatCurrency(value)}
               />
               <Tooltip content={<CustomTooltip />} />
               <ReferenceLine 

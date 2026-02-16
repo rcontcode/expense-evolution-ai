@@ -281,7 +281,7 @@ export function CashFlowSankey() {
 
   // Calculate heights for visual representation
   const maxValue = Math.max(flowData.totalIncome, flowData.totalExpenses);
-  const getHeight = (value: number) => Math.max(24, (value / maxValue) * 200);
+  const getHeight = (value: number) => Math.max(24, Math.min(120, (value / maxValue) * 200));
 
   const allExpenseNodes = flowData.balanceNode 
     ? [...flowData.expenseNodes, flowData.balanceNode]
@@ -317,9 +317,9 @@ export function CashFlowSankey() {
         <CardDescription>{t.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex items-stretch justify-between gap-4 min-h-[400px] py-4">
+        <div className="flex flex-col md:flex-row items-stretch justify-between gap-4 min-h-[300px] md:min-h-[400px] py-4">
           {/* Income Sources (Left) */}
-          <div className="flex flex-col justify-center gap-2 w-1/3">
+          <div className="flex flex-col justify-center gap-2 w-full md:w-1/3">
             <div className="text-sm font-medium text-muted-foreground mb-2 text-center">{t.income}</div>
             {flowData.incomeNodes.map((node) => (
               <Tooltip key={node.id}>
@@ -350,7 +350,7 @@ export function CashFlowSankey() {
           </div>
 
           {/* Center Account Node */}
-          <div className="flex flex-col items-center justify-center w-1/3">
+          <div className="flex flex-col items-center justify-center w-full md:w-1/3">
             <div className="relative">
               {/* Flow lines from income */}
               <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full w-8">
@@ -394,7 +394,7 @@ export function CashFlowSankey() {
           </div>
 
           {/* Expense Destinations (Right) */}
-          <div className="flex flex-col justify-center gap-2 w-1/3">
+          <div className="flex flex-col justify-center gap-2 w-full md:w-1/3">
             <div className="text-sm font-medium text-muted-foreground mb-2 text-center">{t.expenses}</div>
             {allExpenseNodes.map((node) => (
               <Tooltip key={node.id}>

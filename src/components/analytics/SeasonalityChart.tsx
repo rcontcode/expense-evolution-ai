@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { format, startOfYear, endOfYear, eachMonthOfInterval, isSameMonth, subYears } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
@@ -27,6 +28,7 @@ const MONTH_NAMES = {
 export const SeasonalityChart = memo(({ expenses, isLoading }: SeasonalityChartProps) => {
   const { language } = useLanguage();
   const locale = language === 'es' ? es : enUS;
+  const { formatCurrency: fc, formatCompact } = useFormatCurrency();
   
   const { chartData, insights, currentYear, previousYear } = useMemo(() => {
     const now = new Date();
@@ -142,16 +144,16 @@ export const SeasonalityChart = memo(({ expenses, isLoading }: SeasonalityChartP
               />
               <YAxis 
                 tick={{ fontSize: 12 }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                tickFormatter={(value) => formatCompact(value)}
                 className="text-muted-foreground"
               />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))', 
+                  backgroundColor: 'hsl(var(--popover))', 
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '8px'
                 }}
-                formatter={(value: number) => [`$${value.toFixed(2)}`, '']}
+                formatter={(value: number) => [fc(value), '']}
                 labelFormatter={(label) => label}
               />
               <Legend />
@@ -189,7 +191,7 @@ export const SeasonalityChart = memo(({ expenses, isLoading }: SeasonalityChartP
             <div className="flex flex-wrap gap-2">
               {insights.highestMonths.map((m, idx) => (
                 <Badge key={m.month} variant="secondary">
-                  {m.month}: ${m.avg.toFixed(0)}
+                  {m.month}: {formatCompact(m.avg)}
                 </Badge>
               ))}
             </div>
@@ -205,8 +207,8 @@ export const SeasonalityChart = memo(({ expenses, isLoading }: SeasonalityChartP
               </div>
               <p className="text-sm text-muted-foreground">
                 {language === 'es' 
-                  ? `Basado en el historial, prepárate para ~$${insights.nextMonthPrediction.toFixed(0)} en gastos`
-                  : `Based on history, expect ~$${insights.nextMonthPrediction.toFixed(0)} in expenses`}
+                  ? `Basado en el historial, prepárate para ~${formatCompact(insights.nextMonthPrediction)} en gastos`
+                  : `Based on history, expect ~${formatCompact(insights.nextMonthPrediction)} in expenses`}
               </p>
             </div>
           )}
