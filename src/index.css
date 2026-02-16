@@ -2261,28 +2261,31 @@
   user-select: none;
 }
 
-/* Mobile-optimized touch targets */
+/* Mobile-optimized touch targets - SELECTIVE, not global */
 @media (max-width: 768px) {
-  .nav-item {
-    min-height: 44px;
-  }
-  
-  button, 
-  [role="button"] {
+  .nav-item,
+  .btn-touch,
+  .mobile-bottom-nav-item,
+  .mobile-menu-item,
+  .mobile-overflow-menu-item {
     min-height: 44px;
     min-width: 44px;
+  }
+  
+  /* Exclude badges, chips, tags from touch target inflation */
+  .badge,
+  .chip,
+  [data-slot="badge"],
+  [data-slot="tag"],
+  .inline-flex.items-center.rounded-full,
+  .inline-flex.items-center.rounded-md {
+    min-height: auto !important;
+    min-width: auto !important;
   }
   
   /* Reduce padding on mobile pages */
   .p-8 {
     padding: 1rem;
-  }
-  
-  /* Stack grid on mobile */
-  .md\:grid-cols-2,
-  .md\:grid-cols-3,
-  .md\:grid-cols-4 {
-    grid-template-columns: 1fr;
   }
   
   /* Hide desktop-only elements */
@@ -2465,11 +2468,11 @@
 /* Mobile CSS Variables - Core spacing and sizing */
 :root {
   --mobile-page-padding: 1rem;
-  --mobile-section-gap: 0.875rem;
-  --mobile-card-padding: 1rem;
+  --mobile-section-gap: 0.75rem;
+  --mobile-card-padding: 0.875rem;
   --mobile-touch-target: 48px;
-  --mobile-bottom-nav-height: 68px;
-  --mobile-header-height: 56px;
+  --mobile-bottom-nav-height: 64px;
+  --mobile-header-height: 52px;
 }
 
 @media (min-width: 640px) {
@@ -2612,12 +2615,14 @@
   @apply h-9 w-9 p-0;
 }
 
-/* Horizontal scroll chips */
+/* Horizontal scroll chips with fade edges */
 .chips-scroll {
   @apply flex gap-2 overflow-x-auto pb-2 -mx-4 px-4;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  mask-image: linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
 }
 
 .chips-scroll::-webkit-scrollbar {
@@ -2709,45 +2714,61 @@
   }
 }
 
-/* Mobile bottom nav styling - native feel with labels */
+/* Mobile bottom nav styling - iOS/Android native feel */
 .mobile-bottom-nav {
-  @apply fixed bottom-0 left-0 right-0 z-50;
-  @apply bg-background/95 backdrop-blur-xl border-t border-border/60;
+  @apply fixed bottom-0 left-0 right-0 z-50 backdrop-blur-2xl border-t border-border/40;
+  background: hsl(var(--background) / 0.98);
   height: var(--mobile-bottom-nav-height);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .mobile-bottom-nav-item {
-  @apply flex flex-col items-center justify-center gap-0.5 py-1.5 px-1;
-  @apply text-muted-foreground/70 transition-all duration-200;
+  @apply flex flex-col items-center justify-center gap-0.5 py-1 px-2;
+  @apply text-muted-foreground/60 transition-all duration-200;
   min-height: 48px;
+  position: relative;
   -webkit-tap-highlight-color: transparent;
 }
 
 .mobile-bottom-nav-item.active {
   @apply text-primary;
-  transform: scale(1.05);
 }
 
-.mobile-bottom-nav-item.active::after {
-  display: none;
+/* Active indicator bar - top, like iOS */
+.mobile-bottom-nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 25%;
+  right: 25%;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: hsl(var(--primary));
+}
+
+/* Active background pill */
+.mobile-bottom-nav-item.active .mobile-bottom-nav-icon-wrap {
+  @apply bg-primary/10 rounded-xl px-3 py-0.5;
 }
 
 .mobile-bottom-nav-label {
-  @apply text-[9px] font-semibold leading-none tracking-tight;
+  @apply text-[10px] font-semibold leading-none tracking-tight;
   @apply text-inherit;
 }
 
 .mobile-bottom-nav-fab {
-  @apply -mt-4;
+  @apply -mt-5;
 }
 
 .mobile-bottom-nav-fab-button {
-  @apply w-11 h-11 rounded-2xl shadow-lg;
+  @apply rounded-2xl shadow-xl;
+  width: 3.25rem;
+  height: 3.25rem;
   @apply bg-gradient-to-br from-primary to-primary/80;
   @apply flex items-center justify-center;
   @apply text-primary-foreground;
-  box-shadow: 0 4px 14px hsl(var(--primary) / 0.45);
+  @apply active:scale-95 transition-transform;
+  box-shadow: 0 6px 20px hsl(var(--primary) / 0.5);
   -webkit-tap-highlight-color: transparent;
 }
 
