@@ -297,6 +297,48 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
           break;
         }
 
+        case 'create_recurring_bill': {
+          const billData = action.data as { amount: number; name?: string; category?: string; frequency?: string; auto_pay?: boolean };
+          if (billData && billData.amount) {
+            try {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) {
+                const nextDueDate = new Date();
+                nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+                nextDueDate.setDate(1);
+                
+                const { error } = await supabase.from('recurring_bills').insert({
+                  user_id: user.id,
+                  name: billData.name || 'Sin nombre',
+                  amount: billData.amount,
+                  category: billData.category || 'other',
+                  frequency: billData.frequency || 'monthly',
+                  next_due_date: nextDueDate.toISOString().split('T')[0],
+                  auto_pay: billData.auto_pay || false,
+                  is_active: true,
+                  currency: 'CAD',
+                });
+
+                if (error) throw error;
+
+                const msg = language === 'es'
+                  ? `Pago fijo de $${billData.amount} creado${billData.name ? ` (${billData.name})` : ''}`
+                  : `Recurring bill of $${billData.amount} created${billData.name ? ` (${billData.name})` : ''}`;
+                toast.success(msg);
+                result = { success: true, message: action.message, data: billData };
+              }
+            } catch (err) {
+              console.error('[Assistant] Failed to create recurring bill:', err);
+              const errMsg = language === 'es'
+                ? 'No pude crear el pago fijo'
+                : 'Failed to create recurring bill';
+              toast.error(errMsg);
+              result = { success: false, message: errMsg };
+            }
+          }
+          break;
+        }
+
         case 'export': {
           const reportType = action.data?.reportType as string;
           const format = (action.data?.format as string) || 'excel';
