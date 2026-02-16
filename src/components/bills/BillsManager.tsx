@@ -6,6 +6,16 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Pencil, Trash2, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useRecurringBills, useCreateBill, useUpdateBill, useDeleteBill, useMarkBillPaid, type RecurringBill, type BillInsert } from '@/hooks/data/useRecurringBills';
 import { BILL_CATEGORY_CONFIG, PAYMENT_METHOD_CONFIG, type BillCategory, type PaymentMethodType, getBillCategoryLabel, getBillFrequencyLabel, getPaymentMethodLabel } from '@/lib/constants/bill-categories';
@@ -50,6 +60,7 @@ export function BillsManager() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBill, setEditingBill] = useState<RecurringBill | null>(null);
+  const [deleteBillId, setDeleteBillId] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all');
 
   const openNew = () => { setEditingBill(null); setDialogOpen(true); };
@@ -164,7 +175,7 @@ export function BillsManager() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                        onClick={() => deleteBill.mutate(bill.id)}
+                        onClick={() => setDeleteBillId(bill.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -183,6 +194,29 @@ export function BillsManager() {
         editingBill={editingBill}
         onSave={handleSave}
       />
+
+      <AlertDialog open={!!deleteBillId} onOpenChange={() => setDeleteBillId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {l ? '¿Eliminar gasto recurrente?' : 'Delete recurring bill?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {l ? 'Esta acción no se puede deshacer. Se eliminará el gasto recurrente y su historial de pagos.' 
+                 : 'This action cannot be undone. The recurring bill and its payment history will be deleted.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{l ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => { if (deleteBillId) { deleteBill.mutate(deleteBillId); setDeleteBillId(null); } }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {l ? 'Eliminar' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

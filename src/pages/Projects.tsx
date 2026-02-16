@@ -599,10 +599,31 @@ export default function Projects() {
               <AlertDialogTitle>
                 {language === 'es' ? '¿Eliminar proyecto?' : 'Delete project?'}
               </AlertDialogTitle>
-              <AlertDialogDescription>
-                {language === 'es'
-                  ? 'Esta acción no se puede deshacer. Se eliminará el proyecto y sus asociaciones con clientes.'
-                  : 'This action cannot be undone. The project and its client associations will be deleted.'}
+              <AlertDialogDescription asChild>
+                <div className="space-y-2">
+                  <p>{language === 'es'
+                    ? 'Esta acción no se puede deshacer. Se eliminará el proyecto y sus asociaciones con clientes.'
+                    : 'This action cannot be undone. The project and its client associations will be deleted.'}</p>
+                  {deleteProjectId && (() => {
+                    const expenseCount = expenses?.filter(e => e.project_id === deleteProjectId).length || 0;
+                    const incomeCount = income?.filter(i => i.project_id === deleteProjectId).length || 0;
+                    const hasData = expenseCount + incomeCount > 0;
+                    if (!hasData) return null;
+                    return (
+                      <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm space-y-1">
+                        <p className="font-medium text-destructive">
+                          {language === 'es' ? '⚠️ Datos que perderán su proyecto:' : '⚠️ Data that will lose project assignment:'}
+                        </p>
+                        {expenseCount > 0 && (
+                          <p>• {expenseCount} {language === 'es' ? `gasto${expenseCount > 1 ? 's' : ''}` : `expense${expenseCount > 1 ? 's' : ''}`}</p>
+                        )}
+                        {incomeCount > 0 && (
+                          <p>• {incomeCount} {language === 'es' ? `ingreso${incomeCount > 1 ? 's' : ''}` : `income record${incomeCount > 1 ? 's' : ''}`}</p>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

@@ -399,13 +399,31 @@ export default function Tags() {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>{t('tags.deleteConfirm')}</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {t('tags.deleteTagWarning')}
+                <AlertDialogDescription asChild>
+                  <div className="space-y-2">
+                    <p>{t('tags.deleteTagWarning')}</p>
+                    {deleteId && (() => {
+                      const tagData = tags?.find(t => t.id === deleteId);
+                      const count = (tagData as any)?.expense_count || 0;
+                      if (count === 0) return null;
+                      return (
+                        <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm">
+                          <p className="font-medium text-destructive">
+                            {language === 'es' 
+                              ? `⚠️ Este tag está usado en ${count} gasto${count > 1 ? 's' : ''}. Se desvinculará de todos.`
+                              : `⚠️ This tag is used in ${count} expense${count > 1 ? 's' : ''}. It will be unlinked from all.`}
+                          </p>
+                        </div>
+                      );
+                    })()}
+                  </div>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>{t('common.delete')}</AlertDialogAction>
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  {t('common.delete')}
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
