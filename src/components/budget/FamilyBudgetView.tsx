@@ -88,6 +88,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
   const [showCaptureDialog, setShowCaptureDialog] = useState(false);
 
   const isUnified = budgetMode === "unified";
+  const isSeparated = budgetMode === "separated";
   const monthLabel = format(now, "MMMM yyyy", { locale: l ? es : enUS });
 
   // Bills data
@@ -195,11 +196,15 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
           <div className="flex items-center gap-2">
             <span className={cn(
               "text-[10px] px-2.5 py-1 rounded-full font-medium",
-              isUnified
+              isSeparated
+                ? "bg-blue-500/15 text-blue-500 border border-blue-500/20"
+                : isUnified
                 ? "bg-blue-500/15 text-blue-500 border border-blue-500/20"
                 : "bg-emerald-500/15 text-emerald-500 border border-emerald-500/20"
             )}>
-              {isUnified
+              {isSeparated
+                ? (l ? "🏢 Separado" : "🏢 Separated")
+                : isUnified
                 ? (l ? "🔗 Unificado" : "🔗 Unified")
                 : (l ? "🏡 Familiar" : "🏡 Family")}
             </span>
@@ -660,7 +665,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
           </div>
 
           {/* ===== SECTION 10: BANKING + BUSINESS ===== */}
-          {isUnified && (
+          {(isUnified || isSeparated) && (
             <CollapsibleSection
               emoji="💼"
               title={l ? "Gastos del Negocio" : "Business Expenses"}
