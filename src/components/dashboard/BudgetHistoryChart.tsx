@@ -6,6 +6,7 @@ import { useExpenses } from "@/hooks/data/useExpenses";
 import { useUserSettings, UserPreferences } from "@/hooks/data/useUserSettings";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBudgetEntity } from "@/contexts/BudgetEntityContext";
 import { 
   AreaChart, 
   Area, 
@@ -32,9 +33,12 @@ export function BudgetHistoryChart() {
 
   const now = new Date();
   const sixMonthsAgo = startOfMonth(subMonths(now, 5));
+  const budgetEntityId = useBudgetEntity();
 
   const { data: expenses, isLoading } = useExpenses({
     dateRange: { start: sixMonthsAgo, end: endOfMonth(now) },
+    entityId: budgetEntityId ?? undefined,
+    showAllEntities: budgetEntityId === undefined,
   });
 
   const chartData = useMemo(() => {

@@ -10,6 +10,7 @@ import { useCategoryBudgets } from "@/hooks/data/useCategoryBudgets";
 import { useUserSettings, UserPreferences } from "@/hooks/data/useUserSettings";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBudgetEntity } from "@/contexts/BudgetEntityContext";
 import { startOfMonth, endOfMonth, format, differenceInDays } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { getCategoryLabel, ExpenseCategory } from "@/lib/constants/expense-categories";
@@ -33,16 +34,24 @@ export function BudgetAlertsCard() {
   const monthStart = startOfMonth(now);
   const monthEnd = endOfMonth(now);
   const l = language === 'es';
+  const budgetEntityId = useBudgetEntity();
 
   const { data: expenses } = useExpenses({
     dateRange: { start: monthStart, end: monthEnd },
+    entityId: budgetEntityId ?? undefined,
+    showAllEntities: budgetEntityId === undefined,
   });
 
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
-  const { data: incomeData } = useIncome({ year: currentYear, month: currentMonth });
+  const { data: incomeData } = useIncome({
+    year: currentYear,
+    month: currentMonth,
+    entityId: budgetEntityId ?? undefined,
+    showAllEntities: budgetEntityId === undefined,
+  });
 
-  const { data: budgets } = useCategoryBudgets();
+  const { data: budgets } = useCategoryBudgets(budgetEntityId);
   const { data: settings } = useUserSettings();
 
   const preferences = (settings?.preferences as UserPreferences) || {};
