@@ -10,8 +10,15 @@ interface InsightData {
   pace: number;
   dailyBudget: number;
   daysRemaining: number;
+  daysPassed: number;
+  daysInMonth: number;
   topCategory?: { label: string; spent: number; icon: string };
   prevMonthSpent?: number;
+  overdueBills?: number;
+  categoriesOverBudget?: number;
+  projectedSavings?: number;
+  debtTotal?: number;
+  streak?: number;
 }
 
 export function SmartInsights({ data }: { data: InsightData }) {
@@ -19,7 +26,7 @@ export function SmartInsights({ data }: { data: InsightData }) {
   const l = language === "es";
   const { formatCurrency: fc } = useFormatCurrency();
 
-  const insights: { icon: string; text: string; type: "success" | "warning" | "info" }[] = [];
+  const insights: { icon: string; text: string; type: "success" | "warning" | "info" | "danger" }[] = [];
 
   // Savings rate
   const savingsRate = data.totalIncome > 0
@@ -46,19 +53,21 @@ export function SmartInsights({ data }: { data: InsightData }) {
 
   // Pace alert
   if (data.pace > 110) {
+    const reduceBy = data.dailyBudget * 0.3;
     insights.push({
       icon: "🚨",
       text: l
-        ? `Ritmo de gasto al ${data.pace.toFixed(0)}%. Reduce ${fc(data.dailyBudget * 0.3)}/día para volver al plan.`
-        : `Spending pace at ${data.pace.toFixed(0)}%. Reduce by ${fc(data.dailyBudget * 0.3)}/day to get back on track.`,
-      type: "warning",
+        ? `Ritmo de gasto al ${data.pace.toFixed(0)}%. Reduce ${fc(reduceBy)}/día para volver al plan.`
+        : `Spending pace at ${data.pace.toFixed(0)}%. Reduce by ${fc(reduceBy)}/day to get back on track.`,
+      type: "danger",
     });
   } else if (data.pace > 0 && data.pace <= 85) {
+    const extraSavings = data.dailyBudget * data.daysRemaining * 0.15;
     insights.push({
       icon: "✨",
       text: l
-        ? `¡Vas por debajo del ritmo ideal! Podrías ahorrar ${fc(data.dailyBudget * data.daysRemaining * 0.15)} extra este mes.`
-        : `You're below ideal pace! You could save an extra ${fc(data.dailyBudget * data.daysRemaining * 0.15)} this month.`,
+        ? `¡Vas por debajo del ritmo ideal! Podrías ahorrar ${fc(extraSavings)} extra este mes.`
+        : `You're below ideal pace! You could save an extra ${fc(extraSavings)} this month.`,
       type: "success",
     });
   }
@@ -99,6 +108,68 @@ export function SmartInsights({ data }: { data: InsightData }) {
     }
   }
 
+  // Overdue bills
+  if (data.overdueBills && data.overdueBills > 0) {
+    insights.push({
+      icon: "🔴",
+      text: l
+        ? `¡Tienes ${data.overdueBills} pago(s) vencido(s)! Evita cargos por mora.`
+        : `You have ${data.overdueBills} overdue payment(s)! Avoid late fees.`,
+      type: "danger",
+    });
+  }
+
+  // Categories over budget
+  if (data.categoriesOverBudget && data.categoriesOverBudget > 0) {
+    insights.push({
+      icon: "📊",
+      text: l
+        ? `${data.categoriesOverBudget} categoría(s) excedieron su presupuesto. Ajusta o redistribuye.`
+        : `${data.categoriesOverBudget} category(ies) over budget. Adjust or redistribute.`,
+      type: "warning",
+    });
+  }
+
+  // Debt awareness
+  if (data.debtTotal && data.debtTotal > 0 && data.projectedSavings && data.projectedSavings > 0) {
+    const monthsToPayDebt = Math.ceil(data.debtTotal / data.projectedSavings);
+    if (monthsToPayDebt <= 12) {
+      insights.push({
+        icon: "🎯",
+        text: l
+          ? `A este ritmo de ahorro, podrías liquidar tu deuda en ~${monthsToPayDebt} meses. ¡Enfócate!`
+          : `At this savings rate, you could clear your debt in ~${monthsToPayDebt} months. Stay focused!`,
+        type: "info",
+      });
+    }
+  }
+
+  // Streak gamification
+  if (data.streak && data.streak >= 5) {
+    insights.push({
+      icon: "🔥",
+      text: l
+        ? `¡Racha de ${data.streak} días! La consistencia es la clave del éxito financiero.`
+        : `${data.streak}-day streak! Consistency is the key to financial success.`,
+      type: "success",
+    });
+  }
+
+  // End-of-month projection
+  if (data.daysPassed > 5 && data.totalSpent > 0 && data.daysRemaining > 0) {
+    const dailyAvg = data.totalSpent / data.daysPassed;
+    const projectedTotal = dailyAvg * data.daysInMonth;
+    if (data.totalIncome > 0 && projectedTotal > data.totalIncome * 0.9) {
+      insights.push({
+        icon: "🔮",
+        text: l
+          ? `Proyección: gastarás ~${fc(projectedTotal)} este mes. Eso es el ${((projectedTotal / data.totalIncome) * 100).toFixed(0)}% de tus ingresos.`
+          : `Projection: you'll spend ~${fc(projectedTotal)} this month. That's ${((projectedTotal / data.totalIncome) * 100).toFixed(0)}% of your income.`,
+        type: "warning",
+      });
+    }
+  }
+
   if (insights.length === 0) {
     insights.push({
       icon: "💡",
@@ -113,16 +184,17 @@ export function SmartInsights({ data }: { data: InsightData }) {
     success: "bg-emerald-500/10 border-emerald-500/20",
     warning: "bg-amber-500/10 border-amber-500/20",
     info: "bg-blue-500/10 border-blue-500/20",
+    danger: "bg-red-500/10 border-red-500/20",
   };
 
   return (
     <div className="space-y-2">
-      {insights.slice(0, 3).map((insight, i) => (
+      {insights.slice(0, 5).map((insight, i) => (
         <motion.div
           key={i}
           initial={{ opacity: 0, x: -12 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: i * 0.1 }}
+          transition={{ delay: i * 0.08 }}
           className={`flex items-start gap-2.5 p-3 rounded-lg border ${bgMap[insight.type]}`}
         >
           <span className="text-base mt-0.5">{insight.icon}</span>

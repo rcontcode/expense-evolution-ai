@@ -10,7 +10,7 @@ import { BILL_CATEGORY_CONFIG, BillCategory } from "@/lib/constants/bill-categor
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Plus, Settings2, Upload, CreditCard } from "lucide-react";
-import { format, startOfMonth, endOfMonth, differenceInDays, parseISO, subMonths } from "date-fns";
+import { format, startOfMonth, endOfMonth, differenceInDays, parseISO, subMonths, eachDayOfInterval } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -23,6 +23,10 @@ import { EmptyState } from "./family/EmptyState";
 import { SpendingDonut } from "./family/SpendingDonut";
 import { SmartInsights } from "./family/SmartInsights";
 import { FamilyFAB } from "./family/FamilyFAB";
+import { HealthGauge } from "./family/HealthGauge";
+import { MonthlyHeatmap } from "./family/MonthlyHeatmap";
+import { DebtSnapshot } from "./family/DebtSnapshot";
+import { GamificationStreak } from "./family/GamificationStreak";
 
 // Family-specific dialogs
 import { FamilyExpenseDialog } from "./FamilyExpenseDialog";
@@ -92,17 +96,12 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
     const due = parseISO(b.next_due_date);
     return differenceInDays(due, now) <= 7;
   });
+  const overdueBills = plan.unpaidBills.filter(b => b.overdue);
 
   // Spending health
   const spendingHealth = plan.totalIncome > 0
     ? ((plan.totalIncome - plan.totalSpent - plan.totalFixed) / plan.totalIncome) * 100
     : 0;
-  const healthEmoji = spendingHealth >= 20 ? "🟢" : spendingHealth >= 5 ? "🟡" : "🔴";
-  const healthText = spendingHealth >= 20
-    ? (l ? "¡Vas muy bien!" : "You're doing great!")
-    : spendingHealth >= 5
-    ? (l ? "Cuidado, ajusta tus gastos" : "Careful, adjust your spending")
-    : (l ? "Estás en rojo, revisa tus gastos" : "You're in the red, review spending");
 
   // Current month expenses
   const monthStart = startOfMonth(now);
@@ -147,6 +146,23 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
 
   const topCategory = familyCategories.length > 0 ? familyCategories[0] : undefined;
 
+  // Heatmap data: daily spending
+  const heatmapData = useMemo(() => {
+    const dayMap: Record<number, number> = {};
+    familyExpenses.forEach(e => {
+      const day = new Date(e.date).getDate();
+      dayMap[day] = (dayMap[day] || 0) + Number(e.amount);
+    });
+    const result = [];
+    for (let d = 1; d <= plan.daysInMonth; d++) {
+      result.push({ day: d, spent: dayMap[d] || 0 });
+    }
+    return result;
+  }, [familyExpenses, plan.daysInMonth]);
+
+  // Categories over budget count
+  const categoriesOverBudget = plan.categorySpending.filter(c => c.budget > 0 && c.percentage > 100).length;
+
   return (
     <div className="space-y-4 max-w-2xl mx-auto pb-24">
       {/* Header */}
@@ -167,23 +183,21 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         </Button>
       </motion.div>
 
-      {/* ===== 1. RESUMEN RÁPIDO ===== */}
+      {/* ===== 1. SALUD FINANCIERA (GAUGE) ===== */}
       <CollapsibleSection
         emoji="📊"
-        title={l ? "Resumen del Mes" : "Monthly Summary"}
+        title={l ? "Salud Financiera" : "Financial Health"}
+        subtitle={`${plan.healthScore}/100 · ${plan.healthLabel}`}
         defaultOpen={true}
       >
         <div className="space-y-4">
-          {/* Health indicator */}
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
-            <span className="text-2xl">{healthEmoji}</span>
-            <div className="flex-1">
-              <p className="text-sm font-medium">{healthText}</p>
-              <p className="text-xs text-muted-foreground">
-                {l ? `Tasa de ahorro: ${spendingHealth.toFixed(0)}%` : `Savings rate: ${spendingHealth.toFixed(0)}%`}
-              </p>
-            </div>
-          </div>
+          {/* Health Gauge */}
+          <HealthGauge
+            score={plan.healthScore}
+            label={plan.healthLabel}
+            savingsRate={plan.savingsRate}
+            pace={plan.pace}
+          />
 
           {/* Key numbers */}
           <div className="grid grid-cols-2 gap-3">
@@ -211,16 +225,6 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
               color={plan.freeMoney - plan.totalSpent >= 0 ? "text-blue-600 dark:text-blue-400" : "text-red-500"}
             />
           </div>
-
-          {/* Donut chart */}
-          {familyCategories.length > 0 && (
-            <SpendingDonut
-              categories={familyCategories}
-              total={familyTotal}
-              freeLabel={l ? "Libre" : "Free"}
-              freeMoney={Math.max(0, plan.freeMoney - plan.totalSpent)}
-            />
-          )}
 
           {/* Daily budget */}
           {plan.dailyBudget > 0 && (
@@ -255,7 +259,20 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         </div>
       </CollapsibleSection>
 
-      {/* ===== 2. INSIGHTS INTELIGENTES ===== */}
+      {/* ===== 2. MAPA DE CALOR MENSUAL ===== */}
+      <CollapsibleSection
+        emoji="🗓️"
+        title={l ? "Calendario de Gastos" : "Spending Calendar"}
+        subtitle={l ? "Tu patrón de gasto diario" : "Your daily spending pattern"}
+      >
+        <MonthlyHeatmap
+          data={heatmapData}
+          dailyBudget={plan.dailyBudget}
+          currentDay={plan.daysPassed}
+        />
+      </CollapsibleSection>
+
+      {/* ===== 3. INSIGHTS INTELIGENTES ===== */}
       <CollapsibleSection
         emoji="🧠"
         title={l ? "Insights Inteligentes" : "Smart Insights"}
@@ -270,18 +287,44 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
           pace: plan.pace,
           dailyBudget: plan.dailyBudget,
           daysRemaining: plan.daysRemaining,
+          daysPassed: plan.daysPassed,
+          daysInMonth: plan.daysInMonth,
           topCategory: topCategory ? { label: topCategory.label, spent: topCategory.spent, icon: topCategory.icon } : undefined,
           prevMonthSpent: prevFamilyTotal,
+          overdueBills: overdueBills.length,
+          categoriesOverBudget,
+          projectedSavings: plan.projectedSavings,
         }} />
       </CollapsibleSection>
 
-      {/* ===== 3. PAGOS FIJOS ===== */}
+      {/* ===== 4. DONUT DE DISTRIBUCIÓN ===== */}
+      {familyCategories.length > 0 && (
+        <CollapsibleSection
+          emoji="🍩"
+          title={l ? "Distribución de Gastos" : "Spending Distribution"}
+          subtitle={`${familyCategories.length} ${l ? "categorías" : "categories"} · ${fc(familyTotal)}`}
+          defaultOpen={true}
+        >
+          <SpendingDonut
+            categories={familyCategories}
+            total={familyTotal}
+            freeLabel={l ? "Libre" : "Free"}
+            freeMoney={Math.max(0, plan.freeMoney - plan.totalSpent)}
+          />
+        </CollapsibleSection>
+      )}
+
+      {/* ===== 5. PAGOS FIJOS ===== */}
       <CollapsibleSection
         emoji="🏦"
         title={l ? "Pagos Fijos" : "Fixed Payments"}
         subtitle={`${activeBills.length} ${l ? "activos" : "active"} · ${fc(plan.totalFixed)}`}
-        alert={unpaidBills.length > 0}
-        badge={unpaidBills.length > 0 ? `${unpaidBills.length} ${l ? "pronto" : "soon"}` : undefined}
+        alert={unpaidBills.length > 0 || overdueBills.length > 0}
+        badge={overdueBills.length > 0
+          ? `${overdueBills.length} ${l ? "vencido" : "overdue"}`
+          : unpaidBills.length > 0
+          ? `${unpaidBills.length} ${l ? "pronto" : "soon"}`
+          : undefined}
       >
         <div className="space-y-3">
           {activeBills.length > 0 ? (
@@ -290,6 +333,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
                 const due = parseISO(bill.next_due_date);
                 const daysUntil = differenceInDays(due, now);
                 const isUrgent = daysUntil <= 3;
+                const isOverdue = daysUntil < 0;
                 const catInfo = getCatInfo(bill.category, l ? 'es' : 'en');
                 return (
                   <motion.div
@@ -297,7 +341,8 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
                     whileTap={{ scale: 0.98 }}
                     className={cn(
                       "flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-muted/60 transition-colors",
-                      isUrgent ? "bg-destructive/10 border border-destructive/20" : "bg-muted/30"
+                      isOverdue ? "bg-destructive/15 border border-destructive/30" :
+                      isUrgent ? "bg-amber-500/10 border border-amber-500/20" : "bg-muted/30"
                     )}
                     onClick={() => { setEditingBill(bill); setShowBillDialog(true); }}
                   >
@@ -312,8 +357,13 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold">{fc(bill.amount)}</p>
-                      <p className={cn("text-[11px]", isUrgent ? "text-destructive font-medium" : "text-muted-foreground")}>
-                        {isUrgent && "⚠️ "}{format(due, "dd MMM", { locale: l ? es : enUS })}
+                      <p className={cn("text-[11px]",
+                        isOverdue ? "text-destructive font-semibold" :
+                        isUrgent ? "text-amber-600 dark:text-amber-400 font-medium" : "text-muted-foreground"
+                      )}>
+                        {isOverdue ? "🔴 " : isUrgent ? "⚠️ " : ""}
+                        {format(due, "dd MMM", { locale: l ? es : enUS })}
+                        {isOverdue && ` (${Math.abs(daysUntil)}d ${l ? "atrás" : "ago"})`}
                       </p>
                     </div>
                   </motion.div>
@@ -335,28 +385,35 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         </div>
       </CollapsibleSection>
 
-      {/* ===== 4. GASTOS POR CATEGORÍA ===== */}
+      {/* ===== 6. GASTOS POR CATEGORÍA ===== */}
       <CollapsibleSection
         emoji="🛒"
         title={l ? "Gastos por Categoría" : "Spending by Category"}
         subtitle={`${familyCategories.length} ${l ? "categorías" : "categories"} · ${fc(familyTotal)}`}
+        badge={categoriesOverBudget > 0 ? `${categoriesOverBudget} ${l ? "excedidas" : "over"}` : undefined}
+        alert={categoriesOverBudget > 0}
       >
         {familyCategories.length > 0 ? (
           <div className="space-y-2">
             {familyCategories.map(({ cat, spent, icon, label }) => {
               const budget = plan.categorySpending.find(c => c.category === cat)?.budget || 0;
               const pct = budget > 0 ? (spent / budget) * 100 : 0;
+              const isOver = pct > 100;
               return (
-                <div key={cat} className="p-3 rounded-lg bg-muted/30 space-y-1.5">
+                <div key={cat} className={cn(
+                  "p-3 rounded-lg space-y-1.5",
+                  isOver ? "bg-red-500/10 border border-red-500/15" : "bg-muted/30"
+                )}>
                   <div className="flex items-center justify-between">
                     <span className="text-sm flex items-center gap-2">
                       <span>{icon}</span> {label}
+                      {isOver && <span className="text-[10px] text-red-500 font-semibold">⚠️ {l ? "EXCEDIDO" : "OVER"}</span>}
                     </span>
                     <span className="text-sm font-semibold">{fc(spent)}</span>
                   </div>
                   {budget > 0 && (
                     <div className="space-y-0.5">
-                      <Progress value={Math.min(pct, 100)} className="h-1.5" />
+                      <Progress value={Math.min(pct, 100)} className={cn("h-1.5", isOver && "[&>div]:bg-red-500")} />
                       <p className="text-[10px] text-muted-foreground text-right">
                         {pct.toFixed(0)}% {l ? "de" : "of"} {fc(budget)}
                       </p>
@@ -371,7 +428,16 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         )}
       </CollapsibleSection>
 
-      {/* ===== 5. PRESUPUESTOS POR CATEGORÍA (editable) ===== */}
+      {/* ===== 7. DEUDAS Y COMPROMISOS ===== */}
+      <CollapsibleSection
+        emoji="💳"
+        title={l ? "Deudas y Compromisos" : "Debts & Obligations"}
+        subtitle={l ? "Seguimiento de pagos pendientes" : "Track outstanding payments"}
+      >
+        <DebtSnapshot />
+      </CollapsibleSection>
+
+      {/* ===== 8. PRESUPUESTOS POR CATEGORÍA (editable) ===== */}
       <CollapsibleSection
         emoji="📏"
         title={l ? "Límites de Categoría" : "Category Budgets"}
@@ -380,16 +446,20 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         <CategoryBudgetsCard />
       </CollapsibleSection>
 
-      {/* ===== 6. ALERTAS INTELIGENTES ===== */}
+      {/* ===== 9. ALERTAS INTELIGENTES ===== */}
       <CollapsibleSection
         emoji="🔔"
         title={l ? "Alertas" : "Alerts"}
         subtitle={l ? "Avisos y recomendaciones" : "Warnings & recommendations"}
+        badge={plan.alerts.filter(a => a.type === "danger").length > 0
+          ? `${plan.alerts.filter(a => a.type === "danger").length} ${l ? "críticas" : "critical"}`
+          : undefined}
+        alert={plan.alerts.some(a => a.type === "danger")}
       >
         <BudgetAlertsCard />
       </CollapsibleSection>
 
-      {/* ===== 7. PROYECCIONES ===== */}
+      {/* ===== 10. PROYECCIONES ===== */}
       <CollapsibleSection
         emoji="🔮"
         title={l ? "Proyecciones" : "Projections"}
@@ -415,7 +485,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         </div>
       </CollapsibleSection>
 
-      {/* ===== 8. SUSCRIPCIONES ===== */}
+      {/* ===== 11. SUSCRIPCIONES ===== */}
       <CollapsibleSection
         emoji="🔄"
         title={l ? "Suscripciones Detectadas" : "Detected Subscriptions"}
@@ -424,7 +494,16 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         <SubscriptionTracker />
       </CollapsibleSection>
 
-      {/* ===== 9. ANÁLISIS BANCARIO ===== */}
+      {/* ===== 12. GAMIFICACIÓN ===== */}
+      <CollapsibleSection
+        emoji="🎮"
+        title={l ? "Tu Progreso Financiero" : "Your Financial Progress"}
+        subtitle={l ? "Nivel, racha y logros" : "Level, streak & achievements"}
+      >
+        <GamificationStreak />
+      </CollapsibleSection>
+
+      {/* ===== 13. ANÁLISIS BANCARIO ===== */}
       <CollapsibleSection
         emoji="🏧"
         title={l ? "Análisis Bancario" : "Bank Analysis"}
@@ -449,7 +528,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         </div>
       </CollapsibleSection>
 
-      {/* ===== 10. GASTOS DEL NEGOCIO (solo modo unificado) ===== */}
+      {/* ===== 14. GASTOS DEL NEGOCIO (solo modo unificado) ===== */}
       {isUnified && (
         <CollapsibleSection
           emoji="💼"
