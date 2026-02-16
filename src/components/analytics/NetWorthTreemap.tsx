@@ -39,11 +39,7 @@ const LIABILITY_COLORS: Record<string, { bar: string; bg: string }> = {
   other: { bar: 'bg-red-400', bg: 'bg-red-400/10' },
 };
 
-function formatCompact(val: number) {
-  if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
-  if (val >= 1000) return `$${(val / 1000).toFixed(1)}K`;
-  return `$${val.toFixed(0)}`;
-}
+// Removed local formatCompact - using useFormatCurrency hook instead
 
 export function NetWorthTreemap() {
   const { language } = useLanguage();
@@ -319,7 +315,7 @@ export function NetWorthTreemap() {
                       </div>
                       <div className="flex items-center gap-2 shrink-0 ml-2">
                         <span className="text-sm font-bold text-foreground">
-                          {formatCompact(item.value)}
+                          {formatCurrency(item.value)}
                         </span>
                         <Badge
                           variant="secondary"

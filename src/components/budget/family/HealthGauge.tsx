@@ -66,12 +66,23 @@ export function HealthGauge({ score, label, savingsRate, pace }: HealthGaugeProp
         </div>
       </div>
       <p className={cn("text-sm font-semibold", getColor(score))}>{label}</p>
+      <p className="text-[10px] text-muted-foreground text-center max-w-[180px]">
+        {score >= 80 
+          ? (l ? "Tu salud financiera es excelente. ¡Sigue así!" : "Your financial health is excellent. Keep it up!")
+          : score >= 60 
+          ? (l ? "Buen control. Revisa los gastos para mejorar." : "Good control. Review spending to improve.")
+          : score >= 40 
+          ? (l ? "Atención: gastos superando el ritmo ideal." : "Attention: spending exceeding ideal pace.")
+          : (l ? "Alerta: necesitas ajustar tu presupuesto urgente." : "Alert: you need to adjust your budget urgently.")}
+      </p>
       <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
         <span>
           {l ? "Ahorro" : "Savings"}: <strong className={savingsRate >= 15 ? "text-emerald-500" : "text-amber-500"}>{savingsRate.toFixed(0)}%</strong>
+          <span className="opacity-50 ml-0.5">({l ? "meta: 15%+" : "goal: 15%+"})</span>
         </span>
         <span>
           {l ? "Ritmo" : "Pace"}: <strong className={pace <= 100 ? "text-emerald-500" : "text-red-500"}>{pace > 0 ? `${pace.toFixed(0)}%` : "—"}</strong>
+          <span className="opacity-50 ml-0.5">({l ? "meta: ≤100%" : "goal: ≤100%"})</span>
         </span>
       </div>
     </div>

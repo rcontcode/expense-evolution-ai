@@ -21,6 +21,7 @@ export function BudgetVsActualChart({ categories }: BudgetVsActualChartProps) {
   const l = language === "es";
   const { formatCurrency: fc } = useFormatCurrency();
 
+  const { formatCompact } = useFormatCurrency();
   const withBudget = categories.filter(c => c.budget > 0);
 
   if (withBudget.length === 0) {
@@ -36,7 +37,7 @@ export function BudgetVsActualChart({ categories }: BudgetVsActualChartProps) {
 
   const chartData = withBudget.slice(0, 8).map(c => ({
     name: `${c.icon} ${c.label}`,
-    shortName: c.label.length > 10 ? c.label.slice(0, 10) + "…" : c.label,
+    shortName: `${c.icon} ${c.label.length > 8 ? c.label.slice(0, 8) + "…" : c.label}`,
     spent: c.spent,
     budget: c.budget,
     percentage: c.percentage,
@@ -66,7 +67,7 @@ export function BudgetVsActualChart({ categories }: BudgetVsActualChartProps) {
             <XAxis
               type="number"
               tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-              tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+              tickFormatter={(v) => formatCompact(v)}
             />
             <YAxis
               type="category"
@@ -75,7 +76,7 @@ export function BudgetVsActualChart({ categories }: BudgetVsActualChartProps) {
               width={80}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="budget" fill="hsl(var(--muted))" radius={[0, 4, 4, 0]} barSize={14} name={l ? "Presupuesto" : "Budget"} />
+            <Bar dataKey="budget" fill="hsl(var(--muted-foreground) / 0.3)" stroke="hsl(var(--muted-foreground) / 0.5)" strokeWidth={1} radius={[0, 4, 4, 0]} barSize={14} name={l ? "Presupuesto" : "Budget"} />
             <Bar dataKey="spent" radius={[0, 4, 4, 0]} barSize={14} name={l ? "Gastado" : "Spent"}>
               {chartData.map((entry, i) => (
                 <Cell key={i} fill={entry.isOver ? "hsl(var(--destructive))" : "hsl(var(--chart-2))"} />

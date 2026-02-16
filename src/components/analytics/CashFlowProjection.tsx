@@ -443,7 +443,7 @@ export function CashFlowProjection() {
               />
               <YAxis 
                 tick={{ fontSize: 11 }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                tickFormatter={(value) => formatCurrency(value)}
                 className="text-muted-foreground"
               />
               <Tooltip content={<CustomTooltip />} />
