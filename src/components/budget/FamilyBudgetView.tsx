@@ -73,7 +73,8 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
   const [showIncomeDialog, setShowIncomeDialog] = useState(false);
   const [showBillDialog, setShowBillDialog] = useState(false);
   const [editingBill, setEditingBill] = useState<RecurringBill | null>(null);
-  const [showSmartTextDialog, setShowSmartTextDialog] = useState(false);
+  const [showCaptureDialog, setShowCaptureDialog] = useState(false);
+  const [captureDefaultTab, setCaptureDefaultTab] = useState<'photo' | 'text'>('text');
 
   const isUnified = budgetMode === "unified";
   const monthLabel = format(now, "MMMM yyyy", { locale: l ? es : enUS });
@@ -604,8 +605,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         onExpense={() => setShowExpenseDialog(true)}
         onIncome={() => setShowIncomeDialog(true)}
         onBill={() => { setEditingBill(null); setShowBillDialog(true); }}
-        onReceipt={() => navigate("/mobile-capture")}
-        onSmartText={() => setShowSmartTextDialog(true)}
+        onSmartCapture={() => setShowCaptureDialog(true)}
       />
 
       {/* Dialogs */}
@@ -618,8 +618,8 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
         onSave={handleSaveBill}
       />
       <QuickCaptureDialog
-        open={showSmartTextDialog}
-        onClose={() => setShowSmartTextDialog(false)}
+        open={showCaptureDialog}
+        onClose={() => setShowCaptureDialog(false)}
         defaultTab="text"
       />
     </div>
