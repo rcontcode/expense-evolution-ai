@@ -203,11 +203,8 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
       >
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              {isUnified ? "🏠💼" : "🏠"} {l ? "Mi Presupuesto" : "My Budget"}
-            </h1>
             <p className="text-sm text-muted-foreground capitalize">
-              {monthLabel} — {l ? `Día ${plan.daysPassed} de ${plan.daysInMonth}` : `Day ${plan.daysPassed} of ${plan.daysInMonth}`}
+              {isUnified ? "🏠💼" : "🏠"} {monthLabel} — {l ? `Día ${plan.daysPassed} de ${plan.daysInMonth}` : `Day ${plan.daysPassed} of ${plan.daysInMonth}`}
             </p>
           </div>
           <div className="flex items-center gap-2">
