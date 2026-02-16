@@ -5,9 +5,22 @@ import { useFiscalEntities } from "@/hooks/data/useFiscalEntities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, Building2, Home, ArrowRight, Sparkles } from "lucide-react";
+import { Users, Building2, Home, ArrowRight, Sparkles, Check, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+
+const FEATURES: Array<{ label: { es: string; en: string }; family: boolean; unified: boolean; separated: boolean }> = [
+  { label: { es: "Control diario de gastos", en: "Daily expense tracking" }, family: true, unified: true, separated: true },
+  { label: { es: "Pagos fijos (arriendo, servicios)", en: "Fixed payments (rent, utilities)" }, family: true, unified: true, separated: true },
+  { label: { es: "Alertas inteligentes", en: "Smart alerts" }, family: true, unified: true, separated: true },
+  { label: { es: "Metas de ahorro", en: "Savings goals" }, family: true, unified: true, separated: true },
+  { label: { es: "Sección gastos de negocio", en: "Business expenses section" }, family: false, unified: true, separated: true },
+  { label: { es: "Ingresos por entidad", en: "Income per entity" }, family: false, unified: false, separated: true },
+  { label: { es: "Presupuesto independiente por empresa", en: "Independent budget per company" }, family: false, unified: false, separated: true },
+  { label: { es: "Selector de entidad fiscal", en: "Fiscal entity selector" }, family: false, unified: false, separated: true },
+  { label: { es: "Proyecciones por entidad", en: "Projections per entity" }, family: false, unified: true, separated: true },
+  { label: { es: "Vista consolidada hogar + negocio", en: "Consolidated home + business view" }, family: false, unified: true, separated: false },
+];
 
 export type BudgetMode = "unified" | "separated" | "family_only";
 
@@ -147,6 +160,26 @@ export function BudgetSetupWizard({ onComplete }: BudgetSetupWizardProps) {
                     <p className="text-sm text-muted-foreground mt-2">
                       {mode.description}
                     </p>
+                    {/* Feature checklist */}
+                    {isSelected && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1"
+                      >
+                        {FEATURES.map((f, i) => {
+                          const has = mode.id === "family_only" ? f.family : mode.id === "unified" ? f.unified : f.separated;
+                          return (
+                            <span key={i} className={cn("text-xs flex items-center gap-1.5", has ? "text-foreground" : "text-muted-foreground/50 line-through")}>
+                              {has
+                                ? <Check className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+                                : <X className="h-3 w-3 text-muted-foreground/40 flex-shrink-0" />}
+                              {f.label[language]}
+                            </span>
+                          );
+                        })}
+                      </motion.div>
+                    )}
                     {mode.examples && (
                       <p className="text-xs text-primary/70 mt-1.5 italic">
                         {mode.examples}
