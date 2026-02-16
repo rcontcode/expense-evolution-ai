@@ -629,6 +629,47 @@ export type Database = {
           },
         ]
       }
+      budget_rollovers: {
+        Row: {
+          category: string
+          created_at: string
+          entity_id: string | null
+          id: string
+          month: string
+          rollover_amount: number
+          source_month: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          entity_id?: string | null
+          id?: string
+          month: string
+          rollover_amount?: number
+          source_month: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          entity_id?: string | null
+          id?: string
+          month?: string
+          rollover_amount?: number
+          source_month?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_rollovers_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "fiscal_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       category_budgets: {
         Row: {
           alert_threshold: number

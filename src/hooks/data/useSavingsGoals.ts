@@ -144,28 +144,20 @@ export function useAddToSavingsGoal() {
   const { trackAction } = useMissionTracker();
 
   return useMutation({
-    mutationFn: async ({ id, amount }: { id: string; amount: number }) => {
-      // First get current amount
-      const { data: goal, error: fetchError } = await supabase
-        .from('savings_goals')
-        .select('current_amount')
-        .eq('id', id)
-        .single();
+    mutationFn: async ({ id, amount, notes }: { id: string; amount: number; notes?: string }) => {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) throw new Error('Not authenticated');
 
-      if (fetchError) throw fetchError;
-
-      const newAmount = (goal.current_amount || 0) + amount;
-
+      // Insert contribution (trigger auto-updates current_amount)
       const { error } = await supabase
-        .from('savings_goals')
-        .update({ current_amount: newAmount })
-        .eq('id', id);
+        .from('savings_contributions' as any)
+        .insert({ goal_id: id, amount, notes, user_id: authUser.id } as any);
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['savings-goals'] });
-      // Track mission progress
+      queryClient.invalidateQueries({ queryKey: ['savings-contributions'] });
       trackAction('add_savings', 1);
       toast.success('Cantidad agregada');
     },
@@ -173,5 +165,24 @@ export function useAddToSavingsGoal() {
       toast.error('Error al agregar cantidad');
       console.error(error);
     },
+  });
+}
+
+export function useSavingsContributions(goalId?: string) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['savings-contributions', goalId],
+    queryFn: async () => {
+      let q = supabase
+        .from('savings_contributions' as any)
+        .select('*')
+        .eq('user_id', user!.id)
+        .order('contribution_date', { ascending: false });
+      if (goalId) q = q.eq('goal_id', goalId);
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+    enabled: !!user,
   });
 }
