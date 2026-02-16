@@ -31,6 +31,8 @@ export function useExpensesRealtime() {
           // Invalidate queries to refetch data
           queryClient.invalidateQueries({ queryKey: ['expenses'] });
           queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['income-summary'] });
+          queryClient.invalidateQueries({ queryKey: ['data-health'] });
           
           // Show toast notification
           const expense = payload.new as any;
@@ -58,6 +60,7 @@ export function useExpensesRealtime() {
           console.log('[Realtime] Expense updated:', payload);
           queryClient.invalidateQueries({ queryKey: ['expenses'] });
           queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['income-summary'] });
         }
       )
       .on(
@@ -72,6 +75,7 @@ export function useExpensesRealtime() {
           console.log('[Realtime] Expense deleted:', payload);
           queryClient.invalidateQueries({ queryKey: ['expenses'] });
           queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['income-summary'] });
         }
       )
       .subscribe((status) => {

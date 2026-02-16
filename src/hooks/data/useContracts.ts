@@ -1,7 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ContractFormData, ContractWithClient, ContractStatus } from '@/types/contract.types';
+import { useInvalidateRelated } from './useInvalidateRelated';
 
 export const useContracts = () => {
   return useQuery({
@@ -23,7 +24,7 @@ export const useContracts = () => {
 };
 
 export const useCreateContract = () => {
-  const queryClient = useQueryClient();
+  const { afterContract } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (data: ContractFormData) => {
@@ -80,7 +81,7 @@ export const useCreateContract = () => {
       return contracts;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contracts'] });
+      afterContract();
       toast.success('Contrato subido exitosamente');
     },
     onError: (error) => {
@@ -91,7 +92,7 @@ export const useCreateContract = () => {
 };
 
 export const useUpdateContract = () => {
-  const queryClient = useQueryClient();
+  const { afterContract } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; client_id?: string; status?: ContractStatus }) => {
@@ -106,7 +107,7 @@ export const useUpdateContract = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contracts'] });
+      afterContract();
       toast.success('Contrato actualizado');
     },
     onError: () => {
@@ -116,7 +117,7 @@ export const useUpdateContract = () => {
 };
 
 export const useDeleteContract = () => {
-  const queryClient = useQueryClient();
+  const { afterContract } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -134,7 +135,7 @@ export const useDeleteContract = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contracts'] });
+      afterContract();
       toast.success('Contrato movido a la papelera');
     },
     onError: () => {

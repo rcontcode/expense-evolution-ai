@@ -1,9 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useInvalidateRelated } from './useInvalidateRelated';
 
+// RecurringBill, BillPayment, BillInsert, BillUpdate types
 export interface RecurringBill {
   id: string;
   user_id: string;
@@ -86,9 +88,9 @@ export function useBillPayments(billId?: string) {
 }
 
 export function useCreateBill() {
-  const qc = useQueryClient();
   const { user } = useAuth();
   const { language } = useLanguage();
+  const { afterBill } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (bill: BillInsert) => {
@@ -101,7 +103,7 @@ export function useCreateBill() {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['recurring-bills'] });
+      afterBill();
       toast.success(language === 'es' ? 'Pago recurrente creado' : 'Recurring bill created');
     },
     onError: () => {
@@ -111,8 +113,8 @@ export function useCreateBill() {
 }
 
 export function useUpdateBill() {
-  const qc = useQueryClient();
   const { language } = useLanguage();
+  const { afterBill } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: BillUpdate & { id: string }) => {
@@ -126,7 +128,7 @@ export function useUpdateBill() {
       return data;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['recurring-bills'] });
+      afterBill();
       toast.success(language === 'es' ? 'Pago actualizado' : 'Bill updated');
     },
     onError: () => {
@@ -136,8 +138,8 @@ export function useUpdateBill() {
 }
 
 export function useDeleteBill() {
-  const qc = useQueryClient();
   const { language } = useLanguage();
+  const { afterBill } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -145,7 +147,7 @@ export function useDeleteBill() {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['recurring-bills'] });
+      afterBill();
       toast.success(language === 'es' ? 'Pago eliminado' : 'Bill deleted');
     },
     onError: () => {
@@ -155,13 +157,12 @@ export function useDeleteBill() {
 }
 
 export function useMarkBillPaid() {
-  const qc = useQueryClient();
   const { user } = useAuth();
   const { language } = useLanguage();
+  const { afterBill } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ billId, amount, paidDate, notes }: { billId: string; amount: number; paidDate?: string; notes?: string }) => {
-      // Create payment record
       const { error: payError } = await supabase.from('bill_payments').insert({
         user_id: user!.id,
         bill_id: billId,
@@ -171,7 +172,6 @@ export function useMarkBillPaid() {
       });
       if (payError) throw payError;
 
-      // Get current bill to calculate next due date
       const { data: bill, error: billError } = await supabase
         .from('recurring_bills')
         .select('*')
@@ -179,12 +179,10 @@ export function useMarkBillPaid() {
         .single();
       if (billError) throw billError;
 
-      // Calculate next due date
       const currentDue = new Date(bill.next_due_date);
       const { getNextDueDate } = await import('@/lib/constants/bill-categories');
       const nextDue = getNextDueDate(currentDue, bill.frequency, bill.frequency_months || undefined);
 
-      // Update bill
       const { error: updateError } = await supabase
         .from('recurring_bills')
         .update({
@@ -195,8 +193,7 @@ export function useMarkBillPaid() {
       if (updateError) throw updateError;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['recurring-bills'] });
-      qc.invalidateQueries({ queryKey: ['bill-payments'] });
+      afterBill();
       toast.success(language === 'es' ? '✅ Pago registrado' : '✅ Payment recorded');
     },
     onError: () => {

@@ -1,8 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Client } from '@/types/expense.types';
 import { toast } from 'sonner';
 import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
+import { useInvalidateRelated } from './useInvalidateRelated';
 
 type ClientInsert = {
   name: string;
@@ -30,8 +31,8 @@ export function useClients() {
 }
 
 export function useCreateClient(defaultEntityId?: string) {
-  const queryClient = useQueryClient();
   const { triggers } = useGamificationTriggers();
+  const { afterClient, invalidate } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (client: ClientInsert) => {
@@ -54,7 +55,6 @@ export function useCreateClient(defaultEntityId?: string) {
       
       await triggers.client(currentCount);
 
-      // Audit log
       await supabase.from('audit_log' as any).insert({
         user_id: user.id, action: 'create', entity_type: 'client', entity_id: data.id,
         entity_name: client.name, new_values: { name: client.name },
@@ -63,9 +63,8 @@ export function useCreateClient(defaultEntityId?: string) {
       return data as Client;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clients'] });
-      queryClient.invalidateQueries({ queryKey: ['user-level'] });
-      queryClient.invalidateQueries({ queryKey: ['user-achievements'] });
+      afterClient();
+      invalidate('user-level', 'user-achievements');
       toast.success('Cliente creado');
     },
     onError: (error: Error) => {
@@ -75,7 +74,7 @@ export function useCreateClient(defaultEntityId?: string) {
 }
 
 export function useUpdateClient() {
-  const queryClient = useQueryClient();
+  const { afterClient } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<ClientInsert> }) => {
@@ -90,7 +89,7 @@ export function useUpdateClient() {
       return data as Client;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      afterClient();
       toast.success('Cliente actualizado');
     },
     onError: (error: Error) => {
@@ -100,7 +99,7 @@ export function useUpdateClient() {
 }
 
 export function useDeleteClient() {
-  const queryClient = useQueryClient();
+  const { afterClientDelete } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -121,14 +120,7 @@ export function useDeleteClient() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clients'] });
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      queryClient.invalidateQueries({ queryKey: ['income'] });
-      queryClient.invalidateQueries({ queryKey: ['mileage'] });
-      queryClient.invalidateQueries({ queryKey: ['contracts'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['income-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      afterClientDelete();
       toast.success('Cliente movido a la papelera');
     },
     onError: (error: Error) => {
@@ -138,11 +130,10 @@ export function useDeleteClient() {
 }
 
 export function useDeleteClientTestData() {
-  const queryClient = useQueryClient();
+  const { afterClientDelete, invalidate } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (clientId: string) => {
-      // Delete expense_tags for expenses of this client first
       const { data: clientExpenses } = await supabase
         .from('expenses')
         .select('id')
@@ -157,7 +148,6 @@ export function useDeleteClientTestData() {
         if (tagsError) throw tagsError;
       }
 
-      // Delete documents linked to expenses of this client
       if (clientExpenses && clientExpenses.length > 0) {
         const expenseIds = clientExpenses.map(e => e.id);
         const { error: docsError } = await supabase
@@ -167,51 +157,24 @@ export function useDeleteClientTestData() {
         if (docsError) throw docsError;
       }
 
-      // Delete expenses for this client
-      const { error: expensesError } = await supabase
-        .from('expenses')
-        .delete()
-        .eq('client_id', clientId);
+      const { error: expensesError } = await supabase.from('expenses').delete().eq('client_id', clientId);
       if (expensesError) throw expensesError;
 
-      // Delete income for this client
-      const { error: incomeError } = await supabase
-        .from('income')
-        .delete()
-        .eq('client_id', clientId);
+      const { error: incomeError } = await supabase.from('income').delete().eq('client_id', clientId);
       if (incomeError) throw incomeError;
 
-      // Delete mileage for this client
-      const { error: mileageError } = await supabase
-        .from('mileage')
-        .delete()
-        .eq('client_id', clientId);
+      const { error: mileageError } = await supabase.from('mileage').delete().eq('client_id', clientId);
       if (mileageError) throw mileageError;
 
-      // Delete project_clients relationships
-      const { error: pcError } = await supabase
-        .from('project_clients')
-        .delete()
-        .eq('client_id', clientId);
+      const { error: pcError } = await supabase.from('project_clients').delete().eq('client_id', clientId);
       if (pcError) throw pcError;
 
-      // Delete contracts for this client
-      const { error: contractsError } = await supabase
-        .from('contracts')
-        .delete()
-        .eq('client_id', clientId);
+      const { error: contractsError } = await supabase.from('contracts').delete().eq('client_id', clientId);
       if (contractsError) throw contractsError;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      queryClient.invalidateQueries({ queryKey: ['income'] });
-      queryClient.invalidateQueries({ queryKey: ['mileage'] });
-      queryClient.invalidateQueries({ queryKey: ['contracts'] });
-      queryClient.invalidateQueries({ queryKey: ['clients'] });
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['income-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['tags-with-expense-count'] });
+      afterClientDelete();
+      invalidate('mileage', 'mileage-summary', 'tags-with-expense-count');
       toast.success('Datos de prueba eliminados exitosamente');
     },
     onError: (error: Error) => {

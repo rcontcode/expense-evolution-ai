@@ -78,6 +78,7 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
             .from('expenses')
             .select('amount, currency')
             .eq('user_id', user.id)
+            .is('deleted_at', null)
             .gte('date', firstDayThisMonth.toISOString())
             .lte('date', lastDayThisMonth.toISOString());
           if (clientFilter) query = query.eq('client_id', clientFilter);
@@ -92,6 +93,7 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
           .from('income')
           .select('amount')
           .eq('user_id', user.id)
+          .is('deleted_at', null)
           .gte('date', format(firstDayThisMonth, 'yyyy-MM-dd'))
           .lte('date', format(lastDayThisMonth, 'yyyy-MM-dd')),
         
@@ -121,6 +123,7 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
             .from('expenses')
             .select('category, amount, currency')
             .eq('user_id', user.id)
+            .is('deleted_at', null)
             .gte('date', firstDayThisMonth.toISOString())
             .lte('date', lastDayThisMonth.toISOString());
           if (clientFilter) query = query.eq('client_id', clientFilter);
@@ -136,6 +139,7 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
             .from('expenses')
             .select('client_id, amount, currency, clients(name)')
             .eq('user_id', user.id)
+            .is('deleted_at', null)
             .gte('date', firstDayThisMonth.toISOString())
             .lte('date', lastDayThisMonth.toISOString())
             .not('client_id', 'is', null);
@@ -152,6 +156,7 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
             .from('expenses')
             .select('amount, date, currency')
             .eq('user_id', user.id)
+            .is('deleted_at', null)
             .gte('date', firstDayForTrends.toISOString())
             .lte('date', lastDayThisMonth.toISOString());
           if (clientFilter) query = query.eq('client_id', clientFilter);

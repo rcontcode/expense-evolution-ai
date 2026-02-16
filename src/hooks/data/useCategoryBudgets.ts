@@ -1,7 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useInvalidateRelated } from "./useInvalidateRelated";
 
 export interface CategoryBudget {
   id: string;
@@ -26,12 +27,10 @@ export function useCategoryBudgets(entityId?: string | null) {
         .order("category");
 
       if (entityId === null) {
-        // Family / no entity
         query = query.is("entity_id", null);
       } else if (entityId) {
         query = query.eq("entity_id", entityId);
       }
-      // If entityId is undefined, return all (unified mode)
 
       const { data, error } = await query;
       if (error) throw error;
@@ -42,8 +41,8 @@ export function useCategoryBudgets(entityId?: string | null) {
 }
 
 export function useUpsertCategoryBudget() {
-  const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { afterBudget } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (data: { category: string; monthly_budget: number; alert_threshold?: number; entity_id?: string | null }) => {
@@ -62,7 +61,7 @@ export function useUpsertCategoryBudget() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["category-budgets"] });
+      afterBudget();
       toast.success("Presupuesto guardado");
     },
     onError: (error: Error) => {
@@ -73,7 +72,7 @@ export function useUpsertCategoryBudget() {
 }
 
 export function useDeleteCategoryBudget() {
-  const queryClient = useQueryClient();
+  const { afterBudget } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -85,7 +84,7 @@ export function useDeleteCategoryBudget() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["category-budgets"] });
+      afterBudget();
       toast.success("Presupuesto eliminado");
     },
     onError: (error: Error) => {

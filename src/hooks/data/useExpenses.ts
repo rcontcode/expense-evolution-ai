@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useMissionTracker } from './useMissions';
 import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
 import { useAuth } from '@/contexts/AuthContext';
+import { useInvalidateRelated } from './useInvalidateRelated';
 
 const QUERY_LIMIT = 500;
 
@@ -65,7 +66,6 @@ export function useExpenses(filters?: ExpenseFilters) {
         query = query.eq('entity_id', filters.entityId);
       } else if (filters?.showAllEntities !== true && filters?.entityId === undefined) {
         // By default, show expenses without entity_id (legacy data)
-        // This allows gradual migration without breaking existing functionality
       }
 
       // Filter for incomplete expenses (for reports)
@@ -126,10 +126,10 @@ export function useExpenses(filters?: ExpenseFilters) {
 }
 
 export function useCreateExpense() {
-  const queryClient = useQueryClient();
   const { user } = useAuth();
   const { trackAction } = useMissionTracker();
   const { triggers } = useGamificationTriggers();
+  const { afterExpense, invalidate } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (expense: Omit<ExpenseInsert, 'user_id'>) => {
@@ -148,7 +148,6 @@ export function useCreateExpense() {
       
       await triggers.expense(currentCount);
       
-      // Log audit
       await supabase.from('audit_log' as any).insert({
         user_id: userData.user.id,
         action: 'create',
@@ -161,11 +160,8 @@ export function useCreateExpense() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['income-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['user-level'] });
-      queryClient.invalidateQueries({ queryKey: ['user-achievements'] });
+      afterExpense();
+      invalidate('user-level', 'user-achievements');
       trackAction('add_expense', 1);
       trackAction('categorize_expense', 1);
       toast.success('Gasto registrado');
@@ -177,7 +173,7 @@ export function useCreateExpense() {
 }
 
 export function useUpdateExpense() {
-  const queryClient = useQueryClient();
+  const { afterExpense } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: ExpenseUpdate }) => {
@@ -192,8 +188,7 @@ export function useUpdateExpense() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      afterExpense();
       toast.success('Gasto actualizado');
     },
     onError: (error: Error) => {
@@ -203,11 +198,10 @@ export function useUpdateExpense() {
 }
 
 export function useDeleteExpense() {
-  const queryClient = useQueryClient();
+  const { afterExpense } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      // Get name for audit before soft-deleting
       const { data: existing } = await supabase.from('expenses').select('vendor, amount').eq('id', id).single();
       
       const { error } = await supabase
@@ -230,9 +224,7 @@ export function useDeleteExpense() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['income-summary'] });
+      afterExpense();
       toast.success('Gasto movido a la papelera');
     },
     onError: (error: Error) => {
@@ -242,7 +234,7 @@ export function useDeleteExpense() {
 }
 
 export function useAddExpenseTags() {
-  const queryClient = useQueryClient();
+  const { invalidate } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ expenseId, tagIds }: { expenseId: string; tagIds: string[] }) => {
@@ -260,7 +252,7 @@ export function useAddExpenseTags() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      invalidate('expenses');
     },
   });
 }
