@@ -20,6 +20,8 @@ import { TaxSituationWizard } from "@/components/tax-calendar/TaxSituationWizard
 import { TaxResources } from "@/components/tax-calendar/TaxResources";
 import { TaxEstimator } from "@/components/tax-calendar/TaxEstimator";
 import { TaxInfoVersionBadge } from "@/components/tax-calendar/TaxInfoVersionBadge";
+import { TaxKnowledgeQuiz } from "@/components/tax-calendar/TaxKnowledgeQuiz";
+import { TaxContextBanner } from "@/components/tax-calendar/TaxContextBanner";
 import { useCountryContext } from "@/hooks/utils/useCountryContext";
 import { CountrySelector } from "@/components/country";
 import { CountryFlag } from "@/components/ui/country-flag";
@@ -47,6 +49,7 @@ export default function TaxCalendar() {
   
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showWizard, setShowWizard] = useState(false);
+  const [showKnowledgeQuiz, setShowKnowledgeQuiz] = useState(false);
 
   // Determine user's business type from profile
   const workTypes = profile?.work_types || [];
@@ -133,6 +136,22 @@ export default function TaxCalendar() {
               }
             </AlertDescription>
           </Alert>
+        )}
+
+        {/* Tax Context Banner - shows user's fiscal profile summary */}
+        {profileComplete && (
+          <TaxContextBanner 
+            country={effectiveCountry} 
+            onOpenQuiz={() => setShowKnowledgeQuiz(true)} 
+          />
+        )}
+
+        {/* Tax Knowledge Quiz */}
+        {showKnowledgeQuiz && (
+          <TaxKnowledgeQuiz 
+            onClose={() => setShowKnowledgeQuiz(false)}
+            onComplete={() => setShowKnowledgeQuiz(false)}
+          />
         )}
 
         {/* Quick Status Cards */}

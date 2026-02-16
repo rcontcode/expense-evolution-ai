@@ -2941,6 +2941,98 @@ export type Database = {
           },
         ]
       }
+      tax_knowledge_assessment: {
+        Row: {
+          accountant_info: string | null
+          additional_notes: string | null
+          business_start_date_notes: string | null
+          business_structure_knowledge: number | null
+          completed_at: string | null
+          country: string
+          created_at: string
+          deductions_knowledge: number | null
+          employee_end_date: string | null
+          employment_transition_notes: string | null
+          filing_deadlines_knowledge: number | null
+          first_business_revenue_date: string | null
+          general_tax_knowledge: number | null
+          has_accountant: boolean | null
+          has_filed_before: boolean | null
+          id: string
+          knowledge_gaps: Json | null
+          knows_fiscal_year_end: boolean | null
+          knows_gst_hst_status: boolean | null
+          knows_tax_regime: boolean | null
+          previous_filings_notes: string | null
+          switched_from_employee: boolean | null
+          tax_software_used: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accountant_info?: string | null
+          additional_notes?: string | null
+          business_start_date_notes?: string | null
+          business_structure_knowledge?: number | null
+          completed_at?: string | null
+          country?: string
+          created_at?: string
+          deductions_knowledge?: number | null
+          employee_end_date?: string | null
+          employment_transition_notes?: string | null
+          filing_deadlines_knowledge?: number | null
+          first_business_revenue_date?: string | null
+          general_tax_knowledge?: number | null
+          has_accountant?: boolean | null
+          has_filed_before?: boolean | null
+          id?: string
+          knowledge_gaps?: Json | null
+          knows_fiscal_year_end?: boolean | null
+          knows_gst_hst_status?: boolean | null
+          knows_tax_regime?: boolean | null
+          previous_filings_notes?: string | null
+          switched_from_employee?: boolean | null
+          tax_software_used?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accountant_info?: string | null
+          additional_notes?: string | null
+          business_start_date_notes?: string | null
+          business_structure_knowledge?: number | null
+          completed_at?: string | null
+          country?: string
+          created_at?: string
+          deductions_knowledge?: number | null
+          employee_end_date?: string | null
+          employment_transition_notes?: string | null
+          filing_deadlines_knowledge?: number | null
+          first_business_revenue_date?: string | null
+          general_tax_knowledge?: number | null
+          has_accountant?: boolean | null
+          has_filed_before?: boolean | null
+          id?: string
+          knowledge_gaps?: Json | null
+          knows_fiscal_year_end?: boolean | null
+          knows_gst_hst_status?: boolean | null
+          knows_tax_regime?: boolean | null
+          previous_filings_notes?: string | null
+          switched_from_employee?: boolean | null
+          tax_software_used?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_knowledge_assessment_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       usage_tracking: {
         Row: {
           bank_analyses_count: number
