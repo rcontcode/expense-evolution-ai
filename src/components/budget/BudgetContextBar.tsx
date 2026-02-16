@@ -14,6 +14,13 @@ const COUNTRY_NAMES: Record<string, { es: string; en: string }> = {
   CL: { es: "Chile", en: "Chile" },
 };
 
+const COUNTRY_DEFAULT_CURRENCY: Record<string, string> = { CA: "CAD", CL: "CLP" };
+
+const AVAILABLE_COUNTRIES = [
+  { code: "CA", flag: "🇨🇦" },
+  { code: "CL", flag: "🇨🇱" },
+];
+
 const AVAILABLE_CURRENCIES = [
   { code: "CAD", label: "CAD — Dólar Canadiense", flag: "🇨🇦" },
   { code: "CLP", label: "CLP — Peso Chileno", flag: "🇨🇱" },
@@ -26,7 +33,8 @@ export function BudgetContextBar() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const l = language === "es";
-  const [open, setOpen] = useState(false);
+  const [currencyOpen, setCurrencyOpen] = useState(false);
+  const [countryOpen, setCountryOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const flag = COUNTRY_FLAGS[currentCountry] || "🌎";
@@ -47,20 +55,62 @@ export function BudgetContextBar() {
       toast.error(l ? "Error al cambiar moneda" : "Error changing currency");
     } finally {
       setSaving(false);
-      setOpen(false);
+      setCurrencyOpen(false);
+    }
+  };
+
+  const handleCountryChange = async (newCountry: string) => {
+    if (newCountry === currentCountry || !user) return;
+    setSaving(true);
+    try {
+      const defaultCurrency = COUNTRY_DEFAULT_CURRENCY[newCountry] || "CAD";
+      const { error } = await supabase
+        .from("profiles")
+        .update({ country: newCountry, display_currency: defaultCurrency })
+        .eq("id", user.id);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      toast.success(l ? `País cambiado a ${COUNTRY_NAMES[newCountry]?.es || newCountry}` : `Country changed to ${COUNTRY_NAMES[newCountry]?.en || newCountry}`);
+    } catch {
+      toast.error(l ? "Error al cambiar país" : "Error changing country");
+    } finally {
+      setSaving(false);
+      setCountryOpen(false);
     }
   };
 
   return (
     <div className="flex flex-wrap items-center gap-2 text-[11px]">
-      {/* Country */}
-      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted/60 border border-border/50">
-        <span>{flag}</span>
-        <span className="font-medium">{countryName}</span>
-      </span>
+      {/* Country — Editable */}
+      <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+        <PopoverTrigger asChild>
+          <button className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted/60 border border-border/50 hover:bg-primary/10 hover:border-primary/20 transition-colors cursor-pointer">
+            <span>{flag}</span>
+            <span className="font-medium">{countryName}</span>
+            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-48 p-1" align="start">
+          <p className="text-[10px] text-muted-foreground px-2 py-1.5 font-medium">
+            {l ? "Selecciona tu país" : "Select your country"}
+          </p>
+          {AVAILABLE_COUNTRIES.map((c) => (
+            <button
+              key={c.code}
+              onClick={() => handleCountryChange(c.code)}
+              disabled={saving}
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs hover:bg-muted/80 transition-colors text-left"
+            >
+              <span>{c.flag}</span>
+              <span className="flex-1">{COUNTRY_NAMES[c.code]?.[language] || c.code}</span>
+              {c.code === currentCountry && <Check className="h-3.5 w-3.5 text-primary" />}
+            </button>
+          ))}
+        </PopoverContent>
+      </Popover>
 
       {/* Currency — Editable */}
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={currencyOpen} onOpenChange={setCurrencyOpen}>
         <PopoverTrigger asChild>
           <button className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted/60 border border-border/50 hover:bg-primary/10 hover:border-primary/20 transition-colors cursor-pointer">
             <DollarSign className="h-3 w-3 text-muted-foreground" />
