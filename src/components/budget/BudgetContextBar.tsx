@@ -23,9 +23,9 @@ const AVAILABLE_COUNTRIES = [
 ];
 
 const CURRENCY_CONFIG: Record<string, { emoji: string; gradient: string; shadow: string }> = {
-  CAD: { emoji: "🍁", gradient: "from-red-500/20 to-red-600/10", shadow: "shadow-red-500/20" },
-  CLP: { emoji: "🌶️", gradient: "from-blue-500/20 to-red-500/10", shadow: "shadow-blue-500/20" },
-  USD: { emoji: "💵", gradient: "from-emerald-500/20 to-emerald-600/10", shadow: "shadow-emerald-500/20" },
+  CAD: { emoji: "🇨🇦", gradient: "from-red-500/20 to-red-600/10", shadow: "shadow-red-500/20" },
+  CLP: { emoji: "🇨🇱", gradient: "from-blue-500/20 to-red-500/10", shadow: "shadow-blue-500/20" },
+  USD: { emoji: "🇺🇸", gradient: "from-emerald-500/20 to-emerald-600/10", shadow: "shadow-emerald-500/20" },
 };
 
 const AVAILABLE_CURRENCIES = [
