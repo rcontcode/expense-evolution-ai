@@ -1,10 +1,12 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Income, IncomeWithRelations, IncomeFormData } from '@/types/income.types';
 import { useMissionTracker } from './useMissions';
 import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
+import { useInvalidateRelated } from './useInvalidateRelated';
+
 export interface IncomeFilters {
   year?: number;
   month?: number;
@@ -52,7 +54,6 @@ export function useIncome(filters?: IncomeFilters) {
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
       return data as IncomeWithRelations[];
     },
@@ -61,10 +62,10 @@ export function useIncome(filters?: IncomeFilters) {
 }
 
 export function useCreateIncome() {
-  const queryClient = useQueryClient();
   const { user } = useAuth();
   const { trackAction } = useMissionTracker();
   const { triggers } = useGamificationTriggers();
+  const { afterIncome, invalidate } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (data: IncomeFormData) => {
@@ -97,7 +98,6 @@ export function useCreateIncome() {
       
       await triggers.income(currentCount);
 
-      // Audit log
       await supabase.from('audit_log' as any).insert({
         user_id: user.id,
         action: 'create',
@@ -110,11 +110,8 @@ export function useCreateIncome() {
       return newIncome;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['income'] });
-      queryClient.invalidateQueries({ queryKey: ['income-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['user-level'] });
-      queryClient.invalidateQueries({ queryKey: ['user-achievements'] });
+      afterIncome();
+      invalidate('user-level', 'user-achievements');
       trackAction('add_income', 1);
       toast.success('Ingreso registrado');
     },
@@ -126,7 +123,7 @@ export function useCreateIncome() {
 }
 
 export function useUpdateIncome() {
-  const queryClient = useQueryClient();
+  const { afterIncome } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<IncomeFormData> }) => {
@@ -152,9 +149,7 @@ export function useUpdateIncome() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['income'] });
-      queryClient.invalidateQueries({ queryKey: ['income-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      afterIncome();
       toast.success('Ingreso actualizado');
     },
     onError: (error) => {
@@ -165,7 +160,7 @@ export function useUpdateIncome() {
 }
 
 export function useDeleteIncome() {
-  const queryClient = useQueryClient();
+  const { afterIncome } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -183,9 +178,7 @@ export function useDeleteIncome() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['income'] });
-      queryClient.invalidateQueries({ queryKey: ['income-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      afterIncome();
       toast.success('Ingreso movido a la papelera');
     },
     onError: (error) => {

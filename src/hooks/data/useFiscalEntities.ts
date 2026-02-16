@@ -1,9 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { Database } from '@/integrations/supabase/types';
+import { useInvalidateRelated } from './useInvalidateRelated';
 
 export type FiscalEntity = Database['public']['Tables']['fiscal_entities']['Row'];
 export type FiscalEntityInsert = Database['public']['Tables']['fiscal_entities']['Insert'];
@@ -48,9 +49,9 @@ export function usePrimaryFiscalEntity() {
 }
 
 export function useCreateFiscalEntity() {
-  const queryClient = useQueryClient();
   const { user } = useAuth();
   const { language } = useLanguage();
+  const { afterEntity } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (entity: Omit<FiscalEntityInsert, 'user_id'>) => {
@@ -66,8 +67,7 @@ export function useCreateFiscalEntity() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fiscal-entities'] });
-      queryClient.invalidateQueries({ queryKey: ['fiscal-entity-primary'] });
+      afterEntity();
       toast.success(language === 'es' ? 'Entidad fiscal creada' : 'Fiscal entity created');
     },
     onError: (error: Error) => {
@@ -78,8 +78,8 @@ export function useCreateFiscalEntity() {
 }
 
 export function useUpdateFiscalEntity() {
-  const queryClient = useQueryClient();
   const { language } = useLanguage();
+  const { afterEntity } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: FiscalEntityUpdate & { id: string }) => {
@@ -94,8 +94,7 @@ export function useUpdateFiscalEntity() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fiscal-entities'] });
-      queryClient.invalidateQueries({ queryKey: ['fiscal-entity-primary'] });
+      afterEntity();
       toast.success(language === 'es' ? 'Entidad actualizada' : 'Entity updated');
     },
     onError: (error: Error) => {
@@ -106,8 +105,8 @@ export function useUpdateFiscalEntity() {
 }
 
 export function useDeleteFiscalEntity() {
-  const queryClient = useQueryClient();
   const { language } = useLanguage();
+  const { afterEntity } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -119,12 +118,7 @@ export function useDeleteFiscalEntity() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fiscal-entities'] });
-      queryClient.invalidateQueries({ queryKey: ['fiscal-entity-primary'] });
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      queryClient.invalidateQueries({ queryKey: ['income'] });
-      queryClient.invalidateQueries({ queryKey: ['clients'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      afterEntity();
       toast.success(language === 'es' ? 'Entidad eliminada' : 'Entity deleted');
     },
     onError: (error: Error) => {
@@ -135,8 +129,8 @@ export function useDeleteFiscalEntity() {
 }
 
 export function useSetPrimaryEntity() {
-  const queryClient = useQueryClient();
   const { language } = useLanguage();
+  const { afterEntity } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -151,8 +145,7 @@ export function useSetPrimaryEntity() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fiscal-entities'] });
-      queryClient.invalidateQueries({ queryKey: ['fiscal-entity-primary'] });
+      afterEntity();
       toast.success(language === 'es' ? 'Entidad principal actualizada' : 'Primary entity updated');
     },
     onError: (error: Error) => {

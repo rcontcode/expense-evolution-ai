@@ -1,7 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useInvalidateRelated } from "./useInvalidateRelated";
 
 export type BudgetMode = "unified" | "separated" | "family_only";
 
@@ -30,14 +31,13 @@ export function useUserSettings() {
 }
 
 export function useUpdateUserPreferences() {
-  const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { afterSettings } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (preferences: Partial<UserPreferences>) => {
       if (!user) throw new Error("Not authenticated");
 
-      // Get current preferences
       const { data: current } = await supabase
         .from("settings")
         .select("preferences")
@@ -54,7 +54,7 @@ export function useUpdateUserPreferences() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-settings"] });
+      afterSettings();
       toast.success("Configuración guardada");
     },
     onError: (error: Error) => {

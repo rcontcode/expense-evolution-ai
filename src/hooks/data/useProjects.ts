@@ -1,8 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Project, ProjectWithRelations, ProjectFormData } from '@/types/income.types';
+import { useInvalidateRelated } from './useInvalidateRelated';
 
 export function useProjects(status?: string) {
   const { user } = useAuth();
@@ -25,7 +26,6 @@ export function useProjects(status?: string) {
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
       return data as ProjectWithRelations[];
     },
@@ -34,8 +34,8 @@ export function useProjects(status?: string) {
 }
 
 export function useCreateProject(defaultEntityId?: string) {
-  const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { afterProject } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (data: ProjectFormData & { entity_id?: string }) => {
@@ -58,7 +58,6 @@ export function useCreateProject(defaultEntityId?: string) {
 
       if (error) throw error;
 
-      // Audit
       await supabase.from('audit_log' as any).insert({
         user_id: user!.id, action: 'create', entity_type: 'project', entity_id: newProject.id,
         entity_name: data.name, new_values: { name: data.name, status: data.status },
@@ -67,9 +66,7 @@ export function useCreateProject(defaultEntityId?: string) {
       return newProject;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      queryClient.invalidateQueries({ queryKey: ['projects-with-clients'] });
-      queryClient.invalidateQueries({ queryKey: ['client-projects'] });
+      afterProject();
       toast.success('Proyecto creado');
     },
     onError: (error) => {
@@ -80,7 +77,7 @@ export function useCreateProject(defaultEntityId?: string) {
 }
 
 export function useUpdateProject() {
-  const queryClient = useQueryClient();
+  const { afterProject } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<ProjectFormData> }) => {
@@ -106,9 +103,7 @@ export function useUpdateProject() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      queryClient.invalidateQueries({ queryKey: ['projects-with-clients'] });
-      queryClient.invalidateQueries({ queryKey: ['client-projects'] });
+      afterProject();
       toast.success('Proyecto actualizado');
     },
     onError: (error) => {
@@ -119,7 +114,7 @@ export function useUpdateProject() {
 }
 
 export function useDeleteProject() {
-  const queryClient = useQueryClient();
+  const { afterProjectDelete } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -136,12 +131,7 @@ export function useDeleteProject() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      queryClient.invalidateQueries({ queryKey: ['projects-with-clients'] });
-      queryClient.invalidateQueries({ queryKey: ['client-projects'] });
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      queryClient.invalidateQueries({ queryKey: ['income'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      afterProjectDelete();
       toast.success('Proyecto movido a la papelera');
     },
     onError: (error) => {
@@ -152,8 +142,8 @@ export function useDeleteProject() {
 }
 
 export function useDuplicateProject() {
-  const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { afterProject } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (projectId: string) => {
@@ -207,8 +197,7 @@ export function useDuplicateProject() {
       return newProject;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      queryClient.invalidateQueries({ queryKey: ['projects-with-clients'] });
+      afterProject();
       toast.success('Proyecto duplicado');
     },
     onError: (error) => {
