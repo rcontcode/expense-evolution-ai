@@ -27,6 +27,7 @@ import {
   Bell,
   GraduationCap,
   Upload,
+  FolderOpen,
   ScanLine,
   Sun,
   Moon,
@@ -164,6 +165,7 @@ const getNavSections = (language: string) => [
     themeKey: 'system' as keyof typeof sectionThemes,
     items: [
       { icon: Sparkles, label: 'nav.notifications', path: '/notifications', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: FolderOpen, label: 'nav.files', path: '/files', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
       { icon: Settings, label: 'nav.config', path: '/settings', badge: null, tooltipKey: 'dashboard' as const },
       { icon: Trash2, label: language === 'es' ? 'Papelera' : 'Trash', path: '/trash', badge: null, tooltipKey: 'dashboard' as const },
       { icon: HeartPulse, label: language === 'es' ? 'Salud de Datos' : 'Data Health', path: '/data-health', badge: null, tooltipKey: 'dashboard' as const },

@@ -418,6 +418,7 @@ export const translations = {
       menu: 'Menú',
       badgeNew: 'Nuevo',
       badgeSmart: 'Smart',
+      files: 'Archivos',
     },
     budget: {
       pageDescription: 'Controla tu plan mensual, presupuestos por categoría, alertas y proyecciones',
@@ -1380,6 +1381,7 @@ export const translations = {
       menu: 'Menu',
       badgeNew: 'New',
       badgeSmart: 'Smart',
+      files: 'Files',
     },
     budget: {
       pageDescription: 'Control your monthly plan, category budgets, alerts and projections',
