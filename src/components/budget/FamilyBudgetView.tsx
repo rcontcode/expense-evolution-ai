@@ -42,6 +42,7 @@ import { YearComparisonChart } from "./family/YearComparisonChart";
 import { BudgetExportWidget } from "./family/BudgetExportWidget";
 
 import { BudgetContextBar } from "./BudgetContextBar";
+import { CaptureHub } from "./CaptureHub";
 import { IncomeListWidget } from "./family/IncomeListWidget";
 
 // Family-specific dialogs
@@ -313,6 +314,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
 
             {/* ===== TAB 1: RESUMEN ===== */}
             <TabsContent value="overview" className="space-y-5 mt-0">
+              <CaptureHub />
               <div className="grid gap-5 lg:grid-cols-2">
                 <CollapsibleSection
                   emoji="📊"
