@@ -1656,15 +1656,21 @@ export default function Landing() {
               {/* Social Links */}
               <SocialLinks className="order-3 md:order-2" iconSize="md" />
               
-              <div className="flex items-center gap-6 text-sm pr-16 order-2 md:order-3">
-                <Link to="/legal" className="text-slate-400 hover:text-cyan-400 transition-colors">
-                  {language === 'es' ? 'Términos de Uso' : 'Terms of Use'}
+              <div className="flex items-center gap-6 text-sm pr-16 order-2 md:order-3 flex-wrap">
+                <Link to="/terms" className="text-slate-400 hover:text-cyan-400 transition-colors">
+                  {language === 'es' ? 'Términos' : 'Terms'}
                 </Link>
                 <Link to="/privacy" className="text-slate-400 hover:text-cyan-400 transition-colors">
                   {language === 'es' ? 'Privacidad' : 'Privacy'}
                 </Link>
+                <Link to="/about" className="text-slate-400 hover:text-cyan-400 transition-colors">
+                  {language === 'es' ? 'Nosotros' : 'About'}
+                </Link>
+                <Link to="/status" className="text-slate-400 hover:text-cyan-400 transition-colors">
+                  {language === 'es' ? 'Estado' : 'Status'}
+                </Link>
                 <Link to="/legal#disclaimer" className="text-slate-400 hover:text-cyan-400 transition-colors">
-                  {language === 'es' ? 'Descargo Legal' : 'Disclaimer'}
+                  {language === 'es' ? 'Legal' : 'Legal'}
                 </Link>
                 <ContactForm 
                   trigger={

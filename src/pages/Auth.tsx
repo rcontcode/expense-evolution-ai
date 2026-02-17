@@ -642,7 +642,7 @@ export default function Auth() {
                       {language === 'es' ? (
                         <>
                           Acepto los{' '}
-                          <Link to="/legal" className="text-primary hover:underline" target="_blank">
+                          <Link to="/terms" className="text-primary hover:underline" target="_blank">
                             Términos de Uso
                           </Link>{' '}
                           y la{' '}
@@ -653,7 +653,7 @@ export default function Auth() {
                       ) : (
                         <>
                           I accept the{' '}
-                          <Link to="/legal" className="text-primary hover:underline" target="_blank">
+                          <Link to="/terms" className="text-primary hover:underline" target="_blank">
                             Terms of Use
                           </Link>{' '}
                           and{' '}
