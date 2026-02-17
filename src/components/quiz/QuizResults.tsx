@@ -598,15 +598,11 @@ export const QuizResults = ({ result, onRetake, referralInfo, onNavigateToAuth }
           <Sparkles className="w-5 h-5" />
           {t.personalAnalysis}
         </h3>
-        <p
-          className="text-white/90 text-sm leading-relaxed font-medium"
-          dangerouslySetInnerHTML={{
-            __html: personalizedMessage.replace(
-              /\*\*(.*?)\*\*/g,
-              '<strong class="text-amber-400 font-bold">$1</strong>'
-            ),
-          }}
-        />
+        <p className="text-white/90 text-sm leading-relaxed font-medium">
+          {personalizedMessage.split(/\*\*(.*?)\*\*/).map((part, i) =>
+            i % 2 ? <strong key={i} className="text-amber-400 font-bold">{part}</strong> : part
+          )}
+        </p>
       </motion.div>
 
       {/* For HIGH scorers - Enhanced why section */}
