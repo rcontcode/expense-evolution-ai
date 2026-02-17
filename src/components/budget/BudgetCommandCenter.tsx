@@ -33,7 +33,8 @@
  import { startOfMonth, endOfMonth, format, differenceInDays, subMonths } from 'date-fns';
  import { es, enUS } from 'date-fns/locale';
  import { motion, AnimatePresence } from 'framer-motion';
- import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { CaptureHub } from './CaptureHub';
  import { getCategoryLabel, ExpenseCategory } from '@/lib/constants/expense-categories';
  
  interface FinancialHealthScore {
@@ -281,8 +282,11 @@
    const { formatCompact: formatCurrency } = useFormatCurrency();
  
    return (
-     <div className="space-y-6">
-       {/* Hero Section - Financial Health Score */}
+    <div className="space-y-6">
+      {/* Capture Hub - Unified entry point */}
+      <CaptureHub />
+
+      {/* Hero Section - Financial Health Score */}
        <Card className="relative overflow-hidden border-2 border-primary/20">
          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-chart-3/10" />
          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
