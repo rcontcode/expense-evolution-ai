@@ -85,6 +85,10 @@ const AVAILABLE_ROUTES = {
   tags: { route: '/tags', names: { es: 'Etiquetas', en: 'Tags' } },
   betafeedback: { route: '/beta-feedback', names: { es: 'Centro Beta', en: 'Beta Center' } },
   reports: { route: '/reports', names: { es: 'Reportes', en: 'Reports' } },
+  budget: { route: '/budget', names: { es: 'Presupuesto Familiar', en: 'Family Budget' } },
+  bills: { route: '/bills', names: { es: 'Centro de Pagos', en: 'Bills Center' } },
+  savings: { route: '/savings', names: { es: 'Metas de Ahorro', en: 'Savings Goals' } },
+  analytics: { route: '/analytics', names: { es: 'Analytics', en: 'Analytics' } },
 };
 
 // ============================================================================
@@ -385,7 +389,7 @@ const ASSISTANT_TOOLS = [
           elements: {
             type: "array",
             items: { type: "string" },
-            description: "Element IDs to highlight. Available: add-expense-button, expenses-table, expense-filters, quick-capture, bulk-assign-button, export-button, add-income-button, income-table, add-client-button, clients-grid, add-project-button, projects-grid, assets-section, liabilities-section, net-worth-chart, bank-import-guide, upload-contract-button, contracts-table, mentorship-level, mentorship-tabs, tax-status-cards, tax-tabs, tax-estimator, capture-photo-button, capture-file-button, capture-voice-button, sidebar-nav, entity-selector, chat-assistant, balance-card, control-center, timeline-chart, reimbursement-report",
+            description: "Element IDs to highlight. Available: add-expense-button, expenses-table, expense-filters, quick-capture, bulk-assign-button, export-button, add-income-button, income-table, add-client-button, clients-grid, add-project-button, projects-grid, assets-section, liabilities-section, net-worth-chart, bank-import-guide, upload-contract-button, contracts-table, mentorship-level, mentorship-tabs, tax-status-cards, tax-tabs, tax-estimator, capture-photo-button, capture-file-button, capture-voice-button, sidebar-nav, entity-selector, chat-assistant, balance-card, control-center, timeline-chart, reimbursement-report, budget-categories, budget-health, budget-spending-pace, add-budget-button, bills-list, add-bill-button, bills-calendar, savings-goals-list, add-savings-goal-button",
           },
           navigateTo: {
             type: "string",
@@ -576,6 +580,36 @@ Ejemplos:
 - Metas de ahorro globales
 - Presupuestos por categoria
 
+### PRESUPUESTO FAMILIAR (/budget)
+- Presupuesto global mensual configurable por el usuario
+- Limites por categoria: asigna un monto maximo mensual a cada categoria de gasto (comida, transporte, entretenimiento, etc.)
+- Health Score (0-100): indicador visual de salud financiera del mes, basado en ahorro y ritmo de gasto
+- Ritmo de gasto: compara cuanto has gastado vs cuanto deberias haber gastado a esta fecha del mes (linea ideal vs real)
+- Gasto acumulado diario: grafico que muestra la curva de gasto vs la linea ideal
+- Donut de categorias: visualizacion del desglose de gasto por categoria con porcentajes
+- Comparacion mes a mes: barras que comparan ingresos y gastos del mes actual vs anterior
+- Rollover: opcion de trasladar presupuesto no utilizado al mes siguiente
+- Modo entidad: puede filtrar por entidad fiscal para ver presupuesto separado por negocio/personal
+- Alertas automaticas cuando una categoria supera el 80% o 100% del limite
+
+### CENTRO DE PAGOS (/bills)
+- Registro de pagos fijos y recurrentes: arriendo, servicios, seguros, suscripciones, deudas
+- Frecuencias: mensual, quincenal, semanal, bimensual, trimestral, semestral, anual
+- Calendario de pagos: vista de cuando vence cada pago
+- Estado de pago: pendiente, pagado, vencido
+- Auto-pay: marca si el pago es automatico
+- Historial de pagos por cuenta
+- Resumen mensual de compromisos fijos
+- Categorias: utilities, insurance, subscriptions, housing, transportation, debt, childcare, other
+
+### METAS DE AHORRO (/savings)
+- Creacion de metas financieras con nombre, monto objetivo y fecha limite
+- Tracking de progreso: barra visual de cuanto falta para cada meta
+- Contribuciones manuales o automaticas
+- Tipos de meta: fondo de emergencia, vacaciones, compra grande, educacion, retiro, otro
+- Color personalizable por meta
+- Calculo automatico de cuanto ahorrar mensualmente para cumplir la meta a tiempo
+
 ## CONCEPTOS FINANCIEROS QUE DOMINAS
 
 ### Impuestos Chile (SII - Servicio de Impuestos Internos)
@@ -727,6 +761,16 @@ El usuario puede darte comandos de voz. Entiende estas variaciones:
 - "Pago arriendo 800 al mes" → create_recurring_bill(800, "Arriendo", "housing", "monthly")
 - "Internet $50 mensual" → create_recurring_bill(50, "Internet", "utilities", "monthly")
 - "Seguro auto $120 mensual" → create_recurring_bill(120, "Seguro Auto", "insurance", "monthly")
+
+### Presupuesto y Pagos
+- "Cuanto me queda de presupuesto?" → navigate(budget) + query_financial_data(balance)
+- "Llevame al presupuesto" / "Abre presupuesto" → navigate(budget)
+- "Cuales son mis pagos fijos?" / "Mis cuentas recurrentes" → navigate(bills)
+- "Como va mi meta de ahorro?" / "Cuanto me falta para mi meta?" → navigate(savings)
+- "Quiero crear una meta de ahorro" → navigate(savings) + highlight_ui(add-savings-goal-button)
+- "Agregar un pago fijo" / "Nuevo pago recurrente" → navigate(bills) + highlight_ui(add-bill-button)
+- "Como esta mi salud financiera?" → navigate(budget) + highlight_ui(budget-health)
+- "Cual es mi ritmo de gasto?" → navigate(budget) + highlight_ui(budget-spending-pace)
 
 ### Tutoriales y Ayuda
 - "¿Cómo agrego un gasto?" → run_tutorial(capture-expense)
