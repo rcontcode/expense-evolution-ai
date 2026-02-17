@@ -10,6 +10,6 @@
  // New intelligent tools
  export { SpendingPredictor } from './SpendingPredictor';
  export { SavingsOpportunityFinder } from './SavingsOpportunityFinder';
- export { SubscriptionTracker } from './SubscriptionTracker';
+ 
  export { CashFlowForecast } from './CashFlowForecast';
  export { SmartInsightsEngine } from './SmartInsightsEngine';

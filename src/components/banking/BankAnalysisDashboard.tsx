@@ -36,7 +36,7 @@ import { FinancialHealthPanel } from './FinancialHealthPanel';
 import { SmartBudgetIntegration } from './SmartBudgetIntegration';
  import { SpendingPredictor } from './SpendingPredictor';
  import { SavingsOpportunityFinder } from './SavingsOpportunityFinder';
- import { SubscriptionTracker } from './SubscriptionTracker';
+ import { SubscriptionTracker } from '@/components/subscriptions/SubscriptionTracker';
  import { CashFlowForecast } from './CashFlowForecast';
  import { SmartInsightsEngine } from './SmartInsightsEngine';
 import { format, parseISO } from 'date-fns';
