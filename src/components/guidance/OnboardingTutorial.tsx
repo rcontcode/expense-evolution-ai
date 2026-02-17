@@ -41,8 +41,8 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     id: 'welcome',
     icon: <Sparkles className="h-12 w-12 text-primary" />,
     title: {
-      en: 'Welcome to Your Financial Assistant!',
-      es: '¡Bienvenido a Tu Asistente Financiero!'
+      en: 'Welcome to EvoFinz!',
+      es: '¡Bienvenido a EvoFinz!'
     },
     description: {
       en: 'This app helps you manage expenses, income, taxes, and build wealth. Let me show you around!',

@@ -174,10 +174,10 @@ export function VoicePreferencesCard() {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(
       voice.lang.startsWith('es') 
-        ? 'Hola, soy tu asistente financiero. ¿En qué puedo ayudarte hoy?'
+        ? 'Hola, soy EvoFinz. ¿En qué puedo ayudarte hoy?'
         : voice.lang.startsWith('fr')
-        ? 'Bonjour, je suis votre assistant financier. Comment puis-je vous aider?'
-        : 'Hello, I am your financial assistant. How can I help you today?'
+        ? 'Bonjour, je suis EvoFinz. Comment puis-je vous aider?'
+        : 'Hello, I am EvoFinz. How can I help you today?'
     );
     utterance.voice = voice;
     utterance.rate = voicePrefs.speechSpeed * 0.95;
@@ -205,8 +205,8 @@ export function VoicePreferencesCard() {
     setIsTestingPremiumVoice(voiceId);
     
     const testText = lang === 'es' 
-      ? 'Hola, soy tu asistente financiero.'
-      : 'Hello, I am your financial assistant.';
+      ? 'Hola, soy EvoFinz.'
+      : 'Hello, I am EvoFinz.';
     
     // Check remaining minutes first (admins are unlimited)
     const remaining = getRemainingVoiceMinutes();

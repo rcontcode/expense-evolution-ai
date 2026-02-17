@@ -131,8 +131,8 @@ export function ProgressiveOnboarding() {
               </CardTitle>
               <CardDescription>
                 {language === 'es' 
-                  ? 'Completa estas 3 misiones para dominar tu asistente financiero' 
-                  : 'Complete these 3 missions to master your financial assistant'}
+                  ? 'Completa estas 3 misiones para dominar EvoFinz' 
+                  : 'Complete these 3 missions to master EvoFinz'}
               </CardDescription>
             </div>
           </div>
