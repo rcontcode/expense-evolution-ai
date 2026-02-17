@@ -38,6 +38,7 @@ function lazyWithRetry<T extends ComponentType<unknown>>(
 // Lazy load all pages for better initial load performance
 const Landing = lazyWithRetry(() => import("./pages/Landing"));
 const Legal = lazyWithRetry(() => import("./pages/Legal"));
+const Privacy = lazyWithRetry(() => import("./pages/Privacy"));
 const Auth = lazyWithRetry(() => import("./pages/Auth"));
 const Onboarding = lazyWithRetry(() => import("./pages/Onboarding"));
 const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
@@ -188,6 +189,7 @@ const App = () => (
                         <Route path="/quiz" element={<FinancialQuiz />} />
                         <Route path="/landing" element={<Landing />} />
                         <Route path="/legal" element={<Legal />} />
+                        <Route path="/privacy" element={<Privacy />} />
                         <Route path="/auth" element={<Auth />} />
                         <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                         <Route path="/beta-welcome" element={<ProtectedRoute><BetaWelcome /></ProtectedRoute>} />

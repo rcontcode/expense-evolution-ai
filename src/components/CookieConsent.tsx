@@ -111,7 +111,7 @@ export function CookieConsent() {
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {t.description}{' '}
-                  <Link to="/legal#privacy" className="text-primary hover:underline">
+                  <Link to="/privacy" className="text-primary hover:underline">
                     {t.privacy}
                   </Link>
                 </p>

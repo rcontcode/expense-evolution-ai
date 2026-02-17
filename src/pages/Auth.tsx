@@ -646,9 +646,9 @@ export default function Auth() {
                             Términos de Uso
                           </Link>{' '}
                           y la{' '}
-                          <Link to="/legal#privacy" className="text-primary hover:underline" target="_blank">
-                            Política de Privacidad
-                          </Link>
+                           <Link to="/privacy" className="text-primary hover:underline" target="_blank">
+                             Política de Privacidad
+                           </Link>
                         </>
                       ) : (
                         <>
@@ -657,9 +657,9 @@ export default function Auth() {
                             Terms of Use
                           </Link>{' '}
                           and{' '}
-                          <Link to="/legal#privacy" className="text-primary hover:underline" target="_blank">
-                            Privacy Policy
-                          </Link>
+                           <Link to="/privacy" className="text-primary hover:underline" target="_blank">
+                             Privacy Policy
+                           </Link>
                         </>
                       )}
                     </label>

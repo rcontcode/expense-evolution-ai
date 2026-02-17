@@ -492,6 +492,12 @@ export default function Legal() {
             <li>Al eliminar tu cuenta, tus datos se borran dentro de 30 días</li>
             <li>Podemos retener datos anónimos y agregados para estadísticas generales</li>
           </ul>
+          <div className="p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20 mt-4">
+            <p className="text-sm">
+              📖 Para información completa sobre privacidad, acceso de administradores y protección de datos, 
+              consulta nuestra <a href="/privacy" className="text-primary hover:underline font-medium">Política de Privacidad detallada</a>.
+            </p>
+          </div>
         </>
       ) : (
         <>
@@ -536,6 +542,12 @@ export default function Legal() {
             <li>Upon account deletion, your data will be deleted within 30 days</li>
             <li>We may retain anonymized and aggregated data for general statistics</li>
           </ul>
+          <div className="p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20 mt-4">
+            <p className="text-sm">
+              📖 For complete information on privacy, administrator access and data protection, 
+              see our <a href="/privacy" className="text-primary hover:underline font-medium">detailed Privacy Policy</a>.
+            </p>
+          </div>
         </>
       ),
     },

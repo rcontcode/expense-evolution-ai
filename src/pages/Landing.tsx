@@ -1660,7 +1660,7 @@ export default function Landing() {
                 <Link to="/legal" className="text-slate-400 hover:text-cyan-400 transition-colors">
                   {language === 'es' ? 'Términos de Uso' : 'Terms of Use'}
                 </Link>
-                <Link to="/legal#privacy" className="text-slate-400 hover:text-cyan-400 transition-colors">
+                <Link to="/privacy" className="text-slate-400 hover:text-cyan-400 transition-colors">
                   {language === 'es' ? 'Privacidad' : 'Privacy'}
                 </Link>
                 <Link to="/legal#disclaimer" className="text-slate-400 hover:text-cyan-400 transition-colors">
