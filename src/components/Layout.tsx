@@ -937,7 +937,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 <Link to="/legal" className="hover:text-foreground transition-colors">
                   {language === 'es' ? 'Términos de Uso' : 'Terms of Use'}
                 </Link>
-                <Link to="/legal#privacy" className="hover:text-foreground transition-colors">
+                <Link to="/privacy" className="hover:text-foreground transition-colors">
                   {language === 'es' ? 'Privacidad' : 'Privacy'}
                 </Link>
                 <Link to="/legal#disclaimer" className="hover:text-foreground transition-colors">
