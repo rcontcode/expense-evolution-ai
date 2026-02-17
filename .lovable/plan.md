@@ -1,82 +1,92 @@
 
 
-# Auditoria Profesional: Lo Que Falta en EvoFinz
+# Reestructuración UX de la Página de Presupuesto
 
-## 1. Cambiar Contrasena (Critico)
+## Problema Actual
 
-No existe forma de cambiar la contrasena una vez logueado. Solo hay "Forgot Password" que envia email. Un usuario deberia poder cambiar su contrasena desde Settings sin tener que cerrar sesion.
+La FamilyBudgetView apila ~15 CollapsibleSections en un scroll vertical sin jerarquía clara. Cuando hay datos, el usuario ve:
+- Resumen rapido (4 mini-cards)
+- Ingresos del Mes
+- Salud Financiera + Consejos Inteligentes
+- Ritmo de Gasto + Presupuesto vs Real
+- Comparacion Mensual + Proximos Pagos
+- Distribucion de Gastos + Pagos Fijos
+- Detalle por Categoria + Calendario
+- Limites por Categoria + Alertas
+- Proyecciones (full width)
+- Metas de Ahorro + Comparacion Anual
+- Reglas + Historial + Exportar (3 cols)
+- Deudas + Suscripciones + Progreso (3 cols)
+- Gastos del Negocio
 
-**Cambio:** Agregar seccion "Cambiar Contrasena" en `src/components/settings/DataPrivacyCard.tsx` (o nuevo componente `SecurityCard.tsx`) con campos para contrasena actual y nueva, usando `supabase.auth.updateUser({ password })`.
+Son 15+ secciones mezclando informacion esencial con herramientas avanzadas. No hay un camino claro.
 
----
+## Solucion: Tabs de Navegacion Principal
 
-## 2. URL Canonica Incorrecta (SEO / Branding)
+Reemplazar el scroll infinito con **tabs claros** que agrupen logicamente las secciones. El scroll nav horizontal existente (SECTION_IDS) ya tiene la estructura correcta pero solo hace scroll -- ahora cada tab sera una vista separada que oculta el resto.
 
-En `index.html` linea 41:
-```
-<link rel="canonical" href="https://expense-evolution-ai.lovable.app/" />
-```
-Deberia ser `https://evofinz.com/` cuando conectes tu dominio. Tambien las URLs en JSON-LD (lineas 74, 79, 88-89) siguen usando `expense-evolution-ai.lovable.app`.
+### Nueva Estructura por Tabs
 
-**Cambio:** Actualizar `index.html` reemplazando todas las URLs de `expense-evolution-ai.lovable.app` por `evofinz.com`.
+**Tab 1: Resumen (default)**
+- Summary strip (4 mini-cards) - siempre visible
+- Daily budget indicator
+- Salud Financiera + Consejos Inteligentes (2 cols)
+- Comparacion Mensual + Proximos Pagos (2 cols)
 
----
+**Tab 2: Gastos**
+- Distribucion de Gastos (donut)
+- Detalle por Categoria (con barras de progreso)
+- Calendario de Gastos (heatmap)
+- Gastos del Negocio (si aplica)
 
-## 3. Pagina de Terminos de Servicio Dedicada (/terms)
+**Tab 3: Ritmo**
+- Ritmo de Gasto Diario (cumulative chart)
+- Presupuesto vs Real (by category)
+- Limites por Categoria
+- Alertas
 
-Actualmente los terminos estan embebidos dentro de /legal como una seccion mas. Para una app profesional, especialmente manejando datos financieros, necesitas una pagina dedicada `/terms` que sea enlazable individualmente y que cubra:
-- Condiciones de uso del servicio
-- Politica de suscripciones y pagos
-- Politica de reembolsos
-- Propiedad intelectual
-- Terminacion de cuenta
+**Tab 4: Pagos**
+- Pagos Fijos (lista completa)
+- Proximos Pagos / Recordatorios
+- Ingresos del Mes
 
-**Cambio:** Crear `src/pages/Terms.tsx` con contenido legal completo, bilingue. Agregar ruta `/terms` en App.tsx. Actualizar checkbox de Auth para enlazar a `/terms` separado de `/privacy`.
+**Tab 5: Metas**
+- Metas de Ahorro
+- Proyecciones (savings, annual, rate, daily)
+- Comparacion Ano vs Ano
 
----
+**Tab 6: Herramientas** (icono de engranaje, solo power users)
+- Reglas Automaticas
+- Historial de Cambios
+- Exportar Presupuesto
+- Deudas
+- Suscripciones
+- Progreso / Gamificacion
 
-## 4. Pagina de Estado / Status Page
+### Cambios Clave de UX
 
-No existe forma para los usuarios de saber si la app esta funcionando correctamente o en mantenimiento. Una status page basica da confianza profesional.
+1. **El summary strip (4 mini-cards + daily budget) siempre visible arriba de los tabs** -- es la informacion mas importante y debe verse sin importar que tab este activo
 
-**Cambio:** Crear una pagina simple `/status` que muestre el estado de la app (puede ser estatica por ahora con un indicador de "Operativo" y fecha de ultima verificacion).
+2. **Cada tab muestra solo 3-4 secciones** en lugar de 15, reduciendo dramaticamente el scroll y la complejidad visual
 
----
+3. **Las herramientas avanzadas se agrupan en un solo tab** para no contaminar la vista principal
 
-## 5. "Acerca de" o "Sobre Nosotros"
+4. **Los tabs usan el mismo estilo visual** que ya tiene BudgetSection.tsx (con iconos y badges de conteo)
 
-No existe pagina que explique quien esta detras de EvoFinz. Para confianza y transparencia, especialmente en finanzas, los usuarios quieren saber quien creo la app.
+## Archivos a Modificar
 
-**Cambio:** Crear `/about` con informacion del equipo/fundador, mision de EvoFinz, y enlaces a redes sociales.
+| Archivo | Cambio |
+|---|---|
+| `src/components/budget/FamilyBudgetView.tsx` | Reestructurar: extraer summary strip como siempre-visible, agrupar secciones en tabs usando Tabs/TabsContent de Radix, eliminar scroll nav horizontal |
 
----
+## Detalles Tecnicos
 
-## 6. Sesion por Inactividad (Seguridad)
+- Se reutilizara el componente `Tabs` de Radix UI ya importado en el proyecto
+- Los tabs reemplazaran los botones de scroll nav (`SECTION_IDS`)
+- El estado del tab activo se manejara con `useState` (default: "overview")
+- Todos los sub-componentes existentes se mantienen intactos, solo cambia su agrupacion
+- La logica de onboarding (sin datos) sigue igual
+- El FAB flotante sigue visible en todos los tabs
+- Los tabs seran responsive: en mobile mostraran solo iconos, en desktop icono + texto
+- Se mantendra lazy loading para charts pesados dentro de cada tab
 
-No existe timeout de sesion por inactividad. En una app financiera, si un usuario deja la sesion abierta en un computador compartido, sus datos quedan expuestos indefinidamente.
-
-**Cambio:** Implementar un hook `useSessionTimeout` que detecte inactividad (sin clicks/teclas por 30 minutos) y cierre la sesion automaticamente con un aviso previo de 60 segundos para extender.
-
----
-
-## Resumen de Archivos
-
-| # | Que | Archivo | Tipo |
-|---|---|---|---|
-| 1 | Cambiar contrasena | `src/components/settings/SecurityCard.tsx` (nuevo) + Settings.tsx | Nuevo + Editar |
-| 2 | URLs canonicas | `index.html` | Editar |
-| 3 | Pagina Terminos | `src/pages/Terms.tsx` (nuevo) + App.tsx + Auth.tsx | Nuevo + Editar |
-| 4 | Status page | `src/pages/Status.tsx` (nuevo) + App.tsx | Nuevo + Editar |
-| 5 | About page | `src/pages/About.tsx` (nuevo) + App.tsx + Landing.tsx footer | Nuevo + Editar |
-| 6 | Session timeout | `src/hooks/useSessionTimeout.ts` (nuevo) + App.tsx | Nuevo + Editar |
-
-## Prioridad Recomendada
-
-1. Cambiar contrasena (seguridad basica)
-2. URLs canonicas (SEO, toma 2 minutos)
-3. Terminos de Servicio (legal obligatorio)
-4. Session timeout (seguridad financiera)
-5. About page (confianza)
-6. Status page (profesionalismo)
-
-Total: 5 archivos nuevos, 5 archivos editados. Sin migraciones de base de datos necesarias.
