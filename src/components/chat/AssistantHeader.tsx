@@ -76,7 +76,7 @@ export const AssistantHeader: React.FC<AssistantHeaderProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-foreground">
-              {language === 'es' ? 'Asistente Financiero' : 'Financial Assistant'}
+              EvoFinz
             </h3>
             <Badge variant="outline" className="text-[10px] h-5 px-1.5 gap-1">
               {language === 'es' ? '🇪🇸' : '🇬🇧'} {language.toUpperCase()}

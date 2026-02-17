@@ -168,7 +168,7 @@ export default function Legal() {
             EvoFinz utiliza modelos de inteligencia artificial (IA) para proporcionar funcionalidades como:
           </p>
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>Asistente financiero conversacional ("Phoenix")</li>
+            <li>Asistente financiero conversacional de EvoFinz</li>
             <li>Extracción automática de datos de documentos (OCR)</li>
             <li>Análisis y categorización de gastos</li>
             <li>Sugerencias y recomendaciones personalizadas</li>
@@ -193,7 +193,7 @@ export default function Legal() {
             EvoFinz uses artificial intelligence (AI) models to provide features such as:
           </p>
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>Conversational financial assistant ("Phoenix")</li>
+            <li>Conversational financial assistant (EvoFinz)</li>
             <li>Automatic document data extraction (OCR)</li>
             <li>Expense analysis and categorization</li>
             <li>Personalized suggestions and recommendations</li>

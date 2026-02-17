@@ -988,8 +988,8 @@ export function useSmartGuidance() {
     };
 
     const defaultMessage = {
-      es: `${greeting}, ${userName}. Soy tu asistente financiero. ¿En qué puedo ayudarte hoy?`,
-      en: `${greeting}, ${userName}. I'm your financial assistant. How can I help you today?`
+      es: `${greeting}, ${userName}. Soy EvoFinz, tu asistente. ¿En qué puedo ayudarte hoy?`,
+      en: `${greeting}, ${userName}. I'm EvoFinz, your assistant. How can I help you today?`
     };
 
     const message = pageMessages[path] || defaultMessage;
