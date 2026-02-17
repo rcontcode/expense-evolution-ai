@@ -195,53 +195,65 @@
        });
      }
  
-     // Low savings rate
-     if (totalIncome > 0 && savingsRate < 10) {
-       recs.push({
-         icon: PiggyBank,
-         title: l ? 'Mejora tu tasa de ahorro' : 'Improve your savings rate',
-         description: l
-           ? `Tu tasa actual es ${savingsRate.toFixed(1)}%. El objetivo recomendado es 20%+`
-           : `Your current rate is ${savingsRate.toFixed(1)}%. Recommended target is 20%+`,
-         priority: 'medium',
-       });
-     }
- 
-     // No savings goals
-     if (!savingsGoals || savingsGoals.length === 0) {
-       recs.push({
-         icon: Target,
-         title: l ? 'Crea una meta de ahorro' : 'Create a savings goal',
-         description: l
-           ? 'Las metas te ayudan a mantener el enfoque y la motivación'
-           : 'Goals help you stay focused and motivated',
-         priority: 'medium',
-       });
-     }
- 
-     // Spending increasing
-     if (monthOverMonth > 20) {
-       recs.push({
-         icon: TrendingUp,
-         title: l ? 'Gasto en aumento' : 'Spending increasing',
-         description: l
-           ? `Tus gastos subieron ${monthOverMonth.toFixed(0)}% vs. el mes pasado`
-           : `Your spending is up ${monthOverMonth.toFixed(0)}% vs. last month`,
-         priority: 'medium',
-       });
-     }
- 
-     // Positive: good savings rate
-     if (savingsRate >= 20) {
-       recs.push({
-         icon: Trophy,
-         title: l ? '¡Excelente tasa de ahorro!' : 'Excellent savings rate!',
-         description: l
-           ? `Estás ahorrando el ${savingsRate.toFixed(0)}% de tus ingresos. ¡Sigue así!`
-           : `You're saving ${savingsRate.toFixed(0)}% of your income. Keep it up!`,
-         priority: 'low',
-       });
-     }
+      // No expenses warning
+      if (totalIncome > 0 && totalSpent === 0) {
+        recs.push({
+          icon: AlertTriangle,
+          title: l ? 'Sin gastos registrados' : 'No expenses recorded',
+          description: l
+            ? 'Tienes ingresos pero no has registrado gastos. Las métricas no reflejan tu realidad.'
+            : "You have income but no expenses recorded. Metrics don't reflect reality.",
+          priority: 'high',
+        });
+      }
+
+      // Low savings rate
+      if (totalIncome > 0 && savingsRate < 10 && totalSpent > 0) {
+        recs.push({
+          icon: PiggyBank,
+          title: l ? 'Mejora tu tasa de ahorro' : 'Improve your savings rate',
+          description: l
+            ? `Tu tasa actual es ${savingsRate.toFixed(1)}%. El objetivo recomendado es 20%+`
+            : `Your current rate is ${savingsRate.toFixed(1)}%. Recommended target is 20%+`,
+          priority: 'medium',
+        });
+      }
+
+      // No savings goals
+      if (!savingsGoals || savingsGoals.length === 0) {
+        recs.push({
+          icon: Target,
+          title: l ? 'Crea una meta de ahorro' : 'Create a savings goal',
+          description: l
+            ? 'Las metas te ayudan a mantener el enfoque y la motivación'
+            : 'Goals help you stay focused and motivated',
+          priority: 'medium',
+        });
+      }
+
+      // Spending increasing
+      if (monthOverMonth > 20) {
+        recs.push({
+          icon: TrendingUp,
+          title: l ? 'Gasto en aumento' : 'Spending increasing',
+          description: l
+            ? `Tus gastos subieron ${monthOverMonth.toFixed(0)}% vs. el mes pasado`
+            : `Your spending is up ${monthOverMonth.toFixed(0)}% vs. last month`,
+          priority: 'medium',
+        });
+      }
+
+      // Positive: good savings rate
+      if (savingsRate >= 20 && totalSpent > 0) {
+        recs.push({
+          icon: Trophy,
+          title: l ? '¡Excelente tasa de ahorro!' : 'Excellent savings rate!',
+          description: l
+            ? `Estás ahorrando el ${savingsRate.toFixed(0)}% de tus ingresos. ¡Sigue así!`
+            : `You're saving ${savingsRate.toFixed(0)}% of your income. Keep it up!`,
+          priority: 'low',
+        });
+      }
  
      return recs.sort((a, b) => {
        const priority = { high: 0, medium: 1, low: 2 };

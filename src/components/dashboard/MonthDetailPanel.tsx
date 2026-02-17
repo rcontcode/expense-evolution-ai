@@ -280,13 +280,19 @@ export function MonthDetailPanel({
         : `Hi ${firstName}! No activity this month yet. Shall we start tracking?`;
     }
     
-    if (isPositive && Number(savingsRate) >= 20) {
+    if (totals.totalIncome > 0 && totals.totalExpenses === 0) {
+      return language === 'es'
+        ? `${firstName}, tienes ingresos registrados pero aún no has registrado gastos este mes. Registra tus gastos para ver tu situación real 📝`
+        : `${firstName}, you have income recorded but no expenses this month yet. Add your expenses to see your real situation 📝`;
+    }
+
+    if (isPositive && Number(savingsRate) >= 20 && totals.totalExpenses > 0) {
       return language === 'es'
         ? `¡Excelente ${firstName}! Estás ahorrando el ${savingsRate}% de tus ingresos 🎯`
         : `Excellent ${firstName}! You're saving ${savingsRate}% of your income 🎯`;
     }
     
-    if (isPositive && Number(savingsRate) >= 10) {
+    if (isPositive && Number(savingsRate) >= 10 && totals.totalExpenses > 0) {
       return language === 'es'
         ? `Bien hecho ${firstName}. Vas por buen camino con ${savingsRate}% de ahorro 💪`
         : `Well done ${firstName}. On track with ${savingsRate}% savings 💪`;
