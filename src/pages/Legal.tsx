@@ -10,14 +10,14 @@ import {
   BookOpen, 
   FileText, 
   Lock, 
-  AlertTriangle,
   ArrowLeft,
   ExternalLink,
   Building2,
   Bot,
   UserCheck,
   Mail,
-  Heart
+  Heart,
+  ArrowRight
 } from 'lucide-react';
 
 export default function Legal() {
@@ -114,50 +114,6 @@ export default function Legal() {
       ),
     },
     {
-      id: 'liability',
-      icon: AlertTriangle,
-      title: isEs ? 'Sobre Nuestra Responsabilidad' : 'About Our Responsibility',
-      color: 'text-amber-500',
-      content: isEs ? (
-        <>
-          <p className="mb-4">
-            EvoFinz es una herramienta gratuita/de bajo costo creada con buenas intenciones, pero como toda 
-            herramienta, tiene limitaciones:
-          </p>
-          <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>No podemos garantizar que todos los cálculos sean 100% exactos — son estimaciones basadas en 
-            información general y en los datos que tú proporcionas</li>
-            <li>No nos hacemos responsables de decisiones financieras que tomes basándote únicamente en la app</li>
-            <li>Si algo no funciona como esperabas o encuentras un error, por favor avísanos para que podamos mejorarlo</li>
-            <li>Hacemos nuestro mejor esfuerzo para mantener la información actualizada, pero las leyes fiscales 
-            y tasas cambian frecuentemente</li>
-          </ul>
-          <p className="text-sm text-muted-foreground">
-            En cualquier caso, si hubiese alguna reclamación, nuestra responsabilidad se limita al monto que 
-            hayas pagado por usar el servicio en los últimos 12 meses.
-          </p>
-        </>
-      ) : (
-        <>
-          <p className="mb-4">
-            EvoFinz is a free/low-cost tool created with good intentions, but like any tool, 
-            it has limitations:
-          </p>
-          <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>We can't guarantee that all calculations are 100% accurate — they're estimates based on 
-            general information and the data you provide</li>
-            <li>We are not responsible for financial decisions you make based solely on the app</li>
-            <li>If something doesn't work as expected or you find an error, please let us know so we can improve it</li>
-            <li>We do our best to keep information up to date, but tax laws and rates change frequently</li>
-          </ul>
-          <p className="text-sm text-muted-foreground">
-            In any case, if there were any claims, our liability is limited to the amount you've 
-            paid for using the service in the last 12 months.
-          </p>
-        </>
-      ),
-    },
-    {
       id: 'ai-content',
       icon: Bot,
       title: isEs ? 'Contenido Generado por Inteligencia Artificial' : 'AI-Generated Content',
@@ -174,7 +130,7 @@ export default function Legal() {
             <li>Sugerencias y recomendaciones personalizadas</li>
           </ul>
           <div className="p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20 mb-4">
-            <p className="text-sm font-medium mb-2">⚠️ {isEs ? 'Advertencia sobre IA:' : 'AI Warning:'}</p>
+            <p className="text-sm font-medium mb-2">⚠️ Advertencia sobre IA:</p>
             <ul className="text-sm space-y-1">
               <li>• El contenido generado por IA puede contener <strong>errores, imprecisiones o "alucinaciones"</strong></li>
               <li>• Las respuestas del asistente NO constituyen asesoría profesional</li>
@@ -358,7 +314,7 @@ export default function Legal() {
           </p>
           <p className="mb-4">
             Las citas incluidas se utilizan bajo el principio de <strong>Uso Justo (Fair Use)</strong> con fines educativos, 
-            siempre con atribución al autor original y su obra. Las citas son breves, transformativas en contexto, 
+            siempre con atribución al autor original y su obra. Las citas son breves, transformativas en contexto,
             y no sustituyen la lectura de las obras originales.
           </p>
           <p className="text-sm text-muted-foreground">
@@ -376,7 +332,7 @@ export default function Legal() {
           <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20 mb-4">
             <p className="text-sm font-medium mb-2">📚 Content Attribution:</p>
             <ul className="text-sm space-y-1">
-              <li>• "Rich Dad Poor Dad", "Cashflow Quadrant" and related concepts are works by <strong>Robert T. Kiyosaki</strong></li>
+              <li>• "Rich Dad Poor Dad", "Cashflow Quadrant", "Rich Dad Poor Dad" are registered trademarks of Cashflow Technologies, Inc.</li>
               <li>• "The Total Money Makeover" and debt elimination principles are by <strong>Dave Ramsey</strong></li>
               <li>• "Atomic Habits" is a work by <strong>James Clear</strong></li>
               <li>• SMART Goals and productivity principles are attributed to <strong>Brian Tracy</strong></li>
@@ -445,154 +401,6 @@ export default function Legal() {
       ),
     },
     {
-      id: 'privacy',
-      icon: Lock,
-      title: isEs ? 'Privacidad y Datos' : 'Privacy & Data',
-      color: 'text-cyan-500',
-      content: isEs ? (
-        <>
-          <p className="mb-4 font-medium">
-            Tus datos son tuyos. Así de simple. Aquí te explicamos cómo los manejamos:
-          </p>
-          
-          <p className="font-medium text-sm mb-2">Datos que recopilamos:</p>
-          <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>Información de cuenta (email, nombre)</li>
-            <li>Datos financieros que tú ingresas voluntariamente (ingresos, gastos, activos, deudas)</li>
-            <li>Documentos que subes para procesamiento (facturas, recibos)</li>
-            <li>Datos de uso y navegación dentro de la aplicación</li>
-          </ul>
-
-          <p className="font-medium text-sm mb-2">Cómo usamos tus datos:</p>
-          <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>Para que la app funcione y te muestre tu información organizada</li>
-            <li>Para procesamiento por IA (OCR, asistente, análisis) — tus datos pueden ser enviados a 
-            proveedores de IA para procesamiento</li>
-            <li>Para mejorar la experiencia del usuario y el servicio</li>
-          </ul>
-
-          <p className="font-medium text-sm mb-2">Protección de datos:</p>
-          <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>Tus datos financieros se almacenan de forma segura y encriptada</li>
-            <li><strong>No vendemos</strong> tu información personal a terceros</li>
-            <li>No compartimos datos personales para fines publicitarios</li>
-            <li>Puedes exportar o solicitar eliminación de tus datos en cualquier momento</li>
-          </ul>
-
-          <p className="font-medium text-sm mb-2">Cookies:</p>
-          <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>Usamos cookies esenciales para que la app funcione (sesión, autenticación)</li>
-            <li>Podemos usar cookies analíticas para entender cómo se usa la app</li>
-            <li>No usamos cookies de seguimiento publicitario</li>
-          </ul>
-
-          <p className="font-medium text-sm mb-2">Si quieres irte:</p>
-          <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>Puedes eliminar tu cuenta cuando quieras</li>
-            <li>Al eliminar tu cuenta, tus datos se borran dentro de 30 días</li>
-            <li>Podemos retener datos anónimos y agregados para estadísticas generales</li>
-          </ul>
-          <div className="p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20 mt-4">
-            <p className="text-sm">
-              📖 Para información completa sobre privacidad, acceso de administradores y protección de datos, 
-              consulta nuestra <a href="/privacy" className="text-primary hover:underline font-medium">Política de Privacidad detallada</a>.
-            </p>
-          </div>
-        </>
-      ) : (
-        <>
-          <p className="mb-4 font-medium">
-            Your data is yours. It's that simple. Here's how we handle it:
-          </p>
-          
-          <p className="font-medium text-sm mb-2">Data we collect:</p>
-          <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>Account information (email, name)</li>
-            <li>Financial data you voluntarily enter (income, expenses, assets, debts)</li>
-            <li>Documents you upload for processing (invoices, receipts)</li>
-            <li>Usage and navigation data within the application</li>
-          </ul>
-
-          <p className="font-medium text-sm mb-2">How we use your data:</p>
-          <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>To make the app work and show you your organized information</li>
-            <li>For AI processing (OCR, assistant, analysis) — your data may be sent to 
-            AI providers for processing</li>
-            <li>To improve user experience and service</li>
-          </ul>
-
-          <p className="font-medium text-sm mb-2">Data protection:</p>
-          <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>Your financial data is stored securely and encrypted</li>
-            <li><strong>We do not sell</strong> your personal information to third parties</li>
-            <li>We do not share personal data for advertising purposes</li>
-            <li>You can export or request deletion of your data at any time</li>
-          </ul>
-
-          <p className="font-medium text-sm mb-2">Cookies:</p>
-          <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>We use essential cookies for app functionality (session, authentication)</li>
-            <li>We may use analytical cookies to understand how the app is used</li>
-            <li>We do not use advertising tracking cookies</li>
-          </ul>
-
-          <p className="font-medium text-sm mb-2">If you want to leave:</p>
-          <ul className="list-disc pl-6 mb-4 space-y-1">
-            <li>You can delete your account whenever you want</li>
-            <li>Upon account deletion, your data will be deleted within 30 days</li>
-            <li>We may retain anonymized and aggregated data for general statistics</li>
-          </ul>
-          <div className="p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20 mt-4">
-            <p className="text-sm">
-              📖 For complete information on privacy, administrator access and data protection, 
-              see our <a href="/privacy" className="text-primary hover:underline font-medium">detailed Privacy Policy</a>.
-            </p>
-          </div>
-        </>
-      ),
-    },
-    {
-      id: 'terms',
-      icon: FileText,
-      title: isEs ? 'Términos de Uso' : 'Terms of Use',
-      color: 'text-orange-500',
-      content: isEs ? (
-        <>
-          <p className="mb-4">
-            Al usar EvoFinz aceptas estas reglas sencillas:
-          </p>
-          <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>Usarás la app para organizar tus finanzas personales y aprender — no para actividades ilegales</li>
-            <li>Entiendes que toda la información es aproximada y educativa</li>
-            <li>Para decisiones financieras importantes, consultarás con un profesional</li>
-            <li>La información que ingreses será lo más precisa posible para que las estimaciones sean útiles</li>
-            <li>No intentarás acceder a datos de otros usuarios ni vulnerar la seguridad del sistema</li>
-          </ul>
-          <p className="text-sm text-muted-foreground">
-            Podemos actualizar estos términos de vez en cuando. Si hacemos cambios importantes, te avisaremos. 
-            Seguir usando la app después de un cambio significa que los aceptas.
-          </p>
-        </>
-      ) : (
-        <>
-          <p className="mb-4">
-            By using EvoFinz you agree to these simple rules:
-          </p>
-          <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li>You'll use the app to organize your personal finances and learn — not for illegal activities</li>
-            <li>You understand that all information is approximate and educational</li>
-            <li>For important financial decisions, you'll consult with a professional</li>
-            <li>The information you enter will be as accurate as possible so estimates are useful</li>
-            <li>You won't try to access other users' data or breach system security</li>
-          </ul>
-          <p className="text-sm text-muted-foreground">
-            We may update these terms from time to time. If we make important changes, we'll let you know. 
-            Continuing to use the app after a change means you accept them.
-          </p>
-        </>
-      ),
-    },
-    {
       id: 'contact',
       icon: Mail,
       title: isEs ? 'Resolución de Dudas y Contacto' : 'Questions & Contact',
@@ -644,6 +452,29 @@ export default function Legal() {
           </p>
         </>
       ),
+    },
+  ];
+
+  const legalDocuments = [
+    {
+      icon: FileText,
+      title: isEs ? 'Términos de Servicio' : 'Terms of Service',
+      description: isEs 
+        ? 'Suscripciones, pagos, reembolsos, propiedad intelectual y terminación de cuenta.'
+        : 'Subscriptions, payments, refunds, intellectual property and account termination.',
+      to: '/terms',
+      color: 'text-orange-500',
+      bgColor: 'bg-orange-500/10 border-orange-500/20 hover:border-orange-500/40',
+    },
+    {
+      icon: Lock,
+      title: isEs ? 'Política de Privacidad' : 'Privacy Policy',
+      description: isEs 
+        ? 'Cómo recopilamos, usamos y protegemos tus datos personales y financieros.'
+        : 'How we collect, use and protect your personal and financial data.',
+      to: '/privacy',
+      color: 'text-cyan-500',
+      bgColor: 'bg-cyan-500/10 border-cyan-500/20 hover:border-cyan-500/40',
     },
   ];
 
@@ -729,6 +560,35 @@ export default function Legal() {
               </Card>
             );
           })}
+        </div>
+
+        {/* Legal Documents Navigation Cards */}
+        <div className="mt-8" id="legal-docs">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" />
+            {isEs ? 'Documentos Legales Completos' : 'Complete Legal Documents'}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {legalDocuments.map((doc) => {
+              const Icon = doc.icon;
+              return (
+                <Link key={doc.to} to={doc.to}>
+                  <Card className={`border ${doc.bgColor} transition-all duration-200 cursor-pointer group`}>
+                    <CardContent className="p-5 flex items-start gap-4">
+                      <div className="p-2.5 rounded-lg bg-background/80 shadow-sm">
+                        <Icon className={`h-5 w-5 ${doc.color}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm mb-1">{doc.title}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{doc.description}</p>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors mt-1 flex-shrink-0" />
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
         {/* Footer */}
