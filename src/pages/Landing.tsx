@@ -20,6 +20,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { SocialLinks } from '@/components/SocialLinks';
 import { ContactForm } from '@/components/ContactForm';
+import { LiveSocialProof } from '@/components/landing/LiveSocialProof';
+import { UrgencyBanner } from '@/components/landing/UrgencyBanner';
+import { Wallet, CalendarCheck } from 'lucide-react';
 
 // Lazy loader with retry for transient network errors
 function lazyWithRetry<T extends ComponentType<unknown>>(
@@ -151,17 +154,17 @@ const getFeatures = (language: string) => [
     row: 2
   },
   { 
-    icon: Building2, 
-    title: language === 'es' ? 'Análisis Bancario' : 'Bank Analysis', 
-    description: language === 'es' ? '🏦 Detecta anomalías ocultas' : '🏦 Detect hidden anomalies', 
-    tier: 'Pro', 
+    icon: Wallet, 
+    title: language === 'es' ? 'Presupuesto Familiar' : 'Family Budget', 
+    description: language === 'es' ? '🏠 Límites, alertas y salud financiera' : '🏠 Limits, alerts & financial health', 
+    tier: 'Premium', 
     color: 'from-violet-500 to-purple-500',
     row: 3
   },
   { 
-    icon: CreditCard, 
-    title: language === 'es' ? 'Suscripciones' : 'Subscriptions', 
-    description: language === 'es' ? '💳 Encuentra gastos fantasma' : '💳 Find phantom expenses', 
+    icon: CalendarCheck, 
+    title: language === 'es' ? 'Centro de Pagos' : 'Bills Center', 
+    description: language === 'es' ? '📅 Pagos fijos y recurrentes' : '📅 Fixed & recurring bills', 
     tier: 'Premium', 
     color: 'from-pink-500 to-rose-500',
     row: 3
@@ -397,12 +400,12 @@ export default function Landing() {
       const annualTotal = monthlyPrice * 12 * 0.8; // 20% discount
       const monthlyEquivalent = (annualTotal / 12).toFixed(2);
       return { 
-        display: `$${monthlyEquivalent}`, 
+        display: `$${monthlyEquivalent} USD`, 
         period: language === 'es' ? '/mes' : '/mo',
-        savings: language === 'es' ? `Ahorras $${(monthlyPrice * 12 * 0.2).toFixed(0)}/año` : `Save $${(monthlyPrice * 12 * 0.2).toFixed(0)}/year`
+        savings: language === 'es' ? `Ahorras $${(monthlyPrice * 12 * 0.2).toFixed(0)} USD/año` : `Save $${(monthlyPrice * 12 * 0.2).toFixed(0)} USD/year`
       };
     }
-    return { display: `$${monthlyPrice.toFixed(2)}`, period: language === 'es' ? '/mes' : '/mo', savings: '' };
+    return { display: `$${monthlyPrice.toFixed(2)} USD`, period: language === 'es' ? '/mes' : '/mo', savings: '' };
   };
 
   const validateBetaCode = async (code: string) => {
@@ -766,6 +769,16 @@ export default function Landing() {
             </motion.div>
 
             {/* Beta Code Input */}
+            {/* Live Social Proof - after CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 1.1 }}
+              className="max-w-md mx-auto mb-8"
+            >
+              <LiveSocialProof />
+            </motion.div>
+
             {showBetaInput && (
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
@@ -1153,6 +1166,13 @@ export default function Landing() {
               ? '✨ Cada herramienta diseñada para acelerar tu transformación financiera'
               : '✨ Each tool designed to accelerate your financial transformation'}
           </motion.p>
+        </div>
+      </section>
+
+      {/* Urgency Banner - before pricing */}
+      <section className="py-6 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <UrgencyBanner variant="banner" />
         </div>
       </section>
 
@@ -1660,47 +1680,27 @@ export default function Landing() {
               </div>
             </div>
             
-            {/* Security Certifications Links */}
+            {/* Security Certifications */}
             <div className="flex flex-wrap items-center justify-center gap-4 py-4 border-t border-slate-800">
               <span className="text-xs text-slate-500">
-                {language === 'es' ? 'Verificar certificaciones:' : 'Verify certifications:'}
+                {language === 'es' ? 'Certificaciones de seguridad:' : 'Security certifications:'}
               </span>
-              <a 
-                href="https://supabase.com/security" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-xs text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1"
-              >
+              <span className="text-xs text-slate-400 flex items-center gap-1">
                 <Shield className="h-3 w-3" />
                 SOC 2 Type II
-              </a>
-              <a 
-                href="https://supabase.com/docs/guides/platform/going-into-prod#security" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-xs text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1"
-              >
+              </span>
+              <span className="text-xs text-slate-400 flex items-center gap-1">
                 <Shield className="h-3 w-3" />
-                {language === 'es' ? 'Seguridad de Infraestructura' : 'Infrastructure Security'}
-              </a>
-              <a 
-                href="https://supabase.com/privacy" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-xs text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1"
-              >
+                {language === 'es' ? 'Infraestructura Certificada' : 'Certified Infrastructure'}
+              </span>
+              <span className="text-xs text-slate-400 flex items-center gap-1">
                 <Shield className="h-3 w-3" />
-                GDPR
-              </a>
-              <a 
-                href="https://aws.amazon.com/compliance/data-center/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-xs text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1"
-              >
+                {language === 'es' ? 'Protección GDPR' : 'GDPR Compliant'}
+              </span>
+              <span className="text-xs text-slate-400 flex items-center gap-1">
                 <Shield className="h-3 w-3" />
-                AWS {language === 'es' ? 'Centros de Datos' : 'Data Centers'}
-              </a>
+                {language === 'es' ? 'Encriptación AES-256' : 'AES-256 Encryption'}
+              </span>
             </div>
             
             <div className="text-center border-t border-slate-800 pt-4">
