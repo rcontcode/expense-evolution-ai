@@ -1,85 +1,76 @@
 
-# Flujo de Suscripciones Detectadas: Diagnostico y Correccion
+# Diagnostico: El Flujo de Captura esta Fragmentado y Sin Guia Clara
 
-## Como funciona hoy
+## El Problema
 
-El flujo de deteccion de suscripciones desde extractos bancarios tiene **3 etapas**, pero hay una desconexion entre Banking y el resto del sistema:
+Hoy el usuario tiene **5 puntos de entrada distintos** para registrar documentos financieros, pero **ninguno le dice claramente "mete todo aqui"**:
 
 ```text
-EXTRACTO BANCARIO (CSV/foto/PDF)
-        |
-        v
-  [Edge Function: analyze-bank-statement]
-        |
-        v
-  Tabla: bank_transactions (persistido)
-        |
-        +---> useBankInsights() --> recurringPayments (en memoria, NO se guarda)
-        |         |
-        |         v
-        |    Banking/SubscriptionTracker (INFERIOR)
-        |    - Solo muestra lista
-        |    - NO puede convertir a gasto fijo
-        |    - NO se conecta con Presupuesto
-        |
-        +---> useSubscriptionDetector() --> DetectedSubscription[] (en memoria)
-                  |
-                  v
-             Subscriptions/SubscriptionTracker (SUPERIOR)
-             - Analiza expenses + bank_transactions
-             - PUEDE convertir a recurring_bills (tabla real)
-             - Se usa en Dashboard, Budget, FamiliaArea
-             - Pero NO se usa en Banking!
+Punto de Entrada          Que acepta                    Donde esta
+─────────────────────────────────────────────────────────────────────
+1. Boton + (FAB)          Foto de recibo, texto libre   Barra inferior movil
+2. Quick Capture sidebar  Foto, voz, texto libre        Sidebar izquierdo (desktop)
+3. Banking > Importar     CSV, PDF, foto de extracto    /banking (escondido)
+4. Centro de Revision     Fotos pendientes de revisar   /chaos-inbox
+5. Gastos > Agregar       Formulario manual              /expenses
 ```
 
-## El problema
+**Problemas concretos:**
+- No existe una pagina o seccion que diga: "Aqui puedes meter TODOS tus documentos"
+- El usuario no sabe que el FAB puede procesar boletas
+- El import de extractos bancarios solo esta en /banking, no es obvio
+- No hay guia paso a paso: "1. Sube extractos, 2. Sube boletas, 3. Revisa lo detectado"
+- El InteractiveWelcome del Dashboard menciona las acciones pero no explica el flujo completo
 
-1. **Banking usa el tracker INFERIOR**: El modulo de Banking (`/banking`) importa su propio `SubscriptionTracker` local que solo lee pagos recurrentes en memoria y no permite hacer nada con ellos.
+## La Solucion: "Centro de Captura" Unificado
 
-2. **Las suscripciones detectadas nunca se guardan automaticamente**: Son calculadas en memoria cada vez. Solo se persisten cuando el usuario manualmente hace clic en "Convertir en gasto fijo" desde el tracker SUPERIOR (que no esta disponible en Banking).
+Crear un **panel visible en /budget** (donde el usuario ya esta) que unifique TODOS los metodos de entrada en un solo lugar con instrucciones claras.
 
-3. **Resultado**: Si importas un extracto bancario en `/banking`, ves las suscripciones detectadas pero no puedes hacer nada con ellas. Tienes que ir a `/budget` o `/dashboard` para convertirlas en gastos fijos.
+### Componente Nuevo: `CaptureHub.tsx`
 
-## Plan de correccion
+Un card prominente dentro del tab de presupuesto que muestre:
 
-### 1. Eliminar el SubscriptionTracker duplicado de Banking
-
-Borrar el archivo `src/components/banking/SubscriptionTracker.tsx` (222 lineas) que es la version inferior.
-
-### 2. Actualizar BankAnalysisDashboard para usar el tracker superior
-
-En `src/components/banking/BankAnalysisDashboard.tsx`, cambiar el import de:
+```text
+┌─────────────────────────────────────────────────┐
+│  📥 Centro de Captura - Registra Todo Aqui      │
+│                                                  │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
+│  │ 📷 Foto  │  │ 📝 Texto │  │ 🏦 Banco │      │
+│  │ Boletas, │  │ "pague   │  │ CSV, PDF │      │
+│  │ cuentas, │  │  $50 de  │  │ o foto   │      │
+│  │ recibos  │  │  luz"    │  │ extracto │      │
+│  └──────────┘  └──────────┘  └──────────┘      │
+│                                                  │
+│  Como funciona:                                  │
+│  1. Sube cualquier documento financiero          │
+│  2. La IA extrae datos y clasifica               │
+│  3. Detecta suscripciones y pagos recurrentes    │
+│  4. Todo aparece organizado en tu presupuesto    │
+│                                                  │
+│  [Ver documentos pendientes de revision (3)]     │
+└─────────────────────────────────────────────────┘
 ```
-import { SubscriptionTracker } from './SubscriptionTracker';
-```
-a:
-```
-import { SubscriptionTracker } from '@/components/subscriptions/SubscriptionTracker';
-```
 
-Esto le da al usuario en Banking la misma capacidad que ya tiene en Dashboard y Budget: ver suscripciones detectadas con score de confianza y boton "Convertir en gasto fijo".
+### Que hace cada boton:
+- **Foto**: Abre el QuickCaptureDialog (tab foto) - boletas, cuentas de celular, recibos, e-transfers
+- **Texto**: Abre el QuickCaptureDialog (tab texto) - "pague $45 de internet", "recibi $2000 de salario"
+- **Banco**: Abre el BankImportDialog - extractos bancarios CSV, PDF o foto
 
-### 3. Actualizar el barrel export de Banking
+### Donde se coloca:
+- En `BudgetCommandCenter.tsx`, como primera seccion visible (antes de los charts)
+- Reemplaza la necesidad de que el usuario navegue a /banking para importar extractos
 
-En `src/components/banking/index.ts`, eliminar la linea:
-```
-export { SubscriptionTracker } from './SubscriptionTracker';
-```
-
-### Resultado
-
-- El usuario importa su extracto bancario en `/banking`
-- Ve las suscripciones detectadas (igual que antes)
-- Ahora puede hacer clic en "Convertir en gasto fijo" directamente desde Banking
-- Eso inserta en la tabla `recurring_bills`
-- El gasto fijo aparece en Presupuesto > Pagos, con fecha de proximo cobro y alertas
-
-### Archivos afectados
+### Archivos a crear/modificar:
 
 | Archivo | Cambio |
 |---|---|
-| `src/components/banking/SubscriptionTracker.tsx` | ELIMINAR |
-| `src/components/banking/BankAnalysisDashboard.tsx` | Cambiar import a `@/components/subscriptions/SubscriptionTracker` |
-| `src/components/banking/index.ts` | Quitar export del tracker eliminado |
+| `src/components/budget/CaptureHub.tsx` | NUEVO - panel unificado con 3 botones + explicacion |
+| `src/components/budget/BudgetCommandCenter.tsx` | Agregar CaptureHub como primera seccion visible |
 
-Solo 3 archivos. Sin cambios de logica ni base de datos. El tracker superior ya existe y funciona perfectamente.
+### Detalles del CaptureHub:
+- 3 cards clickeables (Foto, Texto, Banco) con iconos grandes y descripcion clara
+- Seccion "Como funciona" con 4 pasos numerados
+- Link al Centro de Revision si hay documentos pendientes (usa conteo de expenses en estado "revision")
+- Banner educativo colapsable: "Que puedo subir?" con lista de ejemplos (extractos, boletas de luz, cuentas de celular, e-transfers, recibos de compra, facturas)
+- Bilingue ES/EN
+- Reutiliza QuickCaptureDialog y BankImportDialog existentes, no duplica logica
