@@ -12,10 +12,11 @@
    AlertTriangle,
    CheckCircle2
  } from 'lucide-react';
- import { useLanguage } from '@/contexts/LanguageContext';
- import { useBankTransactions } from '@/hooks/data/useBankTransactions';
- import { useBankInsights } from '@/hooks/data/useBankAnalysis';
- import { useUserSettings, UserPreferences } from '@/hooks/data/useUserSettings';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useBankTransactions } from '@/hooks/data/useBankTransactions';
+import { useBankInsights } from '@/hooks/data/useBankAnalysis';
+import { useUserSettings, UserPreferences } from '@/hooks/data/useUserSettings';
+import { useExpenses } from '@/hooks/data/useExpenses';
  import { motion } from 'framer-motion';
  import { format, startOfMonth, endOfMonth, getDaysInMonth, differenceInDays, subMonths, parseISO } from 'date-fns';
  import { es } from 'date-fns/locale';
@@ -30,70 +31,100 @@
  }
  
  export function SpendingPredictor() {
-   const { language } = useLanguage();
-   const { data: transactions } = useBankTransactions();
-   const { data: settings } = useUserSettings();
-   const insights = useBankInsights();
+  const { language } = useLanguage();
+  const { data: transactions } = useBankTransactions();
+  const { data: expenses } = useExpenses();
+  const { data: settings } = useUserSettings();
+  const insights = useBankInsights();
+  
+  const preferences = (settings?.preferences as UserPreferences) || {};
+  const globalBudget = preferences.global_monthly_budget || 0;
+  
+  const now = new Date();
+  const dayOfMonth = now.getDate();
+  const daysInMonth = getDaysInMonth(now);
+  const daysRemaining = daysInMonth - dayOfMonth;
+  const monthProgress = (dayOfMonth / daysInMonth) * 100;
+  
+  // Unify both data sources into { date, amount }
+  const unifiedData = useMemo(() => {
+    const items: { date: string; amount: number }[] = [];
+    
+    // Add expenses (excluding soft-deleted)
+    if (expenses?.length) {
+      expenses.forEach(e => {
+        if (!e.deleted_at) {
+          items.push({ date: e.date, amount: Math.abs(Number(e.amount)) });
+        }
+      });
+    }
+    
+    // Collect matched expense IDs to deduplicate
+    const matchedExpenseIds = new Set(
+      transactions?.filter(t => t.matched_expense_id).map(t => t.matched_expense_id) || []
+    );
+    
+    // Add bank transactions that are NOT already matched to an expense
+    if (transactions?.length) {
+      transactions.forEach(t => {
+        if (!t.matched_expense_id) {
+          items.push({ date: t.transaction_date, amount: Math.abs(Number(t.amount)) });
+        }
+      });
+    }
+    
+    return items;
+  }, [transactions, expenses]);
+  
+  const predictions = useMemo(() => {
+    if (unifiedData.length === 0) {
+      return { monthEndPrediction: 0, dailyAvg: 0, projectedSavings: 0, onTrack: true, predictions: [] };
+    }
+    
+    const monthStart = startOfMonth(now);
+    
+    // Current month spending
+    const currentMonthItems = unifiedData.filter(item => {
+      const date = parseISO(item.date);
+      return date >= monthStart && date <= now;
+    });
+    
+    const currentSpent = currentMonthItems.reduce((sum, item) => sum + item.amount, 0);
+    const dailyAvg = dayOfMonth > 0 ? currentSpent / dayOfMonth : 0;
+    const monthEndPrediction = dailyAvg * daysInMonth;
+    
+    // Previous month for historical comparison
+    const lastMonthStart = startOfMonth(subMonths(now, 1));
+    const lastMonthEnd = endOfMonth(subMonths(now, 1));
+    const lastMonthItems = unifiedData.filter(item => {
+      const date = parseISO(item.date);
+      return date >= lastMonthStart && date <= lastMonthEnd;
+    });
+    const lastMonthTotal = lastMonthItems.reduce((sum, item) => sum + item.amount, 0);
+    
+    // Calculate projected savings
+    const projectedSavings = globalBudget > 0 ? globalBudget - monthEndPrediction : 0;
+    const onTrack = globalBudget > 0 ? monthEndPrediction <= globalBudget : true;
+    
+    // Trend analysis
+    const percentChange = lastMonthTotal > 0 
+      ? ((monthEndPrediction - lastMonthTotal) / lastMonthTotal) * 100 
+      : 0;
+    
+    return {
+      monthEndPrediction,
+      dailyAvg,
+      currentSpent,
+      lastMonthTotal,
+      projectedSavings,
+      onTrack,
+      percentChange,
+      daysRemaining,
+      predictions: [] as Prediction[]
+    };
+  }, [unifiedData, globalBudget, dayOfMonth, daysInMonth, now]);
    
-   const preferences = (settings?.preferences as UserPreferences) || {};
-   const globalBudget = preferences.global_monthly_budget || 0;
-   
-   const now = new Date();
-   const dayOfMonth = now.getDate();
-   const daysInMonth = getDaysInMonth(now);
-   const daysRemaining = daysInMonth - dayOfMonth;
-   const monthProgress = (dayOfMonth / daysInMonth) * 100;
-   
-   const predictions = useMemo(() => {
-     if (!transactions || transactions.length === 0) {
-       return { monthEndPrediction: 0, dailyAvg: 0, projectedSavings: 0, onTrack: true, predictions: [] };
-     }
-     
-     const monthStart = startOfMonth(now);
-     const monthEnd = endOfMonth(now);
-     
-     // Current month spending
-     const currentMonthTx = transactions.filter(t => {
-       const date = parseISO(t.transaction_date);
-       return date >= monthStart && date <= now;
-     });
-     
-     const currentSpent = currentMonthTx.reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
-     const dailyAvg = dayOfMonth > 0 ? currentSpent / dayOfMonth : 0;
-     const monthEndPrediction = dailyAvg * daysInMonth;
-     
-     // Previous months for historical comparison
-     const lastMonthStart = startOfMonth(subMonths(now, 1));
-     const lastMonthEnd = endOfMonth(subMonths(now, 1));
-     const lastMonthTx = transactions.filter(t => {
-       const date = parseISO(t.transaction_date);
-       return date >= lastMonthStart && date <= lastMonthEnd;
-     });
-     const lastMonthTotal = lastMonthTx.reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
-     
-     // Calculate projected savings
-     const projectedSavings = globalBudget > 0 ? globalBudget - monthEndPrediction : 0;
-     const onTrack = globalBudget > 0 ? monthEndPrediction <= globalBudget : true;
-     
-     // Trend analysis
-     const percentChange = lastMonthTotal > 0 
-       ? ((monthEndPrediction - lastMonthTotal) / lastMonthTotal) * 100 
-       : 0;
-     
-     return {
-       monthEndPrediction,
-       dailyAvg,
-       currentSpent,
-       lastMonthTotal,
-       projectedSavings,
-       onTrack,
-       percentChange,
-       daysRemaining,
-       predictions: [] as Prediction[]
-     };
-   }, [transactions, globalBudget, dayOfMonth, daysInMonth, now]);
-   
-   if (!transactions || transactions.length === 0) return null;
+   if (unifiedData.length === 0) return null;
    
    const l = language === 'es';
    
@@ -115,8 +146,8 @@
                <CardTitle className="text-base">
                  {l ? '🔮 Predicción de Gastos' : '🔮 Spending Prediction'}
                </CardTitle>
-               <CardDescription className="text-xs">
-                 {l ? `Basado en ${dayOfMonth} días de datos` : `Based on ${dayOfMonth} days of data`}
+                <CardDescription className="text-xs">
+                  {l ? `Basado en gastos y transacciones bancarias` : `Based on expenses and bank transactions`}
                </CardDescription>
              </div>
            </div>
