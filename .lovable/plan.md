@@ -1,35 +1,64 @@
 
-# Consolidar SpendingPredictor: Usar Expenses + Bank Transactions
 
-## Problema actual
-El componente `SpendingPredictor` solo consume datos de `bank_transactions` para sus predicciones. Esto significa que si un usuario tiene gastos registrados manualmente en `expenses` pero no ha importado estados bancarios, el predictor no muestra nada (retorna `null`). Incluso si usa ambos, la predicción es incompleta.
+# Centro de Archivos Subidos - Vista Unificada
 
-## Cambios a realizar
+## Situacion Actual
 
-### Archivo: `src/components/banking/SpendingPredictor.tsx`
+Los archivos subidos estan dispersos en dos lugares:
+- **Recibos/Fotos** -> tabla `documents`, visibles parcialmente en `/chaos` (solo los pendientes de revision)
+- **Contratos** -> tabla `contracts`, visibles en `/contracts`
 
-1. **Agregar import de `useExpenses`** desde `@/hooks/data/useExpenses`
+No existe un lugar donde puedas ver **todo lo que has subido** de forma centralizada con informacion de: fecha, estado de procesamiento, seccion destino, tipo de archivo, etc.
 
-2. **Consumir ambas fuentes de datos** en el componente:
-   - Llamar `useExpenses()` para obtener los gastos manuales
-   - Mantener `useBankTransactions()` para transacciones bancarias
+## Solucion Propuesta
 
-3. **Unificar los datos en el `useMemo`**:
-   - Convertir ambas fuentes a un formato comun `{ date: string, amount: number }` 
-   - Para `expenses`: usar campo `date` y `amount`
-   - Para `bank_transactions`: usar campo `transaction_date` y `amount`
-   - Deduplicar: excluir transacciones bancarias que ya esten "matched" con un expense (campo `matched_expense_id`) para no contar doble
+Crear una pagina **"/files"** (Centro de Archivos / File Center) accesible desde el menu lateral, que muestre una tabla/lista unificada de todos los archivos subidos.
 
-4. **Actualizar la condicion de "no data"** (linea 48 y 96):
-   - Mostrar el componente si hay datos en **cualquiera** de las dos fuentes (no solo bank_transactions)
-   - Cambiar: `if (!transactions || transactions.length === 0) return null` a verificar si la combinacion unificada esta vacia
+### Informacion que mostrara cada archivo
 
-5. **Actualizar la descripcion** (linea 119):
-   - Indicar que usa datos combinados: "Basado en gastos y transacciones bancarias" / "Based on expenses and bank transactions"
+| Campo | Fuente |
+|-------|--------|
+| Nombre del archivo | `file_name` |
+| Fecha de subida | `created_at` |
+| Tipo de archivo | `file_type` (PDF, JPG, PNG) |
+| Seccion/Origen | "Recibo" o "Contrato" (segun la tabla de origen) |
+| Estado de procesamiento | `status` / `review_status` |
+| Cliente asociado | `client_id` -> nombre del cliente |
+| Vinculado a gasto | `expense_id` (si fue aprobado) |
+| Tamano | `file_size` (solo documents) |
 
-## Detalles tecnicos
+### Funcionalidades
 
-- Las dependencias del `useMemo` se actualizaran para incluir `expenses`
-- No se requieren cambios en la base de datos
-- No se requieren nuevos hooks, solo reutilizar `useExpenses` existente
-- La logica de calculo (promedio diario, proyeccion, comparacion mes anterior) permanece identica, solo cambia la fuente de datos de entrada
+1. **Lista unificada** con filtros por:
+   - Tipo (Recibos / Contratos / Todos)
+   - Estado (Pendiente / Procesado / Aprobado / Rechazado)
+   - Rango de fechas
+
+2. **Acciones rapidas** por archivo:
+   - Ver/previsualizar
+   - Descargar
+   - Ir a la seccion correspondiente (abrir en Chaos Inbox o en Contratos)
+
+3. **Estadisticas resumidas** en la parte superior:
+   - Total de archivos subidos
+   - Pendientes de revision
+   - Procesados exitosamente
+
+### Cambios a Realizar
+
+1. **Nuevo archivo**: `src/pages/Files.tsx` - Pagina principal del centro de archivos
+2. **Nuevo archivo**: `src/hooks/data/useAllFiles.ts` - Hook que combina datos de `documents` y `contracts` en una lista unificada
+3. **Modificar**: `src/App.tsx` - Agregar ruta `/files`
+4. **Modificar**: `src/components/Layout.tsx` - Agregar enlace en el menu de navegacion lateral
+5. **Modificar**: `src/lib/i18n.ts` - Traducciones bilingues (es/en)
+6. **Modificar**: `src/components/PageHeader.tsx` - Agregar configuracion de ruta
+
+### Detalles Tecnicos
+
+- El hook `useAllFiles` ejecutara dos queries paralelas (a `documents` y `contracts`) y las combinara en un formato comun
+- Se usaran signed URLs del storage para previsualizacion (bucket `expense-documents` para recibos, bucket de contratos para contratos)
+- La tabla usara paginacion o scroll virtual si hay muchos archivos
+- Filtros implementados con estado local (useState) para respuesta inmediata
+- Reutilizara componentes existentes: `Badge` para estados, `Button` para acciones, `Card` para el layout
+- Responsive: en mobile mostrara tarjetas compactas, en desktop una tabla completa
+
