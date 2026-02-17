@@ -1,66 +1,67 @@
 
+# Pagina Dedicada de Politica de Privacidad
 
-# Auditoria de Nombres: Estandarizar a "EvoFinz"
+## Situacion Actual
 
-## Hallazgos
+Ya existe una seccion breve de "Privacidad y Datos" dentro de `/legal#privacy`, pero es muy general. No explica en detalle:
+- Que tablas/datos especificos se guardan
+- Que el administrador NO puede ver datos financieros
+- Como funciona el aislamiento de datos (RLS)
+- Que pasa con los datos enviados a proveedores de IA
+- Derechos especificos del usuario (PIPEDA, GDPR)
 
-### VISIBLE al usuario - DEBE cambiarse (7 ubicaciones)
+## Lo Que Se Hara
 
-| Donde | Nombre actual | Cambiar a |
-|-------|--------------|-----------|
-| AssistantHeader.tsx | "Asistente Financiero" / "Financial Assistant" | "EvoFinz" |
-| ChatAssistant.tsx | "Asistente Financiero" / "Financial Assistant" | "EvoFinz" |
-| OnboardingTutorial.tsx | "Welcome to Your Financial Assistant!" | "Welcome to EvoFinz!" |
-| ProgressiveOnboarding.tsx | "dominar tu asistente financiero" | "dominar EvoFinz" |
-| VoicePreferencesCard.tsx | "soy tu asistente financiero" (voz de prueba) | "soy EvoFinz" |
-| useSmartGuidance.ts | "Soy tu asistente financiero" | "Soy EvoFinz" |
-| Legal.tsx | 'Asistente financiero conversacional ("Phoenix")' | 'Asistente financiero conversacional de EvoFinz' |
-| System prompt (edge function) | "Eres Phoenix, un asistente financiero..." | "Eres EvoFinz, el asistente financiero..." |
+Crear una nueva pagina `/privacy` con contenido completo, bilingue (ES/EN), organizada en secciones claras.
 
-### NO visible / NO cambiar
+### Estructura de la Pagina
 
-| Donde | Por que dejarlo |
-|-------|----------------|
-| `PhoenixLogo` (componente) | Nombre interno de codigo, el usuario nunca lo ve |
-| `phoenix-logo.tsx` (archivo) | Nombre de archivo interno |
-| `phoenix-clean-logo.png` (asset) | Nombre de asset interno |
-| `expense-evolution-ai.lovable.app` (URL) | URL de Lovable, no se puede cambiar desde aqui |
-| CategoryTrendsChart "Expense evolution by category" | Describe la evolucion de gastos como concepto, no es el nombre de la app |
-| Sonidos "phoenix" style en VoiceSettingsPanel | Es un estilo de sonido interno, no se muestra como nombre de app |
+1. **Resumen Simple** - "Tus datos son tuyos" en lenguaje accesible
+2. **Datos que recopilamos** - Lista detallada organizada por categoria:
+   - Datos de cuenta (email, nombre, preferencias)
+   - Datos financieros (gastos, ingresos, clientes, contratos, kilometraje)
+   - Documentos subidos (recibos, facturas via OCR)
+   - Datos de uso (funciones usadas, paginas visitadas, feedback beta)
+3. **Quien puede ver tus datos** - La seccion mas importante:
+   - Tu: Solo tu ves tus datos financieros
+   - Otros usuarios: No pueden ver nada tuyo (aislamiento total)
+   - El administrador: Solo puede ver datos operativos (feedback, bugs, uso de funciones). NO puede ver gastos, ingresos, clientes ni ningun dato financiero
+   - Proveedores de IA: Reciben datos temporalmente para procesamiento (OCR, asistente)
+   - Terceros: No vendemos ni compartimos datos personales
+4. **Como protegemos tus datos** - Explicacion tecnica accesible:
+   - Encriptacion en transito y reposo
+   - Aislamiento por usuario (cada cuenta solo accede a sus propios datos)
+   - Autenticacion requerida para todo acceso
+   - Sin acceso anonimo a datos personales
+5. **Cookies y almacenamiento local** - Que se guarda en el navegador
+6. **Tus derechos** - Acceso, exportacion, eliminacion, portabilidad
+7. **Procesamiento por IA** - Que datos se envian, para que, y que pasa despues
+8. **Retencion de datos** - Cuanto tiempo se guardan y que pasa al eliminar cuenta
+9. **Contacto** - Como comunicarse para preguntas de privacidad
+10. **Actualizaciones** - Como se notifican cambios a esta politica
 
----
+### Archivos a Modificar
 
-## Plan de cambios
+**Archivo nuevo:** `src/pages/Privacy.tsx`
+- Pagina completa bilingue con todas las secciones
+- Mismo estilo visual que Legal.tsx (Cards, iconos, badges)
+- Navegacion de vuelta a la app
 
-### Archivo 1: `src/components/chat/AssistantHeader.tsx`
-- Linea 79: `'Asistente Financiero'` a `'EvoFinz'`
-- Linea 79: `'Financial Assistant'` a `'EvoFinz'`
+**Archivo modificado:** `src/App.tsx`
+- Agregar ruta `/privacy` (publica, no requiere autenticacion)
+- Importar componente lazy
 
-### Archivo 2: `src/components/chat/ChatAssistant.tsx`
-- Linea 1330: mismo cambio que AssistantHeader
+**Archivos modificados (links):**
+- `src/pages/Legal.tsx` - Agregar link a la pagina de privacidad desde la seccion existente
+- `src/pages/Auth.tsx` - Actualizar link de "Politica de Privacidad" para apuntar a `/privacy`
+- `src/components/CookieConsent.tsx` - Actualizar link de privacidad
+- `src/components/Layout.tsx` - Actualizar link del footer
+- `src/pages/Landing.tsx` - Actualizar link del footer
 
-### Archivo 3: `src/components/guidance/OnboardingTutorial.tsx`
-- Titulo: "Welcome to Your Financial Assistant!" a "Welcome to EvoFinz!"
-- Titulo ES: "Bienvenido a Tu Asistente Financiero!" a "Bienvenido a EvoFinz!"
+### Detalles Tecnicos
 
-### Archivo 4: `src/components/onboarding/ProgressiveOnboarding.tsx`
-- "dominar tu asistente financiero" a "dominar EvoFinz"
-- "master your financial assistant" a "master EvoFinz"
-
-### Archivo 5: `src/components/settings/VoicePreferencesCard.tsx`
-- Texto de prueba de voz: "soy tu asistente financiero" a "soy EvoFinz"
-- EN: "I am your financial assistant" a "I am EvoFinz"
-
-### Archivo 6: `src/hooks/utils/useSmartGuidance.ts`
-- "Soy tu asistente financiero" a "Soy EvoFinz, tu asistente"
-- "I'm your financial assistant" a "I'm EvoFinz, your assistant"
-
-### Archivo 7: `src/pages/Legal.tsx`
-- Quitar '("Phoenix")' y reemplazar con "de EvoFinz"
-
-### Archivo 8: `supabase/functions/app-assistant/index.ts`
-- System prompt: "Eres Phoenix, un asistente financiero" a "Eres EvoFinz, el asistente financiero inteligente de esta aplicacion"
-- Mantener toda la personalidad y conocimiento igual, solo cambiar el nombre
-
-**Total: 8 archivos, cambios menores de texto. Sin migraciones SQL. Sin componentes nuevos.**
-
+- La pagina sera publica (sin ProtectedRoute) ya que cualquier visitante debe poder leerla antes de registrarse
+- Se usara el mismo patron de lazy loading con `lazyWithRetry`
+- Contenido completamente bilingue usando `useLanguage()`
+- Scroll automatico a secciones via hash (`#cookies`, `#rights`, etc.)
+- Link de retorno al dashboard o landing segun estado de autenticacion
