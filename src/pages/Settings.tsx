@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 // Lazy load heavy sections
 const DataPrivacyCard = lazy(() => import('@/components/settings/DataPrivacyCard').then(m => ({ default: m.DataPrivacyCard })));
 const SampleDataManager = lazy(() => import('@/components/settings/SampleDataManager').then(m => ({ default: m.SampleDataManager })));
+import { SecurityCard } from '@/components/settings/SecurityCard';
 import { VoicePreferencesCard } from '@/components/settings/VoicePreferencesCard';
 
 const SectionSkeleton = () => (
@@ -308,6 +309,7 @@ export default function Settings() {
 
           {/* ============== DATA TAB ============== */}
           <TabsContent value="data" className="space-y-4 sm:space-y-6">
+            <SecurityCard />
             <Suspense fallback={<SectionSkeleton />}>
               <SampleDataManager />
               <DataPrivacyCard />

@@ -39,6 +39,9 @@ function lazyWithRetry<T extends ComponentType<unknown>>(
 const Landing = lazyWithRetry(() => import("./pages/Landing"));
 const Legal = lazyWithRetry(() => import("./pages/Legal"));
 const Privacy = lazyWithRetry(() => import("./pages/Privacy"));
+const Terms = lazyWithRetry(() => import("./pages/Terms"));
+const Status = lazyWithRetry(() => import("./pages/Status"));
+const About = lazyWithRetry(() => import("./pages/About"));
 const Auth = lazyWithRetry(() => import("./pages/Auth"));
 const Onboarding = lazyWithRetry(() => import("./pages/Onboarding"));
 const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
@@ -85,6 +88,9 @@ const CookieConsent = lazyWithRetry(() =>
 );
 const FeedbackButton = lazyWithRetry(() =>
   import("./components/FeedbackButton").then((m) => ({ default: m.FeedbackButton }))
+);
+const SessionTimeoutWarning = lazyWithRetry(() =>
+  import("./components/SessionTimeoutWarning").then((m) => ({ default: m.SessionTimeoutWarning }))
 );
 
 // Page loading fallback - minimal skeleton
@@ -190,6 +196,9 @@ const App = () => (
                         <Route path="/landing" element={<Landing />} />
                         <Route path="/legal" element={<Legal />} />
                         <Route path="/privacy" element={<Privacy />} />
+                        <Route path="/terms" element={<Terms />} />
+                        <Route path="/status" element={<Status />} />
+                        <Route path="/about" element={<About />} />
                         <Route path="/auth" element={<Auth />} />
                         <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
                         <Route path="/beta-welcome" element={<ProtectedRoute><BetaWelcome /></ProtectedRoute>} />
@@ -243,6 +252,9 @@ const App = () => (
                   </Suspense>
                   <Suspense fallback={null}>
                     <FeedbackButton />
+                  </Suspense>
+                  <Suspense fallback={null}>
+                    <SessionTimeoutWarning />
                   </Suspense>
                   </GamificationProvider>
                 </HighlightProvider>
