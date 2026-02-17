@@ -33,7 +33,15 @@ export function SmartInsights({ data }: { data: InsightData }) {
     ? ((data.totalIncome - data.totalSpent - data.totalFixed) / data.totalIncome) * 100
     : 0;
 
-  if (savingsRate >= 20) {
+  if (data.totalIncome > 0 && data.totalSpent === 0) {
+    insights.push({
+      icon: "📝",
+      text: l
+        ? "Tienes ingresos pero no has registrado gastos este mes. Registra tus gastos para ver consejos reales."
+        : "You have income but no expenses recorded this month. Add expenses to see real insights.",
+      type: "warning",
+    });
+  } else if (savingsRate >= 20 && data.totalSpent > 0) {
     insights.push({
       icon: "🏆",
       text: l
@@ -41,7 +49,7 @@ export function SmartInsights({ data }: { data: InsightData }) {
         : `${savingsRate.toFixed(0)}% savings rate. Excellent financial discipline!`,
       type: "success",
     });
-  } else if (savingsRate < 5 && data.totalIncome > 0) {
+  } else if (savingsRate < 5 && data.totalIncome > 0 && data.totalSpent > 0) {
     insights.push({
       icon: "⚠️",
       text: l

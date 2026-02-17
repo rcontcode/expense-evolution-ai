@@ -227,7 +227,18 @@ export function useMonthlyPlanData(): MonthlyPlanData {
       });
     }
 
-    if (savingsRate >= 20) {
+    if (totalIncome > 0 && totalSpent === 0) {
+      alerts.push({
+        type: "warning",
+        message: l
+          ? "Tienes ingresos pero no has registrado gastos este mes. Las métricas no reflejan tu realidad financiera."
+          : "You have income but no expenses recorded this month. Metrics don't reflect your financial reality.",
+        action: l ? "Registrar gastos" : "Add expenses",
+        link: "/expenses",
+      });
+    }
+
+    if (savingsRate >= 20 && totalSpent > 0) {
       alerts.push({
         type: "success",
         message: l
