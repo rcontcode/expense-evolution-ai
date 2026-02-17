@@ -1,67 +1,82 @@
 
-# Pagina Dedicada de Politica de Privacidad
 
-## Situacion Actual
+# Auditoria Profesional: Lo Que Falta en EvoFinz
 
-Ya existe una seccion breve de "Privacidad y Datos" dentro de `/legal#privacy`, pero es muy general. No explica en detalle:
-- Que tablas/datos especificos se guardan
-- Que el administrador NO puede ver datos financieros
-- Como funciona el aislamiento de datos (RLS)
-- Que pasa con los datos enviados a proveedores de IA
-- Derechos especificos del usuario (PIPEDA, GDPR)
+## 1. Cambiar Contrasena (Critico)
 
-## Lo Que Se Hara
+No existe forma de cambiar la contrasena una vez logueado. Solo hay "Forgot Password" que envia email. Un usuario deberia poder cambiar su contrasena desde Settings sin tener que cerrar sesion.
 
-Crear una nueva pagina `/privacy` con contenido completo, bilingue (ES/EN), organizada en secciones claras.
+**Cambio:** Agregar seccion "Cambiar Contrasena" en `src/components/settings/DataPrivacyCard.tsx` (o nuevo componente `SecurityCard.tsx`) con campos para contrasena actual y nueva, usando `supabase.auth.updateUser({ password })`.
 
-### Estructura de la Pagina
+---
 
-1. **Resumen Simple** - "Tus datos son tuyos" en lenguaje accesible
-2. **Datos que recopilamos** - Lista detallada organizada por categoria:
-   - Datos de cuenta (email, nombre, preferencias)
-   - Datos financieros (gastos, ingresos, clientes, contratos, kilometraje)
-   - Documentos subidos (recibos, facturas via OCR)
-   - Datos de uso (funciones usadas, paginas visitadas, feedback beta)
-3. **Quien puede ver tus datos** - La seccion mas importante:
-   - Tu: Solo tu ves tus datos financieros
-   - Otros usuarios: No pueden ver nada tuyo (aislamiento total)
-   - El administrador: Solo puede ver datos operativos (feedback, bugs, uso de funciones). NO puede ver gastos, ingresos, clientes ni ningun dato financiero
-   - Proveedores de IA: Reciben datos temporalmente para procesamiento (OCR, asistente)
-   - Terceros: No vendemos ni compartimos datos personales
-4. **Como protegemos tus datos** - Explicacion tecnica accesible:
-   - Encriptacion en transito y reposo
-   - Aislamiento por usuario (cada cuenta solo accede a sus propios datos)
-   - Autenticacion requerida para todo acceso
-   - Sin acceso anonimo a datos personales
-5. **Cookies y almacenamiento local** - Que se guarda en el navegador
-6. **Tus derechos** - Acceso, exportacion, eliminacion, portabilidad
-7. **Procesamiento por IA** - Que datos se envian, para que, y que pasa despues
-8. **Retencion de datos** - Cuanto tiempo se guardan y que pasa al eliminar cuenta
-9. **Contacto** - Como comunicarse para preguntas de privacidad
-10. **Actualizaciones** - Como se notifican cambios a esta politica
+## 2. URL Canonica Incorrecta (SEO / Branding)
 
-### Archivos a Modificar
+En `index.html` linea 41:
+```
+<link rel="canonical" href="https://expense-evolution-ai.lovable.app/" />
+```
+Deberia ser `https://evofinz.com/` cuando conectes tu dominio. Tambien las URLs en JSON-LD (lineas 74, 79, 88-89) siguen usando `expense-evolution-ai.lovable.app`.
 
-**Archivo nuevo:** `src/pages/Privacy.tsx`
-- Pagina completa bilingue con todas las secciones
-- Mismo estilo visual que Legal.tsx (Cards, iconos, badges)
-- Navegacion de vuelta a la app
+**Cambio:** Actualizar `index.html` reemplazando todas las URLs de `expense-evolution-ai.lovable.app` por `evofinz.com`.
 
-**Archivo modificado:** `src/App.tsx`
-- Agregar ruta `/privacy` (publica, no requiere autenticacion)
-- Importar componente lazy
+---
 
-**Archivos modificados (links):**
-- `src/pages/Legal.tsx` - Agregar link a la pagina de privacidad desde la seccion existente
-- `src/pages/Auth.tsx` - Actualizar link de "Politica de Privacidad" para apuntar a `/privacy`
-- `src/components/CookieConsent.tsx` - Actualizar link de privacidad
-- `src/components/Layout.tsx` - Actualizar link del footer
-- `src/pages/Landing.tsx` - Actualizar link del footer
+## 3. Pagina de Terminos de Servicio Dedicada (/terms)
 
-### Detalles Tecnicos
+Actualmente los terminos estan embebidos dentro de /legal como una seccion mas. Para una app profesional, especialmente manejando datos financieros, necesitas una pagina dedicada `/terms` que sea enlazable individualmente y que cubra:
+- Condiciones de uso del servicio
+- Politica de suscripciones y pagos
+- Politica de reembolsos
+- Propiedad intelectual
+- Terminacion de cuenta
 
-- La pagina sera publica (sin ProtectedRoute) ya que cualquier visitante debe poder leerla antes de registrarse
-- Se usara el mismo patron de lazy loading con `lazyWithRetry`
-- Contenido completamente bilingue usando `useLanguage()`
-- Scroll automatico a secciones via hash (`#cookies`, `#rights`, etc.)
-- Link de retorno al dashboard o landing segun estado de autenticacion
+**Cambio:** Crear `src/pages/Terms.tsx` con contenido legal completo, bilingue. Agregar ruta `/terms` en App.tsx. Actualizar checkbox de Auth para enlazar a `/terms` separado de `/privacy`.
+
+---
+
+## 4. Pagina de Estado / Status Page
+
+No existe forma para los usuarios de saber si la app esta funcionando correctamente o en mantenimiento. Una status page basica da confianza profesional.
+
+**Cambio:** Crear una pagina simple `/status` que muestre el estado de la app (puede ser estatica por ahora con un indicador de "Operativo" y fecha de ultima verificacion).
+
+---
+
+## 5. "Acerca de" o "Sobre Nosotros"
+
+No existe pagina que explique quien esta detras de EvoFinz. Para confianza y transparencia, especialmente en finanzas, los usuarios quieren saber quien creo la app.
+
+**Cambio:** Crear `/about` con informacion del equipo/fundador, mision de EvoFinz, y enlaces a redes sociales.
+
+---
+
+## 6. Sesion por Inactividad (Seguridad)
+
+No existe timeout de sesion por inactividad. En una app financiera, si un usuario deja la sesion abierta en un computador compartido, sus datos quedan expuestos indefinidamente.
+
+**Cambio:** Implementar un hook `useSessionTimeout` que detecte inactividad (sin clicks/teclas por 30 minutos) y cierre la sesion automaticamente con un aviso previo de 60 segundos para extender.
+
+---
+
+## Resumen de Archivos
+
+| # | Que | Archivo | Tipo |
+|---|---|---|---|
+| 1 | Cambiar contrasena | `src/components/settings/SecurityCard.tsx` (nuevo) + Settings.tsx | Nuevo + Editar |
+| 2 | URLs canonicas | `index.html` | Editar |
+| 3 | Pagina Terminos | `src/pages/Terms.tsx` (nuevo) + App.tsx + Auth.tsx | Nuevo + Editar |
+| 4 | Status page | `src/pages/Status.tsx` (nuevo) + App.tsx | Nuevo + Editar |
+| 5 | About page | `src/pages/About.tsx` (nuevo) + App.tsx + Landing.tsx footer | Nuevo + Editar |
+| 6 | Session timeout | `src/hooks/useSessionTimeout.ts` (nuevo) + App.tsx | Nuevo + Editar |
+
+## Prioridad Recomendada
+
+1. Cambiar contrasena (seguridad basica)
+2. URLs canonicas (SEO, toma 2 minutos)
+3. Terminos de Servicio (legal obligatorio)
+4. Session timeout (seguridad financiera)
+5. About page (confianza)
+6. Status page (profesionalismo)
+
+Total: 5 archivos nuevos, 5 archivos editados. Sin migraciones de base de datos necesarias.
