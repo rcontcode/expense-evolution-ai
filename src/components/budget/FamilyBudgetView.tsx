@@ -233,8 +233,8 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
       ) : (
         <>
           {/* ===== ALWAYS VISIBLE: Summary Strip ===== */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}>
-            <Card className="p-4">
+          <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.05, type: "spring", stiffness: 200 }}>
+            <Card className="p-4 shadow-xl shadow-primary/5 border-border/50 bg-gradient-to-br from-card via-card to-muted/30 backdrop-blur-sm">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <MiniCard
                   emoji="💰" label={l ? "Ingresos" : "Income"} value={fc(plan.totalIncome)}
@@ -261,48 +261,55 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
                 />
               </div>
               {plan.dailyBudget > 0 && (
-                <div className="flex items-center gap-2 mt-3 p-2.5 rounded-lg bg-primary/5 border border-primary/10">
-                  <span className="text-lg">📅</span>
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex items-center gap-2 mt-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/15 shadow-sm"
+                >
+                  <span className="text-xl">📅</span>
                   <p className="text-sm">
-                    <span className="font-semibold">{fc(plan.dailyBudget)}</span>
+                    <span className="font-bold text-primary">{fc(plan.dailyBudget)}</span>
                     <span className="text-muted-foreground">
                       /{l ? "día" : "day"} · {plan.daysRemaining} {l ? "días restantes" : "days left"}
                     </span>
                   </p>
-                </div>
+                </motion.div>
               )}
             </Card>
           </motion.div>
 
           {/* ===== TABBED NAVIGATION ===== */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5">
-            <TabsList className="w-full grid grid-cols-6 h-auto p-1 gap-0.5">
-              <TabsTrigger value="overview" className="flex items-center gap-1.5 py-2.5 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <LayoutDashboard className="h-4 w-4" />
-                <span className="hidden sm:inline">{l ? 'Resumen' : 'Overview'}</span>
-              </TabsTrigger>
-              <TabsTrigger value="expenses" className="flex items-center gap-1.5 py-2.5 text-xs data-[state=active]:bg-chart-2 data-[state=active]:text-white">
-                <ShoppingCart className="h-4 w-4" />
-                <span className="hidden sm:inline">{l ? 'Gastos' : 'Expenses'}</span>
-              </TabsTrigger>
-              <TabsTrigger value="pace" className="flex items-center gap-1.5 py-2.5 text-xs data-[state=active]:bg-chart-3 data-[state=active]:text-white">
-                <TrendingUp className="h-4 w-4" />
-                <span className="hidden sm:inline">{l ? 'Ritmo' : 'Pace'}</span>
-              </TabsTrigger>
-              <TabsTrigger value="payments" className="flex items-center gap-1.5 py-2.5 text-xs data-[state=active]:bg-amber-500 data-[state=active]:text-white">
-                <Wallet className="h-4 w-4" />
-                <span className="hidden sm:inline">{l ? 'Pagos' : 'Payments'}</span>
-                {overdueBills.length > 0 && <Badge variant="destructive" className="ml-0.5 text-[10px] px-1.5 py-0">{overdueBills.length}</Badge>}
-              </TabsTrigger>
-              <TabsTrigger value="goals" className="flex items-center gap-1.5 py-2.5 text-xs data-[state=active]:bg-chart-4 data-[state=active]:text-white">
-                <Target className="h-4 w-4" />
-                <span className="hidden sm:inline">{l ? 'Metas' : 'Goals'}</span>
-              </TabsTrigger>
-              <TabsTrigger value="tools" className="flex items-center gap-1.5 py-2.5 text-xs data-[state=active]:bg-muted-foreground data-[state=active]:text-white">
-                <Wrench className="h-4 w-4" />
-                <span className="hidden sm:inline">{l ? 'Herram.' : 'Tools'}</span>
-              </TabsTrigger>
-            </TabsList>
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <TabsList className="w-full grid grid-cols-6 h-auto p-1.5 gap-1 bg-muted/60 backdrop-blur-sm shadow-lg shadow-black/5 border border-border/50 rounded-2xl">
+                <TabsTrigger value="overview" className="flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:scale-[1.02] hover:bg-muted/80">
+                  <span className="text-base">📊</span>
+                  <span className="hidden sm:inline">{l ? 'Resumen' : 'Overview'}</span>
+                </TabsTrigger>
+                <TabsTrigger value="expenses" className="flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-rose-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-rose-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80">
+                  <span className="text-base">🛒</span>
+                  <span className="hidden sm:inline">{l ? 'Gastos' : 'Expenses'}</span>
+                </TabsTrigger>
+                <TabsTrigger value="pace" className="flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-violet-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-violet-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80">
+                  <span className="text-base">⚡</span>
+                  <span className="hidden sm:inline">{l ? 'Ritmo' : 'Pace'}</span>
+                </TabsTrigger>
+                <TabsTrigger value="payments" className="flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-amber-500 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80">
+                  <span className="text-base">💳</span>
+                  <span className="hidden sm:inline">{l ? 'Pagos' : 'Pay'}</span>
+                  {overdueBills.length > 0 && <Badge variant="destructive" className="ml-0.5 text-[10px] px-1.5 py-0 animate-pulse">{overdueBills.length}</Badge>}
+                </TabsTrigger>
+                <TabsTrigger value="goals" className="flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80">
+                  <span className="text-base">🎯</span>
+                  <span className="hidden sm:inline">{l ? 'Metas' : 'Goals'}</span>
+                </TabsTrigger>
+                <TabsTrigger value="tools" className="flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-slate-600 data-[state=active]:to-slate-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-slate-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80">
+                  <span className="text-base">🔧</span>
+                  <span className="hidden sm:inline">{l ? 'Herram.' : 'Tools'}</span>
+                </TabsTrigger>
+              </TabsList>
+            </motion.div>
 
             {/* ===== TAB 1: RESUMEN ===== */}
             <TabsContent value="overview" className="space-y-5 mt-0">
