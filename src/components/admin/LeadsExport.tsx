@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Download, FileSpreadsheet, FileText, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import * as XLSX from 'xlsx';
 import type { QuizLead } from '@/hooks/admin/useLeadsManagement';
 import { calculateLeadScore, getLeadPriority, getPriorityLabel } from '@/hooks/admin/useLeadScoring';
 
@@ -55,18 +54,27 @@ export function LeadsExport({ leads, filename = 'quiz-leads' }: LeadsExportProps
   const exportToExcel = async () => {
     setIsExporting(true);
     try {
+      const ExcelJS = await import('exceljs');
       const data = prepareData();
-      const ws = XLSX.utils.json_to_sheet(data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Leads');
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('Leads');
 
-      // Auto-size columns
-      const colWidths = Object.keys(data[0] || {}).map((key) => ({
-        wch: Math.max(key.length, 15),
-      }));
-      ws['!cols'] = colWidths;
+      // Add headers
+      const headers = Object.keys(data[0] || {});
+      ws.columns = headers.map((h) => ({ header: h, key: h, width: Math.max(h.length, 15) }));
+      ws.getRow(1).font = { bold: true };
 
-      XLSX.writeFile(wb, `${filename}-${new Date().toISOString().split('T')[0]}.xlsx`);
+      // Add data rows
+      data.forEach((row) => ws.addRow(row));
+
+      const buffer = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${filename}-${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+
       toast.success(`${data.length} leads exportados a Excel`);
     } catch (error) {
       console.error('Export error:', error);
@@ -80,8 +88,17 @@ export function LeadsExport({ leads, filename = 'quiz-leads' }: LeadsExportProps
     setIsExporting(true);
     try {
       const data = prepareData();
-      const ws = XLSX.utils.json_to_sheet(data);
-      const csv = XLSX.utils.sheet_to_csv(ws);
+      const headers = Object.keys(data[0] || {});
+      const csvRows = [
+        headers.map((h) => `"${h}"`).join(','),
+        ...data.map((row) =>
+          headers.map((h) => {
+            const val = String((row as Record<string, unknown>)[h] ?? '');
+            return `"${val.replace(/"/g, '""')}"`;
+          }).join(',')
+        ),
+      ];
+      const csv = csvRows.join('\n');
 
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
