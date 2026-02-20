@@ -18,6 +18,7 @@ import { QuickClassifyDialog } from '@/components/dialogs/QuickClassifyDialog';
 import { LinkReceiptDialog } from '@/components/dialogs/LinkReceiptDialog';
 import { ExpenseBulkActions } from '@/components/expenses/ExpenseBulkActions';
 import { ExpenseHealthPanel } from '@/components/expenses/ExpenseHealthPanel';
+import { ExpenseReviewCenter } from '@/components/expenses/ExpenseReviewCenter';
 import { ExpenseFilters as Filters, ExpenseWithRelations } from '@/types/expense.types';
 import { Card, CardContent } from '@/components/ui/card';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
@@ -249,6 +250,14 @@ export default function Expenses() {
               onOpenLinkReceipt={handleOpenLinkReceipt}
               onSelectExpenses={handleSelectExpenses}
               onDeleteDuplicate={handleDeleteDuplicate}
+            />
+          )}
+
+          {/* Unified Review Center */}
+          {allExpenses && allExpenses.length > 0 && (
+            <ExpenseReviewCenter
+              expenses={allExpenses}
+              onExportReady={() => setExportDialogOpen(true)}
             />
           )}
 
