@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -10,6 +10,72 @@ type RecurrenceType = Database['public']['Enums']['recurrence_type'];
 
 // Marker to identify sample data
 const SAMPLE_MARKER = '[SAMPLE]';
+
+export type SampleDataCounts = {
+  clients: number;
+  projects: number;
+  expenses: number;
+  income: number;
+  mileage: number;
+  assets: number;
+  liabilities: number;
+  goals: number;
+  contracts: number;
+  notifications: number;
+  education: number;
+  bank_transactions: number;
+  total: number;
+};
+
+export function useSampleDataCounts() {
+  return useQuery<SampleDataCounts>({
+    queryKey: ['sample-data-counts'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { clients: 0, projects: 0, expenses: 0, income: 0, mileage: 0, assets: 0, liabilities: 0, goals: 0, contracts: 0, notifications: 0, education: 0, bank_transactions: 0, total: 0 };
+
+      const uid = user.id;
+      const m = SAMPLE_MARKER;
+
+      const [
+        clientsRes, projectsRes, expensesRes, incomeRes, mileageRes,
+        assetsRes, liabilitiesRes, investGoalsRes, savingsGoalsRes,
+        contractsRes, notifRes, eduRes, bankRes,
+      ] = await Promise.all([
+        supabase.from('clients').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
+        supabase.from('projects').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
+        supabase.from('expenses').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('description', `%${m}%`),
+        supabase.from('income').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('description', `%${m}%`),
+        supabase.from('mileage').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('route', `%${m}%`),
+        supabase.from('assets').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
+        supabase.from('liabilities').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
+        supabase.from('investment_goals').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
+        supabase.from('savings_goals').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
+        supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('file_name', `%${m}%`),
+        supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('title', `%${m}%`),
+        supabase.from('financial_education').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('title', `%${m}%`),
+        supabase.from('bank_transactions').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('description', `%${m}%`),
+      ]);
+
+      const clients = clientsRes.count ?? 0;
+      const projects = projectsRes.count ?? 0;
+      const expenses = expensesRes.count ?? 0;
+      const income = incomeRes.count ?? 0;
+      const mileage = mileageRes.count ?? 0;
+      const assets = assetsRes.count ?? 0;
+      const liabilities = liabilitiesRes.count ?? 0;
+      const goals = (investGoalsRes.count ?? 0) + (savingsGoalsRes.count ?? 0);
+      const contracts = contractsRes.count ?? 0;
+      const notifications = notifRes.count ?? 0;
+      const education = eduRes.count ?? 0;
+      const bank_transactions = bankRes.count ?? 0;
+      const total = clients + projects + expenses + income + mileage + assets + liabilities + goals + contracts + notifications + education + bank_transactions;
+
+      return { clients, projects, expenses, income, mileage, assets, liabilities, goals, contracts, notifications, education, bank_transactions, total };
+    },
+    staleTime: 30_000,
+  });
+}
 
 export function useGenerateSampleData() {
   const queryClient = useQueryClient();
@@ -1301,4 +1367,5 @@ function invalidateAllQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: ['financial-level'] });
   queryClient.invalidateQueries({ queryKey: ['achievements'] });
   queryClient.invalidateQueries({ queryKey: ['education-daily-logs'] });
+  queryClient.invalidateQueries({ queryKey: ['sample-data-counts'] });
 }
