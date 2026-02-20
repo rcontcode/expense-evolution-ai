@@ -41,6 +41,8 @@ const ROUTE_CONFIG: Record<string, { labelEs: string; labelEn: string; parent?: 
   '/capture': { labelEs: 'Captura Rápida', labelEn: 'Quick Capture', parent: '/expenses' },
   '/budget': { labelEs: 'Presupuesto', labelEn: 'Budget', parent: '/dashboard' },
   '/files': { labelEs: 'Centro de Archivos', labelEn: 'File Center', parent: '/dashboard' },
+  '/trash': { labelEs: 'Papelera', labelEn: 'Trash', parent: '/dashboard' },
+  '/data-health': { labelEs: 'Salud de Datos', labelEn: 'Data Health', parent: '/dashboard' },
 };
 
 export function PageHeader({ title, description, showBack = true, children }: PageHeaderProps) {
