@@ -247,22 +247,23 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
           </p>
           {/* Show how many could be classified */}
           {expenses.filter(e => e.reimbursement_type === 'pending_classification' && !e.deleted_at).length > 0 && (
-            <div className="mt-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 text-center">
-              <p className="text-sm text-amber-700 dark:text-amber-400">
-                <strong>{expenses.filter(e => e.reimbursement_type === 'pending_classification' && !e.deleted_at).length}</strong> gastos sin clasificar podrían ser reembolsables
+            <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 border-2 border-amber-300 dark:border-amber-700 text-center max-w-md">
+              <p className="text-sm text-amber-800 dark:text-amber-300 font-medium">
+                ⚡ <strong>{expenses.filter(e => e.reimbursement_type === 'pending_classification' && !e.deleted_at).length}</strong> {language === 'es' ? 'gastos sin clasificar podrían ser reembolsables' : 'unclassified expenses could be reimbursable'}
               </p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-2 border-amber-300 text-amber-700 hover:bg-amber-100"
-                onClick={() => {
-                  // Dispatch event to open bulk assign from parent
-                  window.dispatchEvent(new CustomEvent('open-bulk-assign'));
-                }}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Clasificar ahora
-              </Button>
+              <div className="flex gap-2 justify-center mt-3">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-amber-400 text-amber-800 hover:bg-amber-100 dark:text-amber-300 shadow-sm"
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('open-quick-classify'));
+                  }}
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  {language === 'es' ? 'Clasificar Rápido' : 'Quick Classify'}
+                </Button>
+              </div>
             </div>
           )}
           <div className="flex gap-2 mt-4 flex-wrap justify-center">
