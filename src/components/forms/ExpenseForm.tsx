@@ -98,6 +98,15 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
     }
   }, [reimbursementSuggestion, expense, selectedReimbursementType, form]);
 
+  // Clear client association when switching to personal
+  useEffect(() => {
+    if (selectedReimbursementType === 'personal') {
+      form.setValue('client_id', '__none__');
+      form.setValue('project_id', '__none__');
+      form.setValue('contract_id', '__none__');
+    }
+  }, [selectedReimbursementType, form]);
+
   // Completeness validation for report generation
   const completenessIssues = useMemo(() => {
     const issues: string[] = [];
@@ -115,14 +124,25 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
       }
     }
     
+    if (selectedReimbursementType === 'cra_deductible') {
+      // CRA deductible doesn't require client, but category should be set
+      if (!selectedCategory || selectedCategory === 'other') {
+        issues.push(language === 'es' 
+          ? 'Para deducción fiscal, se recomienda especificar la categoría exacta' 
+          : 'For tax deduction, specifying the exact category is recommended');
+      }
+    }
+    
     if (selectedReimbursementType === 'pending_classification') {
       issues.push(language === 'es' 
         ? 'Clasifique el tipo de reembolso para poder generar reportes' 
         : 'Classify the reimbursement type to generate reports');
     }
     
+    // Personal expenses don't need client/project/contract — they're complete as-is
+    
     return issues;
-  }, [selectedReimbursementType, selectedClientId, filteredContracts, language]);
+  }, [selectedReimbursementType, selectedClientId, selectedCategory, filteredContracts, language]);
 
   const handleSubmit = (data: ExpenseFormValues) => {
     // Clear project and contract if no client selected
@@ -382,7 +402,8 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
         {/* Entity Selector - Only shows if multi-entity */}
         <EntitySelect control={form.control} showDescription={true} />
 
-        {/* Client, Project, Contract Section */}
+        {/* Client, Project, Contract Section - Hidden for personal expenses */}
+        {selectedReimbursementType !== 'personal' && (
         <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <Building2 className="h-4 w-4" />
@@ -525,6 +546,7 @@ export function ExpenseForm({ expense, onSubmit, onCancel, isLoading }: ExpenseF
             />
           </div>
         </div>
+        )}
 
         <FormField
           control={form.control}
