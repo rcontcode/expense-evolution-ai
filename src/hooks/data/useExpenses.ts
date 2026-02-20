@@ -6,6 +6,7 @@ import { useMissionTracker } from './useMissions';
 import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { useExpenseBillMatcher } from './useExpenseBillMatcher';
 
 const QUERY_LIMIT = 500;
 
@@ -130,6 +131,7 @@ export function useCreateExpense() {
   const { trackAction } = useMissionTracker();
   const { triggers } = useGamificationTriggers();
   const { afterExpense, invalidate } = useInvalidateRelated();
+  const { checkExpenseAgainstBills } = useExpenseBillMatcher();
 
   return useMutation({
     mutationFn: async (expense: Omit<ExpenseInsert, 'user_id'>) => {
@@ -193,12 +195,19 @@ export function useCreateExpense() {
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       afterExpense();
       invalidate('user-level', 'user-achievements');
       trackAction('add_expense', 1);
       trackAction('categorize_expense', 1);
       toast.success('Gasto registrado');
+      
+      // Cross-detect: check if this expense matches an existing recurring bill
+      if (data) {
+        setTimeout(() => {
+          checkExpenseAgainstBills({ vendor: data.vendor, amount: data.amount, id: data.id });
+        }, 1500);
+      }
     },
     onError: (error: Error) => {
       if (error.message === 'DUPLICATE_DETECTED') {
