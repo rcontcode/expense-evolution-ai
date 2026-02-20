@@ -317,6 +317,7 @@ export default function Expenses() {
             open={linkReceiptOpen}
             onClose={() => setLinkReceiptOpen(false)}
             expenseIds={linkReceiptExpenseIds}
+            expenses={allExpenses || []}
           />
         </div>
       </TooltipProvider>
