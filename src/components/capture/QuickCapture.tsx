@@ -232,18 +232,30 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
   const handleSaveAll = async () => {
     setIsSaving(true);
     try {
+      let isFirstSaved = true;
       for (const exp of editedExpenses) {
         if (!exp.vendor || !exp.amount) continue;
-        await createExpense.mutateAsync({ 
+        // Only link document to the first expense to avoid many-to-one confusion
+        const docId = isFirstSaved ? savedDocumentId : null;
+        const newExpense = await createExpense.mutateAsync({ 
           vendor: exp.vendor, 
           amount: exp.amount, 
           date: exp.date, 
           category: exp.category, 
           description: exp.description, 
           client_id: exp.client_id || null,
-          document_id: savedDocumentId,
+          document_id: docId,
           status: 'pending' as const
         } as any);
+
+        // Link document back to first expense only
+        if (isFirstSaved && savedDocumentId && newExpense?.id) {
+          await supabase
+            .from('documents')
+            .update({ expense_id: newExpense.id, status: 'classified', review_status: 'approved' })
+            .eq('id', savedDocumentId);
+        }
+        isFirstSaved = false;
       }
       
       toast.success(language === 'es' ? 'Todos los gastos guardados' : 'All expenses saved');
