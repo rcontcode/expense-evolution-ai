@@ -101,7 +101,7 @@ function ImageViewer({ src, alt }: { src: string; alt: string }) {
       {/* Image area */}
       <div
         ref={containerRef}
-        className="relative rounded-lg overflow-hidden border bg-black/5 dark:bg-white/5 h-80 cursor-grab active:cursor-grabbing select-none"
+        className="relative rounded-lg overflow-hidden border bg-black/5 dark:bg-white/5 h-[28rem] cursor-grab active:cursor-grabbing select-none"
         onWheel={handleWheel}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -209,7 +209,7 @@ export function LinkReceiptDialog({ open, onClose, expenseIds, expenses = [] }: 
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Link className="h-5 w-5 text-primary" />
