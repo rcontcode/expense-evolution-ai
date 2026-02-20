@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Plus, Download, Sparkles, FileText, Users, Camera, Search, MoreHorizontal } from 'lucide-react';
+import { Plus, Download, Sparkles, FileText, Users, Camera, Search, MoreHorizontal, Zap } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useExpensesRealtime } from '@/hooks/data/useExpensesRealtime';
@@ -13,6 +13,7 @@ import { ExportDialog } from '@/components/export/ExportDialog';
 import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
 import { ReimbursementReportDialog } from '@/components/dialogs/ReimbursementReportDialog';
 import { BulkAssignDialog } from '@/components/dialogs/BulkAssignDialog';
+import { QuickClassifyDialog } from '@/components/dialogs/QuickClassifyDialog';
 import { ExpenseFilters as Filters, ExpenseWithRelations } from '@/types/expense.types';
 import { Card, CardContent } from '@/components/ui/card';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
@@ -43,6 +44,7 @@ export default function Expenses() {
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
   const [reimbursementReportOpen, setReimbursementReportOpen] = useState(false);
   const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
+  const [quickClassifyOpen, setQuickClassifyOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseWithRelations | undefined>();
 
   // Track expenses page visit for missions
@@ -63,7 +65,7 @@ export default function Expenses() {
   const { data: expenses, isLoading } = useExpenses(filters);
   const { data: allExpenses } = useExpenses({});
 
-  // Listen for voice command actions
+  // Listen for voice command actions and bulk assign events
   useEffect(() => {
     const handleVoiceAction = (event: CustomEvent<{ action: string }>) => {
       if (event.detail.action === 'add-expense') {
@@ -71,10 +73,13 @@ export default function Expenses() {
         setDialogOpen(true);
       }
     };
+    const handleOpenBulkAssign = () => setBulkAssignOpen(true);
 
     window.addEventListener('voice-command-action', handleVoiceAction as EventListener);
+    window.addEventListener('open-bulk-assign', handleOpenBulkAssign);
     return () => {
       window.removeEventListener('voice-command-action', handleVoiceAction as EventListener);
+      window.removeEventListener('open-bulk-assign', handleOpenBulkAssign);
     };
   }, []);
 
@@ -121,9 +126,13 @@ export default function Expenses() {
                       <Download className="mr-2 h-4 w-4" />
                       {t('common.export')}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setBulkAssignOpen(true)}>
+                     <DropdownMenuItem onClick={() => setBulkAssignOpen(true)}>
                       <Users className="mr-2 h-4 w-4" />
                       {t('expenses.bulkAssign')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setQuickClassifyOpen(true)}>
+                      <Zap className="mr-2 h-4 w-4" />
+                      {language === 'es' ? 'Clasificar Rápido' : 'Quick Classify'}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setReimbursementReportOpen(true)}>
                       <FileText className="mr-2 h-4 w-4" />
@@ -141,6 +150,10 @@ export default function Expenses() {
                     {t('expenses.bulkAssign')}
                   </Button>
                 </InfoTooltip>
+                <Button variant="outline" size="sm" onClick={() => setQuickClassifyOpen(true)} className="border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30">
+                  <Zap className="mr-2 h-4 w-4" />
+                  <span className="hidden lg:inline">{language === 'es' ? 'Clasificar' : 'Classify'}</span>
+                </Button>
                 <InfoTooltip content={TOOLTIP_CONTENT.reimbursementReport} variant="wrapper" side="bottom">
                   <Button variant="outline" size="sm" onClick={() => setReimbursementReportOpen(true)} data-highlight="reimbursement-report">
                     <FileText className="mr-2 h-4 w-4" />
@@ -238,6 +251,11 @@ export default function Expenses() {
           <BulkAssignDialog
             open={bulkAssignOpen}
             onClose={() => setBulkAssignOpen(false)}
+            expenses={allExpenses || []}
+          />
+          <QuickClassifyDialog
+            open={quickClassifyOpen}
+            onClose={() => setQuickClassifyOpen(false)}
             expenses={allExpenses || []}
           />
         </div>

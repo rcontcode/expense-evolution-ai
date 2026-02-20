@@ -245,7 +245,27 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
           <p className="text-muted-foreground mt-2 text-center max-w-md">
             Asigna gastos a clientes con estado reembolsable para generar reportes profesionales
           </p>
-          <div className="flex gap-2 mt-6">
+          {/* Show how many could be classified */}
+          {expenses.filter(e => e.reimbursement_type === 'pending_classification' && !e.deleted_at).length > 0 && (
+            <div className="mt-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 text-center">
+              <p className="text-sm text-amber-700 dark:text-amber-400">
+                <strong>{expenses.filter(e => e.reimbursement_type === 'pending_classification' && !e.deleted_at).length}</strong> gastos sin clasificar podrían ser reembolsables
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2 border-amber-300 text-amber-700 hover:bg-amber-100"
+                onClick={() => {
+                  // Dispatch event to open bulk assign from parent
+                  window.dispatchEvent(new CustomEvent('open-bulk-assign'));
+                }}
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Clasificar ahora
+              </Button>
+            </div>
+          )}
+          <div className="flex gap-2 mt-4 flex-wrap justify-center">
             <Badge variant="secondary" className="gap-1">
               <CheckCircle2 className="h-3 w-3" />
               Paso 1: Agregar gastos

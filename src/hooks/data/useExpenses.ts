@@ -136,6 +136,40 @@ export function useCreateExpense() {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('Not authenticated');
 
+      // Validate vendor is not garbage
+      const vendor = (expense as any).vendor?.trim();
+      if (vendor && (vendor === 'Unknown' || /^\d{4}$/.test(vendor) || /^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+de\s+\d{4}$/i.test(vendor))) {
+        console.warn('Suspicious vendor name detected:', vendor);
+      }
+
+      // Duplicate detection: same amount + same date + similar vendor
+      const amount = (expense as any).amount;
+      const date = (expense as any).date;
+      if (amount && date && vendor) {
+        const { data: potentialDupes } = await supabase
+          .from('expenses')
+          .select('id, vendor, amount, date')
+          .eq('user_id', userData.user.id)
+          .eq('amount', amount)
+          .eq('date', date)
+          .is('deleted_at', null)
+          .limit(5);
+        
+        if (potentialDupes && potentialDupes.length > 0) {
+          const vendorLower = vendor.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const isDupe = potentialDupes.some(d => {
+            const existingVendor = (d.vendor || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            // Simple similarity: one contains the other or Levenshtein-like check
+            return existingVendor === vendorLower || 
+                   existingVendor.includes(vendorLower) || 
+                   vendorLower.includes(existingVendor);
+          });
+          if (isDupe) {
+            throw new Error('DUPLICATE_DETECTED');
+          }
+        }
+      }
+
       const currentCount = await getTableCount('expenses', userData.user.id);
 
       const { data, error } = await supabase
@@ -167,6 +201,10 @@ export function useCreateExpense() {
       toast.success('Gasto registrado');
     },
     onError: (error: Error) => {
+      if (error.message === 'DUPLICATE_DETECTED') {
+        toast.error('⚠️ Este gasto parece duplicado (mismo monto, fecha y proveedor)');
+        return;
+      }
       toast.error(error.message || 'Error al registrar gasto');
     },
   });
