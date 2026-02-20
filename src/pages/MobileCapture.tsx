@@ -146,7 +146,7 @@ export default function MobileCapture() {
       const result = await processReceipt(imageBase64, undefined);
       
       if (result?.expenses?.length) {
-        // Save extracted data to document record (same as QuickCapture)
+        // Save extracted data to document record
         if (savedDocumentId) {
           await supabase
             .from('documents')
@@ -155,13 +155,15 @@ export default function MobileCapture() {
         }
 
         let savedCount = 0;
+        let billsCreated = 0;
         let lastExpense: ExtractedExpenseData | null = null;
         let lastId: string | null = null;
         let isFirst = true;
 
         for (const exp of result.expenses) {
           if (!exp.vendor || !exp.amount) continue;
-          // Link document to first expense only (same as QuickCapture)
+
+          // Create expense
           const docId = isFirst ? savedDocumentId : null;
           const newExpense = await createExpense.mutateAsync({
             vendor: exp.vendor,
@@ -183,6 +185,27 @@ export default function MobileCapture() {
               .eq('id', savedDocumentId);
           }
 
+          // Auto-create recurring bill if detected (same as QuickCapture)
+          if (exp.is_recurring_candidate && exp.recurring_bill_data && user) {
+            try {
+              const billData = exp.recurring_bill_data;
+              await supabase.from('recurring_bills').insert({
+                user_id: user.id,
+                name: billData.name,
+                amount: exp.amount,
+                category: billData.category || 'utilities',
+                frequency: billData.frequency || 'monthly',
+                next_due_date: billData.next_due_date || exp.date,
+                auto_pay: billData.auto_pay || false,
+                is_active: true,
+                currency: currentEntity?.default_currency || exp.currency || 'CAD',
+              });
+              billsCreated++;
+            } catch (billErr) {
+              console.error('Error creating recurring bill:', billErr);
+            }
+          }
+
           savedCount++;
           lastExpense = exp;
           lastId = newExpense?.id || null;
@@ -197,26 +220,34 @@ export default function MobileCapture() {
           setSavedExpenseId(lastId);
           setShowQuickEdit(true);
         }
-        
+
+        // Build contextual success message
+        const parts: string[] = [];
+        if (savedCount > 0) {
+          parts.push(language === 'es' ? `${savedCount} gasto(s)` : `${savedCount} expense(s)`);
+        }
+        if (billsCreated > 0) {
+          parts.push(language === 'es' ? `${billsCreated} pago(s) fijo(s)` : `${billsCreated} recurring bill(s)`);
+        }
         toast.success(
-          language === 'es' 
-            ? `¡${savedCount} gasto(s) guardado(s) con recibo!`
-            : `${savedCount} expense(s) saved with receipt!`
+          language === 'es'
+            ? `✅ ${parts.join(' + ')} guardado(s) con documento`
+            : `✅ ${parts.join(' + ')} saved with document`
         );
         
       } else {
         toast.error(
           language === 'es'
-            ? 'No se pudo extraer información del recibo'
-            : 'Could not extract information from receipt'
+            ? 'No se pudo extraer información del documento'
+            : 'Could not extract information from document'
         );
       }
     } catch (error) {
-      console.error('Error processing receipt:', error);
+      console.error('Error processing document:', error);
       toast.error(
         language === 'es'
-          ? 'Error al procesar el recibo'
-          : 'Error processing receipt'
+          ? 'Error al procesar el documento'
+          : 'Error processing document'
       );
     }
   };
