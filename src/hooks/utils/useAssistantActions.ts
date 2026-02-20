@@ -288,43 +288,33 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
         }
 
         case 'create_recurring_bill': {
-          const billData = action.data as { amount: number; name?: string; category?: string; frequency?: string; auto_pay?: boolean };
+          const billData = action.data as { amount: number; name?: string; category?: string; frequency?: string; auto_pay?: boolean; next_due_date?: string };
           if (billData && billData.amount) {
-            try {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (user) {
-                const nextDueDate = new Date();
-                nextDueDate.setMonth(nextDueDate.getMonth() + 1);
-                nextDueDate.setDate(1);
-                
-                const { error } = await supabase.from('recurring_bills').insert({
-                  user_id: user.id,
-                  name: billData.name || 'Sin nombre',
-                  amount: billData.amount,
-                  category: billData.category || 'other',
-                  frequency: billData.frequency || 'monthly',
-                  next_due_date: nextDueDate.toISOString().split('T')[0],
-                  auto_pay: billData.auto_pay || false,
-                  is_active: true,
-                  currency: 'CAD',
-                });
-
-                if (error) throw error;
-
-                const msg = language === 'es'
-                  ? `Pago fijo de $${billData.amount} creado${billData.name ? ` (${billData.name})` : ''}`
-                  : `Recurring bill of $${billData.amount} created${billData.name ? ` (${billData.name})` : ''}`;
-                toast.success(msg);
-                result = { success: true, message: action.message, data: billData };
+            // Emit global event to open confirmation dialog instead of inserting directly
+            const nextDueDate = billData.next_due_date || (() => {
+              const d = new Date();
+              d.setMonth(d.getMonth() + 1);
+              d.setDate(1);
+              return d.toISOString().split('T')[0];
+            })();
+            
+            window.dispatchEvent(new CustomEvent('recurring-bill-candidate', {
+              detail: {
+                name: billData.name || (language === 'es' ? 'Sin nombre' : 'Unnamed'),
+                amount: billData.amount,
+                currency: 'CAD',
+                category: billData.category || 'utilities',
+                frequency: billData.frequency || 'monthly',
+                auto_pay: billData.auto_pay || false,
+                next_due_date: nextDueDate,
               }
-            } catch (err) {
-              console.error('[Assistant] Failed to create recurring bill:', err);
-              const errMsg = language === 'es'
-                ? 'No pude crear el pago fijo'
-                : 'Failed to create recurring bill';
-              toast.error(errMsg);
-              result = { success: false, message: errMsg };
-            }
+            }));
+            
+            const msg = language === 'es'
+              ? 'Revisa los detalles del pago fijo para confirmarlo'
+              : 'Review the recurring bill details to confirm';
+            toast.info(msg);
+            result = { success: true, message: action.message, data: billData };
           }
           break;
         }

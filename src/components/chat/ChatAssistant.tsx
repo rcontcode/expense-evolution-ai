@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { X, Send, Loader2, Sparkles, HelpCircle, Target, Lightbulb, Mic, MicOff, Volume2, VolumeX, Radio, Play, Square, AlertTriangle, BookOpen, Settings, Volume1, History, Zap, TrendingUp, ArrowRight, Minimize2 } from 'lucide-react';
+import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -111,6 +112,21 @@ export const ChatAssistant: React.FC = () => {
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const previousPathRef = useRef<string>('');
   const navigate = useNavigate();
+  const [pendingBillCandidate, setPendingBillCandidate] = useState<RecurringBillCandidate | null>(null);
+  const [showBillConfirm, setShowBillConfirm] = useState(false);
+
+  // Listen for global recurring-bill-candidate events (from useAssistantActions or chat actions)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as RecurringBillCandidate;
+      if (detail) {
+        setPendingBillCandidate(detail);
+        setShowBillConfirm(true);
+      }
+    };
+    window.addEventListener('recurring-bill-candidate', handler);
+    return () => window.removeEventListener('recurring-bill-candidate', handler);
+  }, []);
   
   // Auto-minimize to bubble mode when navigating or in tutorial
   const autoMinimizeToBubble = useCallback(() => {
@@ -939,26 +955,19 @@ export const ChatAssistant: React.FC = () => {
         const billData = action.data as { name?: string; amount: number; category?: string; frequency?: string; next_due_date?: string };
         if (billData?.amount) {
           triggerHapticFeedback('medium');
-          (async () => {
-            try {
-              const { data: { user: u } } = await supabase.auth.getUser();
-              if (!u) return;
-              const { error: billError } = await supabase.from('recurring_bills').insert({
-                user_id: u.id,
-                name: billData.name || 'Sin especificar',
-                amount: billData.amount,
-                category: billData.category || 'other',
-                frequency: billData.frequency || 'monthly',
-                next_due_date: billData.next_due_date || new Date().toISOString().split('T')[0],
-                auto_pay: false,
-                is_active: true,
-              });
-              if (billError) throw billError;
-              toast.success(language === 'es' ? '🔄 Pago fijo creado' : '🔄 Recurring bill created');
-            } catch {
-              toast.error(language === 'es' ? 'Error al crear pago fijo' : 'Error creating bill');
+          // Emit global event to open confirmation dialog instead of inserting directly
+          window.dispatchEvent(new CustomEvent('recurring-bill-candidate', {
+            detail: {
+              name: billData.name || (language === 'es' ? 'Sin especificar' : 'Unspecified'),
+              amount: billData.amount,
+              currency: 'CAD',
+              category: billData.category || 'utilities',
+              frequency: billData.frequency || 'monthly',
+              auto_pay: false,
+              next_due_date: billData.next_due_date || new Date().toISOString().split('T')[0],
             }
-          })();
+          }));
+          toast.info(language === 'es' ? '📋 Revisa los detalles del pago fijo' : '📋 Review bill details');
         }
         break;
       }
@@ -1926,6 +1935,21 @@ export const ChatAssistant: React.FC = () => {
           </form>
         </div>
       )}
+    <>
+      {/* Global Recurring Bill Confirmation Dialog */}
+      <RecurringBillConfirmDialog
+        open={showBillConfirm}
+        onClose={() => {
+          setShowBillConfirm(false);
+          setPendingBillCandidate(null);
+        }}
+        candidate={pendingBillCandidate}
+        onCreated={() => {
+          setShowBillConfirm(false);
+          setPendingBillCandidate(null);
+        }}
+      />
+    </>
     </>
   );
 };

@@ -15,6 +15,7 @@ import { useEntity } from '@/contexts/EntityContext';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
 
 interface SmartTextInputProps {
   onSuccess?: () => void;
@@ -59,6 +60,8 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
   const [isSaving, setIsSaving] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const createExpense = useCreateExpense();
+  const [pendingBillCandidate, setPendingBillCandidate] = useState<RecurringBillCandidate | null>(null);
+  const [showBillConfirm, setShowBillConfirm] = useState(false);
 
   const { isListening, transcript, isSupported: voiceSupported, toggleListening, setTranscript } = useVoiceInput({
     onResult: () => {}
@@ -132,23 +135,19 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
         } as any);
         toast.success(l ? '✅ Gasto registrado' : '✅ Expense recorded');
       } else if (result.type === 'recurring_bill') {
-        const { data: userData } = await supabase.auth.getUser();
-        if (!userData.user) throw new Error('Not authenticated');
-        
-        const nextDueDate = result.data.date || new Date().toISOString().split('T')[0];
-        const { error } = await supabase.from('recurring_bills').insert({
-          user_id: userData.user.id,
+        // Open confirmation dialog instead of inserting directly
+        setPendingBillCandidate({
           name: result.data.name || result.data.description,
           amount: result.data.amount,
-          category: result.data.category || 'other',
-          frequency: result.data.frequency || 'monthly',
-          next_due_date: nextDueDate,
-          auto_pay: result.data.auto_pay || false,
-          is_active: true,
           currency: currentEntity?.default_currency || 'CAD',
+          category: result.data.category || 'utilities',
+          frequency: result.data.frequency || 'monthly',
+          auto_pay: result.data.auto_pay || false,
+          next_due_date: result.data.date || new Date().toISOString().split('T')[0],
         });
-        if (error) throw error;
-        toast.success(l ? '✅ Pago fijo creado' : '✅ Fixed bill created');
+        setShowBillConfirm(true);
+        setIsSaving(false);
+        return; // Don't call onSuccess yet - wait for dialog
       } else if (result.type === 'income') {
         const { data: userData } = await supabase.auth.getUser();
         if (!userData.user) throw new Error('Not authenticated');
@@ -402,6 +401,23 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
           {l ? 'Cancelar' : 'Cancel'}
         </Button>
       )}
+
+      {/* Recurring Bill Confirmation Dialog */}
+      <RecurringBillConfirmDialog
+        open={showBillConfirm}
+        onClose={() => {
+          setShowBillConfirm(false);
+          setPendingBillCandidate(null);
+        }}
+        candidate={pendingBillCandidate}
+        onCreated={() => {
+          setShowBillConfirm(false);
+          setPendingBillCandidate(null);
+          setText('');
+          setResult(null);
+          onSuccess?.();
+        }}
+      />
     </div>
   );
 }
