@@ -1,86 +1,176 @@
 
 
-# Analisis Critico: Sistema de Rendicion de Gastos - Estado Actual
+# Plan: Sistema Completo de Gestion Masiva de Gastos
 
-## Diagnostico General: El sistema NO esta listo para generar reportes
+## Resumen
 
-Despues de analizar cada componente del flujo completo, encontre **problemas criticos** que impiden generar un reporte util ahora mismo.
-
----
-
-## Estado Actual de los Datos
-
-- **17 gastos** registrados, todos al **50% de completitud**
-- **0 gastos** listos para reportes (0 Completed)
-- **17 gastos** sin clasificar (pending_classification)
-- **0 gastos** vinculados a cliente, proyecto o contrato
-- **1 cliente** registrado (Vertogen), con **2 contratos** y **1 proyecto**
-- **17 documentos** en Review Center, todos `pending_review` con `expense_id: null` (no vinculados a ningun gasto)
-- **Ninguna foto** de recibo esta vinculada a un gasto (`document_id: null` en todos)
+Agregar seleccion multiple con checkbox, acciones en masa (borrar, editar, clasificar), deteccion inteligente de problemas (duplicados, sin recibo), y explicaciones contextuales claras en toda la seccion de gastos.
 
 ---
 
-## Mejoras Implementadas ✅
+## Cambios Principales
 
-### 1. ✅ Wizard de Clasificación Rápida
-- Nuevo componente `QuickClassifyDialog` accesible desde la página de Gastos
-- Muestra cada gasto pendiente uno por uno con opciones: Cliente Reembolsable / Deducible CRA / Personal
-- Si elige "Cliente", muestra selector de cliente y contrato inline
-- Barra de progreso y avance automático al siguiente
-- Botón "Clasificar" en desktop y en menú mobile
+### 1. Checkboxes de seleccion en la tabla de gastos
 
-### 2. ✅ Validación Pre-Exportación
-- `ExportDialog` ahora muestra alertas amarillas cuando hay datos incompletos
-- Detecta gastos sin clasificar y advierte sobre reportes T2125 vacíos
-- Sugiere usar "Clasificación Rápida" antes de exportar
+**Archivo: `src/components/tables/ExpensesTable.tsx`**
 
-### 3. ✅ Detección de Duplicados
-- `useCreateExpense` verifica antes de guardar si existe otro gasto con mismo monto + fecha + proveedor similar
-- Usa normalización fuzzy (lowercase, sin caracteres especiales) para detectar variantes como "CHEVRON" vs "CHEURON"
-- Bloquea la creación con mensaje claro de duplicado
+- Agregar columna de checkbox al inicio de cada fila (desktop) y en cada card (mobile)
+- Estado `selectedIds: Set<string>` manejado en el componente principal
+- Checkbox "Seleccionar todo" en el header de la tabla
+- Al seleccionar, aparece una barra flotante con acciones disponibles
 
-### 4. ✅ Validación de Vendor
-- Detecta vendors sospechosos: "Unknown", fechas como vendor ("Enero de 2016"), strings numéricos
-- Log de warning para seguimiento
+### 2. Barra de acciones masivas para gastos
 
-### 5. ✅ Vinculación Documento-Gasto (ya existía)
-- QuickCapture ya vincula `document_id` en el gasto y `expense_id` en el documento
-- La vinculación bidireccional está funcional en el código
+**Archivo nuevo: `src/components/expenses/ExpenseBulkActions.tsx`**
 
-### 6. ✅ Flujo Guiado desde Reporte Vacío
-- `ClientReimbursementReport` ahora muestra cuántos gastos podrían ser reembolsables
-- Botón directo "Clasificar ahora" que abre Bulk Assign
-- Mejora la UX del empty state con información actionable
+Barra fija que aparece cuando hay gastos seleccionados, con:
+- Contador de seleccionados y monto total
+- **Eliminar seleccionados** (con confirmacion mostrando detalle)
+- **Clasificar seleccionados** (abre wizard de clasificacion rapida solo para los seleccionados)
+- **Asignar cliente/contrato** a todos los seleccionados
+- **Deseleccionar todo**
+- Animacion de entrada/salida con framer-motion
+
+### 3. Panel de Problemas Detectados (Smart Health Panel)
+
+**Archivo nuevo: `src/components/expenses/ExpenseHealthPanel.tsx`**
+
+Panel visible arriba de la tabla que reemplaza los warnings simples actuales. Muestra:
+
+- **Gastos sin recibo** (X gastos) con opciones:
+  - "Subir recibo ahora" (abre file picker)
+  - "Vincular documento existente" (muestra documentos huerfanos)
+  - "Ignorar / No tengo recibo"
+  - "Eliminar estos gastos"
+  
+- **Posibles duplicados** detectados automaticamente:
+  - Muestra pares de gastos con mismo monto+fecha+vendor similar
+  - Opciones: "Mantener ambos", "Eliminar duplicado", "Fusionar"
+  
+- **Gastos sin clasificar** con boton directo al wizard
+
+- **Gastos sin categoria** con sugerencia de categoria por IA
+
+Cada seccion es colapsable, con contadores y colores (rojo/naranja/amarillo segun urgencia).
+
+### 4. Dialogo de vinculacion de recibo
+
+**Archivo nuevo: `src/components/dialogs/LinkReceiptDialog.tsx`**
+
+Cuando el usuario elige "Vincular documento existente":
+- Lista documentos huerfanos (`expense_id IS NULL`) con preview de imagen
+- Muestra datos extraidos (vendor, monto) para facilitar el match
+- Boton "Vincular" actualiza `expenses.document_id` y `documents.expense_id`
+- Opcion "Subir nuevo" si no encuentra match
+
+### 5. Deteccion de duplicados en la tabla
+
+**Archivo: `src/hooks/data/useExpenseDuplicates.ts` (nuevo)**
+
+Hook que analiza la lista de gastos y detecta:
+- Mismo monto + misma fecha + vendor similar (fuzzy)
+- Retorna grupos de duplicados con IDs
+
+### 6. Mejoras a ExpenseCard (mobile)
+
+**Archivo: `src/components/tables/ExpenseCard.tsx`**
+
+- Agregar checkbox de seleccion (prop `selectable`, `selected`, `onSelect`)
+- Indicador visual de "Sin recibo" con icono de camara tachada + pulsacion naranja
+- Tooltip con explicacion de que hacer: "Sube un recibo o vincula uno existente"
+
+### 7. Mejoras a ExpenseRowComponent (desktop)
+
+**Archivo: `src/components/tables/ExpensesTable.tsx`**
+
+- Agregar columna checkbox al inicio
+- Indicador de "Sin recibo" en la columna de recibo (actualmente solo muestra el icono gris)
+- Al hacer hover sobre un gasto incompleto, mostrar tooltip con pasos a seguir
+
+### 8. Explicaciones y consejos contextuales
+
+**Integrado en los componentes anteriores:**
+
+- En el Health Panel: explicaciones como "Los gastos sin recibo no son validos para CRA. Puedes subir una foto del recibo o marcarlos como personal."
+- En el wizard de clasificacion: "Tip: Los gastos de gasolina y comida suelen ser deducibles si son para trabajo."
+- En la barra de acciones masivas: "Selecciona gastos similares para clasificarlos todos de una vez."
+- Warning antes de borrar en masa: "Se moveran X gastos a la papelera. Podras restaurarlos desde la seccion Papelera."
+
+### 9. Integracion en Expenses.tsx
+
+**Archivo: `src/pages/Expenses.tsx`**
+
+- Pasar `selectedIds` y `onSelectionChange` a `ExpensesTable`
+- Renderizar `ExpenseBulkActions` cuando hay seleccion
+- Renderizar `ExpenseHealthPanel` arriba de la tabla con datos de gastos
+- Agregar event listeners para abrir `LinkReceiptDialog`
 
 ---
 
-## Archivos Modificados
+## Detalle Tecnico
 
-1. `src/components/dialogs/QuickClassifyDialog.tsx` (nuevo) - Wizard de clasificación rápida
-2. `src/pages/Expenses.tsx` - Botón de clasificación rápida + QuickClassifyDialog
-3. `src/components/export/ExportDialog.tsx` - Alertas de datos incompletos pre-export
-4. `src/hooks/data/useExpenses.ts` - Detección de duplicados + validación de vendor
-5. `src/components/reports/ClientReimbursementReport.tsx` - Empty state mejorado con acción directa
+### Flujo de Seleccion Multiple
 
----
+```text
+ExpensesTable
+  +-- selectedIds: Set<string> (lifted to Expenses.tsx)
+  +-- Checkbox header: toggle all
+  +-- Each row/card: individual checkbox
+  +-- ExpenseBulkActions (floating bar)
+        +-- Delete selected -> AlertDialog con lista
+        +-- Classify selected -> QuickClassifyDialog con subset
+        +-- Assign client -> Select inline
+```
 
-## Próximos Pasos Pendientes
+### Flujo de Vinculacion de Recibo
 
-- ~~Limpiar datos basura existentes (gastos $0, vendors inválidos)~~ ✅ Hecho: eliminados 5 duplicados + 1 basura, vendor "Enero de 2016" renombrado
-- Procesar los 14 documentos huérfanos en Review Center
-- Clasificar los 13 gastos pendientes usando el nuevo wizard
+```text
+ExpenseHealthPanel
+  +-- "X gastos sin recibo" section
+  +-- Click "Vincular" -> LinkReceiptDialog
+        +-- Fetch documents where expense_id IS NULL
+        +-- Show previews + extracted data
+        +-- "Vincular" button:
+              UPDATE expenses SET document_id = ? WHERE id = ?
+              UPDATE documents SET expense_id = ? WHERE id = ?
+  +-- Click "Subir" -> File input -> upload to storage -> create document -> link
+```
 
-## Bugs Corregidos (Ronda 2) ✅
+### Flujo de Duplicados
 
-### 7. ✅ Fix QuickClassify index skipping bug
-- El wizard saltaba gastos después de clasificar uno (el índice se incrementaba pero el array se acortaba)
-- Reescrito para usar `classifiedIds` Set en vez de `currentIndex`, siempre mostrando `remainingExpenses[0]`
+```text
+useExpenseDuplicates(expenses)
+  +-- Returns: { groups: [{original, duplicate, similarity}], count }
+  
+ExpenseHealthPanel
+  +-- "X posibles duplicados" section
+  +-- Each pair shown side by side
+  +-- Actions: "Mantener ambos" | "Eliminar duplicado" | "Eliminar ambos"
+```
 
-### 8. ✅ Fix SaveAll multi-document linking
-- `handleSaveAll` en QuickCapture vinculaba el mismo `document_id` a todos los gastos extraídos
-- Corregido para vincular solo al primer gasto guardado
+### Archivos a crear
 
-### 9. ✅ Limpieza de datos basura
-- Soft-deleted: $0 Unknown, 2x Home Depot duplicados ($39.15), 1x AMBLESIDE CHEURON (typo), 2x London Drugs $9.99 duplicados
-- Renombrado: "Enero de 2016" → "Gasto no identificado"
-- Resultado: 13 gastos limpios listos para clasificar
+| Archivo | Proposito |
+|---------|-----------|
+| `src/components/expenses/ExpenseBulkActions.tsx` | Barra de acciones masivas |
+| `src/components/expenses/ExpenseHealthPanel.tsx` | Panel de problemas detectados |
+| `src/components/dialogs/LinkReceiptDialog.tsx` | Vincular recibos a gastos |
+| `src/hooks/data/useExpenseDuplicates.ts` | Deteccion de duplicados |
+
+### Archivos a modificar
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/pages/Expenses.tsx` | Estado de seleccion, render Health Panel y Bulk Actions |
+| `src/components/tables/ExpensesTable.tsx` | Checkboxes, prop selectedIds/onSelect |
+| `src/components/tables/ExpenseCard.tsx` | Checkbox, indicador sin recibo mejorado |
+| `src/components/dialogs/QuickClassifyDialog.tsx` | Aceptar subset filtrado de gastos |
+
+### Patron visual
+
+- Health Panel: Gradientes suaves (rojo para critico, naranja para advertencia, amarillo para info)
+- Bulk Actions bar: Fondo `primary/10` con animacion slide-up via framer-motion
+- Checkboxes: Estilo Radix existente con animacion de check
+- Indicador sin recibo: Icono `Camera` con slash diagonal + efecto pulse naranja
+- Tooltips explicativos en cada estado incompleto con pasos numerados
+
