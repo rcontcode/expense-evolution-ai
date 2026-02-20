@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Plus, Pencil, Trash2, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
@@ -17,11 +18,12 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
-import { useRecurringBills, useCreateBill, useUpdateBill, useDeleteBill, useMarkBillPaid, type RecurringBill, type BillInsert } from '@/hooks/data/useRecurringBills';
+import { useRecurringBills, useBillPayments, useCreateBill, useUpdateBill, useDeleteBill, useMarkBillPaid, type RecurringBill, type BillInsert } from '@/hooks/data/useRecurringBills';
 import { BILL_CATEGORY_CONFIG, PAYMENT_METHOD_CONFIG, type BillCategory, type PaymentMethodType, getBillCategoryLabel, getBillFrequencyLabel, getPaymentMethodLabel } from '@/lib/constants/bill-categories';
 import { differenceInDays, parseISO, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { BillFormDialog } from './BillFormDialog';
+import { BillSparkline } from './BillSparkline';
 
 function BillStatusBadge({ bill }: { bill: RecurringBill }) {
   const { language } = useLanguage();
@@ -137,6 +139,7 @@ export function BillsManager() {
                     key={bill.id}
                     layout
                     className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
+                    style={bill.color ? { borderLeftWidth: 3, borderLeftColor: bill.color } : undefined}
                   >
                     <div className="text-2xl">{cfg?.icon || '📋'}</div>
                     <div className="flex-1 min-w-0">
@@ -149,6 +152,14 @@ export function BillsManager() {
                         <span>{formatCurrency(bill.amount)}</span>
                         <span>·</span>
                         <span>{getBillFrequencyLabel(bill.frequency, l ? 'es' : 'en')}</span>
+                        {bill.frequency === 'custom' && bill.frequency_months && (
+                          <>
+                            <span>·</span>
+                            <span className="text-primary text-[10px]">
+                              ({l ? `c/${bill.frequency_months} meses` : `every ${bill.frequency_months} mo`})
+                            </span>
+                          </>
+                        )}
                         <span>·</span>
                         <span>{format(parseISO(bill.next_due_date), 'dd MMM yyyy', { locale: l ? es : undefined })}</span>
                       </div>
@@ -159,15 +170,24 @@ export function BillsManager() {
                         )}
                       </div>
                     </div>
+                    {/* Sparkline: payment trend */}
+                    <div className="hidden sm:block">
+                      <BillSparkline billId={bill.id} currentAmount={bill.amount} />
+                    </div>
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-green-600 hover:bg-green-500/10"
-                        onClick={() => markPaid.mutate({ billId: bill.id, amount: bill.amount })}
-                      >
-                        <CheckCircle2 className="h-4 w-4" />
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-green-600 hover:bg-green-500/10"
+                            onClick={() => markPaid.mutate({ billId: bill.id, amount: bill.amount })}
+                          >
+                            <CheckCircle2 className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{l ? 'Marcar pagado' : 'Mark paid'}</TooltipContent>
+                      </Tooltip>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(bill)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
