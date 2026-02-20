@@ -68,6 +68,13 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
       return days === 0;
     });
 
+    // Bills within their reminder window (reminder_days_before)
+    const inReminderWindow = active.filter(b => {
+      const days = differenceInDays(parseISO(b.next_due_date), now);
+      const reminderDays = b.reminder_days_before || 3;
+      return days > 0 && days <= reminderDays && !dueToday.some(d => d.id === b.id);
+    }).sort((a, b) => a.next_due_date.localeCompare(b.next_due_date));
+
     // Income vs bills
     const monthlyIncome = stats?.monthlyIncome || 0;
     const variableExpenses = stats?.monthlyTotal || 0;
@@ -114,6 +121,7 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
       dueSoonCount: dueSoon.length,
       dueTodayCount: dueToday.length,
       dueToday,
+      inReminderWindow,
       paidAmount,
       pendingAmount,
       progress,
@@ -123,8 +131,11 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
       manualCount,
       totalActive: active.length,
       severity,
+      // Commitment health score: bills as % of income
+      commitmentRatio: monthlyIncome > 0 ? (monthlyTotal / monthlyIncome) * 100 : 0,
     };
   }, [bills, stats]);
+
 
   if (!analysis) {
     return (
@@ -223,6 +234,37 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
         )}
       </AnimatePresence>
 
+      {/* ═══ REMINDER WINDOW BANNER ═══ */}
+      <AnimatePresence>
+        {analysis.inReminderWindow.length > 0 && analysis.severity !== 'critical' && analysis.dueTodayCount === 0 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="bg-blue-500/10 border-b border-blue-500/20"
+          >
+            <div className="flex items-center gap-2 px-4 py-2">
+              <PiggyBank className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+                  🔔 {analysis.inReminderWindow.length} {l ? 'pago(s) próximo(s) dentro del periodo de recordatorio' : 'payment(s) within reminder window'}
+                </p>
+                <div className="flex gap-1.5 mt-0.5 flex-wrap">
+                  {analysis.inReminderWindow.slice(0, 3).map(b => {
+                    const days = differenceInDays(parseISO(b.next_due_date), now);
+                    return (
+                      <Badge key={b.id} className="text-[10px] h-4 bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30">
+                        {BILL_CATEGORY_CONFIG[b.category as BillCategory]?.icon} {b.name}: {days}d
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
@@ -290,6 +332,42 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
             <CalendarDays className="h-3 w-3" /> {l ? `Día ${dayOfMonth}/${daysInMonth}` : `Day ${dayOfMonth}/${daysInMonth}`}
           </span>
         </div>
+
+        {/* ═══ COMMITMENT HEALTH SCORE ═══ */}
+        {analysis.commitmentRatio > 0 && (
+          <div className="p-2.5 rounded-lg border bg-muted/30">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <ShieldAlert className="h-3 w-3" />
+                {l ? 'Ratio Compromisos/Ingreso' : 'Commitment/Income Ratio'}
+              </span>
+              <Badge 
+                variant={analysis.commitmentRatio < 30 ? 'default' : analysis.commitmentRatio < 50 ? 'secondary' : 'destructive'} 
+                className="text-[10px] h-4"
+              >
+                {analysis.commitmentRatio.toFixed(0)}%
+              </Badge>
+            </div>
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <motion.div 
+                initial={{ width: 0 }} 
+                animate={{ width: `${Math.min(analysis.commitmentRatio, 100)}%` }}
+                transition={{ duration: 0.8 }}
+                className={`h-full rounded-full ${
+                  analysis.commitmentRatio < 30 ? 'bg-emerald-500' : 
+                  analysis.commitmentRatio < 50 ? 'bg-amber-500' : 'bg-destructive'
+                }`} 
+              />
+            </div>
+            <p className="text-[9px] text-muted-foreground mt-1">
+              {analysis.commitmentRatio < 30
+                ? (l ? '✅ Excelente — tus compromisos fijos son bajos' : '✅ Excellent — low fixed commitments')
+                : analysis.commitmentRatio < 50
+                  ? (l ? '⚡ Moderado — espacio razonable para gastos variables' : '⚡ Moderate — reasonable room for variable expenses')
+                  : (l ? '⚠️ Alto — más del 50% de tu ingreso va a pagos fijos' : '⚠️ High — over 50% of income goes to fixed bills')}
+            </p>
+          </div>
+        )}
 
         <Separator />
 

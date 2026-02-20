@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -6,14 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Loader2, Sparkles, TrendingUp, Calendar, DollarSign } from 'lucide-react';
+import { RefreshCw, Loader2, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEntity } from '@/contexts/EntityContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useUpsertCategoryBudget } from '@/hooks/data/useCategoryBudgets';
 import { toast } from 'sonner';
+import { HistoricalInsightPanel } from './HistoricalInsightPanel';
 import { 
   BILL_CATEGORY_CONFIG, 
   BILL_FREQUENCY_CONFIG,
@@ -29,15 +29,6 @@ export interface RecurringBillCandidate {
   frequency: string;
   auto_pay: boolean;
   next_due_date: string | null;
-}
-
-interface HistoricalInsight {
-  count: number;
-  min: number;
-  max: number;
-  avg: number;
-  suggestedDay: number | null;
-  dates: string[];
 }
 
 interface RecurringBillConfirmDialogProps {
@@ -57,11 +48,10 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
   const [amount, setAmount] = useState(0);
   const [category, setCategory] = useState<string>('utilities');
   const [frequency, setFrequency] = useState<string>('monthly');
+  const [frequencyMonths, setFrequencyMonths] = useState<number | null>(null);
   const [autoPay, setAutoPay] = useState(false);
   const [nextDueDate, setNextDueDate] = useState('');
   const [creating, setCreating] = useState(false);
-  const [historicalInsight, setHistoricalInsight] = useState<HistoricalInsight | null>(null);
-  const [loadingInsight, setLoadingInsight] = useState(false);
   const [linkToBudget, setLinkToBudget] = useState(true);
   const upsertBudget = useUpsertCategoryBudget();
 
@@ -77,59 +67,16 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
     setNextDueDate(candidate.next_due_date || new Date().toISOString().split('T')[0]);
   }
 
-  // Fetch historical data for similar vendor/name
-  useEffect(() => {
-    if (!open || !candidate?.name || !user) {
-      setHistoricalInsight(null);
-      return;
+  const handleApplyAverage = (avg: number) => setAmount(avg);
+  
+  const handleApplySuggestedDay = (day: number) => {
+    if (nextDueDate) {
+      const d = new Date(nextDueDate);
+      d.setDate(day);
+      if (d < new Date()) d.setMonth(d.getMonth() + 1);
+      setNextDueDate(d.toISOString().split('T')[0]);
     }
-
-    const fetchHistorical = async () => {
-      setLoadingInsight(true);
-      try {
-        const searchTerm = candidate.name.toLowerCase().split(' ')[0]; // First word
-        if (searchTerm.length < 3) { setLoadingInsight(false); return; }
-
-        const { data: expenses } = await supabase
-          .from('expenses')
-          .select('amount, date, vendor')
-          .eq('user_id', user.id)
-          .is('deleted_at', null)
-          .or(`vendor.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
-          .order('date', { ascending: false })
-          .limit(24);
-
-        if (expenses && expenses.length >= 2) {
-          const amounts = expenses.map(e => Number(e.amount));
-          const dates = expenses.map(e => e.date);
-          const days = dates.map(d => new Date(d).getDate());
-          
-          // Find most common day of month
-          const dayFreq: Record<number, number> = {};
-          days.forEach(d => { dayFreq[d] = (dayFreq[d] || 0) + 1; });
-          const suggestedDay = Object.entries(dayFreq)
-            .sort((a, b) => b[1] - a[1])[0]?.[0];
-
-          setHistoricalInsight({
-            count: expenses.length,
-            min: Math.min(...amounts),
-            max: Math.max(...amounts),
-            avg: Math.round(amounts.reduce((s, a) => s + a, 0) / amounts.length * 100) / 100,
-            suggestedDay: suggestedDay ? parseInt(suggestedDay) : null,
-            dates,
-          });
-        } else {
-          setHistoricalInsight(null);
-        }
-      } catch {
-        setHistoricalInsight(null);
-      } finally {
-        setLoadingInsight(false);
-      }
-    };
-
-    fetchHistorical();
-  }, [open, candidate?.name, user]);
+  };
 
   const handleCreate = async () => {
     if (!user || !name.trim()) return;
@@ -141,6 +88,7 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
         amount,
         category,
         frequency,
+        frequency_months: frequency === 'custom' ? frequencyMonths : null,
         next_due_date: nextDueDate || new Date().toISOString().split('T')[0],
         auto_pay: autoPay,
         is_active: true,
@@ -149,10 +97,8 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
       if (error) throw error;
       toast.success(l ? '🔄 Pago fijo creado exitosamente' : '🔄 Recurring bill created');
       
-      // Auto-suggest budget update for this category
       if (linkToBudget) {
         try {
-          // Get existing budget for this category
           const { data: existingBudgets } = await supabase
             .from('category_budgets')
             .select('monthly_budget')
@@ -174,7 +120,7 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
             : `📊 ${category} budget updated to $${newMinBudget.toFixed(0)} (+$${amount.toFixed(0)} from recurring bill)`
           );
         } catch {
-          // Non-critical - don't block bill creation
+          // Non-critical
         }
       }
       
@@ -185,20 +131,6 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
       toast.error(l ? 'Error al crear pago fijo' : 'Error creating recurring bill');
     } finally {
       setCreating(false);
-    }
-  };
-
-  const applyAverage = () => {
-    if (historicalInsight) setAmount(historicalInsight.avg);
-  };
-
-  const applySuggestedDay = () => {
-    if (historicalInsight?.suggestedDay && nextDueDate) {
-      const d = new Date(nextDueDate);
-      d.setDate(historicalInsight.suggestedDay);
-      // If date is in the past, move to next month
-      if (d < new Date()) d.setMonth(d.getMonth() + 1);
-      setNextDueDate(d.toISOString().split('T')[0]);
     }
   };
 
@@ -224,54 +156,13 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
           </p>
         </div>
 
-        {/* Historical Insight Panel */}
-        {loadingInsight && (
-          <div className="flex items-center gap-2 p-3 rounded-lg border border-dashed">
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">{l ? 'Analizando historial...' : 'Analyzing history...'}</span>
-          </div>
-        )}
-        {historicalInsight && (
-          <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 space-y-2">
-            <div className="flex items-center gap-1.5">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              <span className="text-xs font-semibold text-primary">
-                {l ? `${historicalInsight.count} registros encontrados` : `${historicalInsight.count} records found`}
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="text-center p-1.5 rounded bg-background/80">
-                <p className="text-[10px] text-muted-foreground">{l ? 'Mín' : 'Min'}</p>
-                <p className="text-xs font-bold">${historicalInsight.min.toFixed(2)}</p>
-              </div>
-              <button
-                onClick={applyAverage}
-                className="text-center p-1.5 rounded bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer border border-primary/20"
-                title={l ? 'Usar promedio' : 'Use average'}
-              >
-                <p className="text-[10px] text-primary font-medium">{l ? 'Promedio' : 'Avg'}</p>
-                <p className="text-xs font-bold text-primary">${historicalInsight.avg.toFixed(2)}</p>
-              </button>
-              <div className="text-center p-1.5 rounded bg-background/80">
-                <p className="text-[10px] text-muted-foreground">{l ? 'Máx' : 'Max'}</p>
-                <p className="text-xs font-bold">${historicalInsight.max.toFixed(2)}</p>
-              </div>
-            </div>
-            {historicalInsight.suggestedDay && (
-              <button
-                onClick={applySuggestedDay}
-                className="w-full flex items-center gap-2 p-2 rounded bg-background/80 hover:bg-accent/50 transition-colors text-left cursor-pointer"
-              >
-                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">
-                  {l 
-                    ? `Fecha más frecuente: día ${historicalInsight.suggestedDay} — toca para aplicar`
-                    : `Most frequent date: day ${historicalInsight.suggestedDay} — tap to apply`}
-                </span>
-              </button>
-            )}
-          </div>
-        )}
+        {/* Extracted Historical Insight Panel */}
+        <HistoricalInsightPanel
+          candidateName={candidate?.name || null}
+          open={open}
+          onApplyAverage={handleApplyAverage}
+          onApplySuggestedDay={handleApplySuggestedDay}
+        />
 
         <div className="space-y-4">
           <div className="space-y-2">
@@ -323,6 +214,19 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
             </div>
           </div>
 
+          {/* Custom frequency months */}
+          {frequency === 'custom' && (
+            <div className="space-y-2">
+              <Label>{l ? 'Cada X meses' : 'Every X months'}</Label>
+              <Input
+                type="number" min={1} max={60}
+                value={frequencyMonths || ''}
+                onChange={(e) => setFrequencyMonths(parseInt(e.target.value) || null)}
+                placeholder="3"
+              />
+            </div>
+          )}
+
           <div className="flex items-center justify-between p-3 rounded-lg border">
             <div>
               <p className="text-sm font-medium">{l ? 'Pago automático' : 'Auto-pay'}</p>
@@ -333,7 +237,6 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
             <Switch checked={autoPay} onCheckedChange={setAutoPay} />
           </div>
 
-          {/* Link to budget option */}
           <label className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-accent/30 transition-colors">
             <Checkbox 
               checked={linkToBudget} 
