@@ -20,15 +20,16 @@
    Calendar,
    AlertTriangle
  } from 'lucide-react';
- import { useLanguage } from '@/contexts/LanguageContext';
- import { useBankTransactions } from '@/hooks/data/useBankTransactions';
- import { useBankInsights } from '@/hooks/data/useBankAnalysis';
- import { useExpenses } from '@/hooks/data/useExpenses';
- import { useIncome, IncomeFilters } from '@/hooks/data/useIncome';
- import { motion } from 'framer-motion';
- import { format, addMonths, startOfMonth, endOfMonth, parseISO, subMonths } from 'date-fns';
- import { es } from 'date-fns/locale';
- import { cn } from '@/lib/utils';
+  import { useLanguage } from '@/contexts/LanguageContext';
+  import { useBankTransactions } from '@/hooks/data/useBankTransactions';
+  import { useBankInsights } from '@/hooks/data/useBankAnalysis';
+  import { useExpenses } from '@/hooks/data/useExpenses';
+  import { useIncome, IncomeFilters } from '@/hooks/data/useIncome';
+  import { useRecurringBills } from '@/hooks/data/useRecurringBills';
+  import { motion } from 'framer-motion';
+  import { format, addMonths, startOfMonth, endOfMonth, parseISO, subMonths } from 'date-fns';
+  import { es } from 'date-fns/locale';
+  import { cn } from '@/lib/utils';
  
  interface ForecastPoint {
    month: string;
@@ -54,8 +55,9 @@
    const { data: allIncome } = useIncome({ year: now.getFullYear() });
    const { data: allExpenses } = useExpenses({ 
      dateRange: { start: sixMonthsAgo, end: twoMonthsAhead } 
-   });
-   
+    });
+    const { data: recurringBills } = useRecurringBills();
+    
    const forecastData = useMemo(() => {
      const data: ForecastPoint[] = [];
      let cumulative = 0;
@@ -71,17 +73,24 @@
        let monthIncome = 0;
        let monthExpenses = 0;
        
-       if (isProjection) {
-         // For projections, use averages from historical data
-         const historicalMonths = data.filter(d => !d.isProjection);
-         if (historicalMonths.length > 0) {
-           monthIncome = historicalMonths.reduce((sum, d) => sum + d.income, 0) / historicalMonths.length;
-           monthExpenses = historicalMonths.reduce((sum, d) => sum + d.expenses, 0) / historicalMonths.length;
-         }
-         
-         // Add recurring payments to projections
-         const recurringTotal = insights.recurringPayments.reduce((sum, p) => sum + p.amount, 0);
-         monthExpenses = Math.max(monthExpenses, recurringTotal);
+        if (isProjection) {
+          // For projections, use averages from historical data
+          const historicalMonths = data.filter(d => !d.isProjection);
+          if (historicalMonths.length > 0) {
+            monthIncome = historicalMonths.reduce((sum, d) => sum + d.income, 0) / historicalMonths.length;
+            monthExpenses = historicalMonths.reduce((sum, d) => sum + d.expenses, 0) / historicalMonths.length;
+          }
+          
+          // Add recurring bills from the recurring_bills table as guaranteed future expenses
+          const activeBillsTotal = (recurringBills || [])
+            .filter(b => b.status === 'active')
+            .reduce((sum, b) => sum + Number(b.amount), 0);
+          
+          // Also include bank-detected recurring payments
+          const bankRecurringTotal = insights.recurringPayments.reduce((sum, p) => sum + p.amount, 0);
+          
+          // Use the higher of: historical average, active bills, or bank-detected recurring
+          monthExpenses = Math.max(monthExpenses, activeBillsTotal, bankRecurringTotal);
        } else {
          // Calculate actual values
          monthIncome = (allIncome || [])
@@ -126,9 +135,10 @@
      }
      
      return data;
-   }, [allIncome, allExpenses, transactions, insights.recurringPayments, currentMonth, language]);
+   }, [allIncome, allExpenses, transactions, insights.recurringPayments, recurringBills, currentMonth, language]);
    
-   if (!transactions || transactions.length === 0) return null;
+    // Show even without bank transactions if we have recurring bills or expenses
+    if ((!transactions || transactions.length === 0) && (!recurringBills || recurringBills.length === 0) && (!allExpenses || allExpenses.length === 0)) return null;
    
    const l = language === 'es';
    
