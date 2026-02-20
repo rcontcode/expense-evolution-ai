@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -17,15 +18,23 @@ import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { FilePreviewDialog } from '@/components/files/FilePreviewDialog';
 import { FileDeleteDialog } from '@/components/files/FileDeleteDialog';
+import { FileUploadZone } from '@/components/files/FileUploadZone';
+import { FileBulkActions } from '@/components/files/FileBulkActions';
 import {
   FileText, Download, ExternalLink, Eye, Files as FilesIcon,
   Clock, CheckCircle2, Image, File, Search, Trash2, CalendarIcon, X,
+  ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { format, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 type OriginFilter = 'all' | 'receipt' | 'contract';
 type StatusFilter = 'all' | 'pending' | 'processed' | 'approved' | 'rejected';
+type SortField = 'file_name' | 'created_at' | 'file_size' | 'origin' | 'status';
+type SortDir = 'asc' | 'desc';
+
+const PAGE_SIZE = 20;
 
 function getStatusBadge(file: UnifiedFile, lang: string) {
   if (file.origin === 'receipt') {
@@ -69,6 +78,11 @@ function matchesStatus(file: UnifiedFile, filter: StatusFilter): boolean {
   return true;
 }
 
+function SortIcon({ field, sortField, sortDir }: { field: SortField; sortField: SortField; sortDir: SortDir }) {
+  if (field !== sortField) return <ArrowUpDown className="h-3 w-3 opacity-40" />;
+  return sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />;
+}
+
 export default function FilesPage() {
   const { language } = useLanguage();
   const { data: files, isLoading } = useAllFiles();
@@ -82,6 +96,16 @@ export default function FilesPage() {
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
 
+  // Sort
+  const [sortField, setSortField] = useState<SortField>('created_at');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+  // Pagination
+  const [page, setPage] = useState(0);
+
+  // Selection
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
   // Preview state
   const [previewFile, setPreviewFile] = useState<UnifiedFile | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -89,24 +113,50 @@ export default function FilesPage() {
 
   // Delete state
   const [deleteTarget, setDeleteTarget] = useState<UnifiedFile | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const handleSort = useCallback((field: SortField) => {
+    setSortField((prev) => {
+      if (prev === field) {
+        setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+        return prev;
+      }
+      setSortDir('asc');
+      return field;
+    });
+  }, []);
 
   const filtered = useMemo(() => {
     if (!files) return [];
-    return files.filter((f) => {
+    let result = files.filter((f) => {
       if (originFilter !== 'all' && f.origin !== originFilter) return false;
       if (!matchesStatus(f, statusFilter)) return false;
       if (searchQuery && !f.file_name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-      if (dateFrom) {
-        const fileDate = new Date(f.created_at);
-        if (isBefore(fileDate, startOfDay(dateFrom))) return false;
-      }
-      if (dateTo) {
-        const fileDate = new Date(f.created_at);
-        if (isAfter(fileDate, endOfDay(dateTo))) return false;
-      }
+      if (dateFrom && isBefore(new Date(f.created_at), startOfDay(dateFrom))) return false;
+      if (dateTo && isAfter(new Date(f.created_at), endOfDay(dateTo))) return false;
       return true;
     });
-  }, [files, originFilter, statusFilter, searchQuery, dateFrom, dateTo]);
+
+    // Sort
+    result.sort((a, b) => {
+      let cmp = 0;
+      switch (sortField) {
+        case 'file_name': cmp = a.file_name.localeCompare(b.file_name); break;
+        case 'created_at': cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime(); break;
+        case 'file_size': cmp = (a.file_size ?? 0) - (b.file_size ?? 0); break;
+        case 'origin': cmp = a.origin.localeCompare(b.origin); break;
+        case 'status': cmp = (a.review_status ?? a.status ?? '').localeCompare(b.review_status ?? b.status ?? ''); break;
+      }
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+
+    return result;
+  }, [files, originFilter, statusFilter, searchQuery, dateFrom, dateTo, sortField, sortDir]);
+
+  // Reset page when filters change
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const paged = filtered.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
 
   const stats = useMemo(() => {
     if (!files) return { total: 0, pending: 0, processed: 0 };
@@ -116,6 +166,36 @@ export default function FilesPage() {
       processed: files.filter((f) => !matchesStatus(f, 'pending')).length,
     };
   }, [files]);
+
+  // Selection helpers
+  const fileKey = (f: UnifiedFile) => `${f.origin}-${f.id}`;
+  const allPageSelected = paged.length > 0 && paged.every((f) => selected.has(fileKey(f)));
+
+  const toggleSelect = useCallback((f: UnifiedFile) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      const key = fileKey(f);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allPageSelected) {
+        paged.forEach((f) => next.delete(fileKey(f)));
+      } else {
+        paged.forEach((f) => next.add(fileKey(f)));
+      }
+      return next;
+    });
+  }, [paged, allPageSelected]);
+
+  const selectedFiles = useMemo(() => {
+    if (!files) return [];
+    return files.filter((f) => selected.has(fileKey(f)));
+  }, [files, selected]);
 
   const handlePreview = useCallback(async (file: UnifiedFile) => {
     setPreviewFile(file);
@@ -145,13 +225,52 @@ export default function FilesPage() {
     deleteFile.mutate(deleteTarget, { onSettled: () => setDeleteTarget(null) });
   }, [deleteTarget, deleteFile]);
 
+  const handleBulkDownload = useCallback(async () => {
+    for (const f of selectedFiles) {
+      await handleDownload(f);
+    }
+  }, [selectedFiles, handleDownload]);
+
+  const handleBulkDelete = useCallback(async () => {
+    if (selectedFiles.length === 0) return;
+    const confirmed = window.confirm(
+      language === 'es'
+        ? `¿Eliminar ${selectedFiles.length} archivo(s)? Esta acción no se puede deshacer.`
+        : `Delete ${selectedFiles.length} file(s)? This cannot be undone.`
+    );
+    if (!confirmed) return;
+    setBulkDeleting(true);
+    let count = 0;
+    for (const f of selectedFiles) {
+      try {
+        await supabase.storage.from(f.bucket).remove([f.file_path]);
+        const table = f.origin === 'receipt' ? 'documents' : 'contracts';
+        await supabase.from(table).delete().eq('id', f.id);
+        count++;
+      } catch { /* continue */ }
+    }
+    toast.success(language === 'es' ? `${count} archivo(s) eliminado(s)` : `${count} file(s) deleted`);
+    setSelected(new Set());
+    setBulkDeleting(false);
+    // Invalidate
+    const { QueryClient } = await import('@tanstack/react-query');
+    // Use the existing queryClient through the hook's invalidation
+    deleteFile.reset();
+    window.location.reload(); // Simple refresh for bulk ops
+  }, [selectedFiles, language, deleteFile]);
+
   const title = language === 'es' ? 'Centro de Archivos' : 'File Center';
   const desc = language === 'es' ? 'Todos tus archivos subidos en un solo lugar' : 'All your uploaded files in one place';
   const locale = language === 'es' ? es : enUS;
 
+  const thClass = 'p-3 cursor-pointer select-none hover:bg-muted/50 transition-colors';
+
   return (
     <Layout>
       <PageHeader title={title} description={desc} />
+
+      {/* Upload Zone */}
+      <FileUploadZone />
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-5">
@@ -178,12 +297,12 @@ export default function FilesPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
             placeholder={language === 'es' ? 'Buscar por nombre...' : 'Search by name...'}
             className="pl-9 h-9"
           />
         </div>
-        <Select value={originFilter} onValueChange={(v) => setOriginFilter(v as OriginFilter)}>
+        <Select value={originFilter} onValueChange={(v) => { setOriginFilter(v as OriginFilter); setPage(0); }}>
           <SelectTrigger className="w-[130px] h-9">
             <SelectValue />
           </SelectTrigger>
@@ -193,7 +312,7 @@ export default function FilesPage() {
             <SelectItem value="contract">{language === 'es' ? 'Contratos' : 'Contracts'}</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as StatusFilter); setPage(0); }}>
           <SelectTrigger className="w-[130px] h-9">
             <SelectValue />
           </SelectTrigger>
@@ -206,7 +325,6 @@ export default function FilesPage() {
           </SelectContent>
         </Select>
 
-        {/* Date range */}
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="h-9 gap-1.5">
@@ -215,7 +333,7 @@ export default function FilesPage() {
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
-            <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} locale={locale} />
+            <Calendar mode="single" selected={dateFrom} onSelect={(d) => { setDateFrom(d); setPage(0); }} locale={locale} />
           </PopoverContent>
         </Popover>
         <Popover>
@@ -226,15 +344,24 @@ export default function FilesPage() {
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
-            <Calendar mode="single" selected={dateTo} onSelect={setDateTo} locale={locale} />
+            <Calendar mode="single" selected={dateTo} onSelect={(d) => { setDateTo(d); setPage(0); }} locale={locale} />
           </PopoverContent>
         </Popover>
         {(dateFrom || dateTo) && (
-          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>
+          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => { setDateFrom(undefined); setDateTo(undefined); setPage(0); }}>
             <X className="h-4 w-4" />
           </Button>
         )}
       </div>
+
+      {/* Bulk Actions */}
+      <FileBulkActions
+        selectedCount={selected.size}
+        onBulkDelete={handleBulkDelete}
+        onBulkDownload={handleBulkDownload}
+        onClearSelection={() => setSelected(new Set())}
+        isDeleting={bulkDeleting}
+      />
 
       {/* File list */}
       {isLoading ? (
@@ -252,9 +379,14 @@ export default function FilesPage() {
         </Card>
       ) : isMobile ? (
         <div className="space-y-2">
-          {filtered.map((f) => (
-            <Card key={`${f.origin}-${f.id}`} className="hover:shadow-md">
+          {paged.map((f) => (
+            <Card key={fileKey(f)} className="hover:shadow-md">
               <CardContent className="p-3 flex items-start gap-3">
+                <Checkbox
+                  checked={selected.has(fileKey(f))}
+                  onCheckedChange={() => toggleSelect(f)}
+                  className="mt-1"
+                />
                 {fileTypeIcon(f.file_type)}
                 <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handlePreview(f)}>
                   <p className="text-sm font-medium truncate">{f.file_name}</p>
@@ -287,19 +419,50 @@ export default function FilesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
-                  <th className="p-3">{language === 'es' ? 'Archivo' : 'File'}</th>
+                  <th className="p-3 w-10">
+                    <Checkbox checked={allPageSelected} onCheckedChange={toggleSelectAll} />
+                  </th>
+                  <th className={thClass} onClick={() => handleSort('file_name')}>
+                    <span className="flex items-center gap-1">
+                      {language === 'es' ? 'Archivo' : 'File'}
+                      <SortIcon field="file_name" sortField={sortField} sortDir={sortDir} />
+                    </span>
+                  </th>
                   <th className="p-3">{language === 'es' ? 'Tipo' : 'Type'}</th>
-                  <th className="p-3">{language === 'es' ? 'Sección' : 'Section'}</th>
-                  <th className="p-3">{language === 'es' ? 'Estado' : 'Status'}</th>
+                  <th className={thClass} onClick={() => handleSort('origin')}>
+                    <span className="flex items-center gap-1">
+                      {language === 'es' ? 'Sección' : 'Section'}
+                      <SortIcon field="origin" sortField={sortField} sortDir={sortDir} />
+                    </span>
+                  </th>
+                  <th className={thClass} onClick={() => handleSort('status')}>
+                    <span className="flex items-center gap-1">
+                      {language === 'es' ? 'Estado' : 'Status'}
+                      <SortIcon field="status" sortField={sortField} sortDir={sortDir} />
+                    </span>
+                  </th>
                   <th className="p-3">{language === 'es' ? 'Cliente' : 'Client'}</th>
-                  <th className="p-3">{language === 'es' ? 'Fecha' : 'Date'}</th>
-                  <th className="p-3">{language === 'es' ? 'Tamaño' : 'Size'}</th>
+                  <th className={thClass} onClick={() => handleSort('created_at')}>
+                    <span className="flex items-center gap-1">
+                      {language === 'es' ? 'Fecha' : 'Date'}
+                      <SortIcon field="created_at" sortField={sortField} sortDir={sortDir} />
+                    </span>
+                  </th>
+                  <th className={thClass} onClick={() => handleSort('file_size')}>
+                    <span className="flex items-center gap-1">
+                      {language === 'es' ? 'Tamaño' : 'Size'}
+                      <SortIcon field="file_size" sortField={sortField} sortDir={sortDir} />
+                    </span>
+                  </th>
                   <th className="p-3">{language === 'es' ? 'Acciones' : 'Actions'}</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((f) => (
-                  <tr key={`${f.origin}-${f.id}`} className="border-b hover:bg-muted/50 transition-colors">
+                {paged.map((f) => (
+                  <tr key={fileKey(f)} className={`border-b hover:bg-muted/50 transition-colors ${selected.has(fileKey(f)) ? 'bg-primary/5' : ''}`}>
+                    <td className="p-3">
+                      <Checkbox checked={selected.has(fileKey(f))} onCheckedChange={() => toggleSelect(f)} />
+                    </td>
                     <td className="p-3">
                       <div className="flex items-center gap-2 cursor-pointer" onClick={() => handlePreview(f)}>
                         {fileTypeIcon(f.file_type)}
@@ -344,7 +507,25 @@ export default function FilesPage() {
         </Card>
       )}
 
-      {/* Inline Preview Dialog */}
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-sm text-muted-foreground">
+            {language === 'es'
+              ? `${safePage * PAGE_SIZE + 1}–${Math.min((safePage + 1) * PAGE_SIZE, filtered.length)} de ${filtered.length}`
+              : `${safePage * PAGE_SIZE + 1}–${Math.min((safePage + 1) * PAGE_SIZE, filtered.length)} of ${filtered.length}`}
+          </p>
+          <div className="flex gap-1">
+            <Button variant="outline" size="icon" className="h-8 w-8" disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" className="h-8 w-8" disabled={safePage >= totalPages - 1} onClick={() => setPage(safePage + 1)}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       <FilePreviewDialog
         file={previewFile}
         previewUrl={previewUrl}
@@ -354,7 +535,6 @@ export default function FilesPage() {
         onGoToSection={handleGoToSection}
       />
 
-      {/* Delete Confirmation */}
       <FileDeleteDialog
         file={deleteTarget}
         isDeleting={deleteFile.isPending}
