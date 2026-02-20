@@ -35,7 +35,10 @@ import { cn } from '@/lib/utils';
    const { data: settings } = useUserSettings();
    const { data: savingsGoals } = useSavingsGoals();
  
-   const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState(() => {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('tab') || 'overview';
+    });
    const [showOnboarding, setShowOnboarding] = useState(false);
  
    const preferences = (settings?.preferences as UserPreferences) || {};

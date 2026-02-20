@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense, useMemo } from "react";
+import { useState, lazy, Suspense, useMemo, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useMonthlyPlanData } from "@/hooks/data/useMonthlyPlanData";
@@ -181,7 +181,10 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
   // Determine if user is in "empty" onboarding state
   const hasAnyData = plan.hasIncome || familyExpenses.length > 0 || activeBills.length > 0;
 
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('tab') || 'overview';
+  });
 
   return (
     <div className="space-y-5 pb-24">
