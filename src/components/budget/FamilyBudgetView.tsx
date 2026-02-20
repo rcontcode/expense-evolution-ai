@@ -290,28 +290,28 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
               <TabsList className="w-full grid grid-cols-6 h-auto p-1.5 gap-1 bg-muted/60 backdrop-blur-sm shadow-lg shadow-black/5 border border-border/50 rounded-2xl">
                 <TabsTrigger value="overview" className="flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:scale-[1.02] hover:bg-muted/80">
-                  <span className="text-base">📊</span>
+                  <span className="text-xl">📊</span>
                   <span className="hidden sm:inline">{l ? 'Resumen' : 'Overview'}</span>
                 </TabsTrigger>
                 <TabsTrigger value="expenses" className="flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-rose-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-rose-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80">
-                  <span className="text-base">🛒</span>
+                  <span className="text-xl">🛒</span>
                   <span className="hidden sm:inline">{l ? 'Gastos' : 'Expenses'}</span>
                 </TabsTrigger>
                 <TabsTrigger value="pace" className="flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-violet-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-violet-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80">
-                  <span className="text-base">⚡</span>
+                  <span className="text-xl">⚡</span>
                   <span className="hidden sm:inline">{l ? 'Ritmo' : 'Pace'}</span>
                 </TabsTrigger>
                 <TabsTrigger value="payments" className={cn("flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-amber-500 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80", shouldHighlight('payments') && 'highlight-tab-active')}>
-                  <span className="text-base">💳</span>
+                  <span className="text-xl">💳</span>
                   <span className="hidden sm:inline">{l ? 'Pagos' : 'Pay'}</span>
                   {overdueBills.length > 0 && <Badge variant="destructive" className="ml-0.5 text-[10px] px-1.5 py-0 animate-pulse">{overdueBills.length}</Badge>}
                 </TabsTrigger>
                 <TabsTrigger value="goals" className={cn("flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80", shouldHighlight('goals') && 'highlight-tab-active')}>
-                  <span className="text-base">🎯</span>
+                  <span className="text-xl">🎯</span>
                   <span className="hidden sm:inline">{l ? 'Metas' : 'Goals'}</span>
                 </TabsTrigger>
                 <TabsTrigger value="tools" className={cn("flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-slate-600 data-[state=active]:to-slate-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-slate-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80", shouldHighlight('tools') && 'highlight-tab-active')}>
-                  <span className="text-base">🔧</span>
+                  <span className="text-xl">🔧</span>
                   <span className="hidden sm:inline">{l ? 'Herram.' : 'Tools'}</span>
                 </TabsTrigger>
               </TabsList>
