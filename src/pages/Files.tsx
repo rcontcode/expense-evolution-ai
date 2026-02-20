@@ -1,21 +1,27 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Layout } from '@/components/Layout';
 import { PageHeader } from '@/components/PageHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAllFiles, type UnifiedFile } from '@/hooks/data/useAllFiles';
+import { useDeleteFile } from '@/hooks/data/useDeleteFile';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { FilePreviewDialog } from '@/components/files/FilePreviewDialog';
+import { FileDeleteDialog } from '@/components/files/FileDeleteDialog';
 import {
   FileText, Download, ExternalLink, Eye, Files as FilesIcon,
-  Clock, CheckCircle2, AlertCircle, Image, File,
+  Clock, CheckCircle2, Image, File, Search, Trash2, CalendarIcon, X,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 
 type OriginFilter = 'all' | 'receipt' | 'contract';
@@ -49,8 +55,7 @@ function fileTypeIcon(ft: string | null) {
   if (!ft) return <File className="h-4 w-4" />;
   const lower = ft.toLowerCase();
   if (lower.includes('pdf')) return <FileText className="h-4 w-4 text-red-500" />;
-  if (lower.includes('jpg') || lower.includes('jpeg') || lower.includes('png') || lower.includes('webp'))
-    return <Image className="h-4 w-4 text-blue-500" />;
+  if (/jpg|jpeg|png|webp/.test(lower)) return <Image className="h-4 w-4 text-blue-500" />;
   return <File className="h-4 w-4" />;
 }
 
@@ -67,19 +72,41 @@ function matchesStatus(file: UnifiedFile, filter: StatusFilter): boolean {
 export default function FilesPage() {
   const { language } = useLanguage();
   const { data: files, isLoading } = useAllFiles();
+  const deleteFile = useDeleteFile();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+
   const [originFilter, setOriginFilter] = useState<OriginFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
+
+  // Preview state
+  const [previewFile, setPreviewFile] = useState<UnifiedFile | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+
+  // Delete state
+  const [deleteTarget, setDeleteTarget] = useState<UnifiedFile | null>(null);
 
   const filtered = useMemo(() => {
     if (!files) return [];
     return files.filter((f) => {
       if (originFilter !== 'all' && f.origin !== originFilter) return false;
       if (!matchesStatus(f, statusFilter)) return false;
+      if (searchQuery && !f.file_name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (dateFrom) {
+        const fileDate = new Date(f.created_at);
+        if (isBefore(fileDate, startOfDay(dateFrom))) return false;
+      }
+      if (dateTo) {
+        const fileDate = new Date(f.created_at);
+        if (isAfter(fileDate, endOfDay(dateTo))) return false;
+      }
       return true;
     });
-  }, [files, originFilter, statusFilter]);
+  }, [files, originFilter, statusFilter, searchQuery, dateFrom, dateTo]);
 
   const stats = useMemo(() => {
     if (!files) return { total: 0, pending: 0, processed: 0 };
@@ -90,12 +117,16 @@ export default function FilesPage() {
     };
   }, [files]);
 
-  const handlePreview = async (file: UnifiedFile) => {
+  const handlePreview = useCallback(async (file: UnifiedFile) => {
+    setPreviewFile(file);
+    setPreviewLoading(true);
+    setPreviewUrl(null);
     const { data } = await supabase.storage.from(file.bucket).createSignedUrl(file.file_path, 3600);
-    if (data?.signedUrl) window.open(data.signedUrl, '_blank');
-  };
+    setPreviewUrl(data?.signedUrl ?? null);
+    setPreviewLoading(false);
+  }, []);
 
-  const handleDownload = async (file: UnifiedFile) => {
+  const handleDownload = useCallback(async (file: UnifiedFile) => {
     const { data } = await supabase.storage.from(file.bucket).createSignedUrl(file.file_path, 3600);
     if (data?.signedUrl) {
       const a = document.createElement('a');
@@ -103,16 +134,20 @@ export default function FilesPage() {
       a.download = file.file_name;
       a.click();
     }
-  };
+  }, []);
 
-  const handleGoToSection = (file: UnifiedFile) => {
+  const handleGoToSection = useCallback((file: UnifiedFile) => {
     navigate(file.origin === 'receipt' ? '/chaos' : '/contracts');
-  };
+  }, [navigate]);
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (!deleteTarget) return;
+    deleteFile.mutate(deleteTarget, { onSettled: () => setDeleteTarget(null) });
+  }, [deleteTarget, deleteFile]);
 
   const title = language === 'es' ? 'Centro de Archivos' : 'File Center';
-  const desc = language === 'es'
-    ? 'Todos tus archivos subidos en un solo lugar'
-    : 'All your uploaded files in one place';
+  const desc = language === 'es' ? 'Todos tus archivos subidos en un solo lugar' : 'All your uploaded files in one place';
+  const locale = language === 'es' ? es : enUS;
 
   return (
     <Layout>
@@ -137,10 +172,19 @@ export default function FilesPage() {
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-2 mb-4 flex-wrap">
+      {/* Search + Filters */}
+      <div className="flex gap-2 mb-4 flex-wrap items-center">
+        <div className="relative flex-1 min-w-[180px] max-w-[300px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={language === 'es' ? 'Buscar por nombre...' : 'Search by name...'}
+            className="pl-9 h-9"
+          />
+        </div>
         <Select value={originFilter} onValueChange={(v) => setOriginFilter(v as OriginFilter)}>
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-[130px] h-9">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -150,7 +194,7 @@ export default function FilesPage() {
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-[130px] h-9">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -161,6 +205,35 @@ export default function FilesPage() {
             <SelectItem value="rejected">{language === 'es' ? 'Rechazado' : 'Rejected'}</SelectItem>
           </SelectContent>
         </Select>
+
+        {/* Date range */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-9 gap-1.5">
+              <CalendarIcon className="h-3.5 w-3.5" />
+              {dateFrom ? format(dateFrom, 'dd/MM', { locale }) : (language === 'es' ? 'Desde' : 'From')}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} locale={locale} />
+          </PopoverContent>
+        </Popover>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-9 gap-1.5">
+              <CalendarIcon className="h-3.5 w-3.5" />
+              {dateTo ? format(dateTo, 'dd/MM', { locale }) : (language === 'es' ? 'Hasta' : 'To')}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateTo} onSelect={setDateTo} locale={locale} />
+          </PopoverContent>
+        </Popover>
+        {(dateFrom || dateTo) && (
+          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {/* File list */}
@@ -178,13 +251,12 @@ export default function FilesPage() {
           </CardContent>
         </Card>
       ) : isMobile ? (
-        /* Mobile: compact cards */
         <div className="space-y-2">
           {filtered.map((f) => (
             <Card key={`${f.origin}-${f.id}`} className="hover:shadow-md">
               <CardContent className="p-3 flex items-start gap-3">
                 {fileTypeIcon(f.file_type)}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handlePreview(f)}>
                   <p className="text-sm font-medium truncate">{f.file_name}</p>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <Badge variant="outline" className="text-[10px]">
@@ -192,7 +264,7 @@ export default function FilesPage() {
                     </Badge>
                     {getStatusBadge(f, language)}
                     <span className="text-[10px] text-muted-foreground">
-                      {format(new Date(f.created_at), 'dd MMM yyyy', { locale: language === 'es' ? es : enUS })}
+                      {format(new Date(f.created_at), 'dd MMM yyyy', { locale })}
                     </span>
                   </div>
                   {f.client_name && <p className="text-[10px] text-muted-foreground mt-0.5">{f.client_name}</p>}
@@ -201,8 +273,8 @@ export default function FilesPage() {
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handlePreview(f)}>
                     <Eye className="h-3.5 w-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleGoToSection(f)}>
-                    <ExternalLink className="h-3.5 w-3.5" />
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteTarget(f)}>
+                    <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </CardContent>
@@ -210,7 +282,6 @@ export default function FilesPage() {
           ))}
         </div>
       ) : (
-        /* Desktop: table */
         <Card>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -229,9 +300,11 @@ export default function FilesPage() {
               <tbody>
                 {filtered.map((f) => (
                   <tr key={`${f.origin}-${f.id}`} className="border-b hover:bg-muted/50 transition-colors">
-                    <td className="p-3 flex items-center gap-2">
-                      {fileTypeIcon(f.file_type)}
-                      <span className="truncate max-w-[200px]">{f.file_name}</span>
+                    <td className="p-3">
+                      <div className="flex items-center gap-2 cursor-pointer" onClick={() => handlePreview(f)}>
+                        {fileTypeIcon(f.file_type)}
+                        <span className="truncate max-w-[200px] hover:underline">{f.file_name}</span>
+                      </div>
                     </td>
                     <td className="p-3 uppercase text-xs text-muted-foreground">{f.file_type ?? '—'}</td>
                     <td className="p-3">
@@ -242,7 +315,7 @@ export default function FilesPage() {
                     <td className="p-3">{getStatusBadge(f, language)}</td>
                     <td className="p-3 text-muted-foreground">{f.client_name ?? '—'}</td>
                     <td className="p-3 text-muted-foreground whitespace-nowrap">
-                      {format(new Date(f.created_at), 'dd MMM yyyy', { locale: language === 'es' ? es : enUS })}
+                      {format(new Date(f.created_at), 'dd MMM yyyy', { locale })}
                     </td>
                     <td className="p-3 text-muted-foreground">
                       {f.file_size ? `${(f.file_size / 1024).toFixed(0)} KB` : '—'}
@@ -258,6 +331,9 @@ export default function FilesPage() {
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleGoToSection(f)} title={language === 'es' ? 'Ir a sección' : 'Go to section'}>
                           <ExternalLink className="h-3.5 w-3.5" />
                         </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(f)} title={language === 'es' ? 'Eliminar' : 'Delete'}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -267,6 +343,24 @@ export default function FilesPage() {
           </div>
         </Card>
       )}
+
+      {/* Inline Preview Dialog */}
+      <FilePreviewDialog
+        file={previewFile}
+        previewUrl={previewUrl}
+        isLoading={previewLoading}
+        onClose={() => { setPreviewFile(null); setPreviewUrl(null); }}
+        onDownload={handleDownload}
+        onGoToSection={handleGoToSection}
+      />
+
+      {/* Delete Confirmation */}
+      <FileDeleteDialog
+        file={deleteTarget}
+        isDeleting={deleteFile.isPending}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </Layout>
   );
 }
