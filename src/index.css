@@ -2887,29 +2887,20 @@
   }
 }
 
-@keyframes highlight-tab-pulse {
-  0% {
-    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5);
-  }
-  25% {
-    box-shadow: 0 0 0 6px hsl(var(--primary) / 0.35);
-  }
-  55% {
-    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.2);
-  }
-  100% {
-    box-shadow: 0 0 0 0 transparent;
-  }
+/* highlight-tab-active: recuadro naranja visible en el botón del tab */
+.highlight-tab-active {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  border-radius: 0.75rem;
+  background-color: hsl(var(--primary) / 0.12) !important;
 }
 
+/* highlight-on-arrival: recuadro naranja en la sección completa de contenido */
 .highlight-on-arrival {
-  animation: highlight-beacon 3.5s ease-out forwards;
-  border: 2px solid hsl(var(--primary) / 0.7);
+  border: 2px solid hsl(var(--primary) / 0.8);
   border-radius: 1rem;
   position: relative;
-}
-
-.highlight-tab-active {
-  animation: highlight-tab-pulse 2s ease-out forwards;
-  border-radius: 0.75rem;
+  background-color: hsl(var(--primary) / 0.04);
+  padding: 0.5rem;
+  animation: highlight-beacon 3.5s ease-out forwards;
 }
