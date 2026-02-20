@@ -24,6 +24,8 @@ export type SampleDataCounts = {
   notifications: number;
   education: number;
   bank_transactions: number;
+  category_budgets: number;
+  recurring_bills: number;
   total: number;
 };
 
@@ -32,7 +34,7 @@ export function useSampleDataCounts() {
     queryKey: ['sample-data-counts'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { clients: 0, projects: 0, expenses: 0, income: 0, mileage: 0, assets: 0, liabilities: 0, goals: 0, contracts: 0, notifications: 0, education: 0, bank_transactions: 0, total: 0 };
+      if (!user) return { clients: 0, projects: 0, expenses: 0, income: 0, mileage: 0, assets: 0, liabilities: 0, goals: 0, contracts: 0, notifications: 0, education: 0, bank_transactions: 0, category_budgets: 0, recurring_bills: 0, total: 0 };
 
       const uid = user.id;
       const m = SAMPLE_MARKER;
@@ -40,7 +42,7 @@ export function useSampleDataCounts() {
       const [
         clientsRes, projectsRes, expensesRes, incomeRes, mileageRes,
         assetsRes, liabilitiesRes, investGoalsRes, savingsGoalsRes,
-        contractsRes, notifRes, eduRes, bankRes,
+        contractsRes, notifRes, eduRes, bankRes, catBudgetsRes, recurBillsRes,
       ] = await Promise.all([
         supabase.from('clients').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
         supabase.from('projects').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
@@ -55,6 +57,8 @@ export function useSampleDataCounts() {
         supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('title', `%${m}%`),
         supabase.from('financial_education').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('title', `%${m}%`),
         supabase.from('bank_transactions').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('description', `%${m}%`),
+        supabase.from('category_budgets').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('category', `%${m}%`),
+        supabase.from('recurring_bills').select('id', { count: 'exact', head: true }).eq('user_id', uid).like('name', `%${m}%`),
       ]);
 
       const clients = clientsRes.count ?? 0;
@@ -69,9 +73,11 @@ export function useSampleDataCounts() {
       const notifications = notifRes.count ?? 0;
       const education = eduRes.count ?? 0;
       const bank_transactions = bankRes.count ?? 0;
-      const total = clients + projects + expenses + income + mileage + assets + liabilities + goals + contracts + notifications + education + bank_transactions;
+      const category_budgets = catBudgetsRes.count ?? 0;
+      const recurring_bills = recurBillsRes.count ?? 0;
+      const total = clients + projects + expenses + income + mileage + assets + liabilities + goals + contracts + notifications + education + bank_transactions + category_budgets + recurring_bills;
 
-      return { clients, projects, expenses, income, mileage, assets, liabilities, goals, contracts, notifications, education, bank_transactions, total };
+      return { clients, projects, expenses, income, mileage, assets, liabilities, goals, contracts, notifications, education, bank_transactions, category_budgets, recurring_bills, total };
     },
     staleTime: 30_000,
   });
@@ -904,6 +910,47 @@ export function useGenerateSampleData() {
       const { error: achError } = await supabase.from('user_achievements').insert(achievements.map(a => ({ ...a, user_id: userId })));
       if (achError) console.warn('[SAMPLE DATA] Achievements error:', achError);
 
+      // ============================================
+      // 22. CREATE CATEGORY BUDGETS (for budget section)
+      // ============================================
+      console.log('[SAMPLE DATA] Creating category budgets...');
+      const categoryBudgets = [
+        { category: `${SAMPLE_MARKER} food`, monthly_budget: 800, alert_threshold: 80 },
+        { category: `${SAMPLE_MARKER} transport`, monthly_budget: 400, alert_threshold: 75 },
+        { category: `${SAMPLE_MARKER} entertainment`, monthly_budget: 200, alert_threshold: 90 },
+        { category: `${SAMPLE_MARKER} utilities`, monthly_budget: 350, alert_threshold: 85 },
+        { category: `${SAMPLE_MARKER} health`, monthly_budget: 250, alert_threshold: 80 },
+        { category: `${SAMPLE_MARKER} software`, monthly_budget: 150, alert_threshold: 70 },
+        { category: `${SAMPLE_MARKER} education`, monthly_budget: 300, alert_threshold: 80 },
+        { category: `${SAMPLE_MARKER} clothing`, monthly_budget: 200, alert_threshold: 90 },
+      ];
+
+      const { error: catBudgetsError } = await supabase.from('category_budgets').insert(
+        categoryBudgets.map(b => ({ ...b, user_id: userId }))
+      );
+      if (catBudgetsError) console.warn('[SAMPLE DATA] Category budgets error:', catBudgetsError);
+
+      // ============================================
+      // 23. CREATE RECURRING BILLS (for bill tracking)
+      // ============================================
+      console.log('[SAMPLE DATA] Creating recurring bills...');
+      const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+      const recurringBills = [
+        { name: `${SAMPLE_MARKER} Netflix`, amount: 22.99, category: 'entertainment', frequency: 'monthly', due_day: 15, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 15).toISOString().split('T')[0], auto_pay: true, priority: 'low', color: '#E50914', icon: '📺', notes: `${SAMPLE_MARKER} Streaming subscription` },
+        { name: `${SAMPLE_MARKER} Electricity - Hydro`, amount: 156.78, category: 'utilities', frequency: 'monthly', due_day: 20, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 20).toISOString().split('T')[0], auto_pay: false, priority: 'high', color: '#F59E0B', icon: '⚡', notes: `${SAMPLE_MARKER} Monthly hydro bill` },
+        { name: `${SAMPLE_MARKER} Car Insurance`, amount: 185.00, category: 'insurance', frequency: 'monthly', due_day: 1, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 1).toISOString().split('T')[0], auto_pay: true, priority: 'high', color: '#3B82F6', icon: '🚗', notes: `${SAMPLE_MARKER} Auto insurance premium` },
+        { name: `${SAMPLE_MARKER} Internet - Bell`, amount: 89.99, category: 'utilities', frequency: 'monthly', due_day: 5, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 5).toISOString().split('T')[0], auto_pay: true, priority: 'medium', color: '#0EA5E9', icon: '🌐', notes: `${SAMPLE_MARKER} Fiber internet 1Gbps` },
+        { name: `${SAMPLE_MARKER} Gym Membership`, amount: 49.99, category: 'health', frequency: 'monthly', due_day: 1, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 1).toISOString().split('T')[0], auto_pay: true, priority: 'low', color: '#10B981', icon: '🏋️', notes: `${SAMPLE_MARKER} Monthly gym membership` },
+        { name: `${SAMPLE_MARKER} Spotify Family`, amount: 16.99, category: 'entertainment', frequency: 'monthly', due_day: 10, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 10).toISOString().split('T')[0], auto_pay: true, priority: 'low', color: '#1DB954', icon: '🎵', notes: `${SAMPLE_MARKER} Family plan music streaming` },
+        { name: `${SAMPLE_MARKER} Home Insurance`, amount: 245.00, category: 'insurance', frequency: 'monthly', due_day: 15, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 15).toISOString().split('T')[0], auto_pay: false, priority: 'high', color: '#8B5CF6', icon: '🏠', notes: `${SAMPLE_MARKER} Homeowners insurance` },
+        { name: `${SAMPLE_MARKER} Phone Plan`, amount: 65.00, category: 'utilities', frequency: 'monthly', due_day: 25, next_due_date: new Date(nextMonth.getFullYear(), nextMonth.getMonth(), 25).toISOString().split('T')[0], auto_pay: true, priority: 'medium', color: '#EC4899', icon: '📱', notes: `${SAMPLE_MARKER} Mobile phone plan` },
+      ];
+
+      const { error: billsError } = await supabase.from('recurring_bills').insert(
+        recurringBills.map(b => ({ ...b, user_id: userId, status: 'active', payment_method_type: 'manual_online' }))
+      );
+      if (billsError) console.warn('[SAMPLE DATA] Recurring bills error:', billsError);
+
       console.log('[SAMPLE DATA] ✅ All sample data created successfully!');
       return { success: true };
     },
@@ -987,6 +1034,13 @@ export function useDeleteSampleData() {
       await supabase.from('savings_goals').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
       await supabase.from('tags').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
       await supabase.from('notifications').delete().eq('user_id', userId).like('title', `%${SAMPLE_MARKER}%`);
+      await supabase.from('category_budgets').delete().eq('user_id', userId).like('category', `%${SAMPLE_MARKER}%`);
+      // Delete bill_payments referencing sample recurring_bills before deleting them
+      const { data: sampleRecurBills } = await supabase.from('recurring_bills').select('id').eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
+      if (sampleRecurBills && sampleRecurBills.length > 0) {
+        await supabase.from('bill_payments').delete().in('bill_id', sampleRecurBills.map(b => b.id));
+      }
+      await supabase.from('recurring_bills').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
 
       // 11. Delete new sample data tables
       // Financial habits and logs
@@ -1130,6 +1184,19 @@ export function useDeleteSampleDataBySection() {
             
           case 'bank_transactions':
             await supabase.from('bank_transactions').delete().eq('user_id', userId).like('description', `%${SAMPLE_MARKER}%`);
+            break;
+
+          case 'category_budgets':
+            await supabase.from('category_budgets').delete().eq('user_id', userId).like('category', `%${SAMPLE_MARKER}%`);
+            break;
+
+          case 'recurring_bills':
+            // Delete bill_payments referencing sample bills first
+            const { data: sampleBills } = await supabase.from('recurring_bills').select('id').eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
+            if (sampleBills && sampleBills.length > 0) {
+              await supabase.from('bill_payments').delete().in('bill_id', sampleBills.map(b => b.id));
+            }
+            await supabase.from('recurring_bills').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
             break;
         }
       }
@@ -1309,6 +1376,29 @@ export function useGenerateSampleDataBySection() {
           ];
           await supabase.from('financial_education').insert(educationResources.map(e => ({ ...e, user_id: userId })));
           break;
+
+        case 'category_budgets':
+          const catBudgets = [
+            { category: `${SAMPLE_MARKER} food`, monthly_budget: 800, alert_threshold: 80 },
+            { category: `${SAMPLE_MARKER} transport`, monthly_budget: 400, alert_threshold: 75 },
+            { category: `${SAMPLE_MARKER} entertainment`, monthly_budget: 200, alert_threshold: 90 },
+            { category: `${SAMPLE_MARKER} utilities`, monthly_budget: 350, alert_threshold: 85 },
+            { category: `${SAMPLE_MARKER} health`, monthly_budget: 250, alert_threshold: 80 },
+            { category: `${SAMPLE_MARKER} software`, monthly_budget: 150, alert_threshold: 70 },
+          ];
+          await supabase.from('category_budgets').insert(catBudgets.map(b => ({ ...b, user_id: userId })));
+          break;
+
+        case 'recurring_bills':
+          const nextMo = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+          const bills = [
+            { name: `${SAMPLE_MARKER} Netflix`, amount: 22.99, category: 'entertainment', frequency: 'monthly', due_day: 15, next_due_date: new Date(nextMo.getFullYear(), nextMo.getMonth(), 15).toISOString().split('T')[0], auto_pay: true, priority: 'low', color: '#E50914', icon: '📺', notes: `${SAMPLE_MARKER} Streaming` },
+            { name: `${SAMPLE_MARKER} Electricity`, amount: 156.78, category: 'utilities', frequency: 'monthly', due_day: 20, next_due_date: new Date(nextMo.getFullYear(), nextMo.getMonth(), 20).toISOString().split('T')[0], auto_pay: false, priority: 'high', color: '#F59E0B', icon: '⚡', notes: `${SAMPLE_MARKER} Hydro` },
+            { name: `${SAMPLE_MARKER} Car Insurance`, amount: 185.00, category: 'insurance', frequency: 'monthly', due_day: 1, next_due_date: new Date(nextMo.getFullYear(), nextMo.getMonth(), 1).toISOString().split('T')[0], auto_pay: true, priority: 'high', color: '#3B82F6', icon: '🚗', notes: `${SAMPLE_MARKER} Auto insurance` },
+            { name: `${SAMPLE_MARKER} Internet`, amount: 89.99, category: 'utilities', frequency: 'monthly', due_day: 5, next_due_date: new Date(nextMo.getFullYear(), nextMo.getMonth(), 5).toISOString().split('T')[0], auto_pay: true, priority: 'medium', color: '#0EA5E9', icon: '🌐', notes: `${SAMPLE_MARKER} Fiber` },
+          ];
+          await supabase.from('recurring_bills').insert(bills.map(b => ({ ...b, user_id: userId, status: 'active', payment_method_type: 'manual_online' })));
+          break;
       }
 
       return { success: true, section };
@@ -1368,4 +1458,6 @@ function invalidateAllQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: ['achievements'] });
   queryClient.invalidateQueries({ queryKey: ['education-daily-logs'] });
   queryClient.invalidateQueries({ queryKey: ['sample-data-counts'] });
+  queryClient.invalidateQueries({ queryKey: ['category-budgets'] });
+  queryClient.invalidateQueries({ queryKey: ['recurring-bills'] });
 }

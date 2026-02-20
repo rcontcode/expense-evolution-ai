@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { 
   Database, Trash2, RefreshCw, Users, FolderKanban, Receipt, TrendingUp, Car, Scale, 
   Target, FileText, Bell, BookOpen, Building2, Loader2, Info, CheckCircle2, Clock, 
-  AlertTriangle, LogIn, Search, AlertCircle, Sparkles
+  AlertTriangle, LogIn, Search, AlertCircle, Sparkles, PiggyBank, CalendarClock
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,6 +34,8 @@ const SAMPLE_SECTIONS = [
   { key: 'notifications',     icon: Bell,          labelEs: 'Notificaciones',  labelEn: 'Notifications', color: 'text-yellow-500',  bg: 'bg-yellow-500/10',  countKey: 'notifications' },
   { key: 'education',         icon: BookOpen,      labelEs: 'Educación',       labelEn: 'Education',     color: 'text-teal-500',    bg: 'bg-teal-500/10',    countKey: 'education' },
   { key: 'bank_transactions', icon: Building2,     labelEs: 'Transacciones',   labelEn: 'Transactions',  color: 'text-slate-500',   bg: 'bg-slate-500/10',   countKey: 'bank_transactions' },
+  { key: 'category_budgets', icon: PiggyBank,     labelEs: 'Presupuestos',    labelEn: 'Budgets',       color: 'text-emerald-500', bg: 'bg-emerald-500/10', countKey: 'category_budgets' },
+  { key: 'recurring_bills',  icon: CalendarClock,  labelEs: 'Facturas Recurrentes', labelEn: 'Recurring Bills', color: 'text-rose-500', bg: 'bg-rose-500/10', countKey: 'recurring_bills' },
 ] as const;
 
 type SectionKey = typeof SAMPLE_SECTIONS[number]['key'];
@@ -58,6 +60,8 @@ const GENERATION_STEPS = [
   { key: 'pyf',           labelEs: 'Configurando págate primero...',   labelEn: 'Setting up pay yourself first...' },
   { key: 'profile',       labelEs: 'Creando perfil financiero...',     labelEn: 'Creating financial profile...' },
   { key: 'gamification',  labelEs: 'Configurando gamificación...',     labelEn: 'Setting up gamification...' },
+  { key: 'budgets',       labelEs: 'Creando presupuestos...',          labelEn: 'Creating budgets...' },
+  { key: 'bills',         labelEs: 'Creando facturas recurrentes...',  labelEn: 'Creating recurring bills...' },
   { key: 'done',          labelEs: '¡Completado!',                     labelEn: 'Complete!' },
 ];
 
