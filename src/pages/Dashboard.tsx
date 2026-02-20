@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, lazy, Suspense, useEffect } from 'react';
+import { useHighlightOnArrival } from '@/hooks/utils/useHighlightOnArrival';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -164,6 +165,8 @@ export default function Dashboard() {
       setSearchParams({});
     }
   }, [searchParams, setSearchParams, refreshSubscription]);
+
+  const { shouldHighlight, getHighlightProps } = useHighlightOnArrival();
 
   // Deep-linking: open the Control Center on a specific tab (used by InteractiveWelcome)
   useEffect(() => {
@@ -463,7 +466,8 @@ export default function Dashboard() {
                               "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-blue-500/50 data-[state=active]:scale-105",
                               "data-[state=active]:ring-2 data-[state=active]:ring-blue-400/50",
                               "hover:bg-blue-500/20 hover:text-blue-400 hover:scale-102",
-                              "bg-blue-500/5 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                              "bg-blue-500/5 text-blue-600 dark:text-blue-400 border border-blue-500/20",
+                              shouldHighlight('charts') && 'highlight-tab-active'
                             )}
                           >
                             <div className="p-1.5 rounded-lg bg-blue-500/20">
@@ -481,7 +485,8 @@ export default function Dashboard() {
                               "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-purple-500/50 data-[state=active]:scale-105",
                               "data-[state=active]:ring-2 data-[state=active]:ring-purple-400/50",
                               "hover:bg-purple-500/20 hover:text-purple-400 hover:scale-102",
-                              "bg-purple-500/5 text-purple-600 dark:text-purple-400 border border-purple-500/20"
+                              "bg-purple-500/5 text-purple-600 dark:text-purple-400 border border-purple-500/20",
+                              shouldHighlight('analytics') && 'highlight-tab-active'
                             )}
                           >
                             <div className="p-1.5 rounded-lg bg-purple-500/20">
@@ -499,7 +504,8 @@ export default function Dashboard() {
                               "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-cyan-500/50 data-[state=active]:scale-105",
                               "data-[state=active]:ring-2 data-[state=active]:ring-cyan-400/50",
                               "hover:bg-cyan-500/20 hover:text-cyan-400",
-                              "bg-cyan-500/5 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20"
+                              "bg-cyan-500/5 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20",
+                              shouldHighlight('budget') && 'highlight-tab-active'
                             )}
                           >
                             <div className="p-1 rounded-lg bg-cyan-500/20">
@@ -517,7 +523,8 @@ export default function Dashboard() {
                               "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-amber-500/50 data-[state=active]:scale-105",
                               "data-[state=active]:ring-2 data-[state=active]:ring-amber-400/50",
                               "hover:bg-amber-500/20 hover:text-amber-400 hover:scale-102",
-                              "bg-amber-500/5 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                              "bg-amber-500/5 text-amber-600 dark:text-amber-400 border border-amber-500/20",
+                              shouldHighlight('mentorship') && 'highlight-tab-active'
                             )}
                           >
                             <div className="p-1.5 rounded-lg bg-amber-500/20">
@@ -535,7 +542,8 @@ export default function Dashboard() {
                               "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-emerald-500/50 data-[state=active]:scale-105",
                               "data-[state=active]:ring-2 data-[state=active]:ring-emerald-400/50",
                               "hover:bg-emerald-500/20 hover:text-emerald-400",
-                              "bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                              "bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
+                              shouldHighlight('goals') && 'highlight-tab-active'
                             )}
                           >
                             <div className="p-1 rounded-lg bg-emerald-500/20">
@@ -553,7 +561,8 @@ export default function Dashboard() {
                               "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-green-500/50 data-[state=active]:scale-105",
                               "data-[state=active]:ring-2 data-[state=active]:ring-green-400/50",
                               "hover:bg-green-500/20 hover:text-green-400",
-                              "bg-green-500/5 text-green-600 dark:text-green-400 border border-green-500/20"
+                              "bg-green-500/5 text-green-600 dark:text-green-400 border border-green-500/20",
+                              shouldHighlight('tax') && 'highlight-tab-active'
                             )}
                           >
                             <div className="p-1 rounded-lg bg-green-500/20">
@@ -571,7 +580,8 @@ export default function Dashboard() {
                               "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-blue-500/50 data-[state=active]:scale-105",
                               "data-[state=active]:ring-2 data-[state=active]:ring-blue-400/50",
                               "hover:bg-blue-500/20 hover:text-blue-400",
-                              "bg-blue-500/5 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                              "bg-blue-500/5 text-blue-600 dark:text-blue-400 border border-blue-500/20",
+                              shouldHighlight('mileage') && 'highlight-tab-active'
                             )}
                           >
                             <div className="p-1 rounded-lg bg-blue-500/20">
@@ -589,7 +599,8 @@ export default function Dashboard() {
                               "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-violet-500/50 data-[state=active]:scale-105",
                               "data-[state=active]:ring-2 data-[state=active]:ring-violet-400/50",
                               "hover:bg-violet-500/20 hover:text-violet-400",
-                              "bg-violet-500/5 text-violet-600 dark:text-violet-400 border border-violet-500/20"
+                              "bg-violet-500/5 text-violet-600 dark:text-violet-400 border border-violet-500/20",
+                              shouldHighlight('subscriptions') && 'highlight-tab-active'
                             )}
                           >
                             <div className="p-1 rounded-lg bg-violet-500/20">
@@ -607,7 +618,8 @@ export default function Dashboard() {
                               "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-orange-500/50 data-[state=active]:scale-105",
                               "data-[state=active]:ring-2 data-[state=active]:ring-orange-400/50",
                               "hover:bg-orange-500/20 hover:text-orange-400",
-                              "bg-orange-500/5 text-orange-600 dark:text-orange-400 border border-orange-500/20"
+                              "bg-orange-500/5 text-orange-600 dark:text-orange-400 border border-orange-500/20",
+                              shouldHighlight('fire') && 'highlight-tab-active'
                             )}
                           >
                             <div className="p-1 rounded-lg bg-orange-500/20">
@@ -625,7 +637,8 @@ export default function Dashboard() {
                               "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-red-500/50 data-[state=active]:scale-105",
                               "data-[state=active]:ring-2 data-[state=active]:ring-red-400/50",
                               "hover:bg-red-500/20 hover:text-red-400",
-                              "bg-red-500/5 text-red-600 dark:text-red-400 border border-red-500/20"
+                              "bg-red-500/5 text-red-600 dark:text-red-400 border border-red-500/20",
+                              shouldHighlight('debt') && 'highlight-tab-active'
                             )}
                           >
                             <div className="p-1 rounded-lg bg-red-500/20">
@@ -643,7 +656,8 @@ export default function Dashboard() {
                               "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-indigo-500/50 data-[state=active]:scale-105",
                               "data-[state=active]:ring-2 data-[state=active]:ring-indigo-400/50",
                               "hover:bg-indigo-500/20 hover:text-indigo-400",
-                              "bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+                              "bg-indigo-500/5 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20",
+                              shouldHighlight('portfolio') && 'highlight-tab-active'
                             )}
                           >
                             <div className="p-1 rounded-lg bg-indigo-500/20">
@@ -661,7 +675,8 @@ export default function Dashboard() {
                               "data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-amber-500/50 data-[state=active]:scale-105",
                               "data-[state=active]:ring-2 data-[state=active]:ring-amber-400/50",
                               "hover:bg-amber-500/20 hover:text-amber-400",
-                              "bg-amber-500/5 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                              "bg-amber-500/5 text-amber-600 dark:text-amber-400 border border-amber-500/20",
+                              shouldHighlight('education') && 'highlight-tab-active'
                             )}
                           >
                             <div className="p-1 rounded-lg bg-amber-500/20">
@@ -671,7 +686,7 @@ export default function Dashboard() {
                           </TabsTrigger>
                         </TabsList>
 
-                        <TabsContent value="charts" className="space-y-4">
+                        <TabsContent value="charts" className={cn("space-y-4", getHighlightProps('charts').className)} ref={getHighlightProps('charts').ref as any}>
                           {activeTab === 'charts' && (
                             <Suspense fallback={<ChartsSkeleton />}>
                               <DashboardCharts
@@ -684,7 +699,7 @@ export default function Dashboard() {
                           )}
                         </TabsContent>
 
-                        <TabsContent value="analytics" className="space-y-4">
+                        <TabsContent value="analytics" className={cn("space-y-4", getHighlightProps('analytics').className)} ref={getHighlightProps('analytics').ref as any}>
                           {activeTab === 'analytics' && (
                             <Suspense fallback={<AnalyticsSkeleton />}>
                               <div className="space-y-6">
@@ -717,7 +732,7 @@ export default function Dashboard() {
                           )}
                         </TabsContent>
 
-                        <TabsContent value="budgets" className="space-y-4">
+                        <TabsContent value="budgets" className={cn("space-y-4", getHighlightProps('budget').className)} ref={getHighlightProps('budget').ref as any}>
                           {activeTab === 'budgets' && (
                             <Suspense fallback={<AnalyticsSkeleton />}>
                               <div className="space-y-6">
@@ -740,7 +755,7 @@ export default function Dashboard() {
                           )}
                         </TabsContent>
 
-                        <TabsContent value="mentorship" className="space-y-4">
+                        <TabsContent value="mentorship" className={cn("space-y-4", getHighlightProps('mentorship').className)} ref={getHighlightProps('mentorship').ref as any}>
                           {activeTab === 'mentorship' && (
                             <Suspense fallback={<AnalyticsSkeleton />}>
                               <div className="space-y-6">
@@ -763,7 +778,7 @@ export default function Dashboard() {
                           )}
                         </TabsContent>
 
-                        <TabsContent value="goals" className="space-y-4">
+                        <TabsContent value="goals" className={cn("space-y-4", getHighlightProps('goals').className)} ref={getHighlightProps('goals').ref as any}>
                           {activeTab === 'goals' && (
                             <Suspense fallback={<Skeleton className="h-[400px]" />}>
                               <SavingsGoalsSection />
@@ -771,7 +786,7 @@ export default function Dashboard() {
                           )}
                         </TabsContent>
 
-                        <TabsContent value="tax" className="space-y-4">
+                        <TabsContent value="tax" className={cn("space-y-4", getHighlightProps('tax').className)} ref={getHighlightProps('tax').ref as any}>
                           {activeTab === 'tax' && (
                             <div className="space-y-6">
                               <div className="grid gap-6 lg:grid-cols-2">
@@ -787,7 +802,7 @@ export default function Dashboard() {
                           )}
                         </TabsContent>
 
-                        <TabsContent value="mileage" className="space-y-4">
+                        <TabsContent value="mileage" className={cn("space-y-4", getHighlightProps('mileage').className)} ref={getHighlightProps('mileage').ref as any}>
                           {activeTab === 'mileage' && (
                             <Suspense fallback={<MileageSkeleton />}>
                               <MileageTabContent
@@ -798,7 +813,7 @@ export default function Dashboard() {
                           )}
                         </TabsContent>
 
-                        <TabsContent value="subscriptions" className="space-y-4">
+                        <TabsContent value="subscriptions" className={cn("space-y-4", getHighlightProps('subscriptions').className)} ref={getHighlightProps('subscriptions').ref as any}>
                           {activeTab === 'subscriptions' && (
                             <Suspense fallback={<Skeleton className="h-64" />}>
                               <SubscriptionTracker />
@@ -806,7 +821,7 @@ export default function Dashboard() {
                           )}
                         </TabsContent>
 
-                        <TabsContent value="fire" className="space-y-4">
+                        <TabsContent value="fire" className={cn("space-y-4", getHighlightProps('fire').className)} ref={getHighlightProps('fire').ref as any}>
                           {activeTab === 'fire' && (
                             <Suspense fallback={<Skeleton className="h-[600px]" />}>
                               <FIRECalculatorCard />
@@ -814,7 +829,7 @@ export default function Dashboard() {
                           )}
                         </TabsContent>
 
-                        <TabsContent value="debt" className="space-y-4">
+                        <TabsContent value="debt" className={cn("space-y-4", getHighlightProps('debt').className)} ref={getHighlightProps('debt').ref as any}>
                           {activeTab === 'debt' && (
                             <Suspense fallback={<Skeleton className="h-[600px]" />}>
                               <DebtManagerCard />
@@ -822,7 +837,7 @@ export default function Dashboard() {
                           )}
                         </TabsContent>
 
-                        <TabsContent value="portfolio" className="space-y-4">
+                        <TabsContent value="portfolio" className={cn("space-y-4", getHighlightProps('portfolio').className)} ref={getHighlightProps('portfolio').ref as any}>
                           {activeTab === 'portfolio' && (
                             <div className="grid gap-6 lg:grid-cols-3">
                               <div className="lg:col-span-2">
@@ -839,7 +854,7 @@ export default function Dashboard() {
                           )}
                         </TabsContent>
 
-                        <TabsContent value="education" className="space-y-4">
+                        <TabsContent value="education" className={cn("space-y-4", getHighlightProps('education').className)} ref={getHighlightProps('education').ref as any}>
                           {activeTab === 'education' && (
                             <Suspense fallback={<AnalyticsSkeleton />}>
                               <div className="space-y-6">

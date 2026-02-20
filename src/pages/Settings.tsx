@@ -1,4 +1,6 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -85,7 +87,51 @@ export default function Settings() {
   const { t, language, setLanguage } = useLanguage();
   const { data: isAdmin } = useIsAdmin();
   const isMobile = useIsMobile();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('preferences');
+  const highlightRef = useRef<HTMLDivElement>(null);
+  const [highlightSection, setHighlightSection] = useState<string | null>(null);
+
+  // Deep-link: scroll to and highlight a section when arriving via ?tab=subscription etc.
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (!tab) return;
+
+    // Map tab param to the data-highlight attribute
+    const sectionMap: Record<string, string> = {
+      subscription: 'subscription-settings',
+      projects: 'fiscal-entities',
+    };
+
+    const target = sectionMap[tab];
+    if (!target) return;
+
+    setHighlightSection(target);
+
+    // Scroll into view after render
+    const timer = setTimeout(() => {
+      const el = document.querySelector(`[data-highlight="${target}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('highlight-on-arrival');
+      }
+    }, 400);
+
+    // Clean up highlight and URL after 3.5s
+    const cleanupTimer = setTimeout(() => {
+      const el = document.querySelector(`[data-highlight="${target}"]`);
+      if (el) el.classList.remove('highlight-on-arrival');
+      setHighlightSection(null);
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('tab');
+      setSearchParams(newParams, { replace: true });
+    }, 4000);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(cleanupTimer);
+    };
+  }, [searchParams, setSearchParams]);
 
   return (
     <Layout>
