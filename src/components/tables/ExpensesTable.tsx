@@ -4,6 +4,7 @@ import { ExpenseWithRelations } from '@/types/expense.types';
 import { ExpenseCard } from './ExpenseCard';
 import { SwipeableCard } from '@/components/mobile/SwipeableCard';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -89,6 +90,8 @@ function SortableHeader({ field, label, currentSort, currentDirection, onSort, c
 interface ExpensesTableProps {
   expenses: ExpenseWithRelations[];
   onEdit: (expense: ExpenseWithRelations) => void;
+  selectedIds?: Set<string>;
+  onSelectionChange?: (ids: Set<string>) => void;
 }
 
 const STATUS_CONFIG: Record<string, { icon: React.ElementType; color: string; bgColor: string; labelKey: string }> = {
@@ -166,6 +169,8 @@ interface ExpenseRowCustomProps {
   onDelete: (id: string) => void;
   t: (key: string) => string;
   language: string;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string) => void;
 }
 
 // Full row props including react-window's injected props
@@ -179,7 +184,7 @@ interface ExpenseRowProps extends ExpenseRowCustomProps {
   style: CSSProperties;
 }
 
-function ExpenseRowComponent({ index, style, expenses, onEdit, onDelete, t, language }: ExpenseRowProps): ReactElement {
+function ExpenseRowComponent({ index, style, expenses, onEdit, onDelete, t, language, selectedIds, onToggleSelect }: ExpenseRowProps): ReactElement {
   const expense = expenses[index];
   const config = STATUS_CONFIG[expense.status] || STATUS_CONFIG.pending;
   const StatusIcon = config.icon;
@@ -194,10 +199,23 @@ function ExpenseRowComponent({ index, style, expenses, onEdit, onDelete, t, lang
   return (
     <div 
       style={style} 
-      className="flex items-center border-b border-border hover:bg-muted/50 transition-colors"
+      className={cn(
+        "flex items-center border-b border-border hover:bg-muted/50 transition-colors",
+        selectedIds?.has(expense.id) && "bg-primary/5"
+      )}
     >
+      {/* Checkbox */}
+      {selectedIds && (
+        <div className="w-[3%] px-2 flex justify-center">
+          <Checkbox
+            checked={selectedIds.has(expense.id)}
+            onCheckedChange={() => onToggleSelect?.(expense.id)}
+          />
+        </div>
+      )}
+
       {/* Completeness Indicator */}
-      <div className="w-[5%] px-2 flex justify-center">
+      <div className={cn(selectedIds ? "w-[4%]" : "w-[5%]", "px-2 flex justify-center")}>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -383,7 +401,7 @@ function ExpenseRowComponent({ index, style, expenses, onEdit, onDelete, t, lang
   );
 }
 
-export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: ExpensesTableProps) {
+export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit, selectedIds, onSelectionChange }: ExpensesTableProps) {
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -436,6 +454,23 @@ export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: E
     setDeleteId(id);
   }, []);
 
+  const handleToggleSelect = useCallback((id: string) => {
+    if (!onSelectionChange || !selectedIds) return;
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onSelectionChange(next);
+  }, [selectedIds, onSelectionChange]);
+
+  const handleSelectAll = useCallback(() => {
+    if (!onSelectionChange) return;
+    const allIds = sortedExpenses.map(e => e.id);
+    const allSelected = selectedIds && allIds.every(id => selectedIds.has(id));
+    onSelectionChange(allSelected ? new Set() : new Set(allIds));
+  }, [sortedExpenses, selectedIds, onSelectionChange]);
+
+  const allSelected = selectedIds && sortedExpenses.length > 0 && sortedExpenses.every(e => selectedIds.has(e.id));
+
   // Calculate completeness stats
   const completenessStats = useMemo(() => {
     let complete = 0;
@@ -468,6 +503,8 @@ export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: E
     onDelete: handleSetDeleteId,
     t,
     language,
+    selectedIds,
+    onToggleSelect: handleToggleSelect,
   };
 
   // Mobile: Card view
@@ -501,6 +538,9 @@ export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: E
                 expense={expense}
                 onEdit={onEdit}
                 onDelete={handleSetDeleteId}
+                selectable={!!selectedIds}
+                selected={selectedIds?.has(expense.id)}
+                onSelect={(id, checked) => handleToggleSelect(id)}
               />
             </SwipeableCard>
           ))}
@@ -545,7 +585,15 @@ export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: E
       <div className="rounded-md border overflow-hidden">
         {/* Header */}
         <div className="flex items-center bg-muted/50 border-b border-border font-medium text-xs text-muted-foreground">
-          <div className="w-[5%] px-2 py-3 text-center">
+          {selectedIds && (
+            <div className="w-[3%] px-2 py-3 text-center">
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={handleSelectAll}
+              />
+            </div>
+          )}
+          <div className={cn(selectedIds ? "w-[4%]" : "w-[5%]", "px-2 py-3 text-center")}>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
@@ -605,6 +653,8 @@ export const ExpensesTable = memo(function ExpensesTable({ expenses, onEdit }: E
                 onDelete={handleSetDeleteId}
                 t={t}
                 language={language}
+                selectedIds={selectedIds}
+                onToggleSelect={handleToggleSelect}
               />
             ))}
           </div>
