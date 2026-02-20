@@ -190,7 +190,9 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
         const doc = documents.find(d => d.id === expense.document_id);
         if (!doc?.extracted_data) return null;
         
-        const receiptAmount = Number(doc.extracted_data.amount) || 0;
+        // extracted_data can be an array (from multi-receipt processing) or a plain object
+        const extractedData = Array.isArray(doc.extracted_data) ? doc.extracted_data[0] : doc.extracted_data;
+        const receiptAmount = Number(extractedData?.amount) || 0;
         const expenseAmount = Number(expense.amount);
         const difference = Math.abs(expenseAmount - receiptAmount);
         const percentDiff = receiptAmount > 0 ? (difference / receiptAmount) * 100 : 0;
