@@ -10,7 +10,9 @@ import {
   ArrowLeft,
   Wifi,
   WifiOff,
-  Zap
+  Zap,
+  Upload,
+  ImagePlus
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -20,6 +22,7 @@ import { useReceiptProcessor, ExtractedExpenseData } from '@/hooks/data/useRecei
 import { useCreateExpense, useUpdateExpense } from '@/hooks/data/useExpenses';
 import { useCaptureStreak } from '@/hooks/data/useCaptureStreak';
 import { useEntity } from '@/contexts/EntityContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,6 +34,8 @@ export default function MobileCapture() {
   const { user } = useAuth();
   const { currentEntity } = useEntity();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
@@ -71,10 +76,14 @@ export default function MobileCapture() {
   }, [language]);
 
   const handleCameraCapture = () => {
+    cameraInputRef.current?.click();
+  };
+
+  const handleFileUpload = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, source: 'camera' | 'file' = 'file') => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
     
@@ -220,6 +229,7 @@ export default function MobileCapture() {
     setShowQuickEdit(false);
     setLastSavedExpense(null);
     setSavedExpenseId(null);
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -246,6 +256,7 @@ export default function MobileCapture() {
       setSavedDocumentId(null);
       setSavedExpenseId(null);
       setLastSavedExpense(null);
+      if (cameraInputRef.current) cameraInputRef.current.value = '';
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (error) {
       console.error('Error updating expense:', error);
@@ -260,6 +271,7 @@ export default function MobileCapture() {
     setSavedDocumentId(null);
     setLastSavedExpense(null);
     setSavedExpenseId(null);
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
     if (fileInputRef.current) fileInputRef.current.value = '';
     setTimeout(() => handleCameraCapture(), 100);
   };
@@ -292,7 +304,7 @@ export default function MobileCapture() {
               <Camera className="h-5 w-5 text-primary-foreground" />
             </motion.div>
             <span className="font-semibold text-primary-foreground">
-              {language === 'es' ? 'Captura Móvil' : 'Mobile Capture'}
+              {language === 'es' ? 'Captura de Recibos' : 'Receipt Capture'}
             </span>
           </div>
           <Badge 
@@ -311,7 +323,7 @@ export default function MobileCapture() {
       </motion.header>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 space-y-4">
+      <main className="flex-1 p-4 space-y-4 max-w-2xl mx-auto w-full">
         {/* Stats Card - Always visible */}
         <MobileCaptureStats
           todayCount={todayCount}
@@ -321,70 +333,108 @@ export default function MobileCapture() {
           goalReached={goalReached}
         />
 
-        {/* Camera Area */}
+        {/* Camera/Upload Area */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="overflow-hidden border-2 border-transparent bg-gradient-to-br from-card to-card">
-            {/* Animated gradient border */}
-            <div className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-blue-500 via-purple-500 to-emerald-500 opacity-50 blur-sm animate-gradient-border" />
-            
+          <Card className="overflow-hidden border border-border">
             <CardContent className="p-4">
               {!imagePreview ? (
-                <motion.div 
-                  onClick={handleCameraCapture}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={cn(
-                    "aspect-[3/4] rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-4 cursor-pointer transition-all relative overflow-hidden",
-                    "border-primary/40 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/10",
-                    "hover:border-primary hover:shadow-lg hover:shadow-primary/20"
-                  )}
-                >
-                  {/* Shimmer effect */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12"
-                    animate={{ x: ['-200%', '200%'] }}
-                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
-                  />
-                  
-                  {/* Dotted pattern background */}
-                  <div className="absolute inset-0 opacity-5" style={{
-                    backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
-                    backgroundSize: '20px 20px'
-                  }} />
-                  
-                  <motion.div 
-                    className="p-6 rounded-full bg-gradient-to-br from-primary/30 to-accent/20 shadow-lg shadow-primary/20"
-                    animate={{ 
-                      y: [0, -8, 0],
-                      boxShadow: [
-                        '0 10px 25px -5px rgba(59, 130, 246, 0.2)',
-                        '0 20px 35px -5px rgba(59, 130, 246, 0.3)',
-                        '0 10px 25px -5px rgba(59, 130, 246, 0.2)'
-                      ]
-                    }}
-                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                  >
-                    <Camera className="h-12 w-12 text-primary" />
-                  </motion.div>
-                  <div className="text-center px-4 relative z-10">
-                    <p className="text-lg font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                      {language === 'es' ? 'Toca para fotografiar' : 'Tap to photograph'}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {language === 'es' 
-                        ? 'Captura tu recibo y se procesará automáticamente'
-                        : 'Capture your receipt and it will be processed automatically'
-                      }
-                    </p>
+                <div className="space-y-4">
+                  {/* Two action buttons: Camera + Upload */}
+                  <div className={cn(
+                    "grid gap-3",
+                    isMobile ? "grid-cols-1" : "grid-cols-2"
+                  )}>
+                    {/* Camera Button */}
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleCameraCapture}
+                      className={cn(
+                        "rounded-xl border-2 border-dashed border-primary/40 cursor-pointer transition-all relative overflow-hidden",
+                        "bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/10",
+                        "hover:border-primary hover:shadow-lg hover:shadow-primary/20",
+                        "flex flex-col items-center justify-center gap-3 p-8",
+                        isMobile ? "aspect-[4/3]" : "aspect-square"
+                      )}
+                    >
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12"
+                        animate={{ x: ['-200%', '200%'] }}
+                        transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+                      />
+                      <motion.div 
+                        className="p-4 rounded-full bg-gradient-to-br from-primary/30 to-accent/20 shadow-lg shadow-primary/20"
+                        animate={{ 
+                          y: [0, -5, 0],
+                        }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                      >
+                        <Camera className="h-8 w-8 text-primary" />
+                      </motion.div>
+                      <div className="text-center relative z-10">
+                        <p className="text-base font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                          {language === 'es' ? '📸 Tomar Foto' : '📸 Take Photo'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {language === 'es' 
+                            ? 'Usa la cámara de tu dispositivo'
+                            : 'Use your device camera'
+                          }
+                        </p>
+                      </div>
+                    </motion.div>
+
+                    {/* Upload Button */}
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleFileUpload}
+                      className={cn(
+                        "rounded-xl border-2 border-dashed border-accent/40 cursor-pointer transition-all relative overflow-hidden",
+                        "bg-gradient-to-br from-accent/5 via-secondary/5 to-primary/10",
+                        "hover:border-accent hover:shadow-lg hover:shadow-accent/20",
+                        "flex flex-col items-center justify-center gap-3 p-8",
+                        isMobile ? "aspect-[4/3]" : "aspect-square"
+                      )}
+                    >
+                      <motion.div 
+                        className="p-4 rounded-full bg-gradient-to-br from-accent/30 to-secondary/20 shadow-lg shadow-accent/20"
+                        animate={{ y: [0, -5, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+                      >
+                        <Upload className="h-8 w-8 text-accent-foreground" />
+                      </motion.div>
+                      <div className="text-center relative z-10">
+                        <p className="text-base font-semibold text-accent-foreground">
+                          {language === 'es' ? '📁 Subir Archivo' : '📁 Upload File'}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {language === 'es'
+                            ? 'Selecciona una imagen o documento'
+                            : 'Select an image or document'
+                          }
+                        </p>
+                      </div>
+                    </motion.div>
                   </div>
-                </motion.div>
+
+                  <p className="text-xs text-center text-muted-foreground">
+                    {language === 'es'
+                      ? '💡 Soporta recibos, facturas, e-transfers y estados de cuenta'
+                      : '💡 Supports receipts, invoices, e-transfers and bank statements'
+                    }
+                  </p>
+                </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted relative">
+                  <div className={cn(
+                    "rounded-xl overflow-hidden bg-muted relative",
+                    isMobile ? "aspect-[3/4]" : "aspect-[4/3] max-h-[400px]"
+                  )}>
                     <img 
                       src={imagePreview} 
                       alt="Receipt preview" 
@@ -395,27 +445,18 @@ export default function MobileCapture() {
                     <AnimatePresence>
                       {isProcessing && (
                         <>
-                          {/* Dark overlay */}
                           <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             className="absolute inset-0 bg-background/60 backdrop-blur-sm"
                           />
-                          
-                          {/* Laser line */}
                           <motion.div
                             initial={{ top: '0%' }}
                             animate={{ top: '100%' }}
-                            transition={{ 
-                              duration: 2, 
-                              repeat: Infinity, 
-                              ease: 'linear' 
-                            }}
+                            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                             className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent shadow-[0_0_20px_5px_rgba(16,185,129,0.5)]"
                           />
-                          
-                          {/* Processing text */}
                           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                             <motion.div
                               animate={{ rotate: 360 }}
@@ -437,13 +478,20 @@ export default function MobileCapture() {
           </Card>
         </motion.div>
 
-        {/* Hidden file input */}
+        {/* Hidden file inputs */}
         <input
-          ref={fileInputRef}
+          ref={cameraInputRef}
           type="file"
           accept="image/*"
           capture="environment"
-          onChange={handleFileSelect}
+          onChange={(e) => handleFileSelect(e, 'camera')}
+          className="hidden"
+        />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,.pdf"
+          onChange={(e) => handleFileSelect(e, 'file')}
           className="hidden"
         />
 
