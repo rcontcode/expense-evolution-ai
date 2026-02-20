@@ -65,7 +65,7 @@ export default function Expenses() {
   const { data: expenses, isLoading } = useExpenses(filters);
   const { data: allExpenses } = useExpenses({});
 
-  // Listen for voice command actions and bulk assign events
+  // Listen for voice command actions and dialog events
   useEffect(() => {
     const handleVoiceAction = (event: CustomEvent<{ action: string }>) => {
       if (event.detail.action === 'add-expense') {
@@ -74,12 +74,18 @@ export default function Expenses() {
       }
     };
     const handleOpenBulkAssign = () => setBulkAssignOpen(true);
+    const handleOpenQuickClassify = () => setQuickClassifyOpen(true);
+    const handleOpenExport = () => setExportDialogOpen(true);
 
     window.addEventListener('voice-command-action', handleVoiceAction as EventListener);
     window.addEventListener('open-bulk-assign', handleOpenBulkAssign);
+    window.addEventListener('open-quick-classify', handleOpenQuickClassify);
+    window.addEventListener('open-export-dialog', handleOpenExport);
     return () => {
       window.removeEventListener('voice-command-action', handleVoiceAction as EventListener);
       window.removeEventListener('open-bulk-assign', handleOpenBulkAssign);
+      window.removeEventListener('open-quick-classify', handleOpenQuickClassify);
+      window.removeEventListener('open-export-dialog', handleOpenExport);
     };
   }, []);
 

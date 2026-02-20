@@ -13,7 +13,7 @@ import { exportT2125Report } from '@/lib/export/t2125-export';
 import { exportT2125ToPDF, exportExpensesToPDF, PDFExportOptions } from '@/lib/export/pdf-export';
 import { useToast } from '@/hooks/use-toast';
 import { useProfile } from '@/hooks/data/useProfile';
-import { FileSpreadsheet, FileText, Download, Loader2, FileCheck, FileJson, FileType, FileWarning } from 'lucide-react';
+import { FileSpreadsheet, FileText, Download, Loader2, FileCheck, FileJson, FileType, FileWarning, Sparkles } from 'lucide-react';
 
 interface ExportDialogProps {
   open: boolean;
@@ -258,36 +258,63 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
           {(() => {
             const filtered = yearFilter === 'all' ? expenses : expenses.filter(e => new Date(e.date).getFullYear() === parseInt(yearFilter));
             const unclassified = filtered.filter(e => e.reimbursement_type === 'pending_classification').length;
-            const noClient = filtered.filter(e => !e.client_id).length;
+            const noClient = filtered.filter(e => !e.client_id && e.reimbursement_type === 'client_reimbursable').length;
             const noReceipt = filtered.filter(e => !e.document_id).length;
-            const hasWarnings = unclassified > 0 || (exportType === 't2125' && unclassified > 0);
+            const hasWarnings = unclassified > 0;
             
             return hasWarnings ? (
-              <div className="p-3 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-700 mt-4 space-y-2">
-                <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
-                  <FileWarning className="h-4 w-4" />
-                  <p className="text-sm font-medium">
-                    {language === 'es' ? 'Datos incompletos detectados' : 'Incomplete data detected'}
+              <div className="p-4 rounded-xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 dark:border-amber-700 mt-4 space-y-3">
+                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
+                  <div className="p-1.5 rounded-lg bg-amber-200 dark:bg-amber-800">
+                    <FileWarning className="h-4 w-4" />
+                  </div>
+                  <p className="text-sm font-bold">
+                    {language === 'es' ? '⚠️ Datos incompletos detectados' : '⚠️ Incomplete data detected'}
                   </p>
                 </div>
-                <ul className="text-xs text-amber-600 dark:text-amber-400 space-y-1 ml-6">
+                <ul className="text-xs text-amber-700 dark:text-amber-400 space-y-1.5 ml-1">
                   {unclassified > 0 && (
-                    <li>• {unclassified} {language === 'es' ? 'gastos sin clasificar' : 'unclassified expenses'}</li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                      <strong>{unclassified}</strong> {language === 'es' ? 'gastos sin clasificar — no aparecerán en reportes' : 'unclassified expenses — won\'t appear in reports'}
+                    </li>
                   )}
                   {exportType === 't2125' && unclassified > 0 && (
-                    <li>• {language === 'es' ? 'El reporte T2125 mostrará $0 deducible' : 'T2125 report will show $0 deductible'}</li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                      {language === 'es' ? 'El reporte T2125 mostrará $0 deducible' : 'T2125 report will show $0 deductible'}
+                    </li>
                   )}
-                  {noClient > 0 && exportType === 'general' && (
-                    <li>• {noClient} {language === 'es' ? 'gastos sin cliente asignado' : 'expenses without client'}</li>
+                  {noClient > 0 && (
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" />
+                      <strong>{noClient}</strong> {language === 'es' ? 'gastos reembolsables sin cliente' : 'reimbursable expenses without client'}
+                    </li>
                   )}
                 </ul>
-                <p className="text-xs text-amber-600 dark:text-amber-400">
-                  {language === 'es' 
-                    ? '💡 Usa "Clasificación Rápida" en Gastos para completar antes de exportar.' 
-                    : '💡 Use "Quick Classification" in Expenses to complete before exporting.'}
-                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full border-amber-400 text-amber-800 hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900/30 font-medium"
+                  onClick={() => {
+                    onClose();
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('open-quick-classify')), 300);
+                  }}
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  {language === 'es' ? `Clasificar ${unclassified} gastos primero` : `Classify ${unclassified} expenses first`}
+                </Button>
               </div>
-            ) : null;
+            ) : (
+              <div className="p-3 rounded-xl border border-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/20 dark:border-emerald-700 mt-4">
+                <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                  <FileCheck className="h-4 w-4" />
+                  <p className="text-sm font-medium">
+                    {language === 'es' ? '✓ Todos los gastos están clasificados' : '✓ All expenses are classified'}
+                  </p>
+                </div>
+              </div>
+            );
           })()}
 
           {/* Summary */}
