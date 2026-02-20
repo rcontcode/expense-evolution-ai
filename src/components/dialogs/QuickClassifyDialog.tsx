@@ -43,16 +43,21 @@ export function QuickClassifyDialog({ open, onClose, expenses }: QuickClassifyDi
     [expenses]
   );
 
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedType, setSelectedType] = useState<ReimbursementType | null>(null);
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [selectedContractId, setSelectedContractId] = useState<string>('');
-  const [classifiedCount, setClassifiedCount] = useState(0);
+  const [classifiedIds, setClassifiedIds] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
 
-  const current = pendingExpenses[currentIndex];
+  // Filter out already-classified (in this session) expenses to avoid index drift
+  const remainingExpenses = useMemo(() => 
+    pendingExpenses.filter(e => !classifiedIds.has(e.id)),
+    [pendingExpenses, classifiedIds]
+  );
+
+  const current = remainingExpenses[0]; // Always show the first remaining
   const total = pendingExpenses.length;
-  const progress = total > 0 ? ((classifiedCount) / total) * 100 : 0;
+  const progress = total > 0 ? (classifiedIds.size / total) * 100 : 0;
 
   const clientContracts = useMemo(() => 
     selectedClientId ? contracts.filter(c => c.client_id === selectedClientId && !c.deleted_at) : [],
@@ -75,9 +80,9 @@ export function QuickClassifyDialog({ open, onClose, expenses }: QuickClassifyDi
       }
 
       await updateExpense.mutateAsync({ id: current.id, updates });
-      setClassifiedCount(prev => prev + 1);
+      setClassifiedIds(prev => new Set(prev).add(current.id));
       toast.success(language === 'es' ? '✓ Clasificado' : '✓ Classified');
-      moveNext();
+      resetSelection();
     } catch (err) {
       toast.error(language === 'es' ? 'Error al clasificar' : 'Error classifying');
     } finally {
@@ -85,19 +90,24 @@ export function QuickClassifyDialog({ open, onClose, expenses }: QuickClassifyDi
     }
   };
 
-  const moveNext = () => {
+  const resetSelection = () => {
     setSelectedType(null);
     setSelectedClientId('');
     setSelectedContractId('');
-    if (currentIndex < total - 1) {
-      setCurrentIndex(prev => prev + 1);
-    } else {
+    // Check if all done after state updates
+    if (remainingExpenses.length <= 1) {
       toast.success(language === 'es' ? '🎉 ¡Todos los gastos clasificados!' : '🎉 All expenses classified!');
       onClose();
     }
   };
 
-  const handleSkip = () => moveNext();
+  const handleSkip = () => {
+    // For skip, we just add to classified so we move past it
+    if (current) {
+      setClassifiedIds(prev => new Set(prev).add(current.id));
+      resetSelection();
+    }
+  };
 
   if (total === 0) {
     return (
@@ -128,15 +138,15 @@ export function QuickClassifyDialog({ open, onClose, expenses }: QuickClassifyDi
           </DialogTitle>
           <DialogDescription>
             {language === 'es' 
-              ? `${total - classifiedCount} gastos pendientes de clasificar` 
-              : `${total - classifiedCount} expenses pending classification`}
+              ? `${remainingExpenses.length} gastos pendientes de clasificar` 
+              : `${remainingExpenses.length} expenses pending classification`}
           </DialogDescription>
         </DialogHeader>
 
         {/* Progress */}
         <div className="space-y-1">
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{classifiedCount} / {total}</span>
+            <span>{classifiedIds.size} / {total}</span>
             <span>{Math.round(progress)}%</span>
           </div>
           <Progress value={progress} className="h-2" />
@@ -246,7 +256,7 @@ export function QuickClassifyDialog({ open, onClose, expenses }: QuickClassifyDi
                   <>
                     <Check className="h-4 w-4 mr-1" />
                     {language === 'es' ? 'Clasificar' : 'Classify'}
-                    {currentIndex < total - 1 && <ChevronRight className="h-4 w-4 ml-1" />}
+                    {remainingExpenses.length > 1 && <ChevronRight className="h-4 w-4 ml-1" />}
                   </>
                 )}
               </Button>
