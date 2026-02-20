@@ -241,9 +241,13 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
               <Building2 className="h-12 w-12 text-primary" />
             </div>
           </div>
-          <h3 className="text-xl font-semibold mt-6">No hay gastos reembolsables</h3>
+          <h3 className="text-xl font-semibold mt-6">
+            {language === 'es' ? '📋 No hay gastos reembolsables' : '📋 No reimbursable expenses'}
+          </h3>
           <p className="text-muted-foreground mt-2 text-center max-w-md">
-            Asigna gastos a clientes con estado reembolsable para generar reportes profesionales
+            {language === 'es' 
+              ? 'Asigna gastos a clientes con estado reembolsable para generar reportes profesionales'
+              : 'Assign expenses to clients with reimbursable status to generate professional reports'}
           </p>
           {/* Show how many could be classified */}
           {expenses.filter(e => e.reimbursement_type === 'pending_classification' && !e.deleted_at).length > 0 && (
@@ -269,15 +273,15 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
           <div className="flex gap-2 mt-4 flex-wrap justify-center">
             <Badge variant="secondary" className="gap-1">
               <CheckCircle2 className="h-3 w-3" />
-              Paso 1: Agregar gastos
+              {language === 'es' ? 'Paso 1: Agregar gastos' : 'Step 1: Add expenses'}
             </Badge>
             <Badge variant="secondary" className="gap-1">
               <Users className="h-3 w-3" />
-              Paso 2: Asignar clientes
+              {language === 'es' ? 'Paso 2: Asignar clientes' : 'Step 2: Assign clients'}
             </Badge>
             <Badge variant="secondary" className="gap-1">
               <Tag className="h-3 w-3" />
-              Paso 3: Clasificar
+              {language === 'es' ? 'Paso 3: Clasificar' : 'Step 3: Classify'}
             </Badge>
           </div>
         </CardContent>
@@ -294,13 +298,17 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="h-5 w-5" />
-              <span className="text-sm font-medium opacity-90">Reporte de Reembolsos</span>
+              <span className="text-sm font-medium opacity-90">
+                {language === 'es' ? '📊 Reporte de Reembolsos' : '📊 Reimbursement Report'}
+              </span>
             </div>
             <h2 className="text-2xl md:text-3xl font-bold">
               ${totalReimbursable.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
             </h2>
             <p className="text-sm opacity-80 mt-1">
-              Total a facturar • {totalExpenses} gastos • {clientGroups.length} cliente(s)
+              {language === 'es' 
+                ? `💰 Total a facturar • ${totalExpenses} gastos • ${clientGroups.length} cliente(s)`
+                : `💰 Total to bill • ${totalExpenses} expenses • ${clientGroups.length} client(s)`}
             </p>
           </div>
           <div className="flex gap-2">
@@ -332,7 +340,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
               <div className="p-2 rounded-lg bg-primary/10">
                 <CalendarIcon className="h-4 w-4 text-primary" />
               </div>
-              <span className="text-sm font-medium">Período del reporte:</span>
+              <span className="text-sm font-medium">{language === 'es' ? '📅 Período del reporte:' : '📅 Report period:'}</span>
             </div>
             <div className="flex items-center gap-2">
               <Popover>
@@ -402,9 +410,9 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
           <CardContent className="pt-6 relative">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Clientes</p>
+                <p className="text-sm text-muted-foreground font-medium">{language === 'es' ? '🏢 Clientes' : '🏢 Clients'}</p>
                 <p className="text-3xl font-bold mt-1">{clientGroups.length}</p>
-                <p className="text-xs text-muted-foreground mt-1">con gastos reembolsables</p>
+                <p className="text-xs text-muted-foreground mt-1">{language === 'es' ? 'con gastos reembolsables' : 'with reimbursable expenses'}</p>
               </div>
               <div className="p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
                 <Building2 className="h-6 w-6 text-primary" />
@@ -418,9 +426,9 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
           <CardContent className="pt-6 relative">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Total Gastos</p>
+                <p className="text-sm text-muted-foreground font-medium">{language === 'es' ? '🧾 Total Gastos' : '🧾 Total Expenses'}</p>
                 <p className="text-3xl font-bold mt-1">{totalExpenses}</p>
-                <p className="text-xs text-muted-foreground mt-1">registrados en período</p>
+                <p className="text-xs text-muted-foreground mt-1">{language === 'es' ? 'registrados en período' : 'recorded in period'}</p>
               </div>
               <div className="p-3 rounded-xl bg-chart-2/10 group-hover:bg-chart-2/20 transition-colors">
                 <Receipt className="h-6 w-6 text-chart-2" />
@@ -434,9 +442,9 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
           <CardContent className="pt-6 relative">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Promedio</p>
+                <p className="text-sm text-muted-foreground font-medium">{language === 'es' ? '📊 Promedio' : '📊 Average'}</p>
                 <p className="text-3xl font-bold mt-1">${averagePerExpense.toFixed(0)}</p>
-                <p className="text-xs text-muted-foreground mt-1">por gasto</p>
+                <p className="text-xs text-muted-foreground mt-1">{language === 'es' ? 'por gasto' : 'per expense'}</p>
               </div>
               <div className="p-3 rounded-xl bg-chart-3/10 group-hover:bg-chart-3/20 transition-colors">
                 <TrendingUp className="h-6 w-6 text-chart-3" />
@@ -449,11 +457,11 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
           <CardContent className="pt-6 relative">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground font-medium">Total a Facturar</p>
+                <p className="text-sm text-muted-foreground font-medium">{language === 'es' ? '💰 Total a Facturar' : '💰 Total to Bill'}</p>
                 <p className="text-3xl font-bold mt-1 text-success">${totalReimbursable.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <ArrowUpRight className="h-3 w-3 text-success" />
-                  <p className="text-xs text-success">Listo para cobrar</p>
+                  <p className="text-xs text-success">{language === 'es' ? '✅ Listo para cobrar' : '✅ Ready to collect'}</p>
                 </div>
               </div>
               <div className="p-3 rounded-xl bg-success/20 group-hover:bg-success/30 transition-colors">
@@ -474,8 +482,8 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                 <PieChartIcon className="h-4 w-4 text-chart-1" />
               </div>
               <div>
-                <CardTitle className="text-lg">Distribución por Categoría</CardTitle>
-                <CardDescription>Desglose de gastos por tipo</CardDescription>
+                <CardTitle className="text-lg">{language === 'es' ? '🎯 Distribución por Categoría' : '🎯 Distribution by Category'}</CardTitle>
+                <CardDescription>{language === 'es' ? 'Desglose de gastos por tipo' : 'Expense breakdown by type'}</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -510,7 +518,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
               </ChartContainer>
             ) : (
               <div className="h-[280px] flex items-center justify-center text-muted-foreground">
-                Sin datos de categorías
+                {language === 'es' ? 'Sin datos de categorías' : 'No category data'}
               </div>
             )}
           </CardContent>
@@ -524,8 +532,8 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                 <BarChart3 className="h-4 w-4 text-chart-2" />
               </div>
               <div>
-                <CardTitle className="text-lg">Comparación por Cliente</CardTitle>
-                <CardDescription>Top clientes por monto reembolsable</CardDescription>
+                <CardTitle className="text-lg">{language === 'es' ? '📊 Comparación por Cliente' : '📊 Comparison by Client'}</CardTitle>
+                <CardDescription>{language === 'es' ? 'Top clientes por monto reembolsable' : 'Top clients by reimbursable amount'}</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -564,7 +572,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
               </ChartContainer>
             ) : (
               <div className="h-[280px] flex items-center justify-center text-muted-foreground">
-                Sin datos de clientes
+                {language === 'es' ? 'Sin datos de clientes' : 'No client data'}
               </div>
             )}
           </CardContent>
@@ -576,10 +584,10 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
-            Detalle por Cliente
+            {language === 'es' ? '📋 Detalle por Cliente' : '📋 Detail by Client'}
           </h3>
           <Badge variant="outline" className="text-xs">
-            {clientGroups.length} cliente(s) en reporte
+            {clientGroups.length} {language === 'es' ? 'cliente(s) en reporte' : 'client(s) in report'}
           </Badge>
         </div>
 
@@ -606,11 +614,11 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                     <div>
                       <CardTitle className="text-lg">{group.clientName}</CardTitle>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="secondary" className="text-xs">
-                          {group.count} gastos
+                         <Badge variant="secondary" className="text-xs">
+                          {group.count} {language === 'es' ? 'gastos' : 'expenses'}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
-                          {clientPercentage.toFixed(1)}% del total
+                          {clientPercentage.toFixed(1)}% {language === 'es' ? 'del total' : 'of total'}
                         </Badge>
                       </div>
                     </div>
@@ -619,7 +627,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                     <p className="text-3xl font-bold" style={{ color: CHART_COLORS[groupIndex % CHART_COLORS.length] }}>
                       ${group.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                     </p>
-                    <p className="text-sm text-muted-foreground">Total a reembolsar</p>
+                    <p className="text-sm text-muted-foreground">{language === 'es' ? 'Total a reembolsar' : 'Total to reimburse'}</p>
                   </div>
                 </div>
               </CardHeader>
@@ -629,7 +637,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <Tag className="h-4 w-4" />
-                    Desglose por categoría
+                    {language === 'es' ? '🏷️ Desglose por categoría' : '🏷️ Breakdown by category'}
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {Object.entries(group.categories)
@@ -661,17 +669,17 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <Receipt className="h-4 w-4" />
-                    Detalle de gastos
+                    {language === 'es' ? '🧾 Detalle de gastos' : '🧾 Expense detail'}
                   </p>
                   <div className="rounded-lg border overflow-hidden">
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-muted/50">
-                          <TableHead className="font-semibold">Fecha</TableHead>
-                          <TableHead className="font-semibold">Vendedor</TableHead>
-                          <TableHead className="font-semibold">Categoría</TableHead>
-                          <TableHead className="font-semibold hidden md:table-cell">Descripción</TableHead>
-                          <TableHead className="font-semibold text-right">Monto</TableHead>
+                          <TableHead className="font-semibold">{language === 'es' ? 'Fecha' : 'Date'}</TableHead>
+                          <TableHead className="font-semibold">{language === 'es' ? 'Vendedor' : 'Vendor'}</TableHead>
+                          <TableHead className="font-semibold">{language === 'es' ? 'Categoría' : 'Category'}</TableHead>
+                          <TableHead className="font-semibold hidden md:table-cell">{language === 'es' ? 'Descripción' : 'Description'}</TableHead>
+                          <TableHead className="font-semibold text-right">{language === 'es' ? 'Monto' : 'Amount'}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -715,7 +723,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                     </Table>
                     {group.expenses.length > 10 && (
                       <div className="p-3 bg-muted/30 text-center text-sm text-muted-foreground border-t">
-                        +{group.expenses.length - 10} gastos adicionales (ver Excel para lista completa)
+                        +{group.expenses.length - 10} {language === 'es' ? 'gastos adicionales (ver Excel para lista completa)' : 'additional expenses (see Excel for full list)'}
                       </div>
                     )}
                   </div>
@@ -735,15 +743,15 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                 <FileText className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="font-medium">Reporte listo para exportar</p>
+                <p className="font-medium">{language === 'es' ? '✅ Reporte listo para exportar' : '✅ Report ready to export'}</p>
                 <p className="text-sm text-muted-foreground">
-                  {clientGroups.length} clientes • {totalExpenses} gastos • ${totalReimbursable.toLocaleString('es-MX', { minimumFractionDigits: 2 })} total
+                  {clientGroups.length} {language === 'es' ? 'clientes' : 'clients'} • {totalExpenses} {language === 'es' ? 'gastos' : 'expenses'} • ${totalReimbursable.toLocaleString('es-MX', { minimumFractionDigits: 2 })} total
                 </p>
               </div>
             </div>
-            <Button onClick={exportProfessionalReport} className="gap-2">
+            <Button onClick={exportProfessionalReport} className="gap-2 shadow-lg shadow-primary/20">
               <Download className="h-4 w-4" />
-              Descargar Reporte Excel Pro
+              {language === 'es' ? '📥 Descargar Reporte Excel Pro' : '📥 Download Excel Pro Report'}
             </Button>
           </div>
         </CardContent>
