@@ -9,6 +9,7 @@ import { BillsKanban } from './BillsKanban';
 import { PaymentChecklist } from './PaymentChecklist';
 import { CashFlowProjection } from './CashFlowProjection';
 import { NetCashFlowCard } from './NetCashFlowCard';
+import { BillsExportButtons } from './BillsExportButtons';
 import { cn } from '@/lib/utils';
 
 export function BillsDashboard() {
@@ -18,7 +19,10 @@ export function BillsDashboard() {
 
   return (
     <div className="space-y-6">
-      <BillsSummaryCards />
+      <div className="flex items-center justify-between">
+        <BillsSummaryCards />
+        <BillsExportButtons />
+      </div>
       <NetCashFlowCard />
 
       <Tabs value={view} onValueChange={setView} className="space-y-4">
