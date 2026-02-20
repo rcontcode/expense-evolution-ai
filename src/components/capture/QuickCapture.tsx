@@ -12,6 +12,7 @@ import {
   Utensils, Plane, Monitor, Code, Paperclip, Briefcase, Zap, Home, Car, HelpCircle,
   CreditCard, RefreshCw
 } from 'lucide-react';
+import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -63,6 +64,8 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [creatingBill, setCreatingBill] = useState(false);
   const [billCreatedForIndex, setBillCreatedForIndex] = useState<Set<number>>(new Set());
+  const [pendingBillCandidate, setPendingBillCandidate] = useState<RecurringBillCandidate | null>(null);
+  const [showBillConfirm, setShowBillConfirm] = useState(false);
   const { processReceipt, isProcessing } = useReceiptProcessor();
   const createExpense = useCreateExpense();
   const { data: clients = [] } = useClients();
@@ -287,31 +290,18 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
     setBillCreatedForIndex(new Set());
   };
 
-  const handleCreateRecurringBill = async (expense: ExtractedExpenseData) => {
-    if (!user || !expense.recurring_bill_data) return;
-    setCreatingBill(true);
-    try {
-      const billData = expense.recurring_bill_data;
-      const { error } = await supabase.from('recurring_bills').insert({
-        user_id: user.id,
-        name: billData.name,
-        amount: expense.amount,
-        category: billData.category || 'utilities',
-        frequency: billData.frequency || 'monthly',
-        next_due_date: billData.next_due_date || expense.date,
-        auto_pay: billData.auto_pay || false,
-        is_active: true,
-        currency: currentEntity?.default_currency || expense.currency || 'CAD',
-      });
-      if (error) throw error;
-      setBillCreatedForIndex(prev => new Set(prev).add(currentIndex));
-      toast.success(language === 'es' ? '🔄 Pago fijo creado exitosamente' : '🔄 Recurring bill created successfully');
-    } catch (err) {
-      console.error('Error creating recurring bill:', err);
-      toast.error(language === 'es' ? 'Error al crear pago fijo' : 'Error creating recurring bill');
-    } finally {
-      setCreatingBill(false);
-    }
+  const handleCreateRecurringBill = (expense: ExtractedExpenseData) => {
+    if (!expense.recurring_bill_data) return;
+    setPendingBillCandidate({
+      name: expense.recurring_bill_data.name,
+      amount: expense.amount,
+      currency: currentEntity?.default_currency || expense.currency || 'CAD',
+      category: expense.recurring_bill_data.category || 'utilities',
+      frequency: expense.recurring_bill_data.frequency || 'monthly',
+      auto_pay: expense.recurring_bill_data.auto_pay || false,
+      next_due_date: expense.recurring_bill_data.next_due_date || expense.date,
+    });
+    setShowBillConfirm(true);
   };
 
   // Get category icon for current expense
@@ -459,8 +449,8 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
                         </p>
                         <p className="text-xs">
                           {language === 'es'
-                            ? `"${currentExpense.recurring_bill_data.name}" parece ser un pago ${currentExpense.recurring_bill_data.frequency === 'monthly' ? 'mensual' : currentExpense.recurring_bill_data.frequency}. ¿Quieres crear un pago fijo para que te recuerde cada período?`
-                            : `"${currentExpense.recurring_bill_data.name}" looks like a ${currentExpense.recurring_bill_data.frequency} payment. Want to create a recurring bill so you'll be reminded each period?`}
+                            ? `"${currentExpense.recurring_bill_data.name}" parece ser un pago ${currentExpense.recurring_bill_data.frequency === 'monthly' ? 'mensual' : currentExpense.recurring_bill_data.frequency}. Puedes revisar los detalles y crear un pago fijo.`
+                            : `"${currentExpense.recurring_bill_data.name}" looks like a ${currentExpense.recurring_bill_data.frequency} payment. You can review the details and create a recurring bill.`}
                         </p>
                         {billCreatedForIndex.has(currentIndex) ? (
                           <Badge variant="default" className="bg-emerald-600">
@@ -473,14 +463,9 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
                             variant="default"
                             className="mt-1"
                             onClick={() => handleCreateRecurringBill(currentExpense)}
-                            disabled={creatingBill}
                           >
-                            {creatingBill ? (
-                              <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                            ) : (
-                              <CreditCard className="h-3.5 w-3.5 mr-1" />
-                            )}
-                            {language === 'es' ? 'Crear Pago Fijo' : 'Create Recurring Bill'}
+                            <CreditCard className="h-3.5 w-3.5 mr-1" />
+                            {language === 'es' ? 'Revisar y Crear Pago Fijo' : 'Review & Create Bill'}
                           </Button>
                         )}
                       </div>
@@ -631,6 +616,20 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
         )}
       </CardContent>
     </Card>
+
+    {/* Recurring Bill Confirmation Dialog */}
+    <RecurringBillConfirmDialog
+      open={showBillConfirm}
+      onClose={() => {
+        setShowBillConfirm(false);
+        setPendingBillCandidate(null);
+      }}
+      candidate={pendingBillCandidate}
+      onCreated={() => {
+        setBillCreatedForIndex(prev => new Set(prev).add(currentIndex));
+        setPendingBillCandidate(null);
+      }}
+    />
     </TooltipProvider>
   );
 }
