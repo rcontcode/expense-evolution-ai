@@ -75,19 +75,27 @@ export function useHighlightOnArrival(options: UseHighlightOnArrivalOptions = {}
     document.documentElement.style.setProperty('--hab', String(rgb[2]));
   }, [highlightColor]);
 
-  // On mount, if param exists, activate highlight
+  // On mount, if param exists, activate highlight with a small delay
+  // so the DOM is painted before the CSS animation starts
   useEffect(() => {
     if (arrivedAt) {
-      setActiveHighlight(arrivedAt);
-      setIsHighlighted(true);
+      // Pequeño delay para que el browser pinte antes de agregar la clase
+      const activateTimer = setTimeout(() => {
+        setActiveHighlight(arrivedAt);
+        setIsHighlighted(true);
+      }, 200);
 
-      // Scroll to top of page so the tabs are visible — not deep into content
+      // Scroll to top so the tabs are visible
       if (scrollIntoView) {
         const scrollTimer = setTimeout(() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 150);
-        return () => clearTimeout(scrollTimer);
+        return () => {
+          clearTimeout(activateTimer);
+          clearTimeout(scrollTimer);
+        };
       }
+      return () => clearTimeout(activateTimer);
     }
   }, [arrivedAt, scrollIntoView]);
 
