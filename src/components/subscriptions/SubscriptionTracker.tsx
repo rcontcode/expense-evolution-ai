@@ -28,6 +28,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useBankTransactions } from '@/hooks/data/useBankTransactions';
+import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useSubscriptionDetector, DetectedSubscription } from '@/hooks/data/useSubscriptionDetector';
 import { supabase } from '@/integrations/supabase/client';
 import { useInvalidateRelated } from '@/hooks/data/useInvalidateRelated';
@@ -151,6 +152,22 @@ function SubscriptionCard({ subscription, language, getFrequencyLabel, onConvert
                   <span className="ml-2 font-medium">${subscription.totalSpent.toFixed(2)}</span>
                 </div>
               </div>
+              {/* Amount range */}
+              {subscription.expenses.length >= 2 && (() => {
+                const amounts = subscription.expenses.map(e => Number(e.amount));
+                const min = Math.min(...amounts);
+                const max = Math.max(...amounts);
+                if (min === max) return null;
+                return (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">{language === 'es' ? 'Rango' : 'Range'}:</span>
+                    <span className="font-medium">${min.toFixed(2)} — ${max.toFixed(2)}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {language === 'es' ? 'Promedio' : 'Avg'}: ${subscription.averageAmount.toFixed(2)}
+                    </Badge>
+                  </div>
+                );
+              })()}
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
                   {language === 'es' ? 'Confianza de detección' : 'Detection confidence'}:
@@ -189,8 +206,16 @@ export function SubscriptionTracker() {
   const { language } = useLanguage();
   const { data: expenses, isLoading: expensesLoading } = useExpenses();
   const { data: bankTransactions, isLoading: bankLoading } = useBankTransactions();
+  const { data: recurringBills } = useRecurringBills();
   const { afterBill } = useInvalidateRelated();
   const [convertedVendors, setConvertedVendors] = useState<Set<string>>(new Set());
+
+  // Track which subscriptions are already tracked as recurring bills
+  const trackedVendors = new Set(
+    (recurringBills || [])
+      .filter(b => b.status === 'active')
+      .map(b => b.name.toLowerCase().replace(/[^a-z0-9]/g, ''))
+  );
 
   const { 
     subscriptions, 
@@ -371,7 +396,10 @@ export function SubscriptionTracker() {
                   language={language}
                   getFrequencyLabel={getFrequencyLabel}
                   onConvertToBill={handleConvertToBill}
-                  isConverted={convertedVendors.has(subscription.vendor)}
+                  isConverted={
+                    convertedVendors.has(subscription.vendor) ||
+                    trackedVendors.has(subscription.vendor.toLowerCase().replace(/[^a-z0-9]/g, ''))
+                  }
                 />
               ))}
             </div>
