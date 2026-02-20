@@ -29,6 +29,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { MobileCaptureStats } from '@/components/capture/MobileCaptureStats';
 import { QuickEditPanel } from '@/components/capture/QuickEditPanel';
+import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
 export default function MobileCapture() {
   const { language } = useLanguage();
   const { user } = useAuth();
@@ -45,6 +46,8 @@ export default function MobileCapture() {
   const [lastSavedExpense, setLastSavedExpense] = useState<ExtractedExpenseData | null>(null);
   const [savedExpenseId, setSavedExpenseId] = useState<string | null>(null);
   const [showQuickEdit, setShowQuickEdit] = useState(false);
+  const [pendingBillCandidate, setPendingBillCandidate] = useState<RecurringBillCandidate | null>(null);
+  const [showBillConfirm, setShowBillConfirm] = useState(false);
 
   const { processReceipt, isProcessing } = useReceiptProcessor();
   const createExpense = useCreateExpense();
@@ -155,7 +158,7 @@ export default function MobileCapture() {
         }
 
         let savedCount = 0;
-        let billsCreated = 0;
+        let hasBillCandidate = false;
         let lastExpense: ExtractedExpenseData | null = null;
         let lastId: string | null = null;
         let isFirst = true;
@@ -185,25 +188,17 @@ export default function MobileCapture() {
               .eq('id', savedDocumentId);
           }
 
-          // Auto-create recurring bill if detected (same as QuickCapture)
-          if (exp.is_recurring_candidate && exp.recurring_bill_data && user) {
-            try {
-              const billData = exp.recurring_bill_data;
-              await supabase.from('recurring_bills').insert({
-                user_id: user.id,
-                name: billData.name,
-                amount: exp.amount,
-                category: billData.category || 'utilities',
-                frequency: billData.frequency || 'monthly',
-                next_due_date: billData.next_due_date || exp.date,
-                auto_pay: billData.auto_pay || false,
-                is_active: true,
-                currency: currentEntity?.default_currency || exp.currency || 'CAD',
-              });
-              billsCreated++;
-            } catch (billErr) {
-              console.error('Error creating recurring bill:', billErr);
-            }
+          // Queue recurring bill confirmation if detected (don't auto-create)
+          if (exp.is_recurring_candidate && exp.recurring_bill_data) {
+            setPendingBillCandidate({
+              name: exp.recurring_bill_data.name,
+              amount: exp.amount,
+              currency: currentEntity?.default_currency || exp.currency || 'CAD',
+              category: exp.recurring_bill_data.category || 'utilities',
+              frequency: exp.recurring_bill_data.frequency || 'monthly',
+              auto_pay: exp.recurring_bill_data.auto_pay || false,
+              next_due_date: exp.recurring_bill_data.next_due_date || exp.date,
+            });
           }
 
           savedCount++;
@@ -215,25 +210,23 @@ export default function MobileCapture() {
         recordCapture(savedCount);
         triggerSuccessConfetti();
         
+        // Show quick edit panel
         if (lastExpense) {
           setLastSavedExpense(lastExpense);
           setSavedExpenseId(lastId);
           setShowQuickEdit(true);
         }
 
-        // Build contextual success message
-        const parts: string[] = [];
-        if (savedCount > 0) {
-          parts.push(language === 'es' ? `${savedCount} gasto(s)` : `${savedCount} expense(s)`);
-        }
-        if (billsCreated > 0) {
-          parts.push(language === 'es' ? `${billsCreated} pago(s) fijo(s)` : `${billsCreated} recurring bill(s)`);
-        }
         toast.success(
           language === 'es'
-            ? `✅ ${parts.join(' + ')} guardado(s) con documento`
-            : `✅ ${parts.join(' + ')} saved with document`
+            ? `✅ ${savedCount} gasto(s) guardado(s) con documento`
+            : `✅ ${savedCount} expense(s) saved with document`
         );
+
+        // Show recurring bill confirmation dialog after save
+        if (pendingBillCandidate) {
+          setTimeout(() => setShowBillConfirm(true), 500);
+        }
         
       } else {
         toast.error(
@@ -618,6 +611,17 @@ export default function MobileCapture() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Recurring Bill Confirmation Dialog */}
+      <RecurringBillConfirmDialog
+        open={showBillConfirm}
+        onClose={() => {
+          setShowBillConfirm(false);
+          setPendingBillCandidate(null);
+        }}
+        candidate={pendingBillCandidate}
+        onCreated={() => setPendingBillCandidate(null)}
+      />
     </div>
   );
 }
