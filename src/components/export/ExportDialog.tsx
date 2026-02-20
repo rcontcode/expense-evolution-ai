@@ -254,6 +254,42 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
             </div>
           )}
 
+          {/* Data Quality Warnings */}
+          {(() => {
+            const filtered = yearFilter === 'all' ? expenses : expenses.filter(e => new Date(e.date).getFullYear() === parseInt(yearFilter));
+            const unclassified = filtered.filter(e => e.reimbursement_type === 'pending_classification').length;
+            const noClient = filtered.filter(e => !e.client_id).length;
+            const noReceipt = filtered.filter(e => !e.document_id).length;
+            const hasWarnings = unclassified > 0 || (exportType === 't2125' && unclassified > 0);
+            
+            return hasWarnings ? (
+              <div className="p-3 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-700 mt-4 space-y-2">
+                <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                  <FileWarning className="h-4 w-4" />
+                  <p className="text-sm font-medium">
+                    {language === 'es' ? 'Datos incompletos detectados' : 'Incomplete data detected'}
+                  </p>
+                </div>
+                <ul className="text-xs text-amber-600 dark:text-amber-400 space-y-1 ml-6">
+                  {unclassified > 0 && (
+                    <li>• {unclassified} {language === 'es' ? 'gastos sin clasificar' : 'unclassified expenses'}</li>
+                  )}
+                  {exportType === 't2125' && unclassified > 0 && (
+                    <li>• {language === 'es' ? 'El reporte T2125 mostrará $0 deducible' : 'T2125 report will show $0 deductible'}</li>
+                  )}
+                  {noClient > 0 && exportType === 'general' && (
+                    <li>• {noClient} {language === 'es' ? 'gastos sin cliente asignado' : 'expenses without client'}</li>
+                  )}
+                </ul>
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  {language === 'es' 
+                    ? '💡 Usa "Clasificación Rápida" en Gastos para completar antes de exportar.' 
+                    : '💡 Use "Quick Classification" in Expenses to complete before exporting.'}
+                </p>
+              </div>
+            ) : null;
+          })()}
+
           {/* Summary */}
           <div className="bg-muted p-3 rounded-lg mt-4">
             <p className="text-sm">
