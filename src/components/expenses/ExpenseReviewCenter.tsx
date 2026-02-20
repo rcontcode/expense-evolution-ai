@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   AlertTriangle, CheckCircle2, Clock, FileText, Eye, 
   Edit3, Trash2, RotateCw, ZoomIn, ZoomOut, Maximize2,
-  ArrowRight, Camera, Download, ShieldCheck, XCircle
+  ArrowRight, Camera, Download, ShieldCheck, XCircle,
+  CameraOff, ChevronRight, Sparkles, FileCheck
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -121,6 +122,55 @@ function MiniImageViewer({ filePath, className }: { filePath: string | null; cla
   );
 }
 
+// Flow step indicator
+function FlowStepIndicator({ 
+  steps, 
+  currentStep,
+  language 
+}: { 
+  steps: { key: string; label: string; icon: React.ElementType; count: number; done: boolean }[];
+  currentStep: string;
+  language: string;
+}) {
+  return (
+    <div className="flex items-center gap-1 overflow-x-auto pb-1 px-1">
+      {steps.map((step, idx) => {
+        const Icon = step.icon;
+        const isCurrent = step.key === currentStep;
+        const isDone = step.done;
+        return (
+          <div key={step.key} className="flex items-center gap-1 shrink-0">
+            <div className={cn(
+              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all duration-300",
+              isCurrent && !isDone && "bg-primary/15 text-primary ring-2 ring-primary/30 shadow-sm",
+              isDone && "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
+              !isCurrent && !isDone && "bg-muted text-muted-foreground"
+            )}>
+              {isDone ? (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              ) : (
+                <Icon className="h-3.5 w-3.5" />
+              )}
+              <span className="hidden sm:inline">{step.label}</span>
+              {step.count > 0 && !isDone && (
+                <Badge variant={isCurrent ? "destructive" : "secondary"} className="px-1 py-0 text-[9px] h-4 min-w-[16px] justify-center">
+                  {step.count}
+                </Badge>
+              )}
+            </div>
+            {idx < steps.length - 1 && (
+              <ChevronRight className={cn(
+                "h-3 w-3 shrink-0",
+                isDone ? "text-emerald-400" : "text-muted-foreground/40"
+              )} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCenterProps) {
   const { language } = useLanguage();
   const { user } = useAuth();
@@ -171,6 +221,38 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
   const totalIssues = discrepancies.length + pendingDocs.length + noReceipt.length;
   const isAllGood = totalIssues === 0 && expenses.length > 0;
 
+  // Flow steps for visual indicator
+  const flowSteps = useMemo(() => [
+    {
+      key: 'discrepancies',
+      label: language === 'es' ? 'Discrepancias' : 'Discrepancies',
+      icon: AlertTriangle,
+      count: discrepancies.length,
+      done: discrepancies.length === 0,
+    },
+    {
+      key: 'noreceipt',
+      label: language === 'es' ? 'Sin recibo' : 'No receipt',
+      icon: CameraOff,
+      count: noReceipt.length,
+      done: noReceipt.length === 0,
+    },
+    {
+      key: 'pending',
+      label: language === 'es' ? 'Pendientes' : 'Pending',
+      icon: Clock,
+      count: pendingDocs.length,
+      done: pendingDocs.length === 0,
+    },
+    {
+      key: 'ready',
+      label: language === 'es' ? 'Listos' : 'Ready',
+      icon: FileCheck,
+      count: readyExpenses.length,
+      done: isAllGood,
+    },
+  ], [language, discrepancies.length, noReceipt.length, pendingDocs.length, readyExpenses.length, isAllGood]);
+
   const handleUpdateAmount = useCallback(async (expenseId: string, newAmount: number) => {
     // Check for duplicates with same amount
     const hasDuplicate = expenses.some(e => 
@@ -190,7 +272,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       { id: expenseId, updates: { amount: newAmount } },
       {
         onSuccess: () => {
-          toast.success(language === 'es' ? 'Monto actualizado' : 'Amount updated');
+          toast.success(language === 'es' ? '✅ Monto actualizado correctamente' : '✅ Amount updated successfully');
           setEditingId(null);
         },
       }
@@ -200,19 +282,19 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
   const handleDelete = useCallback((id: string) => {
     deleteMutation.mutate(id, {
       onSuccess: () => {
-        toast.success(language === 'es' ? 'Gasto eliminado' : 'Expense deleted');
+        toast.success(language === 'es' ? '🗑️ Gasto eliminado' : '🗑️ Expense deleted');
         setDeleteConfirm(null);
       },
     });
   }, [deleteMutation, language]);
 
-  // Auto-select tab based on what needs attention
+  // Auto-select tab based on what needs attention (only on mount/data change)
   useEffect(() => {
     if (discrepancies.length > 0) setActiveTab('discrepancies');
-    else if (pendingDocs.length > 0) setActiveTab('pending');
     else if (noReceipt.length > 0) setActiveTab('noreceipt');
+    else if (pendingDocs.length > 0) setActiveTab('pending');
     else setActiveTab('ready');
-  }, [discrepancies.length, pendingDocs.length, noReceipt.length]);
+  }, [discrepancies.length, noReceipt.length, pendingDocs.length]);
 
   if (expenses.length === 0) return null;
 
@@ -222,52 +304,81 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       animate={{ opacity: 1, y: 0 }}
       className="space-y-3"
     >
-      {/* Summary header */}
+      {/* Summary header with flow indicator */}
       <div className={cn(
-        "flex items-center gap-3 p-4 rounded-xl border",
+        "p-4 rounded-xl border space-y-3",
         isAllGood 
           ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800"
           : "bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-200 dark:border-amber-800"
       )}>
-        {isAllGood ? (
-          <ShieldCheck className="h-6 w-6 text-emerald-600 shrink-0" />
-        ) : (
-          <AlertTriangle className="h-6 w-6 text-amber-600 shrink-0" />
-        )}
-        <div className="flex-1 min-w-0">
-          <p className={cn("text-sm font-semibold", isAllGood ? "text-emerald-800 dark:text-emerald-300" : "text-amber-800 dark:text-amber-300")}>
-            {isAllGood
-              ? (language === 'es' ? '✅ Todo revisado y listo para reportes' : '✅ All reviewed and ready for reports')
-              : (language === 'es' 
-                ? `${totalIssues} ${totalIssues === 1 ? 'punto requiere' : 'puntos requieren'} tu atención`
-                : `${totalIssues} ${totalIssues === 1 ? 'item needs' : 'items need'} your attention`)
-            }
-          </p>
-          <p className={cn("text-xs", isAllGood ? "text-emerald-600/80" : "text-amber-600/80")}>
-            {isAllGood
-              ? (language === 'es' ? 'Puedes generar tu reporte fiscal ahora' : 'You can generate your tax report now')
-              : (language === 'es' ? 'Revisa discrepancias de montos y recibos pendientes' : 'Review amount discrepancies and pending receipts')
-            }
-          </p>
+        <div className="flex items-center gap-3">
+          {isAllGood ? (
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+            >
+              <ShieldCheck className="h-6 w-6 text-emerald-600 shrink-0" />
+            </motion.div>
+          ) : (
+            <AlertTriangle className="h-6 w-6 text-amber-600 shrink-0 animate-pulse" />
+          )}
+          <div className="flex-1 min-w-0">
+            <p className={cn("text-sm font-semibold", isAllGood ? "text-emerald-800 dark:text-emerald-300" : "text-amber-800 dark:text-amber-300")}>
+              {isAllGood
+                ? (language === 'es' ? '🎉 ¡Todo revisado y listo para reportes!' : '🎉 All reviewed and ready for reports!')
+                : (language === 'es' 
+                  ? `📋 ${totalIssues} ${totalIssues === 1 ? 'punto requiere' : 'puntos requieren'} tu atención`
+                  : `📋 ${totalIssues} ${totalIssues === 1 ? 'item needs' : 'items need'} your attention`)
+              }
+            </p>
+            <p className={cn("text-xs mt-0.5", isAllGood ? "text-emerald-600/80" : "text-amber-600/80")}>
+              {isAllGood
+                ? (language === 'es' 
+                  ? '✨ Tus gastos están conciliados con sus recibos. Genera tu reporte fiscal o de reembolsos ahora.' 
+                  : '✨ Your expenses are reconciled with their receipts. Generate your tax or reimbursement report now.')
+                : (language === 'es' 
+                  ? '👇 Sigue los pasos del flujo para resolver cada punto antes de generar reportes' 
+                  : '👇 Follow the flow steps to resolve each item before generating reports')
+              }
+            </p>
+          </div>
+          {isAllGood && onExportReady && (
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Button size="sm" onClick={onExportReady} className="bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20">
+                <Sparkles className="h-4 w-4 mr-2" />
+                {language === 'es' ? 'Generar Reporte' : 'Generate Report'}
+              </Button>
+            </motion.div>
+          )}
         </div>
-        {isAllGood && onExportReady && (
-          <Button size="sm" onClick={onExportReady} className="bg-emerald-600 hover:bg-emerald-700">
-            <Download className="h-4 w-4 mr-2" />
-            {language === 'es' ? 'Generar Reporte' : 'Generate Report'}
-          </Button>
-        )}
+
+        {/* Flow step indicator */}
+        <FlowStepIndicator steps={flowSteps} currentStep={activeTab} language={language} />
       </div>
 
       {/* Tabs for different review categories */}
       {!isAllGood && (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full grid grid-cols-3">
+          <TabsList className="w-full grid grid-cols-4">
             <TabsTrigger value="discrepancies" className="relative text-xs sm:text-sm">
               <AlertTriangle className="h-3.5 w-3.5 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">{language === 'es' ? 'Discrepancias' : 'Discrepancies'}</span>
               <span className="sm:hidden">{language === 'es' ? 'Dif.' : 'Diff.'}</span>
               {discrepancies.length > 0 && (
                 <Badge variant="destructive" className="ml-1 px-1.5 py-0 text-[10px]">{discrepancies.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="noreceipt" className="text-xs sm:text-sm">
+              <CameraOff className="h-3.5 w-3.5 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">{language === 'es' ? 'Sin recibo' : 'No receipt'}</span>
+              <span className="sm:hidden">📷</span>
+              {noReceipt.length > 0 && (
+                <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400">{noReceipt.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="pending" className="text-xs sm:text-sm">
@@ -281,154 +392,274 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
             <TabsTrigger value="ready" className="text-xs sm:text-sm">
               <CheckCircle2 className="h-3.5 w-3.5 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">{language === 'es' ? 'Listos' : 'Ready'}</span>
-              <span className="sm:hidden">OK</span>
+              <span className="sm:hidden">✅</span>
               <Badge variant="outline" className="ml-1 px-1.5 py-0 text-[10px]">{readyExpenses.length}</Badge>
             </TabsTrigger>
           </TabsList>
 
           {/* Discrepancies Tab */}
           <TabsContent value="discrepancies" className="space-y-3 mt-3">
-            {discrepancies.length === 0 ? (
-              <Card className="border-dashed">
-                <CardContent className="flex items-center justify-center py-8">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500 mr-2" />
-                  <p className="text-sm text-muted-foreground">
-                    {language === 'es' ? 'No hay discrepancias de montos' : 'No amount discrepancies found'}
+            <AnimatePresence mode="wait">
+              {discrepancies.length === 0 ? (
+                <motion.div key="no-disc" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                  <Card className="border-dashed border-emerald-200 dark:border-emerald-800">
+                    <CardContent className="flex flex-col items-center justify-center py-8 gap-2">
+                      <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                      <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                        {language === 'es' ? '✅ Sin discrepancias de montos' : '✅ No amount discrepancies'}
+                      </p>
+                      <p className="text-xs text-muted-foreground text-center max-w-md">
+                        {language === 'es' 
+                          ? 'Todos los montos en sistema coinciden con los recibos vinculados. ¡Excelente!' 
+                          : 'All system amounts match their linked receipts. Excellent!'}
+                      </p>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground mt-2" />
+                      <p className="text-xs text-muted-foreground">
+                        {language === 'es' ? 'Continúa con el siguiente paso →' : 'Continue to the next step →'}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ) : (
+                <motion.div key="disc-list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+                  {/* Explanation banner */}
+                  <div className="flex gap-2 p-3 rounded-lg bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40">
+                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                    <div className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+                      <p className="font-medium mb-0.5">
+                        {language === 'es' ? '¿Por qué hay diferencias?' : 'Why are there differences?'}
+                      </p>
+                      <p className="text-amber-600 dark:text-amber-500">
+                        {language === 'es' 
+                          ? 'Cuando el sistema detecta un recibo, a veces identifica solo un ítem de una compra con múltiples productos. Puedes corregir el monto al total real o eliminar el gasto parcial si ya existe el correcto.'
+                          : 'When the system detects a receipt, sometimes it identifies only one item from a multi-item purchase. You can fix the amount to the real total or delete the partial expense if the correct one already exists.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {discrepancies.map((item, idx) => (
+                    <motion.div
+                      key={item.expense.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                    >
+                      <Card className="border-amber-200 dark:border-amber-800 overflow-hidden hover:shadow-md transition-shadow">
+                        <CardContent className="p-0">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+                            {/* Left: Receipt image */}
+                            <MiniImageViewer 
+                              filePath={item.document?.file_path || null} 
+                              className="h-64 lg:h-72"
+                            />
+
+                            {/* Right: Comparison */}
+                            <div className="p-4 space-y-3">
+                              <div className="flex items-center gap-2">
+                                <AlertTriangle className="h-4 w-4 text-amber-500" />
+                                <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                                  {language === 'es' ? '⚠️ Discrepancia de monto' : '⚠️ Amount discrepancy'}
+                                </span>
+                                <Badge variant="outline" className="text-[10px] ml-auto">
+                                  #{idx + 1}/{discrepancies.length}
+                                </Badge>
+                              </div>
+
+                              <div className="text-xs text-muted-foreground">
+                                🏪 {item.expense.vendor || '—'} · 📅 {item.expense.date}
+                                {item.expense.category && (
+                                  <> · 🏷️ {item.expense.category}</>
+                                )}
+                              </div>
+
+                              {/* Amount comparison */}
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="p-3 rounded-lg bg-muted/50 border">
+                                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+                                    💻 {language === 'es' ? 'En sistema' : 'In system'}
+                                  </p>
+                                  <p className="text-lg font-bold">${item.expenseAmount.toFixed(2)}</p>
+                                </div>
+                                <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                                  <p className="text-[10px] uppercase tracking-wider text-amber-600 mb-1">
+                                    🧾 {language === 'es' ? 'En recibo' : 'On receipt'}
+                                  </p>
+                                  <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
+                                    ${item.receiptAmount.toFixed(2)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <p className="text-xs text-muted-foreground leading-relaxed">
+                                {language === 'es' 
+                                  ? `📊 Diferencia: $${item.difference.toFixed(2)} (${item.percentDiff.toFixed(0)}%) — ${item.expenseAmount < item.receiptAmount ? 'Puede ser un ítem parcial de una compra mayor.' : 'El monto del sistema es mayor al del recibo.'}`
+                                  : `📊 Difference: $${item.difference.toFixed(2)} (${item.percentDiff.toFixed(0)}%) — ${item.expenseAmount < item.receiptAmount ? 'May be a partial item from a larger purchase.' : 'System amount is higher than receipt.'}`}
+                              </p>
+
+                              {/* Actions */}
+                              <div className="flex flex-col gap-2 pt-1">
+                                {editingId === item.expense.id ? (
+                                  <div className="flex gap-2">
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={editAmount}
+                                      onChange={(e) => setEditAmount(e.target.value)}
+                                      className="h-9"
+                                      placeholder={item.receiptAmount.toFixed(2)}
+                                      autoFocus
+                                    />
+                                    <Button size="sm" onClick={() => handleUpdateAmount(item.expense.id, Number(editAmount))} className="shadow-sm">
+                                      {language === 'es' ? '💾 Guardar' : '💾 Save'}
+                                    </Button>
+                                    <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>
+                                      <XCircle className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="flex-1 border-primary/30 hover:bg-primary/5"
+                                      onClick={() => {
+                                        setEditingId(item.expense.id);
+                                        setEditAmount(item.receiptAmount.toFixed(2));
+                                      }}
+                                    >
+                                      <Edit3 className="h-3.5 w-3.5 mr-1.5" />
+                                      {language === 'es' ? `Corregir a $${item.receiptAmount.toFixed(2)}` : `Fix to $${item.receiptAmount.toFixed(2)}`}
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      className="shadow-sm"
+                                      onClick={() => setDeleteConfirm(item.expense.id)}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                                      {language === 'es' ? 'Eliminar' : 'Delete'}
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </TabsContent>
+
+          {/* No Receipt Tab */}
+          <TabsContent value="noreceipt" className="space-y-3 mt-3">
+            {noReceipt.length === 0 ? (
+              <Card className="border-dashed border-emerald-200 dark:border-emerald-800">
+                <CardContent className="flex flex-col items-center justify-center py-8 gap-2">
+                  <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                    {language === 'es' ? '✅ Todos los gastos tienen recibo vinculado' : '✅ All expenses have a linked receipt'}
+                  </p>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground mt-2" />
+                  <p className="text-xs text-muted-foreground">
+                    {language === 'es' ? 'Continúa con el siguiente paso →' : 'Continue to the next step →'}
                   </p>
                 </CardContent>
               </Card>
             ) : (
-              discrepancies.map((item) => (
-                <Card key={item.expense.id} className="border-amber-200 dark:border-amber-800 overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-                      {/* Left: Receipt image */}
-                      <MiniImageViewer 
-                        filePath={item.document?.file_path || null} 
-                        className="h-64 lg:h-72"
-                      />
+              <div className="space-y-3">
+                {/* Explanation banner */}
+                <div className="flex gap-2 p-3 rounded-lg bg-orange-50/80 dark:bg-orange-950/20 border border-orange-200/60 dark:border-orange-800/40">
+                  <CameraOff className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
+                  <div className="text-xs text-orange-700 dark:text-orange-400 leading-relaxed">
+                    <p className="font-medium mb-0.5">
+                      {language === 'es' ? `📷 ${noReceipt.length} gastos sin comprobante` : `📷 ${noReceipt.length} expenses without receipt`}
+                    </p>
+                    <p className="text-orange-600 dark:text-orange-500">
+                      {language === 'es'
+                        ? 'Los gastos sin recibo no son válidos para declaración fiscal (CRA/T2125). Vincula un recibo existente o sube una foto del comprobante.'
+                        : 'Expenses without receipts are not valid for tax filing (CRA/T2125). Link an existing receipt or upload a photo of the receipt.'}
+                    </p>
+                  </div>
+                </div>
 
-                      {/* Right: Comparison */}
-                      <div className="p-4 space-y-3">
-                        <div className="flex items-center gap-2">
-                          <AlertTriangle className="h-4 w-4 text-amber-500" />
-                          <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">
-                            {language === 'es' ? 'Discrepancia de monto' : 'Amount discrepancy'}
-                          </span>
-                        </div>
-
-                        <div className="text-xs text-muted-foreground">
-                          {item.expense.vendor || '—'} · {item.expense.date}
-                        </div>
-
-                        {/* Amount comparison */}
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="p-3 rounded-lg bg-muted/50 border">
-                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                              {language === 'es' ? 'En sistema' : 'In system'}
-                            </p>
-                            <p className="text-lg font-bold">${item.expenseAmount.toFixed(2)}</p>
-                          </div>
-                          <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
-                            <p className="text-[10px] uppercase tracking-wider text-amber-600 mb-1">
-                              {language === 'es' ? 'En recibo' : 'On receipt'}
-                            </p>
-                            <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
-                              ${item.receiptAmount.toFixed(2)}
-                            </p>
-                          </div>
-                        </div>
-
-                        <p className="text-xs text-muted-foreground">
-                          {language === 'es' 
-                            ? `Diferencia: $${item.difference.toFixed(2)} (${item.percentDiff.toFixed(0)}%) — Puede ser un ítem parcial de una compra mayor.`
-                            : `Difference: $${item.difference.toFixed(2)} (${item.percentDiff.toFixed(0)}%) — May be a partial item from a larger purchase.`}
+                {/* List of expenses without receipts */}
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {noReceipt.slice(0, 8).map(expense => (
+                    <div key={expense.id} className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors">
+                      <CameraOff className="h-4 w-4 text-orange-400 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{expense.vendor || '—'}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          📅 {expense.date} · 💰 ${Number(expense.amount).toFixed(2)}
                         </p>
-
-                        {/* Actions */}
-                        <div className="flex flex-col gap-2">
-                          {editingId === item.expense.id ? (
-                            <div className="flex gap-2">
-                              <Input
-                                type="number"
-                                step="0.01"
-                                value={editAmount}
-                                onChange={(e) => setEditAmount(e.target.value)}
-                                className="h-9"
-                                placeholder={item.receiptAmount.toFixed(2)}
-                              />
-                              <Button size="sm" onClick={() => handleUpdateAmount(item.expense.id, Number(editAmount))}>
-                                {language === 'es' ? 'Guardar' : 'Save'}
-                              </Button>
-                              <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>
-                                <XCircle className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="flex-1"
-                                onClick={() => {
-                                  setEditingId(item.expense.id);
-                                  setEditAmount(item.receiptAmount.toFixed(2));
-                                }}
-                              >
-                                <Edit3 className="h-3.5 w-3.5 mr-1.5" />
-                                {language === 'es' ? 'Corregir a $' + item.receiptAmount.toFixed(2) : 'Fix to $' + item.receiptAmount.toFixed(2)}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => setDeleteConfirm(item.expense.id)}
-                              >
-                                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                                {language === 'es' ? 'Eliminar' : 'Delete'}
-                              </Button>
-                            </div>
-                          )}
-                        </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))
+                  ))}
+                </div>
+                {noReceipt.length > 8 && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    +{noReceipt.length - 8} {language === 'es' ? 'más sin recibo' : 'more without receipt'}
+                  </p>
+                )}
+
+                <p className="text-xs text-muted-foreground">
+                  {language === 'es' 
+                    ? '💡 Usa el panel de "Salud de Gastos" arriba para vincular recibos existentes o seleccionar gastos para eliminación.'
+                    : '💡 Use the "Expense Health" panel above to link existing receipts or select expenses for deletion.'}
+                </p>
+              </div>
             )}
           </TabsContent>
 
           {/* Pending Tab */}
           <TabsContent value="pending" className="space-y-3 mt-3">
             {pendingDocs.length === 0 ? (
-              <Card className="border-dashed">
-                <CardContent className="flex items-center justify-center py-8">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500 mr-2" />
-                  <p className="text-sm text-muted-foreground">
-                    {language === 'es' ? 'No hay recibos pendientes de revisión' : 'No receipts pending review'}
+              <Card className="border-dashed border-emerald-200 dark:border-emerald-800">
+                <CardContent className="flex flex-col items-center justify-center py-8 gap-2">
+                  <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                    {language === 'es' ? '✅ Todos los recibos están revisados' : '✅ All receipts are reviewed'}
+                  </p>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground mt-2" />
+                  <p className="text-xs text-muted-foreground">
+                    {language === 'es' ? 'Continúa con el siguiente paso →' : 'Continue to the next step →'}
                   </p>
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  {language === 'es' 
-                    ? `Tienes ${pendingDocs.length} recibo(s) sin aprobar. Ve a la Bandeja de Recibos para revisarlos.`
-                    : `You have ${pendingDocs.length} unapproved receipt(s). Go to the Receipt Inbox to review them.`}
-                </p>
-                <Button variant="outline" size="sm" asChild>
+              <div className="space-y-3">
+                {/* Explanation banner */}
+                <div className="flex gap-2 p-3 rounded-lg bg-blue-50/80 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-800/40">
+                  <Clock className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                  <div className="text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
+                    <p className="font-medium mb-0.5">
+                      {language === 'es' ? `⏳ ${pendingDocs.length} recibo(s) pendientes de aprobación` : `⏳ ${pendingDocs.length} receipt(s) pending approval`}
+                    </p>
+                    <p className="text-blue-600 dark:text-blue-500">
+                      {language === 'es'
+                        ? 'Estos recibos fueron capturados pero no han sido aprobados. Revísalos en la Bandeja de Recibos para validar los datos extraídos.'
+                        : 'These receipts were captured but haven\'t been approved. Review them in the Receipt Inbox to validate the extracted data.'}
+                    </p>
+                  </div>
+                </div>
+
+                <Button variant="outline" size="sm" asChild className="shadow-sm">
                   <a href="/chaos">
                     <Eye className="h-4 w-4 mr-2" />
-                    {language === 'es' ? 'Ir a Bandeja de Recibos' : 'Go to Receipt Inbox'}
+                    {language === 'es' ? '📥 Ir a Bandeja de Recibos' : '📥 Go to Receipt Inbox'}
                   </a>
                 </Button>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {pendingDocs.slice(0, 4).map(doc => (
-                    <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
+                    <div key={doc.id} className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors">
                       <Clock className="h-4 w-4 text-amber-500 shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium truncate">{doc.file_name}</p>
+                        <p className="text-xs font-medium truncate">📄 {doc.file_name}</p>
                         <p className="text-[10px] text-muted-foreground">
-                          {doc.extracted_data?.vendor || '—'} · ${doc.extracted_data?.amount?.toFixed(2) || '0.00'}
+                          🏪 {doc.extracted_data?.vendor || '—'} · 💰 ${doc.extracted_data?.amount?.toFixed(2) || '0.00'}
                         </p>
                       </div>
                     </div>
@@ -445,26 +676,46 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
 
           {/* Ready Tab */}
           <TabsContent value="ready" className="mt-3">
-            <Card className="border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/10">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+            <Card className="border-emerald-200 dark:border-emerald-800 bg-gradient-to-br from-emerald-50/80 to-emerald-50/30 dark:from-emerald-950/20 dark:to-emerald-950/5">
+              <CardContent className="p-5">
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
+                    <FileCheck className="h-5 w-5 text-emerald-600" />
+                  </div>
                   <div>
                     <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                      {readyExpenses.length} {language === 'es' ? 'gastos listos' : 'expenses ready'}
+                      🎉 {readyExpenses.length} {language === 'es' ? 'gastos conciliados y listos' : 'reconciled expenses ready'}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                       {language === 'es' 
-                        ? 'Estos gastos tienen recibo vinculado y montos consistentes'
-                        : 'These expenses have linked receipts with consistent amounts'}
+                        ? 'Estos gastos tienen recibo vinculado y montos consistentes. Están listos para incluir en tu reporte fiscal o de reembolsos.'
+                        : 'These expenses have linked receipts with consistent amounts. They are ready to include in your tax or reimbursement report.'}
                     </p>
                   </div>
                 </div>
+                
+                {totalIssues > 0 && (
+                  <div className="p-3 rounded-lg bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/40 mb-3">
+                    <p className="text-xs text-amber-700 dark:text-amber-400">
+                      {language === 'es'
+                        ? `⚠️ Aún tienes ${totalIssues} punto(s) por resolver. Puedes generar un reporte parcial con los ${readyExpenses.length} gastos listos, o resolver todo primero para un reporte completo.`
+                        : `⚠️ You still have ${totalIssues} item(s) to resolve. You can generate a partial report with the ${readyExpenses.length} ready expenses, or resolve everything first for a complete report.`}
+                    </p>
+                  </div>
+                )}
+
                 {readyExpenses.length > 0 && onExportReady && (
-                  <Button size="sm" onClick={onExportReady} variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-100">
-                    <Download className="h-4 w-4 mr-2" />
-                    {language === 'es' ? 'Generar reporte con estos gastos' : 'Generate report with these expenses'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={onExportReady} className="bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20">
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      {language === 'es' ? 'Generar Reporte' : 'Generate Report'}
+                    </Button>
+                    {totalIssues > 0 && (
+                      <Button size="sm" variant="outline" onClick={() => setActiveTab('discrepancies')} className="border-amber-300 text-amber-700 hover:bg-amber-50">
+                        {language === 'es' ? 'Resolver pendientes primero' : 'Resolve pending first'}
+                      </Button>
+                    )}
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -477,18 +728,18 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {language === 'es' ? '¿Eliminar este gasto?' : 'Delete this expense?'}
+              {language === 'es' ? '🗑️ ¿Eliminar este gasto?' : '🗑️ Delete this expense?'}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {language === 'es' 
-                ? 'Este gasto parece ser un ítem parcial detectado. Al eliminarlo, solo quedará el gasto principal con el monto correcto del recibo.'
-                : 'This expense appears to be a partially detected item. Deleting it will keep only the main expense with the correct receipt amount.'}
+                ? 'Este gasto parece ser un ítem parcial detectado de una compra mayor. Al eliminarlo, solo quedará el gasto principal con el monto correcto del recibo. Esta acción no se puede deshacer.'
+                : 'This expense appears to be a partially detected item from a larger purchase. Deleting it will keep only the main expense with the correct receipt amount. This action cannot be undone.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{language === 'es' ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
             <AlertDialogAction onClick={() => deleteConfirm && handleDelete(deleteConfirm)} className="bg-destructive text-destructive-foreground">
-              {language === 'es' ? 'Sí, eliminar' : 'Yes, delete'}
+              {language === 'es' ? 'Sí, eliminar gasto parcial' : 'Yes, delete partial expense'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
