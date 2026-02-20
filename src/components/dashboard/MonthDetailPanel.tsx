@@ -598,7 +598,7 @@ export function MonthDetailPanel({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
               {[
                 { icon: Goal, label: language === 'es' ? 'Metas de ahorro' : 'Savings Goals', route: '/budget', color: 'text-emerald-400' },
-                { icon: CreditCard, label: language === 'es' ? 'Pagos fijos' : 'Fixed Bills', route: '/bills', color: 'text-sky-400' },
+                { icon: CreditCard, label: language === 'es' ? 'Pagos fijos' : 'Fixed Bills', route: '/budget?tab=bills', color: 'text-sky-400' },
                 { icon: CalendarDays, label: language === 'es' ? 'Calendario fiscal' : 'Tax Calendar', route: '/tax-calendar', color: 'text-amber-400' },
                 { icon: Download, label: language === 'es' ? 'Exportar PDF' : 'Export PDF', route: '/budget', color: 'text-violet-400' },
               ].map((item) => (
