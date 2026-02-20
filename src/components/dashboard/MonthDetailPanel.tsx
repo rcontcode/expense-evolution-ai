@@ -598,7 +598,7 @@ export function MonthDetailPanel({
             <div className="grid grid-cols-2 gap-3 pt-2">
               {[
                 { icon: Goal, label: language === 'es' ? 'Metas de ahorro' : 'Savings Goals', desc: language === 'es' ? 'Seguimiento de objetivos' : 'Track your goals', route: '/budget?tab=goals', gradient: 'from-emerald-500/20 to-emerald-600/5', iconColor: 'text-emerald-400', borderColor: 'border-emerald-500/30' },
-                { icon: CreditCard, label: language === 'es' ? 'Pagos fijos' : 'Fixed Bills', desc: language === 'es' ? 'Gastos recurrentes' : 'Recurring expenses', route: '/budget?tab=bills', gradient: 'from-sky-500/20 to-sky-600/5', iconColor: 'text-sky-400', borderColor: 'border-sky-500/30' },
+                { icon: CreditCard, label: language === 'es' ? 'Pagos fijos' : 'Fixed Bills', desc: language === 'es' ? 'Gastos recurrentes' : 'Recurring expenses', route: '/budget?tab=payments', gradient: 'from-sky-500/20 to-sky-600/5', iconColor: 'text-sky-400', borderColor: 'border-sky-500/30' },
                 { icon: CalendarDays, label: language === 'es' ? 'Calendario fiscal' : 'Tax Calendar', desc: language === 'es' ? 'Fechas importantes' : 'Key dates', route: '/tax-calendar', gradient: 'from-amber-500/20 to-amber-600/5', iconColor: 'text-amber-400', borderColor: 'border-amber-500/30' },
                 { icon: Download, label: language === 'es' ? 'Exportar reporte' : 'Export Report', desc: language === 'es' ? 'PDF y Excel' : 'PDF & Excel', route: '/budget?tab=tools', gradient: 'from-violet-500/20 to-violet-600/5', iconColor: 'text-violet-400', borderColor: 'border-violet-500/30' },
               ].map((item) => (
