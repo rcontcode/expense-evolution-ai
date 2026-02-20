@@ -19,10 +19,10 @@ export function BillsDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <BillsSummaryCards />
+      <div className="flex items-center justify-end">
         <BillsExportButtons />
       </div>
+      <BillsSummaryCards />
       <NetCashFlowCard />
 
       <Tabs value={view} onValueChange={setView} className="space-y-4">
