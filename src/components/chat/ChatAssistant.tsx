@@ -897,10 +897,76 @@ export const ChatAssistant: React.FC = () => {
         break;
       }
         
+      case 'create_expense': {
+        const expData = action.data as { amount: number; vendor?: string; category?: string; description?: string; date?: string };
+        if (expData?.amount) {
+          triggerHapticFeedback('medium');
+          createExpense.mutateAsync({
+            vendor: expData.vendor || 'Sin especificar',
+            amount: expData.amount,
+            category: expData.category || 'other',
+            description: expData.description || expData.vendor || '',
+            date: expData.date || new Date().toISOString().split('T')[0],
+            status: 'pending' as const,
+          } as any).catch((err: Error) => {
+            if (err.message !== 'DUPLICATE_DETECTED') {
+              toast.error(language === 'es' ? 'Error al registrar gasto' : 'Error recording expense');
+            }
+          });
+        }
+        break;
+      }
+
+      case 'create_income': {
+        const incData = action.data as { amount: number; source?: string; income_type?: string; description?: string; date?: string };
+        if (incData?.amount) {
+          triggerHapticFeedback('medium');
+          createIncome.mutateAsync({
+            amount: incData.amount,
+            source: incData.source || null,
+            income_type: (incData.income_type || 'other') as any,
+            description: incData.description || incData.source || '',
+            date: incData.date || new Date().toISOString().split('T')[0],
+            is_taxable: true,
+          } as any).catch(() => {
+            toast.error(language === 'es' ? 'Error al registrar ingreso' : 'Error recording income');
+          });
+        }
+        break;
+      }
+
+      case 'create_recurring_bill': {
+        const billData = action.data as { name?: string; amount: number; category?: string; frequency?: string; next_due_date?: string };
+        if (billData?.amount) {
+          triggerHapticFeedback('medium');
+          (async () => {
+            try {
+              const { data: { user: u } } = await supabase.auth.getUser();
+              if (!u) return;
+              const { error: billError } = await supabase.from('recurring_bills').insert({
+                user_id: u.id,
+                name: billData.name || 'Sin especificar',
+                amount: billData.amount,
+                category: billData.category || 'other',
+                frequency: billData.frequency || 'monthly',
+                next_due_date: billData.next_due_date || new Date().toISOString().split('T')[0],
+                auto_pay: false,
+                is_active: true,
+              });
+              if (billError) throw billError;
+              toast.success(language === 'es' ? '🔄 Pago fijo creado' : '🔄 Recurring bill created');
+            } catch {
+              toast.error(language === 'es' ? 'Error al crear pago fijo' : 'Error creating bill');
+            }
+          })();
+        }
+        break;
+      }
+
       default:
         console.log('[AI Action] Unknown action type:', action.action);
     }
-  }, [navigate, triggerHapticFeedback, voicePrefs, isHighlightEnabled, highlight, language, detectHighlightTargets]);
+  }, [navigate, triggerHapticFeedback, voicePrefs, isHighlightEnabled, highlight, language, detectHighlightTargets, createExpense, createIncome]);
 
   const sendMessage = useCallback(async (text: string, skipAddingUserMessage = false) => {
     const trimmedText = text.trim();

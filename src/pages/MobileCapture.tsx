@@ -14,22 +14,28 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { useReceiptProcessor, ExtractedExpenseData } from '@/hooks/data/useReceiptProcessor';
 import { useCreateExpense, useUpdateExpense } from '@/hooks/data/useExpenses';
 import { useCaptureStreak } from '@/hooks/data/useCaptureStreak';
+import { useEntity } from '@/contexts/EntityContext';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { MobileCaptureStats } from '@/components/capture/MobileCaptureStats';
 import { QuickEditPanel } from '@/components/capture/QuickEditPanel';
-
 export default function MobileCapture() {
   const { language } = useLanguage();
+  const { user } = useAuth();
+  const { currentEntity } = useEntity();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [savedDocumentId, setSavedDocumentId] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [lastSavedExpense, setLastSavedExpense] = useState<ExtractedExpenseData | null>(null);
   const [savedExpenseId, setSavedExpenseId] = useState<string | null>(null);
@@ -68,14 +74,51 @@ export default function MobileCapture() {
     fileInputRef.current?.click();
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !user) return;
     
     setImagePreview(URL.createObjectURL(file));
+    setImageFile(file);
+    
+    // Convert to base64 for AI processing
     const reader = new FileReader();
     reader.onloadend = () => setImageBase64(reader.result as string);
     reader.readAsDataURL(file);
+
+    // Upload to storage immediately (same as QuickCapture)
+    const fileName = `${user.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('expense-documents')
+      .upload(fileName, file, { contentType: file.type, upsert: false });
+
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError);
+      toast.error(language === 'es' ? `Error subiendo foto: ${uploadError.message}` : `Upload error: ${uploadError.message}`);
+      return;
+    }
+
+    // Create document record
+    const { data: doc, error: dbError } = await supabase
+      .from('documents')
+      .insert({
+        user_id: user.id,
+        file_path: fileName,
+        file_name: file.name,
+        file_type: file.type,
+        file_size: file.size,
+        status: 'pending',
+        review_status: 'pending_review',
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('Document DB error:', dbError);
+      return;
+    }
+
+    setSavedDocumentId(doc.id);
   };
 
   const triggerSuccessConfetti = () => {
@@ -94,12 +137,23 @@ export default function MobileCapture() {
       const result = await processReceipt(imageBase64, undefined);
       
       if (result?.expenses?.length) {
+        // Save extracted data to document record (same as QuickCapture)
+        if (savedDocumentId) {
+          await supabase
+            .from('documents')
+            .update({ extracted_data: result.expenses as any, status: 'classified' })
+            .eq('id', savedDocumentId);
+        }
+
         let savedCount = 0;
         let lastExpense: ExtractedExpenseData | null = null;
         let lastId: string | null = null;
+        let isFirst = true;
 
         for (const exp of result.expenses) {
           if (!exp.vendor || !exp.amount) continue;
+          // Link document to first expense only (same as QuickCapture)
+          const docId = isFirst ? savedDocumentId : null;
           const newExpense = await createExpense.mutateAsync({
             vendor: exp.vendor,
             amount: exp.amount,
@@ -107,11 +161,23 @@ export default function MobileCapture() {
             category: exp.category,
             description: exp.description,
             client_id: null,
+            document_id: docId,
+            currency: currentEntity?.default_currency || exp.currency || 'CAD',
             status: 'pending'
           } as any);
+
+          // Link document back to first expense
+          if (isFirst && savedDocumentId && newExpense?.id) {
+            await supabase
+              .from('documents')
+              .update({ expense_id: newExpense.id, status: 'classified', review_status: 'approved' })
+              .eq('id', savedDocumentId);
+          }
+
           savedCount++;
           lastExpense = exp;
           lastId = newExpense?.id || null;
+          isFirst = false;
         }
         
         recordCapture(savedCount);
@@ -125,8 +191,8 @@ export default function MobileCapture() {
         
         toast.success(
           language === 'es' 
-            ? `¡${savedCount} gasto(s) guardado(s)!`
-            : `${savedCount} expense(s) saved!`
+            ? `¡${savedCount} gasto(s) guardado(s) con recibo!`
+            : `${savedCount} expense(s) saved with receipt!`
         );
         
       } else {
@@ -149,6 +215,8 @@ export default function MobileCapture() {
   const handleRetake = () => {
     setImagePreview(null);
     setImageBase64(null);
+    setImageFile(null);
+    setSavedDocumentId(null);
     setShowQuickEdit(false);
     setLastSavedExpense(null);
     setSavedExpenseId(null);
@@ -174,6 +242,8 @@ export default function MobileCapture() {
       setShowQuickEdit(false);
       setImagePreview(null);
       setImageBase64(null);
+      setImageFile(null);
+      setSavedDocumentId(null);
       setSavedExpenseId(null);
       setLastSavedExpense(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -186,10 +256,11 @@ export default function MobileCapture() {
     setShowQuickEdit(false);
     setImagePreview(null);
     setImageBase64(null);
+    setImageFile(null);
+    setSavedDocumentId(null);
     setLastSavedExpense(null);
     setSavedExpenseId(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
-    // Small delay then open camera
     setTimeout(() => handleCameraCapture(), 100);
   };
 
