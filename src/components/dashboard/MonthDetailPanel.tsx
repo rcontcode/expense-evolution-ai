@@ -595,23 +595,31 @@ export function MonthDetailPanel({
             </Suspense>
 
             {/* Quick access shortcuts */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+            <div className="grid grid-cols-2 gap-3 pt-2">
               {[
-                { icon: Goal, label: language === 'es' ? 'Metas de ahorro' : 'Savings Goals', route: '/budget', color: 'text-emerald-400' },
-                { icon: CreditCard, label: language === 'es' ? 'Pagos fijos' : 'Fixed Bills', route: '/budget?tab=bills', color: 'text-sky-400' },
-                { icon: CalendarDays, label: language === 'es' ? 'Calendario fiscal' : 'Tax Calendar', route: '/tax-calendar', color: 'text-amber-400' },
-                { icon: Download, label: language === 'es' ? 'Exportar PDF' : 'Export PDF', route: '/budget', color: 'text-violet-400' },
+                { icon: Goal, label: language === 'es' ? 'Metas de ahorro' : 'Savings Goals', desc: language === 'es' ? 'Seguimiento de objetivos' : 'Track your goals', route: '/budget?tab=goals', gradient: 'from-emerald-500/20 to-emerald-600/5', iconColor: 'text-emerald-400', borderColor: 'border-emerald-500/30' },
+                { icon: CreditCard, label: language === 'es' ? 'Pagos fijos' : 'Fixed Bills', desc: language === 'es' ? 'Gastos recurrentes' : 'Recurring expenses', route: '/budget?tab=bills', gradient: 'from-sky-500/20 to-sky-600/5', iconColor: 'text-sky-400', borderColor: 'border-sky-500/30' },
+                { icon: CalendarDays, label: language === 'es' ? 'Calendario fiscal' : 'Tax Calendar', desc: language === 'es' ? 'Fechas importantes' : 'Key dates', route: '/tax-calendar', gradient: 'from-amber-500/20 to-amber-600/5', iconColor: 'text-amber-400', borderColor: 'border-amber-500/30' },
+                { icon: Download, label: language === 'es' ? 'Exportar reporte' : 'Export Report', desc: language === 'es' ? 'PDF y Excel' : 'PDF & Excel', route: '/budget?tab=tools', gradient: 'from-violet-500/20 to-violet-600/5', iconColor: 'text-violet-400', borderColor: 'border-violet-500/30' },
               ].map((item) => (
-                <Button
+                <button
                   key={item.label}
-                  variant="ghost"
-                  size="sm"
                   onClick={() => navigate(item.route)}
-                  className="h-auto py-2.5 flex-col gap-1.5 border border-border/40 hover:border-border rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-xl border transition-all duration-200",
+                    "bg-gradient-to-br hover:scale-[1.02] active:scale-[0.98]",
+                    item.gradient, item.borderColor,
+                    "hover:shadow-md"
+                  )}
                 >
-                  <item.icon className={cn("h-4 w-4", item.color)} />
-                  <span className="text-[11px] leading-tight text-center">{item.label}</span>
-                </Button>
+                  <div className={cn("shrink-0 h-9 w-9 rounded-lg bg-background/60 flex items-center justify-center", item.iconColor)}>
+                    <item.icon className="h-4.5 w-4.5" />
+                  </div>
+                  <div className="text-left min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{item.label}</p>
+                    <p className="text-[11px] text-muted-foreground truncate">{item.desc}</p>
+                  </div>
+                </button>
               ))}
             </div>
           </CollapsibleContent>
