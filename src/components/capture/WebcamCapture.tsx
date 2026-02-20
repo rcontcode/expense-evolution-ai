@@ -15,13 +15,15 @@ export function WebcamCapture({ onCapture, onFallbackToFile }: WebcamCaptureProp
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [cameraState, setCameraState] = useState<'checking' | 'active' | 'no-camera' | 'denied'>('checking');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
   const stopStream = useCallback(() => {
-    stream?.getTracks().forEach(t => t.stop());
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
     setStream(null);
-  }, [stream]);
+  }, []);
 
   const startCamera = useCallback(async () => {
     setCameraState('checking');
@@ -29,6 +31,7 @@ export function WebcamCapture({ onCapture, onFallbackToFile }: WebcamCaptureProp
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
       });
+      streamRef.current = mediaStream;
       setStream(mediaStream);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
@@ -47,10 +50,10 @@ export function WebcamCapture({ onCapture, onFallbackToFile }: WebcamCaptureProp
   useEffect(() => {
     startCamera();
     return () => {
-      stream?.getTracks().forEach(t => t.stop());
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [startCamera]);
 
   const takePhoto = useCallback(() => {
     if (!videoRef.current || !canvasRef.current) return;
