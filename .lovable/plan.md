@@ -1,176 +1,63 @@
 
+## Diagnóstico: El flash del cohete al navegar a "Metas de Ahorro"
 
-# Plan: Sistema Completo de Gestion Masiva de Gastos
+### ¿Qué está pasando exactamente?
 
-## Resumen
+El flujo completo cuando haces clic en "Metas de Ahorro" desde el dashboard:
 
-Agregar seleccion multiple con checkbox, acciones en masa (borrar, editar, clasificar), deteccion inteligente de problemas (duplicados, sin recibo), y explicaciones contextuales claras en toda la seccion de gastos.
+1. El link navega a `/budget?tab=goals`
+2. La página `Budget.tsx` carga y renderiza `FamilyBudgetView`
+3. `FamilyBudgetView` lee el `tab` de la URL para inicializar el estado de la pestaña activa
+4. El hook `useHighlightOnArrival` detecta el parámetro `?tab=goals` y activa la animación `highlight-beacon` en el contenedor de la pestaña "Metas"
+5. El tab "goals" tiene una animación `highlight-tab-pulse` en el botón de la pestaña
 
----
+**El "cohete" que ves** es la animación `highlight-tab-pulse` que escala el emoji 🎯 del tab "Metas" ligeramente hacia arriba, lo que por un instante hace que se vea como un pequeño "lanzamiento". Es el efecto de `scale(1.05)` en la keyframe a los 15%.
 
-## Cambios Principales
+### ¿Está bien o está mal?
 
-### 1. Checkboxes de seleccion en la tabla de gastos
+**El sistema está funcionando como fue diseñado**, pero tiene un problema de experiencia de usuario: la animación es tan sutil y rápida que el usuario la percibe como un "bug" o "flash" en lugar de una confirmación visual útil.
 
-**Archivo: `src/components/tables/ExpensesTable.tsx`**
+La causa raíz es que **la animación `highlight-tab-pulse` en el botón de la pestaña no es lo suficientemente obvia** para comunicar su intención. El usuario ve:
+- Un pequeño "brinco" del emoji 🎯 (parece un cohete moviéndose)
+- Un destello de sombra alrededor del tab
+- Todo en menos de 2 segundos
 
-- Agregar columna de checkbox al inicio de cada fila (desktop) y en cada card (mobile)
-- Estado `selectedIds: Set<string>` manejado en el componente principal
-- Checkbox "Seleccionar todo" en el header de la tabla
-- Al seleccionar, aparece una barra flotante con acciones disponibles
+Lo mismo ocurre con otras pestañas que usan este sistema (pagos, herramientas, etc.) — cualquiera que se navegue con `?tab=X` tiene este comportamiento.
 
-### 2. Barra de acciones masivas para gastos
+### Plan de corrección
 
-**Archivo nuevo: `src/components/expenses/ExpenseBulkActions.tsx`**
+El problema tiene dos partes:
 
-Barra fija que aparece cuando hay gastos seleccionados, con:
-- Contador de seleccionados y monto total
-- **Eliminar seleccionados** (con confirmacion mostrando detalle)
-- **Clasificar seleccionados** (abre wizard de clasificacion rapida solo para los seleccionados)
-- **Asignar cliente/contrato** a todos los seleccionados
-- **Deseleccionar todo**
-- Animacion de entrada/salida con framer-motion
+**Parte 1 — Mejorar la animación para que sea obvia y útil:**
+En `src/index.css`, modificar `highlight-tab-pulse` para que la animación sea más lenta, clara y reconocible como "destacado intencional" en lugar de parecer un glitch. En lugar de escalar el tab completo (que hace el efecto "cohete"), usaremos solo un brillo/glow suave alrededor del tab sin moverlo.
 
-### 3. Panel de Problemas Detectados (Smart Health Panel)
+```css
+/* ANTES — causa el efecto "cohete" */
+@keyframes highlight-tab-pulse {
+  15% { transform: scale(1.05); ... }
+  45% { transform: scale(1.03); ... }
+}
 
-**Archivo nuevo: `src/components/expenses/ExpenseHealthPanel.tsx`**
-
-Panel visible arriba de la tabla que reemplaza los warnings simples actuales. Muestra:
-
-- **Gastos sin recibo** (X gastos) con opciones:
-  - "Subir recibo ahora" (abre file picker)
-  - "Vincular documento existente" (muestra documentos huerfanos)
-  - "Ignorar / No tengo recibo"
-  - "Eliminar estos gastos"
-  
-- **Posibles duplicados** detectados automaticamente:
-  - Muestra pares de gastos con mismo monto+fecha+vendor similar
-  - Opciones: "Mantener ambos", "Eliminar duplicado", "Fusionar"
-  
-- **Gastos sin clasificar** con boton directo al wizard
-
-- **Gastos sin categoria** con sugerencia de categoria por IA
-
-Cada seccion es colapsable, con contadores y colores (rojo/naranja/amarillo segun urgencia).
-
-### 4. Dialogo de vinculacion de recibo
-
-**Archivo nuevo: `src/components/dialogs/LinkReceiptDialog.tsx`**
-
-Cuando el usuario elige "Vincular documento existente":
-- Lista documentos huerfanos (`expense_id IS NULL`) con preview de imagen
-- Muestra datos extraidos (vendor, monto) para facilitar el match
-- Boton "Vincular" actualiza `expenses.document_id` y `documents.expense_id`
-- Opcion "Subir nuevo" si no encuentra match
-
-### 5. Deteccion de duplicados en la tabla
-
-**Archivo: `src/hooks/data/useExpenseDuplicates.ts` (nuevo)**
-
-Hook que analiza la lista de gastos y detecta:
-- Mismo monto + misma fecha + vendor similar (fuzzy)
-- Retorna grupos de duplicados con IDs
-
-### 6. Mejoras a ExpenseCard (mobile)
-
-**Archivo: `src/components/tables/ExpenseCard.tsx`**
-
-- Agregar checkbox de seleccion (prop `selectable`, `selected`, `onSelect`)
-- Indicador visual de "Sin recibo" con icono de camara tachada + pulsacion naranja
-- Tooltip con explicacion de que hacer: "Sube un recibo o vincula uno existente"
-
-### 7. Mejoras a ExpenseRowComponent (desktop)
-
-**Archivo: `src/components/tables/ExpensesTable.tsx`**
-
-- Agregar columna checkbox al inicio
-- Indicador de "Sin recibo" en la columna de recibo (actualmente solo muestra el icono gris)
-- Al hacer hover sobre un gasto incompleto, mostrar tooltip con pasos a seguir
-
-### 8. Explicaciones y consejos contextuales
-
-**Integrado en los componentes anteriores:**
-
-- En el Health Panel: explicaciones como "Los gastos sin recibo no son validos para CRA. Puedes subir una foto del recibo o marcarlos como personal."
-- En el wizard de clasificacion: "Tip: Los gastos de gasolina y comida suelen ser deducibles si son para trabajo."
-- En la barra de acciones masivas: "Selecciona gastos similares para clasificarlos todos de una vez."
-- Warning antes de borrar en masa: "Se moveran X gastos a la papelera. Podras restaurarlos desde la seccion Papelera."
-
-### 9. Integracion en Expenses.tsx
-
-**Archivo: `src/pages/Expenses.tsx`**
-
-- Pasar `selectedIds` y `onSelectionChange` a `ExpensesTable`
-- Renderizar `ExpenseBulkActions` cuando hay seleccion
-- Renderizar `ExpenseHealthPanel` arriba de la tabla con datos de gastos
-- Agregar event listeners para abrir `LinkReceiptDialog`
-
----
-
-## Detalle Tecnico
-
-### Flujo de Seleccion Multiple
-
-```text
-ExpensesTable
-  +-- selectedIds: Set<string> (lifted to Expenses.tsx)
-  +-- Checkbox header: toggle all
-  +-- Each row/card: individual checkbox
-  +-- ExpenseBulkActions (floating bar)
-        +-- Delete selected -> AlertDialog con lista
-        +-- Classify selected -> QuickClassifyDialog con subset
-        +-- Assign client -> Select inline
+/* DESPUÉS — glow suave sin movimiento */
+@keyframes highlight-tab-pulse {
+  0%   { box-shadow: 0 0 0 0 hsl(var(--primary)/0.5); }
+  40%  { box-shadow: 0 0 0 6px hsl(var(--primary)/0.3); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
 ```
 
-### Flujo de Vinculacion de Recibo
-
-```text
-ExpenseHealthPanel
-  +-- "X gastos sin recibo" section
-  +-- Click "Vincular" -> LinkReceiptDialog
-        +-- Fetch documents where expense_id IS NULL
-        +-- Show previews + extracted data
-        +-- "Vincular" button:
-              UPDATE expenses SET document_id = ? WHERE id = ?
-              UPDATE documents SET expense_id = ? WHERE id = ?
-  +-- Click "Subir" -> File input -> upload to storage -> create document -> link
-```
-
-### Flujo de Duplicados
-
-```text
-useExpenseDuplicates(expenses)
-  +-- Returns: { groups: [{original, duplicate, similarity}], count }
-  
-ExpenseHealthPanel
-  +-- "X posibles duplicados" section
-  +-- Each pair shown side by side
-  +-- Actions: "Mantener ambos" | "Eliminar duplicado" | "Eliminar ambos"
-```
-
-### Archivos a crear
-
-| Archivo | Proposito |
-|---------|-----------|
-| `src/components/expenses/ExpenseBulkActions.tsx` | Barra de acciones masivas |
-| `src/components/expenses/ExpenseHealthPanel.tsx` | Panel de problemas detectados |
-| `src/components/dialogs/LinkReceiptDialog.tsx` | Vincular recibos a gastos |
-| `src/hooks/data/useExpenseDuplicates.ts` | Deteccion de duplicados |
+**Parte 2 — Agregar un pequeño indicador visual más claro:**
+En `src/components/budget/FamilyBudgetView.tsx`, cuando el tab está destacado (`shouldHighlight('goals')`), agregar un pequeño punto pulsante debajo del tab para que el usuario entienda intuitivamente que "esa es la sección a la que llegó".
 
 ### Archivos a modificar
 
 | Archivo | Cambio |
-|---------|--------|
-| `src/pages/Expenses.tsx` | Estado de seleccion, render Health Panel y Bulk Actions |
-| `src/components/tables/ExpensesTable.tsx` | Checkboxes, prop selectedIds/onSelect |
-| `src/components/tables/ExpenseCard.tsx` | Checkbox, indicador sin recibo mejorado |
-| `src/components/dialogs/QuickClassifyDialog.tsx` | Aceptar subset filtrado de gastos |
+|---|---|
+| `src/index.css` | Reemplazar la keyframe `highlight-tab-pulse` para eliminar el `scale()` que causa el efecto "cohete" |
+| `src/components/budget/FamilyBudgetView.tsx` | Agregar un pequeño dot indicador bajo cada tab destacado para hacer el efecto más obvio e intencional |
 
-### Patron visual
+### Resumen
 
-- Health Panel: Gradientes suaves (rojo para critico, naranja para advertencia, amarillo para info)
-- Bulk Actions bar: Fondo `primary/10` con animacion slide-up via framer-motion
-- Checkboxes: Estilo Radix existente con animacion de check
-- Indicador sin recibo: Icono `Camera` con slash diagonal + efecto pulse naranja
-- Tooltips explicativos en cada estado incompleto con pasos numerados
-
+- El comportamiento **NO es un bug** — es una feature de "navegación con llegada destacada"
+- Pero la animación actual **parece un bug** porque usa `scale()` que mueve el elemento visualmente (el "cohete")
+- La solución es **reemplazar el scale por un glow/resplandor suave** que sea claramente intencional y no parezca un error
