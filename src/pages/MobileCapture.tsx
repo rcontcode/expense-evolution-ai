@@ -14,6 +14,7 @@ import {
   Upload,
   ImagePlus
 } from 'lucide-react';
+import { WebcamCapture } from '@/components/capture/WebcamCapture';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -48,6 +49,7 @@ export default function MobileCapture() {
   const [showQuickEdit, setShowQuickEdit] = useState(false);
   const [pendingBillCandidate, setPendingBillCandidate] = useState<RecurringBillCandidate | null>(null);
   const [showBillConfirm, setShowBillConfirm] = useState(false);
+  const [showWebcam, setShowWebcam] = useState(false);
 
   const { processReceipt, isProcessing } = useReceiptProcessor();
   const createExpense = useCreateExpense();
@@ -79,7 +81,55 @@ export default function MobileCapture() {
   }, [language]);
 
   const handleCameraCapture = () => {
-    cameraInputRef.current?.click();
+    if (isMobile) {
+      cameraInputRef.current?.click();
+    } else {
+      setShowWebcam(true);
+    }
+  };
+
+  const handleWebcamCapture = async (file: File, previewUrl: string) => {
+    if (!user) return;
+    setShowWebcam(false);
+    setImagePreview(previewUrl);
+    setImageFile(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => setImageBase64(reader.result as string);
+    reader.readAsDataURL(file);
+
+    const fileName = `${user.id}/${Date.now()}-${file.name}`;
+    const { error: uploadError } = await supabase.storage
+      .from('expense-documents')
+      .upload(fileName, file, { contentType: file.type, upsert: false });
+
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError);
+      toast.error(`Error: ${uploadError.message}`);
+      return;
+    }
+
+    const { data: doc, error: dbError } = await supabase
+      .from('documents')
+      .insert({
+        user_id: user.id,
+        file_path: fileName,
+        file_name: file.name,
+        file_type: file.type,
+        file_size: file.size,
+        status: 'pending',
+        review_status: 'pending_review',
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('Document DB error:', dbError);
+      return;
+    }
+
+    setSavedDocumentId(doc.id);
+    toast.success(language === 'es' ? 'Foto capturada correctamente' : 'Photo captured successfully');
   };
 
   const handleFileUpload = () => {
@@ -251,6 +301,7 @@ export default function MobileCapture() {
     setImageFile(null);
     setSavedDocumentId(null);
     setShowQuickEdit(false);
+    setShowWebcam(false);
     setLastSavedExpense(null);
     setSavedExpenseId(null);
     if (cameraInputRef.current) cameraInputRef.current.value = '';
@@ -365,7 +416,7 @@ export default function MobileCapture() {
         >
           <Card className="overflow-hidden border border-border">
             <CardContent className="p-4">
-              {!imagePreview ? (
+              {!imagePreview && !showWebcam ? (
                 <div className="space-y-4">
                   {/* Two action buttons: Camera + Upload */}
                   <div className={cn(
@@ -392,9 +443,7 @@ export default function MobileCapture() {
                       />
                       <motion.div 
                         className="p-4 rounded-full bg-gradient-to-br from-primary/30 to-accent/20 shadow-lg shadow-primary/20"
-                        animate={{ 
-                          y: [0, -5, 0],
-                        }}
+                        animate={{ y: [0, -5, 0] }}
                         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                       >
                         <Camera className="h-8 w-8 text-primary" />
@@ -405,8 +454,8 @@ export default function MobileCapture() {
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {language === 'es' 
-                            ? 'Usa la cámara de tu dispositivo'
-                            : 'Use your device camera'
+                            ? (isMobile ? 'Usa la cámara de tu dispositivo' : 'Usa tu cámara web')
+                            : (isMobile ? 'Use your device camera' : 'Use your webcam')
                           }
                         </p>
                       </div>
@@ -453,6 +502,11 @@ export default function MobileCapture() {
                     }
                   </p>
                 </div>
+              ) : showWebcam && !imagePreview ? (
+                <WebcamCapture
+                  onCapture={handleWebcamCapture}
+                  onFallbackToFile={() => { setShowWebcam(false); handleFileUpload(); }}
+                />
               ) : (
                 <div className="space-y-4">
                   <div className={cn(
