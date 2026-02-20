@@ -226,29 +226,19 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
         }
 
         case 'create_expense': {
-          const expenseData = action.data as { amount: number; vendor?: string; category?: string; description?: string };
+          const expenseData = action.data as { amount: number; vendor?: string; category?: string; description?: string; date?: string };
           if (expenseData && expenseData.amount) {
             try {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (user) {
-                const { error } = await supabase.from('expenses').insert({
-                  user_id: user.id,
-                  amount: expenseData.amount,
-                  vendor: expenseData.vendor || 'Sin especificar',
-                  category: expenseData.category || 'other',
-                  description: expenseData.description || expenseData.vendor,
-                  date: new Date().toISOString().split('T')[0],
-                });
-
-                if (error) throw error;
-
-                onCreateExpense?.(expenseData);
-                const msg = language === 'es'
-                  ? `Gasto de $${expenseData.amount} registrado${expenseData.vendor ? ` en ${expenseData.vendor}` : ''}`
-                  : `Expense of $${expenseData.amount} recorded${expenseData.vendor ? ` at ${expenseData.vendor}` : ''}`;
-                toast.success(msg);
-                result = { success: true, message: action.message, data: expenseData };
+              // Use the onCreateExpense callback which should invoke useCreateExpense
+              // This ensures duplicate detection, audit logging, gamification, and cache invalidation all fire
+              if (onCreateExpense) {
+                onCreateExpense(expenseData);
               }
+              const msg = language === 'es'
+                ? `Gasto de $${expenseData.amount} registrado${expenseData.vendor ? ` en ${expenseData.vendor}` : ''}`
+                : `Expense of $${expenseData.amount} recorded${expenseData.vendor ? ` at ${expenseData.vendor}` : ''}`;
+              // Don't toast here — onCreateExpense hook already toasts on success/error
+              result = { success: true, message: action.message, data: expenseData };
             } catch (err) {
               console.error('[Assistant] Failed to create expense:', err);
               const errMsg = language === 'es'
