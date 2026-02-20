@@ -2861,46 +2861,107 @@
 }
 
 /* ================================================================
-   HIGHLIGHT ON ARRIVAL — Visual beacon for shortcut navigation
+   HIGHLIGHT ON ARRIVAL — Visual beacon con color configurable
+   Variables inyectadas desde useHighlightOnArrival:
+     --har  --hag  --hab  (RGB del color elegido por el usuario)
+   Default fallback: naranja (249, 115, 22)
    ================================================================ */
 
-@keyframes highlight-beacon {
+:root {
+  --har: 249;
+  --hag: 115;
+  --hab: 22;
+}
+
+@keyframes highlight-beacon-color {
   0% {
-    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.6), inset 0 0 0 0 hsl(var(--primary) / 0.05);
-    border-color: hsl(var(--primary) / 0.7);
+    box-shadow:
+      0 0 0 0 rgba(var(--har), var(--hag), var(--hab), 0.7),
+      0 0 0 0 rgba(var(--har), var(--hag), var(--hab), 0.3);
+    border-color: rgba(var(--har), var(--hag), var(--hab), 0.9);
   }
-  25% {
-    box-shadow: 0 0 20px 4px hsl(var(--primary) / 0.3), inset 0 0 12px 0 hsl(var(--primary) / 0.08);
-    border-color: hsl(var(--primary) / 0.9);
+  20% {
+    box-shadow:
+      0 0 0 8px rgba(var(--har), var(--hag), var(--hab), 0.25),
+      0 0 30px 6px rgba(var(--har), var(--hag), var(--hab), 0.35);
+    border-color: rgba(var(--har), var(--hag), var(--hab), 1);
   }
   50% {
-    box-shadow: 0 0 8px 2px hsl(var(--primary) / 0.15), inset 0 0 4px 0 hsl(var(--primary) / 0.03);
-    border-color: hsl(var(--primary) / 0.5);
+    box-shadow:
+      0 0 0 4px rgba(var(--har), var(--hag), var(--hab), 0.15),
+      0 0 15px 3px rgba(var(--har), var(--hag), var(--hab), 0.2);
+    border-color: rgba(var(--har), var(--hag), var(--hab), 0.7);
   }
   75% {
-    box-shadow: 0 0 16px 3px hsl(var(--primary) / 0.25), inset 0 0 8px 0 hsl(var(--primary) / 0.06);
-    border-color: hsl(var(--primary) / 0.7);
+    box-shadow:
+      0 0 0 6px rgba(var(--har), var(--hag), var(--hab), 0.2),
+      0 0 25px 5px rgba(var(--har), var(--hag), var(--hab), 0.28);
+    border-color: rgba(var(--har), var(--hag), var(--hab), 0.85);
   }
   100% {
-    box-shadow: 0 0 0 0 transparent, inset 0 0 0 0 transparent;
-    border-color: hsl(var(--border));
+    box-shadow: 0 0 0 0 transparent, 0 0 0 0 transparent;
+    border-color: transparent;
+    background-color: transparent;
   }
 }
 
-/* highlight-tab-active: recuadro naranja visible en el botón del tab */
-.highlight-tab-active {
-  outline: 2px solid hsl(var(--primary));
-  outline-offset: 2px;
-  border-radius: 0.75rem;
-  background-color: hsl(var(--primary) / 0.12) !important;
+@keyframes highlight-tab-pulse-color {
+  0% {
+    outline-color: rgba(var(--har), var(--hag), var(--hab), 0.95);
+    box-shadow:
+      0 0 0 0 rgba(var(--har), var(--hag), var(--hab), 0.6),
+      0 0 0 0 rgba(var(--har), var(--hag), var(--hab), 0.3);
+    background-color: rgba(var(--har), var(--hag), var(--hab), 0.2);
+  }
+  20% {
+    outline-color: rgba(var(--har), var(--hag), var(--hab), 1);
+    box-shadow:
+      0 0 0 6px rgba(var(--har), var(--hag), var(--hab), 0.25),
+      0 0 20px 4px rgba(var(--har), var(--hag), var(--hab), 0.4);
+    background-color: rgba(var(--har), var(--hag), var(--hab), 0.28);
+  }
+  55% {
+    outline-color: rgba(var(--har), var(--hag), var(--hab), 0.7);
+    box-shadow:
+      0 0 0 3px rgba(var(--har), var(--hag), var(--hab), 0.15),
+      0 0 10px 2px rgba(var(--har), var(--hag), var(--hab), 0.2);
+    background-color: rgba(var(--har), var(--hag), var(--hab), 0.15);
+  }
+  80% {
+    outline-color: rgba(var(--har), var(--hag), var(--hab), 0.85);
+    box-shadow:
+      0 0 0 5px rgba(var(--har), var(--hag), var(--hab), 0.2),
+      0 0 18px 3px rgba(var(--har), var(--hag), var(--hab), 0.3);
+    background-color: rgba(var(--har), var(--hag), var(--hab), 0.18);
+  }
+  100% {
+    outline-color: transparent;
+    box-shadow: none;
+    background-color: transparent;
+  }
 }
 
-/* highlight-on-arrival: recuadro naranja en la sección completa de contenido */
+/* highlight-tab-active: recuadro visible en el botón del tab con el color del usuario */
+.highlight-tab-active {
+  outline: 3px solid rgba(var(--har), var(--hag), var(--hab), 0.95) !important;
+  outline-offset: 3px !important;
+  border-radius: 0.75rem !important;
+  background-color: rgba(var(--har), var(--hag), var(--hab), 0.22) !important;
+  box-shadow:
+    0 0 0 6px rgba(var(--har), var(--hag), var(--hab), 0.15),
+    0 0 20px rgba(var(--har), var(--hag), var(--hab), 0.35) !important;
+  animation: highlight-tab-pulse-color 3.5s ease-out forwards !important;
+}
+
+/* highlight-on-arrival: recuadro en la sección completa de contenido con el color del usuario */
 .highlight-on-arrival {
-  border: 2px solid hsl(var(--primary) / 0.8);
-  border-radius: 1rem;
-  position: relative;
-  background-color: hsl(var(--primary) / 0.04);
-  padding: 0.5rem;
-  animation: highlight-beacon 3.5s ease-out forwards;
+  border: 3px solid rgba(var(--har), var(--hag), var(--hab), 0.9) !important;
+  border-radius: 1rem !important;
+  position: relative !important;
+  background-color: rgba(var(--har), var(--hag), var(--hab), 0.07) !important;
+  padding: 0.75rem !important;
+  box-shadow:
+    0 0 0 4px rgba(var(--har), var(--hag), var(--hab), 0.12),
+    0 0 35px rgba(var(--har), var(--hag), var(--hab), 0.25) !important;
+  animation: highlight-beacon-color 3.5s ease-out forwards !important;
 }
