@@ -29,7 +29,12 @@ import {
   ArrowRight,
   Wallet,
   Camera,
-  Target
+  Target,
+  Goal,
+  Download,
+  CalendarDays,
+  CreditCard,
+  Flame
 } from 'lucide-react';
 import {
   PieChart as RechartsPieChart,
@@ -588,6 +593,27 @@ export function MonthDetailPanel({
                 <BudgetAlertsCard />
               </div>
             </Suspense>
+
+            {/* Quick access shortcuts */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+              {[
+                { icon: Goal, label: language === 'es' ? 'Metas de ahorro' : 'Savings Goals', route: '/budget', color: 'text-emerald-400' },
+                { icon: CreditCard, label: language === 'es' ? 'Pagos fijos' : 'Fixed Bills', route: '/bills', color: 'text-sky-400' },
+                { icon: CalendarDays, label: language === 'es' ? 'Calendario fiscal' : 'Tax Calendar', route: '/tax-calendar', color: 'text-amber-400' },
+                { icon: Download, label: language === 'es' ? 'Exportar PDF' : 'Export PDF', route: '/budget', color: 'text-violet-400' },
+              ].map((item) => (
+                <Button
+                  key={item.label}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(item.route)}
+                  className="h-auto py-2.5 flex-col gap-1.5 border border-border/40 hover:border-border rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <item.icon className={cn("h-4 w-4", item.color)} />
+                  <span className="text-[11px] leading-tight text-center">{item.label}</span>
+                </Button>
+              ))}
+            </div>
           </CollapsibleContent>
         </Collapsible>
       </CardContent>
