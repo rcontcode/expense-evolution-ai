@@ -301,18 +301,21 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
                   <span className="text-base">⚡</span>
                   <span className="hidden sm:inline">{l ? 'Ritmo' : 'Pace'}</span>
                 </TabsTrigger>
-                <TabsTrigger value="payments" className={cn("flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-amber-500 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80", shouldHighlight('payments') && 'highlight-tab-active')}>
+                <TabsTrigger value="payments" className={cn("relative flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-amber-500 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80", shouldHighlight('payments') && 'highlight-tab-active')}>
                   <span className="text-base">💳</span>
                   <span className="hidden sm:inline">{l ? 'Pagos' : 'Pay'}</span>
                   {overdueBills.length > 0 && <Badge variant="destructive" className="ml-0.5 text-[10px] px-1.5 py-0 animate-pulse">{overdueBills.length}</Badge>}
+                  {shouldHighlight('payments') && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
                 </TabsTrigger>
-                <TabsTrigger value="goals" className={cn("flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80", shouldHighlight('goals') && 'highlight-tab-active')}>
+                <TabsTrigger value="goals" className={cn("relative flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80", shouldHighlight('goals') && 'highlight-tab-active')}>
                   <span className="text-base">🎯</span>
                   <span className="hidden sm:inline">{l ? 'Metas' : 'Goals'}</span>
+                  {shouldHighlight('goals') && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
                 </TabsTrigger>
-                <TabsTrigger value="tools" className={cn("flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-slate-600 data-[state=active]:to-slate-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-slate-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80", shouldHighlight('tools') && 'highlight-tab-active')}>
+                <TabsTrigger value="tools" className={cn("relative flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-slate-600 data-[state=active]:to-slate-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-slate-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80", shouldHighlight('tools') && 'highlight-tab-active')}>
                   <span className="text-base">🔧</span>
                   <span className="hidden sm:inline">{l ? 'Herram.' : 'Tools'}</span>
+                  {shouldHighlight('tools') && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
                 </TabsTrigger>
               </TabsList>
             </motion.div>
