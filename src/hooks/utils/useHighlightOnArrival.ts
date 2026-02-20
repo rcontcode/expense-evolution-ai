@@ -60,11 +60,11 @@ export function useHighlightOnArrival(options: UseHighlightOnArrivalOptions = {}
       setActiveHighlight(arrivedAt);
       setIsHighlighted(true);
 
-      // Scroll into view after a short delay for rendering
+      // Scroll to top of page so the tabs are visible — not deep into content
       if (scrollIntoView) {
         const scrollTimer = setTimeout(() => {
-          highlightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 400);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 150);
         return () => clearTimeout(scrollTimer);
       }
     }
