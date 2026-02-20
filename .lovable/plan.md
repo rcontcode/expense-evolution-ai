@@ -1,63 +1,127 @@
 
-## Diagnóstico: El flash del cohete al navegar a "Metas de Ahorro"
+## Diagnóstico completo del problema
 
-### ¿Qué está pasando exactamente?
+Hay DOS sistemas de highlight completamente desconectados entre sí:
 
-El flujo completo cuando haces clic en "Metas de Ahorro" desde el dashboard:
+**Sistema 1 - HighlightContext** (el configurable por el usuario):
+- Guarda el color elegido (`orange`, `green`, `red`, `blue`, `purple`) en localStorage
+- Aplica estilos inline directamente en el DOM con valores RGBA concretos
+- Se usa cuando el asistente de chat destaca elementos específicos
 
-1. El link navega a `/budget?tab=goals`
-2. La página `Budget.tsx` carga y renderiza `FamilyBudgetView`
-3. `FamilyBudgetView` lee el `tab` de la URL para inicializar el estado de la pestaña activa
-4. El hook `useHighlightOnArrival` detecta el parámetro `?tab=goals` y activa la animación `highlight-beacon` en el contenedor de la pestaña "Metas"
-5. El tab "goals" tiene una animación `highlight-tab-pulse` en el botón de la pestaña
+**Sistema 2 - useHighlightOnArrival** (el de navegación via URL `?tab=`):
+- Aplica clases CSS `highlight-tab-active` y `highlight-on-arrival`
+- Esas clases usan `hsl(var(--primary))` — el color del TEMA, no el del usuario
+- Por eso el recuadro sale azul-verdoso (color primario del dark theme) en lugar del naranja configurado
+- Nunca lee el color de `HighlightContext`
 
-**El "cohete" que ves** es la animación `highlight-tab-pulse` que escala el emoji 🎯 del tab "Metas" ligeramente hacia arriba, lo que por un instante hace que se vea como un pequeño "lanzamiento". Es el efecto de `scale(1.05)` en la keyframe a los 15%.
+**Problema secundario:** La animación `highlight-beacon` en el contenido es suave pero poco visible, y el recuadro del tab (`highlight-tab-active`) no es suficientemente llamativo.
 
-### ¿Está bien o está mal?
+## Solución: Conectar ambos sistemas + reforzar el efecto visual
 
-**El sistema está funcionando como fue diseñado**, pero tiene un problema de experiencia de usuario: la animación es tan sutil y rápida que el usuario la percibe como un "bug" o "flash" en lugar de una confirmación visual útil.
+### Parte 1 — Pasar el color del HighlightContext al CSS via variables CSS
 
-La causa raíz es que **la animación `highlight-tab-pulse` en el botón de la pestaña no es lo suficientemente obvia** para comunicar su intención. El usuario ve:
-- Un pequeño "brinco" del emoji 🎯 (parece un cohete moviéndose)
-- Un destello de sombra alrededor del tab
-- Todo en menos de 2 segundos
+En lugar de hardcodear `hsl(var(--primary))` en las clases CSS, inyectaremos una variable CSS dinámica `--highlight-arrival-color` basada en el color elegido por el usuario. Esto se hace en el `HighlightProvider` o en un nuevo efecto en `useHighlightOnArrival`.
 
-Lo mismo ocurre con otras pestañas que usan este sistema (pagos, herramientas, etc.) — cualquiera que se navegue con `?tab=X` tiene este comportamiento.
-
-### Plan de corrección
-
-El problema tiene dos partes:
-
-**Parte 1 — Mejorar la animación para que sea obvia y útil:**
-En `src/index.css`, modificar `highlight-tab-pulse` para que la animación sea más lenta, clara y reconocible como "destacado intencional" en lugar de parecer un glitch. En lugar de escalar el tab completo (que hace el efecto "cohete"), usaremos solo un brillo/glow suave alrededor del tab sin moverlo.
-
-```css
-/* ANTES — causa el efecto "cohete" */
-@keyframes highlight-tab-pulse {
-  15% { transform: scale(1.05); ... }
-  45% { transform: scale(1.03); ... }
-}
-
-/* DESPUÉS — glow suave sin movimiento */
-@keyframes highlight-tab-pulse {
-  0%   { box-shadow: 0 0 0 0 hsl(var(--primary)/0.5); }
-  40%  { box-shadow: 0 0 0 6px hsl(var(--primary)/0.3); }
-  100% { box-shadow: 0 0 0 0 transparent; }
-}
+**Mapa de colores:**
+```
+orange  → rgba(249, 115, 22, ...)   (naranja — default)
+green   → rgba(34, 197, 94, ...)
+red     → rgba(239, 68, 68, ...)
+blue    → rgba(59, 130, 246, ...)
+purple  → rgba(168, 85, 247, ...)
 ```
 
-**Parte 2 — Agregar un pequeño indicador visual más claro:**
-En `src/components/budget/FamilyBudgetView.tsx`, cuando el tab está destacado (`shouldHighlight('goals')`), agregar un pequeño punto pulsante debajo del tab para que el usuario entienda intuitivamente que "esa es la sección a la que llegó".
+### Parte 2 — Reforzar el efecto visual considerablemente
+
+El recuadro actual es demasiado sutil. Lo haremos mucho más evidente:
+
+- **Tab button**: borde sólido de 3px del color configurado + fondo del 20% de opacidad + `box-shadow` glow exterior. Así se verá como un recuadro naranja claro e inconfundible alrededor del botón.
+- **Contenido completo**: borde de 3px sólido + `box-shadow` con resplandor + fondo tintado + animación beacon más llamativa (3 pulsos en lugar de fade suave).
 
 ### Archivos a modificar
 
-| Archivo | Cambio |
-|---|---|
-| `src/index.css` | Reemplazar la keyframe `highlight-tab-pulse` para eliminar el `scale()` que causa el efecto "cohete" |
-| `src/components/budget/FamilyBudgetView.tsx` | Agregar un pequeño dot indicador bajo cada tab destacado para hacer el efecto más obvio e intencional |
+**1. `src/hooks/utils/useHighlightOnArrival.ts`**
 
-### Resumen
+Importar `useHighlight` del `HighlightContext` para leer el `highlightColor` y el `HIGHLIGHT_COLORS`. En el hook, cuando se activa el highlight, inyectar la variable CSS en el `document.documentElement`:
 
-- El comportamiento **NO es un bug** — es una feature de "navegación con llegada destacada"
-- Pero la animación actual **parece un bug** porque usa `scale()` que mueve el elemento visualmente (el "cohete")
-- La solución es **reemplazar el scale por un glow/resplandor suave** que sea claramente intencional y no parezca un error
+```typescript
+// Al activar:
+document.documentElement.style.setProperty('--highlight-arrival-color-r', 'R');
+document.documentElement.style.setProperty('--highlight-arrival-color-g', 'G');
+document.documentElement.style.setProperty('--highlight-arrival-color-b', 'B');
+
+// Al limpiar:
+document.documentElement.style.removeProperty('--highlight-arrival-color-r');
+// etc.
+```
+
+Esto permite que el CSS use `rgba(var(--highlight-arrival-color-r), var(...g), var(...b), 0.9)` para el color exacto configurado.
+
+**2. `src/index.css`**
+
+Reemplazar `.highlight-tab-active` y `.highlight-on-arrival` para que usen las variables CSS dinámicas en lugar de `hsl(var(--primary))`. También reforzar visualmente ambas clases:
+
+```css
+.highlight-tab-active {
+  /* Usa el color configurado por el usuario */
+  outline: 3px solid rgba(var(--har), var(--hag), var(--hab), 0.95) !important;
+  outline-offset: 3px;
+  border-radius: 0.75rem;
+  background-color: rgba(var(--har), var(--hag), var(--hab), 0.18) !important;
+  box-shadow: 0 0 0 6px rgba(var(--har), var(--hag), var(--hab), 0.15),
+              0 0 20px rgba(var(--har), var(--hag), var(--hab), 0.3) !important;
+  animation: highlight-tab-pulse 3.5s ease-out forwards;
+}
+
+.highlight-on-arrival {
+  border: 3px solid rgba(var(--har), var(--hag), var(--hab), 0.9) !important;
+  border-radius: 1rem;
+  background-color: rgba(var(--har), var(--hag), var(--hab), 0.07) !important;
+  box-shadow: 0 0 0 4px rgba(var(--har), var(--hag), var(--hab), 0.12),
+              0 0 30px rgba(var(--har), var(--hag), var(--hab), 0.25) !important;
+  animation: highlight-beacon-color 3.5s ease-out forwards;
+}
+```
+
+Y la keyframe beacon también la actualizaremos para usar las variables RGB.
+
+**3. `src/components/budget/FamilyBudgetView.tsx`**
+
+Agregar también `highlight-on-arrival` en los `TabsContent` de 'payments', 'goals' y 'tools' (actualmente solo el trigger del tab tiene `highlight-tab-active`, pero el contenido completo también debe recibir el recuadro). Verificar que los `TabsContent` pasen correctamente las props del hook.
+
+### Resumen visual del resultado esperado
+
+Al navegar a `/budget?tab=goals`:
+- El botón "🎯 Metas" en la barra de tabs recibe un **recuadro naranja** (o el color configurado) grueso y bien visible con resplandor
+- La sección completa del contenido de Metas también queda encuadrada con el mismo color
+- La animación pulsa 3 veces en ~3.5 segundos y luego desaparece gradualmente
+- Si el usuario cambia su color de highlight a verde, ambos efectos serán verdes
+
+### Diagrama del flujo corregido
+
+```text
+Usuario navega a /budget?tab=goals
+         │
+         ▼
+useHighlightOnArrival detecta ?tab=goals
+         │
+         ├─► Lee highlightColor de HighlightContext (ej: "orange")
+         │
+         ├─► Convierte a RGB: (249, 115, 22)
+         │
+         ├─► Inyecta en :root:
+         │      --har: 249   --hag: 115   --hab: 22
+         │
+         ├─► Activa isHighlighted=true
+         │
+         ▼
+FamilyBudgetView.tsx
+  ├─ TabsTrigger goals: agrega clase "highlight-tab-active"
+  │     └─ CSS usa rgba(249,115,22) → RECUADRO NARANJA en botón ✓
+  │
+  └─ TabsContent goals: agrega clase "highlight-on-arrival"
+        └─ CSS usa rgba(249,115,22) → RECUADRO NARANJA en sección ✓
+         │
+         ▼
+Después de 3.5s: limpia clases, limpia variables CSS, limpia URL
+```
