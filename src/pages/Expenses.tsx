@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Plus, Download, Sparkles, FileText, Users, Camera, Search, MoreHorizont
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useExpensesRealtime } from '@/hooks/data/useExpensesRealtime';
+import { useExpenseDuplicates } from '@/hooks/data/useExpenseDuplicates';
 import { ExpensesTable } from '@/components/tables/ExpensesTable';
 import { ExpenseFilters } from '@/components/filters/ExpenseFilters';
 import { ExpenseDialog } from '@/components/dialogs/ExpenseDialog';
@@ -14,6 +15,9 @@ import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
 import { ReimbursementReportDialog } from '@/components/dialogs/ReimbursementReportDialog';
 import { BulkAssignDialog } from '@/components/dialogs/BulkAssignDialog';
 import { QuickClassifyDialog } from '@/components/dialogs/QuickClassifyDialog';
+import { LinkReceiptDialog } from '@/components/dialogs/LinkReceiptDialog';
+import { ExpenseBulkActions } from '@/components/expenses/ExpenseBulkActions';
+import { ExpenseHealthPanel } from '@/components/expenses/ExpenseHealthPanel';
 import { ExpenseFilters as Filters, ExpenseWithRelations } from '@/types/expense.types';
 import { Card, CardContent } from '@/components/ui/card';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
@@ -27,6 +31,7 @@ import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { PageHeader } from '@/components/PageHeader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileActionBar } from '@/components/mobile';
+import { useDeleteExpense } from '@/hooks/data/useExpenses';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,6 +51,9 @@ export default function Expenses() {
   const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
   const [quickClassifyOpen, setQuickClassifyOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseWithRelations | undefined>();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [linkReceiptOpen, setLinkReceiptOpen] = useState(false);
+  const [linkReceiptExpenseIds, setLinkReceiptExpenseIds] = useState<string[]>([]);
 
   // Track expenses page visit for missions
   usePageVisitTracker('view_expenses');
@@ -64,6 +72,8 @@ export default function Expenses() {
 
   const { data: expenses, isLoading } = useExpenses(filters);
   const { data: allExpenses } = useExpenses({});
+  const deleteMutation = useDeleteExpense();
+  const duplicates = useExpenseDuplicates(allExpenses || []);
 
   // Listen for voice command actions and dialog events
   useEffect(() => {
@@ -103,6 +113,19 @@ export default function Expenses() {
     setSelectedExpense(undefined);
     setDialogOpen(true);
   };
+
+  const handleOpenLinkReceipt = useCallback((expenseIds: string[]) => {
+    setLinkReceiptExpenseIds(expenseIds);
+    setLinkReceiptOpen(true);
+  }, []);
+
+  const handleSelectExpenses = useCallback((ids: string[]) => {
+    setSelectedIds(new Set(ids));
+  }, []);
+
+  const handleDeleteDuplicate = useCallback((id: string) => {
+    deleteMutation.mutate(id);
+  }, [deleteMutation]);
 
   return (
     <Layout>
@@ -217,6 +240,18 @@ export default function Expenses() {
             <ExpenseFilters filters={filters} onChange={setFilters} />
           </div>
 
+          {/* Health Panel - Data quality issues */}
+          {allExpenses && allExpenses.length > 0 && (
+            <ExpenseHealthPanel
+              expenses={allExpenses}
+              duplicates={duplicates}
+              onOpenClassify={() => setQuickClassifyOpen(true)}
+              onOpenLinkReceipt={handleOpenLinkReceipt}
+              onSelectExpenses={handleSelectExpenses}
+              onDeleteDuplicate={handleDeleteDuplicate}
+            />
+          )}
+
         {isLoading ? (
           <Card className="border-dashed">
             <CardContent className="flex items-center justify-center py-8 sm:py-12">
@@ -225,7 +260,12 @@ export default function Expenses() {
           </Card>
         ) : expenses && expenses.length > 0 ? (
           <div data-highlight="expenses-table">
-            <ExpensesTable expenses={expenses} onEdit={handleEdit} />
+            <ExpensesTable
+              expenses={expenses}
+              onEdit={handleEdit}
+              selectedIds={selectedIds}
+              onSelectionChange={setSelectedIds}
+            />
           </div>
         ) : (
           <SectionEmptyState 
@@ -238,6 +278,15 @@ export default function Expenses() {
             showSampleDataButton={true}
           />
         )}
+
+        {/* Bulk Actions floating bar */}
+        <ExpenseBulkActions
+          selectedIds={selectedIds}
+          expenses={allExpenses || []}
+          onClearSelection={() => setSelectedIds(new Set())}
+          onClassifySelected={() => setQuickClassifyOpen(true)}
+          onAssignSelected={() => setBulkAssignOpen(true)}
+        />
 
         <ExpenseDialog open={dialogOpen} onClose={handleClose} expense={selectedExpense} />
         <ExportDialog 
@@ -263,6 +312,11 @@ export default function Expenses() {
             open={quickClassifyOpen}
             onClose={() => setQuickClassifyOpen(false)}
             expenses={allExpenses || []}
+          />
+          <LinkReceiptDialog
+            open={linkReceiptOpen}
+            onClose={() => setLinkReceiptOpen(false)}
+            expenseIds={linkReceiptExpenseIds}
           />
         </div>
       </TooltipProvider>

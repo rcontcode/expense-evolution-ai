@@ -3,6 +3,7 @@ import { ExpenseWithRelations } from '@/types/expense.types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Edit, 
   Trash2, 
@@ -17,6 +18,7 @@ import {
   FileCheck,
   Ban,
   AlertTriangle,
+  CameraOff,
 } from 'lucide-react';
 import { ReceiptPhotoViewer } from '@/components/ReceiptPhotoViewer';
 import {
@@ -34,6 +36,9 @@ interface ExpenseCardProps {
   expense: ExpenseWithRelations;
   onEdit: (expense: ExpenseWithRelations) => void;
   onDelete: (id: string) => void;
+  selectable?: boolean;
+  selected?: boolean;
+  onSelect?: (id: string, checked: boolean) => void;
 }
 
 const STATUS_CONFIG: Record<string, { icon: React.ElementType; color: string; bgColor: string; labelKey: string }> = {
@@ -77,7 +82,7 @@ function getCompletenessStatus(expense: ExpenseWithRelations, language: string) 
   return { isComplete, missingItems };
 }
 
-export const ExpenseCard = memo(function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardProps) {
+export const ExpenseCard = memo(function ExpenseCard({ expense, onEdit, onDelete, selectable, selected, onSelect }: ExpenseCardProps) {
   const { t, language } = useLanguage();
   
   const config = STATUS_CONFIG[expense.status] || STATUS_CONFIG.pending;
@@ -97,9 +102,24 @@ export const ExpenseCard = memo(function ExpenseCard({ expense, onEdit, onDelete
     )}>
       <CardContent className="p-3">
         <div className="flex items-start gap-3">
+          {/* Checkbox */}
+          {selectable && (
+            <div className="shrink-0 pt-1">
+              <Checkbox
+                checked={selected}
+                onCheckedChange={(checked) => onSelect?.(expense.id, !!checked)}
+              />
+            </div>
+          )}
+
           {/* Receipt thumbnail */}
-          <div className="shrink-0">
+          <div className="shrink-0 relative">
             <ReceiptPhotoViewer documentId={expense.document_id} size="sm" />
+            {!expense.document_id && (
+              <div className="absolute -top-1 -right-1 p-0.5 rounded-full bg-orange-100 dark:bg-orange-900/50 animate-pulse">
+                <CameraOff className="h-3 w-3 text-orange-600" />
+              </div>
+            )}
           </div>
           
           {/* Main content */}
