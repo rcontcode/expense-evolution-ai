@@ -419,6 +419,8 @@ export const translations = {
       badgeNew: 'Nuevo',
       badgeSmart: 'Smart',
       files: 'Archivos',
+      trash: 'Papelera',
+      dataHealth: 'Salud de Datos',
     },
     budget: {
       pageDescription: 'Controla tu plan mensual, presupuestos por categoría, alertas y proyecciones',
@@ -1382,6 +1384,8 @@ export const translations = {
       badgeNew: 'New',
       badgeSmart: 'Smart',
       files: 'Files',
+      trash: 'Trash',
+      dataHealth: 'Data Health',
     },
     budget: {
       pageDescription: 'Control your monthly plan, category budgets, alerts and projections',
