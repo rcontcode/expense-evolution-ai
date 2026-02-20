@@ -1,4 +1,5 @@
  import { useState, useMemo } from 'react';
+ import { useHighlightOnArrival } from '@/hooks/utils/useHighlightOnArrival';
  import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
  import { Button } from '@/components/ui/button';
  import { Card, CardContent } from '@/components/ui/card';
@@ -35,6 +36,7 @@ import { cn } from '@/lib/utils';
    const { data: settings } = useUserSettings();
    const { data: savingsGoals } = useSavingsGoals();
  
+    const { getHighlightProps, shouldHighlight } = useHighlightOnArrival();
     const [activeTab, setActiveTab] = useState(() => {
       const params = new URLSearchParams(window.location.search);
       return params.get('tab') || 'overview';
@@ -133,9 +135,10 @@ import { cn } from '@/lib/utils';
            </TabsTrigger>
             <TabsTrigger 
               value="bills" 
-              className={cn(
-                "flex items-center gap-2 py-3 data-[state=active]:bg-amber-500 data-[state=active]:text-white"
-              )}
+               className={cn(
+                 "flex items-center gap-2 py-3 data-[state=active]:bg-amber-500 data-[state=active]:text-white",
+                 shouldHighlight('bills') && 'highlight-tab-active'
+               )}
             >
               <Receipt className="h-4 w-4" />
               <span className="hidden sm:inline">{l ? 'Pagos' : 'Bills'}</span>
@@ -171,7 +174,7 @@ import { cn } from '@/lib/utils';
          </TabsContent>
  
           {/* Bills Tab */}
-          <TabsContent value="bills" className="space-y-6">
+          <TabsContent value="bills" className={cn("space-y-6", getHighlightProps('bills').className)} ref={getHighlightProps('bills').ref as any}>
             <BillsDashboard />
           </TabsContent>
 

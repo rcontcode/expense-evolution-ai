@@ -2859,3 +2859,65 @@
 .mobile-menu-item-active:hover {
   @apply bg-primary/15;
 }
+
+/* ================================================================
+   HIGHLIGHT ON ARRIVAL — Visual beacon for shortcut navigation
+   ================================================================ */
+
+@keyframes highlight-beacon {
+  0% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.6), inset 0 0 0 0 hsl(var(--primary) / 0.05);
+    border-color: hsl(var(--primary) / 0.7);
+  }
+  25% {
+    box-shadow: 0 0 20px 4px hsl(var(--primary) / 0.3), inset 0 0 12px 0 hsl(var(--primary) / 0.08);
+    border-color: hsl(var(--primary) / 0.9);
+  }
+  50% {
+    box-shadow: 0 0 8px 2px hsl(var(--primary) / 0.15), inset 0 0 4px 0 hsl(var(--primary) / 0.03);
+    border-color: hsl(var(--primary) / 0.5);
+  }
+  75% {
+    box-shadow: 0 0 16px 3px hsl(var(--primary) / 0.25), inset 0 0 8px 0 hsl(var(--primary) / 0.06);
+    border-color: hsl(var(--primary) / 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent, inset 0 0 0 0 transparent;
+    border-color: hsl(var(--border));
+  }
+}
+
+@keyframes highlight-tab-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
+  }
+  15% {
+    transform: scale(1.05);
+    box-shadow: 0 0 12px 3px hsl(var(--primary) / 0.4);
+  }
+  30% {
+    transform: scale(1);
+    box-shadow: 0 0 4px 1px hsl(var(--primary) / 0.2);
+  }
+  45% {
+    transform: scale(1.03);
+    box-shadow: 0 0 8px 2px hsl(var(--primary) / 0.3);
+  }
+  60% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.highlight-on-arrival {
+  animation: highlight-beacon 3.5s ease-out forwards;
+  border: 2px solid hsl(var(--primary) / 0.7);
+  border-radius: 1rem;
+  position: relative;
+}
+
+.highlight-tab-active {
+  animation: highlight-tab-pulse 2s ease-out forwards;
+  border-radius: 0.75rem;
+}

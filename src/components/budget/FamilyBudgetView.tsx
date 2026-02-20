@@ -1,4 +1,5 @@
 import { useState, lazy, Suspense, useMemo, useEffect } from "react";
+import { useHighlightOnArrival } from "@/hooks/utils/useHighlightOnArrival";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useMonthlyPlanData } from "@/hooks/data/useMonthlyPlanData";
@@ -181,6 +182,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
   // Determine if user is in "empty" onboarding state
   const hasAnyData = plan.hasIncome || familyExpenses.length > 0 || activeBills.length > 0;
 
+  const { getHighlightProps, shouldHighlight } = useHighlightOnArrival();
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get('tab') || 'overview';
@@ -299,16 +301,16 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
                   <span className="text-base">⚡</span>
                   <span className="hidden sm:inline">{l ? 'Ritmo' : 'Pace'}</span>
                 </TabsTrigger>
-                <TabsTrigger value="payments" className="flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-amber-500 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80">
+                <TabsTrigger value="payments" className={cn("flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-amber-500 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80", shouldHighlight('payments') && 'highlight-tab-active')}>
                   <span className="text-base">💳</span>
                   <span className="hidden sm:inline">{l ? 'Pagos' : 'Pay'}</span>
                   {overdueBills.length > 0 && <Badge variant="destructive" className="ml-0.5 text-[10px] px-1.5 py-0 animate-pulse">{overdueBills.length}</Badge>}
                 </TabsTrigger>
-                <TabsTrigger value="goals" className="flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80">
+                <TabsTrigger value="goals" className={cn("flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80", shouldHighlight('goals') && 'highlight-tab-active')}>
                   <span className="text-base">🎯</span>
                   <span className="hidden sm:inline">{l ? 'Metas' : 'Goals'}</span>
                 </TabsTrigger>
-                <TabsTrigger value="tools" className="flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-slate-600 data-[state=active]:to-slate-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-slate-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80">
+                <TabsTrigger value="tools" className={cn("flex items-center gap-1.5 py-3 text-xs font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-slate-600 data-[state=active]:to-slate-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-slate-500/25 data-[state=active]:scale-[1.02] hover:bg-muted/80", shouldHighlight('tools') && 'highlight-tab-active')}>
                   <span className="text-base">🔧</span>
                   <span className="hidden sm:inline">{l ? 'Herram.' : 'Tools'}</span>
                 </TabsTrigger>
@@ -567,7 +569,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
             </TabsContent>
 
             {/* ===== TAB 4: PAGOS ===== */}
-            <TabsContent value="payments" className="space-y-5 mt-0">
+            <TabsContent value="payments" className={cn("space-y-5 mt-0", getHighlightProps('payments').className)} ref={getHighlightProps('payments').ref as any}>
               <CollapsibleSection
                 emoji="🏦"
                 title={l ? "Pagos Fijos" : "Fixed Payments"}
@@ -654,7 +656,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
             </TabsContent>
 
             {/* ===== TAB 5: METAS ===== */}
-            <TabsContent value="goals" className="space-y-5 mt-0">
+            <TabsContent value="goals" className={cn("space-y-5 mt-0", getHighlightProps('goals').className)} ref={getHighlightProps('goals').ref as any}>
               <CollapsibleSection
                 emoji="🎯"
                 title={l ? "Metas de Ahorro" : "Savings Goals"}
@@ -711,7 +713,7 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
             </TabsContent>
 
             {/* ===== TAB 6: HERRAMIENTAS ===== */}
-            <TabsContent value="tools" className="space-y-5 mt-0">
+            <TabsContent value="tools" className={cn("space-y-5 mt-0", getHighlightProps('tools').className)} ref={getHighlightProps('tools').ref as any}>
               <div className="grid gap-5 lg:grid-cols-3">
                 <CollapsibleSection
                   emoji="⚡"
