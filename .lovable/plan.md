@@ -66,6 +66,21 @@ Despues de analizar cada componente del flujo completo, encontre **problemas cri
 
 ## Próximos Pasos Pendientes
 
-- Limpiar datos basura existentes (gastos $0, vendors inválidos)
-- Procesar los 17 documentos huérfanos en Review Center
-- Clasificar los 17 gastos pendientes usando el nuevo wizard
+- ~~Limpiar datos basura existentes (gastos $0, vendors inválidos)~~ ✅ Hecho: eliminados 5 duplicados + 1 basura, vendor "Enero de 2016" renombrado
+- Procesar los 14 documentos huérfanos en Review Center
+- Clasificar los 13 gastos pendientes usando el nuevo wizard
+
+## Bugs Corregidos (Ronda 2) ✅
+
+### 7. ✅ Fix QuickClassify index skipping bug
+- El wizard saltaba gastos después de clasificar uno (el índice se incrementaba pero el array se acortaba)
+- Reescrito para usar `classifiedIds` Set en vez de `currentIndex`, siempre mostrando `remainingExpenses[0]`
+
+### 8. ✅ Fix SaveAll multi-document linking
+- `handleSaveAll` en QuickCapture vinculaba el mismo `document_id` a todos los gastos extraídos
+- Corregido para vincular solo al primer gasto guardado
+
+### 9. ✅ Limpieza de datos basura
+- Soft-deleted: $0 Unknown, 2x Home Depot duplicados ($39.15), 1x AMBLESIDE CHEURON (typo), 2x London Drugs $9.99 duplicados
+- Renombrado: "Enero de 2016" → "Gasto no identificado"
+- Resultado: 13 gastos limpios listos para clasificar
