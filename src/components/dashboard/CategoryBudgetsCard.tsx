@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Plus, Trash2, Target, Edit2, Check, X, Sparkles, RefreshCw, Rocket, BarChart3, Lock } from "lucide-react";
+import { Plus, Trash2, Target, Edit2, Check, X, Sparkles, RefreshCw, Rocket, BarChart3, Lock, AlertTriangle } from "lucide-react";
 import { useCategoryBudgets, useUpsertCategoryBudget, useDeleteCategoryBudget } from "@/hooks/data/useCategoryBudgets";
 import { useExpenses } from "@/hooks/data/useExpenses";
 import { useRecurringBills } from "@/hooks/data/useRecurringBills";
@@ -345,6 +345,31 @@ export function CategoryBudgetsCard() {
           </motion.div>
         ) : (
           <div className="space-y-3">
+            {/* Budget health summary */}
+            {(() => {
+              const undersized = budgets.filter(b => {
+                const suggestion = getCategorySuggestion(budgetSuggestions, b.category);
+                return suggestion && suggestion.averageSpent > b.monthly_budget * 1.05;
+              });
+              if (undersized.length === 0) return null;
+              return (
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                  <div className="text-xs text-amber-700 dark:text-amber-300">
+                    <p className="font-medium">
+                      {l 
+                        ? `${undersized.length} categoría(s) con presupuesto insuficiente según tu historial`
+                        : `${undersized.length} categor${undersized.length > 1 ? 'ies' : 'y'} under-budgeted based on history`}
+                    </p>
+                    <p className="text-amber-600/80 dark:text-amber-400/80">
+                      {l 
+                        ? 'Usa el botón ↻ para ajustar automáticamente basándose en tus últimos 3 meses.'
+                        : 'Use the ↻ button to auto-adjust based on your last 3 months.'}
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
             {budgets.map((budget, index) => {
               const spent = spendingByCategory[budget.category] || 0;
               const committed = committedByCategory[budget.category] || 0;
@@ -353,6 +378,8 @@ export function CategoryBudgetsCard() {
               const remaining = budget.monthly_budget - spent;
               const discretionary = budget.monthly_budget - committed;
               const styles = getStatusStyles(percentage);
+              const suggestion = getCategorySuggestion(budgetSuggestions, budget.category);
+              const isUndersized = suggestion && suggestion.averageSpent > budget.monthly_budget * 1.05;
 
               return (
                 <motion.div 
@@ -454,6 +481,22 @@ export function CategoryBudgetsCard() {
                           : `${fc(committed)} committed (bills) · ${fc(Math.max(discretionary, 0))} discretionary`}
                       </span>
                     </div>
+                  )}
+                  {isUndersized && editingId !== budget.id && (
+                    <button
+                      onClick={() => {
+                        setEditingId(budget.id);
+                        setEditBudget(suggestion!.suggestedBudget.toString());
+                      }}
+                      className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                    >
+                      <AlertTriangle className="h-3 w-3" />
+                      <span>
+                        {l 
+                          ? `Promedio histórico: ${fc(suggestion!.averageSpent)} — toca para ajustar a ${fc(suggestion!.suggestedBudget)}`
+                          : `Historical avg: ${fc(suggestion!.averageSpent)} — tap to adjust to ${fc(suggestion!.suggestedBudget)}`}
+                      </span>
+                    </button>
                   )}
                 </motion.div>
               );
