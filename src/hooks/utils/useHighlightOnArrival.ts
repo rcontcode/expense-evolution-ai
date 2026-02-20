@@ -1,5 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useHighlight } from '@/contexts/HighlightContext';
+
+// Mapa RGB para cada color configurable por el usuario
+const ARRIVAL_COLOR_RGB: Record<string, [number, number, number]> = {
+  orange: [249, 115, 22],
+  green:  [34,  197, 94],
+  red:    [239, 68,  68],
+  blue:   [59,  130, 246],
+  purple: [168, 85,  247],
+};
 
 interface UseHighlightOnArrivalOptions {
   /** The search param key to check (default: 'tab') */
@@ -52,7 +62,18 @@ export function useHighlightOnArrival(options: UseHighlightOnArrivalOptions = {}
   const highlightRef = useRef<HTMLDivElement>(null!);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
+  // Lee el color configurado por el usuario desde HighlightContext
+  const { highlightColor } = useHighlight();
+
   const arrivedAt = searchParams.get(paramKey);
+
+  // Inyecta las variables CSS RGB al activarse el highlight
+  useEffect(() => {
+    const rgb = ARRIVAL_COLOR_RGB[highlightColor] ?? ARRIVAL_COLOR_RGB.orange;
+    document.documentElement.style.setProperty('--har', String(rgb[0]));
+    document.documentElement.style.setProperty('--hag', String(rgb[1]));
+    document.documentElement.style.setProperty('--hab', String(rgb[2]));
+  }, [highlightColor]);
 
   // On mount, if param exists, activate highlight
   useEffect(() => {
