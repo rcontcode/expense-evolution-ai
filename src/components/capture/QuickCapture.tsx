@@ -10,8 +10,10 @@ import {
   Mic, MicOff, Loader2, Sparkles, Check, X, ImageIcon, ChevronLeft, ChevronRight, 
   Trash2, AlertCircle, CheckCircle, Save, Building2, Landmark, User, AlertTriangle,
   Utensils, Plane, Monitor, Code, Paperclip, Briefcase, Zap, Home, Car, HelpCircle,
-  CreditCard, RefreshCw
+  CreditCard, RefreshCw, Camera, Upload
 } from 'lucide-react';
+import { WebcamCapture } from './WebcamCapture';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -49,6 +51,7 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
 };
 
 export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
+  const isMobile = useIsMobile();
   const { t, language } = useLanguage();
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -66,6 +69,7 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
   const [billCreatedForIndex, setBillCreatedForIndex] = useState<Set<number>>(new Set());
   const [pendingBillCandidate, setPendingBillCandidate] = useState<RecurringBillCandidate | null>(null);
   const [showBillConfirm, setShowBillConfirm] = useState(false);
+  const [showWebcam, setShowWebcam] = useState(!isMobile); // Default to webcam on desktop
   const { processReceipt, isProcessing } = useReceiptProcessor();
   const createExpense = useCreateExpense();
   const { data: clients = [] } = useClients();
@@ -141,6 +145,53 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
     console.log('Document created:', doc.id);
     setSavedDocumentId(doc.id);
     toast.success(language === 'es' ? 'Foto guardada correctamente' : 'Photo saved successfully');
+  };
+
+  const handleWebcamCapture = async (file: File, previewUrl: string) => {
+    if (!user) return;
+    setImagePreview(previewUrl);
+    setImageFile(file);
+    setShowWebcam(false);
+    
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImageBase64(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    
+    const fileName = `${user.id}/${Date.now()}-${file.name}`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('expense-documents')
+      .upload(fileName, file, { contentType: file.type, upsert: false });
+
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError);
+      toast.error(`Error: ${uploadError.message}`);
+      return;
+    }
+
+    const { data: doc, error: dbError } = await supabase
+      .from('documents')
+      .insert({
+        user_id: user.id,
+        file_path: fileName,
+        file_name: file.name,
+        file_type: file.type,
+        file_size: file.size,
+        status: 'pending',
+        review_status: 'pending_review',
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('Document DB error:', dbError);
+      toast.error(`Error: ${dbError.message}`);
+      return;
+    }
+    
+    setSavedDocumentId(doc.id);
+    toast.success(language === 'es' ? 'Foto capturada correctamente' : 'Photo captured successfully');
   };
 
 
@@ -327,15 +378,55 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
         <CardContent className="space-y-6">
           {editedExpenses.length === 0 ? (
             <>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium">{t('quickCapture.uploadReceipt')}</label>
-                  <InfoTooltip content={TOOLTIP_CONTENT.expenseUploadPhoto} />
+               <div className="space-y-3">
+                <div className="flex items-center gap-2 justify-between">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium">{t('quickCapture.uploadReceipt')}</label>
+                    <InfoTooltip content={TOOLTIP_CONTENT.expenseUploadPhoto} />
+                  </div>
+                  {!isMobile && !imagePreview && (
+                    <div className="flex gap-1">
+                      <Button
+                        variant={showWebcam ? 'default' : 'outline'}
+                        size="sm"
+                        className="gap-1 text-xs h-7"
+                        onClick={() => setShowWebcam(true)}
+                      >
+                        <Camera className="h-3 w-3" />
+                        {language === 'es' ? 'Cámara' : 'Camera'}
+                      </Button>
+                      <Button
+                        variant={!showWebcam ? 'default' : 'outline'}
+                        size="sm"
+                        className="gap-1 text-xs h-7"
+                        onClick={() => setShowWebcam(false)}
+                      >
+                        <Upload className="h-3 w-3" />
+                        {language === 'es' ? 'Archivo' : 'File'}
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                <div className={cn("border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors", imagePreview ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50")} onClick={() => fileInputRef.current?.click()}>
-                  {imagePreview ? (<div className="space-y-3"><img src={imagePreview} alt="Preview" className="max-h-48 mx-auto rounded-lg object-contain" /><Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setImagePreview(null); setImageBase64(null); }}><X className="h-4 w-4 mr-1" />{t('common.remove')}</Button></div>) : (<div className="space-y-2"><ImageIcon className="h-10 w-10 mx-auto text-muted-foreground" /><p className="text-sm text-muted-foreground">{t('quickCapture.dropOrClick')}</p></div>)}
-                </div>
-                <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileSelect} className="hidden" />
+                {imagePreview ? (
+                  <div className="border-2 border-primary bg-primary/5 rounded-lg p-6 text-center">
+                    <div className="space-y-3">
+                      <img src={imagePreview} alt="Preview" className="max-h-48 mx-auto rounded-lg object-contain" />
+                      <Button variant="ghost" size="sm" onClick={() => { setImagePreview(null); setImageBase64(null); setShowWebcam(!isMobile); }}>
+                        <X className="h-4 w-4 mr-1" />{t('common.remove')}
+                      </Button>
+                    </div>
+                  </div>
+                ) : showWebcam && !isMobile ? (
+                  <WebcamCapture
+                    onCapture={handleWebcamCapture}
+                    onFallbackToFile={() => setShowWebcam(false)}
+                  />
+                ) : (
+                  <div className={cn("border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors border-muted-foreground/25 hover:border-primary/50")} onClick={() => fileInputRef.current?.click()}>
+                    <div className="space-y-2"><ImageIcon className="h-10 w-10 mx-auto text-muted-foreground" /><p className="text-sm text-muted-foreground">{t('quickCapture.dropOrClick')}</p></div>
+                  </div>
+                )}
+                <input ref={fileInputRef} type="file" accept="image/*" capture={isMobile ? "environment" : undefined} onChange={handleFileSelect} className="hidden" />
               </div>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
