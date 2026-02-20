@@ -477,7 +477,7 @@ export function MonthDetailPanel({
             <span className="text-xs font-medium">{language === 'es' ? '+ Ingreso' : '+ Income'}</span>
           </Button>
           <Button 
-            onClick={() => navigate('/expenses')} 
+            onClick={() => navigate('/budget')} 
             variant="outline"
             className="h-auto py-3 flex-col gap-1"
           >
