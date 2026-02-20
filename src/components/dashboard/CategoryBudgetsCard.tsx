@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Plus, Trash2, Target, Edit2, Check, X, Sparkles, RefreshCw, Rocket, BarChart3 } from "lucide-react";
+import { Plus, Trash2, Target, Edit2, Check, X, Sparkles, RefreshCw, Rocket, BarChart3, Lock } from "lucide-react";
 import { useCategoryBudgets, useUpsertCategoryBudget, useDeleteCategoryBudget } from "@/hooks/data/useCategoryBudgets";
 import { useExpenses } from "@/hooks/data/useExpenses";
+import { useRecurringBills } from "@/hooks/data/useRecurringBills";
 import { useBudgetSuggestions, getCategorySuggestion } from "@/hooks/data/useBudgetSuggestions";
 import { useFormatCurrency } from "@/hooks/utils/useFormatCurrency";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -34,6 +35,15 @@ export function CategoryBudgetsCard() {
   const deleteBudget = useDeleteCategoryBudget();
   const budgetSuggestions = useBudgetSuggestions();
   const budgetEntityId = useBudgetEntity();
+  const { data: recurringBills } = useRecurringBills();
+
+  // Calculate committed amounts from recurring bills per category
+  const committedByCategory: Record<string, number> = {};
+  recurringBills?.forEach((bill) => {
+    if (bill.status === 'active' && bill.category) {
+      committedByCategory[bill.category] = (committedByCategory[bill.category] || 0) + Number(bill.amount);
+    }
+  });
 
   const now = new Date();
   const monthStart = startOfMonth(now);
@@ -337,8 +347,11 @@ export function CategoryBudgetsCard() {
           <div className="space-y-3">
             {budgets.map((budget, index) => {
               const spent = spendingByCategory[budget.category] || 0;
+              const committed = committedByCategory[budget.category] || 0;
               const percentage = budget.monthly_budget > 0 ? (spent / budget.monthly_budget) * 100 : 0;
+              const committedPct = budget.monthly_budget > 0 ? (committed / budget.monthly_budget) * 100 : 0;
               const remaining = budget.monthly_budget - spent;
+              const discretionary = budget.monthly_budget - committed;
               const styles = getStatusStyles(percentage);
 
               return (
@@ -432,6 +445,16 @@ export function CategoryBudgetsCard() {
                         : `${fc(Math.abs(remaining))} ${l ? 'excedido' : 'exceeded'}`}
                     </span>
                   </div>
+                  {committed > 0 && (
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <Lock className="h-3 w-3" />
+                      <span>
+                        {l 
+                          ? `${fc(committed)} comprometido (pagos fijos) · ${fc(Math.max(discretionary, 0))} discrecional`
+                          : `${fc(committed)} committed (bills) · ${fc(Math.max(discretionary, 0))} discretionary`}
+                      </span>
+                    </div>
+                  )}
                 </motion.div>
               );
             })}

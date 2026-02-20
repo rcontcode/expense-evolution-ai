@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -11,6 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEntity } from '@/contexts/EntityContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useUpsertCategoryBudget } from '@/hooks/data/useCategoryBudgets';
 import { toast } from 'sonner';
 import { 
   BILL_CATEGORY_CONFIG, 
@@ -60,6 +62,8 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
   const [creating, setCreating] = useState(false);
   const [historicalInsight, setHistoricalInsight] = useState<HistoricalInsight | null>(null);
   const [loadingInsight, setLoadingInsight] = useState(false);
+  const [linkToBudget, setLinkToBudget] = useState(true);
+  const upsertBudget = useUpsertCategoryBudget();
 
   // Sync state when candidate changes
   const [lastCandidate, setLastCandidate] = useState<RecurringBillCandidate | null>(null);
@@ -144,6 +148,36 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
       } as any);
       if (error) throw error;
       toast.success(l ? '🔄 Pago fijo creado exitosamente' : '🔄 Recurring bill created');
+      
+      // Auto-suggest budget update for this category
+      if (linkToBudget) {
+        try {
+          // Get existing budget for this category
+          const { data: existingBudgets } = await supabase
+            .from('category_budgets')
+            .select('monthly_budget')
+            .eq('user_id', user.id)
+            .eq('category', category)
+            .maybeSingle();
+          
+          const currentBudget = existingBudgets?.monthly_budget || 0;
+          const newMinBudget = Number(currentBudget) + amount;
+          
+          upsertBudget.mutate({
+            category,
+            monthly_budget: newMinBudget,
+            entity_id: currentEntity?.id || null,
+          });
+          
+          toast.info(l 
+            ? `📊 Presupuesto de ${category} actualizado a $${newMinBudget.toFixed(0)} (+$${amount.toFixed(0)} del pago fijo)`
+            : `📊 ${category} budget updated to $${newMinBudget.toFixed(0)} (+$${amount.toFixed(0)} from recurring bill)`
+          );
+        } catch {
+          // Non-critical - don't block bill creation
+        }
+      }
+      
       onCreated?.();
       onClose();
     } catch (err) {
@@ -298,6 +332,23 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
             </div>
             <Switch checked={autoPay} onCheckedChange={setAutoPay} />
           </div>
+
+          {/* Link to budget option */}
+          <label className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-accent/30 transition-colors">
+            <Checkbox 
+              checked={linkToBudget} 
+              onCheckedChange={(v) => setLinkToBudget(v === true)} 
+              className="mt-0.5"
+            />
+            <div>
+              <p className="text-sm font-medium">{l ? 'Incluir en presupuesto' : 'Include in budget'}</p>
+              <p className="text-xs text-muted-foreground">
+                {l 
+                  ? 'Suma este monto al presupuesto mensual de la categoría automáticamente'
+                  : 'Automatically adds this amount to the category monthly budget'}
+              </p>
+            </div>
+          </label>
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
