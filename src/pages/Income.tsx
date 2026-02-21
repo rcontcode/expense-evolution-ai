@@ -21,6 +21,7 @@ import { SectionEmptyState } from '@/components/guidance/SectionEmptyState';
 import { IncomeCard } from '@/components/tables/IncomeCard';
 import { SwipeableCard } from '@/components/mobile/SwipeableCard';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { IncomeDuplicatePanel } from '@/components/income/IncomeDuplicatePanel';
 import {
   Plus,
   TrendingUp,
@@ -310,6 +311,11 @@ export default function Income() {
               ))}
             </CardContent>
           </Card>
+        )}
+
+        {/* Duplicate Detection Panel */}
+        {incomeList && incomeList.length > 0 && (
+          <IncomeDuplicatePanel incomes={incomeList} />
         )}
 
         {/* Tabs */}
