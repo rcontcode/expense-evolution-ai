@@ -28,6 +28,19 @@ export interface ClassifiedDocument {
   processedResult?: any;
 }
 
+export interface HistoryEntry {
+  id: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  documentType: DocumentClassificationType;
+  confidence: number;
+  summary: string;
+  processedResult: any;
+  processedAt: string;
+  extractedPreview?: Record<string, any>;
+}
+
 const TYPE_LABELS: Record<DocumentClassificationType, { es: string; en: string; icon: string }> = {
   receipt: { es: 'Recibo/Compra', en: 'Receipt', icon: '🧾' },
   utility_bill: { es: 'Boleta de Servicio', en: 'Utility Bill', icon: '💡' },
@@ -46,6 +59,8 @@ export function useUnifiedChaosInbox() {
   const queryClient = useQueryClient();
   const [documents, setDocuments] = useState<ClassifiedDocument[]>([]);
   const [isProcessingBatch, setIsProcessingBatch] = useState(false);
+
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
 
   const updateDoc = useCallback((id: string, updates: Partial<ClassifiedDocument>) => {
     setDocuments(prev => prev.map(d => d.id === id ? { ...d, ...updates } : d));
@@ -377,6 +392,22 @@ export function useUnifiedChaosInbox() {
       }
 
       toast.success(`✅ ${doc.fileName} procesado`);
+
+      // Auto-add to history
+      if (doc.classification) {
+        setHistory(prev => [{
+          id: doc.id + '-' + Date.now(),
+          fileName: doc.fileName,
+          fileType: doc.fileType,
+          fileSize: doc.fileSize,
+          documentType: doc.classification!.document_type,
+          confidence: doc.classification!.confidence,
+          summary: doc.classification!.summary,
+          processedResult: doc.processedResult || {},
+          processedAt: new Date().toISOString(),
+          extractedPreview: doc.classification!.extracted_preview,
+        }, ...prev]);
+      }
     } catch (error: any) {
       console.error('Error processing:', error);
       updateDoc(docId, { status: 'error', error: error.message });
@@ -436,8 +467,22 @@ export function useUnifiedChaosInbox() {
   }, [documents, user, updateDoc]);
 
   const clearProcessed = useCallback(() => {
+    const processed = documents.filter(d => d.status === 'processed' && d.classification);
+    const newHistoryEntries: HistoryEntry[] = processed.map(d => ({
+      id: d.id,
+      fileName: d.fileName,
+      fileType: d.fileType,
+      fileSize: d.fileSize,
+      documentType: d.classification!.document_type,
+      confidence: d.classification!.confidence,
+      summary: d.classification!.summary,
+      processedResult: d.processedResult,
+      processedAt: new Date().toISOString(),
+      extractedPreview: d.classification!.extracted_preview,
+    }));
+    setHistory(prev => [...newHistoryEntries, ...prev]);
     setDocuments(prev => prev.filter(d => d.status !== 'processed'));
-  }, []);
+  }, [documents]);
 
   const stats = {
     total: documents.length,
@@ -458,8 +503,13 @@ export function useUnifiedChaosInbox() {
     ),
   };
 
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+  }, []);
+
   return {
     documents,
+    history,
     stats,
     isProcessingBatch,
     uploadAndClassify,
@@ -469,5 +519,6 @@ export function useUnifiedChaosInbox() {
     retryDocument,
     removeDoc,
     clearProcessed,
+    clearHistory,
   };
 }

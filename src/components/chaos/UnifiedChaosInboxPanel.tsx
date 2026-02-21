@@ -7,15 +7,16 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { 
-  ClassifiedDocument, DocumentClassificationType, TYPE_LABELS, useUnifiedChaosInbox 
+  ClassifiedDocument, DocumentClassificationType, TYPE_LABELS, HistoryEntry, useUnifiedChaosInbox 
 } from '@/hooks/data/useUnifiedChaosInbox';
 import { 
   Upload, Loader2, CheckCircle2, AlertTriangle, X, Zap, 
   FileText, ArrowRight, RotateCcw, Sparkles, Package,
   Trash2, RefreshCw, ExternalLink, Image, FileIcon, Eye,
-  ChevronRight, ArrowUpRight, Inbox, HelpCircle
+  ChevronRight, ArrowUpRight, Inbox, HelpCircle, Clock, ChevronDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -430,10 +431,84 @@ function BatchSummary({ stats, onClear, language }: { stats: any; onClear: () =>
   );
 }
 
+function HistoryCard({ entry, language }: { entry: HistoryEntry; language: string }) {
+  const navigate = useNavigate();
+  const typeInfo = TYPE_LABELS[entry.documentType];
+  
+  const routeMap: Record<string, string> = {
+    receipt: '/chaos',
+    invoice: '/chaos',
+    utility_bill: '/recurring',
+    bank_statement: '/banking',
+    income_proof: '/income',
+    contract: '/contracts',
+    tax_document: '/files',
+    unknown: '/files',
+  };
+
+  const processedDate = new Date(entry.processedAt);
+  const timeAgo = getTimeAgo(processedDate, language);
+
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group">
+      <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0 text-lg">
+        {typeInfo?.icon || '📎'}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium truncate max-w-[200px]">{entry.fileName}</span>
+          <Badge variant="secondary" className="text-[10px] shrink-0">
+            {typeInfo?.[language === 'es' ? 'es' : 'en']}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+            <Clock className="h-2.5 w-2.5" /> {timeAgo}
+          </span>
+          <span className="text-[10px] text-muted-foreground">•</span>
+          <span className="text-[10px] text-muted-foreground">{formatFileSize(entry.fileSize)}</span>
+          {entry.extractedPreview?.amount != null && (
+            <>
+              <span className="text-[10px] text-muted-foreground">•</span>
+              <span className="text-[10px] font-mono text-foreground/70">
+                {entry.extractedPreview.currency || '$'}{Number(entry.extractedPreview.amount).toLocaleString()}
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-7 text-[10px] gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={() => navigate(routeMap[entry.documentType] || '/files')}
+      >
+        <ArrowUpRight className="h-3 w-3" />
+        {language === 'es' ? 'Ver' : 'View'}
+      </Button>
+    </div>
+  );
+}
+
+function getTimeAgo(date: Date, language: string): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMin / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMin < 1) return language === 'es' ? 'Ahora' : 'Just now';
+  if (diffMin < 60) return language === 'es' ? `Hace ${diffMin}m` : `${diffMin}m ago`;
+  if (diffHours < 24) return language === 'es' ? `Hace ${diffHours}h` : `${diffHours}h ago`;
+  return language === 'es' ? `Hace ${diffDays}d` : `${diffDays}d ago`;
+}
+
 export function UnifiedChaosInboxPanel() {
   const { language } = useLanguage();
+  const [historyOpen, setHistoryOpen] = useState(true);
   const {
     documents,
+    history,
     stats,
     isProcessingBatch,
     uploadAndClassify,
@@ -443,6 +518,7 @@ export function UnifiedChaosInboxPanel() {
     retryDocument,
     removeDoc,
     clearProcessed,
+    clearHistory,
   } = useUnifiedChaosInbox();
 
   const hasClassified = stats.classified > 0;
@@ -533,8 +609,60 @@ export function UnifiedChaosInboxPanel() {
           </ScrollArea>
         )}
 
+        {/* History section */}
+        {history.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Collapsible open={historyOpen} onOpenChange={setHistoryOpen}>
+              <Card className="border-muted">
+                <CollapsibleTrigger asChild>
+                  <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/30 transition-colors rounded-t-lg">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <h3 className="text-sm font-semibold">
+                        {language === 'es' ? 'Historial de Procesamiento' : 'Processing History'}
+                      </h3>
+                      <Badge variant="secondary" className="text-[10px] font-mono">
+                        {history.length}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-[10px] text-muted-foreground hover:text-destructive"
+                        onClick={(e) => { e.stopPropagation(); clearHistory(); }}
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        {language === 'es' ? 'Limpiar' : 'Clear'}
+                      </Button>
+                      <ChevronDown className={cn(
+                        "h-4 w-4 text-muted-foreground transition-transform",
+                        historyOpen && "rotate-180"
+                      )} />
+                    </div>
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="pt-0 pb-3 px-3">
+                    <ScrollArea className="max-h-[300px]">
+                      <div className="space-y-1">
+                        {history.map((entry) => (
+                          <HistoryCard key={entry.id} entry={entry} language={language} />
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+          </motion.div>
+        )}
+
         {/* Empty state with educational guide */}
-        {!hasAnyDocs && (
+        {!hasAnyDocs && history.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
