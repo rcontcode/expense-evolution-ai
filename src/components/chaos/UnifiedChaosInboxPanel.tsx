@@ -305,19 +305,19 @@ function DocumentCard({
                     )}
                   </div>
 
-                  <p className="text-xs text-muted-foreground leading-relaxed">{classification.summary}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{typeof classification.summary === 'string' ? classification.summary : JSON.stringify(classification.summary)}</p>
 
                   {/* Preview data badges */}
                   {classification.extracted_preview && (
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {classification.extracted_preview.vendor && (
+                      {classification.extracted_preview.vendor && typeof classification.extracted_preview.vendor === 'string' && (
                         <Badge variant="outline" className="text-[10px] bg-muted/30">
                           🏪 {classification.extracted_preview.vendor}
                         </Badge>
                       )}
-                      {classification.extracted_preview.amount != null && (
+                      {classification.extracted_preview.amount != null && typeof classification.extracted_preview.amount !== 'object' && (
                         <Badge variant="outline" className="text-[10px] font-mono bg-muted/30">
-                          💵 {classification.extracted_preview.currency || '$'}{classification.extracted_preview.amount.toLocaleString()}
+                          💵 {typeof classification.extracted_preview.currency === 'string' ? classification.extracted_preview.currency : '$'}{Number(classification.extracted_preview.amount).toLocaleString()}
                         </Badge>
                       )}
                       {classification.extracted_preview.date && (
@@ -534,11 +534,11 @@ function HistoryCard({ entry, language }: { entry: HistoryEntry; language: strin
           </span>
           <span className="text-[10px] text-muted-foreground">•</span>
           <span className="text-[10px] text-muted-foreground">{formatFileSize(entry.fileSize)}</span>
-          {entry.extractedPreview?.amount != null && (
+          {entry.extractedPreview?.amount != null && typeof entry.extractedPreview.amount !== 'object' && (
             <>
               <span className="text-[10px] text-muted-foreground">•</span>
               <span className="text-[10px] font-mono text-foreground/70">
-                {entry.extractedPreview.currency || '$'}{Number(entry.extractedPreview.amount).toLocaleString()}
+                {typeof entry.extractedPreview.currency === 'string' ? entry.extractedPreview.currency : '$'}{Number(entry.extractedPreview.amount).toLocaleString()}
               </span>
             </>
           )}
