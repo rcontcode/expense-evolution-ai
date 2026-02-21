@@ -362,6 +362,40 @@ export function useUnifiedChaosInbox() {
     });
   }, [documents, updateDoc]);
 
+  const retryDocument = useCallback(async (docId: string) => {
+    const doc = documents.find(d => d.id === docId);
+    if (!doc || !user) return;
+
+    updateDoc(docId, { status: 'classifying', error: undefined });
+
+    try {
+      const { data: classification, error: classifyError } = await supabase.functions.invoke('classify-document', {
+        body: {
+          imageBase64: doc.base64,
+          fileName: doc.fileName,
+          fileType: doc.fileType,
+        },
+      });
+
+      if (classifyError) throw classifyError;
+
+      updateDoc(docId, {
+        classification,
+        status: 'classified',
+      });
+    } catch (error: any) {
+      console.error('Retry failed:', doc.fileName, error);
+      updateDoc(docId, {
+        status: 'error',
+        error: error.message || 'Error al reintentar',
+      });
+    }
+  }, [documents, user, updateDoc]);
+
+  const clearProcessed = useCallback(() => {
+    setDocuments(prev => prev.filter(d => d.status !== 'processed'));
+  }, []);
+
   const stats = {
     total: documents.length,
     uploading: documents.filter(d => d.status === 'uploading').length,
@@ -389,6 +423,8 @@ export function useUnifiedChaosInbox() {
     processDocument,
     processAllClassified,
     reclassify,
+    retryDocument,
     removeDoc,
+    clearProcessed,
   };
 }
