@@ -154,6 +154,8 @@ function ProcessedResultMessage({ doc, language }: { doc: ClassifiedDocument; la
     income_proof: { es: 'Ingreso detectado — revísalo', en: 'Income detected — review it', route: '/income', routeLabel: { es: 'Ingresos', en: 'Income' } },
     contract: { es: result.analysisError ? 'Contrato guardado (análisis pendiente)' : 'Contrato guardado y analizado', en: result.analysisError ? 'Contract saved (analysis pending)' : 'Contract saved and analyzed', route: '/contracts', routeLabel: { es: 'Contratos', en: 'Contracts' } },
     invoice: { es: 'Factura procesada — enviada al Centro de Revisión', en: 'Invoice processed — sent to Review Center', route: '/chaos', routeLabel: { es: 'Ver', en: 'View' } },
+    invoice_income: { es: `💰 Ingreso de $${result.amount?.toLocaleString() || '?'} ${result.currency || ''} registrado`, en: `💰 Income of $${result.amount?.toLocaleString() || '?'} ${result.currency || ''} recorded`, route: '/income', routeLabel: { es: 'Ver Ingresos', en: 'View Income' } },
+    invoice_expense: { es: 'Factura (gasto) enviada al Centro de Revisión', en: 'Invoice (expense) sent to Review Center', route: '/chaos', routeLabel: { es: 'Ver', en: 'View' } },
     tax_document: { es: 'Documento fiscal guardado', en: 'Tax document saved', route: '/files', routeLabel: { es: 'Archivos', en: 'Files' } },
     unknown: { es: 'Documento guardado para revisión', en: 'Document saved for review', route: '/files', routeLabel: { es: 'Archivos', en: 'Files' } },
     manual_review: { es: 'Guardado para revisión manual', en: 'Saved for manual review' },
@@ -188,12 +190,14 @@ function DocumentCard({
   onRemove, 
   onReclassify,
   onRetry,
+  onSetDirection,
 }: { 
   doc: ClassifiedDocument;
   onProcess: () => void;
   onRemove: () => void;
   onReclassify: (type: DocumentClassificationType) => void;
   onRetry: () => void;
+  onSetDirection?: (direction: 'income' | 'expense') => void;
 }) {
   const { language } = useLanguage();
   const classification = doc.classification;
@@ -203,6 +207,7 @@ function DocumentCard({
     uploading: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/30', pulse: true, label: { es: 'Subiendo...', en: 'Uploading...' } },
     classifying: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/30', pulse: true, label: { es: '🧠 Clasificando con IA...', en: '🧠 AI Classifying...' } },
     classified: { color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30', label: { es: '✅ Listo para procesar', en: '✅ Ready to process' } },
+    pending_direction: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/30', label: { es: '🧾 ¿Ingreso o Gasto?', en: '🧾 Income or Expense?' } },
     processing: { color: 'bg-purple-500/10 text-purple-600 border-purple-500/30', pulse: true, label: { es: '⚙️ Procesando...', en: '⚙️ Processing...' } },
     processed: { color: 'bg-green-500/10 text-green-700 border-green-500/30', label: { es: '🎉 Completado', en: '🎉 Completed' } },
     error: { color: 'bg-destructive/10 text-destructive border-destructive/30', label: { es: '❌ Error', en: '❌ Error' } },
@@ -349,6 +354,68 @@ function DocumentCard({
                 </div>
               )}
 
+              {/* Invoice direction picker */}
+              {doc.status === 'pending_direction' && doc.invoiceDirectionSuggestion && onSetDirection && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-3 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 space-y-2"
+                >
+                  <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                    {language === 'es' ? '🧾 ¿Esta factura es un ingreso o un gasto?' : '🧾 Is this invoice income or expense?'}
+                  </p>
+                  
+                  {doc.invoiceDirectionSuggestion.direction !== 'unknown' && (
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant="outline" className="text-[10px] bg-primary/5 border-primary/30">
+                        💡 {language === 'es' ? 'Sugerencia' : 'Suggestion'}: {doc.invoiceDirectionSuggestion.direction === 'income' 
+                          ? (language === 'es' ? 'Ingreso' : 'Income') 
+                          : (language === 'es' ? 'Gasto' : 'Expense')}
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground">
+                        ({doc.invoiceDirectionSuggestion.reason})
+                      </span>
+                    </div>
+                  )}
+
+                  {classification?.extracted_preview && (
+                    <div className="flex flex-wrap gap-1.5 text-[10px] text-muted-foreground">
+                      {classification.extracted_preview.from_entity && (
+                        <span>📤 De: <strong>{classification.extracted_preview.from_entity}</strong></span>
+                      )}
+                      {classification.extracted_preview.to_entity && (
+                        <span>📥 Para: <strong>{classification.extracted_preview.to_entity}</strong></span>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 pt-1">
+                    <Button
+                      size="sm"
+                      variant={doc.invoiceDirectionSuggestion.direction === 'income' ? 'default' : 'outline'}
+                      className="h-8 text-xs gap-1.5 flex-1"
+                      onClick={(e) => { e.stopPropagation(); onSetDirection('income'); }}
+                    >
+                      💰 {language === 'es' ? 'Es un Ingreso' : 'It\'s Income'}
+                      <span className="text-[9px] opacity-70">
+                        ({language === 'es' ? 'yo cobro' : 'I get paid'})
+                      </span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={doc.invoiceDirectionSuggestion.direction === 'expense' ? 'default' : 'outline'}
+                      className="h-8 text-xs gap-1.5 flex-1"
+                      onClick={(e) => { e.stopPropagation(); onSetDirection('expense'); }}
+                    >
+                      🧾 {language === 'es' ? 'Es un Gasto' : 'It\'s an Expense'}
+                      <span className="text-[9px] opacity-70">
+                        ({language === 'es' ? 'yo pago' : 'I pay'})
+                      </span>
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Error with retry */}
               {doc.error && (
                 <div className="mt-2 flex items-center gap-2">
@@ -374,7 +441,7 @@ function DocumentCard({
                   {language === 'es' ? 'Procesar' : 'Process'}
                 </Button>
               )}
-              {(doc.status === 'classified' || doc.status === 'error' || doc.status === 'processed') && (
+              {(doc.status === 'classified' || doc.status === 'pending_direction' || doc.status === 'error' || doc.status === 'processed') && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="ghost" onClick={onRemove} className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive">
@@ -515,6 +582,7 @@ export function UnifiedChaosInboxPanel() {
     processDocument,
     processAllClassified,
     reclassify,
+    setInvoiceDirection,
     retryDocument,
     removeDoc,
     clearProcessed,
@@ -522,6 +590,7 @@ export function UnifiedChaosInboxPanel() {
   } = useUnifiedChaosInbox();
 
   const hasClassified = stats.classified > 0;
+  const hasPendingDirection = stats.pendingDirection > 0;
   const hasAnyDocs = stats.total > 0;
   const isWorking = stats.uploading > 0 || stats.classifying > 0 || stats.processing > 0;
   const progressPercent = stats.total > 0 ? ((stats.classified + stats.processed) / stats.total) * 100 : 0;
@@ -564,6 +633,11 @@ export function UnifiedChaosInboxPanel() {
                   {stats.errors} {language === 'es' ? 'error(es)' : 'error(s)'}
                 </Badge>
               )}
+              {hasPendingDirection && (
+                <Badge variant="outline" className="text-xs gap-1 border-amber-500/50 text-amber-600 bg-amber-500/5">
+                  🧾 {stats.pendingDirection} {language === 'es' ? 'requiere confirmación' : 'needs confirmation'}
+                </Badge>
+              )}
             </div>
 
             {hasClassified && (
@@ -602,6 +676,7 @@ export function UnifiedChaosInboxPanel() {
                     onRemove={() => removeDoc(doc.id)}
                     onReclassify={(type) => reclassify(doc.id, type)}
                     onRetry={() => retryDocument(doc.id)}
+                    onSetDirection={(dir) => setInvoiceDirection(doc.id, dir)}
                   />
                 ))}
               </div>

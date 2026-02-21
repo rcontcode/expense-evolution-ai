@@ -23,9 +23,16 @@ export interface ClassifiedDocument {
     suggested_actions: string[];
     extracted_preview: Record<string, any>;
   };
-  status: 'uploading' | 'classifying' | 'classified' | 'processing' | 'processed' | 'error';
+  status: 'uploading' | 'classifying' | 'classified' | 'pending_direction' | 'processing' | 'processed' | 'error';
   error?: string;
   processedResult?: any;
+  invoiceDirection?: 'income' | 'expense';
+  invoiceDirectionSuggestion?: {
+    direction: 'income' | 'expense' | 'unknown';
+    confidence: number;
+    reason: string;
+    matchedClient?: string;
+  };
 }
 
 export interface HistoryEntry {
@@ -121,10 +128,80 @@ export function useUnifiedChaosInbox() {
 
         if (classifyError) throw classifyError;
 
-        updateDoc(doc.id, {
-          classification: classification,
-          status: 'classified',
-        });
+        // For invoices, detect direction before marking as classified
+        if (classification.document_type === 'invoice') {
+          const ep = classification.extracted_preview || {};
+          
+          // Fetch user's clients for matching
+          let matchedClient: string | undefined;
+          let directionFromClients: 'income' | 'expense' | 'unknown' = 'unknown';
+          
+          try {
+            const { data: clients } = await supabase
+              .from('clients')
+              .select('name')
+              .eq('user_id', user.id);
+            
+            if (clients && clients.length > 0) {
+              const toEntity = (ep.to_entity || ep.bill_to || '').toLowerCase();
+              const fromEntity = (ep.from_entity || ep.remit_to?.name || ep.vendor || '').toLowerCase();
+              
+              for (const client of clients) {
+                const clientName = client.name.toLowerCase();
+                // If "to" matches a client → we invoiced them → income
+                if (toEntity.includes(clientName) || clientName.includes(toEntity.slice(0, 5))) {
+                  directionFromClients = 'income';
+                  matchedClient = client.name;
+                  break;
+                }
+                // If "from" matches a client → they invoiced us → expense
+                if (fromEntity.includes(clientName) || clientName.includes(fromEntity.slice(0, 5))) {
+                  directionFromClients = 'expense';
+                  matchedClient = client.name;
+                  break;
+                }
+              }
+            }
+          } catch (e) {
+            console.warn('Could not fetch clients for matching:', e);
+          }
+
+          // Combine AI suggestion + client matching
+          const aiDirection = ep.invoice_direction || 'unknown';
+          const aiConfidence = ep.invoice_direction_confidence || 0;
+          
+          let finalDirection: 'income' | 'expense' | 'unknown' = 'unknown';
+          let finalConfidence = 0;
+          let reason = '';
+          
+          if (directionFromClients !== 'unknown') {
+            finalDirection = directionFromClients;
+            finalConfidence = 0.9;
+            reason = `Cliente "${matchedClient}" detectado`;
+          } else if (aiDirection !== 'unknown' && aiConfidence >= 0.7) {
+            finalDirection = aiDirection;
+            finalConfidence = aiConfidence;
+            reason = 'Detección automática por IA';
+          } else {
+            reason = 'No se pudo determinar automáticamente';
+          }
+          
+          updateDoc(doc.id, {
+            classification,
+            status: 'pending_direction',
+            invoiceDirectionSuggestion: {
+              direction: finalDirection,
+              confidence: finalConfidence,
+              reason,
+              matchedClient,
+            },
+          });
+        } else {
+          updateDoc(doc.id, {
+            classification,
+            status: 'classified',
+          });
+        }
 
       } catch (error: any) {
         console.error('Error processing document:', doc.fileName, error);
@@ -184,11 +261,16 @@ export function useUnifiedChaosInbox() {
         }
 
         case 'invoice': {
-          // Use classification data directly - it already has rich invoice data
           const classData = doc.classification!;
           const ep = classData.extracted_preview || {};
+          const direction = doc.invoiceDirection;
           
-          // Map invoice line_items to the expected format
+          if (!direction) {
+            // Should not happen — direction should be set before processing
+            updateDoc(docId, { status: 'pending_direction' });
+            return;
+          }
+
           const lineItems = (ep.line_items || []).map((item: any) => ({
             name: item.description || item.name || 'Item',
             quantity: parseFloat(String(item.quantity || '1').replace(/,/g, '')) || 1,
@@ -200,39 +282,92 @@ export function useUnifiedChaosInbox() {
           const subtotal = parseFloat(String(ep.subtotal || '0').replace(/,/g, '')) || totalAmount;
           const taxAmount = parseFloat(String(ep.tax || '0').replace(/,/g, '')) || 0;
 
-          const extractedData = {
-            vendor: ep.remit_to?.name || ep.vendor || ep.from || classData.document_type,
-            amount: totalAmount,
-            date: ep.date || new Date().toISOString().split('T')[0],
-            category: 'professional_services',
-            description: lineItems.map((i: any) => i.name).join('; ') || ep.description || '',
-            currency: ep.currency || 'CAD',
-            confidence: classData.confidence > 0.8 ? 'high' : classData.confidence > 0.5 ? 'medium' : 'low',
-            cra_deductible: true,
-            cra_deduction_rate: 100,
-            typically_reimbursable: true,
-            line_items: lineItems,
-            subtotal,
-            taxes: taxAmount > 0 ? [{ name: 'Tax', amount: taxAmount }] : [],
-          };
+          if (direction === 'income') {
+            // Invoice represents INCOME — record as income
+            const { error: incomeError } = await supabase
+              .from('income')
+              .insert({
+                user_id: user.id,
+                amount: totalAmount,
+                date: ep.date || new Date().toISOString().split('T')[0],
+                income_type: 'freelance',
+                source: ep.to_entity || ep.bill_to || ep.vendor || doc.fileName,
+                description: `Factura ${ep.invoice_number || ''}: ${lineItems.map((i: any) => i.name).join('; ') || ep.description || ''}`.trim(),
+                currency: ep.currency || 'CAD',
+                is_taxable: true,
+              });
 
-          const { data: dbDoc } = await supabase
-            .from('documents')
-            .insert({
-              user_id: user.id,
-              file_path: doc.storagePath,
-              file_name: doc.fileName,
-              file_type: doc.fileType,
-              file_size: doc.fileSize,
-              status: 'classified',
-              review_status: 'pending_review',
-              extracted_data: extractedData,
-            })
-            .select()
-            .single();
+            if (incomeError) throw incomeError;
 
-          updateDoc(docId, { status: 'processed', processedResult: { type: 'invoice', data: { expenses: [extractedData] }, docId: dbDoc?.id } });
-          queryClient.invalidateQueries({ queryKey: ['documents-review'] });
+            // Also save document record for reference
+            await supabase
+              .from('documents')
+              .insert({
+                user_id: user.id,
+                file_path: doc.storagePath,
+                file_name: doc.fileName,
+                file_type: doc.fileType,
+                file_size: doc.fileSize,
+                status: 'classified',
+                review_status: 'approved',
+                extracted_data: {
+                  invoice_direction: 'income',
+                  vendor: ep.to_entity || ep.bill_to || '',
+                  amount: totalAmount,
+                  date: ep.date,
+                  line_items: lineItems,
+                  subtotal,
+                  taxes: taxAmount > 0 ? [{ name: 'Tax', amount: taxAmount }] : [],
+                },
+              });
+
+            updateDoc(docId, {
+              status: 'processed',
+              processedResult: { type: 'invoice_income', amount: totalAmount, currency: ep.currency || 'CAD' },
+            });
+            queryClient.invalidateQueries({ queryKey: ['income'] });
+            toast.success(`💰 Ingreso de $${totalAmount.toLocaleString()} registrado`);
+
+          } else {
+            // Invoice represents EXPENSE — send to review center
+            const extractedData = {
+              vendor: ep.remit_to?.name || ep.vendor || ep.from_entity || classData.document_type,
+              amount: totalAmount,
+              date: ep.date || new Date().toISOString().split('T')[0],
+              category: 'professional_services',
+              description: lineItems.map((i: any) => i.name).join('; ') || ep.description || '',
+              currency: ep.currency || 'CAD',
+              confidence: classData.confidence > 0.8 ? 'high' : classData.confidence > 0.5 ? 'medium' : 'low',
+              cra_deductible: true,
+              cra_deduction_rate: 100,
+              typically_reimbursable: true,
+              invoice_direction: 'expense',
+              line_items: lineItems,
+              subtotal,
+              taxes: taxAmount > 0 ? [{ name: 'Tax', amount: taxAmount }] : [],
+            };
+
+            const { data: dbDoc } = await supabase
+              .from('documents')
+              .insert({
+                user_id: user.id,
+                file_path: doc.storagePath,
+                file_name: doc.fileName,
+                file_type: doc.fileType,
+                file_size: doc.fileSize,
+                status: 'classified',
+                review_status: 'pending_review',
+                extracted_data: extractedData,
+              })
+              .select()
+              .single();
+
+            updateDoc(docId, {
+              status: 'processed',
+              processedResult: { type: 'invoice_expense', data: { expenses: [extractedData] }, docId: dbDoc?.id },
+            });
+            queryClient.invalidateQueries({ queryKey: ['documents-review'] });
+          }
           break;
         }
 
@@ -484,11 +619,16 @@ export function useUnifiedChaosInbox() {
     setDocuments(prev => prev.filter(d => d.status !== 'processed'));
   }, [documents]);
 
+  const setInvoiceDirection = useCallback((docId: string, direction: 'income' | 'expense') => {
+    updateDoc(docId, { invoiceDirection: direction, status: 'classified' });
+  }, [updateDoc]);
+
   const stats = {
     total: documents.length,
     uploading: documents.filter(d => d.status === 'uploading').length,
     classifying: documents.filter(d => d.status === 'classifying').length,
     classified: documents.filter(d => d.status === 'classified').length,
+    pendingDirection: documents.filter(d => d.status === 'pending_direction').length,
     processing: documents.filter(d => d.status === 'processing').length,
     processed: documents.filter(d => d.status === 'processed').length,
     errors: documents.filter(d => d.status === 'error').length,
@@ -516,6 +656,7 @@ export function useUnifiedChaosInbox() {
     processDocument,
     processAllClassified,
     reclassify,
+    setInvoiceDirection,
     retryDocument,
     removeDoc,
     clearProcessed,
