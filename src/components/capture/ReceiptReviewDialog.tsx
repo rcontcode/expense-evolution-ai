@@ -586,17 +586,26 @@ export function ReceiptReviewDialog({
                 onTouchEnd={handleTouchEnd}
               >
                 {imageUrl ? (
-                  <img 
-                    src={imageUrl} 
-                    alt={document.file_name}
-                    draggable={false}
-                    style={{ 
-                      transform: `translate(${imagePosition.x}px, ${imagePosition.y}px) scale(${imageZoom}) rotate(${imageRotation}deg)`,
-                      transformOrigin: 'center center',
-                      transition: isDragging ? 'none' : 'transform 0.15s ease-out'
-                    }}
-                    className="max-w-full max-h-full object-contain rounded-lg shadow-lg select-none"
-                  />
+                  document.file_type?.includes('pdf') || document.file_name?.toLowerCase().endsWith('.pdf') ? (
+                    <iframe
+                      src={imageUrl}
+                      title={document.file_name}
+                      className="w-full h-full rounded-lg border-0"
+                      style={{ minHeight: '500px' }}
+                    />
+                  ) : (
+                    <img 
+                      src={imageUrl} 
+                      alt={document.file_name}
+                      draggable={false}
+                      style={{ 
+                        transform: `translate(${imagePosition.x}px, ${imagePosition.y}px) scale(${imageZoom}) rotate(${imageRotation}deg)`,
+                        transformOrigin: 'center center',
+                        transition: isDragging ? 'none' : 'transform 0.15s ease-out'
+                      }}
+                      className="max-w-full max-h-full object-contain rounded-lg shadow-lg select-none"
+                    />
+                  )
                 ) : (
                   <div className="flex items-center justify-center h-full">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
