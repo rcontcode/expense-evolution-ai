@@ -148,17 +148,17 @@ function ProcessedResultMessage({ doc, language }: { doc: ClassifiedDocument; la
   if (!result) return null;
 
   const messages: Record<string, { es: string; en: string; route?: string; routeLabel?: { es: string; en: string } }> = {
-    receipt: { es: 'Enviado al Centro de Revisión', en: 'Sent to Review Center', route: '/chaos', routeLabel: { es: 'Ver', en: 'View' } },
+    receipt: { es: 'Enviado al Centro de Revisión', en: 'Sent to Review Center', route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
     utility_bill: { es: 'Boleta procesada — se sugiere pago recurrente', en: 'Bill processed — recurring payment suggested', route: '/recurring', routeLabel: { es: 'Pagos Fijos', en: 'Fixed Payments' } },
     bank_statement: { es: `${result.transactions?.length || 0} transacciones extraídas`, en: `${result.transactions?.length || 0} transactions extracted`, route: '/banking', routeLabel: { es: 'Banca', en: 'Banking' } },
     income_proof: { es: 'Ingreso detectado — revísalo', en: 'Income detected — review it', route: '/income', routeLabel: { es: 'Ingresos', en: 'Income' } },
     contract: { es: result.analysisError ? 'Contrato guardado (análisis pendiente)' : 'Contrato guardado y analizado', en: result.analysisError ? 'Contract saved (analysis pending)' : 'Contract saved and analyzed', route: '/contracts', routeLabel: { es: 'Contratos', en: 'Contracts' } },
-    invoice: { es: 'Factura procesada — enviada al Centro de Revisión', en: 'Invoice processed — sent to Review Center', route: '/chaos', routeLabel: { es: 'Ver', en: 'View' } },
+    invoice: { es: 'Factura procesada — enviada al Centro de Revisión', en: 'Invoice processed — sent to Review Center', route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
     invoice_income: { es: `💰 Ingreso de $${result.amount?.toLocaleString() || '?'} ${result.currency || ''} registrado`, en: `💰 Income of $${result.amount?.toLocaleString() || '?'} ${result.currency || ''} recorded`, route: '/income', routeLabel: { es: 'Ver Ingresos', en: 'View Income' } },
-    invoice_expense: { es: 'Factura (gasto) enviada al Centro de Revisión', en: 'Invoice (expense) sent to Review Center', route: '/chaos', routeLabel: { es: 'Ver', en: 'View' } },
+    invoice_expense: { es: 'Factura (gasto) enviada al Centro de Revisión', en: 'Invoice (expense) sent to Review Center', route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
     tax_document: { es: 'Documento fiscal guardado', en: 'Tax document saved', route: '/files', routeLabel: { es: 'Archivos', en: 'Files' } },
     unknown: { es: 'Documento guardado para revisión', en: 'Document saved for review', route: '/files', routeLabel: { es: 'Archivos', en: 'Files' } },
-    manual_review: { es: 'Guardado para revisión manual', en: 'Saved for manual review' },
+    manual_review: { es: 'Guardado para revisión manual', en: 'Saved for manual review', route: '/expenses', routeLabel: { es: 'Revisar', en: 'Review' } },
   };
 
   const msg = messages[result.type] || messages.manual_review;
@@ -503,8 +503,8 @@ function HistoryCard({ entry, language }: { entry: HistoryEntry; language: strin
   const typeInfo = TYPE_LABELS[entry.documentType];
   
   const routeMap: Record<string, string> = {
-    receipt: '/chaos',
-    invoice: '/chaos',
+    receipt: '/expenses',
+    invoice: '/expenses',
     utility_bill: '/recurring',
     bank_statement: '/banking',
     income_proof: '/income',
