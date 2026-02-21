@@ -222,10 +222,10 @@ export function useUnifiedChaosInbox() {
     try {
       const type = doc.classification.document_type;
       const preview = doc.classification.extracted_preview;
+      let processedResult: any = {};
 
       switch (type) {
         case 'receipt': {
-          // Process through receipt pipeline
           const { data: result, error } = await supabase.functions.invoke('process-receipt', {
             body: {
               imageBase64: doc.base64,
@@ -235,7 +235,6 @@ export function useUnifiedChaosInbox() {
 
           if (error) throw error;
 
-          // Save document record
           const { data: dbDoc } = await supabase
             .from('documents')
             .insert({
@@ -255,7 +254,7 @@ export function useUnifiedChaosInbox() {
             .select()
             .single();
 
-          updateDoc(docId, { status: 'processed', processedResult: { type: 'receipt', data: result, docId: dbDoc?.id } });
+          processedResult = { type: 'receipt', data: result, docId: dbDoc?.id };
           queryClient.invalidateQueries({ queryKey: ['documents-review'] });
           break;
         }
@@ -266,7 +265,6 @@ export function useUnifiedChaosInbox() {
           const direction = doc.invoiceDirection;
           
           if (!direction) {
-            // Should not happen — direction should be set before processing
             updateDoc(docId, { status: 'pending_direction' });
             return;
           }
@@ -283,7 +281,6 @@ export function useUnifiedChaosInbox() {
           const taxAmount = parseFloat(String(ep.tax || '0').replace(/,/g, '')) || 0;
 
           if (direction === 'income') {
-            // Invoice represents INCOME — record as income
             const { error: incomeError } = await supabase
               .from('income')
               .insert({
@@ -299,7 +296,6 @@ export function useUnifiedChaosInbox() {
 
             if (incomeError) throw incomeError;
 
-            // Also save document record for reference
             await supabase
               .from('documents')
               .insert({
@@ -321,15 +317,11 @@ export function useUnifiedChaosInbox() {
                 },
               });
 
-            updateDoc(docId, {
-              status: 'processed',
-              processedResult: { type: 'invoice_income', amount: totalAmount, currency: ep.currency || 'CAD' },
-            });
+            processedResult = { type: 'invoice_income', amount: totalAmount, currency: ep.currency || 'CAD' };
             queryClient.invalidateQueries({ queryKey: ['income'] });
             toast.success(`💰 Ingreso de $${totalAmount.toLocaleString()} registrado`);
 
           } else {
-            // Invoice represents EXPENSE — send to review center
             const extractedData = {
               vendor: ep.remit_to?.name || ep.vendor || ep.from_entity || classData.document_type,
               amount: totalAmount,
@@ -362,17 +354,13 @@ export function useUnifiedChaosInbox() {
               .select()
               .single();
 
-            updateDoc(docId, {
-              status: 'processed',
-              processedResult: { type: 'invoice_expense', data: { expenses: [extractedData] }, docId: dbDoc?.id },
-            });
+            processedResult = { type: 'invoice_expense', data: { expenses: [extractedData] }, docId: dbDoc?.id };
             queryClient.invalidateQueries({ queryKey: ['documents-review'] });
           }
           break;
         }
 
         case 'utility_bill': {
-          // Process as receipt + suggest recurring bill
           const { data: result, error } = await supabase.functions.invoke('process-receipt', {
             body: { imageBase64: doc.base64 },
           });
@@ -399,55 +387,43 @@ export function useUnifiedChaosInbox() {
             .select()
             .single();
 
-          updateDoc(docId, {
-            status: 'processed',
-            processedResult: { type: 'utility_bill', data: result, docId: dbDoc?.id, suggestRecurring: true },
-          });
+          processedResult = { type: 'utility_bill', data: result, docId: dbDoc?.id, suggestRecurring: true };
           queryClient.invalidateQueries({ queryKey: ['documents-review'] });
           break;
         }
 
         case 'bank_statement': {
-          // Process through bank statement pipeline
           const { data: result, error } = await supabase.functions.invoke('process-bank-statement', {
             body: { image: doc.base64 },
           });
 
           if (error) throw error;
 
-          updateDoc(docId, {
-            status: 'processed',
-            processedResult: { type: 'bank_statement', transactions: result?.transactions || [] },
-          });
+          processedResult = { type: 'bank_statement', transactions: result?.transactions || [] };
           break;
         }
 
         case 'income_proof': {
-          // Process as receipt to extract amount/date, then flag as income
           const { data: result, error } = await supabase.functions.invoke('process-receipt', {
             body: { imageBase64: doc.base64 },
           });
 
           if (error) throw error;
 
-          updateDoc(docId, {
-            status: 'processed',
-            processedResult: {
-              type: 'income_proof',
-              data: result,
-              suggestedIncome: {
-                amount: preview.amount || result?.expenses?.[0]?.amount,
-                date: preview.date || result?.expenses?.[0]?.date,
-                source: preview.vendor || result?.expenses?.[0]?.vendor,
-                currency: preview.currency || 'CAD',
-              },
+          processedResult = {
+            type: 'income_proof',
+            data: result,
+            suggestedIncome: {
+              amount: preview.amount || result?.expenses?.[0]?.amount,
+              date: preview.date || result?.expenses?.[0]?.date,
+              source: preview.vendor || result?.expenses?.[0]?.vendor,
+              currency: preview.currency || 'CAD',
             },
-          });
+          };
           break;
         }
 
         case 'contract': {
-          // Upload contract to contracts table
           const { data: contract, error: contractError } = await supabase
             .from('contracts')
             .insert({
@@ -463,7 +439,6 @@ export function useUnifiedChaosInbox() {
 
           if (contractError) throw contractError;
 
-          // Trigger AI analysis
           try {
             const { data: analysis } = await supabase.functions.invoke('analyze-contract', {
               body: {
@@ -486,16 +461,9 @@ export function useUnifiedChaosInbox() {
                 .eq('id', contract.id);
             }
 
-            updateDoc(docId, {
-              status: 'processed',
-              processedResult: { type: 'contract', contractId: contract?.id, analysis },
-            });
+            processedResult = { type: 'contract', contractId: contract?.id, analysis };
           } catch {
-            // Contract saved even if analysis fails
-            updateDoc(docId, {
-              status: 'processed',
-              processedResult: { type: 'contract', contractId: contract?.id, analysisError: true },
-            });
+            processedResult = { type: 'contract', contractId: contract?.id, analysisError: true };
           }
 
           queryClient.invalidateQueries({ queryKey: ['contracts'] });
@@ -504,7 +472,6 @@ export function useUnifiedChaosInbox() {
 
         case 'tax_document':
         default: {
-          // Save as document for manual review
           await supabase
             .from('documents')
             .insert({
@@ -517,18 +484,17 @@ export function useUnifiedChaosInbox() {
               review_status: 'pending_review',
             });
 
-          updateDoc(docId, {
-            status: 'processed',
-            processedResult: { type: 'manual_review' },
-          });
+          processedResult = { type: 'manual_review' };
           queryClient.invalidateQueries({ queryKey: ['documents-review'] });
           break;
         }
       }
 
+      // Update doc with the ACTUAL processedResult
+      updateDoc(docId, { status: 'processed', processedResult });
       toast.success(`✅ ${doc.fileName} procesado`);
 
-      // Auto-add to history
+      // Add to history using the ACTUAL processedResult (not stale closure)
       if (doc.classification) {
         setHistory(prev => [{
           id: doc.id + '-' + Date.now(),
@@ -538,7 +504,7 @@ export function useUnifiedChaosInbox() {
           documentType: doc.classification!.document_type,
           confidence: doc.classification!.confidence,
           summary: doc.classification!.summary,
-          processedResult: doc.processedResult || {},
+          processedResult: processedResult,
           processedAt: new Date().toISOString(),
           extractedPreview: doc.classification!.extracted_preview,
         }, ...prev]);
