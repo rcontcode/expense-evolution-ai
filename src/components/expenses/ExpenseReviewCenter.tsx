@@ -340,7 +340,8 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
           description,
           currency,
           is_taxable: true,
-        });
+          document_id: docId,
+        } as any);
 
       if (incomeError) throw incomeError;
 
@@ -382,7 +383,8 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
     else setActiveTab('ready');
   }, [discrepancies.length, pendingIncome.length, noReceipt.length, pendingDocs.length]);
 
-  if (expenses.length === 0) return null;
+  // Show if there are expenses OR pending income docs to review
+  if (expenses.length === 0 && pendingIncome.length === 0) return null;
 
   return (
     <motion.div
