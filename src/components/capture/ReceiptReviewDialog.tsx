@@ -416,12 +416,12 @@ export function ReceiptReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl w-[95vw] max-h-[85vh] overflow-hidden flex flex-col p-6">
+        <DialogContent className="max-w-6xl w-[96vw] max-h-[90vh] overflow-hidden flex flex-col p-6">
         <DialogHeader className="shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle className="text-xl">
-                {language === 'es' ? 'Revisar Recibo' : 'Review Receipt'}
+                {language === 'es' ? 'Revisar Documento' : 'Review Document'}
               </DialogTitle>
               <p className="text-sm text-muted-foreground mt-1">
                 {document.file_name} • {format(new Date(document.created_at), "dd MMM yyyy HH:mm", { locale: language === 'es' ? es : undefined })}
@@ -435,7 +435,7 @@ export function ReceiptReviewDialog({
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left: Receipt Image with Advanced Controls */}
+          {/* Left: Document Image with Advanced Controls */}
           <TooltipProvider>
             <div className={cn(
               "flex flex-col",
@@ -446,7 +446,7 @@ export function ReceiptReviewDialog({
               {/* Image Controls Toolbar */}
               <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                 <span className="text-sm font-medium text-muted-foreground">
-                  {language === 'es' ? 'Imagen del recibo' : 'Receipt image'}
+                  {language === 'es' ? 'Documento' : 'Document'}
                 </span>
                 <div className="flex items-center gap-1 flex-wrap">
                   {/* Zoom controls */}

@@ -221,10 +221,13 @@ export function useDocumentImageUrl(filePath: string | null) {
     const fetchUrl = async () => {
       const { data } = await supabase.storage
         .from('expense-documents')
-        .createSignedUrl(filePath, 3600); // 1 hour expiry
+        .createSignedUrl(filePath, 3600);
 
       if (data?.signedUrl) {
         setUrl(data.signedUrl);
+      } else {
+        console.warn('Failed to get signed URL for:', filePath);
+        setUrl(null);
       }
     };
 
