@@ -281,22 +281,8 @@ export function useUnifiedChaosInbox() {
           const taxAmount = parseFloat(String(ep.tax || '0').replace(/,/g, '')) || 0;
 
           if (direction === 'income') {
-            const { error: incomeError } = await supabase
-              .from('income')
-              .insert({
-                user_id: user.id,
-                amount: totalAmount,
-                date: ep.date || new Date().toISOString().split('T')[0],
-                income_type: 'freelance',
-                source: ep.to_entity || ep.bill_to || ep.vendor || doc.fileName,
-                description: `Factura ${ep.invoice_number || ''}: ${lineItems.map((i: any) => i.name).join('; ') || ep.description || ''}`.trim(),
-                currency: ep.currency || 'CAD',
-                is_taxable: true,
-              });
-
-            if (incomeError) throw incomeError;
-
-            await supabase
+            // Save as document for review - do NOT insert directly into income
+            const { data: dbDoc } = await supabase
               .from('documents')
               .insert({
                 user_id: user.id,
@@ -305,21 +291,28 @@ export function useUnifiedChaosInbox() {
                 file_type: doc.fileType,
                 file_size: doc.fileSize,
                 status: 'classified',
-                review_status: 'approved',
+                review_status: 'pending_review',
                 extracted_data: {
                   invoice_direction: 'income',
                   vendor: ep.to_entity || ep.bill_to || '',
+                  source: ep.to_entity || ep.bill_to || ep.vendor || doc.fileName,
                   amount: totalAmount,
-                  date: ep.date,
+                  date: ep.date || new Date().toISOString().split('T')[0],
+                  currency: ep.currency || 'CAD',
+                  description: `Factura ${ep.invoice_number || ''}: ${lineItems.map((i: any) => i.name).join('; ') || ep.description || ''}`.trim(),
+                  income_type: 'freelance',
                   line_items: lineItems,
                   subtotal,
                   taxes: taxAmount > 0 ? [{ name: 'Tax', amount: taxAmount }] : [],
+                  invoice_number: ep.invoice_number,
                 },
-              });
+              })
+              .select()
+              .single();
 
-            processedResult = { type: 'invoice_income', amount: totalAmount, currency: ep.currency || 'CAD' };
-            queryClient.invalidateQueries({ queryKey: ['income'] });
-            toast.success(`💰 Ingreso de $${totalAmount.toLocaleString()} registrado`);
+            processedResult = { type: 'invoice_income', amount: totalAmount, currency: ep.currency || 'CAD', docId: dbDoc?.id };
+            queryClient.invalidateQueries({ queryKey: ['documents-review'] });
+            toast.success(`📋 Ingreso de $${totalAmount.toLocaleString()} enviado al Centro de Revisión`);
 
           } else {
             const extractedData = {

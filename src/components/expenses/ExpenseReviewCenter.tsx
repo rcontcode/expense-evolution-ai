@@ -8,7 +8,7 @@ import {
   AlertTriangle, CheckCircle2, Clock, FileText, Eye, 
   Edit3, Trash2, RotateCw, ZoomIn, ZoomOut, Maximize2,
   ArrowRight, Camera, Download, ShieldCheck, XCircle,
-  CameraOff, ChevronRight, Sparkles, FileCheck
+  CameraOff, ChevronRight, Sparkles, FileCheck, DollarSign
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -174,6 +175,7 @@ function FlowStepIndicator({
 export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCenterProps) {
   const { language } = useLanguage();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { data: documents = [] } = useDocumentsForReview();
   const deleteMutation = useDeleteExpense();
   const updateMutation = useUpdateExpense();
@@ -181,6 +183,9 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
   const [editAmount, setEditAmount] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('discrepancies');
+  const [editingIncomeId, setEditingIncomeId] = useState<string | null>(null);
+  const [editIncomeData, setEditIncomeData] = useState<Record<string, string>>({});
+  const [approvingIncomeId, setApprovingIncomeId] = useState<string | null>(null);
 
   // Find discrepancies: expense amount != receipt extracted amount
   const discrepancies = useMemo<DiscrepancyItem[]>(() => {
@@ -205,9 +210,21 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       .filter(Boolean) as DiscrepancyItem[];
   }, [expenses, documents]);
 
-  // Pending review documents (not yet approved)
+  // Pending review documents (not yet approved) — exclude income documents
   const pendingDocs = useMemo(() => 
-    documents.filter(d => d.review_status === 'pending_review' || d.review_status === 'needs_correction'),
+    documents.filter(d => 
+      (d.review_status === 'pending_review' || d.review_status === 'needs_correction') &&
+      (d.extracted_data as any)?.invoice_direction !== 'income'
+    ),
+    [documents]
+  );
+
+  // Pending income documents for review
+  const pendingIncome = useMemo(() => 
+    documents.filter(d => 
+      (d.review_status === 'pending_review' || d.review_status === 'needs_correction') &&
+      (d.extracted_data as any)?.invoice_direction === 'income'
+    ),
     [documents]
   );
 
@@ -220,7 +237,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
     [expenses, discrepancies]
   );
 
-  const totalIssues = discrepancies.length + pendingDocs.length + noReceipt.length;
+  const totalIssues = discrepancies.length + pendingDocs.length + noReceipt.length + pendingIncome.length;
   const isAllGood = totalIssues === 0 && expenses.length > 0;
 
   // Flow steps for visual indicator
@@ -231,6 +248,13 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       icon: AlertTriangle,
       count: discrepancies.length,
       done: discrepancies.length === 0,
+    },
+    {
+      key: 'income',
+      label: language === 'es' ? 'Ingresos' : 'Income',
+      icon: DollarSign,
+      count: pendingIncome.length,
+      done: pendingIncome.length === 0,
     },
     {
       key: 'noreceipt',
@@ -253,7 +277,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       count: readyExpenses.length,
       done: isAllGood,
     },
-  ], [language, discrepancies.length, noReceipt.length, pendingDocs.length, readyExpenses.length, isAllGood]);
+  ], [language, discrepancies.length, pendingIncome.length, noReceipt.length, pendingDocs.length, readyExpenses.length, isAllGood]);
 
   const handleUpdateAmount = useCallback(async (expenseId: string, newAmount: number) => {
     // Check for duplicates with same amount
@@ -290,13 +314,73 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
     });
   }, [deleteMutation, language]);
 
+  const handleApproveIncome = useCallback(async (docId: string) => {
+    if (!user) return;
+    setApprovingIncomeId(docId);
+    try {
+      const doc = documents.find(d => d.id === docId);
+      if (!doc) throw new Error('Document not found');
+      const ed = doc.extracted_data as any;
+      const data = editingIncomeId === docId ? editIncomeData : {};
+      
+      const amount = data.amount ? parseFloat(data.amount) : (ed.amount || 0);
+      const source = data.source || ed.source || ed.vendor || '';
+      const description = data.description || ed.description || '';
+      const date = data.date || ed.date || new Date().toISOString().split('T')[0];
+      const currency = ed.currency || 'CAD';
+
+      const { error: incomeError } = await supabase
+        .from('income')
+        .insert({
+          user_id: user.id,
+          amount,
+          date,
+          income_type: 'freelance' as const,
+          source,
+          description,
+          currency,
+          is_taxable: true,
+        });
+
+      if (incomeError) throw incomeError;
+
+      await supabase
+        .from('documents')
+        .update({
+          review_status: 'approved',
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq('id', docId);
+
+      queryClient.invalidateQueries({ queryKey: ['documents-review'] });
+      queryClient.invalidateQueries({ queryKey: ['income'] });
+      toast.success(language === 'es' ? `✅ Ingreso de $${amount.toLocaleString()} aprobado y registrado` : `✅ Income of $${amount.toLocaleString()} approved and recorded`);
+      setEditingIncomeId(null);
+    } catch (error: any) {
+      console.error('Error approving income:', error);
+      toast.error(language === 'es' ? 'Error al aprobar el ingreso' : 'Error approving income');
+    } finally {
+      setApprovingIncomeId(null);
+    }
+  }, [user, documents, editingIncomeId, editIncomeData, queryClient, language]);
+
+  const handleRejectIncome = useCallback(async (docId: string) => {
+    await supabase
+      .from('documents')
+      .update({ review_status: 'rejected', reviewed_at: new Date().toISOString() })
+      .eq('id', docId);
+    queryClient.invalidateQueries({ queryKey: ['documents-review'] });
+    toast.success(language === 'es' ? '🗑️ Ingreso descartado' : '🗑️ Income discarded');
+  }, [queryClient, language]);
+
   // Auto-select tab based on what needs attention (only on mount/data change)
   useEffect(() => {
     if (discrepancies.length > 0) setActiveTab('discrepancies');
+    else if (pendingIncome.length > 0) setActiveTab('income');
     else if (noReceipt.length > 0) setActiveTab('noreceipt');
     else if (pendingDocs.length > 0) setActiveTab('pending');
     else setActiveTab('ready');
-  }, [discrepancies.length, noReceipt.length, pendingDocs.length]);
+  }, [discrepancies.length, pendingIncome.length, noReceipt.length, pendingDocs.length]);
 
   if (expenses.length === 0) return null;
 
@@ -366,13 +450,21 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       {/* Tabs for different review categories */}
       {!isAllGood && (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full grid grid-cols-4">
+          <TabsList className="w-full grid grid-cols-5">
             <TabsTrigger value="discrepancies" className="relative text-xs sm:text-sm">
               <AlertTriangle className="h-3.5 w-3.5 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">{language === 'es' ? 'Discrepancias' : 'Discrepancies'}</span>
               <span className="sm:hidden">{language === 'es' ? 'Dif.' : 'Diff.'}</span>
               {discrepancies.length > 0 && (
                 <Badge variant="destructive" className="ml-1 px-1.5 py-0 text-[10px]">{discrepancies.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="income" className="text-xs sm:text-sm">
+              <DollarSign className="h-3.5 w-3.5 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">{language === 'es' ? 'Ingresos' : 'Income'}</span>
+              <span className="sm:hidden">💰</span>
+              {pendingIncome.length > 0 && (
+                <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">{pendingIncome.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="noreceipt" className="text-xs sm:text-sm">
@@ -555,7 +647,224 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
             </AnimatePresence>
           </TabsContent>
 
-          {/* No Receipt Tab */}
+          {/* Income Review Tab */}
+          <TabsContent value="income" className="space-y-3 mt-3">
+            {pendingIncome.length === 0 ? (
+              <Card className="border-dashed border-emerald-200 dark:border-emerald-800">
+                <CardContent className="flex flex-col items-center justify-center py-8 gap-2">
+                  <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                    {language === 'es' ? '✅ No hay ingresos pendientes de revisión' : '✅ No pending income to review'}
+                  </p>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground mt-2" />
+                  <p className="text-xs text-muted-foreground">
+                    {language === 'es' ? 'Continúa con el siguiente paso →' : 'Continue to the next step →'}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {/* Explanation banner */}
+                <div className="flex gap-2 p-3 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40">
+                  <DollarSign className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <div className="text-xs text-emerald-700 dark:text-emerald-400 leading-relaxed">
+                    <p className="font-medium mb-0.5">
+                      {language === 'es' 
+                        ? `💰 ${pendingIncome.length} factura(s) de ingreso pendientes de aprobación`
+                        : `💰 ${pendingIncome.length} income invoice(s) pending approval`}
+                    </p>
+                    <p className="text-emerald-600 dark:text-emerald-500">
+                      {language === 'es'
+                        ? 'Revisa los datos extraídos por la IA antes de registrarlos como ingresos. Puedes editar monto, fuente y descripción.'
+                        : 'Review the AI-extracted data before recording them as income. You can edit amount, source and description.'}
+                    </p>
+                  </div>
+                </div>
+
+                {pendingIncome.map((doc, idx) => {
+                  const ed = doc.extracted_data as any;
+                  const isEditing = editingIncomeId === doc.id;
+                  const isApproving = approvingIncomeId === doc.id;
+
+                  return (
+                    <motion.div
+                      key={doc.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                    >
+                      <Card className="border-emerald-200 dark:border-emerald-800 overflow-hidden hover:shadow-md transition-shadow">
+                        <CardContent className="p-0">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+                            {/* Left: Document preview */}
+                            <MiniImageViewer 
+                              filePath={doc.file_path || null} 
+                              className="h-64 lg:h-72"
+                            />
+
+                            {/* Right: Income details */}
+                            <div className="p-4 space-y-3">
+                              <div className="flex items-center gap-2">
+                                <DollarSign className="h-4 w-4 text-emerald-500" />
+                                <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                                  {language === 'es' ? '💰 Factura de Ingreso' : '💰 Income Invoice'}
+                                </span>
+                                <Badge variant="outline" className="text-[10px] ml-auto">
+                                  #{idx + 1}/{pendingIncome.length}
+                                </Badge>
+                              </div>
+
+                              <div className="text-xs text-muted-foreground">
+                                📄 {doc.file_name}
+                              </div>
+
+                              {/* Extracted data */}
+                              {isEditing ? (
+                                <div className="space-y-2">
+                                  <div>
+                                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                                      {language === 'es' ? 'Monto' : 'Amount'}
+                                    </label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={editIncomeData.amount || String(ed.amount || 0)}
+                                      onChange={(e) => setEditIncomeData(prev => ({ ...prev, amount: e.target.value }))}
+                                      className="h-8 text-sm"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                                      {language === 'es' ? 'Fuente / Cliente' : 'Source / Client'}
+                                    </label>
+                                    <Input
+                                      value={editIncomeData.source || ed.source || ''}
+                                      onChange={(e) => setEditIncomeData(prev => ({ ...prev, source: e.target.value }))}
+                                      className="h-8 text-sm"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                                      {language === 'es' ? 'Descripción' : 'Description'}
+                                    </label>
+                                    <Input
+                                      value={editIncomeData.description || ed.description || ''}
+                                      onChange={(e) => setEditIncomeData(prev => ({ ...prev, description: e.target.value }))}
+                                      className="h-8 text-sm"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                                      {language === 'es' ? 'Fecha' : 'Date'}
+                                    </label>
+                                    <Input
+                                      type="date"
+                                      value={editIncomeData.date || ed.date || ''}
+                                      onChange={(e) => setEditIncomeData(prev => ({ ...prev, date: e.target.value }))}
+                                      className="h-8 text-sm"
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="space-y-2">
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
+                                      <p className="text-[10px] uppercase tracking-wider text-emerald-600 mb-1">
+                                        💵 {language === 'es' ? 'Monto' : 'Amount'}
+                                      </p>
+                                      <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
+                                        ${(ed.amount || 0).toLocaleString()} {ed.currency || 'CAD'}
+                                      </p>
+                                    </div>
+                                    <div className="p-3 rounded-lg bg-muted/50 border">
+                                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+                                        📅 {language === 'es' ? 'Fecha' : 'Date'}
+                                      </p>
+                                      <p className="text-sm font-medium">{ed.date || '—'}</p>
+                                    </div>
+                                  </div>
+                                  <div className="p-2 rounded-lg bg-muted/30 border">
+                                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">
+                                      🏢 {language === 'es' ? 'Fuente' : 'Source'}
+                                    </p>
+                                    <p className="text-xs font-medium">{ed.source || ed.vendor || '—'}</p>
+                                  </div>
+                                  {ed.description && (
+                                    <div className="p-2 rounded-lg bg-muted/30 border">
+                                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">
+                                        📝 {language === 'es' ? 'Descripción' : 'Description'}
+                                      </p>
+                                      <p className="text-xs">{ed.description}</p>
+                                    </div>
+                                  )}
+                                  {ed.line_items && ed.line_items.length > 0 && (
+                                    <div className="p-2 rounded-lg bg-muted/30 border">
+                                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+                                        📋 {language === 'es' ? 'Ítems' : 'Items'}
+                                      </p>
+                                      {ed.line_items.slice(0, 5).map((item: any, i: number) => (
+                                        <p key={i} className="text-[11px] text-muted-foreground">
+                                          • {item.name} — ${(item.total || 0).toLocaleString()}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Actions */}
+                              <div className="flex gap-2 pt-1">
+                                {!isEditing && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setEditingIncomeId(doc.id);
+                                      setEditIncomeData({
+                                        amount: String(ed.amount || 0),
+                                        source: ed.source || ed.vendor || '',
+                                        description: ed.description || '',
+                                        date: ed.date || '',
+                                      });
+                                    }}
+                                  >
+                                    <Edit3 className="h-3.5 w-3.5 mr-1.5" />
+                                    {language === 'es' ? 'Editar' : 'Edit'}
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleApproveIncome(doc.id)}
+                                  disabled={isApproving}
+                                  className="bg-emerald-600 hover:bg-emerald-700 flex-1"
+                                >
+                                  {isApproving ? (
+                                    <Clock className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                                  ) : (
+                                    <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                                  )}
+                                  {language === 'es' ? '✅ Aprobar Ingreso' : '✅ Approve Income'}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleRejectIncome(doc.id)}
+                                >
+                                  <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                                  {language === 'es' ? 'Descartar' : 'Discard'}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+
           <TabsContent value="noreceipt" className="space-y-3 mt-3">
             {noReceipt.length === 0 ? (
               <Card className="border-dashed border-emerald-200 dark:border-emerald-800">
