@@ -152,6 +152,9 @@ function ProcessedResultMessage({ doc, language }: { doc: ClassifiedDocument; la
     bank_statement: { es: `${result.transactions?.length || 0} transacciones extraídas`, en: `${result.transactions?.length || 0} transactions extracted`, route: '/banking', routeLabel: { es: 'Banca', en: 'Banking' } },
     income_proof: { es: 'Ingreso detectado — revísalo', en: 'Income detected — review it', route: '/income', routeLabel: { es: 'Ingresos', en: 'Income' } },
     contract: { es: result.analysisError ? 'Contrato guardado (análisis pendiente)' : 'Contrato guardado y analizado', en: result.analysisError ? 'Contract saved (analysis pending)' : 'Contract saved and analyzed', route: '/contracts', routeLabel: { es: 'Contratos', en: 'Contracts' } },
+    invoice: { es: 'Factura procesada — enviada al Centro de Revisión', en: 'Invoice processed — sent to Review Center', route: '/chaos', routeLabel: { es: 'Ver', en: 'View' } },
+    tax_document: { es: 'Documento fiscal guardado', en: 'Tax document saved', route: '/files', routeLabel: { es: 'Archivos', en: 'Files' } },
+    unknown: { es: 'Documento guardado para revisión', en: 'Document saved for review', route: '/files', routeLabel: { es: 'Archivos', en: 'Files' } },
     manual_review: { es: 'Guardado para revisión manual', en: 'Saved for manual review' },
   };
 
