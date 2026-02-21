@@ -665,9 +665,9 @@ export function UnifiedChaosInboxPanel() {
 
         {/* Document list */}
         {hasAnyDocs && (
-          <ScrollArea className="max-h-[60vh]">
+          <div className="overflow-y-auto max-h-[calc(100vh-280px)] pr-1">
             <AnimatePresence mode="popLayout">
-              <div className="space-y-2">
+              <div className="space-y-2 pb-4">
                 {documents.map(doc => (
                   <DocumentCard
                     key={doc.id}
@@ -681,7 +681,7 @@ export function UnifiedChaosInboxPanel() {
                 ))}
               </div>
             </AnimatePresence>
-          </ScrollArea>
+          </div>
         )}
 
         {/* History section */}
