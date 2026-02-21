@@ -29,6 +29,25 @@ interface ClassificationResult {
     is_recurring?: boolean;
     recurrence_frequency?: string;
     parties?: string[];
+    // Invoice-specific fields
+    invoice_direction?: 'income' | 'expense' | 'unknown';
+    invoice_direction_confidence?: number;
+    from_entity?: string;
+    to_entity?: string;
+    bill_to?: string;
+    remit_to?: { name?: string; address?: string };
+    invoice_number?: string;
+    line_items?: Array<{
+      description?: string;
+      name?: string;
+      quantity?: string;
+      unit_price?: string;
+      total?: string;
+      amount?: string;
+    }>;
+    subtotal?: number;
+    tax?: number;
+    total?: number;
   };
 }
 
@@ -77,7 +96,18 @@ Respond with ONLY a valid JSON object:
     "currency": "CAD or CLP or USD etc",
     "is_recurring": false,
     "recurrence_frequency": "monthly or null",
-    "parties": ["Party 1", "Party 2"]
+    "parties": ["Party 1", "Party 2"],
+    "invoice_direction": "income or expense or unknown",
+    "invoice_direction_confidence": 0.8,
+    "from_entity": "Who issued/sent this document",
+    "to_entity": "Who receives/pays this document",
+    "bill_to": "Name of the entity being billed",
+    "remit_to": {"name": "Who to pay to", "address": "optional"},
+    "invoice_number": "INV-001 if visible",
+    "line_items": [{"description": "item name", "quantity": "1", "unit_price": "100", "total": "100"}],
+    "subtotal": 100,
+    "tax": 15,
+    "total": 115
   }
 }
 
@@ -88,6 +118,12 @@ IMPORTANT RULES:
 - For bank statements: suggest importing transactions
 - For income proofs: extract amount and source
 - For contracts: extract parties involved
+- For INVOICES: THIS IS CRITICAL - determine invoice_direction:
+  * "income" = The user ISSUED this invoice (they are the seller/provider billing a client). The "from" entity is the user's business.
+  * "expense" = The user RECEIVED this invoice (they owe money). The "from" entity is a vendor billing the user.
+  * "unknown" = Cannot determine direction.
+  * Extract from_entity (who sent it), to_entity (who receives it), bill_to, remit_to, invoice_number, line_items with quantities and prices
+  * Set invoice_direction_confidence (0-1) based on how clear the direction is
 - confidence should be between 0 and 1
 - All text in Spanish`;
 
