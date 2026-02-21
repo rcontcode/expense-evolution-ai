@@ -21,16 +21,7 @@ export interface ClassifiedDocument {
     confidence: number;
     summary: string;
     suggested_actions: string[];
-    extracted_preview: {
-      vendor?: string;
-      amount?: number;
-      date?: string;
-      description?: string;
-      currency?: string;
-      is_recurring?: boolean;
-      recurrence_frequency?: string;
-      parties?: string[];
-    };
+    extracted_preview: Record<string, any>;
   };
   status: 'uploading' | 'classifying' | 'classified' | 'processing' | 'processed' | 'error';
   error?: string;
@@ -141,8 +132,7 @@ export function useUnifiedChaosInbox() {
       const preview = doc.classification.extracted_preview;
 
       switch (type) {
-        case 'receipt':
-        case 'invoice': {
+        case 'receipt': {
           // Process through receipt pipeline
           const { data: result, error } = await supabase.functions.invoke('process-receipt', {
             body: {
@@ -174,6 +164,59 @@ export function useUnifiedChaosInbox() {
             .single();
 
           updateDoc(docId, { status: 'processed', processedResult: { type: 'receipt', data: result, docId: dbDoc?.id } });
+          queryClient.invalidateQueries({ queryKey: ['documents-review'] });
+          break;
+        }
+
+        case 'invoice': {
+          // Use classification data directly - it already has rich invoice data
+          const classData = doc.classification!;
+          const ep = classData.extracted_preview || {};
+          
+          // Map invoice line_items to the expected format
+          const lineItems = (ep.line_items || []).map((item: any) => ({
+            name: item.description || item.name || 'Item',
+            quantity: parseFloat(String(item.quantity || '1').replace(/,/g, '')) || 1,
+            unit_price: parseFloat(String(item.unit_price || '0').replace(/,/g, '')) || 0,
+            total: parseFloat(String(item.total || item.amount || '0').replace(/,/g, '')) || 0,
+          }));
+
+          const totalAmount = parseFloat(String(ep.total || ep.amount || '0').replace(/,/g, '')) || 0;
+          const subtotal = parseFloat(String(ep.subtotal || '0').replace(/,/g, '')) || totalAmount;
+          const taxAmount = parseFloat(String(ep.tax || '0').replace(/,/g, '')) || 0;
+
+          const extractedData = {
+            vendor: ep.remit_to?.name || ep.vendor || ep.from || classData.document_type,
+            amount: totalAmount,
+            date: ep.date || new Date().toISOString().split('T')[0],
+            category: 'professional_services',
+            description: lineItems.map((i: any) => i.name).join('; ') || ep.description || '',
+            currency: ep.currency || 'CAD',
+            confidence: classData.confidence > 0.8 ? 'high' : classData.confidence > 0.5 ? 'medium' : 'low',
+            cra_deductible: true,
+            cra_deduction_rate: 100,
+            typically_reimbursable: true,
+            line_items: lineItems,
+            subtotal,
+            taxes: taxAmount > 0 ? [{ name: 'Tax', amount: taxAmount }] : [],
+          };
+
+          const { data: dbDoc } = await supabase
+            .from('documents')
+            .insert({
+              user_id: user.id,
+              file_path: doc.storagePath,
+              file_name: doc.fileName,
+              file_type: doc.fileType,
+              file_size: doc.fileSize,
+              status: 'classified',
+              review_status: 'pending_review',
+              extracted_data: extractedData,
+            })
+            .select()
+            .single();
+
+          updateDoc(docId, { status: 'processed', processedResult: { type: 'invoice', data: { expenses: [extractedData] }, docId: dbDoc?.id } });
           queryClient.invalidateQueries({ queryKey: ['documents-review'] });
           break;
         }
