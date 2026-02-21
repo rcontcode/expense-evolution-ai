@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,11 +14,13 @@ import {
   Upload, Camera, Loader2, RefreshCw, 
   CheckCircle2, Clock, AlertTriangle, X,
   Smartphone, Monitor, Layers, ArrowRight, Video,
-  Edit3, ChevronDown, ChevronUp, Eye, MessageSquare, MoreHorizontal
+  Edit3, ChevronDown, ChevronUp, Eye, MessageSquare, MoreHorizontal,
+  Sparkles, Receipt
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { UnifiedChaosInboxPanel } from '@/components/chaos/UnifiedChaosInboxPanel';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { ReceiptReviewCard, ReceiptDocument, ExtractedData } from '@/components/capture/ReceiptReviewCard';
 import { 
@@ -177,6 +180,7 @@ export default function ChaosInbox() {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [showApproved, setShowApproved] = useState(false);
   const [showRejected, setShowRejected] = useState(false);
+  const [activeTab, setActiveTab] = useState('unified');
   
   const { data: documents = [], isLoading, refetch } = useDocumentsForReview();
   const { approveDocument, rejectDocument, addComment, deleteDocument } = useDocumentReviewActions();
@@ -436,10 +440,10 @@ export default function ChaosInbox() {
         <div className="page-container section-gap">
           {/* Header - Mobile Compact */}
           <PageHeader
-            title={language === 'es' ? 'Bandeja de Recibos' : 'Receipt Inbox'}
+            title={language === 'es' ? 'Bandeja del Caos' : 'Chaos Inbox'}
             description={!isMobile ? (language === 'es' 
-              ? 'Captura, revisa y aprueba tus recibos'
-              : 'Capture, review and approve your receipts') : undefined}
+              ? 'Sube cualquier documento — la IA lo clasifica y procesa automáticamente'
+              : 'Upload any document — AI classifies and processes it automatically') : undefined}
           >
             {!isMobile && <InfoTooltip content={TOOLTIP_CONTENT.chaosInbox} />}
             {!isMobile && <ScanSessionHistory />}
@@ -489,6 +493,30 @@ export default function ChaosInbox() {
               </DropdownMenu>
             )}
           </PageHeader>
+
+          {/* Tabs: Unified vs Receipt Review */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="unified" className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                {language === 'es' ? 'Subida Inteligente' : 'Smart Upload'}
+              </TabsTrigger>
+              <TabsTrigger value="receipts" className="gap-2">
+                <Receipt className="h-4 w-4" />
+                {language === 'es' ? 'Centro de Revisión' : 'Review Center'}
+                {pendingDocs.length > 0 && (
+                  <Badge variant="destructive" className="ml-1 text-[10px] px-1.5 py-0">
+                    {pendingDocs.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="unified" className="mt-4 space-y-4">
+              <UnifiedChaosInboxPanel />
+            </TabsContent>
+
+            <TabsContent value="receipts" className="mt-4 space-y-4">
 
           {/* Contextual Page Guide - Hidden on mobile */}
           {!isMobile && (
@@ -757,6 +785,9 @@ export default function ChaosInbox() {
               </CollapsibleContent>
             </Collapsible>
           )}
+
+            </TabsContent>
+          </Tabs>
         </div>
       </TooltipProvider>
 
