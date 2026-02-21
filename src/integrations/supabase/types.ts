@@ -1754,6 +1754,7 @@ export type Database = {
           date: string
           deleted_at: string | null
           description: string | null
+          document_id: string | null
           entity_id: string | null
           exchange_rate_used: number | null
           id: string
@@ -1776,6 +1777,7 @@ export type Database = {
           date: string
           deleted_at?: string | null
           description?: string | null
+          document_id?: string | null
           entity_id?: string | null
           exchange_rate_used?: number | null
           id?: string
@@ -1798,6 +1800,7 @@ export type Database = {
           date?: string
           deleted_at?: string | null
           description?: string | null
+          document_id?: string | null
           entity_id?: string | null
           exchange_rate_used?: number | null
           id?: string
@@ -1818,6 +1821,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "income_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
             referencedColumns: ["id"]
           },
           {

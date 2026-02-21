@@ -254,12 +254,10 @@ export default function Expenses() {
           )}
 
           {/* Unified Review Center */}
-          {allExpenses && allExpenses.length > 0 && (
-            <ExpenseReviewCenter
-              expenses={allExpenses}
-              onExportReady={() => setExportDialogOpen(true)}
-            />
-          )}
+          <ExpenseReviewCenter
+            expenses={allExpenses || []}
+            onExportReady={() => setExportDialogOpen(true)}
+          />
 
         {isLoading ? (
           <Card className="border-dashed">

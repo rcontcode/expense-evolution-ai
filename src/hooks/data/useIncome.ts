@@ -26,7 +26,8 @@ export function useIncome(filters?: IncomeFilters) {
         .select(`
           *,
           client:clients(id, name),
-          project:projects(id, name, color)
+          project:projects(id, name, color),
+          document:documents(id, file_path, file_name)
         `)
         .is('deleted_at', null)
         .order('date', { ascending: false })
