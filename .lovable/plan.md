@@ -1,100 +1,90 @@
 
 
-## Plan: Sistema de Testimonios + Correccion de Triggers + Guia de Lanzamiento
+# Manual de Usuario Interactivo - EvoFinz
 
-### Diagnostico Confirmado
+## Resumen
 
-1. **Triggers AUSENTES**: La base de datos tiene las 6 funciones necesarias pero CERO triggers activos. Los puntos NO se estan otorgando automaticamente.
-2. **Sin sistema de testimonios**: No hay columnas ni UI para consentimiento de uso de feedback como testimonio.
+Crear una pagina `/user-guide` como un manual de usuario completo, estatico y visualmente rico. Sin dependencia de highlights ni IA en tiempo real -- solo contenido escrito de alta calidad con emojis, colores, efectos CSS, acordeones, bullet points, paso a paso, y navegacion interna por secciones.
 
----
+## Estructura del Manual
 
-### Cambios a Implementar
+El manual se dividira en **3 grandes bloques**:
 
-#### 1. Migracion SQL (una sola migracion que hace todo)
+### Bloque 1: Vision General (Hero + Valor)
+- Que es EvoFinz y para quien es
+- Mision, objetivos, ventaja competitiva vs no usar nada o usar herramientas separadas
+- El habito de usarla diariamente
+- Facilidad de uso y valor que aporta
+- Mejora continua con aportes de usuarios
 
-**Agregar columnas de testimonios a `beta_feedback`:**
-- `allow_as_testimonial` (boolean, default false) - consentimiento del usuario
-- `display_name_override` (text, nullable) - nombre personalizado para mostrar
-- `is_published_testimonial` (boolean, default false) - admin lo publica
-- `testimonial_approved_by` (uuid, nullable) - quien lo aprobo
-- `testimonial_approved_at` (timestamptz, nullable) - cuando
+### Bloque 2: Mapa de Secciones (Guia por Area)
+Cada seccion principal de la app con:
+- Emoji + titulo + descripcion corta
+- Para que sirve y que problema resuelve
+- Paso a paso de uso basico
+- Tips y preguntas frecuentes por seccion
+- Como se conecta con otras secciones
 
-**Nuevas RLS policies:**
-- Admins pueden actualizar feedback (para publicar testimonios)
-- Cualquiera puede leer testimonios publicados (para la landing)
+Secciones cubiertas:
+1. Dashboard (centro de comando)
+2. Gastos (registro, categorias, recibos, deducciones)
+3. Ingresos (tipos, clientes asociados)
+4. Clientes (gestion, facturacion)
+5. Contratos (seguimiento de acuerdos)
+6. Presupuesto (metas, pagos fijos, ahorro)
+7. Kilometraje (viajes de trabajo, deducciones)
+8. Calendario Fiscal (fechas limite, recordatorios)
+9. Banking (importacion de estados de cuenta)
+10. Patrimonio Neto (activos, deudas, FIRE)
+11. Captura Rapida (fotos de recibos)
+12. Proyectos y Tags (organizacion avanzada)
+13. Reconciliacion (cruce banco vs registros)
+14. Archivos (almacenamiento de documentos)
+15. Perfil de Negocio
+16. Configuracion y Preferencias
 
-**Recrear los 6 triggers faltantes** (uno por accion):
-- `award_feedback_points_trigger` en `beta_feedback`
-- `award_bug_report_points_trigger` en `beta_bug_reports`
-- `init_beta_points_on_activation` en `profiles`
-- `generate_referral_on_beta_activation` en `profiles`
-- `check_beta_expiration_trigger` en `profiles`
-- `convert_referral_lead_on_profile` en `profiles`
+### Bloque 3: Interconexiones y FAQ Global
+- Como fluye la informacion entre secciones (diagrama visual con emojis)
+- Preguntas frecuentes globales
+- Consultas tipicas de usuarios
 
-**Eliminar funciones huerfanas** que ya no se usan.
+## Detalles Tecnicos
 
-#### 2. Actualizar `src/hooks/data/useBetaFeedback.ts`
+### Archivos a crear/modificar:
 
-- Agregar `allow_as_testimonial` y `display_name_override` a `BetaFeedback` interface y `CreateFeedbackParams`
-- Agregar query `publishedTestimonials` para la landing page (filtra `is_published_testimonial = true`)
-- Agregar mutation `toggleTestimonialPublish` para que el admin publique/despublique
+1. **`src/pages/UserGuide.tsx`** (nuevo) - Pagina principal del manual
+   - Componente grande pero estatico, sin logica de backend
+   - Usa `Accordion` para secciones colapsables
+   - Usa `Card`, `Badge`, `Button` existentes
+   - Navegacion interna con scroll-to-section
+   - Barra de busqueda simple (filtro client-side por texto)
+   - Tabla de contenidos sticky lateral en desktop
+   - Bilingue (ES/EN) usando `useLanguage()`
+   - Animaciones con `framer-motion` (fade-in al scroll)
 
-#### 3. Actualizar `src/pages/BetaFeedback.tsx`
+2. **`src/data/user-guide-content.ts`** (nuevo) - Contenido separado del componente
+   - Toda la data del manual en objetos tipados
+   - Facilita edicion futura sin tocar el componente
+   - Estructura: secciones > subsecciones > pasos/tips/faq
 
-Despues de la seccion "Would recommend" (linea ~613), agregar:
-- Checkbox de consentimiento (solo visible cuando rating >= 4): "Autorizo que mi opinion pueda ser usada como testimonio en la pagina de EvoFinz"
-- Campo opcional de nombre para mostrar (display_name_override)
-- Pasar los nuevos campos al mutation `submitFeedback`
+3. **`src/App.tsx`** (modificar) - Agregar ruta `/user-guide`
+   - Lazy import del componente
+   - Ruta protegida (usuarios autenticados)
 
-#### 4. Actualizar `src/pages/admin/BetaDashboard.tsx`
+4. **Acceso desde la app** - Links al manual desde:
+   - Menu "More" en mobile
+   - Seccion de ayuda en Settings
+   - Boton en el Dashboard o sidebar
 
-Agregar nueva tab "Testimonios" (6ta tab) que muestra:
-- Lista de feedback con `allow_as_testimonial = true`
-- Rating, comentario, nombre del usuario
-- Boton "Publicar" / "Despublicar" por testimonio
-- Badge indicando estado actual
+### Patron visual (consistente con BetaGuide.tsx):
+- Cards con gradientes sutiles para secciones hero
+- Emojis como iconos primarios de cada seccion
+- Badges de colores para categorias
+- Acordeones para FAQ y detalles expandibles
+- Bullet points con iconos de check para pasos
+- Cards con borde de color para tips/alertas
+- Progress indicators visuales para flujos paso a paso
 
-#### 5. Actualizar `src/components/landing/TestimonialsCarousel.tsx`
-
-- Importar `supabase` y `useQuery`
-- Fetch de testimonios reales aprobados (`is_published_testimonial = true`)
-- Si hay 3+ reales, usar solo esos; si no, mezclar con hardcoded
-- Agregar badge "Beta Tester Verificado" en testimonios reales
-
----
-
-### Seccion Tecnica: Estructura de Datos
-
-```text
-beta_feedback (columnas nuevas)
-+---------------------------+----------+---------+
-| Columna                   | Tipo     | Default |
-+---------------------------+----------+---------+
-| allow_as_testimonial      | boolean  | false   |
-| display_name_override     | text     | null    |
-| is_published_testimonial  | boolean  | false   |
-| testimonial_approved_by   | uuid     | null    |
-| testimonial_approved_at   | timestamptz | null |
-+---------------------------+----------+---------+
-```
-
-### Flujo Completo
-
-```text
-1. Beta tester da feedback 4-5 estrellas
-2. Ve checkbox: "Autorizo como testimonio"
-3. Opcionalmente elige como aparecer su nombre
-4. Admin ve en tab "Testimonios" los feedback con consentimiento
-5. Admin click "Publicar" -> aparece en landing page
-6. Visitantes ven testimonios REALES con badge verificado
-```
-
-### Resultado Final
-
-- Triggers corregidos: puntos se otorgan correctamente (una sola vez)
-- Sistema de testimonios con consentimiento legal (opt-in, GDPR/PIPEDA compliant)
-- Admin tiene control total de que se publica
-- Landing page muestra testimonios reales gradualmente
-- 6 tabs en BetaDashboard: Testers, Feedback, Bugs, Premios, Testimonios, Uso
+### Sin dependencias nuevas
+Todo se construye con componentes UI existentes (Card, Badge, Button, Accordion, Tabs, framer-motion).
 
