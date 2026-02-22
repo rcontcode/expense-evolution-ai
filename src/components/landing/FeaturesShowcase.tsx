@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { 
   Camera, Receipt, Users, Car, FileText, PiggyBank, 
-  TrendingUp, Brain, Target, Shield, Sparkles, Calculator
+  TrendingUp, Brain, Target, Shield, Sparkles, Calculator,
+  Zap, BarChart3
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -113,6 +114,24 @@ const getShowcaseItems = (language: string) => [
     how: language === 'es' ? "Cada acción suma puntos y desbloquea badges" : "Every action earns points and unlocks badges",
     gradient: "from-yellow-500 to-amber-500",
     bgGlow: "bg-yellow-500/20"
+  },
+  {
+    icon: BarChart3,
+    title: language === 'es' ? "Reporte Mensual IA" : "AI Monthly Report",
+    why: language === 'es' ? "Entiende tu mes en 30 segundos" : "Understand your month in 30 seconds",
+    what: language === 'es' ? "Score financiero + comparativas automáticas" : "Financial score + automatic comparisons",
+    how: language === 'es' ? "Análisis IA personalizado con logros y alertas" : "Personalized AI analysis with achievements and alerts",
+    gradient: "from-sky-500 to-cyan-500",
+    bgGlow: "bg-sky-500/20"
+  },
+  {
+    icon: Zap,
+    title: language === 'es' ? "Alertas Proactivas" : "Proactive Alerts",
+    why: language === 'es' ? "Prevenir antes que lamentar" : "Prevent before it's too late",
+    what: language === 'es' ? "Detecta sobregastos, vencimientos y anomalías" : "Detects overspending, due dates and anomalies",
+    how: language === 'es' ? "Alertas automáticas con acciones directas" : "Automatic alerts with direct actions",
+    gradient: "from-amber-500 to-red-500",
+    bgGlow: "bg-amber-500/20"
   }
 ];
 
@@ -176,7 +195,7 @@ export const FeaturesShowcase = () => {
         <div className="text-center">
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500/10 to-orange-500/10 backdrop-blur-sm rounded-full text-sm text-slate-300 border border-white/10 mb-4">
             <Sparkles className="w-4 h-4 text-orange-400" />
-            {language === 'es' ? '12 Módulos Potentes' : '12 Powerful Modules'}
+            {language === 'es' ? '14 Módulos Potentes' : '14 Powerful Modules'}
           </span>
           <h2 className="text-3xl md:text-4xl font-black text-white">
             {language === 'es' ? 'Todo lo que puedes hacer con' : 'Everything you can do with'}{' '}
