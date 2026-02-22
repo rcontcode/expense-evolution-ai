@@ -78,6 +78,9 @@ const FinancialHabitsCard = lazy(() => import('@/components/mentorship/Financial
 const FinancialEducationCard = lazy(() => import('@/components/mentorship/FinancialEducationCard').then(m => ({ default: m.FinancialEducationCard })));
 const SMARTGoalsCard = lazy(() => import('@/components/mentorship/SMARTGoalsCard').then(m => ({ default: m.SMARTGoalsCard })));
 const SavingsGoalsSection = lazy(() => import('@/components/settings/SavingsGoalsSection').then(m => ({ default: m.SavingsGoalsSection })));
+const WhatIfSimulator = lazy(() => import('@/components/dashboard/WhatIfSimulator').then(m => ({ default: m.WhatIfSimulator })));
+const MoneyMomentumScore = lazy(() => import('@/components/dashboard/MoneyMomentumScore').then(m => ({ default: m.MoneyMomentumScore })));
+const NegotiationScriptGenerator = lazy(() => import('@/components/dashboard/NegotiationScriptGenerator').then(m => ({ default: m.NegotiationScriptGenerator })));
 const GlobalLearningChart = lazy(() => import('@/components/mentorship/GlobalLearningChart').then(m => ({ default: m.GlobalLearningChart })));
 const ReadingReminderSettings = lazy(() => import('@/components/mentorship/ReadingReminderSettings').then(m => ({ default: m.ReadingReminderSettings })));
 const ReadingPaceComparison = lazy(() => import('@/components/mentorship/ReadingPaceComparison').then(m => ({ default: m.ReadingPaceComparison })));
@@ -718,6 +721,12 @@ export default function Dashboard() {
                                   <ClientProfitability />
                                 </div>
                                 <FinancialCorrelations />
+                                {/* Unique Power Tools */}
+                                <div className="grid gap-6 lg:grid-cols-2">
+                                  <MoneyMomentumScore />
+                                  <WhatIfSimulator />
+                                </div>
+                                <NegotiationScriptGenerator />
                                 <TransactionTimeline />
                                 <div className="grid gap-6 lg:grid-cols-2">
                                   <NetWorthTreemap />
