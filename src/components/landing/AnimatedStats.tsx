@@ -29,7 +29,7 @@ const getAllStats = (language: string): StatItem[][] => [
     { icon: Receipt, value: 10000, suffix: "+", label: language === 'es' ? "Recibos procesados" : "Receipts processed", color: "from-cyan-400 to-blue-500", glowColor: "rgba(34, 211, 238, 0.6)" },
     { icon: Clock, value: 5, suffix: language === 'es' ? "h/mes" : "h/mo", label: language === 'es' ? "Tiempo ahorrado" : "Time saved", color: "from-orange-400 to-red-500", glowColor: "rgba(251, 146, 60, 0.6)" },
     { icon: TrendingUp, value: 98, suffix: "%", label: language === 'es' ? "Precisión Smart" : "Smart accuracy", color: "from-emerald-400 to-teal-500", glowColor: "rgba(52, 211, 153, 0.6)" },
-    { icon: Users, value: 500, suffix: "+", label: "Beta testers", color: "from-purple-400 to-pink-500", glowColor: "rgba(192, 132, 252, 0.6)" },
+    { icon: Users, value: 12, suffix: "+", label: language === 'es' ? "Categorías" : "Categories", color: "from-purple-400 to-pink-500", glowColor: "rgba(192, 132, 252, 0.6)" },
     { icon: Zap, value: 3, suffix: language === 'es' ? "seg" : "sec", label: language === 'es' ? "Procesamiento" : "Processing", color: "from-amber-400 to-orange-500", glowColor: "rgba(251, 191, 36, 0.6)" },
     { icon: Shield, value: 100, suffix: "%", label: language === 'es' ? "Datos seguros" : "Secure data", color: "from-blue-400 to-indigo-500", glowColor: "rgba(96, 165, 250, 0.6)" },
   ],

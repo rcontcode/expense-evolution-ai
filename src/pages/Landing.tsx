@@ -21,7 +21,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { SocialLinks } from '@/components/SocialLinks';
 import { ContactForm } from '@/components/ContactForm';
 import { LiveSocialProof } from '@/components/landing/LiveSocialProof';
-import { UrgencyBanner } from '@/components/landing/UrgencyBanner';
+
 import { Wallet, CalendarCheck } from 'lucide-react';
 
 // Lazy loader with retry for transient network errors
@@ -1170,11 +1170,6 @@ export default function Landing() {
       </section>
 
       {/* Urgency Banner - before pricing */}
-      <section className="py-6 px-4">
-        <div className="container mx-auto max-w-5xl">
-          <UrgencyBanner variant="banner" />
-        </div>
-      </section>
 
       {/* Pricing Section with parallax */}
       <section id="pricing-section" className="relative py-24 bg-slate-950 overflow-hidden">
@@ -1223,11 +1218,13 @@ export default function Landing() {
               <span className={`text-sm font-medium transition-colors ${isAnnual ? 'text-white' : 'text-slate-500'}`}>
                 {language === 'es' ? 'Anual' : 'Annual'}
               </span>
-              {isAnnual && (
-                <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 animate-pulse">
-                  -20% OFF
-                </Badge>
-              )}
+              <Badge className={`transition-all duration-300 border-0 ${
+                isAnnual 
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white animate-pulse' 
+                  : 'opacity-0 pointer-events-none bg-transparent text-transparent'
+              }`}>
+                -20% OFF
+              </Badge>
             </div>
           </motion.div>
 
