@@ -300,7 +300,7 @@ export default function Dashboard() {
              ============================================= */}
 
           <div className="side-by-side" data-highlight="timeline-section">
-            <div data-highlight="timeline-chart">
+            <div data-highlight="timeline-chart" className="flex flex-col">
               <YearTimelineChart
                 selectedMonth={selectedMonth}
                 onMonthSelect={setSelectedMonth}

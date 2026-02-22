@@ -178,7 +178,7 @@ export function YearTimelineChart({
   const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
   return (
-    <Card className="border border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden">
+    <Card className="border border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden h-full flex flex-col">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
@@ -226,7 +226,7 @@ export function YearTimelineChart({
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 flex-1 flex flex-col">
         {/* Mobile: Selected Month Info Banner */}
         {isTouchDevice && (
           <div className="sm:hidden p-3 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20">
