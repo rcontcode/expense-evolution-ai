@@ -43,6 +43,7 @@ export const BetaGamificationCard = () => {
     goalsWithProgress,
     nextTierProgress,
     redemptions,
+    betaQuota,
     isLoading,
     claimReward,
     canClaimReward,
@@ -208,6 +209,40 @@ export const BetaGamificationCard = () => {
           {profile?.beta_expires_at && (
             <div className="px-6 py-3 border-b border-white/10">
               <BetaExpirationBadge expiresAt={profile.beta_expires_at} showDetailed />
+            </div>
+          )}
+
+          {/* Weekly Quota Status */}
+          {betaQuota && betaQuota.is_beta && (
+            <div className={`px-6 py-3 border-b flex items-center gap-3 ${
+              betaQuota.quota_met 
+                ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800' 
+                : 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800'
+            }`}>
+              <div className={`p-2 rounded-full ${betaQuota.quota_met ? 'bg-emerald-100 dark:bg-emerald-900' : 'bg-amber-100 dark:bg-amber-900'}`}>
+                {betaQuota.quota_met 
+                  ? <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  : <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                }
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold">
+                  {language === 'es' ? 'Cuota semanal' : 'Weekly quota'}: {betaQuota.contributions_14d}/{betaQuota.required}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {betaQuota.quota_met 
+                    ? (language === 'es' ? '✅ ¡Cuota cumplida! Tu acceso Pro Beta está activo.' : '✅ Quota met! Your Pro Beta access is active.')
+                    : (language === 'es' 
+                        ? `⚠️ Necesitas ${betaQuota.required - betaQuota.contributions_14d} contribución(es) más en 14 días para mantener tu acceso.`
+                        : `⚠️ You need ${betaQuota.required - betaQuota.contributions_14d} more contribution(s) in 14 days to keep your access.`
+                      )
+                  }
+                </p>
+              </div>
+              <Progress 
+                value={(betaQuota.contributions_14d / betaQuota.required) * 100} 
+                className="w-20 h-2" 
+              />
             </div>
           )}
 

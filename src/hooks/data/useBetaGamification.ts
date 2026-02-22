@@ -114,19 +114,19 @@ export const REWARDS_CONFIG = {
     tier: 'platinum' as const,
   },
   pro_6_months: {
-    points: 1500,
+    points: 2000,
     labelEs: '🚀 Pro 6 Meses',
     labelEn: '🚀 Pro 6 Months',
     descEs: 'Acceso completo a todas las funciones Pro por 6 meses',
     descEn: 'Full access to all Pro features for 6 months',
-    tier: 'platinum' as const,
+    tier: 'diamond' as const,
   },
   pro_1_year: {
-    points: 2000,
+    points: 3000,
     labelEs: '👑 Pro 1 Año',
     labelEn: '👑 Pro 1 Year',
-    descEs: 'Acceso completo a todas las funciones Pro por 12 meses',
-    descEn: 'Full access to all Pro features for 12 months',
+    descEs: 'Acceso completo a todas las funciones Pro por 12 meses. ¡El premio máximo!',
+    descEn: 'Full access to all Pro features for 12 months. The ultimate reward!',
     tier: 'diamond' as const,
   },
 };
@@ -165,6 +165,31 @@ export const useBetaGamification = () => {
       return data as BetaTesterPoints;
     },
     enabled: !!user?.id,
+  });
+
+  // Check beta weekly quota
+  const { data: betaQuota } = useQuery({
+    queryKey: ['beta-quota', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase.rpc('check_beta_weekly_quota', {
+        p_user_id: user.id,
+      });
+      if (error) throw error;
+      return data as {
+        is_beta: boolean;
+        quota_met: boolean;
+        contributions_14d: number;
+        feedback_count?: number;
+        bug_report_count?: number;
+        days_since_last: number;
+        required: number;
+        deactivated?: boolean;
+        message?: string;
+      };
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5,
   });
 
   // Fetch all goals
@@ -324,6 +349,7 @@ export const useBetaGamification = () => {
     goals,
     completions,
     redemptions,
+    betaQuota,
     goalsWithProgress: getGoalsWithProgress(),
     nextTierProgress: getNextTierProgress(),
     // Loading
