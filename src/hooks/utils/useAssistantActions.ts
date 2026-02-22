@@ -84,6 +84,9 @@ const ROUTE_MAP: Record<string, string> = {
   taxes: '/tax-calendar',
   tags: '/tags',
   betafeedback: '/beta-feedback',
+  report: '/dashboard?tab=analytics',
+  alerts: '/dashboard',
+  monthlyreport: '/dashboard?tab=analytics',
 };
 
 export function useAssistantActions(options: UseAssistantActionsOptions) {
