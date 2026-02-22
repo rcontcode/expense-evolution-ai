@@ -77,6 +77,7 @@ const FinancialAdventure = lazyWithRetry(() => import("./pages/FinancialAdventur
 const Trash = lazyWithRetry(() => import("./pages/Trash"));
 const DataHealth = lazyWithRetry(() => import("./pages/DataHealth"));
 const FilesPage = lazyWithRetry(() => import("./pages/Files"));
+const UserGuide = lazyWithRetry(() => import("./pages/UserGuide"));
 
 // Lazy load heavy global components with retry
 const ChatAssistant = lazyWithRetry(() =>
@@ -238,6 +239,7 @@ const App = () => (
                         <Route path="/trash" element={<ProtectedRoute><Trash /></ProtectedRoute>} />
                         <Route path="/data-health" element={<ProtectedRoute><DataHealth /></ProtectedRoute>} />
                         <Route path="/files" element={<ProtectedRoute><FilesPage /></ProtectedRoute>} />
+                        <Route path="/user-guide" element={<ProtectedRoute><UserGuide /></ProtectedRoute>} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
