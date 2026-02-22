@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { es as esLocale } from 'date-fns/locale';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Users,
   Star,
@@ -25,7 +26,10 @@ import {
   Target,
   Flame,
   Shield,
-  Calendar
+  Calendar,
+  Gift,
+  CheckCircle,
+  XCircle,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -43,6 +47,9 @@ import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AdminBetaControls } from '@/components/beta/AdminBetaControls';
 import { BetaExpirationBadge } from '@/components/beta/BetaExpirationBadge';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { REWARDS_CONFIG } from '@/hooks/data/useBetaGamification';
 
 const APP_SECTIONS = [
   { id: 'dashboard', emoji: '📊' }, { id: 'expenses', emoji: '💸' }, { id: 'income', emoji: '💰' },
@@ -152,6 +159,73 @@ const BetaDashboard = () => {
   
   const [expandedBugId, setExpandedBugId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
+  const [rewardActionLoading, setRewardActionLoading] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  // Fetch all reward redemptions (admin can see all via RLS)
+  const { data: allRedemptions } = useQuery({
+    queryKey: ['admin-beta-redemptions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('beta_reward_redemptions')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const { data: redemptionProfiles } = useQuery({
+    queryKey: ['admin-redemption-profiles', allRedemptions?.map(r => r.user_id)],
+    queryFn: async () => {
+      if (!allRedemptions || allRedemptions.length === 0) return {};
+      const userIds = [...new Set(allRedemptions.map(r => r.user_id))];
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', userIds);
+      const map: Record<string, { name: string; email: string }> = {};
+      for (const p of data || []) {
+        map[p.id] = { name: (p as any).full_name || 'Sin nombre', email: (p as any).email || '' };
+      }
+      return map;
+    },
+    enabled: !!allRedemptions && allRedemptions.length > 0,
+  });
+
+  const handleApproveReward = async (redemptionId: string) => {
+    setRewardActionLoading(redemptionId);
+    try {
+      const { error } = await supabase.rpc('apply_beta_reward', {
+        p_redemption_id: redemptionId,
+      });
+      if (error) throw error;
+      toast.success(language === 'es' ? '✅ Recompensa aprobada y aplicada' : '✅ Reward approved and applied');
+      queryClient.invalidateQueries({ queryKey: ['admin-beta-redemptions'] });
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+    } finally {
+      setRewardActionLoading(null);
+    }
+  };
+
+  const handleRejectReward = async (redemptionId: string) => {
+    setRewardActionLoading(redemptionId);
+    try {
+      const { error } = await supabase
+        .from('beta_reward_redemptions')
+        .update({ status: 'rejected', admin_notes: 'Rechazado por admin' })
+        .eq('id', redemptionId);
+      if (error) throw error;
+      toast.success(language === 'es' ? '❌ Recompensa rechazada' : '❌ Reward rejected');
+      queryClient.invalidateQueries({ queryKey: ['admin-beta-redemptions'] });
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+    } finally {
+      setRewardActionLoading(null);
+    }
+  };
+
 
   // Translations
   const t = {
@@ -509,7 +583,7 @@ const BetaDashboard = () => {
           transition={{ delay: 0.3 }}
         >
           <Tabs defaultValue="users" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 p-1 bg-muted/50 rounded-xl h-14">
+            <TabsList className="grid w-full grid-cols-5 p-1 bg-muted/50 rounded-xl h-14">
               <TabsTrigger 
                 value="users" 
                 className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold"
@@ -530,6 +604,13 @@ const BetaDashboard = () => {
               >
                 <Bug className="h-4 w-4" />
                 {text.bugsTab}
+              </TabsTrigger>
+              <TabsTrigger 
+                value="rewards" 
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-amber-600 data-[state=active]:text-white rounded-lg font-semibold"
+              >
+                <Gift className="h-4 w-4" />
+                {language === 'es' ? '🎁 Premios' : '🎁 Rewards'}
               </TabsTrigger>
               <TabsTrigger 
                 value="usage" 
@@ -927,6 +1008,115 @@ const BetaDashboard = () => {
                       </div>
                     )}
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Rewards Tab */}
+            <TabsContent value="rewards">
+              <Card className="border-2 border-yellow-100 dark:border-yellow-900/50 shadow-xl">
+                <CardHeader className="border-b bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/50">
+                      <Gift className="h-5 w-5 text-yellow-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        🎁 {language === 'es' ? 'Solicitudes de Recompensa' : 'Reward Requests'}
+                      </CardTitle>
+                      <CardDescription>
+                        {language === 'es' ? 'Aprueba o rechaza las recompensas solicitadas por beta testers' : 'Approve or reject rewards requested by beta testers'}
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  {allRedemptions && allRedemptions.length > 0 ? (
+                    <div className="space-y-4">
+                      {allRedemptions.map((redemption) => {
+                        const profile = redemptionProfiles?.[redemption.user_id];
+                        const rewardConfig = REWARDS_CONFIG[redemption.reward_type as keyof typeof REWARDS_CONFIG];
+                        const isPending = redemption.status === 'pending';
+                        
+                        return (
+                          <motion.div
+                            key={redemption.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="p-4 border-2 rounded-xl space-y-3 hover:shadow-md transition-all"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="font-semibold text-foreground">
+                                  {profile?.name || redemption.user_id.slice(0, 8)}
+                                </p>
+                                <p className="text-sm text-muted-foreground">{profile?.email}</p>
+                              </div>
+                              <Badge variant={
+                                redemption.status === 'applied' ? 'default' :
+                                redemption.status === 'approved' ? 'default' :
+                                redemption.status === 'rejected' ? 'destructive' :
+                                'secondary'
+                              }>
+                                {redemption.status === 'pending' ? '⏳ Pendiente' :
+                                 redemption.status === 'approved' ? '✅ Aprobado' :
+                                 redemption.status === 'applied' ? '🎉 Aplicado' :
+                                 '❌ Rechazado'}
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                              <span className="text-2xl">{rewardConfig?.labelEs?.split(' ')[0] || '🎁'}</span>
+                              <div>
+                                <p className="font-medium">{rewardConfig?.[language === 'es' ? 'labelEs' : 'labelEn'] || redemption.reward_type}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {redemption.points_spent} pts • Tier: {redemption.tier_at_redemption} • {format(new Date(redemption.created_at), 'PPP', { locale: language === 'es' ? esLocale : undefined })}
+                                </p>
+                              </div>
+                            </div>
+
+                            {isPending && (
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  className="flex-1 gap-1 bg-emerald-600 hover:bg-emerald-700"
+                                  onClick={() => handleApproveReward(redemption.id)}
+                                  disabled={rewardActionLoading === redemption.id}
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                  {language === 'es' ? 'Aprobar y Aplicar' : 'Approve & Apply'}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  className="flex-1 gap-1"
+                                  onClick={() => handleRejectReward(redemption.id)}
+                                  disabled={rewardActionLoading === redemption.id}
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                  {language === 'es' ? 'Rechazar' : 'Reject'}
+                                </Button>
+                              </div>
+                            )}
+
+                            {redemption.admin_notes && (
+                              <p className="text-xs text-muted-foreground italic">📝 {redemption.admin_notes}</p>
+                            )}
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Gift className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                      <p className="text-muted-foreground">
+                        {language === 'es' ? 'No hay solicitudes de recompensa' : 'No reward requests yet'}
+                      </p>
+                      <p className="text-sm text-muted-foreground/70">
+                        {language === 'es' ? 'Las solicitudes aparecerán cuando los testers canjeen sus puntos' : 'Requests will appear when testers redeem their points'}
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
