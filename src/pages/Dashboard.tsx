@@ -81,6 +81,8 @@ const SavingsGoalsSection = lazy(() => import('@/components/settings/SavingsGoal
 const WhatIfSimulator = lazy(() => import('@/components/dashboard/WhatIfSimulator').then(m => ({ default: m.WhatIfSimulator })));
 const MoneyMomentumScore = lazy(() => import('@/components/dashboard/MoneyMomentumScore').then(m => ({ default: m.MoneyMomentumScore })));
 const NegotiationScriptGenerator = lazy(() => import('@/components/dashboard/NegotiationScriptGenerator').then(m => ({ default: m.NegotiationScriptGenerator })));
+const SmartMonthlyReport = lazy(() => import('@/components/dashboard/SmartMonthlyReport').then(m => ({ default: m.SmartMonthlyReport })));
+const ProactiveAlertsWidget = lazy(() => import('@/components/dashboard/ProactiveAlertsWidget').then(m => ({ default: m.ProactiveAlertsWidget })));
 const GlobalLearningChart = lazy(() => import('@/components/mentorship/GlobalLearningChart').then(m => ({ default: m.GlobalLearningChart })));
 const ReadingReminderSettings = lazy(() => import('@/components/mentorship/ReadingReminderSettings').then(m => ({ default: m.ReadingReminderSettings })));
 const ReadingPaceComparison = lazy(() => import('@/components/mentorship/ReadingPaceComparison').then(m => ({ default: m.ReadingPaceComparison })));
@@ -339,7 +341,10 @@ export default function Dashboard() {
             </Suspense>
           )}
 
-          {/* Profile Completion Nudge + Gamification (moved below timeline) */}
+          {/* Smart Alerts + Profile Completion + Gamification */}
+          <Suspense fallback={null}>
+            <ProactiveAlertsWidget />
+          </Suspense>
           <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
           <DashboardGamificationWidget compact={true} />
 
@@ -706,7 +711,8 @@ export default function Dashboard() {
                           {activeTab === 'analytics' && (
                             <Suspense fallback={<AnalyticsSkeleton />}>
                               <div className="space-y-6">
-                                <IncomeVsExpensesChart />
+                              <SmartMonthlyReport />
+                              <IncomeVsExpensesChart />
                                 <div className="grid gap-6 lg:grid-cols-2">
                                   <SavingsRateChart />
                                   <YearOverYearComparison />
