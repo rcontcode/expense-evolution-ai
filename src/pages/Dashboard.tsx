@@ -27,6 +27,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ViewModeToggle, OrganizedDashboard } from '@/components/focus';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { YearTimelineChart } from '@/components/dashboard/YearTimelineChart';
+import { LiveClock } from '@/components/dashboard/LiveClock';
 import { MonthDetailPanel } from '@/components/dashboard/MonthDetailPanel';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
@@ -265,6 +266,9 @@ export default function Dashboard() {
       <TooltipProvider delayDuration={200}>
         <div className="page-container section-gap">
           
+          {/* Live Date & Time */}
+          <LiveClock />
+
           {/* Beta Reminder Banner - Gentle motivational prompts */}
           <BetaReminderBanner />
           
