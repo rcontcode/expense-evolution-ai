@@ -16,10 +16,11 @@ import {
   Upload, Loader2, CheckCircle2, AlertTriangle, X, Zap, 
   FileText, ArrowRight, RotateCcw, Sparkles, Package,
   Trash2, RefreshCw, ExternalLink, Image, FileIcon, Eye,
-  ChevronRight, ArrowUpRight, Inbox, HelpCircle, Clock, ChevronDown
+  ChevronRight, ArrowUpRight, Inbox, HelpCircle, Clock, ChevronDown, Wand2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PostUploadWizard } from './PostUploadWizard';
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -573,6 +574,7 @@ function getTimeAgo(date: Date, language: string): string {
 export function UnifiedChaosInboxPanel() {
   const { language } = useLanguage();
   const [historyOpen, setHistoryOpen] = useState(true);
+  const [wizardOpen, setWizardOpen] = useState(false);
   const {
     documents,
     history,
@@ -594,6 +596,9 @@ export function UnifiedChaosInboxPanel() {
   const hasAnyDocs = stats.total > 0;
   const isWorking = stats.uploading > 0 || stats.classifying > 0 || stats.processing > 0;
   const progressPercent = stats.total > 0 ? ((stats.classified + stats.processed) / stats.total) * 100 : 0;
+  
+  // Show wizard button when there are processed items in history
+  const showWizardTrigger = history.length >= 2 && !isWorking;
 
   return (
     <TooltipProvider>
@@ -662,6 +667,29 @@ export function UnifiedChaosInboxPanel() {
 
         {/* Batch summary */}
         <BatchSummary stats={stats} onClear={clearProcessed} language={language} />
+
+        {/* Post-upload wizard trigger */}
+        {showWizardTrigger && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <Button
+              onClick={() => setWizardOpen(true)}
+              className="w-full gap-2 bg-gradient-to-r from-primary to-chart-2 hover:opacity-90"
+              size="lg"
+            >
+              <Wand2 className="h-5 w-5" />
+              {language === 'es' 
+                ? `🧙 Asistente: Organizar ${history.length} documentos procesados`
+                : `🧙 Assistant: Organize ${history.length} processed documents`}
+            </Button>
+          </motion.div>
+        )}
+
+        {/* Post-upload wizard dialog */}
+        <PostUploadWizard
+          open={wizardOpen}
+          onClose={() => setWizardOpen(false)}
+          processedHistory={history}
+        />
 
         {/* Document list */}
         {hasAnyDocs && (
