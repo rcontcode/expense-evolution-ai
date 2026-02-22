@@ -63,9 +63,9 @@ export const IncomeCard = memo(function IncomeCard({ income, onEdit, onDelete }:
   const dateLocale = language === 'es' ? es : enUS;
   const category = getIncomeCategory(income.income_type);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const hasDocument = !!(income as any).document_id;
-  const documentFilePath = (income as any).document?.file_path;
-  const documentFileName = (income as any).document?.file_name;
+  const hasDocument = !!income.document_id;
+  const documentFilePath = income.document?.file_path;
+  const documentFileName = income.document?.file_name;
 
   return (
     <>
