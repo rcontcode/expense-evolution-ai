@@ -21,6 +21,8 @@
  import { useBankInsights } from '@/hooks/data/useBankAnalysis';
  import { useUserSettings, UserPreferences } from '@/hooks/data/useUserSettings';
  import { useExpenses } from '@/hooks/data/useExpenses';
+ import { useIncome } from '@/hooks/data/useIncome';
+ import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
  import { motion } from 'framer-motion';
  import { Link } from 'react-router-dom';
  import { startOfMonth, endOfMonth, subMonths, parseISO, format } from 'date-fns';
@@ -44,6 +46,8 @@
    const { data: transactions } = useBankTransactions();
    const insights = useBankInsights();
    const { data: settings } = useUserSettings();
+   const { data: allIncome } = useIncome();
+   const { formatCurrency: fc } = useFormatCurrency();
    
    const now = new Date();
    const monthStart = startOfMonth(now);
@@ -125,63 +129,98 @@
              label: l ? 'del presupuesto' : 'of budget' 
            }
          });
-       } else if (usage > 100) {
-         result.push({
-           id: 'budget-exceeded',
-           type: 'warning',
-           priority: 1,
-           icon: AlertTriangle,
-           title: l ? '⚠️ Presupuesto excedido' : '⚠️ Budget exceeded',
-           description: l 
-             ? `Has superado tu presupuesto por $${(currentTotal - globalBudget).toFixed(0)}`
-             : `You've exceeded your budget by $${(currentTotal - globalBudget).toFixed(0)}`,
-           action: { label: l ? 'Ajustar presupuesto' : 'Adjust budget', to: '/dashboard?section=budgets' }
-         });
-       }
+      } else if (usage > 100) {
+          result.push({
+            id: 'budget-exceeded',
+            type: 'warning',
+            priority: 1,
+            icon: AlertTriangle,
+            title: l ? '⚠️ Presupuesto excedido' : '⚠️ Budget exceeded',
+            description: l 
+              ? `Has superado tu presupuesto por ${fc(currentTotal - globalBudget)}`
+              : `You've exceeded your budget by ${fc(currentTotal - globalBudget)}`,
+            action: { label: l ? 'Ajustar presupuesto' : 'Adjust budget', to: '/dashboard?section=budgets' }
+          });
+        }
      }
      
      // Recurring payments insight
-     const recurringTotal = insights.recurringPayments.reduce((sum, p) => sum + p.amount, 0);
-     if (recurringTotal > 100) {
-       const yearlyRecurring = recurringTotal * 12;
-       result.push({
-         id: 'recurring-insight',
-         type: 'tip',
-         priority: 4,
-         icon: Clock,
-         title: l ? '💡 Tus pagos fijos' : '💡 Your fixed payments',
-         description: l 
-           ? `Tienes $${recurringTotal.toFixed(0)}/mes en pagos recurrentes ($${yearlyRecurring.toFixed(0)}/año)`
-           : `You have $${recurringTotal.toFixed(0)}/mo in recurring payments ($${yearlyRecurring.toFixed(0)}/yr)`,
-         metric: { 
-           value: `$${recurringTotal.toFixed(0)}`, 
-           label: l ? '/mes fijo' : '/mo fixed' 
-         }
-       });
-     }
+      const recurringTotal = insights.recurringPayments.reduce((sum, p) => sum + p.amount, 0);
+      if (recurringTotal > 100) {
+        const yearlyRecurring = recurringTotal * 12;
+        result.push({
+          id: 'recurring-insight',
+          type: 'tip',
+          priority: 4,
+          icon: Clock,
+          title: l ? '💡 Tus pagos fijos' : '💡 Your fixed payments',
+          description: l 
+            ? `Tienes ${fc(recurringTotal)}/mes en pagos recurrentes (${fc(yearlyRecurring)}/año)`
+            : `You have ${fc(recurringTotal)}/mo in recurring payments (${fc(yearlyRecurring)}/yr)`,
+          metric: { 
+            value: fc(recurringTotal), 
+            label: l ? '/mes fijo' : '/mo fixed' 
+          }
+        });
+      }
+      
+      // Real savings rate with income data
+      const currentMonthIncome = allIncome?.filter(i => {
+        const d = new Date(i.date);
+        return d >= monthStart && d <= monthEnd;
+      }).reduce((sum, i) => sum + Number(i.amount), 0) || 0;
+      
+      if (currentMonthIncome > 0 && currentTotal > 0) {
+        const savingsRate = ((currentMonthIncome - currentTotal) / currentMonthIncome) * 100;
+        if (savingsRate >= 20) {
+          result.push({
+            id: 'savings-rate',
+            type: 'achievement',
+            priority: 2,
+            icon: PiggyBank,
+            title: l ? `💪 Tasa de ahorro: ${savingsRate.toFixed(0)}%` : `💪 Savings rate: ${savingsRate.toFixed(0)}%`,
+            description: l 
+              ? `Estás ahorrando ${fc(currentMonthIncome - currentTotal)} este mes. ¡Excelente disciplina!`
+              : `You're saving ${fc(currentMonthIncome - currentTotal)} this month. Excellent discipline!`,
+            metric: { value: `${savingsRate.toFixed(0)}%`, label: l ? 'tasa de ahorro' : 'savings rate' }
+          });
+        } else if (savingsRate < 5 && savingsRate >= 0) {
+          result.push({
+            id: 'low-savings',
+            type: 'warning',
+            priority: 2,
+            icon: AlertTriangle,
+            title: l ? '⚠️ Tasa de ahorro baja' : '⚠️ Low savings rate',
+            description: l 
+              ? `Solo ahorras el ${savingsRate.toFixed(0)}% de tus ingresos. Revisa gastos variables.`
+              : `You're only saving ${savingsRate.toFixed(0)}% of income. Review variable expenses.`,
+            action: { label: l ? 'Ver gastos' : 'View expenses', to: '/expenses' }
+          });
+        }
+      }
+
+      // Savings potential (only if no income-based insight)
+      if (globalBudget > 0 && currentTotal < globalBudget && currentMonthIncome === 0) {
+        const potentialSavings = globalBudget - currentTotal;
+        result.push({
+          id: 'savings-potential',
+          type: 'opportunity',
+          priority: 5,
+          icon: PiggyBank,
+          title: l ? '💰 Potencial de ahorro' : '💰 Savings potential',
+          description: l 
+            ? `Si mantienes este ritmo, podrías ahorrar ${fc(potentialSavings)} este mes`
+            : `If you maintain this pace, you could save ${fc(potentialSavings)} this month`,
+          metric: { 
+            value: fc(potentialSavings), 
+            label: l ? 'posible ahorro' : 'potential savings' 
+          }
+        });
+      }
      
-     // Savings potential
-     if (globalBudget > 0 && currentTotal < globalBudget) {
-       const potentialSavings = globalBudget - currentTotal;
-       result.push({
-         id: 'savings-potential',
-         type: 'opportunity',
-         priority: 5,
-         icon: PiggyBank,
-         title: l ? '💰 Potencial de ahorro' : '💰 Savings potential',
-         description: l 
-           ? `Si mantienes este ritmo, podrías ahorrar $${potentialSavings.toFixed(0)} este mes`
-           : `If you maintain this pace, you could save $${potentialSavings.toFixed(0)} this month`,
-         metric: { 
-           value: `$${potentialSavings.toFixed(0)}`, 
-           label: l ? 'posible ahorro' : 'potential savings' 
-         }
-       });
-     }
-     
-     // Sort by priority and take top 4
-     return result.sort((a, b) => a.priority - b.priority).slice(0, 4);
-   }, [currentExpenses, lastExpenses, globalBudget, insights.recurringPayments, userName, language, now]);
+      // Sort by priority and take top 5
+      return result.sort((a, b) => a.priority - b.priority).slice(0, 5);
+    }, [currentExpenses, lastExpenses, globalBudget, insights.recurringPayments, userName, language, now, allIncome, fc]);
    
    if (smartInsights.length === 0) return null;
    
