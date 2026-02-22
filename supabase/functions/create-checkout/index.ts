@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 // Price IDs for EvoFinz plans
@@ -19,19 +19,19 @@ const PRICE_IDS = {
 const PRODUCT_DESCRIPTIONS: Record<string, { name: string; description: string }> = {
   premium_monthly: {
     name: "EvoFinz Premium Mensual",
-    description: "Gastos/ingresos ilimitados, 50 OCR/mes, clientes ilimitados, mileage tracking, gamificación, net worth, calendario fiscal, analytics avanzados.",
+    description: "Gastos/ingresos ilimitados, 50 OCR/mes, clientes ilimitados, mileage, gamificación, patrimonio neto, calendario fiscal, reporte mensual IA, alertas proactivas, mentoría (4 módulos), voz (30 min/mes).",
   },
   premium_annual: {
     name: "EvoFinz Premium Anual",
-    description: "Ahorra 20% - Todo Premium: gastos ilimitados, 50 OCR/mes, mileage, gamificación, net worth, calendario fiscal, analytics. Solo $5.59/mes.",
+    description: "Ahorra 20% - Todo Premium: gastos ilimitados, 50 OCR/mes, mileage, gamificación, patrimonio neto, calendario fiscal, reporte IA, alertas, mentoría. Solo $5.59/mes.",
   },
   pro_monthly: {
     name: "EvoFinz Pro Mensual",
-    description: "Plan completo: OCR ilimitado, análisis de contratos, optimizador fiscal, calculadora FIRE, mentoría financiera, asistente de voz, soporte 24/7.",
+    description: "Plan completo: OCR ilimitado, análisis contratos IA, análisis bancario, optimizador fiscal, FIRE, RRSP/TFSA, T2125, mentoría completa, voz (120 min/mes), soporte prioritario.",
   },
   pro_annual: {
     name: "EvoFinz Pro Anual",
-    description: "Ahorra 20% - Todo Pro: OCR ilimitado, contratos, fiscal, FIRE, mentoría, voz, exportación oficial, soporte 24/7. Solo $11.99/mes.",
+    description: "Ahorra 20% - Todo Pro: OCR ilimitado, contratos IA, fiscal, FIRE, RRSP/TFSA, T2125, mentoría, voz (120 min/mes), soporte prioritario. Solo $11.99/mes.",
   },
 };
 
