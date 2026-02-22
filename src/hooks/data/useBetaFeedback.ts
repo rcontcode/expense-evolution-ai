@@ -14,6 +14,11 @@ interface BetaFeedback {
   comment: string | null;
   suggestions: string | null;
   would_recommend: boolean | null;
+  allow_as_testimonial: boolean;
+  display_name_override: string | null;
+  is_published_testimonial: boolean;
+  testimonial_approved_by: string | null;
+  testimonial_approved_at: string | null;
   created_at: string;
   user_email?: string;
   user_name?: string;
@@ -67,6 +72,8 @@ interface CreateFeedbackParams {
   comment?: string;
   suggestions?: string;
   would_recommend?: boolean;
+  allow_as_testimonial?: boolean;
+  display_name_override?: string;
 }
 
 interface CreateBugReportParams {
@@ -336,6 +343,66 @@ export const useBetaFeedback = () => {
     },
   });
 
+  // Fetch published testimonials (for landing page - public)
+  const { data: publishedTestimonials, isLoading: isLoadingTestimonials } = useQuery({
+    queryKey: ['published-testimonials'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('beta_feedback')
+        .select('*')
+        .eq('is_published_testimonial', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Get profiles for display names
+      const userIds = [...new Set((data || []).map(f => f.user_id))];
+      if (userIds.length === 0) return [];
+      
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', userIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      return (data || []).map(feedback => ({
+        ...feedback,
+        user_name: (feedback as any).display_name_override || profileMap.get(feedback.user_id)?.full_name || 'Beta Tester',
+      }));
+    },
+  });
+
+  // Toggle testimonial publish status (admin)
+  const toggleTestimonialPublish = useMutation({
+    mutationFn: async ({ id, publish }: { id: string; publish: boolean }) => {
+      const updateData: Record<string, unknown> = {
+        is_published_testimonial: publish,
+      };
+      if (publish) {
+        updateData.testimonial_approved_by = user?.id;
+        updateData.testimonial_approved_at = new Date().toISOString();
+      } else {
+        updateData.testimonial_approved_by = null;
+        updateData.testimonial_approved_at = null;
+      }
+
+      const { error } = await supabase
+        .from('beta_feedback')
+        .update(updateData)
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['beta-feedback-all'] });
+      queryClient.invalidateQueries({ queryKey: ['published-testimonials'] });
+      toast({
+        title: 'Testimonio actualizado',
+      });
+    },
+  });
+
   // Log feature usage
   const logFeatureUsage = useMutation({
     mutationFn: async ({ 
@@ -409,12 +476,15 @@ export const useBetaFeedback = () => {
     userStats,
     feedbackStats,
     bugStats,
+    publishedTestimonials,
     // Loading states
     isLoading: isLoadingFeedback || isLoadingBugReports || isLoadingUsage || isLoadingUserStats,
+    isLoadingTestimonials,
     // Mutations
     submitFeedback,
     submitBugReport,
     updateBugReport,
+    toggleTestimonialPublish,
     logFeatureUsage,
   };
 };
