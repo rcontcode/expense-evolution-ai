@@ -60,7 +60,17 @@ export function useInvalidateRelated() {
 
   /** After any category budget mutation */
   const afterBudget = useCallback(() => {
-    invalidate('category-budgets', 'dashboard-stats');
+    invalidate('category-budgets', 'dashboard-stats', 'monthly-plan', 'income-summary');
+  }, [invalidate]);
+
+  /** After any document mutation */
+  const afterDocument = useCallback(() => {
+    invalidate('documents', 'expenses', 'income', 'dashboard-stats', 'data-health');
+  }, [invalidate]);
+
+  /** After any bank transaction mutation */
+  const afterBank = useCallback(() => {
+    invalidate('bank-transactions', 'bank-insights', 'dashboard-stats', 'recurring-bills', 'monthly-plan');
   }, [invalidate]);
 
   /** After any settings change */
@@ -123,5 +133,7 @@ export function useInvalidateRelated() {
     afterTag,
     afterHabit,
     afterJournal,
+    afterDocument,
+    afterBank,
   };
 }

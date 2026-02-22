@@ -189,10 +189,10 @@ export function SmartInsights({ data }: { data: InsightData }) {
   }
 
   const bgMap = {
-    success: "bg-emerald-500/10 border-emerald-500/20",
-    warning: "bg-amber-500/10 border-amber-500/20",
-    info: "bg-blue-500/10 border-blue-500/20",
-    danger: "bg-red-500/10 border-red-500/20",
+    success: "bg-chart-4/10 border-chart-4/20",
+    warning: "bg-chart-5/10 border-chart-5/20",
+    info: "bg-chart-1/10 border-chart-1/20",
+    danger: "bg-destructive/10 border-destructive/20",
   };
 
   return (

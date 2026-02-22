@@ -132,7 +132,7 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
     }
 
     // No budget set
-    const hasBudgets = (existingBudgets?.length ?? 0) > 0 || (settings as any)?.monthly_budget_limit > 0;
+    const hasBudgets = (existingBudgets?.length ?? 0) > 0 || ((settings?.preferences as any)?.global_monthly_budget ?? 0) > 0;
     if (!hasBudgets && budgetSuggestions.globalSuggestion > 0) {
       list.push({
         type: 'no_budget',
@@ -279,8 +279,8 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
               {currentStep === 'summary' && (
                 <div className="space-y-4">
                   <div className="text-center space-y-2">
-                    <div className="w-16 h-16 rounded-2xl bg-green-500/10 flex items-center justify-center mx-auto">
-                      <CheckCircle2 className="h-8 w-8 text-green-600" />
+                    <div className="w-16 h-16 rounded-2xl bg-chart-4/10 flex items-center justify-center mx-auto">
+                      <CheckCircle2 className="h-8 w-8 text-chart-4" />
                     </div>
                     <h3 className="text-xl font-bold">
                       {l ? '¡Procesamiento completado!' : 'Processing complete!'}
@@ -315,16 +315,16 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
                   {issues.length > 0 && (
                     <div className="space-y-2">
                       <h4 className="text-sm font-semibold flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        <AlertTriangle className="h-4 w-4 text-chart-5" />
                         {l ? 'Necesita tu atención:' : 'Needs your attention:'}
                       </h4>
                       {issues.map((issue) => {
                         const Icon = issue.icon;
                         return (
-                          <Card key={issue.type} className="border-amber-500/30 bg-amber-500/5 cursor-pointer hover:bg-amber-500/10 transition-colors"
+                          <Card key={issue.type} className="border-chart-5/30 bg-chart-5/5 cursor-pointer hover:bg-chart-5/10 transition-colors"
                             onClick={() => setCurrentStep(issue.step)}>
                             <CardContent className="p-3 flex items-center gap-3">
-                              <Icon className="h-5 w-5 text-amber-600 shrink-0" />
+                              <Icon className="h-5 w-5 text-chart-5 shrink-0" />
                               <div className="flex-1">
                                 <p className="text-sm font-medium">{issue.title}</p>
                                 <p className="text-xs text-muted-foreground">{issue.description}</p>
@@ -338,9 +338,9 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
                   )}
 
                   {issues.length === 0 && (
-                    <Card className="border-green-500/30 bg-green-500/5">
+                    <Card className="border-chart-4/30 bg-chart-4/5">
                       <CardContent className="p-4 text-center">
-                        <p className="text-sm text-green-700 dark:text-green-400">
+                        <p className="text-sm text-chart-4">
                           {l ? '✨ Todo se ve bien. Tu información financiera está organizada.' 
                              : '✨ Everything looks good. Your financial information is organized.'}
                         </p>
@@ -354,7 +354,7 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
               {currentStep === 'income' && (
                 <div className="space-y-4">
                   <div className="text-center space-y-2">
-                    <DollarSign className="h-10 w-10 text-green-500 mx-auto" />
+                    <DollarSign className="h-10 w-10 text-chart-4 mx-auto" />
                     <h3 className="text-lg font-bold">{l ? 'Ingresos' : 'Income'}</h3>
                     <p className="text-sm text-muted-foreground">
                       {(income?.length ?? 0) === 0
@@ -377,9 +377,9 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
                   )}
                   
                   {(income?.length ?? 0) > 0 && (
-                    <Card className="border-green-500/30 bg-green-500/5">
+                    <Card className="border-chart-4/30 bg-chart-4/5">
                       <CardContent className="p-4">
-                        <p className="text-sm text-green-700 dark:text-green-400">
+                        <p className="text-sm text-chart-4">
                           ✅ {l ? 'Ingresos registrados correctamente' : 'Income properly registered'}
                         </p>
                       </CardContent>
@@ -392,7 +392,7 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
               {currentStep === 'recurrences' && (
                 <div className="space-y-4">
                   <div className="text-center space-y-2">
-                    <RefreshCw className="h-10 w-10 text-blue-500 mx-auto" />
+                    <RefreshCw className="h-10 w-10 text-chart-1 mx-auto" />
                     <h3 className="text-lg font-bold">{l ? 'Pagos Recurrentes' : 'Recurring Payments'}</h3>
                     <p className="text-sm text-muted-foreground">
                       {(recurringBills?.length ?? 0) > 0
@@ -404,7 +404,7 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
                   </div>
                   
                   {analysis.billsProcessed.length > 0 && (
-                    <Card className="border-blue-500/30 bg-blue-500/5">
+                    <Card className="border-chart-1/30 bg-chart-1/5">
                       <CardContent className="p-4 space-y-2">
                         <p className="text-sm font-medium">
                           {l ? `Se procesaron ${analysis.billsProcessed.length} boleta(s) de servicio:` 
@@ -429,7 +429,7 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
               {currentStep === 'assignments' && (
                 <div className="space-y-4">
                   <div className="text-center space-y-2">
-                    <Building2 className="h-10 w-10 text-indigo-500 mx-auto" />
+                    <Building2 className="h-10 w-10 text-primary mx-auto" />
                     <h3 className="text-lg font-bold">{l ? 'Asignación de Gastos' : 'Expense Assignment'}</h3>
                     <p className="text-sm text-muted-foreground">
                       {l ? 'Asigna gastos pendientes a clientes y proyectos para reportes de reembolso.'
@@ -441,9 +441,9 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
                     const unassigned = expenses?.filter(e => !e.client_id && e.reimbursement_type === 'pending_classification') || [];
                     if (unassigned.length === 0) {
                       return (
-                        <Card className="border-green-500/30 bg-green-500/5">
+                        <Card className="border-chart-4/30 bg-chart-4/5">
                           <CardContent className="p-4 text-center">
-                            <p className="text-sm text-green-700 dark:text-green-400">
+                            <p className="text-sm text-chart-4">
                               ✅ {l ? 'Todos los gastos están asignados' : 'All expenses are assigned'}
                             </p>
                           </CardContent>
@@ -473,7 +473,7 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
                 return (
                   <div className="space-y-4">
                     <div className="text-center space-y-2">
-                      <Wallet className="h-10 w-10 text-emerald-500 mx-auto" />
+                      <Wallet className="h-10 w-10 text-chart-4 mx-auto" />
                       <h3 className="text-lg font-bold">{l ? 'Presupuesto Inteligente' : 'Smart Budget'}</h3>
                       <p className="text-sm text-muted-foreground">
                         {hasBudgets
@@ -485,7 +485,7 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
 
                     {!hasBudgets && budgetSuggestions.globalSuggestion > 0 && (
                       <>
-                        <Card className="border-emerald-500/30 bg-emerald-500/5">
+                        <Card className="border-chart-4/30 bg-chart-4/5">
                           <CardContent className="p-4 flex items-center justify-between">
                             <div>
                               <p className="text-sm font-medium">{l ? 'Presupuesto global sugerido' : 'Suggested global budget'}</p>
@@ -494,7 +494,7 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
                                    : `Average: ${formatCurrency(budgetSuggestions.globalAverage)} + 10% margin`}
                               </p>
                             </div>
-                            <span className="text-xl font-bold text-emerald-600">
+                            <span className="text-xl font-bold text-chart-4">
                               {formatCurrency(budgetSuggestions.globalSuggestion)}
                             </span>
                           </CardContent>
@@ -526,9 +526,9 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
                     )}
 
                     {hasBudgets && (
-                      <Card className="border-green-500/30 bg-green-500/5">
+                      <Card className="border-chart-4/30 bg-chart-4/5">
                         <CardContent className="p-4 text-center">
-                          <p className="text-sm text-green-700 dark:text-green-400">
+                          <p className="text-sm text-chart-4">
                             ✅ {l ? 'Presupuestos ya configurados' : 'Budgets already configured'}
                           </p>
                         </CardContent>
@@ -553,14 +553,14 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
               {currentStep === 'savings' && (
                 <div className="space-y-4">
                   <div className="text-center space-y-2">
-                    <PiggyBank className="h-10 w-10 text-pink-500 mx-auto" />
+                    <PiggyBank className="h-10 w-10 text-accent-foreground mx-auto" />
                     <h3 className="text-lg font-bold">{l ? 'Metas de Ahorro' : 'Savings Goals'}</h3>
                   </div>
 
                   {(savingsGoals?.length ?? 0) > 0 ? (
-                    <Card className="border-green-500/30 bg-green-500/5">
+                    <Card className="border-chart-4/30 bg-chart-4/5">
                       <CardContent className="p-4 text-center">
-                        <p className="text-sm text-green-700 dark:text-green-400">
+                        <p className="text-sm text-chart-4">
                           ✅ {l ? `Tienes ${savingsGoals?.length} meta(s) activa(s)` : `You have ${savingsGoals?.length} active goal(s)`}
                         </p>
                       </CardContent>
@@ -568,7 +568,7 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
                   ) : (
                     <>
                       {savingsCapacity.monthlySurplus > 0 ? (
-                        <Card className="border-pink-500/30 bg-pink-500/5">
+                        <Card className="border-primary/30 bg-primary/5">
                           <CardContent className="p-4 space-y-3">
                             <p className="text-sm font-medium">
                               {l ? '📊 Tu capacidad real de ahorro:' : '📊 Your real savings capacity:'}
@@ -576,15 +576,15 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
                             <div className="grid grid-cols-2 gap-3 text-center">
                               <div>
                                 <p className="text-xs text-muted-foreground">{l ? 'Ingreso promedio' : 'Avg income'}</p>
-                                <p className="font-bold text-green-600">{formatCurrency(savingsCapacity.avgMonthlyIncome)}</p>
+                                <p className="font-bold text-chart-4">{formatCurrency(savingsCapacity.avgMonthlyIncome)}</p>
                               </div>
                               <div>
                                 <p className="text-xs text-muted-foreground">{l ? 'Gasto promedio' : 'Avg expense'}</p>
-                                <p className="font-bold text-red-500">{formatCurrency(savingsCapacity.avgMonthlyExpenses)}</p>
+                                <p className="font-bold text-destructive">{formatCurrency(savingsCapacity.avgMonthlyExpenses)}</p>
                               </div>
                               <div>
                                 <p className="text-xs text-muted-foreground">{l ? 'Superávit mensual' : 'Monthly surplus'}</p>
-                                <p className="font-bold text-emerald-600">{formatCurrency(savingsCapacity.monthlySurplus)}</p>
+                                <p className="font-bold text-chart-4">{formatCurrency(savingsCapacity.monthlySurplus)}</p>
                               </div>
                               <div>
                                 <p className="text-xs text-muted-foreground">{l ? 'Ahorro sugerido/mes' : 'Suggested savings/mo'}</p>
@@ -666,8 +666,8 @@ export function PostUploadWizard({ open, onClose, processedHistory }: PostUpload
               {/* STEP: Done */}
               {currentStep === 'done' && (
                 <div className="space-y-4 text-center py-6">
-                  <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center mx-auto">
-                    <CheckCircle2 className="h-10 w-10 text-green-600" />
+                  <div className="w-20 h-20 rounded-full bg-chart-4/10 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="h-10 w-10 text-chart-4" />
                   </div>
                   <h3 className="text-xl font-bold">
                     {l ? '🎉 ¡Todo listo!' : '🎉 All set!'}
