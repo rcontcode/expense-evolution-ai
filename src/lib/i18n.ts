@@ -421,6 +421,7 @@ export const translations = {
       files: 'Archivos',
       trash: 'Papelera',
       dataHealth: 'Salud de Datos',
+      userGuide: 'Manual de Usuario',
     },
     budget: {
       pageDescription: 'Controla tu plan mensual, presupuestos por categoría, alertas y proyecciones',
@@ -1386,6 +1387,7 @@ export const translations = {
       files: 'Files',
       trash: 'Trash',
       dataHealth: 'Data Health',
+      userGuide: 'User Guide',
     },
     budget: {
       pageDescription: 'Control your monthly plan, category budgets, alerts and projections',
