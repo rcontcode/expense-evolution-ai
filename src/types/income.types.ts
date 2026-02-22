@@ -34,6 +34,7 @@ export interface Income {
   client_id: string | null;
   project_id: string | null;
   entity_id: string | null;
+  document_id: string | null;
   recurrence: RecurrenceType;
   recurrence_end_date: string | null;
   is_taxable: boolean;
@@ -45,6 +46,7 @@ export interface Income {
 export interface IncomeWithRelations extends Income {
   client?: { id: string; name: string } | null;
   project?: { id: string; name: string; color: string } | null;
+  document?: { id: string; file_path: string; file_name: string } | null;
 }
 
 export interface Project {

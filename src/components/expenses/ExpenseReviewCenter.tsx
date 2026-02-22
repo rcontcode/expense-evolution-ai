@@ -81,6 +81,17 @@ function MiniImageViewer({ filePath, className }: { filePath: string | null; cla
     </div>
   );
 
+  // Check if it's a PDF
+  const isPdf = filePath?.toLowerCase().endsWith('.pdf');
+
+  if (isPdf) {
+    return (
+      <div className={cn("relative rounded-lg overflow-hidden border bg-black/5 dark:bg-white/5", className)}>
+        <iframe src={url} className="w-full h-full border-0" title="PDF Preview" />
+      </div>
+    );
+  }
+
   return (
     <div className={cn("relative rounded-lg overflow-hidden border bg-black/5 dark:bg-white/5", className)}>
       {/* Controls */}
@@ -374,8 +385,11 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
     toast.success(language === 'es' ? '🗑️ Ingreso descartado' : '🗑️ Income discarded');
   }, [queryClient, language]);
 
-  // Auto-select tab based on what needs attention (only on mount/data change)
+  // Auto-select tab based on what needs attention — only on initial mount
+  const hasAutoSelected = useRef(false);
   useEffect(() => {
+    if (hasAutoSelected.current) return;
+    hasAutoSelected.current = true;
     if (discrepancies.length > 0) setActiveTab('discrepancies');
     else if (pendingIncome.length > 0) setActiveTab('income');
     else if (noReceipt.length > 0) setActiveTab('noreceipt');
