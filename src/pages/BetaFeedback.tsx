@@ -25,6 +25,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -156,6 +157,8 @@ const BetaFeedback = () => {
   const [comment, setComment] = useState('');
   const [suggestions, setSuggestions] = useState('');
   const [wouldRecommend, setWouldRecommend] = useState<boolean | null>(null);
+  const [allowAsTestimonial, setAllowAsTestimonial] = useState(false);
+  const [displayNameOverride, setDisplayNameOverride] = useState('');
   const [feedbackSent, setFeedbackSent] = useState(false);
 
   // Bug report form state
@@ -280,6 +283,8 @@ const BetaFeedback = () => {
       comment: comment || undefined,
       suggestions: suggestions || undefined,
       would_recommend: wouldRecommend ?? undefined,
+      allow_as_testimonial: allowAsTestimonial,
+      display_name_override: displayNameOverride || undefined,
     });
 
     triggerConfetti();
@@ -311,6 +316,8 @@ const BetaFeedback = () => {
     setComment('');
     setSuggestions('');
     setWouldRecommend(null);
+    setAllowAsTestimonial(false);
+    setDisplayNameOverride('');
     setFeedbackSent(false);
   };
 
@@ -611,6 +618,48 @@ const BetaFeedback = () => {
                                 </motion.button>
                               </div>
                             </div>
+
+                            {/* Testimonial Consent (only for 4-5 stars) */}
+                            {rating >= 4 && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                className="space-y-3 p-4 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200 dark:border-amber-800"
+                              >
+                                <div className="flex items-start gap-3">
+                                  <Checkbox
+                                    id="testimonial-consent"
+                                    checked={allowAsTestimonial}
+                                    onCheckedChange={(checked) => setAllowAsTestimonial(checked === true)}
+                                    className="mt-1"
+                                  />
+                                  <Label htmlFor="testimonial-consent" className="text-sm leading-relaxed cursor-pointer">
+                                    {language === 'es'
+                                      ? '✨ Autorizo que mi opinión pueda ser usada como testimonio en la página de EvoFinz (tu nombre será visible)'
+                                      : '✨ I authorize my feedback to be used as a testimonial on the EvoFinz website (your name will be visible)'}
+                                  </Label>
+                                </div>
+                                {allowAsTestimonial && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="space-y-2 pl-7"
+                                  >
+                                    <Label className="text-xs text-muted-foreground">
+                                      {language === 'es'
+                                        ? '¿Cómo quieres que aparezca tu nombre? (opcional)'
+                                        : 'How would you like your name to appear? (optional)'}
+                                    </Label>
+                                    <Input
+                                      value={displayNameOverride}
+                                      onChange={(e) => setDisplayNameOverride(e.target.value)}
+                                      placeholder={language === 'es' ? 'Ej: María G.' : 'E.g.: Maria G.'}
+                                      className="h-9 text-sm"
+                                    />
+                                  </motion.div>
+                                )}
+                              </motion.div>
+                            )}
 
                             {/* Submit */}
                             <motion.div

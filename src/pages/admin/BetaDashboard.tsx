@@ -30,6 +30,7 @@ import {
   Gift,
   CheckCircle,
   XCircle,
+  Quote,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -152,6 +153,7 @@ const BetaDashboard = () => {
     feedbackStats,
     bugStats,
     updateBugReport,
+    toggleTestimonialPublish,
     isLoading 
   } = useBetaFeedback();
   
@@ -583,7 +585,7 @@ const BetaDashboard = () => {
           transition={{ delay: 0.3 }}
         >
           <Tabs defaultValue="users" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 p-1 bg-muted/50 rounded-xl h-14">
+            <TabsList className="grid w-full grid-cols-6 p-1 bg-muted/50 rounded-xl h-14">
               <TabsTrigger 
                 value="users" 
                 className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold"
@@ -611,6 +613,13 @@ const BetaDashboard = () => {
               >
                 <Gift className="h-4 w-4" />
                 {language === 'es' ? '🎁 Premios' : '🎁 Rewards'}
+              </TabsTrigger>
+              <TabsTrigger 
+                value="testimonials" 
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg font-semibold"
+              >
+                <Quote className="h-4 w-4" />
+                {language === 'es' ? '💬 Testimonios' : '💬 Testimonials'}
               </TabsTrigger>
               <TabsTrigger 
                 value="usage" 
@@ -1117,6 +1126,123 @@ const BetaDashboard = () => {
                       </p>
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Testimonials Tab */}
+            <TabsContent value="testimonials">
+              <Card className="border-2 border-cyan-100 dark:border-cyan-900/50 shadow-xl">
+                <CardHeader className="border-b bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-cyan-100 dark:bg-cyan-900/50">
+                      <Quote className="h-5 w-5 text-cyan-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        💬 {language === 'es' ? 'Testimonios con Consentimiento' : 'Consented Testimonials'}
+                      </CardTitle>
+                      <CardDescription>
+                        {language === 'es' ? 'Feedback con autorización para uso público. Publica los mejores en la landing.' : 'Feedback with public use authorization. Publish the best ones on the landing.'}
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  {(() => {
+                    const testimonialFeedback = allFeedback?.filter(f => (f as any).allow_as_testimonial === true) || [];
+                    
+                    if (testimonialFeedback.length === 0) {
+                      return (
+                        <div className="text-center py-12">
+                          <Quote className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                          <p className="text-muted-foreground">
+                            {language === 'es' ? 'Aún no hay feedback con consentimiento de testimonio' : 'No feedback with testimonial consent yet'}
+                          </p>
+                          <p className="text-sm text-muted-foreground/70">
+                            {language === 'es' ? 'Los testers pueden autorizar su feedback como testimonio al dar 4-5 estrellas' : 'Testers can authorize their feedback as a testimonial when giving 4-5 stars'}
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-4">
+                        {testimonialFeedback.map((feedback, index) => {
+                          const isPublished = (feedback as any).is_published_testimonial === true;
+                          return (
+                            <motion.div
+                              key={feedback.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.05 }}
+                              className={`p-5 border-2 rounded-xl space-y-3 transition-all ${
+                                isPublished
+                                  ? 'border-emerald-300 bg-emerald-50/30 dark:bg-emerald-950/10'
+                                  : 'border-border hover:border-cyan-200'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-semibold">{feedback.user_name || 'Anónimo'}</span>
+                                    {(feedback as any).display_name_override && (
+                                      <Badge variant="outline" className="text-xs">
+                                        {language === 'es' ? 'Mostrar como:' : 'Display as:'} {(feedback as any).display_name_override}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">{feedback.user_email}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <StarDisplay rating={feedback.rating} />
+                                  {isPublished ? (
+                                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 border">
+                                      ✅ {language === 'es' ? 'Publicado' : 'Published'}
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="secondary">
+                                      ⏳ {language === 'es' ? 'Pendiente' : 'Pending'}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+
+                              {feedback.comment && (
+                                <div className="p-3 bg-muted/50 rounded-lg">
+                                  <p className="text-sm italic">"{feedback.comment}"</p>
+                                </div>
+                              )}
+
+                              {feedback.suggestions && (
+                                <div className="p-3 bg-amber-50/50 dark:bg-amber-950/10 rounded-lg">
+                                  <p className="text-xs font-medium text-amber-600 mb-1">💡 {language === 'es' ? 'Sugerencias:' : 'Suggestions:'}</p>
+                                  <p className="text-sm">{feedback.suggestions}</p>
+                                </div>
+                              )}
+
+                              <div className="flex items-center gap-2 pt-2">
+                                <Button
+                                  size="sm"
+                                  variant={isPublished ? 'destructive' : 'default'}
+                                  className={isPublished ? '' : 'bg-emerald-600 hover:bg-emerald-700'}
+                                  onClick={() => toggleTestimonialPublish.mutate({ id: feedback.id, publish: !isPublished })}
+                                  disabled={toggleTestimonialPublish.isPending}
+                                >
+                                  {isPublished
+                                    ? (language === 'es' ? '❌ Despublicar' : '❌ Unpublish')
+                                    : (language === 'es' ? '✅ Publicar en Landing' : '✅ Publish to Landing')}
+                                </Button>
+                                <span className="text-xs text-muted-foreground">
+                                  📅 {formatDate(feedback.created_at)}
+                                </span>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             </TabsContent>

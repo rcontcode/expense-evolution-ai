@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Quote, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Quote, Star, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Testimonial {
   name: string;
@@ -10,9 +12,10 @@ interface Testimonial {
   quote: string;
   rating: number;
   highlight: string;
+  isVerified?: boolean;
 }
 
-const getTestimonials = (language: string): Testimonial[] => language === 'es' ? [
+const getHardcodedTestimonials = (language: string): Testimonial[] => language === 'es' ? [
   {
     name: "Valeria Fernández",
     role: "Diseñadora UX Freelance • México",
@@ -162,9 +165,49 @@ const getTestimonials = (language: string): Testimonial[] => language === 'es' ?
 
 export function TestimonialsCarousel() {
   const { language } = useLanguage();
-  const testimonials = getTestimonials(language);
+  const hardcodedTestimonials = getHardcodedTestimonials(language);
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+
+  // Fetch real published testimonials
+  const { data: realTestimonials } = useQuery({
+    queryKey: ['landing-testimonials'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('beta_feedback')
+        .select('*')
+        .eq('is_published_testimonial', true)
+        .order('created_at', { ascending: false });
+
+      if (error) return [];
+
+      const userIds = [...new Set((data || []).map(f => f.user_id))];
+      if (userIds.length === 0) return [];
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', userIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      return (data || []).map(f => ({
+        name: (f as any).display_name_override || profileMap.get(f.user_id)?.full_name || 'Beta Tester',
+        role: 'Beta Tester Verificado • EvoFinz',
+        avatar: '',
+        quote: f.comment || f.suggestions || '',
+        rating: f.rating,
+        highlight: language === 'es' ? 'Beta Tester Verificado' : 'Verified Beta Tester',
+        isVerified: true,
+      })).filter(t => t.quote.length > 20) as Testimonial[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Use real testimonials if 3+, otherwise mix
+  const testimonials = (realTestimonials && realTestimonials.length >= 3)
+    ? realTestimonials
+    : [...(realTestimonials || []), ...hardcodedTestimonials].slice(0, 9);
 
   // Auto-rotation - 8s optimal for ~45 words per testimonial
   useEffect(() => {
@@ -249,42 +292,55 @@ export function TestimonialsCarousel() {
               >
                 {/* Highlight badge */}
                 <div className="flex justify-center mb-6">
-                  <span className="px-4 py-1.5 bg-gradient-to-r from-orange-500/20 to-amber-500/20 rounded-full text-orange-400 text-sm font-medium border border-orange-500/30">
-                    {testimonials[current].highlight}
+                  <span className={`px-4 py-1.5 rounded-full text-sm font-medium border ${
+                    testimonials[current]?.isVerified
+                      ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30'
+                      : 'bg-gradient-to-r from-orange-500/20 to-amber-500/20 text-orange-400 border-orange-500/30'
+                  }`}>
+                    {testimonials[current]?.isVerified && <ShieldCheck className="w-4 h-4 inline mr-1" />}
+                    {testimonials[current]?.highlight}
                   </span>
                 </div>
 
                 {/* Quote */}
                 <blockquote className="text-xl md:text-2xl text-white/90 text-center leading-relaxed mb-8 font-medium">
-                  "{testimonials[current].quote}"
+                  "{testimonials[current]?.quote}"
                 </blockquote>
 
                 {/* Rating */}
                 <div className="flex justify-center gap-1 mb-6">
-                  {Array.from({ length: testimonials[current].rating }).map((_, i) => (
+                  {Array.from({ length: testimonials[current]?.rating || 5 }).map((_, i) => (
                     <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
 
                 {/* User info */}
                 <div className="flex flex-col items-center">
-                  <div className="relative mb-4">
-                    <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/20 ring-offset-2 ring-offset-slate-800">
-                      <img
-                        src={testimonials[current].avatar}
-                        alt={testimonials[current].name}
-                        className="w-full h-full object-cover"
-                      />
+                  {testimonials[current]?.avatar ? (
+                    <div className="relative mb-4">
+                      <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/20 ring-offset-2 ring-offset-slate-800">
+                        <img
+                          src={testimonials[current].avatar}
+                          alt={testimonials[current].name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
+                        <Quote className="w-3 h-3 text-white" />
+                      </div>
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
-                      <Quote className="w-3 h-3 text-white" />
+                  ) : (
+                    <div className="relative mb-4">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center ring-2 ring-emerald-400/30 ring-offset-2 ring-offset-slate-800">
+                        <ShieldCheck className="w-8 h-8 text-white" />
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <h4 className="text-lg font-bold text-white">
-                    {testimonials[current].name}
+                    {testimonials[current]?.name}
                   </h4>
                   <p className="text-slate-400 text-sm">
-                    {testimonials[current].role}
+                    {testimonials[current]?.role}
                   </p>
                 </div>
               </motion.div>
@@ -333,11 +389,17 @@ export function TestimonialsCarousel() {
               }`}
             >
               <div className="w-10 h-10 rounded-full overflow-hidden">
-                <img
-                  src={t.avatar}
-                  alt={t.name}
-                  className="w-full h-full object-cover"
-                />
+                {t.avatar ? (
+                  <img
+                    src={t.avatar}
+                    alt={t.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                    <ShieldCheck className="w-5 h-5 text-white" />
+                  </div>
+                )}
               </div>
             </button>
           ))}

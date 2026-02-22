@@ -288,40 +288,55 @@ export type Database = {
       }
       beta_feedback: {
         Row: {
+          allow_as_testimonial: boolean
           comment: string | null
           created_at: string
           design_rating: number | null
+          display_name_override: string | null
           ease_of_use: number | null
           id: string
+          is_published_testimonial: boolean
           rating: number
           section: string
           suggestions: string | null
+          testimonial_approved_at: string | null
+          testimonial_approved_by: string | null
           usefulness: number | null
           user_id: string
           would_recommend: boolean | null
         }
         Insert: {
+          allow_as_testimonial?: boolean
           comment?: string | null
           created_at?: string
           design_rating?: number | null
+          display_name_override?: string | null
           ease_of_use?: number | null
           id?: string
+          is_published_testimonial?: boolean
           rating: number
           section: string
           suggestions?: string | null
+          testimonial_approved_at?: string | null
+          testimonial_approved_by?: string | null
           usefulness?: number | null
           user_id: string
           would_recommend?: boolean | null
         }
         Update: {
+          allow_as_testimonial?: boolean
           comment?: string | null
           created_at?: string
           design_rating?: number | null
+          display_name_override?: string | null
           ease_of_use?: number | null
           id?: string
+          is_published_testimonial?: boolean
           rating?: number
           section?: string
           suggestions?: string | null
+          testimonial_approved_at?: string | null
+          testimonial_approved_by?: string | null
           usefulness?: number | null
           user_id?: string
           would_recommend?: boolean | null
