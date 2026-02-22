@@ -2366,6 +2366,7 @@ export type Database = {
           beta_expires_at: string | null
           beta_extended_by: string | null
           beta_extension_reason: string | null
+          beta_plan_level: string | null
           birth_date: string | null
           business_name: string | null
           business_number: string | null
@@ -2396,6 +2397,7 @@ export type Database = {
           beta_expires_at?: string | null
           beta_extended_by?: string | null
           beta_extension_reason?: string | null
+          beta_plan_level?: string | null
           birth_date?: string | null
           business_name?: string | null
           business_number?: string | null
@@ -2426,6 +2428,7 @@ export type Database = {
           beta_expires_at?: string | null
           beta_extended_by?: string | null
           beta_extension_reason?: string | null
+          beta_plan_level?: string | null
           birth_date?: string | null
           business_name?: string | null
           business_number?: string | null
@@ -3562,6 +3565,7 @@ export type Database = {
         Args: { p_days?: number; p_user_id: string }
         Returns: undefined
       }
+      apply_beta_reward: { Args: { p_redemption_id: string }; Returns: Json }
       can_use_ai: {
         Args: { credit_limit?: number; user_uuid: string }
         Returns: boolean
@@ -3575,6 +3579,7 @@ export type Database = {
         }
         Returns: Json
       }
+      check_beta_weekly_quota: { Args: { p_user_id: string }; Returns: Json }
       claim_beta_reward: {
         Args: { p_reward_type: string; p_user_id: string }
         Returns: {

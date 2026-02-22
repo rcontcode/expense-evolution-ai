@@ -79,7 +79,7 @@ const FALLBACK_LIMITS = {
 // Keep PLAN_LIMITS export for backward compatibility with tests
 export const PLAN_LIMITS = FALLBACK_LIMITS;
 
-export type PlanType = 'free' | 'premium' | 'pro';
+export type PlanType = 'free' | 'premium' | 'pro' | 'pro_beta';
 export type FeatureKey = keyof typeof FALLBACK_LIMITS.free;
 
 interface PlanLimits {
@@ -190,6 +190,22 @@ export function usePlanLimits() {
       return configMap;
     },
     staleTime: 1000 * 60 * 10, // 10 minutes - configs rarely change
+  });
+
+  // Fetch user profile for beta status
+  const { data: profileData } = useQuery({
+    queryKey: ['profile-beta', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_beta_tester, beta_plan_level')
+        .eq('id', user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5,
   });
 
   // Fetch subscription
@@ -317,10 +333,13 @@ export function usePlanLimits() {
 
   const subscriptionPlanType = subscription?.plan_type || 'free';
   const isGodMode = !!isAdmin;
-  const planType: PlanType = isGodMode ? 'pro' : subscriptionPlanType;
+  const isBetaActive = profileData?.is_beta_tester && profileData?.beta_plan_level === 'pro_beta';
   
-  // Use DB config if available, fallback to hardcoded
-  const limits: PlanLimits = planConfigs?.[planType] || FALLBACK_LIMITS[planType];
+  // Beta testers with pro_beta get pro_beta plan; admins get pro; else subscription plan
+  const planType: PlanType = isGodMode ? 'pro' : (isBetaActive ? 'pro_beta' : subscriptionPlanType);
+  
+  // Use DB config if available, fallback to hardcoded (pro_beta falls back to pro limits)
+  const limits: PlanLimits = planConfigs?.[planType] || FALLBACK_LIMITS[planType as keyof typeof FALLBACK_LIMITS] || FALLBACK_LIMITS.pro;
   
   const currentUsage = usage || {
     expenses_count: 0,
@@ -455,7 +474,7 @@ export function usePlanLimits() {
   };
 
   const getUpgradePlan = (): PlanType | null => {
-    if (planType === 'free') return 'premium';
+    if (planType === 'free' || planType === 'pro_beta') return 'premium';
     if (planType === 'premium') return 'pro';
     return null;
   };
