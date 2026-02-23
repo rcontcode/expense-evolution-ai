@@ -26,7 +26,12 @@ export default function UserGuide() {
   const lang = language as 'es' | 'en';
 
   const scrollToSection = useCallback((id: string) => {
-    sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const el = sectionRefs.current[id];
+    if (el) {
+      const headerOffset = 70;
+      const elementPosition = el.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: elementPosition - headerOffset, behavior: 'smooth' });
+    }
   }, []);
 
   const filteredSections = useMemo(() => {
