@@ -5,11 +5,14 @@ import { PageHeader } from '@/components/PageHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDataHealthCheck, ISSUE_LABELS } from '@/hooks/data/useDataHealthCheck';
 import { useAuditLog } from '@/hooks/data/useAuditLog';
-import { ShieldCheck, AlertTriangle, AlertCircle, History, Plus, FileEdit, Trash2, RotateCcw } from 'lucide-react';
+import { useNudgeSystem } from '@/hooks/utils/useNudgeSystem';
+import { ShieldCheck, AlertTriangle, AlertCircle, History, Plus, FileEdit, Trash2, RotateCcw, Receipt, Tag, HelpCircle, ArrowRight } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const ACTION_ICONS: Record<string, React.ReactNode> = {
   create: <Plus className="h-3.5 w-3.5 text-emerald-500" />,
@@ -31,13 +34,20 @@ export default function DataHealth() {
   const l = language === 'es';
   const { data: health, isLoading: healthLoading } = useDataHealthCheck();
   const { data: auditLogs, isLoading: auditLoading } = useAuditLog(200);
+  const { expenseMissingReceipt, expensePendingClassification, expenseNoCategory } = useNudgeSystem();
+  const navigate = useNavigate();
+
+  // Combine DB issues + expense-level issues for total count
+  const dbIssueCount = health?.totalIssues || 0;
+  const expenseLevelIssues = expenseMissingReceipt + expensePendingClassification + expenseNoCategory;
+  const totalIssues = dbIssueCount + expenseLevelIssues;
 
   return (
     <Layout>
       <div className="page-container section-gap">
         <PageHeader
           title={l ? 'Salud de Datos & Auditoría' : 'Data Health & Audit'}
-          description={l ? 'Detecta registros huérfanos y revisa el historial completo de cambios.' : 'Detect orphaned records and review complete change history.'}
+          description={l ? 'Detecta registros huérfanos, datos incompletos y revisa el historial completo de cambios.' : 'Detect orphaned records, incomplete data and review complete change history.'}
         />
 
         <Tabs defaultValue="health" className="space-y-4">
@@ -45,8 +55,8 @@ export default function DataHealth() {
             <TabsTrigger value="health" className="gap-2">
               <ShieldCheck className="h-4 w-4" />
               {l ? 'Salud' : 'Health'}
-              {health && health.totalIssues > 0 && (
-                <Badge variant="destructive" className="ml-1 text-xs">{health.totalIssues}</Badge>
+              {totalIssues > 0 && (
+                <Badge variant="destructive" className="ml-1 text-xs">{totalIssues}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="audit" className="gap-2">
@@ -59,7 +69,7 @@ export default function DataHealth() {
           <TabsContent value="health" className="space-y-4">
             {healthLoading ? (
               <div className="h-32 animate-pulse bg-muted/30 rounded-lg" />
-            ) : !health || health.totalIssues === 0 ? (
+            ) : totalIssues === 0 ? (
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-16 gap-4">
                   <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
@@ -73,7 +83,8 @@ export default function DataHealth() {
               </Card>
             ) : (
               <div className="space-y-3">
-                {Object.entries(health.grouped).map(([issueType, issues]) => {
+                {/* DB-level issues (orphaned records) */}
+                {health && Object.entries(health.grouped).map(([issueType, issues]) => {
                   const label = ISSUE_LABELS[issueType];
                   const isError = label?.severity === 'error';
                   return (
@@ -110,6 +121,70 @@ export default function DataHealth() {
                     </Card>
                   );
                 })}
+
+                {/* Expense-level issues */}
+                {expenseMissingReceipt > 0 && (
+                  <Card>
+                    <CardHeader className="py-3 px-4">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Receipt className="h-4 w-4 text-amber-500" />
+                        {l ? 'Gastos sin recibo' : 'Expenses missing receipt'}
+                        <Badge variant="secondary" className="ml-auto">{expenseMissingReceipt}</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4 pb-3">
+                      <p className="text-xs text-muted-foreground">
+                        {l ? 'Estos gastos no tienen un documento/recibo vinculado. Vincular recibos es esencial para auditorías fiscales.' : 'These expenses have no linked document/receipt. Linking receipts is essential for tax audits.'}
+                      </p>
+                      <Button variant="outline" size="sm" className="mt-2" onClick={() => navigate('/expenses')}>
+                        {l ? 'Ir a gastos' : 'Go to expenses'}
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {expensePendingClassification > 0 && (
+                  <Card>
+                    <CardHeader className="py-3 px-4">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <HelpCircle className="h-4 w-4 text-amber-500" />
+                        {l ? 'Gastos sin clasificar (reembolso)' : 'Unclassified expenses (reimbursement)'}
+                        <Badge variant="secondary" className="ml-auto">{expensePendingClassification}</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4 pb-3">
+                      <p className="text-xs text-muted-foreground">
+                        {l ? 'Estos gastos aún no han sido clasificados como reembolsable, deducible o personal.' : 'These expenses haven\'t been classified as reimbursable, deductible, or personal yet.'}
+                      </p>
+                      <Button variant="outline" size="sm" className="mt-2" onClick={() => navigate('/expenses')}>
+                        {l ? 'Clasificar' : 'Classify'}
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {expenseNoCategory > 0 && (
+                  <Card>
+                    <CardHeader className="py-3 px-4">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-amber-500" />
+                        {l ? 'Gastos sin categoría' : 'Expenses without category'}
+                        <Badge variant="secondary" className="ml-auto">{expenseNoCategory}</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4 pb-3">
+                      <p className="text-xs text-muted-foreground">
+                        {l ? 'Estos gastos no tienen categoría asignada. Categorizar es clave para presupuestos y reportes fiscales.' : 'These expenses have no assigned category. Categorizing is key for budgets and tax reports.'}
+                      </p>
+                      <Button variant="outline" size="sm" className="mt-2" onClick={() => navigate('/expenses')}>
+                        {l ? 'Categorizar' : 'Categorize'}
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
           </TabsContent>
