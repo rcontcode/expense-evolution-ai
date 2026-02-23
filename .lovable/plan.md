@@ -1,103 +1,83 @@
 
-# Plan: Honestidad Pre-Lanzamiento - 3 Correcciones Criticas
 
-## Datos Reales en la Base de Datos
-- **2 usuarios** registrados
-- **1 pais** (solo Canada)
-- **0 testimonios publicados**
-- **1 feedback** con rating 5.0
+# Plan: Centro de Avisos Completo - Alertas Inteligentes en Tiempo Real
 
-Estos numeros confirman que toda la "social proof" actual es inventada.
+## Problema Actual
+El Centro de Avisos solo muestra dos tipos de informacion: (1) el prompt de completitud de gastos y (2) notificaciones de la base de datos. Pero la app ya tiene muchos datos que podrian generar avisos utiles que el usuario nunca ve en este panel.
 
----
+## Nuevos Tipos de Avisos a Agregar
 
-## Cambio 1: Reemplazar Testimonios Falsos con Seccion de Capacidades Reales
+Se integraran **7 nuevas categorias de avisos inteligentes** que se calculan en tiempo real a partir de los datos existentes del usuario, sin necesidad de cambios en la base de datos:
 
-**Archivo:** `src/components/landing/TestimonialsCarousel.tsx`
+### 1. Documentos Pendientes de Revision
+- Usa `useDocumentsForReview` (ya existe)
+- Muestra: "Tienes X documentos pendientes de clasificar"
+- Accion: Ir a /documents
+- Icono: FileText, color violeta
 
-Eliminar completamente los 9 perfiles ficticios con fotos de stock y reemplazar el componente con una seccion "Casos de Uso Reales" que muestra escenarios verificables de la app (no personas inventadas):
+### 2. Gastos Incompletos (sin categoria o proveedor)
+- Usa `useNudgeSystem` / `useExpenses` (ya existe)
+- Muestra: "X gastos sin categoria o proveedor"
+- Accion: Ir a /expenses
+- Icono: AlertTriangle, color naranja
 
-- **Freelancer en Canada**: "Genera tu T2125 automaticamente con categorizacion inteligente"
-- **Consultor Multi-Cliente**: "Gestiona gastos por proyecto con reportes individuales por cliente"
-- **Emprendedor en Chile**: "Controla tu IVA y deducciones con reglas fiscales chilenas integradas"
-- **Profesional Independiente**: "Escanea recibos con OCR y categoriza gastos en segundos"
+### 3. Cuentas por Pagar Vencidas / Proximas
+- Usa `useRecurringBills` (ya existe)
+- Detecta facturas cuya `next_due_date` ya paso o esta dentro de 3 dias
+- Muestra: "Tienes X cuentas vencidas" o "X cuentas vencen pronto"
+- Accion: Ir a /bills
+- Icono: CreditCard, color rojo
 
-Cada card tendra: icono relevante, titulo del caso de uso, descripcion de la capacidad real, y un badge con la funcionalidad clave. Sin fotos de personas, sin nombres falsos.
+### 4. Metas de Ahorro con Fecha Limite Cercana
+- Usa `useSavingsGoals` (ya existe)
+- Detecta metas activas cuyo `deadline` esta dentro de 30 dias y el progreso es < 80%
+- Muestra: "Meta 'X' vence en Y dias y vas al Z%"
+- Accion: Ir a /goals
+- Icono: Target, color amber
 
-Cuando existan 3+ testimonios reales publicados (de `beta_feedback` con `is_published_testimonial = true`), el componente automaticamente los mostrara en lugar de los casos de uso. La infraestructura de testimonios reales ya existe y seguira funcionando.
+### 5. Problemas de Integridad de Datos (Data Health)
+- Usa `useDataHealthCheck` (ya existe)
+- Muestra: "Se detectaron X problemas en tus datos"
+- Accion: Ir a /expenses
+- Icono: Shield, color rojo
 
----
+### 6. Sin Ingresos Registrados
+- Detecta si hay gastos pero cero ingresos en el mes actual
+- Muestra: "No has registrado ingresos este mes"
+- Accion: Ir a /income
+- Icono: TrendingUp, color azul
 
-## Cambio 2: Reemplazar Estadisticas Infladas con Metricas del Producto
+### 7. Sin Clientes Registrados (Onboarding)
+- Detecta si no hay clientes creados
+- Muestra: "Agrega tu primer cliente para desbloquear facturacion"
+- Accion: Ir a /clients
+- Icono: Users, color indigo
 
-**Archivo:** `src/components/landing/AnimatedStats.tsx`
+## Cambios Tecnicos
 
-Eliminar los 3 sets de stats falsos ("10,000+ recibos", "847+ libros", "234+ transiciones E->S", "1.2M patrimonio total") y reemplazar con un solo set de **metricas verificables del producto**:
+### Archivo modificado: `src/components/dashboard/DashboardNotificationHub.tsx`
 
-| Actual (falso) | Nuevo (real) |
-|---|---|
-| 10,000+ Recibos procesados | 30+ Categorias fiscales |
-| 847+ Libros trackeados | 2 Paises soportados (CA/CL) |
-| 234+ E->S transiciones | 8+ Modulos de mentoria |
-| 500+ Usuarios activos | 100% Datos encriptados |
-| 15K XP ganados | 5+ Tipos de reporte |
-| 1.2M Patrimonio | 3 seg Procesamiento OCR |
+1. Importar los hooks necesarios: `useNudgeSystem`, `useDataHealthCheck`, `useRecurringBills`, `useSavingsGoals`, `useDocumentsForReview`
 
-Un solo set estatico, sin auto-rotacion entre sets falsos. Las metricas describen capacidades del producto, no uso ficticio.
+2. Crear una interfaz `SmartAlert` local con campos: `id`, `icon`, `iconEmoji`, `title`, `message`, `actionUrl`, `color`, `priority`, `dismissKey`
 
-**Archivo:** `src/components/landing/GuaranteesSection.tsx`
+3. Computar via `useMemo` un array `smartAlerts` que evalua cada condicion:
+   - Documentos pendientes > 0
+   - Gastos incompletos > 0
+   - Cuentas vencidas/proximas
+   - Metas en riesgo
+   - Problemas de integridad
+   - Sin ingresos
+   - Sin clientes
 
-Cambiar los trust indicators falsos:
-- "500+ Usuarios Activos" -> "Canada & Chile" (Paises soportados)
-- "50K+ Documentos Procesados" -> "30+ Categorias" (Categorias fiscales)
-- "4.8/5 Satisfaccion" -> eliminar o cambiar a "Acceso por Invitacion"
+4. Agregar estado local `dismissedAlerts` (Set de dismissKey) con persistencia en `localStorage` y cooldown de 24h
 
-**Archivo:** `src/components/landing/LiveSocialProof.tsx`
+5. Combinar `smartAlerts` filtrados + `notifications` de DB en el conteo de `totalItems`
 
-Eliminar los `MIN_STATS` artificiales (50 usuarios, 5 paises, 10 signups semanales) y el `FALLBACK_STATS` inflado. Mostrar datos reales sin piso artificial. Si hay menos de 5 usuarios reales, ocultar el componente completamente en lugar de mostrar numeros falsos.
+6. Renderizar los smart alerts entre el prompt de completitud y las notificaciones de DB, usando el mismo estilo de fila pero con iconos/colores especificos por tipo
 
----
+7. Cada smart alert tendra: boton de accion (navegar) y boton de dismiss (X)
 
-## Cambio 3: Limpiar Beta Publica y Corregir Validacion
+### Sin cambios en base de datos
+Todos los datos necesarios ya existen. Los avisos se calculan client-side en tiempo real.
 
-**Archivo:** `src/pages/Landing.tsx`
-
-3 sub-cambios:
-
-a) **Renombrar el boton "Have a beta code?"** a algo como "Have an invitation code?" / "Tienes un codigo de invitacion?" — eliminar la palabra "beta" del texto publico.
-
-b) **Cambiar `validate_beta_invitation_code` a `validate_any_beta_code`** — actualmente la Landing usa una funcion que solo valida codigos de admin, mientras Auth.tsx usa `validate_any_beta_code` que tambien acepta codigos de referidos. Esto causa que codigos de referidos fallen en la Landing pero funcionen en Auth.
-
-c) **Actualizar textos de confirmacion**: "Acceso beta desbloqueado" -> "Acceso desbloqueado" / "Activar Acceso Beta" -> "Activar Acceso Exclusivo"
-
-**Archivo:** `src/components/settings/SubscriptionManager.tsx`
-
-Agregar entrada `pro_beta` al `planConfig` para evitar crash cuando un usuario con ese plan abre Settings:
-
-```
-pro_beta: {
-  name: 'Pro (Early Access)',
-  price: '$0',
-  icon: Crown,
-  color: 'from-emerald-500 to-teal-600',
-  features: [
-    'Todo de Pro con limites especiales',
-    '20 escaneos OCR/mes',
-    'Asistente de voz (15 min/mes)',
-    ...
-  ],
-}
-```
-
----
-
-## Resumen de Archivos a Modificar
-
-| Archivo | Cambio |
-|---|---|
-| `TestimonialsCarousel.tsx` | Reemplazar perfiles falsos con casos de uso reales |
-| `AnimatedStats.tsx` | Reemplazar stats inventados con metricas del producto |
-| `GuaranteesSection.tsx` | Corregir trust indicators inflados |
-| `LiveSocialProof.tsx` | Eliminar pisos artificiales, ocultar si <5 usuarios |
-| `Landing.tsx` | Renombrar "beta" a "invitacion", fix validacion RPC |
-| `SubscriptionManager.tsx` | Agregar config para plan `pro_beta` |
