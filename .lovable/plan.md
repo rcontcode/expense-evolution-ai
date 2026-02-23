@@ -1,90 +1,69 @@
 
 
-# Implementar Sistema de Recordatorios Real en Toda la App
+# Mejoras al Sistema de Recordatorios
 
-## Problema
+## Problemas Detectados
 
-Hay 4 sistemas de recordatorios que se mencionan en la app y en el manual pero **solo muestran un toast falso o no existen**:
+### 1. Mensajes solo en espanol (no bilingue)
+Los mensajes de notificacion en `useAutoReminders` estan hardcodeados en espanol ("Vence en X dia(s)", "Proximo vencimiento"). Deberian respetar el idioma del usuario.
 
-1. **Calendario Fiscal** -- el boton "Recordar" solo muestra un toast, no guarda nada
-2. **Contratos** -- no existe ningun hook que revise contratos proximos a vencer/renovar
-3. **Pagos Fijos (Bills)** -- el campo `reminder_days_before` se guarda pero nada lo revisa para crear notificaciones
-4. **Presupuesto (Budget Alerts)** -- las reglas se pueden crear/editar pero nada las ejecuta contra gastos reales
+### 2. Bills query no filtra por user_id
+En `checkBillReminders()`, la query a `recurring_bills` filtra por `status = 'active'` pero **no filtra por `user_id`**. Esto significa que si RLS no estuviera activo, mostraria bills de otros usuarios. Es buena practica agregar `.eq('user_id', userId)` como defensa en profundidad.
 
-## Solucion
+### 3. Contracts query no filtra por user_id
+Mismo problema en `checkContractReminders()` -- no filtra por `user_id` explicitamente.
 
-Crear un hook centralizado `useAutoReminders` que corra en el `Layout` (como ya lo hace `useGlobalReminders`) y que revise periodicamente estas 4 areas, insertando notificaciones reales en la tabla `notifications`.
+### 4. Estado de "Recordatorio Activo" no persiste entre sesiones
+En `TaxDeadlineCards`, `activeReminders` es un `useState` local. Si el usuario recarga la pagina, pierde el estado visual de cuales recordatorios ya activo. Deberia consultar la tabla `notifications` al montar para saber cuales ya existen.
 
-## Archivos a Crear
+### 5. F29 (Chile) no tiene boton de recordatorio
+La card de F29 no tiene boton "Recordatorio" como si lo tienen F22 y APV.
 
-### 1. `src/hooks/data/useAutoReminders.ts` (nuevo)
-Hook principal que se ejecuta cada 60 segundos y verifica:
+### 6. Notificaciones de presupuesto no invalidan el cache de React Query
+Cuando `useAutoReminders` inserta notificaciones, no llama `queryClient.invalidateQueries` para actualizar el badge de notificaciones no leidas. Solo `TaxDeadlineCards` lo hace.
 
-**A) Pagos Fijos (Bills)**
-- Consulta `recurring_bills` activos del usuario
-- Para cada bill, calcula dias hasta `next_due_date`
-- Si `dias <= reminder_days_before` y no hay notificacion reciente (ultimas 24h) para ese bill, inserta en `notifications` con `type: 'bill_reminder'`
+### 7. No hay manejo de errores visible para el usuario
+Si alguna de las 4 verificaciones falla silenciosamente (error de red, RLS, etc.), el usuario nunca lo sabe. Al menos deberia loguearse de forma mas detallada.
 
-**B) Contratos**
-- Consulta `contracts` activos (no eliminados, con `end_date`)
-- Si un contrato vence en <= 30 dias (o segun `renewal_notice_days`), y no hay notificacion reciente, inserta con `type: 'contract_reminder'`
-- Si tiene `auto_renew = true`, el mensaje indica que se renovara automaticamente
+### 8. Bills vencidos (dias negativos) no generan alerta
+Si `daysUntilDue < 0`, el bill ya esta vencido y no se genera ninguna notificacion. Deberia alertar tambien cuando un bill esta vencido y no pagado.
 
-**C) Calendario Fiscal**
-- En lugar de guardar recordatorios custom, el hook calcula las fechas fiscales conocidas (las mismas de TaxDeadlineCards) y si alguna esta a 30, 14, o 7 dias, crea notificacion con `type: 'tax_reminder'`
-- Usa el pais del usuario y tipo de entidad para determinar que fechas aplican
+---
 
-**D) Presupuesto**
-- Consulta `budget_alert_rules` activos
-- Consulta gastos del mes actual por categoria
-- Si una regla de tipo `exceeds` o `approaches` se cumple y no se ha disparado hoy, inserta notificacion con `type: 'budget_alert'` y actualiza `last_triggered_at`
+## Plan de Cambios
 
-### 2. Modificar `src/components/tax-calendar/TaxDeadlineCards.tsx`
-- Cambiar `handleSetReminder` para que realmente inserte un registro en `notifications` con la fecha del deadline y un recordatorio configurado
-- Mostrar un indicador visual de "Recordatorio activo" en el boton despues de activarlo
+### A. `src/hooks/data/useAutoReminders.ts`
+- Agregar soporte bilingue: recibir el idioma del contexto y usarlo en los mensajes
+- Agregar `.eq('user_id', userId)` a las queries de bills y contracts
+- Incluir alertas para bills vencidos (daysUntil < 0, hasta -7 dias)
+- Invalidar cache de `['unread-notifications-count']` y `['notifications']` despues de insertar
 
-### 3. Modificar `src/components/Layout.tsx`
-- Importar y activar `useAutoReminders()` junto al existente `useGlobalReminders()`
+### B. `src/components/tax-calendar/TaxDeadlineCards.tsx`
+- Consultar `notifications` al montar para pre-llenar `activeReminders` con recordatorios ya existentes
+- Agregar boton de recordatorio al F29 (Chile)
+- Hacer mensajes bilingues en los botones que faltan
 
-## Logica Anti-Duplicados
+### C. Mejoras menores
+- Agregar `console.warn` con detalle cuando una verificacion individual falla (dentro de `Promise.allSettled`)
+- Documentar en comentarios la logica de anti-duplicados
 
-Cada vez que el hook quiere crear una notificacion, primero consulta si ya existe una con:
-- Mismo `user_id`
-- Mismo `type`
-- Titulo similar (contiene el nombre del bill/contrato/deadline)
-- Creada en las ultimas 24 horas (para bills/budget) o 7 dias (para contratos/fiscal)
-
-Si ya existe, no crea duplicado.
+---
 
 ## Detalles Tecnicos
 
-```text
-useAutoReminders()
-  |
-  |-- checkBillReminders()
-  |     Lee: recurring_bills (status=active)
-  |     Escribe: notifications (type=bill_reminder)
-  |
-  |-- checkContractReminders()
-  |     Lee: contracts (end_date NOT NULL, deleted_at IS NULL)
-  |     Escribe: notifications (type=contract_reminder)
-  |
-  |-- checkTaxReminders()
-  |     Lee: settings (country, entity type)
-  |     Escribe: notifications (type=tax_reminder)
-  |
-  |-- checkBudgetAlerts()
-  |     Lee: budget_alert_rules + expenses (mes actual)
-  |     Escribe: notifications (type=budget_alert)
-  |     Actualiza: budget_alert_rules.last_triggered_at
+**Bilingue en useAutoReminders:**
+El hook no tiene acceso a `useLanguage()` facilmente sin reestructurar. La solucion es guardar el idioma en la notificacion usando un formato neutral y que la UI de notificaciones traduzca, O pasar el idioma como parametro.
+
+Opcion mas simple: usar `useLanguage()` directamente en el hook (ya esta en un componente React via Layout) y condicionar los strings.
+
+**Persistir activeReminders:**
+Al montar `TaxDeadlineCards`, hacer un `useEffect` que consulte:
 ```
+SELECT title FROM notifications 
+WHERE user_id = ? AND type = 'tax_reminder' 
+AND created_at > (now - 30 days)
+```
+Y extraer los nombres de deadlines del titulo para pre-llenar el Set.
 
-## Resultado Esperado
-
-- Al entrar a la app, el sistema verifica automaticamente todas las areas
-- Las notificaciones aparecen en `/notifications` como cualquier otra
-- Los botones de "Recordar" en el calendario fiscal realmente funcionan
-- Los pagos fijos generan alertas antes del vencimiento
-- Los contratos proximos a vencer generan alertas segun `renewal_notice_days`
-- Las reglas de presupuesto se ejecutan y alertan cuando se exceden umbrales
-
+**Invalidar cache:**
+Agregar `useQueryClient()` al hook y llamar `invalidateQueries` despues de cada `insertNotification`.
