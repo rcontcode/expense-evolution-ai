@@ -123,6 +123,55 @@ serve(async (req) => {
       );
     }
 
+    // Email format validation
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!EMAIL_REGEX.test(payload.email)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid email format" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Field length validation
+    if (payload.name.length > 255 || payload.email.length > 255) {
+      return new Response(
+        JSON.stringify({ error: "Name or email too long" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (payload.phone && payload.phone.length > 30) {
+      return new Response(
+        JSON.stringify({ error: "Phone number too long" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (payload.comments && payload.comments.length > 2000) {
+      return new Response(
+        JSON.stringify({ error: "Comments too long" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const textFields: (keyof QuizLeadPayload)[] = ['country', 'situation', 'goal', 'obstacle', 'time_spent', 'quiz_level'];
+    for (const field of textFields) {
+      if (payload[field] && typeof payload[field] === 'string' && (payload[field] as string).length > 500) {
+        return new Response(
+          JSON.stringify({ error: `Field '${field}' too long` }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Sanitize text inputs (strip HTML tags)
+    const sanitize = (s: string | undefined): string | undefined =>
+      s ? s.replace(/<[^>]*>/g, '').trim() : s;
+    payload.name = sanitize(payload.name)!;
+    payload.email = payload.email.trim().toLowerCase();
+    payload.comments = sanitize(payload.comments) || undefined;
+    payload.country = sanitize(payload.country)!;
+    payload.situation = sanitize(payload.situation)!;
+    payload.goal = sanitize(payload.goal)!;
+    payload.obstacle = sanitize(payload.obstacle)!;
+
     // Calculate lead score and priority
     const leadScore = calculateLeadScore(payload);
     const leadPriority = getLeadPriority(leadScore);
