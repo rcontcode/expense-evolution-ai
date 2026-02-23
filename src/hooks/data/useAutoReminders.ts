@@ -11,6 +11,33 @@ import type { NotificationPreference } from './useNotificationPreferences';
 const CHECK_INTERVAL_MS = 60_000;
 
 /**
+ * Maps repeat_frequency to the anti-duplication window in hours.
+ * 'once' = very large window (effectively never re-send)
+ * 'daily_until_deadline' = 24h
+ * 'weekly' = 168h
+ */
+function getWithinHours(frequency: string): number {
+  switch (frequency) {
+    case 'daily_until_deadline': return 24;
+    case 'weekly': return 168;
+    case 'once':
+    default:
+      return 999_999; // effectively infinite — one notification per item
+  }
+}
+
+/**
+ * Returns true if the current hour is within ±1 of the preferred hour.
+ * If preferredHour is null, always returns true (any time is fine).
+ */
+function isWithinPreferredHour(preferredHour: number | null): boolean {
+  if (preferredHour === null) return true;
+  const currentHour = new Date().getHours();
+  const diff = Math.abs(currentHour - preferredHour);
+  return diff <= 1 || diff >= 23; // handle wrap-around (e.g. 23 vs 0)
+}
+
+/**
  * Centralized auto-reminder hook. Checks bills, contracts, tax deadlines,
  * and budget alerts — inserting notifications into the `notifications` table.
  * Respects user preferences from `notification_preferences`.
@@ -39,13 +66,16 @@ export function useAutoReminders() {
     userId: string, type: string, titleContains: string, withinHours: number
   ): Promise<boolean> => {
     const since = new Date(Date.now() - withinHours * 60 * 60 * 1000).toISOString();
+    const now = new Date().toISOString();
     const { count } = await supabase
       .from('notifications')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('type', type)
       .ilike('title', `%${titleContains}%`)
-      .gte('created_at', since);
+      .gte('created_at', since)
+      // Exclude snoozed notifications from duplicate check
+      .or(`snoozed_until.is.null,snoozed_until.lt.${now}`);
     return (count ?? 0) > 0;
   }, []);
 
@@ -108,6 +138,10 @@ export function useAutoReminders() {
     if (pref?.enabled === false) return;
     const advanceDays = pref?.advance_days ?? 3;
     const maxReminders = pref?.max_reminders ?? 3;
+    const withinHours = getWithinHours(pref?.repeat_frequency ?? 'once');
+
+    // Check preferred hour
+    if (!isWithinPreferredHour(pref?.preferred_hour ?? null)) return;
 
     const { data: bills, error } = await supabase
       .from('recurring_bills')
@@ -120,7 +154,6 @@ export function useAutoReminders() {
     const today = new Date();
 
     for (const bill of bills) {
-      // Check if muted
       const muted = await isMuted(userId, 'bill_reminder', bill.name);
       if (muted) continue;
 
@@ -132,7 +165,7 @@ export function useAutoReminders() {
       if (daysUntilDue <= effectiveAdvance && daysUntilDue >= 0) {
         const monthCount = await countMonthNotifications(userId, 'bill_reminder', bill.name);
         if (monthCount >= maxReminders) continue;
-        const exists = await hasRecentNotification(userId, 'bill_reminder', bill.name, 24);
+        const exists = await hasRecentNotification(userId, 'bill_reminder', bill.name, withinHours);
         if (!exists) {
           await insertNotification(
             userId, 'bill_reminder', `💳 ${bill.name}`,
@@ -147,7 +180,7 @@ export function useAutoReminders() {
       // Overdue (up to -7 days)
       if (daysUntilDue < 0 && daysUntilDue >= -7) {
         const overdueDays = Math.abs(daysUntilDue);
-        const exists = await hasRecentNotification(userId, 'bill_reminder', bill.name, 24);
+        const exists = await hasRecentNotification(userId, 'bill_reminder', bill.name, withinHours);
         if (!exists) {
           await insertNotification(
             userId, 'bill_reminder', `🚨 ${bill.name}`,
@@ -167,6 +200,9 @@ export function useAutoReminders() {
     if (pref?.enabled === false) return;
     const advanceDays = pref?.advance_days ?? 30;
     const maxReminders = pref?.max_reminders ?? 4;
+    const withinHours = getWithinHours(pref?.repeat_frequency ?? 'weekly');
+
+    if (!isWithinPreferredHour(pref?.preferred_hour ?? null)) return;
 
     const { data: contracts, error } = await supabase
       .from('contracts')
@@ -191,7 +227,7 @@ export function useAutoReminders() {
       if (daysUntilEnd <= noticeDays && daysUntilEnd >= 0) {
         const monthCount = await countMonthNotifications(userId, 'contract_reminder', name);
         if (monthCount >= maxReminders) continue;
-        const exists = await hasRecentNotification(userId, 'contract_reminder', name, 168);
+        const exists = await hasRecentNotification(userId, 'contract_reminder', name, withinHours);
         if (!exists) {
           const autoMsg = c.auto_renew
             ? (isEs ? ' (se renovará automáticamente)' : ' (auto-renews)')
@@ -212,6 +248,9 @@ export function useAutoReminders() {
     if (pref?.enabled === false) return;
     const advanceDays = pref?.advance_days ?? 30;
     const maxReminders = pref?.max_reminders ?? 3;
+    const withinHours = getWithinHours(pref?.repeat_frequency ?? 'weekly');
+
+    if (!isWithinPreferredHour(pref?.preferred_hour ?? null)) return;
 
     const country = (currentEntity?.country as CountryCode) || 'CA';
     const config = getCountryConfig(country);
@@ -229,7 +268,7 @@ export function useAutoReminders() {
         if (alertThresholds.some(d => daysUntil <= d) && daysUntil >= 0) {
           const monthCount = await countMonthNotifications(userId, 'tax_reminder', deadline.name);
           if (monthCount >= maxReminders) continue;
-          const exists = await hasRecentNotification(userId, 'tax_reminder', deadline.name, 168);
+          const exists = await hasRecentNotification(userId, 'tax_reminder', deadline.name, withinHours);
           if (!exists) {
             await insertNotification(
               userId, 'tax_reminder', `🏛️ ${deadline.name}`,
@@ -245,7 +284,7 @@ export function useAutoReminders() {
         const nextDeadline = new Date(currentYear, month, deadline.day);
         const daysUntil = differenceInDays(nextDeadline, today);
         if (daysUntil <= 7 && daysUntil >= 0) {
-          const exists = await hasRecentNotification(userId, 'tax_reminder', deadline.name, 168);
+          const exists = await hasRecentNotification(userId, 'tax_reminder', deadline.name, withinHours);
           if (!exists) {
             await insertNotification(
               userId, 'tax_reminder', `🏛️ ${deadline.name}`,
@@ -262,6 +301,8 @@ export function useAutoReminders() {
   const checkBudgetAlerts = useCallback(async (userId: string) => {
     const pref = await getPreference(userId, 'budget_alert');
     if (pref?.enabled === false) return;
+
+    if (!isWithinPreferredHour(pref?.preferred_hour ?? null)) return;
 
     const { data: rules, error: rulesError } = await supabase
       .from('budget_alert_rules' as any)
@@ -292,6 +333,8 @@ export function useAutoReminders() {
       totals[cat] = (totals[cat] || 0) + Number(e.amount);
     }
 
+    const withinHours = getWithinHours(pref?.repeat_frequency ?? 'once');
+
     for (const rule of rules as any[]) {
       const muted = await isMuted(userId, 'budget_alert', rule.name);
       if (muted) continue;
@@ -309,7 +352,7 @@ export function useAutoReminders() {
         const todayStr = new Date().toISOString().split('T')[0];
         if (rule.last_triggered_at && rule.last_triggered_at.startsWith(todayStr)) continue;
 
-        const exists = await hasRecentNotification(userId, 'budget_alert', rule.name, 24);
+        const exists = await hasRecentNotification(userId, 'budget_alert', rule.name, withinHours);
         if (!exists) {
           await insertNotification(
             userId, 'budget_alert', `⚠️ ${rule.name}`,

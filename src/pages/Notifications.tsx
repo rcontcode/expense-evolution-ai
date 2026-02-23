@@ -50,7 +50,7 @@ const NOTIFICATION_ICONS: Record<string, React.ComponentType<{ className?: strin
   investment_goal: TrendingUp, goal_deadline: Clock, streak: Flame, reminder: Calendar,
   expense: Receipt, income: Wallet, savings: PiggyBank, mileage: Car, contract: FileText,
   tip: Lightbulb, alert: AlertTriangle, bill_reminder: Wallet, contract_reminder: FileText,
-  tax_reminder: Calendar, budget_alert: AlertTriangle, default: Bell,
+  tax_reminder: Calendar, budget_alert: AlertTriangle, conversion_reminder: TrendingUp, default: Bell,
 };
 
 const NOTIFICATION_COLORS: Record<string, string> = {
@@ -63,10 +63,11 @@ const NOTIFICATION_COLORS: Record<string, string> = {
   contract: 'text-violet-500 bg-violet-500/10', tip: 'text-yellow-500 bg-yellow-500/10',
   alert: 'text-destructive bg-destructive/10', bill_reminder: 'text-blue-500 bg-blue-500/10',
   contract_reminder: 'text-violet-500 bg-violet-500/10', tax_reminder: 'text-cyan-500 bg-cyan-500/10',
-  budget_alert: 'text-amber-500 bg-amber-500/10', default: 'text-muted-foreground bg-muted',
+  budget_alert: 'text-amber-500 bg-amber-500/10', conversion_reminder: 'text-teal-500 bg-teal-500/10',
+  default: 'text-muted-foreground bg-muted',
 };
 
-const REMINDER_TYPES = ['bill_reminder', 'contract_reminder', 'tax_reminder', 'budget_alert'];
+const REMINDER_TYPES = ['bill_reminder', 'contract_reminder', 'tax_reminder', 'budget_alert', 'conversion_reminder'];
 
 export default function Notifications() {
   const { language } = useLanguage();
@@ -104,7 +105,10 @@ export default function Notifications() {
     mutationFn: async (id: string) => {
       await supabase.from('notifications').update({ read: true }).eq('id', id);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-notifications-count'] });
+    },
   });
 
   const markAllAsRead = useMutation({
@@ -112,14 +116,20 @@ export default function Notifications() {
       if (!user) return;
       await supabase.from('notifications').update({ read: true }).eq('user_id', user.id).eq('read', false);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-notifications-count'] });
+    },
   });
 
   const deleteNotification = useMutation({
     mutationFn: async (id: string) => {
       await supabase.from('notifications').delete().eq('id', id);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-notifications-count'] });
+    },
   });
 
   const clearAllNotifications = useMutation({
@@ -127,7 +137,10 @@ export default function Notifications() {
       if (!user) return;
       await supabase.from('notifications').delete().eq('user_id', user.id);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-notifications-count'] });
+    },
   });
 
   // Filter: hide snoozed (unless snooze time has passed) and completed
