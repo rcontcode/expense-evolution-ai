@@ -12,6 +12,7 @@ export interface UserPreferences {
   budget_mode?: BudgetMode;
   expenses_confirmed_month?: string;
   expenses_dismissed_month?: string;
+  expenses_snoozed_until?: string;
 }
 
 export function useUserSettings() {
