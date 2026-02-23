@@ -27,11 +27,11 @@ const PRODUCT_DESCRIPTIONS: Record<string, { name: string; description: string }
   },
   pro_monthly: {
     name: "EvoFinz Pro Mensual",
-    description: "Plan completo: OCR ilimitado, análisis contratos IA, análisis bancario, optimizador fiscal, FIRE, RRSP/TFSA, T2125, mentoría completa, voz (120 min/mes), soporte prioritario.",
+    description: "Plan completo: OCR ilimitado, análisis contratos IA, análisis bancario, optimizador fiscal, FIRE, RRSP/TFSA, T2125, mentoría completa, voz (120 min/mes), soporte dedicado.",
   },
   pro_annual: {
     name: "EvoFinz Pro Anual",
-    description: "Ahorra 20% - Todo Pro: OCR ilimitado, contratos IA, fiscal, FIRE, RRSP/TFSA, T2125, mentoría, voz (120 min/mes), soporte prioritario. Solo $11.99/mes.",
+    description: "Ahorra 20% - Todo Pro: OCR ilimitado, contratos IA, fiscal, FIRE, RRSP/TFSA, T2125, mentoría, voz (120 min/mes), soporte dedicado. Solo $11.99/mes.",
   },
 };
 

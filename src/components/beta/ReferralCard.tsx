@@ -84,17 +84,17 @@ Se llama EvoFinz y es un asistente financiero personal súper completo:
 • Dashboard inteligente con gráficos
 • Optimización fiscal para CRA (Canadá) y SII (Chile)
 • Calculadoras FIRE, patrimonio neto y más
-• Asistente de voz con 100+ comandos
+• Asistente de voz inteligente
 • Gamificación para crear hábitos financieros
 
 💡 Por qué lo recomiendo:
-Estoy usándolo en beta y realmente me ha ayudado a organizar mis finanzas de forma simple y visual.
+Estoy usándolo y realmente me ha ayudado a organizar mis finanzas de forma simple y visual.
 
 🎁 Tu invitación exclusiva:
 Código: {CODE}
 Link directo: {LINK}
 
-Como estoy en el programa de beta testers, tengo invitaciones limitadas, así que aprovecha!
+Tengo invitaciones limitadas, así que aprovecha!
 
 ¡Espero que te guste tanto como a mí!
 
@@ -111,7 +111,7 @@ It's called EvoFinz and it has everything:
 🎯 Savings & retirement calculators
 🤖 Personal financial assistant
 
-I'm in the exclusive beta and have limited invites 🎁
+I have limited invites 🎁
 
 📲 Use my code: {CODE}
 🔗 Sign up here: {LINK}
@@ -127,7 +127,7 @@ What I love most:
 • Tax optimization (CRA/SII)
 • FIRE projections & net worth
 
-I have access to the exclusive beta and can invite you 🎟️
+I can invite you to try it 🎟️
 
 Your access code: {CODE}
 Direct link: {LINK}
@@ -154,17 +154,17 @@ It's called EvoFinz, a super complete personal financial assistant:
 • Smart dashboard with charts
 • Tax optimization for CRA (Canada) & SII (Chile)
 • FIRE calculators, net worth tracking & more
-• Voice assistant with 100+ commands
+• Smart voice assistant
 • Gamification to build financial habits
 
 💡 Why I recommend it:
-I'm using it in beta and it's really helped me organize my finances in a simple, visual way.
+I'm using it and it's really helped me organize my finances in a simple, visual way.
 
 🎁 Your exclusive invitation:
 Code: {CODE}
 Direct link: {LINK}
 
-As I'm in the beta tester program, I have limited invitations, so take advantage!
+I have limited invitations, so take advantage!
 
 Hope you like it as much as I do!
 

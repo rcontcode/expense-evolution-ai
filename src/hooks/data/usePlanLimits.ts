@@ -474,8 +474,10 @@ export function usePlanLimits() {
   };
 
   const getUpgradePlan = (): PlanType | null => {
-    if (planType === 'free' || planType === 'pro_beta') return 'premium';
+    if (planType === 'free') return 'premium';
     if (planType === 'premium') return 'pro';
+    // pro_beta users already have Pro features; suggest Pro only when beta expires
+    if (planType === 'pro_beta') return 'pro';
     return null;
   };
 
