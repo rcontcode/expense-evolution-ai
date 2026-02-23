@@ -17,6 +17,7 @@ import {
 import { differenceInDays, startOfMonth, endOfMonth, format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
 
 interface SmartAlert {
   id: string;
@@ -42,6 +43,7 @@ export function ProactiveAlertsWidget() {
 
   const { data: expenses } = useExpenses({});
   const { data: incomeData } = useIncome({ year: currentYear });
+  const { isConfirmed: expensesConfirmed, looksIncomplete } = useExpenseCompleteness();
 
   // Recurring bills
   const { data: bills } = useQuery<any[]>({
@@ -158,8 +160,8 @@ export function ProactiveAlertsWidget() {
       }
     }
 
-    // 4. Savings rate celebration
-    if (monthIncome > 0) {
+    // 4. Savings rate celebration — only when expenses exist AND data confirmed or not suspicious
+    if (monthIncome > 0 && totalSpent > 0 && (!looksIncomplete || expensesConfirmed)) {
       const savingsRate = ((monthIncome - totalSpent) / monthIncome) * 100;
       if (savingsRate > 30) {
         result.push({
@@ -173,6 +175,21 @@ export function ProactiveAlertsWidget() {
           priority: 5,
         });
       }
+    }
+
+    // 4b. Income without expenses warning
+    if (monthIncome > 0 && totalSpent === 0 && dayOfMonth > 5) {
+      result.push({
+        id: 'no-expenses-warning',
+        type: 'warning',
+        icon: AlertTriangle,
+        title: l ? '📝 Sin gastos registrados' : '📝 No expenses recorded',
+        description: l
+          ? 'Tienes ingresos pero no gastos este mes. Registra tus gastos para métricas reales.'
+          : "You have income but no expenses this month. Add expenses for real metrics.",
+        action: { label: l ? 'Registrar gasto' : 'Add expense', route: '/expenses' },
+        priority: 2,
+      });
     }
 
     // 5. No income registered yet this month
