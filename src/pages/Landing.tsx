@@ -417,7 +417,7 @@ export default function Landing() {
     setCodeStatus('checking');
     
     try {
-      const { data, error } = await supabase.rpc('validate_beta_invitation_code', {
+      const { data, error } = await supabase.rpc('validate_any_beta_code', {
         p_code: code.trim()
       });
 
@@ -764,7 +764,7 @@ export default function Landing() {
                 className="text-lg px-8 py-7 border-2 border-slate-300 bg-white hover:bg-slate-50 hover:border-cyan-400 text-slate-700 shadow-lg"
               >
                 <Gift className="mr-2 h-5 w-5 text-cyan-500" />
-                {language === 'es' ? '¿Tienes código beta?' : 'Have a beta code?'}
+                {language === 'es' ? '¿Tienes código de invitación?' : 'Have an invitation code?'}
               </Button>
             </motion.div>
 
@@ -813,14 +813,14 @@ export default function Landing() {
                   >
                     <p className="text-emerald-600 text-sm mt-3 flex items-center justify-center gap-2">
                       <Sparkles className="h-4 w-4" />
-                      {language === 'es' ? '¡Código válido! Acceso beta desbloqueado.' : 'Valid code! Beta access unlocked.'}
+                      {language === 'es' ? '¡Código válido! Acceso desbloqueado.' : 'Valid code! Access unlocked.'}
                     </p>
                     <Button 
                       onClick={handleGetStarted}
                       className="mt-4 w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-6 shadow-lg"
                     >
                       <Crown className="mr-2 h-5 w-5" />
-                      {language === 'es' ? 'Activar Acceso Beta' : 'Activate Beta Access'}
+                      {language === 'es' ? 'Activar Acceso Exclusivo' : 'Activate Exclusive Access'}
                     </Button>
                   </motion.div>
                 )}

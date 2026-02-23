@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Quote, Star, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
+import { 
+  Star, ChevronLeft, ChevronRight, ShieldCheck,
+  FileText, Users, Receipt, ScanLine, Globe, BarChart3
+} from "lucide-react";
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Badge } from '@/components/ui/badge';
 
 interface Testimonial {
   name: string;
@@ -15,157 +19,55 @@ interface Testimonial {
   isVerified?: boolean;
 }
 
-const getHardcodedTestimonials = (language: string): Testimonial[] => language === 'es' ? [
+interface UseCase {
+  icon: typeof FileText;
+  title: string;
+  description: string;
+  badge: string;
+  color: string;
+}
+
+const getUseCases = (language: string): UseCase[] => [
   {
-    name: "Valeria Fernández",
-    role: "Diseñadora UX Freelance • México",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
-    quote: "Llevaba 3 años guardando recibos en una caja de zapatos. En mi primera semana con EvoFinz escaneé todo y encontré $8,500 MXN en gastos que nunca había deducido.",
-    rating: 5,
-    highlight: "Recuperé dinero olvidado"
+    icon: FileText,
+    title: language === 'es' ? 'Freelancer en Canadá' : 'Freelancer in Canada',
+    description: language === 'es' 
+      ? 'Genera tu T2125 automáticamente con categorización inteligente de gastos según las reglas del CRA.'
+      : 'Generate your T2125 automatically with smart expense categorization following CRA rules.',
+    badge: 'T2125',
+    color: 'from-cyan-500 to-blue-600'
   },
   {
-    name: "Sarah Mitchell",
-    role: "Consultora IT Freelance • Toronto, Canada",
-    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face",
-    quote: "Como freelancer en Canadá, necesitaba algo que entendiera las reglas del CRA. EvoFinz me genera el T2125 automáticamente y calcula mis deducciones de home office correctamente.",
-    rating: 5,
-    highlight: "T2125 automático"
+    icon: Users,
+    title: language === 'es' ? 'Consultor Multi-Cliente' : 'Multi-Client Consultant',
+    description: language === 'es'
+      ? 'Gestiona gastos por proyecto con reportes individuales por cliente y tracking de reembolsos.'
+      : 'Manage expenses per project with individual client reports and reimbursement tracking.',
+    badge: language === 'es' ? 'Multi-Proyecto' : 'Multi-Project',
+    color: 'from-emerald-500 to-teal-600'
   },
   {
-    name: "Andrés Gutiérrez",
-    role: "Desarrollador Full Stack • Colombia",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    quote: "Trabajo con 3 clientes en diferentes monedas. Antes usaba Excel y siempre me confundía. EvoFinz me muestra exactamente cuánto gano por proyecto y qué puedo deducir.",
-    rating: 5,
-    highlight: "Claridad con múltiples clientes"
+    icon: Globe,
+    title: language === 'es' ? 'Emprendedor en Chile' : 'Entrepreneur in Chile',
+    description: language === 'es'
+      ? 'Controla tu IVA y deducciones con reglas fiscales chilenas integradas y soporte multi-moneda.'
+      : 'Control your VAT and deductions with integrated Chilean tax rules and multi-currency support.',
+    badge: 'IVA/F29',
+    color: 'from-violet-500 to-purple-600'
   },
   {
-    name: "Carolina Reyes",
-    role: "Consultora de Marketing • Chile",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    quote: "Mi contador me cobraba extra por organizar mis gastos. Ahora le envío un PDF perfecto directo desde la app. Me ahorro esa tarifa y él termina más rápido.",
-    rating: 5,
-    highlight: "Contador más feliz"
-  },
-  {
-    name: "Michael Chen",
-    role: "Fotógrafo Freelance • Vancouver, Canada",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    quote: "El tracking de kilometraje automático es increíble. Solo activo el GPS y listo. Antes olvidaba registrar la mitad de mis viajes a sesiones fotográficas.",
-    rating: 5,
-    highlight: "Kilometraje sin esfuerzo"
-  },
-  {
-    name: "Sofía Mendoza",
-    role: "Abogada Independiente • Perú",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
-    quote: "Tengo gastos reembolsables por cada cliente. EvoFinz me genera reportes individuales en segundos. Lo que antes me tomaba medio día ahora son 2 clics.",
-    rating: 5,
-    highlight: "Reportes instantáneos"
-  },
-  {
-    name: "Diego Herrera",
-    role: "Coach Ejecutivo • España",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
-    quote: "La sección de educación financiera me sorprendió. No esperaba aprender sobre flujo de caja en una app de gastos. Los conceptos de Kiyosaki aplicados a mi negocio real fueron reveladores.",
-    rating: 4,
-    highlight: "Educación incluida"
-  },
-  {
-    name: "Luciana Vargas",
-    role: "Traductora Freelance • Uruguay",
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face",
-    quote: "Soy terrible con los números. EvoFinz me muestra alertas cuando estoy gastando de más en alguna categoría. Es como tener un asistente financiero que no juzga.",
-    rating: 5,
-    highlight: "Alertas que ayudan"
-  },
-  {
-    name: "Fernando López",
-    role: "Consultor SAP • Brasil",
-    avatar: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=150&h=150&fit=crop&crop=face",
-    quote: "Probé 4 apps antes. Todas complicadísimas o muy básicas. EvoFinz tiene el balance perfecto: potente pero no necesito un tutorial de 2 horas para usarla.",
-    rating: 5,
-    highlight: "Fácil y completa"
-  }
-] : [
-  {
-    name: "Valeria Fernández",
-    role: "UX Designer Freelance • Mexico",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
-    quote: "I spent 3 years keeping receipts in a shoebox. In my first week with EvoFinz I scanned everything and found $8,500 MXN in expenses I never deducted.",
-    rating: 5,
-    highlight: "Recovered forgotten money"
-  },
-  {
-    name: "Sarah Mitchell",
-    role: "IT Consultant Freelance • Toronto, Canada",
-    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face",
-    quote: "As a freelancer in Canada, I needed something that understood CRA rules. EvoFinz generates my T2125 automatically and calculates my home office deductions correctly.",
-    rating: 5,
-    highlight: "Automatic T2125"
-  },
-  {
-    name: "Andrés Gutiérrez",
-    role: "Full Stack Developer • Colombia",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    quote: "I work with 3 clients in different currencies. Before I used Excel and always got confused. EvoFinz shows me exactly how much I earn per project and what I can deduct.",
-    rating: 5,
-    highlight: "Clarity with multiple clients"
-  },
-  {
-    name: "Carolina Reyes",
-    role: "Marketing Consultant • Chile",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    quote: "My accountant charged me extra to organize my expenses. Now I send him a perfect PDF directly from the app. I save that fee and he finishes faster.",
-    rating: 5,
-    highlight: "Happier accountant"
-  },
-  {
-    name: "Michael Chen",
-    role: "Freelance Photographer • Vancouver, Canada",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    quote: "The automatic mileage tracking is incredible. I just turn on GPS and that's it. Before I forgot to log half my trips to photo sessions.",
-    rating: 5,
-    highlight: "Effortless mileage"
-  },
-  {
-    name: "Sofía Mendoza",
-    role: "Independent Lawyer • Peru",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
-    quote: "I have reimbursable expenses for each client. EvoFinz generates individual reports in seconds. What used to take me half a day is now 2 clicks.",
-    rating: 5,
-    highlight: "Instant reports"
-  },
-  {
-    name: "Diego Herrera",
-    role: "Executive Coach • Spain",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
-    quote: "The financial education section surprised me. I didn't expect to learn about cash flow in an expense app. Kiyosaki's concepts applied to my real business were eye-opening.",
-    rating: 4,
-    highlight: "Education included"
-  },
-  {
-    name: "Luciana Vargas",
-    role: "Freelance Translator • Uruguay",
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face",
-    quote: "I'm terrible with numbers. EvoFinz shows me alerts when I'm overspending in a category. It's like having a financial assistant that doesn't judge.",
-    rating: 5,
-    highlight: "Helpful alerts"
-  },
-  {
-    name: "Fernando López",
-    role: "SAP Consultant • Brazil",
-    avatar: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=150&h=150&fit=crop&crop=face",
-    quote: "I tried 4 apps before. All too complicated or too basic. EvoFinz has the perfect balance: powerful but I don't need a 2-hour tutorial to use it.",
-    rating: 5,
-    highlight: "Easy and complete"
+    icon: ScanLine,
+    title: language === 'es' ? 'Profesional Independiente' : 'Independent Professional',
+    description: language === 'es'
+      ? 'Escanea recibos con OCR y categoriza gastos en segundos. De foto a registro contable al instante.'
+      : 'Scan receipts with OCR and categorize expenses in seconds. From photo to accounting record instantly.',
+    badge: 'OCR',
+    color: 'from-orange-500 to-red-600'
   }
 ];
 
 export function TestimonialsCarousel() {
   const { language } = useLanguage();
-  const hardcodedTestimonials = getHardcodedTestimonials(language);
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -192,53 +94,118 @@ export function TestimonialsCarousel() {
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
       return (data || []).map(f => ({
-        name: (f as any).display_name_override || profileMap.get(f.user_id)?.full_name || 'Beta Tester',
-        role: 'Beta Tester Verificado • EvoFinz',
+        name: (f as any).display_name_override || profileMap.get(f.user_id)?.full_name || 'Early User',
+        role: language === 'es' ? 'Usuario Verificado • EvoFinz' : 'Verified User • EvoFinz',
         avatar: '',
         quote: f.comment || f.suggestions || '',
         rating: f.rating,
-        highlight: language === 'es' ? 'Beta Tester Verificado' : 'Verified Beta Tester',
+        highlight: language === 'es' ? 'Usuario Verificado' : 'Verified User',
         isVerified: true,
       })).filter(t => t.quote.length > 20) as Testimonial[];
     },
     staleTime: 5 * 60 * 1000,
   });
 
-  // Use real testimonials if 3+, otherwise mix
-  const testimonials = (realTestimonials && realTestimonials.length >= 3)
-    ? realTestimonials
-    : [...(realTestimonials || []), ...hardcodedTestimonials].slice(0, 9);
+  const hasRealTestimonials = realTestimonials && realTestimonials.length >= 3;
+  const useCases = getUseCases(language);
 
-  // Auto-rotation - 8s optimal for ~45 words per testimonial
+  // Auto-rotation
   useEffect(() => {
     if (isPaused) return;
-    
+    const count = hasRealTestimonials ? realTestimonials.length : useCases.length;
     const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % testimonials.length);
-    }, 8000);
-
+      setCurrent((prev) => (prev + 1) % count);
+    }, 6000);
     return () => clearInterval(timer);
-  }, [isPaused, testimonials.length]);
+  }, [isPaused, hasRealTestimonials, realTestimonials?.length, useCases.length]);
 
-  const next = () => setCurrent((prev) => (prev + 1) % testimonials.length);
-  const prev = () => setCurrent((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+  const itemCount = hasRealTestimonials ? realTestimonials!.length : useCases.length;
+  const next = () => setCurrent((prev) => (prev + 1) % itemCount);
+  const prev = () => setCurrent((prev) => (prev - 1 + itemCount) % itemCount);
 
+  // If we have 3+ real testimonials, show them
+  if (hasRealTestimonials) {
+    const testimonials = realTestimonials!;
+    return (
+      <section className="relative py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl" />
+
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
+              {language === 'es' ? 'Lo que dicen ' : 'What our '}
+              <span className="bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
+                {language === 'es' ? 'nuestros usuarios' : 'users say'}
+              </span>
+            </h2>
+          </motion.div>
+
+          <div className="max-w-4xl mx-auto" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
+            <div className="relative">
+              <button onClick={prev} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-12 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button onClick={next} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-12 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+                <ChevronRight className="w-5 h-5" />
+              </button>
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={current}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.5 }}
+                  className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-3xl p-8 md:p-12 border border-white/10"
+                >
+                  <div className="flex justify-center mb-6">
+                    <span className="px-4 py-1.5 rounded-full text-sm font-medium border bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30">
+                      <ShieldCheck className="w-4 h-4 inline mr-1" />
+                      {testimonials[current]?.highlight}
+                    </span>
+                  </div>
+                  <blockquote className="text-xl md:text-2xl text-white/90 text-center leading-relaxed mb-8 font-medium">
+                    "{testimonials[current]?.quote}"
+                  </blockquote>
+                  <div className="flex justify-center gap-1 mb-6">
+                    {Array.from({ length: testimonials[current]?.rating || 5 }).map((_, i) => (
+                      <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center ring-2 ring-emerald-400/30 ring-offset-2 ring-offset-slate-800 mb-4">
+                      <ShieldCheck className="w-8 h-8 text-white" />
+                    </div>
+                    <h4 className="text-lg font-bold text-white">{testimonials[current]?.name}</h4>
+                    <p className="text-slate-400 text-sm">{testimonials[current]?.role}</p>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+            <div className="flex justify-center gap-2 mt-8">
+              {testimonials.map((_, index) => (
+                <button key={index} onClick={() => setCurrent(index)} className={`transition-all duration-300 rounded-full ${index === current ? "w-8 h-2 bg-gradient-to-r from-orange-400 to-amber-400" : "w-2 h-2 bg-white/30 hover:bg-white/50"}`} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Show use cases (no fake people)
   return (
     <section className="relative py-24 overflow-hidden">
-      {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900" />
-      
-      {/* Decorative elements */}
       <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl" />
       <div className="absolute bottom-20 right-10 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl" />
-      
-      {/* Quote decorations */}
-      <div className="absolute top-32 left-20 opacity-5">
-        <Quote className="w-40 h-40 text-white" />
-      </div>
-      <div className="absolute bottom-32 right-20 opacity-5 rotate-180">
-        <Quote className="w-40 h-40 text-white" />
-      </div>
 
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
@@ -248,161 +215,51 @@ export function TestimonialsCarousel() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
-            {language === 'es' ? 'Lo que dicen ' : 'What our '}
+            {language === 'es' ? 'Casos de Uso ' : 'Real Use '}
             <span className="bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
-              {language === 'es' ? 'nuestros usuarios' : 'users say'}
+              {language === 'es' ? 'Reales' : 'Cases'}
             </span>
           </h2>
           <p className="text-slate-400 text-lg max-w-xl mx-auto">
-            {language === 'es' 
-              ? 'Historias reales de transformación financiera'
-              : 'Real stories of financial transformation'}
+            {language === 'es'
+              ? 'Capacidades reales de la plataforma para profesionales independientes'
+              : 'Real platform capabilities for independent professionals'}
           </p>
         </motion.div>
 
-        {/* Main testimonial */}
-        <div 
-          className="max-w-4xl mx-auto"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-        >
-          <div className="relative">
-            {/* Navigation arrows */}
-            <button
-              onClick={prev}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-12 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={next}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-12 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-
-            <AnimatePresence mode="wait">
+        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          {useCases.map((useCase, index) => {
+            const Icon = useCase.icon;
+            return (
               <motion.div
-                key={current}
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                transition={{ duration: 0.5 }}
-                className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-3xl p-8 md:p-12 border border-white/10"
+                key={useCase.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
+                className="group"
               >
-                {/* Highlight badge */}
-                <div className="flex justify-center mb-6">
-                  <span className={`px-4 py-1.5 rounded-full text-sm font-medium border ${
-                    testimonials[current]?.isVerified
-                      ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30'
-                      : 'bg-gradient-to-r from-orange-500/20 to-amber-500/20 text-orange-400 border-orange-500/30'
-                  }`}>
-                    {testimonials[current]?.isVerified && <ShieldCheck className="w-4 h-4 inline mr-1" />}
-                    {testimonials[current]?.highlight}
-                  </span>
-                </div>
-
-                {/* Quote */}
-                <blockquote className="text-xl md:text-2xl text-white/90 text-center leading-relaxed mb-8 font-medium">
-                  "{testimonials[current]?.quote}"
-                </blockquote>
-
-                {/* Rating */}
-                <div className="flex justify-center gap-1 mb-6">
-                  {Array.from({ length: testimonials[current]?.rating || 5 }).map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-
-                {/* User info */}
-                <div className="flex flex-col items-center">
-                  {testimonials[current]?.avatar ? (
-                    <div className="relative mb-4">
-                      <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/20 ring-offset-2 ring-offset-slate-800">
-                        <img
-                          src={testimonials[current].avatar}
-                          alt={testimonials[current].name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
-                        <Quote className="w-3 h-3 text-white" />
-                      </div>
+                <div className="relative h-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-white/10 hover:border-white/20 transition-all duration-300">
+                  <div className="flex items-start gap-4">
+                    <div className={`p-3 rounded-xl bg-gradient-to-br ${useCase.color} shadow-lg flex-shrink-0`}>
+                      <Icon className="w-6 h-6 text-white" />
                     </div>
-                  ) : (
-                    <div className="relative mb-4">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center ring-2 ring-emerald-400/30 ring-offset-2 ring-offset-slate-800">
-                        <ShieldCheck className="w-8 h-8 text-white" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-lg font-bold text-white">{useCase.title}</h3>
+                        <Badge className={`bg-gradient-to-r ${useCase.color} text-white border-0 text-xs`}>
+                          {useCase.badge}
+                        </Badge>
                       </div>
+                      <p className="text-slate-300 text-sm leading-relaxed">
+                        {useCase.description}
+                      </p>
                     </div>
-                  )}
-                  <h4 className="text-lg font-bold text-white">
-                    {testimonials[current]?.name}
-                  </h4>
-                  <p className="text-slate-400 text-sm">
-                    {testimonials[current]?.role}
-                  </p>
+                  </div>
                 </div>
               </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Dots navigation */}
-          <div className="flex justify-center gap-2 mt-8">
-            {testimonials.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrent(index)}
-                className={`transition-all duration-300 rounded-full ${
-                  index === current 
-                    ? "w-8 h-2 bg-gradient-to-r from-orange-400 to-amber-400" 
-                    : "w-2 h-2 bg-white/30 hover:bg-white/50"
-                }`}
-              />
-            ))}
-          </div>
-
-          {/* Progress bar */}
-          <div className="mt-6 max-w-xs mx-auto">
-            <div className="h-0.5 bg-white/10 rounded-full overflow-hidden">
-              <motion.div
-                key={current}
-                initial={{ width: "0%" }}
-                animate={{ width: isPaused ? "0%" : "100%" }}
-                transition={{ duration: 8, ease: "linear" }}
-                className="h-full bg-gradient-to-r from-cyan-400 to-blue-500"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Avatars preview */}
-        <div className="flex justify-center gap-3 mt-12">
-          {testimonials.map((t, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrent(index)}
-              className={`transition-all duration-300 ${
-                index === current 
-                  ? "scale-110 ring-2 ring-orange-400 ring-offset-2 ring-offset-slate-900" 
-                  : "opacity-50 hover:opacity-80"
-              }`}
-            >
-              <div className="w-10 h-10 rounded-full overflow-hidden">
-                {t.avatar ? (
-                  <img
-                    src={t.avatar}
-                    alt={t.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                    <ShieldCheck className="w-5 h-5 text-white" />
-                  </div>
-                )}
-              </div>
-            </button>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
