@@ -10,7 +10,7 @@ import { Calendar, AlertTriangle, CheckCircle2, Clock, Building2, User, Briefcas
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface CardsProps {
@@ -29,6 +29,30 @@ export function TaxDeadlineCards({ year, workTypes, fiscalYearEnd, country = 'CA
   const today = new Date();
   const isChile = country === 'CL';
   const [activeReminders, setActiveReminders] = useState<Set<string>>(new Set());
+
+  // Persist active reminders: check DB on mount for existing tax_reminder notifications
+  useEffect(() => {
+    if (!user) return;
+    const loadExistingReminders = async () => {
+      const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const { data } = await supabase
+        .from('notifications')
+        .select('title')
+        .eq('user_id', user.id)
+        .eq('type', 'tax_reminder')
+        .gte('created_at', since);
+      if (data?.length) {
+        const names = new Set<string>();
+        for (const n of data) {
+          // Title format is "🏛️ DeadlineName" — extract the name after emoji+space
+          const match = n.title?.replace(/^[^\w]*\s*/, '');
+          if (match) names.add(match);
+        }
+        setActiveReminders(names);
+      }
+    };
+    loadExistingReminders();
+  }, [user]);
 
   const hasCorp = workTypes.includes('corporation');
   const hasSole = workTypes.includes('contractor');
@@ -192,12 +216,23 @@ export function TaxDeadlineCards({ year, workTypes, fiscalYearEnd, country = 'CA
               Incluye: IVA débito/crédito, PPM (Pagos Provisionales Mensuales), retenciones de honorarios.
             </p>
 
-            <Button size="sm" variant="outline" asChild>
-              <a href="https://www.sii.cl/servicios_online/1047-formulario_29-1156.html" target="_blank" rel="noopener">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Declarar F29
-              </a>
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant={activeReminders.has("F29") ? "default" : "outline"}
+                onClick={() => handleSetReminder("F29", getNextF29Deadline())}
+                disabled={activeReminders.has("F29")}
+              >
+                {activeReminders.has("F29") ? <CheckCheck className="h-4 w-4 mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
+                {activeReminders.has("F29") ? (isEs ? "Activo" : "Active") : "Recordatorio"}
+              </Button>
+              <Button size="sm" variant="outline" asChild>
+                <a href="https://www.sii.cl/servicios_online/1047-formulario_29-1156.html" target="_blank" rel="noopener">
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Declarar F29
+                </a>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
