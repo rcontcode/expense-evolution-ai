@@ -66,7 +66,7 @@ const planConfig = {
       'Exportar T2125',
       'Asistente de voz (120 min/mes)',
       'Mentoría completa (8 módulos)',
-      'Soporte prioritario',
+      'Soporte dedicado',
     ],
   },
 };

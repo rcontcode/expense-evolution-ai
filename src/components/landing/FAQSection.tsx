@@ -31,8 +31,8 @@ const getStoryContent = (language: string) => language === 'es' ? {
     {
       icon: 'voice',
       title: 'Tu Asistente Personal de Bolsillo',
-      description: 'Habla naturalmente: "¿Cuánto gasté en restaurantes este mes?" y recibe respuestas instantáneas. 100+ comandos de voz que entienden tu idioma.',
-      stat: '100+ comandos de voz'
+      description: 'Habla naturalmente: "¿Cuánto gasté en restaurantes este mes?" y recibe respuestas instantáneas. Comandos de voz que entienden tu idioma.',
+      stat: 'Asistente de voz inteligente'
     },
     {
       icon: 'tax',
@@ -123,8 +123,8 @@ const getStoryContent = (language: string) => language === 'es' ? {
     {
       icon: 'voice',
       title: 'Your Personal Pocket Assistant',
-      description: 'Speak naturally: "How much did I spend on restaurants this month?" and get instant answers. 100+ voice commands that understand your language.',
-      stat: '100+ voice commands'
+      description: 'Speak naturally: "How much did I spend on restaurants this month?" and get instant answers. Voice commands that understand your language.',
+      stat: 'Smart voice assistant'
     },
     {
       icon: 'tax',

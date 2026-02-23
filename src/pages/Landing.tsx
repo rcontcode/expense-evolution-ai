@@ -330,7 +330,7 @@ const getPricingTiers = (language: string) => [
       '🔄 Detector de suscripciones automático',
       '📊 Predicciones y tendencias',
       '💳 Reconciliación bancaria',
-      '⭐ Soporte prioritario 24/7'
+      '⭐ Soporte dedicado'
     ] : [
       '👑 EVERYTHING in Premium +',
       '📷 UNLIMITED OCR (no limits)',
@@ -345,7 +345,7 @@ const getPricingTiers = (language: string) => [
       '🔄 Automatic subscription detector',
       '📊 Predictions & trends',
       '💳 Bank reconciliation',
-      '⭐ Priority 24/7 support'
+      '⭐ Dedicated support'
     ],
     notIncluded: [],
     cta: language === 'es' ? '¡Quiero Pro!' : 'Get Pro!',
@@ -356,7 +356,7 @@ const getPricingTiers = (language: string) => [
 
 const getStats = (language: string) => [
   { value: '12', label: language === 'es' ? 'Módulos' : 'Modules', icon: Sparkles },
-  { value: '100+', label: language === 'es' ? 'Comandos de Voz' : 'Voice Commands', icon: Zap },
+  { value: '🎤', label: language === 'es' ? 'Asistente de Voz' : 'Voice Assistant', icon: Zap },
   { value: '🇨🇦🇨🇱', label: language === 'es' ? 'Multi-país' : 'Multi-country', icon: Shield },
   { value: '24/7', label: language === 'es' ? 'Acceso' : 'Access', icon: Star },
 ];

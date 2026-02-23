@@ -135,21 +135,21 @@ export const QuizHero = ({ onStartQuiz, referralInfo, isLoadingReferral }: QuizH
     es: {
       vipBadge: "🌟 Invitación VIP",
       invitedBy: "invitado por",
-      exclusiveAccess: "Acceso Exclusivo a Beta Privada",
+      exclusiveAccess: "Acceso Exclusivo Invitados",
       vipBenefits: [
-        "90 días de acceso Premium gratis",
-        "Soporte prioritario de fundadores",
+        "90 días de acceso Pro gratis",
         "Acceso anticipado a nuevas funciones",
+        "Todas las funciones Pro desbloqueadas",
       ],
     },
     en: {
       vipBadge: "🌟 VIP Invitation",
       invitedBy: "invited by",
-      exclusiveAccess: "Exclusive Private Beta Access",
+      exclusiveAccess: "Exclusive Invited Access",
       vipBenefits: [
-        "90 days of free Premium access",
-        "Priority support from founders",
+        "90 days of free Pro access",
         "Early access to new features",
+        "All Pro features unlocked",
       ],
     },
   };

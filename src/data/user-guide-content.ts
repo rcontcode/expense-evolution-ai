@@ -94,8 +94,8 @@ export const heroContent = {
   improvement: {
     title: { es: 'Mejora Continua Contigo', en: 'Continuous Improvement With You' },
     desc: {
-      es: 'EvoFinz evoluciona constantemente basándose en el feedback real de nuestros usuarios. Cada sugerencia, cada reporte de bug y cada opinión contribuye directamente a hacer la plataforma mejor. El sistema de Beta Testing integrado te permite reportar problemas, sugerir mejoras y ganar puntos por tu participación activa. Tú eres parte fundamental de esta evolución — y lo valoramos profundamente.',
-      en: 'EvoFinz constantly evolves based on real user feedback. Every suggestion, every bug report, and every opinion directly contributes to making the platform better. The integrated Beta Testing system lets you report issues, suggest improvements, and earn points for your active participation. You are a fundamental part of this evolution — and we deeply value it.'
+      es: 'EvoFinz evoluciona constantemente basándose en el feedback real de nuestros usuarios. Cada sugerencia y cada opinión contribuye directamente a hacer la plataforma mejor. Puedes reportar problemas, sugerir mejoras y dar feedback desde dentro de la app. Tú eres parte fundamental de esta evolución — y lo valoramos profundamente.',
+      en: 'EvoFinz constantly evolves based on real user feedback. Every suggestion and every opinion directly contributes to making the platform better. You can report issues, suggest improvements, and give feedback from within the app. You are a fundamental part of this evolution — and we deeply value it.'
     }
   }
 };
@@ -670,7 +670,7 @@ export const guideSections: GuideSection[] = [
     connections: [
       { es: 'Se alimenta de TODAS las secciones: cada acción financiera genera XP', en: 'Feeds from ALL sections: every financial action generates XP' },
       { es: 'Los logros y niveles se muestran en el Dashboard y perfil', en: 'Achievements and levels are shown in Dashboard and profile' },
-      { es: 'Integrado con el sistema de Beta Testing para puntos adicionales', en: 'Integrated with Beta Testing system for additional points' },
+      { es: 'Integrado con el sistema de feedback para puntos adicionales', en: 'Integrated with the feedback system for additional points' },
     ],
     color: 'border-amber-500/30',
   },
@@ -1074,7 +1074,7 @@ export const globalFAQ: GuideFAQ[] = [
   },
   {
     question: { es: '¿Cómo reporto un problema o sugiero una mejora?', en: 'How do I report a problem or suggest an improvement?' },
-    answer: { es: 'Desde el sistema de Beta Testing integrado puedes reportar bugs con screenshots, sugerir mejoras y dar feedback. ¡Y ganas Puntos Beta por cada contribución!', en: 'From the integrated Beta Testing system you can report bugs with screenshots, suggest improvements, and give feedback. And you earn Beta Points for each contribution!' }
+    answer: { es: 'Desde el sistema de feedback integrado puedes reportar bugs con screenshots, sugerir mejoras y dar tu opinión. ¡Tu contribución nos ayuda a mejorar!', en: 'From the integrated feedback system you can report bugs with screenshots, suggest improvements, and give your opinion. Your contribution helps us improve!' }
   },
 ];
 

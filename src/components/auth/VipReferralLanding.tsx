@@ -37,17 +37,17 @@ export function VipReferralLanding({ referralCode, onContinueToSignup, onSkip }:
   const [captured, setCaptured] = useState(false);
 
   const benefits = language === 'es' ? [
-    { icon: Crown, text: '90 días de acceso Premium GRATIS', color: 'text-amber-400' },
-    { icon: Sparkles, text: 'OCR ilimitado para escanear recibos', color: 'text-violet-400' },
-    { icon: Zap, text: 'Asistente financiero con voz', color: 'text-cyan-400' },
+    { icon: Crown, text: '90 días de acceso Pro GRATIS', color: 'text-amber-400' },
+    { icon: Sparkles, text: 'OCR para escanear recibos (20/mes)', color: 'text-violet-400' },
+    { icon: Zap, text: 'Asistente financiero con voz (15 min/mes)', color: 'text-cyan-400' },
     { icon: Trophy, text: 'Gamificación con puntos y recompensas', color: 'text-emerald-400' },
-    { icon: Shield, text: 'Protección de datos nivel empresarial', color: 'text-rose-400' },
+    { icon: Shield, text: 'Todas las funciones Pro desbloqueadas', color: 'text-rose-400' },
   ] : [
-    { icon: Crown, text: '90 days FREE Premium access', color: 'text-amber-400' },
-    { icon: Sparkles, text: 'Unlimited OCR receipt scanning', color: 'text-violet-400' },
-    { icon: Zap, text: 'Voice-powered financial assistant', color: 'text-cyan-400' },
+    { icon: Crown, text: '90 days FREE Pro access', color: 'text-amber-400' },
+    { icon: Sparkles, text: 'OCR receipt scanning (20/month)', color: 'text-violet-400' },
+    { icon: Zap, text: 'Voice financial assistant (15 min/month)', color: 'text-cyan-400' },
     { icon: Trophy, text: 'Gamification with points and rewards', color: 'text-emerald-400' },
-    { icon: Shield, text: 'Enterprise-grade data protection', color: 'text-rose-400' },
+    { icon: Shield, text: 'All Pro features unlocked', color: 'text-rose-400' },
   ];
 
   const handleCaptureLead = async () => {
@@ -58,16 +58,14 @@ export function VipReferralLanding({ referralCode, onContinueToSignup, onSkip }:
 
     setLoading(true);
     try {
-      // Capture lead with consent
-      const { error } = await supabase
-        .from('referral_leads')
-        .insert({
-          email: email.trim(),
-          name: name.trim() || null,
-          referral_code: referralCode,
-          marketing_consent: marketingConsent,
-          source: 'vip_landing'
-        });
+      // Capture lead using RPC for proper referral tracking
+      const { error } = await supabase.rpc('capture_referral_lead', {
+        p_email: email.trim(),
+        p_name: name.trim() || null,
+        p_referral_code: referralCode,
+        p_marketing_consent: marketingConsent,
+        p_source: 'vip_landing'
+      });
 
       if (error) {
         console.error('Lead capture error:', error);
@@ -183,8 +181,8 @@ export function VipReferralLanding({ referralCode, onContinueToSignup, onSkip }:
                 </h1>
                 <p className="text-lg text-white/70">
                   {language === 'es'
-                    ? 'Únete al programa beta exclusivo y transforma tus finanzas'
-                    : 'Join the exclusive beta program and transform your finances'}
+                    ? 'Accede a EvoFinz y transforma tus finanzas'
+                    : 'Access EvoFinz and transform your finances'}
                 </p>
               </motion.div>
 
@@ -299,8 +297,8 @@ export function VipReferralLanding({ referralCode, onContinueToSignup, onSkip }:
                 <Users className="h-4 w-4" />
                 <span>
                   {language === 'es' 
-                    ? '+500 beta testers ya están transformando sus finanzas' 
-                    : '+500 beta testers are already transforming their finances'}
+                    ? 'Usuarios ya están transformando sus finanzas' 
+                    : 'Users are already transforming their finances'}
                 </span>
               </motion.div>
             </motion.div>

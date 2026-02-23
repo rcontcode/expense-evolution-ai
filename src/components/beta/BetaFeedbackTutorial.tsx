@@ -103,14 +103,14 @@ const TUTORIAL_STEPS: TutorialStep[] = [
       en: [
         "🥉 Bronze (0 pts) - Starting level",
         "🥈 Silver (250 pts) - Beta features access",
-        "🥇 Gold (500 pts) - Priority support",
+        "🥇 Gold (500 pts) - Priority features",
         "💎 Platinum (1000 pts) - Permanent badge",
         "👑 Diamond (2000 pts) - Founding Member forever!"
       ],
       es: [
         "🥉 Bronze (0 pts) - Nivel inicial",
         "🥈 Silver (250 pts) - Acceso a funciones beta",
-        "🥇 Gold (500 pts) - Soporte prioritario",
+        "🥇 Gold (500 pts) - Funciones prioritarias",
         "💎 Platinum (1000 pts) - Badge permanente",
         "👑 Diamond (2000 pts) - ¡Founding Member para siempre!"
       ]
