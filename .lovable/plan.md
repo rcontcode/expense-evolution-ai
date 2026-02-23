@@ -1,97 +1,103 @@
 
+# Plan: Honestidad Pre-Lanzamiento - 3 Correcciones Criticas
 
-# Problemas Pendientes en el Sistema de Recordatorios
+## Datos Reales en la Base de Datos
+- **2 usuarios** registrados
+- **1 pais** (solo Canada)
+- **0 testimonios publicados**
+- **1 feedback** con rating 5.0
 
-## Hallazgos de la Auditoria Exhaustiva
-
-Despues de revisar todos los archivos relacionados con recordatorios y notificaciones, encontre **7 problemas concretos** -- algunos son brechas funcionales y otros son configuraciones que se guardan pero nunca se usan.
-
----
-
-## 1. `repeat_frequency` y `preferred_hour` se guardan pero NUNCA se usan
-
-**Gravedad: Alta** -- El usuario configura estos valores en `ReminderPreferencesPanel` y se guardan en `notification_preferences`, pero `useAutoReminders` los ignora completamente.
-
-- `repeat_frequency` ('once', 'daily_until_deadline', 'weekly') deberia controlar cada cuanto se re-envia un recordatorio. Actualmente el hook usa logica fija de 24h/168h.
-- `preferred_hour` deberia controlar a que hora del dia se generan. Actualmente se generan en cualquier momento.
-
-**Solucion**: En `useAutoReminders.ts`, leer `pref.repeat_frequency` para calcular el `withinHours` de anti-duplicado (once = nunca re-enviar, daily = 24h, weekly = 168h). Leer `pref.preferred_hour` y comparar con la hora actual antes de insertar.
+Estos numeros confirman que toda la "social proof" actual es inventada.
 
 ---
 
-## 2. Dos sistemas de preferencias desconectados
+## Cambio 1: Reemplazar Testimonios Falsos con Seccion de Capacidades Reales
 
-**Gravedad: Media** -- Existen dos UI de preferencias que no se hablan entre si:
-- `/settings` tiene `NotificationPreferences` (toggles on/off por categoria guardados en tabla `settings.preferences.notifications`)
-- `/notifications` tiene `ReminderPreferencesPanel` (configuracion avanzada guardada en tabla `notification_preferences`)
+**Archivo:** `src/components/landing/TestimonialsCarousel.tsx`
 
-El `useAutoReminders` solo consulta `notification_preferences`. Los toggles de `/settings` no tienen efecto real sobre los recordatorios automaticos.
+Eliminar completamente los 9 perfiles ficticios con fotos de stock y reemplazar el componente con una seccion "Casos de Uso Reales" que muestra escenarios verificables de la app (no personas inventadas):
 
-**Solucion**: Conectar ambos sistemas. Si el usuario desactiva "Contratos" en Settings, `useAutoReminders` deberia respetar eso. O mejor: reemplazar los toggles simples de Settings con un enlace al panel avanzado de Notifications para evitar confusion.
+- **Freelancer en Canada**: "Genera tu T2125 automaticamente con categorizacion inteligente"
+- **Consultor Multi-Cliente**: "Gestiona gastos por proyecto con reportes individuales por cliente"
+- **Emprendedor en Chile**: "Controla tu IVA y deducciones con reglas fiscales chilenas integradas"
+- **Profesional Independiente**: "Escanea recibos con OCR y categoriza gastos en segundos"
 
----
+Cada card tendra: icono relevante, titulo del caso de uso, descripcion de la capacidad real, y un badge con la funcionalidad clave. Sin fotos de personas, sin nombres falsos.
 
-## 3. `useAutoReminders` no filtra notificaciones snoozed al verificar duplicados
-
-**Gravedad: Media** -- Cuando un usuario pospone (snooze) una notificacion, el hook `hasRecentNotification` la cuenta como existente, lo que impide que se genere una nueva cuando el snooze expira. Deberia excluir notificaciones snoozed del chequeo de duplicados.
-
-**Solucion**: Agregar `.or('snoozed_until.is.null,snoozed_until.lt.' + new Date().toISOString())` al query de `hasRecentNotification`.
+Cuando existan 3+ testimonios reales publicados (de `beta_feedback` con `is_published_testimonial = true`), el componente automaticamente los mostrara en lugar de los casos de uso. La infraestructura de testimonios reales ya existe y seguira funcionando.
 
 ---
 
-## 4. Notificaciones de `conversion_reminder` no aparecen en el filtro "Reminders"
+## Cambio 2: Reemplazar Estadisticas Infladas con Metricas del Producto
 
-**Gravedad: Baja** -- `useConversionReminders` genera notificaciones con type `conversion_reminder`, pero la constante `REMINDER_TYPES` en `Notifications.tsx` no lo incluye. Estas notificaciones se ven en "All" pero no en el tab "Reminders".
+**Archivo:** `src/components/landing/AnimatedStats.tsx`
 
-**Solucion**: Agregar `'conversion_reminder'` a `REMINDER_TYPES` y su icono/color correspondiente.
+Eliminar los 3 sets de stats falsos ("10,000+ recibos", "847+ libros", "234+ transiciones E->S", "1.2M patrimonio total") y reemplazar con un solo set de **metricas verificables del producto**:
+
+| Actual (falso) | Nuevo (real) |
+|---|---|
+| 10,000+ Recibos procesados | 30+ Categorias fiscales |
+| 847+ Libros trackeados | 2 Paises soportados (CA/CL) |
+| 234+ E->S transiciones | 8+ Modulos de mentoria |
+| 500+ Usuarios activos | 100% Datos encriptados |
+| 15K XP ganados | 5+ Tipos de reporte |
+| 1.2M Patrimonio | 3 seg Procesamiento OCR |
+
+Un solo set estatico, sin auto-rotacion entre sets falsos. Las metricas describen capacidades del producto, no uso ficticio.
+
+**Archivo:** `src/components/landing/GuaranteesSection.tsx`
+
+Cambiar los trust indicators falsos:
+- "500+ Usuarios Activos" -> "Canada & Chile" (Paises soportados)
+- "50K+ Documentos Procesados" -> "30+ Categorias" (Categorias fiscales)
+- "4.8/5 Satisfaccion" -> eliminar o cambiar a "Acceso por Invitacion"
+
+**Archivo:** `src/components/landing/LiveSocialProof.tsx`
+
+Eliminar los `MIN_STATS` artificiales (50 usuarios, 5 paises, 10 signups semanales) y el `FALLBACK_STATS` inflado. Mostrar datos reales sin piso artificial. Si hay menos de 5 usuarios reales, ocultar el componente completamente en lugar de mostrar numeros falsos.
 
 ---
 
-## 5. TaxDeadlineCards: el nombre del reminder cambia con el idioma
+## Cambio 3: Limpiar Beta Publica y Corregir Validacion
 
-**Gravedad: Media** -- En las cards de Canada, `handleSetReminder` usa el nombre traducido:
+**Archivo:** `src/pages/Landing.tsx`
+
+3 sub-cambios:
+
+a) **Renombrar el boton "Have a beta code?"** a algo como "Have an invitation code?" / "Tienes un codigo de invitacion?" — eliminar la palabra "beta" del texto publico.
+
+b) **Cambiar `validate_beta_invitation_code` a `validate_any_beta_code`** — actualmente la Landing usa una funcion que solo valida codigos de admin, mientras Auth.tsx usa `validate_any_beta_code` que tambien acepta codigos de referidos. Esto causa que codigos de referidos fallen en la Landing pero funcionen en Auth.
+
+c) **Actualizar textos de confirmacion**: "Acceso beta desbloqueado" -> "Acceso desbloqueado" / "Activar Acceso Beta" -> "Activar Acceso Exclusivo"
+
+**Archivo:** `src/components/settings/SubscriptionManager.tsx`
+
+Agregar entrada `pro_beta` al `planConfig` para evitar crash cuando un usuario con ese plan abre Settings:
+
 ```
-handleSetReminder(isEs ? "Impuestos Personales" : "Personal Taxes", ...)
+pro_beta: {
+  name: 'Pro (Early Access)',
+  price: '$0',
+  icon: Crown,
+  color: 'from-emerald-500 to-teal-600',
+  features: [
+    'Todo de Pro con limites especiales',
+    '20 escaneos OCR/mes',
+    'Asistente de voz (15 min/mes)',
+    ...
+  ],
+}
 ```
-Si el usuario activa un reminder en espanol y luego cambia a ingles, la verificacion `activeReminders.has(...)` fallara porque compara contra el nombre en el idioma actual. El indicador "Activo" desaparecera.
-
-**Solucion**: Usar siempre una clave fija en ingles para el titulo del reminder (ej: "Personal Taxes") independiente del idioma de la UI. El mensaje puede ser bilingue, pero el titulo/clave debe ser consistente.
 
 ---
 
-## 6. Settings no incluye el panel avanzado `ReminderPreferencesPanel`
+## Resumen de Archivos a Modificar
 
-**Gravedad: Baja** -- El plan decia "ambos lugares" (Settings + Notifications). El panel avanzado esta en `/notifications` pero no en `/settings`. Solo estan los toggles simples de `NotificationPreferences`.
-
-**Solucion**: Agregar `ReminderPreferencesPanel` como seccion adicional en `/settings`, debajo de `NotificationPreferences`, o reemplazar los toggles simples con el panel avanzado.
-
----
-
-## 7. Falta invalidar `['unread-notifications-count']` en markAsRead/delete/clearAll
-
-**Gravedad: Baja** -- Las mutaciones `markAsRead`, `deleteNotification` y `clearAllNotifications` en `Notifications.tsx` solo invalidan `['notifications']` pero no `['unread-notifications-count']`, por lo que el badge del menu no se actualiza inmediatamente.
-
-**Solucion**: Agregar `queryClient.invalidateQueries({ queryKey: ['unread-notifications-count'] })` a cada `onSuccess`.
-
----
-
-## Plan de Cambios
-
-### A. `src/hooks/data/useAutoReminders.ts`
-1. Leer `repeat_frequency` de cada preferencia y usarlo para calcular el intervalo anti-duplicado real (once=infinito, daily=24h, weekly=168h)
-2. Leer `preferred_hour` y solo generar si la hora actual coincide (tolerancia de +/- 1 hora)
-3. Excluir notificaciones snoozed del chequeo de duplicados
-
-### B. `src/components/tax-calendar/TaxDeadlineCards.tsx`
-4. Usar claves fijas en ingles para los nombres de reminder (no depender del idioma actual)
-
-### C. `src/pages/Notifications.tsx`
-5. Agregar `conversion_reminder` a `REMINDER_TYPES` con icono y color
-6. Agregar invalidacion de `['unread-notifications-count']` a markAsRead, deleteNotification, clearAll
-
-### D. `src/pages/Settings.tsx`
-7. Agregar `ReminderPreferencesPanel` debajo de `NotificationPreferences` para cumplir con "ambos lugares"
-
-### E. `src/components/settings/NotificationPreferences.tsx`
-8. Agregar nota informativa que enlace a la configuracion avanzada en `/notifications`
-
+| Archivo | Cambio |
+|---|---|
+| `TestimonialsCarousel.tsx` | Reemplazar perfiles falsos con casos de uso reales |
+| `AnimatedStats.tsx` | Reemplazar stats inventados con metricas del producto |
+| `GuaranteesSection.tsx` | Corregir trust indicators inflados |
+| `LiveSocialProof.tsx` | Eliminar pisos artificiales, ocultar si <5 usuarios |
+| `Landing.tsx` | Renombrar "beta" a "invitacion", fix validacion RPC |
+| `SubscriptionManager.tsx` | Agregar config para plan `pro_beta` |
