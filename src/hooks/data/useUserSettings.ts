@@ -10,6 +10,8 @@ export interface UserPreferences {
   global_monthly_budget?: number;
   global_budget_alert_threshold?: number;
   budget_mode?: BudgetMode;
+  expenses_confirmed_month?: string;
+  expenses_dismissed_month?: string;
 }
 
 export function useUserSettings() {
