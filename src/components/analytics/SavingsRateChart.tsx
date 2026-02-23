@@ -101,7 +101,8 @@ export function SavingsRateChart() {
         .reduce((sum, exp) => sum + exp.amount, 0);
       
       const savings = monthIncome - monthExpenses;
-      const rate = monthIncome > 0 ? (savings / monthIncome) * 100 : 0;
+      // Only calculate meaningful rate when BOTH income and expenses exist
+      const rate = (monthIncome > 0 && monthExpenses > 0) ? (savings / monthIncome) * 100 : 0;
       
       months.push({
         month: format(date, 'MMM', { locale }),
@@ -117,8 +118,9 @@ export function SavingsRateChart() {
   }, [income, expenses, locale]);
 
   const stats = useMemo(() => {
-    const recentMonths = chartData.slice(-6); // Last 6 months for analysis
-    const validMonths = recentMonths.filter(m => m.income > 0);
+    const recentMonths = chartData.slice(-6);
+    // Only consider months with BOTH income and expenses as valid for analysis
+    const validMonths = recentMonths.filter(m => m.income > 0 && m.expenses > 0);
     
     if (validMonths.length === 0) {
       return { currentRate: 0, avgRate: 0, trend: 'stable' as const, level: 'moderate' as const };
@@ -209,7 +211,7 @@ export function SavingsRateChart() {
     );
   }
 
-  const hasData = chartData.some(m => m.income > 0);
+  const hasData = chartData.some(m => m.income > 0 && m.expenses > 0);
 
   if (!hasData) {
     return (

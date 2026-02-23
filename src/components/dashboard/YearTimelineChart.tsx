@@ -203,25 +203,31 @@ export function YearTimelineChart({
     });
     const incomeSources = Object.entries(sourceMap).length;
     
-    // Achievements
+    // Achievements - only award savings achievements when expenses actually exist
     const achievements: { emoji: string; text: string }[] = [];
-    if (savingsRate >= 50) achievements.push({ emoji: '🏆', text: language === 'es' ? 'Ahorro excepcional (+50%)' : 'Exceptional savings (+50%)' });
-    else if (savingsRate >= 20) achievements.push({ emoji: '🎯', text: language === 'es' ? 'Buen ahorrador (+20%)' : 'Good saver (+20%)' });
-    if (consistencyRate >= 80) achievements.push({ emoji: '🔥', text: language === 'es' ? 'Consistencia financiera' : 'Financial consistency' });
+    const hasExpenseData = totalExpenses > 0;
+    if (totalIncome > 0 && !hasExpenseData) {
+      achievements.push({ emoji: '📝', text: language === 'es' ? 'Registra gastos para ver logros reales' : 'Add expenses to see real achievements' });
+    }
+    if (savingsRate >= 50 && hasExpenseData) achievements.push({ emoji: '🏆', text: language === 'es' ? 'Ahorro excepcional (+50%)' : 'Exceptional savings (+50%)' });
+    else if (savingsRate >= 20 && hasExpenseData) achievements.push({ emoji: '🎯', text: language === 'es' ? 'Buen ahorrador (+20%)' : 'Good saver (+20%)' });
+    if (consistencyRate >= 80 && hasExpenseData) achievements.push({ emoji: '🔥', text: language === 'es' ? 'Consistencia financiera' : 'Financial consistency' });
     if (incomeTrend > 10) achievements.push({ emoji: '📈', text: language === 'es' ? 'Ingresos en crecimiento' : 'Growing income' });
-    if (spendingTrend < -10) achievements.push({ emoji: '💪', text: language === 'es' ? 'Reducción de gastos' : 'Expense reduction' });
+    if (spendingTrend < -10 && hasExpenseData) achievements.push({ emoji: '💪', text: language === 'es' ? 'Reducción de gastos' : 'Expense reduction' });
     if (incomeSources >= 3) achievements.push({ emoji: '🌐', text: language === 'es' ? 'Ingresos diversificados' : 'Diversified income' });
-    if (positiveMonths >= activeMonths && activeMonths >= 3) achievements.push({ emoji: '✨', text: language === 'es' ? 'Balance siempre positivo' : 'Always positive balance' });
+    if (positiveMonths >= activeMonths && activeMonths >= 3 && hasExpenseData) achievements.push({ emoji: '✨', text: language === 'es' ? 'Balance siempre positivo' : 'Always positive balance' });
     
     // Smart tip
     let tip = '';
-    if (savingsRate < 10 && totalIncome > 0) {
+    if (totalIncome > 0 && !hasExpenseData) {
+      tip = language === 'es' ? 'Registra tus gastos para ver análisis de ahorro y tendencias reales.' : 'Add your expenses to see real savings analysis and trends.';
+    } else if (savingsRate < 10 && totalIncome > 0 && hasExpenseData) {
       tip = language === 'es' ? 'Tu tasa de ahorro es baja. Intenta automatizar un 10% de cada ingreso.' : 'Your savings rate is low. Try automating 10% of each income.';
-    } else if (spendingTrend > 20) {
+    } else if (spendingTrend > 20 && hasExpenseData) {
       tip = language === 'es' ? 'Tus gastos están aumentando rápidamente. Revisa las últimas categorías.' : 'Your spending is increasing rapidly. Review recent categories.';
-    } else if (consistencyRate < 50) {
+    } else if (consistencyRate < 50 && hasExpenseData) {
       tip = language === 'es' ? 'Tienes meses irregulares. Un presupuesto mensual podría estabilizar tus finanzas.' : 'You have irregular months. A monthly budget could stabilize your finances.';
-    } else if (savingsRate >= 30) {
+    } else if (savingsRate >= 30 && hasExpenseData) {
       tip = language === 'es' ? '¡Excelente ahorro! Considera invertir el excedente para generar rendimientos.' : 'Excellent savings! Consider investing the surplus for returns.';
     } else {
       tip = language === 'es' ? 'Vas por buen camino. Mantén el ritmo y revisa tus metas trimestralmente.' : 'You\'re on track. Keep the pace and review goals quarterly.';

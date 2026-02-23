@@ -43,12 +43,22 @@ export function useSmartContext(
   const insights = useMemo(() => {
     const insights: ContextInsight[] = [];
 
-    // Savings rate analysis
-    const savingsRate = financialData.monthlyIncome > 0
+    // Savings rate analysis - only valid when BOTH income AND expenses exist
+    const savingsRate = financialData.monthlyIncome > 0 && financialData.monthlyExpenses > 0
       ? ((financialData.monthlyIncome - financialData.monthlyExpenses) / financialData.monthlyIncome) * 100
       : 0;
 
-    if (savingsRate > 50) {
+    // Data completeness warning - income without expenses
+    if (financialData.monthlyIncome > 0 && financialData.monthlyExpenses === 0) {
+      insights.push({
+        type: 'warning',
+        message: isSpanish
+          ? 'Tienes ingresos pero no gastos registrados este mes. Registra tus gastos para ver métricas reales.'
+          : 'You have income but no expenses this month. Add expenses to see real metrics.',
+        priority: 10,
+        actionCommand: isSpanish ? 'registrar gasto' : 'add expense',
+      });
+    } else if (savingsRate > 50 && financialData.monthlyExpenses > 0) {
       insights.push({
         type: 'achievement',
         message: isSpanish 
@@ -57,7 +67,7 @@ export function useSmartContext(
         priority: 8,
         actionCommand: isSpanish ? 'calculador FIRE' : 'FIRE calculator',
       });
-    } else if (savingsRate < 10 && savingsRate >= 0) {
+    } else if (savingsRate < 10 && savingsRate >= 0 && financialData.monthlyExpenses > 0) {
       insights.push({
         type: 'warning',
         message: isSpanish

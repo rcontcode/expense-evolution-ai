@@ -267,18 +267,23 @@ export function useMonthlyPlanData(): MonthlyPlanData {
       });
     }
 
-    // Financial Health Score (0-100)
+    // Financial Health Score (0-100) - savings bonuses only when expenses exist
     let healthScore = 50; // base
     if (totalIncome > 0) healthScore += 10;
     if (activeBills.length > 0) healthScore += 5;
     if (globalBudget > 0 || catBudgetTotal > 0) healthScore += 10;
-    if (savingsRate >= 20) healthScore += 15;
-    else if (savingsRate >= 10) healthScore += 8;
-    else if (savingsRate > 0) healthScore += 3;
+    // Only award savings points when expenses are actually recorded
+    if (totalSpent > 0) {
+      if (savingsRate >= 20) healthScore += 15;
+      else if (savingsRate >= 10) healthScore += 8;
+      else if (savingsRate > 0) healthScore += 3;
+    }
     if (pace <= 100 && pace > 0) healthScore += 10;
     else if (pace > 120) healthScore -= 15;
     if (overdueBills.length > 0) healthScore -= 10 * overdueBills.length;
     if (categoriesOverBudget.length > 0) healthScore -= 5 * categoriesOverBudget.length;
+    // Penalize incomplete data (income without expenses)
+    if (totalIncome > 0 && totalSpent === 0) healthScore -= 10;
     healthScore = Math.max(0, Math.min(100, healthScore));
 
     const healthLabel = healthScore >= 80
