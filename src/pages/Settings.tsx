@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { NotificationPreferences } from '@/components/settings/NotificationPreferences';
+import { ReminderPreferencesPanel } from '@/components/notifications/ReminderPreferencesPanel';
 import { SubscriptionManager } from '@/components/settings/SubscriptionManager';
 import { FiscalEntitiesCard } from '@/components/settings/FiscalEntitiesCard';
 import { resetOnboardingTutorial } from '@/components/guidance/OnboardingTutorial';
@@ -260,6 +261,7 @@ export default function Settings() {
               isMobile={isMobile}
             >
               <NotificationPreferences />
+              <ReminderPreferencesPanel />
             </SettingsSection>
 
             {/* Onboarding Guides Section */}

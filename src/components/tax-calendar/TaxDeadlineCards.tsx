@@ -366,14 +366,14 @@ export function TaxDeadlineCards({ year, workTypes, fiscalYearEnd, country = 'CA
           </div>
 
           <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              variant={activeReminders.has("Personal Taxes") ? "default" : "outline"}
-              onClick={() => handleSetReminder(isEs ? "Impuestos Personales" : "Personal Taxes", new Date(year, 3, 30))}
-              disabled={activeReminders.has(isEs ? "Impuestos Personales" : "Personal Taxes")}
-            >
-              {activeReminders.has(isEs ? "Impuestos Personales" : "Personal Taxes") ? <CheckCheck className="h-4 w-4 mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
-              {activeReminders.has(isEs ? "Impuestos Personales" : "Personal Taxes") ? (isEs ? "Activo" : "Active") : (isEs ? "Recordatorio" : "Reminder")}
+              <Button 
+                size="sm" 
+                variant={activeReminders.has("Personal Taxes") ? "default" : "outline"}
+                onClick={() => handleSetReminder("Personal Taxes", new Date(year, 3, 30))}
+                disabled={activeReminders.has("Personal Taxes")}
+              >
+                {activeReminders.has("Personal Taxes") ? <CheckCheck className="h-4 w-4 mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
+                {activeReminders.has("Personal Taxes") ? (isEs ? "Activo" : "Active") : (isEs ? "Recordatorio" : "Reminder")}
             </Button>
             <Button size="sm" variant="outline" asChild>
               <a href="https://www.canada.ca/en/services/taxes/income-tax/personal-income-tax.html" target="_blank" rel="noopener">
@@ -440,11 +440,11 @@ export function TaxDeadlineCards({ year, workTypes, fiscalYearEnd, country = 'CA
               <Button 
                 size="sm" 
                 variant={activeReminders.has("Self-Employed") ? "default" : "outline"}
-                onClick={() => handleSetReminder(isEs ? "Autónomo" : "Self-Employed", new Date(year, 5, 15))}
-                disabled={activeReminders.has(isEs ? "Autónomo" : "Self-Employed")}
+                onClick={() => handleSetReminder("Self-Employed", new Date(year, 5, 15))}
+                disabled={activeReminders.has("Self-Employed")}
               >
-                {activeReminders.has(isEs ? "Autónomo" : "Self-Employed") ? <CheckCheck className="h-4 w-4 mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
-                {activeReminders.has(isEs ? "Autónomo" : "Self-Employed") ? (isEs ? "Activo" : "Active") : (isEs ? "Recordatorio" : "Reminder")}
+                {activeReminders.has("Self-Employed") ? <CheckCheck className="h-4 w-4 mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
+                {activeReminders.has("Self-Employed") ? (isEs ? "Activo" : "Active") : (isEs ? "Recordatorio" : "Reminder")}
               </Button>
               <Button size="sm" variant="outline" asChild>
                 <a href="https://www.canada.ca/en/revenue-agency/services/forms-publications/forms/t2125.html" target="_blank" rel="noopener">
@@ -499,11 +499,11 @@ export function TaxDeadlineCards({ year, workTypes, fiscalYearEnd, country = 'CA
               <Button 
                 size="sm" 
                 variant={activeReminders.has("Corporation") ? "default" : "outline"}
-                onClick={() => handleSetReminder(isEs ? "Corporación" : "Corporation", corpDates.filingDeadline)}
-                disabled={activeReminders.has(isEs ? "Corporación" : "Corporation")}
+                onClick={() => handleSetReminder("Corporation", corpDates.filingDeadline)}
+                disabled={activeReminders.has("Corporation")}
               >
-                {activeReminders.has(isEs ? "Corporación" : "Corporation") ? <CheckCheck className="h-4 w-4 mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
-                {activeReminders.has(isEs ? "Corporación" : "Corporation") ? (isEs ? "Activo" : "Active") : (isEs ? "Recordatorio" : "Reminder")}
+                {activeReminders.has("Corporation") ? <CheckCheck className="h-4 w-4 mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
+                {activeReminders.has("Corporation") ? (isEs ? "Activo" : "Active") : (isEs ? "Recordatorio" : "Reminder")}
               </Button>
               <Button size="sm" variant="outline" asChild>
                 <a href="https://www.canada.ca/en/revenue-agency/services/forms-publications/forms/t2.html" target="_blank" rel="noopener">

@@ -363,6 +363,14 @@ export function NotificationPreferences() {
             ? 'Las notificaciones desactivadas no aparecerán en tu bandeja de entrada ni generarán alertas.' 
             : 'Disabled notifications will not appear in your inbox or generate alerts.'}
         </p>
+        <p className="text-xs text-muted-foreground mt-2">
+          {isEs 
+            ? '💡 Para configuración avanzada de recordatorios (anticipación, frecuencia, hora preferida), visita ' 
+            : '💡 For advanced reminder settings (advance days, frequency, preferred hour), visit '}
+          <a href="/notifications" className="text-primary underline hover:no-underline">
+            {isEs ? 'Notificaciones → Configurar' : 'Notifications → Settings'}
+          </a>
+        </p>
       </CardContent>
     </Card>
   );
