@@ -6,8 +6,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format, addMonths, differenceInDays, isAfter } from "date-fns";
 import { es, enCA } from "date-fns/locale";
-import { Calendar, AlertTriangle, CheckCircle2, Clock, Building2, User, Briefcase, Calculator, Bell, ExternalLink, FileText } from "lucide-react";
+import { Calendar, AlertTriangle, CheckCircle2, Clock, Building2, User, Briefcase, Calculator, Bell, ExternalLink, FileText, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CardsProps {
   year: number;
@@ -18,10 +22,13 @@ interface CardsProps {
 
 export function TaxDeadlineCards({ year, workTypes, fiscalYearEnd, country = 'CA' }: CardsProps) {
   const { language } = useLanguage();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const locale = language === 'es' ? es : enCA;
   const isEs = language === 'es';
   const today = new Date();
   const isChile = country === 'CL';
+  const [activeReminders, setActiveReminders] = useState<Set<string>>(new Set());
 
   const hasCorp = workTypes.includes('corporation');
   const hasSole = workTypes.includes('contractor');
@@ -43,14 +50,31 @@ export function TaxDeadlineCards({ year, workTypes, fiscalYearEnd, country = 'CA
     };
   }, [hasCorp, fiscalYearEnd, year]);
 
-  const handleSetReminder = (deadlineName: string, date: Date) => {
-    // In a real app, this would integrate with notification system
-    toast.success(
-      isEs 
-        ? `Recordatorio configurado para ${deadlineName} el ${format(date, 'PPP', { locale })}`
-        : `Reminder set for ${deadlineName} on ${format(date, 'PPP', { locale })}`
-    );
-  };
+  const handleSetReminder = useCallback(async (deadlineName: string, date: Date) => {
+    if (!user) return;
+    try {
+      const daysUntil = differenceInDays(date, today);
+      await supabase.from('notifications').insert({
+        user_id: user.id,
+        type: 'tax_reminder',
+        title: `🏛️ ${deadlineName}`,
+        message: isEs
+          ? `Recordatorio fiscal: ${deadlineName} vence el ${format(date, 'PPP', { locale })} (${daysUntil} días)`
+          : `Tax reminder: ${deadlineName} due ${format(date, 'PPP', { locale })} (${daysUntil} days)`,
+        action_url: '/tax-calendar',
+        read: false,
+      });
+      setActiveReminders(prev => new Set(prev).add(deadlineName));
+      queryClient.invalidateQueries({ queryKey: ['unread-notifications-count'] });
+      toast.success(
+        isEs
+          ? `✅ Recordatorio activado para ${deadlineName}`
+          : `✅ Reminder set for ${deadlineName}`
+      );
+    } catch {
+      toast.error(isEs ? 'Error al configurar recordatorio' : 'Error setting reminder');
+    }
+  }, [user, isEs, locale, queryClient, today]);
 
   // Chile-specific: F22 deadline is April 30
   const f22Deadline = new Date(year, 3, 30);
@@ -109,11 +133,12 @@ export function TaxDeadlineCards({ year, workTypes, fiscalYearEnd, country = 'CA
             <div className="flex gap-2">
               <Button 
                 size="sm" 
-                variant="outline"
+                variant={activeReminders.has("F22") ? "default" : "outline"}
                 onClick={() => handleSetReminder("F22", f22Deadline)}
+                disabled={activeReminders.has("F22")}
               >
-                <Bell className="h-4 w-4 mr-2" />
-                Recordatorio
+                {activeReminders.has("F22") ? <CheckCheck className="h-4 w-4 mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
+                {activeReminders.has("F22") ? (isEs ? "Activo" : "Active") : "Recordatorio"}
               </Button>
               <Button size="sm" variant="outline" asChild>
                 <a href="https://www.sii.cl/servicios_online/1047-declaracion_de_renta-1182.html" target="_blank" rel="noopener">
@@ -250,11 +275,12 @@ export function TaxDeadlineCards({ year, workTypes, fiscalYearEnd, country = 'CA
 
             <Button 
               size="sm" 
-              variant="outline"
+              variant={activeReminders.has("APV") ? "default" : "outline"}
               onClick={() => handleSetReminder("APV", new Date(year, 11, 30))}
+              disabled={activeReminders.has("APV")}
             >
-              <Bell className="h-4 w-4 mr-2" />
-              Recordatorio
+              {activeReminders.has("APV") ? <CheckCheck className="h-4 w-4 mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
+              {activeReminders.has("APV") ? (isEs ? "Activo" : "Active") : "Recordatorio"}
             </Button>
           </CardContent>
         </Card>
@@ -307,11 +333,12 @@ export function TaxDeadlineCards({ year, workTypes, fiscalYearEnd, country = 'CA
           <div className="flex gap-2">
             <Button 
               size="sm" 
-              variant="outline"
+              variant={activeReminders.has("Personal Taxes") ? "default" : "outline"}
               onClick={() => handleSetReminder(isEs ? "Impuestos Personales" : "Personal Taxes", new Date(year, 3, 30))}
+              disabled={activeReminders.has(isEs ? "Impuestos Personales" : "Personal Taxes")}
             >
-              <Bell className="h-4 w-4 mr-2" />
-              {isEs ? "Recordatorio" : "Reminder"}
+              {activeReminders.has(isEs ? "Impuestos Personales" : "Personal Taxes") ? <CheckCheck className="h-4 w-4 mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
+              {activeReminders.has(isEs ? "Impuestos Personales" : "Personal Taxes") ? (isEs ? "Activo" : "Active") : (isEs ? "Recordatorio" : "Reminder")}
             </Button>
             <Button size="sm" variant="outline" asChild>
               <a href="https://www.canada.ca/en/services/taxes/income-tax/personal-income-tax.html" target="_blank" rel="noopener">
@@ -377,11 +404,12 @@ export function TaxDeadlineCards({ year, workTypes, fiscalYearEnd, country = 'CA
             <div className="flex gap-2">
               <Button 
                 size="sm" 
-                variant="outline"
+                variant={activeReminders.has("Self-Employed") ? "default" : "outline"}
                 onClick={() => handleSetReminder(isEs ? "Autónomo" : "Self-Employed", new Date(year, 5, 15))}
+                disabled={activeReminders.has(isEs ? "Autónomo" : "Self-Employed")}
               >
-                <Bell className="h-4 w-4 mr-2" />
-                {isEs ? "Recordatorio" : "Reminder"}
+                {activeReminders.has(isEs ? "Autónomo" : "Self-Employed") ? <CheckCheck className="h-4 w-4 mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
+                {activeReminders.has(isEs ? "Autónomo" : "Self-Employed") ? (isEs ? "Activo" : "Active") : (isEs ? "Recordatorio" : "Reminder")}
               </Button>
               <Button size="sm" variant="outline" asChild>
                 <a href="https://www.canada.ca/en/revenue-agency/services/forms-publications/forms/t2125.html" target="_blank" rel="noopener">
@@ -435,11 +463,12 @@ export function TaxDeadlineCards({ year, workTypes, fiscalYearEnd, country = 'CA
             <div className="flex gap-2">
               <Button 
                 size="sm" 
-                variant="outline"
+                variant={activeReminders.has("Corporation") ? "default" : "outline"}
                 onClick={() => handleSetReminder(isEs ? "Corporación" : "Corporation", corpDates.filingDeadline)}
+                disabled={activeReminders.has(isEs ? "Corporación" : "Corporation")}
               >
-                <Bell className="h-4 w-4 mr-2" />
-                {isEs ? "Recordatorio" : "Reminder"}
+                {activeReminders.has(isEs ? "Corporación" : "Corporation") ? <CheckCheck className="h-4 w-4 mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
+                {activeReminders.has(isEs ? "Corporación" : "Corporation") ? (isEs ? "Activo" : "Active") : (isEs ? "Recordatorio" : "Reminder")}
               </Button>
               <Button size="sm" variant="outline" asChild>
                 <a href="https://www.canada.ca/en/revenue-agency/services/forms-publications/forms/t2.html" target="_blank" rel="noopener">
@@ -548,11 +577,12 @@ export function TaxDeadlineCards({ year, workTypes, fiscalYearEnd, country = 'CA
 
           <Button 
             size="sm" 
-            variant="outline"
+            variant={activeReminders.has("RRSP") ? "default" : "outline"}
             onClick={() => handleSetReminder("RRSP", new Date(year, 2, 1))}
+            disabled={activeReminders.has("RRSP")}
           >
-            <Bell className="h-4 w-4 mr-2" />
-            {isEs ? "Recordatorio" : "Reminder"}
+            {activeReminders.has("RRSP") ? <CheckCheck className="h-4 w-4 mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
+            {activeReminders.has("RRSP") ? (isEs ? "Activo" : "Active") : (isEs ? "Recordatorio" : "Reminder")}
           </Button>
         </CardContent>
       </Card>

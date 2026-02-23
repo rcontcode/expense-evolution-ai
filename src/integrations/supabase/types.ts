@@ -680,6 +680,59 @@ export type Database = {
           },
         ]
       }
+      budget_alert_rules: {
+        Row: {
+          category: string | null
+          condition_type: string
+          created_at: string
+          entity_id: string | null
+          id: string
+          is_active: boolean
+          last_triggered_at: string | null
+          name: string
+          notify_method: string
+          threshold_amount: number
+          threshold_percentage: number | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          condition_type?: string
+          created_at?: string
+          entity_id?: string | null
+          id?: string
+          is_active?: boolean
+          last_triggered_at?: string | null
+          name: string
+          notify_method?: string
+          threshold_amount?: number
+          threshold_percentage?: number | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          condition_type?: string
+          created_at?: string
+          entity_id?: string | null
+          id?: string
+          is_active?: boolean
+          last_triggered_at?: string | null
+          name?: string
+          notify_method?: string
+          threshold_amount?: number
+          threshold_percentage?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_alert_rules_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "fiscal_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budget_rollovers: {
         Row: {
           category: string
