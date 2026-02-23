@@ -100,11 +100,18 @@ export function useNudgeSystem() {
     setCooldown(type);
   };
   
+  const expenseMissingReceipt = expenses.filter(e => !e.document_id).length;
+  const expensePendingClassification = expenses.filter(e => e.reimbursement_type === 'pending_classification').length;
+  const expenseNoCategory = expenses.filter(e => !e.category).length;
+
   return {
     nudge,
     dismissNudge,
     pendingDocuments: documents.filter(d => d.status === 'pending' || d.review_status === 'pending').length,
     incompleteExpenses: expenses.filter(e => !e.category || !e.vendor).length,
+    expenseMissingReceipt,
+    expensePendingClassification,
+    expenseNoCategory,
     totalClients: clients.length,
     totalIncomes: incomes.length,
   };

@@ -115,7 +115,7 @@ export function DashboardNotificationHub() {
 
   // ── Data hooks ──
   const { shouldShowPrompt, isConfirmed, looksIncomplete, expenseCount, confirmUpToDate, snoozeUntil } = useExpenseCompleteness();
-  const { pendingDocuments, incompleteExpenses, totalClients, totalIncomes } = useNudgeSystem();
+  const { pendingDocuments, incompleteExpenses, expenseMissingReceipt, expensePendingClassification, expenseNoCategory, totalClients, totalIncomes } = useNudgeSystem();
   const { data: bills = [] } = useRecurringBills();
   const { data: savingsGoals = [] } = useSavingsGoals();
   const { data: healthData } = useDataHealthCheck();
@@ -244,25 +244,35 @@ export function DashboardNotificationHub() {
       });
     }
 
-    // 5. Data health issues — with detailed breakdown
-    if (healthData && healthData.totalIssues > 0) {
-      const issueTypes = Object.keys(healthData.grouped);
-      const detailParts: string[] = [];
-      for (const type of issueTypes) {
+    // 5. Data health issues — consolidated from DB + expense-level issues
+    const dbIssueCount = healthData?.totalIssues || 0;
+    const detailParts: string[] = [];
+
+    // DB-level issues (orphaned records)
+    if (healthData && dbIssueCount > 0) {
+      for (const type of Object.keys(healthData.grouped)) {
         const count = healthData.grouped[type].length;
         const label = l ? healthData.labels[type]?.es : healthData.labels[type]?.en;
         if (label) detailParts.push(`${count} ${label.toLowerCase()}`);
       }
-      const detailMessage = detailParts.join(', ') || (l ? 'Revisión recomendada' : 'Review recommended');
+    }
 
+    // Expense-level issues
+    if (expenseMissingReceipt > 0) detailParts.push(l ? `${expenseMissingReceipt} sin recibo` : `${expenseMissingReceipt} missing receipt`);
+    if (expensePendingClassification > 0) detailParts.push(l ? `${expensePendingClassification} sin clasificar` : `${expensePendingClassification} unclassified`);
+    if (expenseNoCategory > 0) detailParts.push(l ? `${expenseNoCategory} sin categoría` : `${expenseNoCategory} no category`);
+
+    const totalHealthIssues = dbIssueCount + expenseMissingReceipt + expensePendingClassification + expenseNoCategory;
+
+    if (totalHealthIssues > 0) {
       alerts.push({
         id: 'data_health',
         emoji: '🛡️',
         icon: Shield,
-        title: l ? `${healthData.totalIssues} problema${healthData.totalIssues > 1 ? 's' : ''} de integridad` : `${healthData.totalIssues} data integrity issue${healthData.totalIssues > 1 ? 's' : ''}`,
-        message: detailMessage,
-        actionUrl: '/expenses?tab=health',
-        actionLabel: l ? 'Ver detalle' : 'View details',
+        title: l ? `${totalHealthIssues} problema${totalHealthIssues > 1 ? 's' : ''} de integridad` : `${totalHealthIssues} data integrity issue${totalHealthIssues > 1 ? 's' : ''}`,
+        message: detailParts.join(', '),
+        actionUrl: '/data-health',
+        actionLabel: l ? 'Ver reporte' : 'View report',
         colorClass: 'text-red-400',
         bgClass: 'bg-red-400/10',
         priority: 3,
@@ -304,7 +314,7 @@ export function DashboardNotificationHub() {
     return alerts
       .filter(a => !localDismissed.has(a.id))
       .sort((a, b) => a.priority - b.priority);
-  }, [pendingDocuments, incompleteExpenses, bills, savingsGoals, healthData, totalClients, totalIncomes, l, localDismissed]);
+  }, [pendingDocuments, incompleteExpenses, expenseMissingReceipt, expensePendingClassification, expenseNoCategory, bills, savingsGoals, healthData, totalClients, totalIncomes, l, localDismissed]);
 
   const handleDismiss = useCallback((id: string) => {
     dismissAlert(id);
