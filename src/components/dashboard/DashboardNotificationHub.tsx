@@ -244,16 +244,25 @@ export function DashboardNotificationHub() {
       });
     }
 
-    // 5. Data health issues
+    // 5. Data health issues — with detailed breakdown
     if (healthData && healthData.totalIssues > 0) {
+      const issueTypes = Object.keys(healthData.grouped);
+      const detailParts: string[] = [];
+      for (const type of issueTypes) {
+        const count = healthData.grouped[type].length;
+        const label = l ? healthData.labels[type]?.es : healthData.labels[type]?.en;
+        if (label) detailParts.push(`${count} ${label.toLowerCase()}`);
+      }
+      const detailMessage = detailParts.join(', ') || (l ? 'Revisión recomendada' : 'Review recommended');
+
       alerts.push({
         id: 'data_health',
         emoji: '🛡️',
         icon: Shield,
         title: l ? `${healthData.totalIssues} problema${healthData.totalIssues > 1 ? 's' : ''} de integridad` : `${healthData.totalIssues} data integrity issue${healthData.totalIssues > 1 ? 's' : ''}`,
-        message: l ? 'Datos huérfanos o sin clasificar detectados' : 'Orphaned or unclassified data detected',
-        actionUrl: '/expenses',
-        actionLabel: l ? 'Reparar' : 'Fix now',
+        message: detailMessage,
+        actionUrl: '/expenses?tab=health',
+        actionLabel: l ? 'Ver detalle' : 'View details',
         colorClass: 'text-red-400',
         bgClass: 'bg-red-400/10',
         priority: 3,
@@ -362,11 +371,13 @@ export function DashboardNotificationHub() {
             </p>
           </div>
         </div>
-        <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 border-primary/20 hover:bg-primary/10"
-          onClick={() => navigate('/notifications')}>
-          {l ? 'Ver todo' : 'View all'}
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Button>
+        {!expanded && (smartAlerts.length + notifications.length) > 3 && (
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 border-primary/20 hover:bg-primary/10"
+            onClick={() => setExpanded(true)}>
+            {l ? `Ver todo (${totalItems})` : `View all (${totalItems})`}
+            <ChevronDown className="h-3.5 w-3.5" />
+          </Button>
+        )}
       </div>
 
       <div className="divide-y divide-border/20">
