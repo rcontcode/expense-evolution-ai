@@ -2260,33 +2260,87 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          advance_days: number
+          created_at: string
+          enabled: boolean
+          id: string
+          max_reminders: number
+          notification_type: string
+          preferred_hour: number | null
+          repeat_frequency: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          advance_days?: number
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          max_reminders?: number
+          notification_type: string
+          preferred_hour?: number | null
+          repeat_frequency?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          advance_days?: number
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          max_reminders?: number
+          notification_type?: string
+          preferred_hour?: number | null
+          repeat_frequency?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           action_url: string | null
+          completed_at: string | null
           created_at: string | null
           id: string
           message: string
+          muted: boolean | null
           read: boolean | null
+          snoozed_until: string | null
+          source_id: string | null
+          source_type: string | null
           title: string
           type: string
           user_id: string
         }
         Insert: {
           action_url?: string | null
+          completed_at?: string | null
           created_at?: string | null
           id?: string
           message: string
+          muted?: boolean | null
           read?: boolean | null
+          snoozed_until?: string | null
+          source_id?: string | null
+          source_type?: string | null
           title: string
           type: string
           user_id: string
         }
         Update: {
           action_url?: string | null
+          completed_at?: string | null
           created_at?: string | null
           id?: string
           message?: string
+          muted?: boolean | null
           read?: boolean | null
+          snoozed_until?: string | null
+          source_id?: string | null
+          source_type?: string | null
           title?: string
           type?: string
           user_id?: string
