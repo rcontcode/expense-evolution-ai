@@ -2,6 +2,8 @@ import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEntity } from '@/contexts/EntityContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useQueryClient } from '@tanstack/react-query';
 import { differenceInDays } from 'date-fns';
 import { getCountryConfig, type CountryCode } from '@/lib/constants/country-tax-config';
 
@@ -10,14 +12,20 @@ const CHECK_INTERVAL_MS = 60_000; // 60 seconds
 /**
  * Centralized auto-reminder hook that checks bills, contracts, tax deadlines,
  * and budget alerts — inserting real notifications into the `notifications` table.
+ * 
+ * Anti-duplicate logic: Before inserting, checks if a notification with the same
+ * type and similar title already exists within a recent timeframe (24h for bills/budget,
+ * 7 days for contracts/tax).
  */
 export function useAutoReminders() {
   const { user } = useAuth();
   const { currentEntity } = useEntity();
+  const { language } = useLanguage();
+  const queryClient = useQueryClient();
   const runningRef = useRef(false);
   const lastRunRef = useRef(0);
+  const isEs = language === 'es';
 
-  // Anti-duplicate: check if a notification already exists
   const hasRecentNotification = useCallback(async (
     userId: string,
     type: string,
@@ -42,7 +50,7 @@ export function useAutoReminders() {
     message: string,
     actionUrl?: string
   ) => {
-    await supabase.from('notifications').insert({
+    const { error } = await supabase.from('notifications').insert({
       user_id: userId,
       type,
       title,
@@ -50,21 +58,35 @@ export function useAutoReminders() {
       action_url: actionUrl ?? null,
       read: false,
     });
-  }, []);
+    if (error) {
+      console.warn(`[useAutoReminders] Failed to insert notification (${type}):`, error.message);
+      return;
+    }
+    // Invalidate notification caches so UI updates immediately
+    queryClient.invalidateQueries({ queryKey: ['unread-notifications-count'] });
+    queryClient.invalidateQueries({ queryKey: ['notifications'] });
+  }, [queryClient]);
 
-  // A) Bill reminders
+  // A) Bill reminders — includes overdue alerts (up to -7 days)
   const checkBillReminders = useCallback(async (userId: string) => {
-    const { data: bills } = await supabase
+    const { data: bills, error } = await supabase
       .from('recurring_bills')
       .select('id, name, next_due_date, reminder_days_before, amount, currency')
+      .eq('user_id', userId)
       .eq('status', 'active');
 
+    if (error) {
+      console.warn('[useAutoReminders] checkBillReminders error:', error.message);
+      return;
+    }
     if (!bills?.length) return;
     const today = new Date();
 
     for (const bill of bills) {
       const dueDate = new Date(bill.next_due_date);
       const daysUntilDue = differenceInDays(dueDate, today);
+
+      // Upcoming reminder
       if (daysUntilDue <= bill.reminder_days_before && daysUntilDue >= 0) {
         const exists = await hasRecentNotification(userId, 'bill_reminder', bill.name, 24);
         if (!exists) {
@@ -72,22 +94,46 @@ export function useAutoReminders() {
             userId,
             'bill_reminder',
             `💳 ${bill.name}`,
-            `Vence en ${daysUntilDue} día(s) — $${bill.amount} ${bill.currency}`,
+            isEs
+              ? `Vence en ${daysUntilDue} día(s) — $${bill.amount} ${bill.currency}`
+              : `Due in ${daysUntilDue} day(s) — $${bill.amount} ${bill.currency}`,
+            '/budget'
+          );
+        }
+      }
+
+      // Overdue alert (up to -7 days)
+      if (daysUntilDue < 0 && daysUntilDue >= -7) {
+        const overdueDays = Math.abs(daysUntilDue);
+        const exists = await hasRecentNotification(userId, 'bill_reminder', bill.name, 24);
+        if (!exists) {
+          await insertNotification(
+            userId,
+            'bill_reminder',
+            `🚨 ${bill.name}`,
+            isEs
+              ? `¡Vencido hace ${overdueDays} día(s)! — $${bill.amount} ${bill.currency}`
+              : `Overdue by ${overdueDays} day(s)! — $${bill.amount} ${bill.currency}`,
             '/budget'
           );
         }
       }
     }
-  }, [hasRecentNotification, insertNotification]);
+  }, [hasRecentNotification, insertNotification, isEs]);
 
   // B) Contract reminders
   const checkContractReminders = useCallback(async (userId: string) => {
-    const { data: contracts } = await supabase
+    const { data: contracts, error } = await supabase
       .from('contracts')
       .select('id, title, file_name, end_date, auto_renew, renewal_notice_days')
+      .eq('user_id', userId)
       .is('deleted_at', null)
       .not('end_date', 'is', null);
 
+    if (error) {
+      console.warn('[useAutoReminders] checkContractReminders error:', error.message);
+      return;
+    }
     if (!contracts?.length) return;
     const today = new Date();
 
@@ -99,18 +145,22 @@ export function useAutoReminders() {
         const name = c.title || c.file_name;
         const exists = await hasRecentNotification(userId, 'contract_reminder', name, 168); // 7 days
         if (!exists) {
-          const autoMsg = c.auto_renew ? ' (se renovará automáticamente)' : '';
+          const autoMsg = c.auto_renew
+            ? (isEs ? ' (se renovará automáticamente)' : ' (auto-renews)')
+            : '';
           await insertNotification(
             userId,
             'contract_reminder',
             `📄 ${name}`,
-            `Vence en ${daysUntilEnd} día(s)${autoMsg}`,
+            isEs
+              ? `Vence en ${daysUntilEnd} día(s)${autoMsg}`
+              : `Expires in ${daysUntilEnd} day(s)${autoMsg}`,
             '/contracts'
           );
         }
       }
     }
-  }, [hasRecentNotification, insertNotification]);
+  }, [hasRecentNotification, insertNotification, isEs]);
 
   // C) Tax deadline reminders
   const checkTaxReminders = useCallback(async (userId: string) => {
@@ -131,7 +181,9 @@ export function useAutoReminders() {
               userId,
               'tax_reminder',
               `🏛️ ${deadline.name}`,
-              `Vence en ${daysUntil} día(s) — ${deadline.description}`,
+              isEs
+                ? `Vence en ${daysUntil} día(s) — ${deadline.description}`
+                : `Due in ${daysUntil} day(s) — ${deadline.description}`,
               '/tax-calendar'
             );
           }
@@ -147,40 +199,49 @@ export function useAutoReminders() {
               userId,
               'tax_reminder',
               `🏛️ ${deadline.name}`,
-              `Próximo vencimiento en ${daysUntil} día(s)`,
+              isEs
+                ? `Próximo vencimiento en ${daysUntil} día(s)`
+                : `Next deadline in ${daysUntil} day(s)`,
               '/tax-calendar'
             );
           }
         }
       }
     }
-  }, [currentEntity, hasRecentNotification, insertNotification]);
+  }, [currentEntity, hasRecentNotification, insertNotification, isEs]);
 
   // D) Budget alert rules
   const checkBudgetAlerts = useCallback(async (userId: string) => {
-    const { data: rules } = await supabase
+    const { data: rules, error: rulesError } = await supabase
       .from('budget_alert_rules' as any)
       .select('*')
       .eq('user_id', userId)
       .eq('is_active', true);
 
+    if (rulesError) {
+      console.warn('[useAutoReminders] checkBudgetAlerts rules error:', rulesError.message);
+      return;
+    }
     if (!rules?.length) return;
 
-    // Get current month expenses by category
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
     const startStr = startOfMonth.toISOString().split('T')[0];
 
-    const { data: expenses } = await supabase
+    const { data: expenses, error: expError } = await supabase
       .from('expenses')
       .select('category, amount')
+      .eq('user_id', userId)
       .gte('date', startStr)
       .is('deleted_at', null);
 
+    if (expError) {
+      console.warn('[useAutoReminders] checkBudgetAlerts expenses error:', expError.message);
+      return;
+    }
     if (!expenses) return;
 
-    // Sum by category
     const totals: Record<string, number> = {};
     for (const e of expenses) {
       const cat = e.category || 'other';
@@ -201,7 +262,6 @@ export function useAutoReminders() {
       }
 
       if (triggered) {
-        // Check if already triggered today
         const todayStr = new Date().toISOString().split('T')[0];
         if (rule.last_triggered_at && rule.last_triggered_at.startsWith(todayStr)) continue;
 
@@ -211,10 +271,11 @@ export function useAutoReminders() {
             userId,
             'budget_alert',
             `⚠️ ${rule.name}`,
-            `${rule.category || 'Total'}: $${spent.toFixed(0)} / $${rule.threshold_amount} presupuesto`,
+            isEs
+              ? `${rule.category || 'Total'}: $${spent.toFixed(0)} / $${rule.threshold_amount} presupuesto`
+              : `${rule.category || 'Total'}: $${spent.toFixed(0)} / $${rule.threshold_amount} budget`,
             '/budget'
           );
-          // Update last_triggered_at
           await supabase
             .from('budget_alert_rules' as any)
             .update({ last_triggered_at: new Date().toISOString() } as any)
@@ -222,24 +283,30 @@ export function useAutoReminders() {
         }
       }
     }
-  }, [hasRecentNotification, insertNotification]);
+  }, [hasRecentNotification, insertNotification, isEs]);
 
   // Main check
   const runAllChecks = useCallback(async () => {
     if (!user?.id || runningRef.current) return;
-    // Throttle: don't run more than once per 55 seconds
     if (Date.now() - lastRunRef.current < 55_000) return;
     
     runningRef.current = true;
     lastRunRef.current = Date.now();
 
     try {
-      await Promise.allSettled([
+      const results = await Promise.allSettled([
         checkBillReminders(user.id),
         checkContractReminders(user.id),
         checkTaxReminders(user.id),
         checkBudgetAlerts(user.id),
       ]);
+      // Log any rejected checks
+      results.forEach((r, i) => {
+        if (r.status === 'rejected') {
+          const names = ['bills', 'contracts', 'tax', 'budget'];
+          console.warn(`[useAutoReminders] ${names[i]} check failed:`, r.reason);
+        }
+      });
     } catch (e) {
       console.error('[useAutoReminders] error:', e);
     } finally {
@@ -250,8 +317,7 @@ export function useAutoReminders() {
   useEffect(() => {
     if (!user) return;
 
-    // Run once on mount
-    const timeout = setTimeout(runAllChecks, 5_000); // 5s delay on mount
+    const timeout = setTimeout(runAllChecks, 5_000);
     const interval = setInterval(runAllChecks, CHECK_INTERVAL_MS);
 
     return () => {
