@@ -303,7 +303,7 @@ export function MonthDetailPanel({
         : `Well done ${firstName}. On track with ${savingsRate}% savings 💪`;
     }
     
-    if (isPositive) {
+    if (isPositive && totals.totalExpenses > 0) {
       return language === 'es'
         ? `${firstName}, tu balance es positivo. ¡Sigue así!`
         : `${firstName}, your balance is positive. Keep it up!`;

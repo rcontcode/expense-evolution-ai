@@ -86,7 +86,7 @@ import { CaptureHub } from './CaptureHub';
    const totalSpent = currentExpenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
    const lastMonthSpent = lastMonthExpenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
    const totalIncome = income?.reduce((sum, inc) => sum + Number(inc.amount), 0) || 0;
-   const savingsRate = totalIncome > 0 ? ((totalIncome - totalSpent) / totalIncome) * 100 : 0;
+   const savingsRate = (totalIncome > 0 && totalSpent > 0) ? ((totalIncome - totalSpent) / totalIncome) * 100 : 0;
    const dailyBudget = globalBudget > 0 ? globalBudget / daysInMonth : 0;
    const idealSpentToDate = dailyBudget * daysPassed;
    const spendingPace = idealSpentToDate > 0 ? (totalSpent / idealSpentToDate) * 100 : 0;

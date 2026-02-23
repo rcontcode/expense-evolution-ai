@@ -61,15 +61,18 @@ export function MoneyMomentumScore() {
     }) || [];
     const monthlyIncome = recentIncome.reduce((s, i) => s + Number(i.amount), 0);
 
-    // 1. Savings Rate (weight: 30%)
+    // 1. Savings Rate (weight: 30%) - requires BOTH income AND expenses
     let savingsScore = 0;
     let savingsDetail = '';
-    if (monthlyIncome > 0) {
+    if (monthlyIncome > 0 && currentTotal > 0) {
       const rate = ((monthlyIncome - currentTotal) / monthlyIncome) * 100;
       savingsScore = Math.min(100, Math.max(0, rate * 2.5)); // 40% rate = 100 score
       savingsDetail = l
         ? `${rate.toFixed(0)}% de tus ingresos ahorrados`
         : `${rate.toFixed(0)}% of income saved`;
+    } else if (monthlyIncome > 0 && currentTotal === 0) {
+      savingsScore = 0; // Don't give points for "saving" when no expenses recorded
+      savingsDetail = l ? '⚠️ Registra gastos para calcular tu ahorro real' : '⚠️ Add expenses to calculate real savings';
     } else {
       savingsDetail = l ? 'Agrega ingresos para calcular' : 'Add income to calculate';
     }
