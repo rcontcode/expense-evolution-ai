@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Search, ChevronRight, BookOpen, CheckCircle2, Lightbulb, HelpCircle, ArrowRight, Sparkles } from 'lucide-react';
+import { Search, ChevronRight, BookOpen, CheckCircle2, Lightbulb, HelpCircle, ArrowRight, Sparkles, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { heroContent, guideSections, globalFAQ, connectionsDiagram } from '@/data/user-guide-content';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { PageHeader } from '@/components/PageHeader';
+import { LanguageSelector } from '@/components/LanguageSelector';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -58,21 +60,22 @@ export default function UserGuide() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
-        <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <BookOpen className="h-5 w-5 text-primary" />
-          <h1 className="text-lg font-bold truncate">{t(heroContent.title)}</h1>
+      {/* Page Header with Language Selector */}
+      <div className="px-4 pt-4">
+        <div className="max-w-5xl mx-auto">
+          <PageHeader
+            title={`📖 ${t(heroContent.title)}`}
+            description={lang === 'es' ? 'Tu guía completa para dominar EvoFinz' : 'Your complete guide to mastering EvoFinz'}
+          >
+            <LanguageSelector />
+          </PageHeader>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto flex gap-6">
         {/* Sticky TOC - Desktop only */}
         {!isMobile && (
-          <aside className="hidden lg:block w-56 shrink-0 sticky top-16 h-[calc(100vh-4rem)] py-6">
+          <aside className="hidden lg:block w-56 shrink-0 sticky top-24 h-[calc(100vh-6rem)] py-6">
             <ScrollArea className="h-full pr-3">
               <nav className="space-y-1">
                 <button onClick={() => scrollToSection('hero')} className="text-xs text-left w-full px-2 py-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
