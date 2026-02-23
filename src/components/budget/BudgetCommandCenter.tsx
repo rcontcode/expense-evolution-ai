@@ -35,6 +35,7 @@
  import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { CaptureHub } from './CaptureHub';
+import { DataCompletenessPrompt } from '@/components/dashboard/DataCompletenessPrompt';
  import { getCategoryLabel, ExpenseCategory } from '@/lib/constants/expense-categories';
  
  interface FinancialHealthScore {
@@ -283,6 +284,9 @@ import { CaptureHub } from './CaptureHub';
  
    return (
     <div className="space-y-6">
+      {/* Data completeness check */}
+      <DataCompletenessPrompt />
+
       {/* Capture Hub - Unified entry point */}
       <CaptureHub />
 

@@ -42,6 +42,7 @@ import { DashboardGamificationWidget } from '@/components/gamification';
 import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
 import { ProfileExtenderDialog } from '@/components/profile/ProfileExtenderDialog';
 import { LifeProfileSection } from '@/hooks/data/useLifeProfile';
+import { DataCompletenessPrompt } from '@/components/dashboard/DataCompletenessPrompt';
 
 // Lazy load chart components for better performance
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
@@ -312,6 +313,9 @@ export default function Dashboard() {
                 onYearChange={setSelectedYear}
               />
             </div>
+
+            {/* Data completeness check */}
+            <DataCompletenessPrompt />
 
             <div data-highlight="balance-card">
               <MonthDetailPanel
