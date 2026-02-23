@@ -3,13 +3,11 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import { 
   Camera, Receipt, FileText, Calculator, Trophy, GraduationCap,
   BarChart3, BookOpen, Building2, CreditCard, Mic, TrendingUp,
-  ArrowRight, Check, Sparkles, Shield, Zap, Gift, Loader2, CheckCircle2, XCircle,
+  ArrowRight, Check, Sparkles, Shield, Zap, Gift, XCircle,
   Star, Flame, Target, Crown, Heart, AlertTriangle, Clock, Lightbulb, ChevronRight, Quote, Globe, MessageSquare
 } from 'lucide-react';
 import phoenixLogo from '@/assets/phoenix-clean-logo.png';
@@ -366,9 +364,6 @@ export default function Landing() {
   const location = useLocation();
   const { language } = useLanguage();
   const { user, loading } = useAuth();
-  const [showBetaInput, setShowBetaInput] = useState(false);
-  const [betaCode, setBetaCode] = useState('');
-  const [codeStatus, setCodeStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
   const [isAnnual, setIsAnnual] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
 
@@ -408,47 +403,8 @@ export default function Landing() {
     return { display: `$${monthlyPrice.toFixed(2)} USD`, period: language === 'es' ? '/mes' : '/mo', savings: '' };
   };
 
-  const validateBetaCode = async (code: string) => {
-    if (!code.trim()) {
-      setCodeStatus('idle');
-      return;
-    }
-
-    setCodeStatus('checking');
-    
-    try {
-      const { data, error } = await supabase.rpc('validate_any_beta_code', {
-        p_code: code.trim()
-      });
-
-      if (error) {
-        setCodeStatus('invalid');
-        return;
-      }
-
-      const result = data as { valid: boolean; reason: string } | null;
-      setCodeStatus(result?.valid ? 'valid' : 'invalid');
-    } catch {
-      setCodeStatus('invalid');
-    }
-  };
-
-  const handleBetaCodeChange = (value: string) => {
-    setBetaCode(value.toUpperCase());
-    
-    const timeoutId = setTimeout(() => {
-      validateBetaCode(value);
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  };
-
   const handleGetStarted = () => {
-    if (codeStatus === 'valid') {
-      navigate(`/auth?beta=${encodeURIComponent(betaCode)}`);
-    } else {
-      navigate('/auth');
-    }
+    navigate('/auth');
   };
 
   // Hero ref (no parallax)
@@ -756,19 +712,8 @@ export default function Landing() {
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Button>
-              
-              <Button 
-                size="lg" 
-                variant="outline"
-                onClick={() => setShowBetaInput(!showBetaInput)}
-                className="text-lg px-8 py-7 border-2 border-slate-300 bg-white hover:bg-slate-50 hover:border-cyan-400 text-slate-700 shadow-lg"
-              >
-                <Gift className="mr-2 h-5 w-5 text-cyan-500" />
-                {language === 'es' ? '¿Tienes código de invitación?' : 'Have an invitation code?'}
-              </Button>
             </motion.div>
 
-            {/* Beta Code Input */}
             {/* Live Social Proof - after CTAs */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -778,57 +723,6 @@ export default function Landing() {
             >
               <LiveSocialProof />
             </motion.div>
-
-            {showBetaInput && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="max-w-md mx-auto"
-              >
-                <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-teal-500 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
-                  <Input
-                    placeholder="ABCD-1234-WXYZ"
-                    value={betaCode}
-                    onChange={(e) => handleBetaCodeChange(e.target.value)}
-                    className={`relative h-16 text-center text-lg font-mono uppercase bg-white border-2 text-slate-800 placeholder:text-slate-400 shadow-lg ${
-                      codeStatus === 'valid' 
-                        ? 'border-emerald-500 bg-emerald-50' 
-                        : codeStatus === 'invalid'
-                          ? 'border-red-500 bg-red-50'
-                          : 'border-slate-200 focus:border-cyan-400'
-                    }`}
-                  />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                    {codeStatus === 'checking' && <Loader2 className="h-6 w-6 animate-spin text-slate-400" />}
-                    {codeStatus === 'valid' && <CheckCircle2 className="h-6 w-6 text-emerald-500" />}
-                    {codeStatus === 'invalid' && <XCircle className="h-6 w-6 text-red-500" />}
-                  </div>
-                </div>
-                {codeStatus === 'valid' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                  >
-                    <p className="text-emerald-600 text-sm mt-3 flex items-center justify-center gap-2">
-                      <Sparkles className="h-4 w-4" />
-                      {language === 'es' ? '¡Código válido! Acceso desbloqueado.' : 'Valid code! Access unlocked.'}
-                    </p>
-                    <Button 
-                      onClick={handleGetStarted}
-                      className="mt-4 w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-6 shadow-lg"
-                    >
-                      <Crown className="mr-2 h-5 w-5" />
-                      {language === 'es' ? 'Activar Acceso Exclusivo' : 'Activate Exclusive Access'}
-                    </Button>
-                  </motion.div>
-                )}
-                {codeStatus === 'invalid' && (
-                  <p className="text-red-600 text-sm mt-3">{language === 'es' ? 'Código inválido o expirado.' : 'Invalid or expired code.'}</p>
-                )}
-              </motion.div>
-            )}
 
 
           </motion.div>
