@@ -11,7 +11,39 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, voiceText, detectMultipleReceipts } = await req.json();
+    const body = await req.json();
+    const { imageBase64, voiceText, detectMultipleReceipts } = body;
+
+    // Input validation: image size limit (~10MB base64)
+    if (imageBase64 && typeof imageBase64 === "string" && imageBase64.length > 10_000_000) {
+      return new Response(
+        JSON.stringify({ error: "Image too large. Maximum size is ~7.5MB." }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Input validation: voice text length limit
+    if (voiceText && typeof voiceText === "string" && voiceText.length > 5000) {
+      return new Response(
+        JSON.stringify({ error: "Voice text too long. Maximum 5000 characters." }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Input validation: ensure correct types
+    if (imageBase64 && typeof imageBase64 !== "string") {
+      return new Response(
+        JSON.stringify({ error: "Invalid image format." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (voiceText && typeof voiceText !== "string") {
+      return new Response(
+        JSON.stringify({ error: "Invalid voice text format." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
