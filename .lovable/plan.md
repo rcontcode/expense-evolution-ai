@@ -1,90 +1,90 @@
 
 
-# Manual de Usuario Interactivo - EvoFinz
+# Implementar Sistema de Recordatorios Real en Toda la App
 
-## Resumen
+## Problema
 
-Crear una pagina `/user-guide` como un manual de usuario completo, estatico y visualmente rico. Sin dependencia de highlights ni IA en tiempo real -- solo contenido escrito de alta calidad con emojis, colores, efectos CSS, acordeones, bullet points, paso a paso, y navegacion interna por secciones.
+Hay 4 sistemas de recordatorios que se mencionan en la app y en el manual pero **solo muestran un toast falso o no existen**:
 
-## Estructura del Manual
+1. **Calendario Fiscal** -- el boton "Recordar" solo muestra un toast, no guarda nada
+2. **Contratos** -- no existe ningun hook que revise contratos proximos a vencer/renovar
+3. **Pagos Fijos (Bills)** -- el campo `reminder_days_before` se guarda pero nada lo revisa para crear notificaciones
+4. **Presupuesto (Budget Alerts)** -- las reglas se pueden crear/editar pero nada las ejecuta contra gastos reales
 
-El manual se dividira en **3 grandes bloques**:
+## Solucion
 
-### Bloque 1: Vision General (Hero + Valor)
-- Que es EvoFinz y para quien es
-- Mision, objetivos, ventaja competitiva vs no usar nada o usar herramientas separadas
-- El habito de usarla diariamente
-- Facilidad de uso y valor que aporta
-- Mejora continua con aportes de usuarios
+Crear un hook centralizado `useAutoReminders` que corra en el `Layout` (como ya lo hace `useGlobalReminders`) y que revise periodicamente estas 4 areas, insertando notificaciones reales en la tabla `notifications`.
 
-### Bloque 2: Mapa de Secciones (Guia por Area)
-Cada seccion principal de la app con:
-- Emoji + titulo + descripcion corta
-- Para que sirve y que problema resuelve
-- Paso a paso de uso basico
-- Tips y preguntas frecuentes por seccion
-- Como se conecta con otras secciones
+## Archivos a Crear
 
-Secciones cubiertas:
-1. Dashboard (centro de comando)
-2. Gastos (registro, categorias, recibos, deducciones)
-3. Ingresos (tipos, clientes asociados)
-4. Clientes (gestion, facturacion)
-5. Contratos (seguimiento de acuerdos)
-6. Presupuesto (metas, pagos fijos, ahorro)
-7. Kilometraje (viajes de trabajo, deducciones)
-8. Calendario Fiscal (fechas limite, recordatorios)
-9. Banking (importacion de estados de cuenta)
-10. Patrimonio Neto (activos, deudas, FIRE)
-11. Captura Rapida (fotos de recibos)
-12. Proyectos y Tags (organizacion avanzada)
-13. Reconciliacion (cruce banco vs registros)
-14. Archivos (almacenamiento de documentos)
-15. Perfil de Negocio
-16. Configuracion y Preferencias
+### 1. `src/hooks/data/useAutoReminders.ts` (nuevo)
+Hook principal que se ejecuta cada 60 segundos y verifica:
 
-### Bloque 3: Interconexiones y FAQ Global
-- Como fluye la informacion entre secciones (diagrama visual con emojis)
-- Preguntas frecuentes globales
-- Consultas tipicas de usuarios
+**A) Pagos Fijos (Bills)**
+- Consulta `recurring_bills` activos del usuario
+- Para cada bill, calcula dias hasta `next_due_date`
+- Si `dias <= reminder_days_before` y no hay notificacion reciente (ultimas 24h) para ese bill, inserta en `notifications` con `type: 'bill_reminder'`
+
+**B) Contratos**
+- Consulta `contracts` activos (no eliminados, con `end_date`)
+- Si un contrato vence en <= 30 dias (o segun `renewal_notice_days`), y no hay notificacion reciente, inserta con `type: 'contract_reminder'`
+- Si tiene `auto_renew = true`, el mensaje indica que se renovara automaticamente
+
+**C) Calendario Fiscal**
+- En lugar de guardar recordatorios custom, el hook calcula las fechas fiscales conocidas (las mismas de TaxDeadlineCards) y si alguna esta a 30, 14, o 7 dias, crea notificacion con `type: 'tax_reminder'`
+- Usa el pais del usuario y tipo de entidad para determinar que fechas aplican
+
+**D) Presupuesto**
+- Consulta `budget_alert_rules` activos
+- Consulta gastos del mes actual por categoria
+- Si una regla de tipo `exceeds` o `approaches` se cumple y no se ha disparado hoy, inserta notificacion con `type: 'budget_alert'` y actualiza `last_triggered_at`
+
+### 2. Modificar `src/components/tax-calendar/TaxDeadlineCards.tsx`
+- Cambiar `handleSetReminder` para que realmente inserte un registro en `notifications` con la fecha del deadline y un recordatorio configurado
+- Mostrar un indicador visual de "Recordatorio activo" en el boton despues de activarlo
+
+### 3. Modificar `src/components/Layout.tsx`
+- Importar y activar `useAutoReminders()` junto al existente `useGlobalReminders()`
+
+## Logica Anti-Duplicados
+
+Cada vez que el hook quiere crear una notificacion, primero consulta si ya existe una con:
+- Mismo `user_id`
+- Mismo `type`
+- Titulo similar (contiene el nombre del bill/contrato/deadline)
+- Creada en las ultimas 24 horas (para bills/budget) o 7 dias (para contratos/fiscal)
+
+Si ya existe, no crea duplicado.
 
 ## Detalles Tecnicos
 
-### Archivos a crear/modificar:
+```text
+useAutoReminders()
+  |
+  |-- checkBillReminders()
+  |     Lee: recurring_bills (status=active)
+  |     Escribe: notifications (type=bill_reminder)
+  |
+  |-- checkContractReminders()
+  |     Lee: contracts (end_date NOT NULL, deleted_at IS NULL)
+  |     Escribe: notifications (type=contract_reminder)
+  |
+  |-- checkTaxReminders()
+  |     Lee: settings (country, entity type)
+  |     Escribe: notifications (type=tax_reminder)
+  |
+  |-- checkBudgetAlerts()
+  |     Lee: budget_alert_rules + expenses (mes actual)
+  |     Escribe: notifications (type=budget_alert)
+  |     Actualiza: budget_alert_rules.last_triggered_at
+```
 
-1. **`src/pages/UserGuide.tsx`** (nuevo) - Pagina principal del manual
-   - Componente grande pero estatico, sin logica de backend
-   - Usa `Accordion` para secciones colapsables
-   - Usa `Card`, `Badge`, `Button` existentes
-   - Navegacion interna con scroll-to-section
-   - Barra de busqueda simple (filtro client-side por texto)
-   - Tabla de contenidos sticky lateral en desktop
-   - Bilingue (ES/EN) usando `useLanguage()`
-   - Animaciones con `framer-motion` (fade-in al scroll)
+## Resultado Esperado
 
-2. **`src/data/user-guide-content.ts`** (nuevo) - Contenido separado del componente
-   - Toda la data del manual en objetos tipados
-   - Facilita edicion futura sin tocar el componente
-   - Estructura: secciones > subsecciones > pasos/tips/faq
-
-3. **`src/App.tsx`** (modificar) - Agregar ruta `/user-guide`
-   - Lazy import del componente
-   - Ruta protegida (usuarios autenticados)
-
-4. **Acceso desde la app** - Links al manual desde:
-   - Menu "More" en mobile
-   - Seccion de ayuda en Settings
-   - Boton en el Dashboard o sidebar
-
-### Patron visual (consistente con BetaGuide.tsx):
-- Cards con gradientes sutiles para secciones hero
-- Emojis como iconos primarios de cada seccion
-- Badges de colores para categorias
-- Acordeones para FAQ y detalles expandibles
-- Bullet points con iconos de check para pasos
-- Cards con borde de color para tips/alertas
-- Progress indicators visuales para flujos paso a paso
-
-### Sin dependencias nuevas
-Todo se construye con componentes UI existentes (Card, Badge, Button, Accordion, Tabs, framer-motion).
+- Al entrar a la app, el sistema verifica automaticamente todas las areas
+- Las notificaciones aparecen en `/notifications` como cualquier otra
+- Los botones de "Recordar" en el calendario fiscal realmente funcionan
+- Los pagos fijos generan alertas antes del vencimiento
+- Los contratos proximos a vencer generan alertas segun `renewal_notice_days`
+- Las reglas de presupuesto se ejecutan y alertan cuando se exceden umbrales
 
