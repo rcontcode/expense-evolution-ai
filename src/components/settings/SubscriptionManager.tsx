@@ -12,7 +12,14 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 
-const planConfig = {
+const planConfig: Record<string, {
+  name: string;
+  price: string;
+  priceAnnual?: string;
+  icon: typeof Zap;
+  color: string;
+  features: string[];
+}> = {
   free: {
     name: 'Free',
     price: '$0',
@@ -67,6 +74,20 @@ const planConfig = {
       'Asistente de voz (120 min/mes)',
       'Mentoría completa (8 módulos)',
       'Soporte dedicado',
+    ],
+  },
+  pro_beta: {
+    name: 'Pro (Early Access)',
+    price: '$0',
+    icon: Crown,
+    color: 'from-emerald-500 to-teal-600',
+    features: [
+      'Todo de Pro con límites especiales',
+      '20 escaneos OCR/mes',
+      'Asistente de voz (15 min/mes)',
+      'Acceso anticipado a nuevas funciones',
+      'Mentoría completa (8 módulos)',
+      'Soporte prioritario',
     ],
   },
 };

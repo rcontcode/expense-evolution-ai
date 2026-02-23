@@ -67,18 +67,18 @@ const getGuarantees = (language: string) => [
 const getTrustIndicators = (language: string) => [
   {
     icon: Users,
-    value: '500+',
-    label: language === 'es' ? 'Usuarios Activos' : 'Active Users'
+    value: '🇨🇦 🇨🇱',
+    label: language === 'es' ? 'Países Soportados' : 'Countries Supported'
   },
   {
     icon: FileText,
-    value: '50K+',
-    label: language === 'es' ? 'Documentos Procesados' : 'Documents Processed'
+    value: '30+',
+    label: language === 'es' ? 'Categorías Fiscales' : 'Tax Categories'
   },
   {
     icon: Sparkles,
-    value: '4.8/5',
-    label: language === 'es' ? 'Satisfacción' : 'Satisfaction'
+    value: '🔒',
+    label: language === 'es' ? 'Acceso por Invitación' : 'Invite-Only Access'
   }
 ];
 
