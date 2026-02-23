@@ -36,6 +36,7 @@
 import { cn } from '@/lib/utils';
 import { CaptureHub } from './CaptureHub';
 import { DataCompletenessPrompt } from '@/components/dashboard/DataCompletenessPrompt';
+import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
  import { getCategoryLabel, ExpenseCategory } from '@/lib/constants/expense-categories';
  
  interface FinancialHealthScore {
@@ -54,7 +55,8 @@ import { DataCompletenessPrompt } from '@/components/dashboard/DataCompletenessP
    const { data: profile } = useProfile();
    const { data: budgets } = useCategoryBudgets();
    const { data: settings } = useUserSettings();
-   const { data: savingsGoals } = useSavingsGoals();
+    const { data: savingsGoals } = useSavingsGoals();
+    const { isConfirmed: expensesConfirmed, looksIncomplete } = useExpenseCompleteness();
    const budgetSuggestions = useBudgetSuggestions();
  
    const now = new Date();
@@ -246,7 +248,7 @@ import { DataCompletenessPrompt } from '@/components/dashboard/DataCompletenessP
       }
 
       // Positive: good savings rate
-      if (savingsRate >= 20 && totalSpent > 0) {
+      if (savingsRate >= 20 && totalSpent > 0 && (!looksIncomplete || expensesConfirmed)) {
         recs.push({
           icon: Trophy,
           title: l ? '¡Excelente tasa de ahorro!' : 'Excellent savings rate!',

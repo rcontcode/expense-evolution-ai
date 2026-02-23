@@ -12,6 +12,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useUserSettings } from '@/hooks/data/useUserSettings';
+import { useExpenseCompleteness } from '@/hooks/utils/useExpenseCompleteness';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -158,6 +159,7 @@ export function MonthDetailPanel({
   const { data: profile } = useProfile();
   const navigate = useNavigate();
   const [showTools, setShowTools] = useState(false);
+  const { isConfirmed: expensesConfirmed, looksIncomplete } = useExpenseCompleteness();
   
   // Calculate date range for the selected month
   const dateRange = useMemo(() => {
@@ -289,6 +291,13 @@ export function MonthDetailPanel({
       return language === 'es'
         ? `${firstName}, tienes ingresos registrados pero aún no has registrado gastos este mes. Registra tus gastos para ver tu situación real 📝`
         : `${firstName}, you have income recorded but no expenses this month yet. Add your expenses to see your real situation 📝`;
+    }
+
+    // If expenses look incomplete, don't celebrate savings — show a neutral/helpful message
+    if (looksIncomplete && !expensesConfirmed) {
+      return language === 'es'
+        ? `${firstName}, parece que aún faltan gastos por registrar. Completa tus datos para métricas precisas 📊`
+        : `${firstName}, it looks like some expenses are still missing. Complete your data for accurate metrics 📊`;
     }
 
     if (isPositive && Number(savingsRate) >= 20 && totals.totalExpenses > 0) {
