@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Layout } from '@/components/Layout';
 import { motion } from 'framer-motion';
 import { Search, ChevronRight, BookOpen, CheckCircle2, Lightbulb, HelpCircle, ArrowRight, Sparkles, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -59,17 +60,16 @@ export default function UserGuide() {
   const t = (obj: { es: string; en: string }) => obj[lang];
 
   return (
+    <Layout>
     <div className="min-h-screen bg-background pb-24">
       {/* Page Header with Language Selector */}
-      <div className="px-4 pt-4">
-        <div className="max-w-5xl mx-auto">
+      <div className="page-container">
           <PageHeader
             title={`📖 ${t(heroContent.title)}`}
             description={lang === 'es' ? 'Tu guía completa para dominar EvoFinz' : 'Your complete guide to mastering EvoFinz'}
           >
             <LanguageSelector />
           </PageHeader>
-        </div>
       </div>
 
       <div className="max-w-5xl mx-auto flex gap-6">
@@ -362,5 +362,6 @@ export default function UserGuide() {
         </main>
       </div>
     </div>
+    </Layout>
   );
 }

@@ -12,8 +12,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TAG_COLOR_PALETTE, DEFAULT_TAGS } from '@/lib/constants/default-tags';
 import { PageHeader } from '@/components/PageHeader';
-import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
-import { MiniWorkflow } from '@/components/guidance/WorkflowVisualizer';
+// PageContextGuide and MiniWorkflow removed — title must be first for consistency
 import { TagAnalytics } from '@/components/analytics/TagAnalytics';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -148,41 +147,7 @@ export default function Tags() {
   return (
     <Layout>
       <TooltipProvider>
-        <div className="p-8 space-y-6">
-          {/* Page Context Guide */}
-          <PageContextGuide
-            {...PAGE_GUIDES.tags}
-            actions={[
-              { 
-                icon: Plus, 
-                title: { es: 'Nueva Etiqueta', en: 'New Tag' }, 
-                description: { es: 'Crea una nueva', en: 'Create a new one' },
-                action: handleCreate
-              },
-              { 
-                icon: Sparkles, 
-                title: { es: 'Crear Predeterminadas', en: 'Create Defaults' }, 
-                description: { es: '8 etiquetas útiles', en: '8 useful tags' },
-                action: () => seedDefaultTags.mutate()
-              },
-              { 
-                icon: Receipt, 
-                title: { es: 'Ver Gastos', en: 'View Expenses' }, 
-                description: { es: 'Asignar etiquetas', en: 'Assign tags' },
-                path: '/expenses'
-              },
-              { 
-                icon: BarChart3, 
-                title: { es: 'Ver Dashboard', en: 'View Dashboard' }, 
-                description: { es: 'Estadísticas', en: 'Statistics' },
-                path: '/dashboard'
-              },
-            ]}
-          />
-
-          {/* Workflow Visualizer */}
-          <MiniWorkflow workflowId="tag-management" />
-
+        <div className="page-container section-gap">
           <PageHeader
             title={t('tags.title')}
             description={t('tags.description')}
@@ -194,6 +159,27 @@ export default function Tags() {
               </Button>
             </InfoTooltip>
           </PageHeader>
+
+          {/* Explanation Card */}
+          <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/30 shrink-0">
+                  <TagIcon className="h-5 w-5 text-white" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-sm">
+                    {language === 'es' ? '¿Para qué sirven las etiquetas?' : 'What are tags for?'}
+                  </h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {language === 'es' 
+                      ? 'Las etiquetas te permiten clasificar gastos con criterios personalizados que van más allá de las categorías. Por ejemplo: marca gastos como "deducible", "reembolsable", "urgente" o "viaje de negocios". Después puedes filtrar y analizar por etiqueta para descubrir patrones, preparar declaraciones fiscales y tomar mejores decisiones financieras.'
+                      : 'Tags let you classify expenses with custom criteria beyond categories. For example: mark expenses as "deductible", "reimbursable", "urgent" or "business trip". Then filter and analyze by tag to discover patterns, prepare tax returns, and make better financial decisions.'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Tabs for Tags and Analytics */}
           <Tabs defaultValue="tags" className="w-full">
