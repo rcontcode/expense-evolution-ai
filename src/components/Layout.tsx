@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect, useCallback } from 'react';
+import { ReactNode, useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSafeNavigation } from '@/hooks/useSafeNavigation';
 import { preloadRoute } from '@/App';
@@ -227,6 +227,25 @@ export const Layout = ({ children }: LayoutProps) => {
   const NAV_SECTIONS = getNavSections(language);
   const MOBILE_NAV_ITEMS = getMobileNavItems(language);
   const { data: unreadCount = 0 } = useUnreadNotifications();
+  const sidebarNavRef = useRef<HTMLElement>(null);
+  
+  // Persist sidebar scroll position across route changes
+  useEffect(() => {
+    const nav = sidebarNavRef.current;
+    if (!nav) return;
+    
+    const saved = sessionStorage.getItem('__sidebar_scroll__');
+    if (saved) {
+      nav.scrollTop = Number(saved);
+    }
+    
+    const handleScroll = () => {
+      sessionStorage.setItem('__sidebar_scroll__', String(nav.scrollTop));
+    };
+    
+    nav.addEventListener('scroll', handleScroll, { passive: true });
+    return () => nav.removeEventListener('scroll', handleScroll);
+  }, []);
   
   // Global reminders - works even when chat is closed
   useGlobalReminders();
@@ -663,7 +682,7 @@ export const Layout = ({ children }: LayoutProps) => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 py-2 px-2 space-y-1.5 overflow-y-auto" data-highlight="sidebar-nav">
+          <nav ref={sidebarNavRef} className="flex-1 py-2 px-2 space-y-1.5 overflow-y-auto" data-highlight="sidebar-nav">
             {NAV_SECTIONS.map((section) => {
               const theme = sectionThemes[section.themeKey];
               return (

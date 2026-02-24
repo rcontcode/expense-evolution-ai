@@ -14,12 +14,14 @@ function normalizePath(path: string) {
 }
 
 /**
- * Navigation hook with post-navigate render verification.
+ * Navigation hook with Settings-exit safeguard.
  *
- * After calling navigate(), it waits a short window and then dispatches
- * a custom event so RouteSyncGuard can verify and repair if needed.
+ * React Router v7 uses startTransition internally for all navigations.
+ * When leaving a heavy page like Settings (with multiple Suspense boundaries),
+ * the transition keeps the old page visible indefinitely.
  *
- * Anti-spam: cancels pending verification if user navigates again quickly.
+ * Fix: when leaving /settings, use a controlled page navigation instead of
+ * SPA navigate() to guarantee immediate unmount.
  */
 export function useSafeNavigation() {
   const navigate = useNavigate();
@@ -27,13 +29,13 @@ export function useSafeNavigation() {
 
   const safeNavigate = useCallback((path: string) => {
     const normalized = normalizePath(path);
-    const currentRendered = normalizePath(window.__APP_RENDERED_PATH__ ?? "/");
     const currentBrowser = normalizePath(window.location.pathname || "/");
 
     // Skip navigation to same route
-    if (normalized === currentRendered || normalized === currentBrowser) return;
+    if (normalized === currentBrowser) return;
 
-    // Hard-exit safeguard from Settings (root cause path where UI can stay visually stuck)
+    // Settings has heavy Suspense children that block React Router v7's
+    // transition mechanism. Use controlled navigation to guarantee exit.
     if (currentBrowser === "/settings" && normalized !== "/settings") {
       window.location.assign(path);
       return;
@@ -51,7 +53,7 @@ export function useSafeNavigation() {
     pendingTimerRef.current = setTimeout(() => {
       pendingTimerRef.current = null;
       window.dispatchEvent(new Event("__route_sync_check__"));
-    }, 350);
+    }, 600);
   }, [navigate]);
 
   return safeNavigate;

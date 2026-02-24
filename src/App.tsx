@@ -199,6 +199,9 @@ function MissionListenerInitializer() {
   return null;
 }
 
+// Simple Suspense wrapper — Settings exit is handled by useSafeNavigation
+// using controlled navigation to bypass React Router v7's transition blocking.
+
 /**
  * Normaliza paths para evitar falsos mismatches ("/a/" vs "/a").
  */
