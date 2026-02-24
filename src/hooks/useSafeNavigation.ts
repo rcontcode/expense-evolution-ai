@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 declare global {
@@ -7,22 +7,44 @@ declare global {
   }
 }
 
+function normalizePath(path: string) {
+  if (!path) return "/";
+  if (path === "/") return "/";
+  return path.endsWith("/") ? path.slice(0, -1) : path;
+}
+
 /**
- * Navigation hook that uses standard SPA navigation.
- * 
- * The RouteSyncGuard in App.tsx handles persistent desync recovery globally,
- * so this hook only needs to do a simple navigate() call.
- * 
- * Previously this hook had aggressive render-validation timeouts that caused
- * false-positive hard reloads on every navigation (because lazy-loaded routes
- * hadn't rendered within the check window). That has been removed.
+ * Navigation hook with post-navigate render verification.
+ *
+ * After calling navigate(), it waits a short window and then dispatches
+ * a custom event so RouteSyncGuard can verify and repair if needed.
+ *
+ * Anti-spam: cancels pending verification if user navigates again quickly.
  */
 export function useSafeNavigation() {
   const navigate = useNavigate();
+  const pendingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const safeNavigate = useCallback((path: string) => {
-    // Simple SPA navigation — RouteSyncGuard handles edge cases
+    const normalized = normalizePath(path);
+    const current = normalizePath(window.__APP_RENDERED_PATH__ ?? "/");
+
+    // Skip navigation to same route
+    if (normalized === current) return;
+
+    // Cancel any pending verification from a previous rapid navigation
+    if (pendingTimerRef.current) {
+      clearTimeout(pendingTimerRef.current);
+      pendingTimerRef.current = null;
+    }
+
     navigate(path);
+
+    // After a short buffer, ask RouteSyncGuard to verify render matched
+    pendingTimerRef.current = setTimeout(() => {
+      pendingTimerRef.current = null;
+      window.dispatchEvent(new Event("__route_sync_check__"));
+    }, 350);
   }, [navigate]);
 
   return safeNavigate;

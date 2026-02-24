@@ -17,10 +17,16 @@ import { useLoginMissionListener } from "@/hooks/data/useMissions";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy loader with retry on failure (handles transient network/build errors)
+// Preview/dev: shorter backoff (200ms base) for faster interactive navigation
+const IS_PREVIEW = typeof window !== "undefined" &&
+  (/lovableproject\.com$/i.test(window.location.hostname) ||
+    window.location.hostname.includes("preview"));
+const RETRY_BASE_DELAY = IS_PREVIEW ? 200 : 1000;
+
 function lazyWithRetry<T extends ComponentType<unknown>>(
   importFn: () => Promise<{ default: T }>,
-  retries = 3,
-  delay = 1000
+  retries = 2,
+  delay = RETRY_BASE_DELAY
 ): React.LazyExoticComponent<T> {
   return lazy(async () => {
     for (let i = 0; i < retries; i++) {
@@ -33,6 +39,33 @@ function lazyWithRetry<T extends ComponentType<unknown>>(
     }
     throw new Error("Failed to load module after retries");
   });
+}
+
+// Route preload map for hover-based prefetching
+const routeImportMap: Record<string, () => Promise<unknown>> = {
+  '/dashboard': () => import("./pages/Dashboard"),
+  '/income': () => import("./pages/Income"),
+  '/expenses': () => import("./pages/Expenses"),
+  '/settings': () => import("./pages/Settings"),
+  '/budget': () => import("./pages/Budget"),
+  '/chaos': () => import("./pages/ChaosInbox"),
+  '/clients': () => import("./pages/Clients"),
+  '/projects': () => import("./pages/Projects"),
+};
+
+const preloadedRoutes = new Set<string>();
+
+/** Preload a route chunk on hover/focus. Safe to call multiple times. */
+export function preloadRoute(path: string) {
+  if (preloadedRoutes.has(path)) return;
+  const importer = routeImportMap[path];
+  if (importer) {
+    preloadedRoutes.add(path);
+    importer().catch(() => {
+      // If preload fails, allow retry next time
+      preloadedRoutes.delete(path);
+    });
+  }
 }
 
 // Lazy load all pages for better initial load performance
@@ -213,34 +246,63 @@ function RouteRenderHeartbeat() {
  * - Cooldown para evitar loops
  */
 /**
- * Lightweight guard: only listens to popstate (back/forward button).
- * Standard SPA navigation via React Router doesn't need guarding.
- * This eliminates per-render timeouts and event spam that added latency.
+ * Hardened guard: covers popstate, hashchange, visibilitychange,
+ * AND exposes a global channel for useSafeNavigation to request checks.
+ * Conservative: cooldown per route, max 1 repair per navigation attempt.
  */
 function RouteSyncGuard() {
   const navigate = useNavigate();
   const lastRepairRef = useRef(0);
+  const lastRepairedPathRef = useRef("");
 
   useEffect(() => {
-    const handlePopstate = () => {
+    const checkSync = () => {
       const browserPath = getBrowserRoutePath();
       const renderedPath = normalizePath(window.__APP_RENDERED_PATH__ ?? "/");
       const now = Date.now();
 
       if (browserPath === renderedPath) return;
-      if (now - lastRepairRef.current < 3000) return;
+      // Cooldown: don't repair same path within 3s
+      if (now - lastRepairRef.current < 3000 && lastRepairedPathRef.current === browserPath) return;
 
       lastRepairRef.current = now;
-      // Small delay for lazy-loaded routes to mount
+      lastRepairedPathRef.current = browserPath;
+      // Buffer for lazy routes to mount before deciding
       window.setTimeout(() => {
-        if (getBrowserRoutePath() !== normalizePath(window.__APP_RENDERED_PATH__ ?? "/")) {
-          navigate(getBrowserRoutePath(), { replace: true });
+        const currentRendered = normalizePath(window.__APP_RENDERED_PATH__ ?? "/");
+        const currentBrowser = getBrowserRoutePath();
+        if (currentBrowser !== currentRendered) {
+          navigate(currentBrowser, { replace: true });
         }
-      }, 200);
+      }, 400);
+    };
+
+    const handlePopstate = () => checkSync();
+    const handleHashchange = () => checkSync();
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        // Slight extra delay when returning to tab
+        window.setTimeout(checkSync, 300);
+      }
+    };
+
+    // Global channel: useSafeNavigation dispatches this after navigate()
+    const handleNavRequest = () => {
+      // Give lazy route time to mount, then verify
+      window.setTimeout(checkSync, 500);
     };
 
     window.addEventListener("popstate", handlePopstate);
-    return () => window.removeEventListener("popstate", handlePopstate);
+    window.addEventListener("hashchange", handleHashchange);
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("__route_sync_check__", handleNavRequest);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopstate);
+      window.removeEventListener("hashchange", handleHashchange);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("__route_sync_check__", handleNavRequest);
+    };
   }, [navigate]);
 
   return null;

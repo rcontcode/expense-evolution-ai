@@ -54,6 +54,25 @@ const bootstrap = async () => {
 
     sessionStorage.removeItem(PREVIEW_REFRESH_KEY);
     window.setInterval(cleanupServiceWorkers, 30_000);
+
+    // Deterministic freshness: detect stale HTML shell in preview.
+    // If the shell was loaded >30min ago and a new module fails to load,
+    // force a single hard refresh to pick up the latest build.
+    if (isPreviewHost) {
+      const shellAge = Date.now() - ((window as unknown as Record<string, unknown>).__BUILD_TS__ as number || Date.now());
+      const STALE_THRESHOLD = 30 * 60 * 1000; // 30 minutes
+      if (shellAge > STALE_THRESHOLD && !sessionStorage.getItem("__build_refresh__")) {
+        sessionStorage.setItem("__build_refresh__", "1");
+        window.location.replace(
+          window.location.pathname + "?v=" + Date.now() + window.location.hash
+        );
+        return;
+      }
+      // Clear flag on fresh loads
+      if (shellAge < STALE_THRESHOLD) {
+        sessionStorage.removeItem("__build_refresh__");
+      }
+    }
   }
 
   mountApp();
