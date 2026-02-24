@@ -12,7 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   RotateCcw, Globe, BookOpen,
-  Shield, Ticket, Settings2, Database, ChevronDown
+  Shield, Ticket, Settings2, Database, ChevronDown, ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { NotificationPreferences } from '@/components/settings/NotificationPreferences';
@@ -143,6 +143,17 @@ export default function Settings() {
             ? 'Personaliza la aplicación y gestiona tus datos' 
             : 'Customize the app and manage your data') : undefined}
         />
+
+        {isMobile && (
+          <Button
+            variant="outline"
+            className="w-full mb-4 min-h-[44px]"
+            onClick={() => navigate('/dashboard')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {language === 'es' ? 'Salir de Configuración' : 'Exit Settings'}
+          </Button>
+        )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-6">
