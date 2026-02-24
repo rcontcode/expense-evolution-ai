@@ -4,24 +4,29 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Crown, Sparkles, Zap, CreditCard, ExternalLink, 
-  Check, Calendar, RefreshCw, Loader2, ArrowRight
+  Check, RefreshCw, Loader2, ArrowRight, Layers
 } from 'lucide-react';
 import { useSubscription, STRIPE_CONFIG, BillingPeriod } from '@/hooks/data/useSubscription';
-import { usePlanLimits, PLAN_LIMITS, PlanType } from '@/hooks/data/usePlanLimits';
+import { usePlanLimits, PlanType } from '@/hooks/data/usePlanLimits';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 
+type UpgradePlan = 'premium' | 'pro' | 'bundle';
+
 const planConfig: Record<string, {
   name: string;
+  nameEn: string;
   price: string;
   priceAnnual?: string;
   icon: typeof Zap;
   color: string;
   features: string[];
+  featuresEn: string[];
 }> = {
   free: {
     name: 'Free',
+    nameEn: 'Free',
     price: '$0',
     icon: Zap,
     color: 'from-slate-500 to-slate-600',
@@ -34,9 +39,19 @@ const planConfig: Record<string, {
       'Asistente de voz (3 min/mes)',
       'Alertas proactivas básicas',
     ],
+    featuresEn: [
+      '50 expenses/month',
+      '20 incomes/month',
+      '5 OCR scans/month',
+      '2 clients',
+      '2 projects',
+      'Voice assistant (3 min/month)',
+      'Basic proactive alerts',
+    ],
   },
   premium: {
     name: 'Premium',
+    nameEn: 'Premium',
     price: '$6.99',
     priceAnnual: '$5.59',
     icon: Sparkles,
@@ -55,9 +70,24 @@ const planConfig: Record<string, {
       'Asistente de voz (30 min/mes)',
       'Mentoría (4 módulos)',
     ],
+    featuresEn: [
+      'Unlimited expenses & income',
+      '50 OCR scans/month',
+      'Unlimited clients & projects',
+      'Mileage tracking',
+      'Full gamification',
+      'Net worth',
+      'Tax calendar',
+      'Export to Excel',
+      'Monthly AI report',
+      'Proactive alerts',
+      'Voice assistant (30 min/month)',
+      'Mentorship (4 modules)',
+    ],
   },
   pro: {
     name: 'Pro',
+    nameEn: 'Pro',
     price: '$14.99',
     priceAnnual: '$11.99',
     icon: Crown,
@@ -75,9 +105,51 @@ const planConfig: Record<string, {
       'Mentoría completa (8 módulos)',
       'Soporte dedicado',
     ],
+    featuresEn: [
+      'Everything in Premium',
+      'Unlimited OCR',
+      'AI contract analysis',
+      'AI bank analysis',
+      'Tax optimizer',
+      'Financial Freedom Calculator',
+      'RRSP/TFSA optimizer',
+      'Export T2125',
+      'Voice assistant (120 min/month)',
+      'Full mentorship (8 modules)',
+      'Dedicated support',
+    ],
+  },
+  bundle: {
+    name: 'Evo Bundle',
+    nameEn: 'Evo Bundle',
+    price: '$14.99',
+    priceAnnual: '$9.99',
+    icon: Layers,
+    color: 'from-emerald-500 via-teal-500 to-cyan-600',
+    features: [
+      'EvoFinz Pro completo',
+      'Fokuspark Premium completo',
+      'Datos cruzados entre apps',
+      'Insights de correlación enfoque↔finanzas',
+      'Frases unificadas del ecosistema',
+      'Dashboard de ecosistema',
+      'Ahorro de 33% vs planes separados',
+      'Soporte prioritario del ecosistema',
+    ],
+    featuresEn: [
+      'Full EvoFinz Pro',
+      'Full Fokuspark Premium',
+      'Cross-app data integration',
+      'Focus↔finance correlation insights',
+      'Unified ecosystem quotes',
+      'Ecosystem dashboard',
+      '33% savings vs separate plans',
+      'Priority ecosystem support',
+    ],
   },
   pro_beta: {
     name: 'Pro (Early Access)',
+    nameEn: 'Pro (Early Access)',
     price: '$0',
     icon: Crown,
     color: 'from-emerald-500 to-teal-600',
@@ -89,11 +161,20 @@ const planConfig: Record<string, {
       'Mentoría completa (8 módulos)',
       'Soporte prioritario',
     ],
+    featuresEn: [
+      'Everything in Pro with special limits',
+      '20 OCR scans/month',
+      'Voice assistant (15 min/month)',
+      'Early access to new features',
+      'Full mentorship (8 modules)',
+      'Priority support',
+    ],
   },
 };
 
 export function SubscriptionManager() {
   const { language } = useLanguage();
+  const isEs = language === 'es';
   const {
     isSubscribed,
     planType,
@@ -107,11 +188,10 @@ export function SubscriptionManager() {
     refreshSubscription,
   } = useSubscription();
 
-  const [selectedPlan, setSelectedPlan] = useState<'premium' | 'pro'>('premium');
+  const [selectedPlan, setSelectedPlan] = useState<UpgradePlan>('premium');
   const [selectedBilling, setSelectedBilling] = useState<BillingPeriod>('annual');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Sync selectedPlan when planType changes (e.g., after subscription refresh)
   useEffect(() => {
     if (planType === 'premium') {
       setSelectedPlan('pro');
@@ -127,10 +207,15 @@ export function SubscriptionManager() {
   };
 
   const handleCheckout = async () => {
-    await createCheckout(selectedPlan, selectedBilling);
+    if (selectedPlan === 'bundle') {
+      // Bundle uses the bundle checkout flow
+      await createCheckout('bundle' as any, selectedBilling);
+    } else {
+      await createCheckout(selectedPlan, selectedBilling);
+    }
   };
 
-  const dateLocale = language === 'es' ? es : enUS;
+  const dateLocale = isEs ? es : enUS;
   const currentPlanConfig = planConfig[planType];
   const CurrentIcon = currentPlanConfig.icon;
 
@@ -148,6 +233,15 @@ export function SubscriptionManager() {
     );
   }
 
+  // Determine which plans to show based on current plan
+  const getAvailablePlans = (): UpgradePlan[] => {
+    if (planType === 'free') return ['premium', 'pro', 'bundle'];
+    if (planType === 'premium') return ['pro', 'bundle'];
+    return [];
+  };
+
+  const availablePlans = getAvailablePlans();
+
   return (
     <Card>
       <CardHeader>
@@ -156,10 +250,10 @@ export function SubscriptionManager() {
             <CreditCard className="h-5 w-5 text-primary" />
             <div>
               <CardTitle>
-                {language === 'es' ? 'Suscripción' : 'Subscription'}
+                {isEs ? 'Suscripción' : 'Subscription'}
               </CardTitle>
               <CardDescription>
-                {language === 'es' 
+                {isEs 
                   ? 'Gestiona tu plan y facturación' 
                   : 'Manage your plan and billing'}
               </CardDescription>
@@ -185,18 +279,20 @@ export function SubscriptionManager() {
                 <CurrentIcon className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="font-bold text-lg">Plan {currentPlanConfig.name}</h3>
+                <h3 className="font-bold text-lg">Plan {isEs ? currentPlanConfig.name : currentPlanConfig.nameEn}</h3>
                 <p className="text-sm text-white/80">
                   {isSubscribed && billingPeriod
-                    ? `Facturación ${billingPeriod === 'annual' ? 'anual' : 'mensual'}`
-                    : language === 'es' ? 'Gratis para siempre' : 'Free forever'}
+                    ? isEs 
+                      ? `Facturación ${billingPeriod === 'annual' ? 'anual' : 'mensual'}`
+                      : `${billingPeriod === 'annual' ? 'Annual' : 'Monthly'} billing`
+                    : isEs ? 'Gratis para siempre' : 'Free forever'}
                 </p>
               </div>
             </div>
             {isSubscribed && subscriptionEnd && (
               <div className="text-right">
                 <p className="text-xs text-white/70">
-                  {language === 'es' ? 'Próxima renovación' : 'Next renewal'}
+                  {isEs ? 'Próxima renovación' : 'Next renewal'}
                 </p>
                 <p className="font-medium">
                   {format(new Date(subscriptionEnd), 'PPP', { locale: dateLocale })}
@@ -218,18 +314,18 @@ export function SubscriptionManager() {
                 ) : (
                   <ExternalLink className="h-4 w-4 mr-2" />
                 )}
-                {language === 'es' ? 'Gestionar Suscripción' : 'Manage Subscription'}
+                {isEs ? 'Gestionar Suscripción' : 'Manage Subscription'}
               </Button>
             </div>
           )}
         </div>
 
-        {/* Upgrade Section - Only show if not on Pro */}
-        {planType !== 'pro' && (
+        {/* Upgrade Section */}
+        {availablePlans.length > 0 && (
           <div className="space-y-4">
             <h4 className="font-semibold flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
-              {language === 'es' ? 'Mejorar tu plan' : 'Upgrade your plan'}
+              {isEs ? 'Mejorar tu plan' : 'Upgrade your plan'}
             </h4>
 
             {/* Billing Toggle */}
@@ -242,7 +338,7 @@ export function SubscriptionManager() {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {language === 'es' ? 'Mensual' : 'Monthly'}
+                {isEs ? 'Mensual' : 'Monthly'}
               </button>
               <button
                 onClick={() => setSelectedBilling('annual')}
@@ -252,7 +348,7 @@ export function SubscriptionManager() {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {language === 'es' ? 'Anual' : 'Annual'}
+                {isEs ? 'Anual' : 'Annual'}
                 <Badge className="bg-green-500 text-white text-[10px] px-1.5 py-0">
                   -20%
                 </Badge>
@@ -260,59 +356,71 @@ export function SubscriptionManager() {
             </div>
 
             {/* Plan Cards */}
-            <div className="grid gap-4 md:grid-cols-2">
-              {(['premium', 'pro'] as const)
-                .filter(plan => planType === 'free' || plan === 'pro')
-                .map((plan) => {
-                  const config = planConfig[plan];
-                  const PlanIcon = config.icon;
-                  const isSelected = selectedPlan === plan;
-                  const price = selectedBilling === 'annual' 
-                    ? config.priceAnnual 
-                    : config.price;
+            <div className={`grid gap-4 ${availablePlans.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
+              {availablePlans.map((plan) => {
+                const config = planConfig[plan];
+                const PlanIcon = config.icon;
+                const isSelected = selectedPlan === plan;
+                const price = selectedBilling === 'annual' 
+                  ? config.priceAnnual 
+                  : config.price;
+                const isBundle = plan === 'bundle';
+                const features = isEs ? config.features : config.featuresEn;
 
-                  return (
-                    <button
-                      key={plan}
-                      onClick={() => setSelectedPlan(plan)}
-                      className={`p-4 rounded-xl border-2 text-left transition-all ${
-                        isSelected 
-                          ? 'border-primary ring-2 ring-primary/20' 
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <div className={`p-2 rounded-lg bg-gradient-to-r ${config.color}`}>
-                          <PlanIcon className="h-5 w-5 text-white" />
-                        </div>
-                        {isSelected && (
-                          <Badge className="bg-primary text-primary-foreground">
-                            <Check className="h-3 w-3 mr-1" />
-                            {language === 'es' ? 'Seleccionado' : 'Selected'}
-                          </Badge>
-                        )}
+                return (
+                  <button
+                    key={plan}
+                    onClick={() => setSelectedPlan(plan)}
+                    className={`p-4 rounded-xl border-2 text-left transition-all relative ${
+                      isSelected 
+                        ? 'border-primary ring-2 ring-primary/20' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    {isBundle && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] px-2 py-0.5 shadow-md">
+                          🌟 {isEs ? 'Mejor valor' : 'Best value'}
+                        </Badge>
                       </div>
-                      <h5 className="font-bold text-lg">{config.name}</h5>
-                      <div className="flex items-baseline gap-1 mt-1">
-                        <span className="text-2xl font-black">{price}</span>
-                        <span className="text-muted-foreground">/mes</span>
+                    )}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className={`p-2 rounded-lg bg-gradient-to-r ${config.color}`}>
+                        <PlanIcon className="h-5 w-5 text-white" />
                       </div>
-                      <ul className="mt-3 space-y-1.5">
-                        {config.features.slice(0, 5).map((feature, idx) => (
-                          <li key={idx} className="text-sm text-muted-foreground flex items-center gap-2">
-                            <Check className="h-3 w-3 text-green-500 flex-shrink-0" />
-                            {feature}
-                          </li>
-                        ))}
-                        {config.features.length > 5 && (
-                          <li className="text-xs text-muted-foreground">
-                            +{config.features.length - 5} más...
-                          </li>
-                        )}
-                      </ul>
-                    </button>
-                  );
-                })}
+                      {isSelected && (
+                        <Badge className="bg-primary text-primary-foreground">
+                          <Check className="h-3 w-3 mr-1" />
+                          {isEs ? 'Seleccionado' : 'Selected'}
+                        </Badge>
+                      )}
+                    </div>
+                    <h5 className="font-bold text-lg">{isEs ? config.name : config.nameEn}</h5>
+                    <div className="flex items-baseline gap-1 mt-1">
+                      <span className="text-2xl font-black">{price}</span>
+                      <span className="text-muted-foreground">/{isEs ? 'mes' : 'mo'}</span>
+                    </div>
+                    {isBundle && selectedBilling === 'annual' && (
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">
+                        {isEs ? '33% menos vs planes separados' : '33% off vs separate plans'}
+                      </p>
+                    )}
+                    <ul className="mt-3 space-y-1.5">
+                      {features.slice(0, 5).map((feature, idx) => (
+                        <li key={idx} className="text-sm text-muted-foreground flex items-center gap-2">
+                          <Check className="h-3 w-3 text-green-500 flex-shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                      {features.length > 5 && (
+                        <li className="text-xs text-muted-foreground">
+                          +{features.length - 5} {isEs ? 'más...' : 'more...'}
+                        </li>
+                      )}
+                    </ul>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Checkout Button */}
@@ -324,21 +432,21 @@ export function SubscriptionManager() {
               {isCheckingOut ? (
                 <>
                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  {language === 'es' ? 'Procesando...' : 'Processing...'}
+                  {isEs ? 'Procesando...' : 'Processing...'}
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  {language === 'es' 
+                  {selectedPlan === 'bundle' ? <Layers className="h-5 w-5 mr-2" /> : <Sparkles className="h-5 w-5 mr-2" />}
+                  {isEs 
                     ? `Obtener ${planConfig[selectedPlan].name}` 
-                    : `Get ${planConfig[selectedPlan].name}`}
+                    : `Get ${planConfig[selectedPlan].nameEn}`}
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </>
               )}
             </Button>
 
             <p className="text-center text-xs text-muted-foreground">
-              {language === 'es' 
+              {isEs 
                 ? 'Pago seguro con Stripe • Cancela cuando quieras' 
                 : 'Secure payment with Stripe • Cancel anytime'}
             </p>
@@ -350,10 +458,10 @@ export function SubscriptionManager() {
           <div className="text-center py-4">
             <Crown className="h-12 w-12 text-primary mx-auto mb-3" />
             <h4 className="font-bold text-lg">
-              {language === 'es' ? '¡Tienes el plan máximo!' : 'You have the top plan!'}
+              {isEs ? '¡Tienes el plan máximo!' : 'You have the top plan!'}
             </h4>
             <p className="text-muted-foreground text-sm">
-              {language === 'es' 
+              {isEs 
                 ? 'Disfruta de todas las funciones de EvoFinz sin límites' 
                 : 'Enjoy all EvoFinz features without limits'}
             </p>

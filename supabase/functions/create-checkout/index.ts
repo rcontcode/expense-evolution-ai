@@ -13,6 +13,8 @@ const PRICE_IDS = {
   premium_annual: "price_1Swaff3wR30iWwFnGvO9x4Fa",
   pro_monthly: "price_1Swafv3wR30iWwFn0z52B0W7",
   pro_annual: "price_1SwagD3wR30iWwFn9RABKpl3",
+  bundle_monthly: "price_1T4U9U3wR30iWwFnq9YJeIHe",
+  bundle_annual: "price_1T4UEy3wR30iWwFnbIfKJtUb",
 };
 
 // Short descriptions for Stripe (max 500 chars)
@@ -32,6 +34,14 @@ const PRODUCT_DESCRIPTIONS: Record<string, { name: string; description: string }
   pro_annual: {
     name: "EvoFinz Pro Anual",
     description: "Ahorra 20% - Todo Pro: OCR ilimitado, contratos IA, fiscal, FIRE, RRSP/TFSA, T2125, mentoría, voz (120 min/mes), soporte dedicado. Solo $11.99/mes.",
+  },
+  bundle_monthly: {
+    name: "Evo Bundle Mensual",
+    description: "EvoFinz Pro + Fokuspark Premium: acceso completo a ambas apps, datos cruzados, insights de correlación enfoque↔finanzas, dashboard del ecosistema, soporte prioritario.",
+  },
+  bundle_annual: {
+    name: "Evo Bundle Anual",
+    description: "Ahorra 33% - EvoFinz Pro + Fokuspark Premium: acceso completo, datos cruzados, correlación enfoque↔finanzas, dashboard ecosistema. Solo $9.99/mes.",
   },
 };
 
@@ -57,7 +67,7 @@ serve(async (req) => {
     logStep("Request params", { planType, billingPeriod });
 
     // Validate plan type
-    if (!["premium", "pro"].includes(planType)) {
+    if (!["premium", "pro", "bundle"].includes(planType)) {
       throw new Error("Invalid plan type");
     }
 
@@ -123,9 +133,11 @@ serve(async (req) => {
       // Customize checkout page appearance
       custom_text: {
         submit: {
-          message: billingPeriod === 'annual' 
-            ? '🎉 ¡Felicidades! Estás ahorrando un 20% con el plan anual. Tu transformación financiera comienza ahora.'
-            : '🚀 Estás a un clic de tomar el control de tus finanzas. ¡Bienvenido a EvoFinz!',
+          message: planType === 'bundle'
+            ? '🌟 ¡Estás desbloqueando el ecosistema completo! EvoFinz + Fokuspark trabajando juntos por tu bienestar financiero y mental.'
+            : billingPeriod === 'annual' 
+              ? '🎉 ¡Felicidades! Estás ahorrando un 20% con el plan anual. Tu transformación financiera comienza ahora.'
+              : '🚀 Estás a un clic de tomar el control de tus finanzas. ¡Bienvenido a EvoFinz!',
         },
         terms_of_service_acceptance: {
           message: 'Al suscribirte, aceptas nuestros [términos de servicio](https://evofinz.lovable.app/legal) y confirmas que puedes cancelar en cualquier momento.',

@@ -48,8 +48,15 @@
 
 ---
 
-## Proximos pasos potenciales
+## Fase 3: UI de Pricing + Bundle ✅ EN PROGRESO
 
-- UI de pricing con opción Bundle
+### Paso 1: UI de Pricing con opción Bundle ✅
+- SubscriptionManager muestra 3 planes (Premium, Pro, Bundle)
+- Bundle card con badge "Mejor valor" y features de ambas apps
+- createCheckout soporta planType 'bundle'
+- Traducciones ES/EN completas
+
+### Próximos pasos
 - Dashboard de datos cruzados para Bundle users
 - Onboarding del ecosistema
+- Cross-app correlation insights UI
