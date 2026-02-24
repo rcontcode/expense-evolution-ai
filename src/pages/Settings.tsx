@@ -27,13 +27,12 @@ import { useIsAdmin } from '@/hooks/data/useIsAdmin';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
- import { SoundPreferencesPanel } from '@/components/settings/SoundPreferencesPanel';
-
-// Lazy load heavy sections
+// Lazy load heavy sections to reduce mount pressure (root cause of nav desync)
 const DataPrivacyCard = lazy(() => import('@/components/settings/DataPrivacyCard').then(m => ({ default: m.DataPrivacyCard })));
 const SampleDataManager = lazy(() => import('@/components/settings/SampleDataManager').then(m => ({ default: m.SampleDataManager })));
+const VoicePreferencesCard = lazy(() => import('@/components/settings/VoicePreferencesCard').then(m => ({ default: m.VoicePreferencesCard })));
+const SoundPreferencesPanel = lazy(() => import('@/components/settings/SoundPreferencesPanel').then(m => ({ default: m.SoundPreferencesPanel })));
 import { SecurityCard } from '@/components/settings/SecurityCard';
-import { VoicePreferencesCard } from '@/components/settings/VoicePreferencesCard';
 
 const SectionSkeleton = () => (
   <div className="space-y-4">
@@ -234,25 +233,29 @@ export default function Settings() {
               <DisplayPreferencesCard />
             </SettingsSection>
 
-            {/* Voice Preferences */}
+            {/* Voice Preferences - deferred to reduce mount pressure */}
             <SettingsSection 
               title={language === 'es' ? 'Voz' : 'Voice'} 
               icon={Settings2} 
               isMobile={isMobile}
             >
               <div data-highlight="voice-preferences">
-                <VoicePreferencesCard />
+                <Suspense fallback={<SectionSkeleton />}>
+                  <VoicePreferencesCard />
+                </Suspense>
               </div>
             </SettingsSection>
  
-             {/* Sound Preferences */}
+             {/* Sound Preferences - deferred to reduce mount pressure */}
              <SettingsSection 
                title={language === 'es' ? 'Sonidos' : 'Sounds'} 
                icon={Settings2} 
                isMobile={isMobile}
              >
                <div data-highlight="sound-preferences">
-                 <SoundPreferencesPanel language={language === 'es' ? 'es' : 'en'} />
+                 <Suspense fallback={<SectionSkeleton />}>
+                   <SoundPreferencesPanel language={language === 'es' ? 'es' : 'en'} />
+                 </Suspense>
                </div>
              </SettingsSection>
 
