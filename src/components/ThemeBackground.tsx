@@ -1,11 +1,23 @@
-import { memo } from 'react';
+import { memo, useState, useEffect, useRef } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export const ThemeBackground = memo(() => {
   const { style, animationSpeed, animationIntensity } = useTheme();
+  const [ready, setReady] = useState(false);
+  const prevStyleRef = useRef(style);
 
-  // Early exit if animations are disabled
-  if (animationSpeed === 'off') {
+  // Delay rendering after theme change to avoid freezing UI
+  useEffect(() => {
+    if (prevStyleRef.current !== style) {
+      setReady(false);
+      prevStyleRef.current = style;
+    }
+    const timer = setTimeout(() => setReady(true), 350);
+    return () => clearTimeout(timer);
+  }, [style]);
+
+  // Early exit if animations are disabled or not ready yet
+  if (animationSpeed === 'off' || !ready) {
     return null;
   }
 
