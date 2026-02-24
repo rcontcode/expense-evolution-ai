@@ -1,9 +1,9 @@
-import { lazy, Suspense, Component, type ReactNode, ComponentType, useEffect } from "react";
+import { lazy, Suspense, Component, type ReactNode, ComponentType, useEffect, useRef } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -180,10 +180,69 @@ function RouteRenderHeartbeat() {
 }
 
 /**
- * Global guard temporarily disabled.
- * Previous auto-resync logic was causing navigation lockups.
+ * Global guard: repara desincronización real URL/UI de forma conservadora.
+ * - Solo actúa si el mismatch persiste
+ * - Máximo 1 intento por ruta cada 5s
+ * - Sin recargas forzadas
  */
 function RouteSyncGuard() {
+  const navigate = useNavigate();
+  const mismatchSinceRef = useRef<number | null>(null);
+  const lastRepairRef = useRef<{ path: string; at: number } | null>(null);
+
+  useEffect(() => {
+    const tick = () => {
+      const browserPath = window.location.pathname;
+      const renderedPath = window.__APP_RENDERED_PATH__;
+
+      if (!renderedPath || browserPath === renderedPath) {
+        mismatchSinceRef.current = null;
+        return;
+      }
+
+      const now = Date.now();
+
+      if (mismatchSinceRef.current === null) {
+        mismatchSinceRef.current = now;
+        return;
+      }
+
+      // Evita falsos positivos por renders perezosos/carga inicial
+      if (now - mismatchSinceRef.current < 900) {
+        return;
+      }
+
+      const lastRepair = lastRepairRef.current;
+      const inCooldown =
+        !!lastRepair &&
+        lastRepair.path === browserPath &&
+        now - lastRepair.at < 5000;
+
+      if (inCooldown) {
+        return;
+      }
+
+      lastRepairRef.current = { path: browserPath, at: now };
+
+      console.warn(
+        `[RouteSyncGuard] Resync: browser=${browserPath}, rendered=${renderedPath}`
+      );
+
+      // 1) Intenta despertar listeners del router
+      window.dispatchEvent(new PopStateEvent("popstate"));
+
+      // 2) Si sigue desincronizado, fuerza navigate interno (sin hard reload)
+      window.setTimeout(() => {
+        if (window.__APP_RENDERED_PATH__ !== window.location.pathname) {
+          navigate(window.location.pathname, { replace: true });
+        }
+      }, 120);
+    };
+
+    const intervalId = window.setInterval(tick, 700);
+    return () => window.clearInterval(intervalId);
+  }, [navigate]);
+
   return null;
 }
 
