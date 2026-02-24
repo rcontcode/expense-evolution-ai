@@ -189,13 +189,20 @@ function RouteSyncGuard() {
   const mismatchCountRef = useRef(0);
 
   useEffect(() => {
+    // Reset counter on every real render (location change triggers this)
+    mismatchCountRef.current = 0;
+  }, [location.pathname]);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       const browserPath = window.location.pathname;
       const renderedPath = window.__APP_RENDERED_PATH__;
 
       if (renderedPath && browserPath !== renderedPath) {
         mismatchCountRef.current += 1;
-        if (mismatchCountRef.current >= 2) {
+        // Only auto-repair after 4 consecutive mismatches (~4s) to avoid
+        // false positives with lazy-loaded routes that take time to render
+        if (mismatchCountRef.current >= 4) {
           console.warn(
             `[RouteSyncGuard] Persistent desync: browser=${browserPath}, rendered=${renderedPath}. Auto-repairing.`
           );
@@ -205,10 +212,10 @@ function RouteSyncGuard() {
       } else {
         mismatchCountRef.current = 0;
       }
-    }, 600);
+    }, 1000);
 
     return () => clearInterval(interval);
-  }, [location.pathname]);
+  }, []);
 
   return null;
 }
