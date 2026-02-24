@@ -1,74 +1,104 @@
 
-Objetivo: corregir la causa raíz del “quedarse pegado en Configuración” sin depender de recargas forzadas feas, y dejar la navegación estable incluso cuando el usuario entra y sale inmediatamente.
+Objetivo: arreglar definitivamente el “no sale de Configuración” y bajar el tiempo de cambio de sección (actualmente ~3–6s en casos observados), atacando causa raíz y no parches.
 
-Contexto confirmado durante diagnóstico:
-- Se reprodujo exactamente el bug: desde `/settings`, esperando unos segundos sin interacción, al hacer click en sidebar:
-  - la URL cambia (ej. `/dashboard`),
-  - pero la vista sigue mostrando Settings.
-- También se comprobó que, tras interactuar dentro de Settings (por ejemplo cambiar tab), la navegación vuelve a funcionar.
-- Esto confirma un problema de desincronización “URL vs ruta renderizada”, no un simple bloqueo de click.
-- El fallback actual en `useSafeNavigation` valida solo `window.location.pathname`; eso no detecta el caso donde la URL sí cambió pero React Router no re-renderizó. Por eso a veces se queda pegado y otras veces termina en recarga dura.
+Diagnóstico (basado en lo que revisé y reproduje):
+1) El problema sí existe y es real: se puede reproducir una desincronización temporal URL/UI.
+   - En pruebas: la URL cambió a `/income` y el sidebar marcó Income, pero el contenido siguió mostrando Settings durante varios segundos.
+   - Esto confirma que la navegación se dispara, pero el árbol de rutas tarda en conmutar (no es solo “botón roto”).
 
-Plan de corrección (raíz, no parche superficial):
+2) Causa raíz principal (arquitectura actual):
+   - El guard actual (`RouteSyncGuard` en `App.tsx`) solo escucha `popstate`.
+   - Eso no cubre navegación SPA normal (clicks con `navigate()`), justo el flujo donde se está quedando “pegado”.
+   - Resultado: cuando hay desync en navegación interna, no hay corrección activa.
 
-1) Crear una señal confiable de “ruta realmente renderizada”
-- En `App.tsx`, agregar un componente interno de sincronización (ej. `RouteRenderHeartbeat`) que use `useLocation()` y actualice una marca global liviana (ej. `window.__APP_RENDERED_PATH__`) en cada render real de ruta.
-- Esta marca será la fuente de verdad del render React (no solo la URL del navegador).
+3) Causa raíz de lentitud percibida:
+   - El cambio de URL ocurre rápido, pero la vista tarda en actualizar.
+   - Hay señales de presión de render/carga durante transiciones (lazy routes + carga pesada de layout/hooks + posibles retries de chunks).
+   - El patrón actual de lazy con retry en páginas grandes puede amplificar latencia si falla el primer intento de chunk.
 
-2) Reescribir `useSafeNavigation` para validar render, no solo URL
-- Actualizar `src/hooks/useSafeNavigation.ts` para que:
-  - intente navegación SPA normal,
-  - espere una ventana corta (ej. 120ms + 300ms),
-  - valide que `__APP_RENDERED_PATH__ === targetPath`.
-- Si la URL cambió pero la ruta renderizada no cambió, disparar recuperación controlada (hard navigation una sola vez).
-- Mantener compatibilidad con BrowserRouter/HashRouter para evitar falsos positivos.
-- Resultado esperado: elimina el “URL cambió pero sigo en Settings”.
+4) Problema de “preview viejo” aún no cerrado al 100%:
+   - Ya se removió PWA plugin, pero todavía hay rutas de caché/estado en preview que pueden conservar runtime desfasado.
+   - Hay inconsistencias que requieren invalidación determinística por versión (no solo limpieza best-effort de SW/cache).
 
-3) Guard global anti-desincronización (autorreparación)
-- En `App.tsx`, además del heartbeat, agregar un guard global que compare periódicamente:
-  - ruta del navegador,
-  - ruta renderizada por React Router.
-- Si persiste mismatch más de un umbral corto (ej. 400–600ms), ejecutar recuperación automática.
-- Esto evita que el usuario quede atrapado en cualquier pantalla, no solo Settings.
+Plan de implementación (secuenciado):
+Fase 1 — Corrección dura de sincronización de rutas (prioridad máxima)
+- Archivo: `src/App.tsx`
+- Cambios:
+  1. Mantener `RouteRenderHeartbeat`, pero ampliar `RouteSyncGuard` para escuchar:
+     - `popstate` (ya existe)
+     - `hashchange`
+     - `visibilitychange` (cuando vuelve a foco)
+     - y verificación tras navegación SPA (ver Fase 2 hook).
+  2. Guard conservador con “anti-loop”:
+     - umbral de desync (ej. 350–500ms)
+     - cooldown por ruta (ej. 2–3s)
+     - máximo de 1 reparación por intento de navegación
+  3. Reparación suave:
+     - `navigate(target, { replace: true })` solo si heartbeat sigue distinto tras el buffer.
+- Resultado esperado:
+  - Si URL y vista divergen, autocorrección sin reload duro ni loops.
 
-4) Reducir la presión de montaje inicial de Settings (causa contribuyente)
-- En `src/pages/Settings.tsx`, diferir/montar bajo demanda secciones pesadas que hoy se montan todas al entrar.
-- Priorizar lazy mount de componentes pesados (voz/notificaciones avanzadas/sonidos), para que no compitan con el primer cambio de ruta inmediato.
-- Esto ataca el patrón reportado por el usuario: “si entro y salgo enseguida falla; si interactúo primero, luego funciona”.
+Fase 2 — Navegación segura con confirmación de render (sin agresividad)
+- Archivo: `src/hooks/useSafeNavigation.ts`
+- Cambios:
+  1. Añadir verificación “post-navigate” mínima:
+     - tras `navigate(path)`, validar por heartbeat si renderizó ese path en ventana corta.
+  2. Si no renderiza en tiempo:
+     - disparar una única re-sincronización (no hard reload).
+  3. Evitar false positives:
+     - excluir navegación a misma ruta
+     - cancelar verificación si hubo nueva navegación del usuario
+- Resultado esperado:
+  - Salida de Settings consistente incluso en navegación por click, no solo back/forward.
 
-5) Corregir churn de hooks de voz que puede degradar estabilidad
-- Ajustar `useGlobalReminders` y `useVoicePreferences` para evitar reinstalaciones/reinicializaciones innecesarias que generan ruido (`[Audio] Context initialized`) y trabajo extra.
-- Objetivo: una sola inicialización de audio por sesión/interacción real, no múltiples disparos indirectos.
+Fase 3 — Reducir latencia real entre secciones
+- Archivos: `src/App.tsx`, `src/components/Layout.tsx`, rutas grandes (`src/pages/*`)
+- Cambios:
+  1. Preload inteligente de rutas frecuentes:
+     - precargar chunks de Dashboard/Income/Expenses/Settings al hover/focus del item del sidebar.
+  2. Revisar `lazyWithRetry` para rutas:
+     - en preview: evitar backoff largo acumulado para navegación interactiva (fallback rápido + recuperación controlada).
+  3. Quitar trabajo no crítico del camino de navegación:
+     - diferir hooks globales pesados fuera de interacción inmediata (ej. reminders) con `requestIdleCallback`/timeout más largo.
+- Resultado esperado:
+  - navegación percibida mucho más inmediata (objetivo <1s en caliente, ~1–1.5s en frío).
 
-Archivos a intervenir:
-- `src/App.tsx` (heartbeat + guard global de sincronización)
-- `src/hooks/useSafeNavigation.ts` (validación por ruta renderizada)
-- `src/pages/Settings.tsx` (mount diferido de secciones pesadas)
-- `src/hooks/utils/useGlobalReminders.ts` (estabilizar dependencias/intervalo)
-- `src/hooks/utils/useVoicePreferences.ts` (evitar reinicializaciones repetidas de audio)
+Fase 4 — Preview siempre en última versión (determinístico)
+- Archivos: `src/main.tsx`, `index.html` (y opcional: endpoint/versionado estático)
+- Cambios:
+  1. Introducir “build fingerprint” (id de build) y validación en runtime.
+  2. Si detecta mismatch de build entre shell y runtime:
+     - forzar un único reload con query anti-cache (`?v=<build-id>`).
+  3. Mantener limpieza de SW/cache como respaldo, no como mecanismo único.
+  4. Corregir referencias de manifiesto/activos para evitar rutas inconsistentes.
+- Resultado esperado:
+  - preview deja de quedarse en versión antigua de forma intermitente.
 
-Criterios de aceptación (obligatorios):
-1) Desde `/settings`, sin tocar nada dentro, esperar 3–10s y navegar a:
-   - dashboard,
-   - expenses,
-   - net-worth,
-   - cualquier otra sección
-   => la vista debe cambiar siempre, no solo la URL.
-2) Repetir 15–20 veces en desktop y mobile: 0 casos “URL cambia pero pantalla queda en Settings”.
-3) Debe desaparecer la necesidad frecuente de recarga dura “fea”.
-4) Si ocurre una desincronización excepcional, el guard debe auto-reparar en menos de 1 segundo.
-5) Disminuir claramente eventos repetidos de inicialización de audio en consola.
+Fase 5 — Verificación y criterios de aceptación
+- Pruebas funcionales:
+  1. `/settings -> /dashboard` (botón sidebar, breadcrumb, mobile “Salir de Configuración”).
+  2. `/settings -> /income -> /settings` repetido 10 veces.
+  3. navegación rápida multi-click para asegurar que no hay loops.
+- Pruebas de rendimiento:
+  1. medir tiempo click→paint de ruta destino en frío y caliente.
+  2. confirmar que no hay bloqueos >1s en transición normal.
+- Pruebas de frescura de preview:
+  1. publicar cambios consecutivos y validar que preview muestra build nueva sin hard refresh manual.
+- Criterio de éxito:
+  - cero casos de URL/vista desincronizados persistentes
+  - navegación estable sin loops
+  - tiempo de transición claramente menor al estado actual.
 
-Riesgos y mitigaciones:
-- Riesgo: fallback duro puede perder estado efímero.
-  - Mitigación: activarlo únicamente cuando se detecta mismatch real persistente.
-- Riesgo: tocar navegación global puede afectar otras rutas.
-  - Mitigación: centralizar toda lógica en `useSafeNavigation` + guard único en `App`, con pruebas E2E dirigidas.
+Riesgos y mitigación:
+- Riesgo: volver a introducir loops de navegación.
+  - Mitigación: cooldown + umbral + máximo intento por navegación.
+- Riesgo: corrección demasiado agresiva en rutas lazy lentas.
+  - Mitigación: buffer temporal y exclusión de rutas ya en carga.
+- Riesgo: falsas alarmas de build mismatch.
+  - Mitigación: comparación estricta de fingerprint y refresh único por sesión.
 
-Validación final que voy a ejecutar al implementar:
-- Escenario exacto reportado por ti (entrar a Configuración, no hacer nada, salir de inmediato) en loop.
-- Prueba cruzada de salida por:
-  - sidebar,
-  - botón atrás del header,
-  - botón de salida en móvil.
-- Confirmar que ya no se “pega” y que la transición vuelve a ser natural (SPA), no recarga abrupta.
+Notas técnicas concretas (para que quede trazable):
+- Puntos a tocar primero: `App.tsx` (`RouteSyncGuard`) y `useSafeNavigation.ts`.
+- Luego optimización de transición y preload de rutas desde `Layout.tsx`.
+- Finalmente endurecer estrategia de build freshness en `main.tsx` + shell HTML.
+
