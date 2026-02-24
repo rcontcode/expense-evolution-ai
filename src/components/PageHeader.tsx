@@ -1,7 +1,8 @@
 import { ChevronLeft, ChevronRight, Home } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSafeNavigation } from '@/hooks/useSafeNavigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Breadcrumb,
@@ -46,7 +47,7 @@ const ROUTE_CONFIG: Record<string, { labelEs: string; labelEn: string; parent?: 
 };
 
 export function PageHeader({ title, description, showBack = true, children }: PageHeaderProps) {
-  const navigate = useNavigate();
+  const navigate = useSafeNavigation();
   const location = useLocation();
   const { language } = useLanguage();
   const isMobile = useIsMobile();
@@ -78,7 +79,8 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
     if (currentRoute?.parent) {
       navigate(currentRoute.parent);
     } else {
-      navigate(-1);
+      // Fallback: go to dashboard instead of history back to avoid stuck states
+      navigate('/dashboard');
     }
   };
 

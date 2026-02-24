@@ -1,5 +1,6 @@
 import { ReactNode, useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useSafeNavigation } from '@/hooks/useSafeNavigation';
 import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
 import { GlobalSearch } from '@/components/search/GlobalSearch';
 import { 
@@ -210,7 +211,7 @@ const getMobileNavItems = (language: string) => [
 ];
 
 export const Layout = ({ children }: LayoutProps) => {
-  const navigate = useNavigate();
+  const navigate = useSafeNavigation();
   const location = useLocation();
   const { t, language } = useLanguage();
   const { signOut } = useAuth();

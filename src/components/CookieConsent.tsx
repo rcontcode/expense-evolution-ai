@@ -94,8 +94,8 @@ export function CookieConsent() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 animate-slide-up">
-      <div className="max-w-4xl mx-auto">
+    <div className="fixed bottom-4 left-4 right-4 z-40 pointer-events-none sm:left-auto sm:right-4 sm:bottom-4 sm:max-w-sm">
+      <div className="pointer-events-auto">
         <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
           {/* Header */}
           <div className="p-4 md:p-6">
