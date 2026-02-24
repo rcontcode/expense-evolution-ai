@@ -1,22 +1,25 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Camera, Wallet, BarChart3, Car, Building2, Trophy, FileText, Flame, GraduationCap, Calculator, Mic, TrendingDown, CreditCard, BookOpen, Target } from "lucide-react";
-import { ReceiptDemoAnimation } from "./ReceiptDemoAnimation";
-import { NetWorthDemoAnimation } from "./NetWorthDemoAnimation";
-import { DashboardDemoAnimation } from "./DashboardDemoAnimation";
-import { MileageDemoAnimation } from "./MileageDemoAnimation";
-import { BankingDemoAnimation } from "./BankingDemoAnimation";
-import { GamificationDemoAnimation } from "./GamificationDemoAnimation";
-import { ContractsDemoAnimation } from "./ContractsDemoAnimation";
-import { FIREDemoAnimation } from "./FIREDemoAnimation";
-import { EducationDemoAnimation } from "./EducationDemoAnimation";
-import { TaxOptimizerDemoAnimation } from "./TaxOptimizerDemoAnimation";
-import { VoiceAssistantDemoAnimation } from "./VoiceAssistantDemoAnimation";
-import { DebtManagerDemoAnimation } from "./DebtManagerDemoAnimation";
-import { SubscriptionsDemoAnimation } from "./SubscriptionsDemoAnimation";
-import { JournalDemoAnimation } from "./JournalDemoAnimation";
-import { HabitsDemoAnimation } from "./HabitsDemoAnimation";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
+
+// Lazy load all demo animations
+const ReceiptDemoAnimation = lazy(() => import("./ReceiptDemoAnimation").then(m => ({ default: m.ReceiptDemoAnimation })));
+const NetWorthDemoAnimation = lazy(() => import("./NetWorthDemoAnimation").then(m => ({ default: m.NetWorthDemoAnimation })));
+const DashboardDemoAnimation = lazy(() => import("./DashboardDemoAnimation").then(m => ({ default: m.DashboardDemoAnimation })));
+const MileageDemoAnimation = lazy(() => import("./MileageDemoAnimation").then(m => ({ default: m.MileageDemoAnimation })));
+const BankingDemoAnimation = lazy(() => import("./BankingDemoAnimation").then(m => ({ default: m.BankingDemoAnimation })));
+const GamificationDemoAnimation = lazy(() => import("./GamificationDemoAnimation").then(m => ({ default: m.GamificationDemoAnimation })));
+const ContractsDemoAnimation = lazy(() => import("./ContractsDemoAnimation").then(m => ({ default: m.ContractsDemoAnimation })));
+const FIREDemoAnimation = lazy(() => import("./FIREDemoAnimation").then(m => ({ default: m.FIREDemoAnimation })));
+const EducationDemoAnimation = lazy(() => import("./EducationDemoAnimation").then(m => ({ default: m.EducationDemoAnimation })));
+const TaxOptimizerDemoAnimation = lazy(() => import("./TaxOptimizerDemoAnimation").then(m => ({ default: m.TaxOptimizerDemoAnimation })));
+const VoiceAssistantDemoAnimation = lazy(() => import("./VoiceAssistantDemoAnimation").then(m => ({ default: m.VoiceAssistantDemoAnimation })));
+const DebtManagerDemoAnimation = lazy(() => import("./DebtManagerDemoAnimation").then(m => ({ default: m.DebtManagerDemoAnimation })));
+const SubscriptionsDemoAnimation = lazy(() => import("./SubscriptionsDemoAnimation").then(m => ({ default: m.SubscriptionsDemoAnimation })));
+const JournalDemoAnimation = lazy(() => import("./JournalDemoAnimation").then(m => ({ default: m.JournalDemoAnimation })));
+const HabitsDemoAnimation = lazy(() => import("./HabitsDemoAnimation").then(m => ({ default: m.HabitsDemoAnimation })));
 
 // Animation durations for each demo (in ms) - time needed for full animation cycle
 const ANIMATION_DURATIONS: Record<string, number> = {
@@ -160,8 +163,15 @@ const getDemos = (language: string) => [
   },
 ];
 
+const DemoFallback = () => (
+  <div className="w-full h-[300px] rounded-2xl bg-slate-100 animate-pulse flex items-center justify-center">
+    <div className="w-8 h-8 border-2 border-slate-300 border-t-cyan-500 rounded-full animate-spin" />
+  </div>
+);
+
 export function FeatureDemosCarousel() {
   const { language } = useLanguage();
+  const isVisible = usePageVisibility();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -174,9 +184,9 @@ export function FeatureDemosCarousel() {
     return ANIMATION_DURATIONS[currentDemo.id] || 10000;
   }, [currentIndex, demos]);
 
-  // Auto-rotation based on each animation's actual duration
+  // Auto-rotation based on each animation's actual duration - pauses when tab hidden
   useEffect(() => {
-    if (!autoPlay) return;
+    if (!autoPlay || !isVisible) return;
     
     // Clear any existing timer
     if (timerRef.current) {
@@ -194,7 +204,7 @@ export function FeatureDemosCarousel() {
         clearTimeout(timerRef.current);
       }
     };
-  }, [autoPlay, currentIndex, demos.length, getCurrentDuration]);
+  }, [autoPlay, currentIndex, demos.length, getCurrentDuration, isVisible]);
 
   const goTo = (index: number) => {
     if (timerRef.current) {
@@ -260,7 +270,9 @@ export function FeatureDemosCarousel() {
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
           >
-            <CurrentDemo />
+            <Suspense fallback={<DemoFallback />}>
+              <CurrentDemo />
+            </Suspense>
           </motion.div>
         </AnimatePresence>
       </div>

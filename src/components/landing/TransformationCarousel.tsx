@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { usePageVisibility } from '@/hooks/usePageVisibility';
 
 // Currency rotation data for the special slide
 const getCurrencyVariations = (language: string) => [
@@ -146,6 +147,7 @@ const AnimatedCurrencyText = ({ language }: { language: string }) => {
 
 export const TransformationCarousel = () => {
   const { language } = useLanguage();
+  const isVisible = usePageVisibility();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const journeySlides = getJourneySlides(language);
@@ -158,11 +160,12 @@ export const TransformationCarousel = () => {
     setCurrentIndex((prev) => (prev - 1 + journeySlides.length) % journeySlides.length);
   }, [journeySlides.length]);
 
-  // Auto-rotation - 6s optimal for ~15 words per slide
+  // Auto-rotation - pauses when tab hidden
   useEffect(() => {
+    if (!isVisible) return;
     const interval = setInterval(nextSlide, 6000);
     return () => clearInterval(interval);
-  }, [nextSlide]);
+  }, [nextSlide, isVisible]);
 
   const currentSlide = journeySlides[currentIndex];
 

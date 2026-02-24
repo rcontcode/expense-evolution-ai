@@ -30,8 +30,9 @@ interface FloatingCurrency {
 // Memoized currency item to prevent re-renders
 const CurrencyItem = memo(({ currency }: { currency: FloatingCurrency }) => (
   <div
-    className={`absolute font-bold select-none ${currency.color.text} animate-[float_6s_ease-in-out_infinite] will-change-transform`}
+    className={`absolute font-bold select-none ${currency.color.text} animate-[float_6s_ease-in-out_infinite]`}
     style={{
+      willChange: 'transform',
       fontSize: currency.size,
       left: currency.left,
       top: currency.top,
@@ -50,7 +51,7 @@ CurrencyItem.displayName = 'CurrencyItem';
 export const FloatingStars = memo(() => {
   // Reduced from 40 to 20 elements for better performance
   const currencies = useMemo<FloatingCurrency[]>(() => {
-    return Array.from({ length: 20 }, (_, i) => ({
+    return Array.from({ length: 12 }, (_, i) => ({
       id: i,
       symbol: currencySymbols[i % currencySymbols.length],
       size: Math.random() * 12 + 10,

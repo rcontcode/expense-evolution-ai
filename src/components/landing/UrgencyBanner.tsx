@@ -4,6 +4,7 @@ import { Clock, Users, Zap, Gift } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Progress } from '@/components/ui/progress';
+import { usePageVisibility } from '@/hooks/usePageVisibility';
 
 interface UrgencyProps {
   variant?: 'banner' | 'compact' | 'floating';
@@ -15,6 +16,7 @@ export const UrgencyBanner = memo(function UrgencyBanner({
   maxSpots = 100 
 }: UrgencyProps) {
   const { language } = useLanguage();
+  const isVisible = usePageVisibility();
   const [spotsUsed, setSpotsUsed] = useState(0);
   const [timeLeft, setTimeLeft] = useState({ hours: 47, minutes: 59, seconds: 59 });
   const [isLoading, setIsLoading] = useState(true);
@@ -80,9 +82,10 @@ export const UrgencyBanner = memo(function UrgencyBanner({
     };
 
     updateTimer();
+    if (!isVisible) return;
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isVisible]);
 
   const spotsRemaining = maxSpots - spotsUsed;
   const percentUsed = Math.min((spotsUsed / maxSpots) * 100, 100);

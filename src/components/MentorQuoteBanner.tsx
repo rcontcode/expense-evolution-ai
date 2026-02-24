@@ -8,6 +8,7 @@ import { useProfile } from '@/hooks/data/useProfile';
 import { useFinancialProfile } from '@/hooks/data/useFinancialProfile';
 import { useInvestmentGoals } from '@/hooks/data/useInvestmentGoals';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePageVisibility } from '@/hooks/usePageVisibility';
 
 interface MentorQuoteBannerProps {
   showTip?: boolean;
@@ -394,11 +395,14 @@ export function MentorQuoteBanner({
     }, 300);
   };
 
-  // Auto-refresh quote on mount and every 45 seconds
+  const isVisible = usePageVisibility();
+
+  // Auto-refresh quote on mount and every 45 seconds - pauses when tab hidden
   useEffect(() => {
+    if (!isVisible) return;
     const interval = setInterval(refreshQuote, 45000);
     return () => clearInterval(interval);
-  }, [showTip, preferredCategory]);
+  }, [showTip, preferredCategory, isVisible]);
 
   // Get personalized application
   const personalizedApplication = useMemo(() => {

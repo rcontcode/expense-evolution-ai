@@ -149,12 +149,16 @@ export const FeaturesShowcase = () => {
 
     let animationId: number;
     let scrollPosition = 0;
-    const speed = 0.5; // pixels per frame
+    let isHovered = false;
+    const speed = 0.5;
 
     const animate = () => {
-      scrollPosition += speed;
+      if (document.hidden || isHovered) {
+        animationId = requestAnimationFrame(animate);
+        return;
+      }
       
-      // Reset position when we've scrolled through one set of items
+      scrollPosition += speed;
       const singleSetWidth = scrollContainer.scrollWidth / 3;
       if (scrollPosition >= singleSetWidth) {
         scrollPosition = 0;
@@ -166,11 +170,8 @@ export const FeaturesShowcase = () => {
 
     animationId = requestAnimationFrame(animate);
 
-    // Pause on hover
-    const handleMouseEnter = () => cancelAnimationFrame(animationId);
-    const handleMouseLeave = () => {
-      animationId = requestAnimationFrame(animate);
-    };
+    const handleMouseEnter = () => { isHovered = true; };
+    const handleMouseLeave = () => { isHovered = false; };
 
     scrollContainer.addEventListener('mouseenter', handleMouseEnter);
     scrollContainer.addEventListener('mouseleave', handleMouseLeave);
