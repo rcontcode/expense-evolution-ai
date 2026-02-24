@@ -25,8 +25,9 @@
  * and ensure bilingual descriptions are provided.
  * ═══════════════════════════════════════════════════════════════
  */
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Book, Film, Tv, Headphones, Mic, Video, ExternalLink, Star, Filter, Search, BookOpen, GraduationCap } from 'lucide-react';
+import { useLibraryFavorites } from '@/hooks/useLibraryFavorites';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -349,21 +350,13 @@ const ResourceCard = ({
 
 export function FinancialLibrary() {
   const { language: appLanguage } = useLanguage();
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const { favorites, toggleFavorite: toggleFav, loading: favLoading } = useLibraryFavorites();
   const [languageFilter, setLanguageFilter] = useState<'all' | 'es' | 'en'>('all');
   const [activeTab, setActiveTab] = useState('books');
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const saved = localStorage.getItem('financial-education-favorites');
-    if (saved) setFavorites(JSON.parse(saved));
-  }, []);
-
-  const toggleFavorite = (resource: Resource) => {
-    const key = getResourceKey(resource);
-    const newFavorites = favorites.includes(key) ? favorites.filter(f => f !== key) : [...favorites, key];
-    setFavorites(newFavorites);
-    localStorage.setItem('financial-education-favorites', JSON.stringify(newFavorites));
+  const handleToggleFavorite = (resource: Resource) => {
+    toggleFav(getResourceKey(resource));
   };
 
   const filterResources = (resources: Resource[]) => {
@@ -403,7 +396,7 @@ export function FinancialLibrary() {
             key={index} 
             resource={resource} 
             isFavorite={favorites.includes(getResourceKey(resource))}
-            onToggleFavorite={toggleFavorite}
+            onToggleFavorite={handleToggleFavorite}
             language={appLanguage}
           />
         ))}
@@ -503,7 +496,7 @@ export function FinancialLibrary() {
               ) : (
                 <div className="grid gap-2">
                   {filteredFavorites.map((resource, index) => (
-                    <ResourceCard key={index} resource={resource} isFavorite={true} onToggleFavorite={toggleFavorite} language={appLanguage} />
+                    <ResourceCard key={index} resource={resource} isFavorite={true} onToggleFavorite={handleToggleFavorite} language={appLanguage} />
                   ))}
                 </div>
               )}
