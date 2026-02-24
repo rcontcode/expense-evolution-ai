@@ -80,7 +80,7 @@ export function useSubscription() {
   });
 
   // Create checkout session
-  const createCheckout = useCallback(async (planType: 'premium' | 'pro', billingPeriod: BillingPeriod) => {
+  const createCheckout = useCallback(async (planType: 'premium' | 'pro' | 'bundle', billingPeriod: BillingPeriod) => {
     if (!session?.access_token) {
       toast.error('Debes iniciar sesión para suscribirte');
       return null;
