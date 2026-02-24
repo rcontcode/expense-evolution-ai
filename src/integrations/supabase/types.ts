@@ -1494,6 +1494,39 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_flags: {
+        Row: {
+          category: string
+          description: string | null
+          enabled: boolean
+          flag_key: string
+          id: string
+          label: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category?: string
+          description?: string | null
+          enabled?: boolean
+          flag_key: string
+          id?: string
+          label?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          description?: string | null
+          enabled?: boolean
+          flag_key?: string
+          id?: string
+          label?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       feature_usage_logs: {
         Row: {
           action_type: string
@@ -1602,6 +1635,36 @@ export type Database = {
           updated_at?: string
           url?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      financial_focus_sessions: {
+        Row: {
+          completed: boolean
+          created_at: string
+          duration_minutes: number
+          id: string
+          session_type: string
+          user_id: string
+          xp_awarded: number
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          duration_minutes: number
+          id?: string
+          session_type: string
+          user_id: string
+          xp_awarded?: number
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          session_type?: string
+          user_id?: string
+          xp_awarded?: number
         }
         Relationships: []
       }
@@ -1741,6 +1804,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      financial_worry_entries: {
+        Row: {
+          content: string
+          converted_to_journal: boolean
+          created_at: string
+          id: string
+          released: boolean
+          user_id: string
+          worry_category: string
+        }
+        Insert: {
+          content: string
+          converted_to_journal?: boolean
+          created_at?: string
+          id?: string
+          released?: boolean
+          user_id: string
+          worry_category?: string
+        }
+        Update: {
+          content?: string
+          converted_to_journal?: boolean
+          created_at?: string
+          id?: string
+          released?: boolean
+          user_id?: string
+          worry_category?: string
+        }
+        Relationships: []
       }
       fiscal_entities: {
         Row: {
@@ -3652,6 +3745,7 @@ export type Database = {
           billing_period: Database["public"]["Enums"]["billing_period"] | null
           created_at: string
           expires_at: string | null
+          has_bundle: boolean
           id: string
           is_active: boolean
           plan_type: Database["public"]["Enums"]["plan_type"]
@@ -3665,6 +3759,7 @@ export type Database = {
           billing_period?: Database["public"]["Enums"]["billing_period"] | null
           created_at?: string
           expires_at?: string | null
+          has_bundle?: boolean
           id?: string
           is_active?: boolean
           plan_type?: Database["public"]["Enums"]["plan_type"]
@@ -3678,6 +3773,7 @@ export type Database = {
           billing_period?: Database["public"]["Enums"]["billing_period"] | null
           created_at?: string
           expires_at?: string | null
+          has_bundle?: boolean
           id?: string
           is_active?: boolean
           plan_type?: Database["public"]["Enums"]["plan_type"]
