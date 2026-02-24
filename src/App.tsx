@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -184,12 +184,17 @@ function RouteRenderHeartbeat() {
  * Runs a lightweight check every 600ms. If the browser URL differs from the last
  * rendered React Router path for 2 consecutive checks (~1.2s), it forces a reload.
  */
+/**
+ * Global guard: monitors for URL vs render desync.
+ * Instead of forcing a hard reload (which causes ugly 7s delays),
+ * it nudges React Router to re-navigate to the current browser URL.
+ */
 function RouteSyncGuard() {
   const location = useLocation();
+  const navigate = useNavigate();
   const mismatchCountRef = useRef(0);
 
   useEffect(() => {
-    // Reset counter on every real render (location change triggers this)
     mismatchCountRef.current = 0;
   }, [location.pathname]);
 
@@ -200,22 +205,21 @@ function RouteSyncGuard() {
 
       if (renderedPath && browserPath !== renderedPath) {
         mismatchCountRef.current += 1;
-        // Only auto-repair after 4 consecutive mismatches (~4s) to avoid
-        // false positives with lazy-loaded routes that take time to render
-        if (mismatchCountRef.current >= 4) {
+        if (mismatchCountRef.current >= 3) {
           console.warn(
-            `[RouteSyncGuard] Persistent desync: browser=${browserPath}, rendered=${renderedPath}. Auto-repairing.`
+            `[RouteSyncGuard] Soft resync: browser=${browserPath}, rendered=${renderedPath}`
           );
           mismatchCountRef.current = 0;
-          window.location.replace(browserPath);
+          // Soft resync: tell React Router to re-navigate without a hard reload
+          navigate(browserPath, { replace: true });
         }
       } else {
         mismatchCountRef.current = 0;
       }
-    }, 1000);
+    }, 800);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [navigate]);
 
   return null;
 }
