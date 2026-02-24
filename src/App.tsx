@@ -1,4 +1,4 @@
-import { lazy, Suspense, Component, type ReactNode, ComponentType, useEffect, useRef, useCallback } from "react";
+import { lazy, Suspense, Component, type ReactNode, ComponentType, useEffect, useRef } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -150,10 +150,11 @@ class LazyErrorBoundary extends Component<
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Reduce unnecessary refetches
-      staleTime: 1000 * 60, // 1 minute
-      gcTime: 1000 * 60 * 5, // 5 minutes (formerly cacheTime)
+      // Aggressive caching: data stays fresh longer → fewer refetches on navigation
+      staleTime: 1000 * 60 * 5, // 5 minutes (was 1 min)
+      gcTime: 1000 * 60 * 15, // 15 minutes (was 5 min)
       refetchOnWindowFocus: false,
+      refetchOnMount: false, // Don't refetch if data is fresh
       retry: 1,
     },
   },
@@ -211,54 +212,36 @@ function RouteRenderHeartbeat() {
  * - Sin polling continuo (solo eventos + cambios de ruta)
  * - Cooldown para evitar loops
  */
+/**
+ * Lightweight guard: only listens to popstate (back/forward button).
+ * Standard SPA navigation via React Router doesn't need guarding.
+ * This eliminates per-render timeouts and event spam that added latency.
+ */
 function RouteSyncGuard() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const isRepairingRef = useRef(false);
-  const lastRepairAtRef = useRef(0);
+  const lastRepairRef = useRef(0);
 
-  const runDesyncCheck = useCallback((reason: "render" | "event") => {
-    const browserPath = getBrowserRoutePath();
-    const renderedPath = normalizePath(window.__APP_RENDERED_PATH__ ?? location.pathname);
-    const now = Date.now();
-
-    if (browserPath === renderedPath) return;
-    if (isRepairingRef.current || now - lastRepairAtRef.current < 2000) return;
-
-    isRepairingRef.current = true;
-    lastRepairAtRef.current = now;
-
-    console.warn(`[RouteSyncGuard] Resync (${reason}): browser=${browserPath}, rendered=${renderedPath}`);
-
-    navigate(browserPath, { replace: true });
-
-    window.setTimeout(() => {
-      isRepairingRef.current = false;
-    }, 250);
-  }, [location.pathname, navigate]);
-
-  // Chequea tras cada render real de ruta (ventana breve por lazy mount)
   useEffect(() => {
-    const id = window.setTimeout(() => runDesyncCheck("render"), 120);
-    return () => window.clearTimeout(id);
-  }, [location.pathname, runDesyncCheck]);
+    const handlePopstate = () => {
+      const browserPath = getBrowserRoutePath();
+      const renderedPath = normalizePath(window.__APP_RENDERED_PATH__ ?? "/");
+      const now = Date.now();
 
-  // Chequea también en eventos del navegador que pueden mover la URL
-  useEffect(() => {
-    const handleRouteEvent = () => {
-      window.setTimeout(() => runDesyncCheck("event"), 80);
+      if (browserPath === renderedPath) return;
+      if (now - lastRepairRef.current < 3000) return;
+
+      lastRepairRef.current = now;
+      // Small delay for lazy-loaded routes to mount
+      window.setTimeout(() => {
+        if (getBrowserRoutePath() !== normalizePath(window.__APP_RENDERED_PATH__ ?? "/")) {
+          navigate(getBrowserRoutePath(), { replace: true });
+        }
+      }, 200);
     };
 
-    window.addEventListener("popstate", handleRouteEvent);
-    window.addEventListener("hashchange", handleRouteEvent);
-    window.addEventListener("pageshow", handleRouteEvent);
-
-    return () => {
-      window.removeEventListener("popstate", handleRouteEvent);
-      window.removeEventListener("hashchange", handleRouteEvent);
-      window.removeEventListener("pageshow", handleRouteEvent);
-    };
-  }, [runDesyncCheck]);
+    window.addEventListener("popstate", handlePopstate);
+    return () => window.removeEventListener("popstate", handlePopstate);
+  }, [navigate]);
 
   return null;
 }
