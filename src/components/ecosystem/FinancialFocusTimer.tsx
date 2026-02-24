@@ -39,7 +39,7 @@ export function FinancialFocusTimer() {
 
     if (user?.id) {
       try {
-        await (supabase as any)
+        await supabase
           .from('financial_focus_sessions')
           .insert({
             user_id: user.id,
