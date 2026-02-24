@@ -228,24 +228,42 @@ export const Layout = ({ children }: LayoutProps) => {
   const MOBILE_NAV_ITEMS = getMobileNavItems(language);
   const { data: unreadCount = 0 } = useUnreadNotifications();
   const sidebarNavRef = useRef<HTMLElement>(null);
-  
-  // Persist sidebar scroll position across route changes
+  const SIDEBAR_SCROLL_KEY = '__sidebar_scroll__';
+
+  // Persist sidebar scroll while user navigates between pages
   useEffect(() => {
     const nav = sidebarNavRef.current;
-    if (!nav) return;
-    
-    const saved = sessionStorage.getItem('__sidebar_scroll__');
-    if (saved) {
-      nav.scrollTop = Number(saved);
-    }
-    
+    if (!nav || isMobile) return;
+
     const handleScroll = () => {
-      sessionStorage.setItem('__sidebar_scroll__', String(nav.scrollTop));
+      sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(nav.scrollTop));
     };
-    
+
     nav.addEventListener('scroll', handleScroll, { passive: true });
     return () => nav.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isMobile]);
+
+  // Re-apply scroll position after route/content updates
+  useEffect(() => {
+    const nav = sidebarNavRef.current;
+    if (!nav || isMobile) return;
+
+    const saved = Number(sessionStorage.getItem(SIDEBAR_SCROLL_KEY) ?? '0');
+    if (!Number.isFinite(saved) || saved <= 0) return;
+
+    let raf2 = 0;
+    const raf1 = window.requestAnimationFrame(() => {
+      nav.scrollTop = saved;
+      raf2 = window.requestAnimationFrame(() => {
+        nav.scrollTop = saved;
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(raf1);
+      if (raf2) window.cancelAnimationFrame(raf2);
+    };
+  }, [location.pathname, collapsed, isMobile]);
   
   // Global reminders - works even when chat is closed
   useGlobalReminders();
@@ -739,7 +757,13 @@ export const Layout = ({ children }: LayoutProps) => {
                     
                     const button = (
                       <button
-                        onClick={() => navigate(item.path)}
+                        onClick={() => {
+                          const nav = sidebarNavRef.current;
+                          if (nav) {
+                            sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(nav.scrollTop));
+                          }
+                          navigate(item.path);
+                        }}
                         onMouseEnter={() => preloadRoute(item.path)}
                         onFocus={() => preloadRoute(item.path)}
                         className={cn(

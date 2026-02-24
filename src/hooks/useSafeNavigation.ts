@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 declare global {
@@ -16,18 +16,28 @@ function normalizePath(path: string) {
 /**
  * Navigation hook with Settings-exit safeguard.
  *
- * React Router v7 uses startTransition internally for all navigations.
- * When leaving a heavy page like Settings (with multiple Suspense boundaries),
- * the transition keeps the old page visible indefinitely.
- *
- * Fix: when leaving /settings, use a controlled page navigation instead of
- * SPA navigate() to guarantee immediate unmount.
+ * Strategy:
+ * - Keep SPA navigation as the default (no full reloads).
+ * - When leaving /settings, emit a pre-exit event so Settings can shed heavy UI.
+ * - Run multiple sync checks to recover URL/UI desync without hard refresh.
  */
 export function useSafeNavigation() {
   const navigate = useNavigate();
-  const pendingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingChecksRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const navTokenRef = useRef(0);
+
+  const clearPendingChecks = useCallback(() => {
+    pendingChecksRef.current.forEach((timer) => clearTimeout(timer));
+    pendingChecksRef.current = [];
+  }, []);
+
+  const queueSyncCheck = useCallback((delay: number, token: number) => {
+    const timer = setTimeout(() => {
+      if (token !== navTokenRef.current) return;
+      window.dispatchEvent(new Event("__route_sync_check__"));
+    }, delay);
+    pendingChecksRef.current.push(timer);
+  }, []);
 
   const safeNavigate = useCallback((path: string) => {
     const normalized = normalizePath(path);
@@ -36,43 +46,26 @@ export function useSafeNavigation() {
     // Skip navigation to same route
     if (normalized === currentBrowser) return;
 
-    // Cancel timers from previous rapid navigations
-    if (pendingTimerRef.current) {
-      clearTimeout(pendingTimerRef.current);
-      pendingTimerRef.current = null;
-    }
-    if (fallbackTimerRef.current) {
-      clearTimeout(fallbackTimerRef.current);
-      fallbackTimerRef.current = null;
-    }
+    clearPendingChecks();
 
     // New navigation token to invalidate stale checks
     navTokenRef.current += 1;
     const navToken = navTokenRef.current;
 
+    // Let Settings drop heavy content before transition starts
+    if (currentBrowser === "/settings" && normalized !== "/settings") {
+      window.dispatchEvent(new CustomEvent("__settings_exit__", { detail: { to: normalized } }));
+    }
+
     navigate(path);
 
-    // Ask RouteSyncGuard for a soft verification first
-    pendingTimerRef.current = setTimeout(() => {
-      pendingTimerRef.current = null;
-      if (navToken !== navTokenRef.current) return;
-      window.dispatchEvent(new Event("__route_sync_check__"));
-    }, 350);
+    // Multi-stage sync verification (no hard reload fallback)
+    [250, 700, 1400].forEach((delay) => queueSyncCheck(delay, navToken));
+  }, [clearPendingChecks, navigate, queueSyncCheck]);
 
-    // Last-resort fallback ONLY when leaving settings and still visually desynced
-    if (currentBrowser === "/settings" && normalized !== "/settings") {
-      fallbackTimerRef.current = setTimeout(() => {
-        fallbackTimerRef.current = null;
-        if (navToken !== navTokenRef.current) return;
-
-        const browserPath = normalizePath(window.location.pathname || "/");
-        const renderedPath = normalizePath(window.__APP_RENDERED_PATH__ ?? "/");
-        if (browserPath === normalized && renderedPath !== normalized) {
-          window.location.assign(path);
-        }
-      }, 1200);
-    }
-  }, [navigate]);
+  useEffect(() => {
+    return () => clearPendingChecks();
+  }, [clearPendingChecks]);
 
   return safeNavigate;
 }
@@ -84,3 +77,4 @@ export function useSafeNavigation() {
 export function hardNavigate(path: string) {
   window.location.assign(path);
 }
+
