@@ -3474,6 +3474,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_library_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          resource_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          resource_key: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          resource_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_life_profile: {
         Row: {
           anniversary_date: string | null
