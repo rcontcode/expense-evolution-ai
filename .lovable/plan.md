@@ -1,75 +1,74 @@
 
-Objetivo inmediato: eliminar el bloqueo al salir de Configuración con una solución de “escape garantizado” (sin depender de que el router interno esté sano), y luego estabilizar las causas que están dejando la UI “pegada”.
+Objetivo: corregir la causa raíz del “quedarse pegado en Configuración” sin depender de recargas forzadas feas, y dejar la navegación estable incluso cuando el usuario entra y sale inmediatamente.
 
-Diagnóstico confirmado (no suposición):
-1) Se reproduce el fallo: al hacer click en “volver” o navegar desde sidebar, la URL cambia a `/dashboard`, pero el contenido visible sigue siendo `Settings`.
-2) Esto indica desincronización entre URL y render del router (el navegador sí cambia ruta, la UI no conmuta pantalla).
-3) Hay además ruido/performance secundarios:
-   - Banner de cookies fijo superpuesto en zonas de interacción.
-   - Warning React de `Badge` sin `forwardRef` (genera trabajo extra en render dev y ensucia consola).
+Contexto confirmado durante diagnóstico:
+- Se reprodujo exactamente el bug: desde `/settings`, esperando unos segundos sin interacción, al hacer click en sidebar:
+  - la URL cambia (ej. `/dashboard`),
+  - pero la vista sigue mostrando Settings.
+- También se comprobó que, tras interactuar dentro de Settings (por ejemplo cambiar tab), la navegación vuelve a funcionar.
+- Esto confirma un problema de desincronización “URL vs ruta renderizada”, no un simple bloqueo de click.
+- El fallback actual en `useSafeNavigation` valida solo `window.location.pathname`; eso no detecta el caso donde la URL sí cambió pero React Router no re-renderizó. Por eso a veces se queda pegado y otras veces termina en recarga dura.
 
-Qué voy a implementar (orden estricto, enfoque “que funcione sí o sí”):
+Plan de corrección (raíz, no parche superficial):
 
-Fase 1 — Salida forzada confiable (hotfix principal)
-- Crear un helper/hook de navegación segura (por ejemplo `useSafeNavigation`) que:
-  1. Intente navegación SPA (`navigate(path)`).
-  2. Verifique en 120–250ms si la pantalla siguió “atascada” (URL y/o ruta renderizada no alineadas).
-  3. Si detecta desincronización, haga fallback duro con `window.location.assign(path)` para forzar recarga en la ruta destino.
-- Aplicar este helper en todos los puntos críticos de salida:
-  - `src/pages/Settings.tsx` (botón “Salir de Configuración”).
-  - `src/components/PageHeader.tsx` (botón volver + home en breadcrumb).
-  - `src/components/Layout.tsx` (items de sidebar y navegación móvil principal).
-- Resultado esperado: aunque el router se trabe, el usuario SIEMPRE sale de Configuración.
+1) Crear una señal confiable de “ruta realmente renderizada”
+- En `App.tsx`, agregar un componente interno de sincronización (ej. `RouteRenderHeartbeat`) que use `useLocation()` y actualice una marca global liviana (ej. `window.__APP_RENDERED_PATH__`) en cada render real de ruta.
+- Esta marca será la fuente de verdad del render React (no solo la URL del navegador).
 
-Fase 2 — Guard global de desincronización ruta/UI
-- En `src/App.tsx`, añadir un guard liviano que detecte inconsistencia persistente entre:
-  - `window.location.pathname` (navegador) y
-  - ruta activa de React Router (`useLocation().pathname`).
-- Si persiste más de un umbral corto (ej. 500ms), ejecutar recuperación segura:
-  - `window.location.replace(window.location.pathname + window.location.search + window.location.hash)`.
-- Esto cubre no solo Settings, sino cualquier pantalla donde ocurra el mismo síntoma.
+2) Reescribir `useSafeNavigation` para validar render, no solo URL
+- Actualizar `src/hooks/useSafeNavigation.ts` para que:
+  - intente navegación SPA normal,
+  - espere una ventana corta (ej. 120ms + 300ms),
+  - valide que `__APP_RENDERED_PATH__ === targetPath`.
+- Si la URL cambió pero la ruta renderizada no cambió, disparar recuperación controlada (hard navigation una sola vez).
+- Mantener compatibilidad con BrowserRouter/HashRouter para evitar falsos positivos.
+- Resultado esperado: elimina el “URL cambió pero sigo en Settings”.
 
-Fase 3 — Quitar fricción visual que interfiere con interacción
-- `src/components/CookieConsent.tsx`:
-  - No mostrar el banner completo en rutas autenticadas críticas o convertirlo a modo compacto no intrusivo (chip/botón lateral) para no tapar navegación móvil/desktop.
-  - Mantener acceso a preferencias, pero sin overlay grande fijo.
-- Impacto: menos “sensación de app trabada” y menos zonas tapadas.
+3) Guard global anti-desincronización (autorreparación)
+- En `App.tsx`, además del heartbeat, agregar un guard global que compare periódicamente:
+  - ruta del navegador,
+  - ruta renderizada por React Router.
+- Si persiste mismatch más de un umbral corto (ej. 400–600ms), ejecutar recuperación automática.
+- Esto evita que el usuario quede atrapado en cualquier pantalla, no solo Settings.
 
-Fase 4 — Corrección de warning React que penaliza render
-- `src/components/ui/badge.tsx`:
-  - Convertir `Badge` a `React.forwardRef` (elemento `span`/`div`) para soportar refs cuando se use dentro de `asChild`/Slot en componentes de Radix.
-- Impacto: reduce warnings repetitivos y costo de validación en desarrollo, mejorando estabilidad percibida.
+4) Reducir la presión de montaje inicial de Settings (causa contribuyente)
+- En `src/pages/Settings.tsx`, diferir/montar bajo demanda secciones pesadas que hoy se montan todas al entrar.
+- Priorizar lazy mount de componentes pesados (voz/notificaciones avanzadas/sonidos), para que no compitan con el primer cambio de ruta inmediato.
+- Esto ataca el patrón reportado por el usuario: “si entro y salgo enseguida falla; si interactúo primero, luego funciona”.
 
-Archivos a tocar
-1) `src/hooks/useSafeNavigation.ts` (nuevo)
-2) `src/pages/Settings.tsx`
-3) `src/components/PageHeader.tsx`
-4) `src/components/Layout.tsx`
-5) `src/App.tsx`
-6) `src/components/CookieConsent.tsx`
-7) `src/components/ui/badge.tsx`
+5) Corregir churn de hooks de voz que puede degradar estabilidad
+- Ajustar `useGlobalReminders` y `useVoicePreferences` para evitar reinstalaciones/reinicializaciones innecesarias que generan ruido (`[Audio] Context initialized`) y trabajo extra.
+- Objetivo: una sola inicialización de audio por sesión/interacción real, no múltiples disparos indirectos.
 
-Criterios de aceptación (obligatorios)
-1) Desde `/settings`, al usar:
-   - botón “Salir de Configuración”,
-   - botón atrás del header,
-   - home breadcrumb,
-   - sidebar (Dashboard/Expenses/etc),
-   la pantalla debe cambiar de inmediato (no solo la URL).
-2) Prueba repetida 10 veces seguidas en mobile y desktop: 0 bloqueos.
-3) Si el router interno se desincroniza, el fallback duro debe recuperar la navegación automáticamente.
-4) Sin warning “Function components cannot be given refs” relacionado a `Badge`.
-5) Cookie banner no debe tapar controles de salida/navegación.
+Archivos a intervenir:
+- `src/App.tsx` (heartbeat + guard global de sincronización)
+- `src/hooks/useSafeNavigation.ts` (validación por ruta renderizada)
+- `src/pages/Settings.tsx` (mount diferido de secciones pesadas)
+- `src/hooks/utils/useGlobalReminders.ts` (estabilizar dependencias/intervalo)
+- `src/hooks/utils/useVoicePreferences.ts` (evitar reinicializaciones repetidas de audio)
 
-Riesgos y mitigación
-- Riesgo: fallback duro recarga página (pierde estado efímero no guardado).
-  - Mitigación: solo activar fallback si se detecta desincronización real (no siempre).
-- Riesgo: cambiar navegación en muchos puntos.
-  - Mitigación: centralizar en `useSafeNavigation` para mantener una sola lógica y evitar divergencias.
+Criterios de aceptación (obligatorios):
+1) Desde `/settings`, sin tocar nada dentro, esperar 3–10s y navegar a:
+   - dashboard,
+   - expenses,
+   - net-worth,
+   - cualquier otra sección
+   => la vista debe cambiar siempre, no solo la URL.
+2) Repetir 15–20 veces en desktop y mobile: 0 casos “URL cambia pero pantalla queda en Settings”.
+3) Debe desaparecer la necesidad frecuente de recarga dura “fea”.
+4) Si ocurre una desincronización excepcional, el guard debe auto-reparar en menos de 1 segundo.
+5) Disminuir claramente eventos repetidos de inicialización de audio en consola.
 
-Notas técnicas (para implementación)
-- El síntoma observado “URL cambia pero la vista no” se trata como condición de error de navegación.
-- La solución no depende de animaciones ni estética; prioriza flujo crítico usable.
-- Se mantiene SPA normalmente; la recarga completa es red de seguridad, no camino principal.
+Riesgos y mitigaciones:
+- Riesgo: fallback duro puede perder estado efímero.
+  - Mitigación: activarlo únicamente cuando se detecta mismatch real persistente.
+- Riesgo: tocar navegación global puede afectar otras rutas.
+  - Mitigación: centralizar toda lógica en `useSafeNavigation` + guard único en `App`, con pruebas E2E dirigidas.
 
-Tras aprobar este plan, ejecuto inmediatamente los cambios en ese orden y dejo verificación final de flujo end-to-end de salida desde Configuración.
+Validación final que voy a ejecutar al implementar:
+- Escenario exacto reportado por ti (entrar a Configuración, no hacer nada, salir de inmediato) en loop.
+- Prueba cruzada de salida por:
+  - sidebar,
+  - botón atrás del header,
+  - botón de salida en móvil.
+- Confirmar que ya no se “pega” y que la transición vuelve a ser natural (SPA), no recarga abrupta.
