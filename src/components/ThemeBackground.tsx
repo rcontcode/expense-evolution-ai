@@ -47,16 +47,13 @@ export const ThemeBackground = memo(() => {
     return () => cancelMount(mountId);
   }, [style]);
 
-  const isSettingsRoute = location.pathname.startsWith('/settings');
-  const isMobileViewport = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
-  const nav = typeof navigator !== 'undefined' ? (navigator as any) : null;
-  const isLowPowerDevice = !!nav && (
-    (typeof nav.deviceMemory === 'number' && nav.deviceMemory <= 6) ||
-    (typeof nav.hardwareConcurrency === 'number' && nav.hardwareConcurrency <= 6)
+  // Only render on public routes - eliminates all performance issues in authenticated app
+  const publicRoutes = ['/', '/quiz', '/auth', '/beta'];
+  const isPublicRoute = publicRoutes.some(route => 
+    location.pathname === route || location.pathname.startsWith('/auth') || location.pathname.startsWith('/quiz')
   );
 
-  // Safety guard: disable heavy decorative backgrounds in settings, mobile and low-power devices
-  if (animationSpeed === 'off' || phase === 'hidden' || isSettingsRoute || isMobileViewport || isLowPowerDevice) {
+  if (animationSpeed === 'off' || phase === 'hidden' || !isPublicRoute) {
     return null;
   }
 

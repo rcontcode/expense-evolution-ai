@@ -8,6 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
+import { usePageVisibility } from '@/hooks/usePageVisibility';
 
 interface Testimonial {
   name: string;
@@ -68,6 +69,7 @@ const getUseCases = (language: string): UseCase[] => [
 
 export function TestimonialsCarousel() {
   const { language } = useLanguage();
+  const isVisible = usePageVisibility();
   const [current, setCurrent] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -109,15 +111,15 @@ export function TestimonialsCarousel() {
   const hasRealTestimonials = realTestimonials && realTestimonials.length >= 3;
   const useCases = getUseCases(language);
 
-  // Auto-rotation
+  // Auto-rotation - pauses when tab hidden
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || !isVisible) return;
     const count = hasRealTestimonials ? realTestimonials.length : useCases.length;
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % count);
     }, 6000);
     return () => clearInterval(timer);
-  }, [isPaused, hasRealTestimonials, realTestimonials?.length, useCases.length]);
+  }, [isPaused, isVisible, hasRealTestimonials, realTestimonials?.length, useCases.length]);
 
   const itemCount = hasRealTestimonials ? realTestimonials!.length : useCases.length;
   const next = () => setCurrent((prev) => (prev + 1) % itemCount);
