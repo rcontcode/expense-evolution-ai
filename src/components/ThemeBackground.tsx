@@ -1,8 +1,10 @@
 import { memo, useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export const ThemeBackground = memo(() => {
   const { style, animationSpeed, animationIntensity } = useTheme();
+  const location = useLocation();
   const [phase, setPhase] = useState<'hidden' | 'mounting' | 'visible'>('hidden');
   const prevStyleRef = useRef(style);
 
@@ -45,8 +47,16 @@ export const ThemeBackground = memo(() => {
     return () => cancelMount(mountId);
   }, [style]);
 
-  // Early exit if animations are disabled or not ready yet
-  if (animationSpeed === 'off' || phase === 'hidden') {
+  const isSettingsRoute = location.pathname.startsWith('/settings');
+  const isMobileViewport = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+  const nav = typeof navigator !== 'undefined' ? (navigator as any) : null;
+  const isLowPowerDevice = !!nav && (
+    (typeof nav.deviceMemory === 'number' && nav.deviceMemory <= 6) ||
+    (typeof nav.hardwareConcurrency === 'number' && nav.hardwareConcurrency <= 6)
+  );
+
+  // Safety guard: disable heavy decorative backgrounds in settings, mobile and low-power devices
+  if (animationSpeed === 'off' || phase === 'hidden' || isSettingsRoute || isMobileViewport || isLowPowerDevice) {
     return null;
   }
 

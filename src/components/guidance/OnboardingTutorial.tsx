@@ -220,6 +220,22 @@ const STORAGE_KEY = 'onboarding-tutorial-completed';
 // Routes where tutorial should NOT show
 const PUBLIC_ROUTES = ['/', '/auth', '/onboarding', '/beta-welcome', '/beta-features', '/install'];
 
+function getTutorialCompleted(): boolean {
+  try {
+    return localStorage.getItem(STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function markTutorialCompleted(): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, 'true');
+  } catch (error) {
+    console.warn('Could not persist onboarding completion:', error);
+  }
+}
+
 export function OnboardingTutorial() {
   const { language, t } = useLanguage();
   const { user } = useAuth();
@@ -229,6 +245,7 @@ export function OnboardingTutorial() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [dismissedThisSession, setDismissedThisSession] = useState(false);
 
   const userName = profile?.full_name?.split(' ')[0] || t('user');
 
@@ -236,18 +253,18 @@ export function OnboardingTutorial() {
   const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname);
 
   useEffect(() => {
-    // Don't show on public routes or if user not authenticated
-    if (isPublicRoute || !user) {
+    // Don't show on public routes, dismissed session, or if user not authenticated
+    if (isPublicRoute || !user || dismissedThisSession) {
       setIsOpen(false);
       return;
     }
 
-    const completed = localStorage.getItem(STORAGE_KEY);
+    const completed = getTutorialCompleted();
     if (!completed) {
       const timer = setTimeout(() => setIsOpen(true), 1000);
       return () => clearTimeout(timer);
     }
-  }, [isPublicRoute, user]);
+  }, [isPublicRoute, user, dismissedThisSession]);
 
   const handleNext = () => {
     if (currentStep < TUTORIAL_STEPS.length - 1) {
@@ -262,18 +279,21 @@ export function OnboardingTutorial() {
   };
 
   const handleComplete = () => {
-    localStorage.setItem(STORAGE_KEY, 'true');
+    markTutorialCompleted();
+    setDismissedThisSession(true);
     setIsOpen(false);
   };
 
   const handleSkip = () => {
-    localStorage.setItem(STORAGE_KEY, 'true');
+    markTutorialCompleted();
+    setDismissedThisSession(true);
     setIsOpen(false);
   };
 
   const handleAction = (route?: string) => {
     if (route) {
-      localStorage.setItem(STORAGE_KEY, 'true');
+      markTutorialCompleted();
+      setDismissedThisSession(true);
       setIsOpen(false);
       navigate(route);
     }
@@ -370,5 +390,9 @@ export function OnboardingTutorial() {
 }
 
 export function resetOnboardingTutorial() {
-  localStorage.removeItem(STORAGE_KEY);
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (error) {
+    console.warn('Could not reset onboarding tutorial:', error);
+  }
 }
