@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
+import { useSafeNavigation } from '@/hooks/useSafeNavigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -84,7 +84,7 @@ function SettingsSection({
 }
 
 export default function Settings() {
-  const navigate = useNavigate();
+  const navigate = useSafeNavigation();
   const { t, language, setLanguage } = useLanguage();
   const { data: isAdmin } = useIsAdmin();
   const isMobile = useIsMobile();
