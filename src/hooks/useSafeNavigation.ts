@@ -26,6 +26,8 @@ function normalizePath(path: string) {
 export function useSafeNavigation() {
   const navigate = useNavigate();
   const pendingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navTokenRef = useRef(0);
 
   const safeNavigate = useCallback((path: string) => {
     const normalized = normalizePath(path);
@@ -34,26 +36,42 @@ export function useSafeNavigation() {
     // Skip navigation to same route
     if (normalized === currentBrowser) return;
 
-    // Settings has heavy Suspense children that block React Router v7's
-    // transition mechanism. Use controlled navigation to guarantee exit.
-    if (currentBrowser === "/settings" && normalized !== "/settings") {
-      window.location.assign(path);
-      return;
-    }
-
-    // Cancel any pending verification from a previous rapid navigation
+    // Cancel timers from previous rapid navigations
     if (pendingTimerRef.current) {
       clearTimeout(pendingTimerRef.current);
       pendingTimerRef.current = null;
     }
+    if (fallbackTimerRef.current) {
+      clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    }
+
+    // New navigation token to invalidate stale checks
+    navTokenRef.current += 1;
+    const navToken = navTokenRef.current;
 
     navigate(path);
 
-    // After a short buffer, ask RouteSyncGuard to verify render matched
+    // Ask RouteSyncGuard for a soft verification first
     pendingTimerRef.current = setTimeout(() => {
       pendingTimerRef.current = null;
+      if (navToken !== navTokenRef.current) return;
       window.dispatchEvent(new Event("__route_sync_check__"));
-    }, 600);
+    }, 350);
+
+    // Last-resort fallback ONLY when leaving settings and still visually desynced
+    if (currentBrowser === "/settings" && normalized !== "/settings") {
+      fallbackTimerRef.current = setTimeout(() => {
+        fallbackTimerRef.current = null;
+        if (navToken !== navTokenRef.current) return;
+
+        const browserPath = normalizePath(window.location.pathname || "/");
+        const renderedPath = normalizePath(window.__APP_RENDERED_PATH__ ?? "/");
+        if (browserPath === normalized && renderedPath !== normalized) {
+          window.location.assign(path);
+        }
+      }, 1200);
+    }
   }, [navigate]);
 
   return safeNavigate;
