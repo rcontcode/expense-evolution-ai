@@ -1,4 +1,4 @@
-import { lazy, Suspense, Component, type ReactNode, ComponentType, useEffect, useRef } from "react";
+import { lazy, Suspense, Component, type ReactNode, ComponentType, useEffect, useRef, useCallback } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -166,6 +166,32 @@ function MissionListenerInitializer() {
 }
 
 /**
+ * Normaliza paths para evitar falsos mismatches ("/a/" vs "/a").
+ */
+function normalizePath(path: string) {
+  if (!path) return "/";
+  if (path === "/") return "/";
+  return path.endsWith("/") ? path.slice(0, -1) : path;
+}
+
+/**
+ * Devuelve la ruta activa del navegador compatible con BrowserRouter y HashRouter.
+ * - BrowserRouter: pathname
+ * - HashRouter: hash con formato #/ruta
+ */
+function getBrowserRoutePath() {
+  if (typeof window === "undefined") return "/";
+
+  const { hash, pathname } = window.location;
+  if (hash.startsWith("#/")) {
+    const hashPath = hash.slice(1).split("?")[0] || "/";
+    return normalizePath(hashPath.startsWith("/") ? hashPath : `/${hashPath}`);
+  }
+
+  return normalizePath(pathname || "/");
+}
+
+/**
  * Heartbeat: writes the *actually rendered* React Router path to a global variable.
  * This is the source of truth for detecting URL-vs-render desynchronization.
  */
@@ -173,75 +199,66 @@ function RouteRenderHeartbeat() {
   const location = useLocation();
 
   useEffect(() => {
-    window.__APP_RENDERED_PATH__ = location.pathname;
+    window.__APP_RENDERED_PATH__ = normalizePath(location.pathname);
   }, [location.pathname]);
 
   return null;
 }
 
 /**
- * Global guard: repara desincronización real URL/UI de forma conservadora.
- * - Solo actúa si el mismatch persiste
- * - Máximo 1 intento por ruta cada 5s
- * - Sin recargas forzadas
+ * Guard conservador anti-desync URL/UI.
+ * - Compatible con BrowserRouter y HashRouter
+ * - Sin polling continuo (solo eventos + cambios de ruta)
+ * - Cooldown para evitar loops
  */
 function RouteSyncGuard() {
   const navigate = useNavigate();
-  const mismatchSinceRef = useRef<number | null>(null);
-  const lastRepairRef = useRef<{ path: string; at: number } | null>(null);
+  const location = useLocation();
+  const isRepairingRef = useRef(false);
+  const lastRepairAtRef = useRef(0);
 
+  const runDesyncCheck = useCallback((reason: "render" | "event") => {
+    const browserPath = getBrowserRoutePath();
+    const renderedPath = normalizePath(window.__APP_RENDERED_PATH__ ?? location.pathname);
+    const now = Date.now();
+
+    if (browserPath === renderedPath) return;
+    if (isRepairingRef.current || now - lastRepairAtRef.current < 2000) return;
+
+    isRepairingRef.current = true;
+    lastRepairAtRef.current = now;
+
+    console.warn(`[RouteSyncGuard] Resync (${reason}): browser=${browserPath}, rendered=${renderedPath}`);
+
+    navigate(browserPath, { replace: true });
+
+    window.setTimeout(() => {
+      isRepairingRef.current = false;
+    }, 250);
+  }, [location.pathname, navigate]);
+
+  // Chequea tras cada render real de ruta (ventana breve por lazy mount)
   useEffect(() => {
-    const tick = () => {
-      const browserPath = window.location.pathname;
-      const renderedPath = window.__APP_RENDERED_PATH__;
+    const id = window.setTimeout(() => runDesyncCheck("render"), 120);
+    return () => window.clearTimeout(id);
+  }, [location.pathname, runDesyncCheck]);
 
-      if (!renderedPath || browserPath === renderedPath) {
-        mismatchSinceRef.current = null;
-        return;
-      }
-
-      const now = Date.now();
-
-      if (mismatchSinceRef.current === null) {
-        mismatchSinceRef.current = now;
-        return;
-      }
-
-      // Evita falsos positivos por renders perezosos/carga inicial
-      if (now - mismatchSinceRef.current < 900) {
-        return;
-      }
-
-      const lastRepair = lastRepairRef.current;
-      const inCooldown =
-        !!lastRepair &&
-        lastRepair.path === browserPath &&
-        now - lastRepair.at < 5000;
-
-      if (inCooldown) {
-        return;
-      }
-
-      lastRepairRef.current = { path: browserPath, at: now };
-
-      console.warn(
-        `[RouteSyncGuard] Resync: browser=${browserPath}, rendered=${renderedPath}`
-      );
-
-      // 1) Intenta despertar listeners del router
-      window.dispatchEvent(new PopStateEvent("popstate"));
-
-      // 2) Si sigue desincronizado, fuerza navigate interno (sin hard reload)
-      window.setTimeout(() => {
-        if (window.__APP_RENDERED_PATH__ !== window.location.pathname) {
-          navigate(window.location.pathname, { replace: true });
-        }
-      }, 120);
+  // Chequea también en eventos del navegador que pueden mover la URL
+  useEffect(() => {
+    const handleRouteEvent = () => {
+      window.setTimeout(() => runDesyncCheck("event"), 80);
     };
 
-    const intervalId = window.setInterval(tick, 700);
-    return () => window.clearInterval(intervalId);
-  }, [navigate]);
+    window.addEventListener("popstate", handleRouteEvent);
+    window.addEventListener("hashchange", handleRouteEvent);
+    window.addEventListener("pageshow", handleRouteEvent);
+
+    return () => {
+      window.removeEventListener("popstate", handleRouteEvent);
+      window.removeEventListener("hashchange", handleRouteEvent);
+      window.removeEventListener("pageshow", handleRouteEvent);
+    };
+  }, [runDesyncCheck]);
 
   return null;
 }
