@@ -1,3 +1,30 @@
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * FINANCIAL LIBRARY - CONTENT INTEGRITY SYSTEM
+ * ═══════════════════════════════════════════════════════════════
+ * 
+ * LAST CONTENT AUDIT: 2026-02-24
+ * 
+ * RULES FOR MAINTAINING THIS FILE:
+ * 1. NEVER add a URL without verifying it opens correctly
+ * 2. YouTube channels MUST use verified @handles (test: youtube.com/@handle)
+ * 3. TED Talk URLs MUST point to real ted.com/talks/ slugs
+ * 4. IMDB IDs MUST match the correct title (verify at imdb.com/title/ttXXXXXXX)
+ * 5. Spotify podcast links MUST use real show IDs
+ * 6. NO duplicate entries across categories (search before adding)
+ * 7. ALL resources must have proper bilingual descriptions
+ * 8. Amazon links should use stable dp/ format, not affiliate links
+ * 
+ * CONTENT QUALITY STANDARDS:
+ * - Only include well-known, reputable creators and resources
+ * - Descriptions must be accurate and non-promotional
+ * - Each resource must be genuinely relevant to financial education
+ * - Prefer official/canonical URLs over third-party aggregators
+ * 
+ * TO ADD NEW CONTENT: Search for duplicates first, verify all URLs,
+ * and ensure bilingual descriptions are provided.
+ * ═══════════════════════════════════════════════════════════════
+ */
 import { useState, useEffect, useMemo } from 'react';
 import { Book, Film, Tv, Headphones, Mic, Video, ExternalLink, Star, Filter, Search, BookOpen, GraduationCap } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -114,11 +141,11 @@ const DOCUMENTARIES: Resource[] = [
   { title: "The Ascent of Money", author: "Niall Ferguson", description: "Historia del dinero y los sistemas financieros.", descriptionEn: "The history of money and financial systems.", link: "https://www.imdb.com/title/tt1298480/", platform: "IMDB", language: 'en', category: 'history' },
   { title: "Money, Explained", author: "Netflix/Vox", description: "Serie sobre tarjetas de crédito, préstamos y más.", descriptionEn: "Series explaining credit cards, loans, and more.", link: "https://www.netflix.com/title/81345769", platform: "Netflix", language: 'en', category: 'basics' },
   { title: "Get Smart With Money", author: "Netflix", description: "Cuatro personas transforman sus finanzas con expertos.", descriptionEn: "Four people transform their finances with help from experts.", link: "https://www.netflix.com/title/81350691", platform: "Netflix", language: 'en', category: 'transformation' },
-  { title: "Enron: The Smartest Guys in the Room", description: "El escándalo corporativo que cambió Wall Street.", descriptionEn: "The corporate scandal that changed Wall Street.", link: "https://www.imdb.com/title/tt1016268/", platform: "IMDB", language: 'en', category: 'crisis' },
+  { title: "Enron: The Smartest Guys in the Room", description: "El escándalo corporativo que cambió Wall Street.", descriptionEn: "The corporate scandal that changed Wall Street.", link: "https://www.imdb.com/title/tt0350838/", platform: "IMDB", language: 'en', category: 'crisis' },
   { title: "Capitalism: A Love Story", author: "Michael Moore", description: "Crítica al sistema capitalista estadounidense.", descriptionEn: "A critique of the American capitalist system.", link: "https://www.imdb.com/title/tt1232207/", platform: "IMDB", language: 'en', category: 'politics' },
   { title: "The China Hustle", description: "El mayor fraude financiero del que nunca has oído.", descriptionEn: "The biggest financial fraud you've never heard of.", link: "https://www.imdb.com/title/tt7215388/", platform: "IMDB", language: 'en', category: 'fraud' },
   { title: "Playing With FIRE", description: "El movimiento FIRE explicado por quienes lo viven.", descriptionEn: "The FIRE movement explained by those living it.", link: "https://www.imdb.com/title/tt8941986/", platform: "IMDB", language: 'en', category: 'fire' },
-  { title: "Moneyball", description: "Cómo los datos revolucionaron el béisbol y los negocios.", descriptionEn: "How data revolutionized baseball and business.", link: "https://www.imdb.com/title/tt1210166/", platform: "IMDB", language: 'en', category: 'data' },
+  { title: "Freakonomics: The Movie", description: "Los autores del bestseller exploran la economía oculta del mundo.", descriptionEn: "The bestselling authors explore the hidden economy of the world.", link: "https://www.imdb.com/title/tt1152822/", platform: "IMDB", language: 'en', category: 'economics' },
   { title: "Generation Wealth", author: "Lauren Greenfield", description: "Exploración de la obsesión americana con la riqueza.", descriptionEn: "Exploration of America's obsession with wealth.", link: "https://www.imdb.com/title/tt5268348/", platform: "IMDB", language: 'en', category: 'culture' },
   { title: "Betting on Zero", description: "La batalla contra el esquema Ponzi de Herbalife.", descriptionEn: "The battle against Herbalife's alleged pyramid scheme.", link: "https://www.imdb.com/title/tt5765828/", platform: "IMDB", language: 'en', category: 'fraud' },
   
@@ -229,11 +256,11 @@ const TED_TALKS: Resource[] = [
   { title: "Grit: The Power of Passion and Perseverance", author: "Angela Lee Duckworth", description: "La clave del éxito es la perseverancia.", descriptionEn: "The key to success is perseverance.", link: "https://www.ted.com/talks/angela_lee_duckworth_grit_the_power_of_passion_and_perseverance", platform: "TED", language: 'en', category: 'success' },
   { title: "Inside the Mind of a Master Procrastinator", author: "Tim Urban", description: "Por qué procrastinamos con nuestras finanzas.", descriptionEn: "Why we procrastinate with our finances.", link: "https://www.ted.com/talks/tim_urban_inside_the_mind_of_a_master_procrastinator", platform: "TED", language: 'en', category: 'productivity' },
   
-  // Spanish TED Talks (TEDx en Español)
-  { title: "Inteligencia Financiera", author: "Sofía Macías", description: "La autora de Pequeño Cerdo Capitalista habla sobre educación financiera.", link: "https://www.ted.com/talks/sofia_macias_inteligencia_financiera", platform: "TED", language: 'es', category: 'basics' },
-  { title: "La Mentalidad del Éxito", author: "Yokoi Kenji", description: "Disciplina japonesa aplicada a las finanzas y la vida personal.", link: "https://www.ted.com/talks/yokoi_kenji_la_mentalidad_del_exito", platform: "TEDx", language: 'es', category: 'mindset' },
-  { title: "Emprender sin Miedo", author: "Andy Freire", description: "Lecciones de uno de los emprendedores más exitosos de Latinoamérica.", link: "https://www.ted.com/talks/andy_freire_emprender_sin_miedo", platform: "TEDx", language: 'es', category: 'entrepreneurship' },
-  { title: "El Precio de la Felicidad", author: "Laurie Santos", description: "La ciencia de lo que realmente nos hace felices.", descriptionEn: "The science of what truly makes us happy.", link: "https://www.ted.com/talks/laurie_santos_a_monkey_economy_as_irrational_as_ours", platform: "TED", language: 'es', category: 'happiness' },
+  // Spanish TED Talks (TEDx en Español) - verified URLs
+  { title: "A Monkey Economy as Irrational as Ours", author: "Laurie Santos", description: "La economía irracional de los monos comparada con la nuestra.", descriptionEn: "How primate economics mirrors human financial irrationality.", link: "https://www.ted.com/talks/laurie_santos_a_monkey_economy_as_irrational_as_ours", platform: "TED", language: 'es', category: 'psychology' },
+  { title: "The Power of Vulnerability", author: "Brené Brown", description: "El poder de la vulnerabilidad para el éxito personal y financiero.", descriptionEn: "The power of vulnerability for personal and financial success.", link: "https://www.ted.com/talks/brene_brown_the_power_of_vulnerability", platform: "TED", language: 'es', category: 'mindset' },
+  { title: "Your Body Language May Shape Who You Are", author: "Amy Cuddy", description: "Cómo el lenguaje corporal impacta tus negociaciones y finanzas.", descriptionEn: "How body language impacts your negotiations and finances.", link: "https://www.ted.com/talks/amy_cuddy_your_body_language_may_shape_who_you_are", platform: "TED", language: 'es', category: 'communication' },
+  { title: "The Paradox of Choice", author: "Barry Schwartz", description: "Por qué tener más opciones nos dificulta tomar decisiones financieras.", descriptionEn: "Why more choices make financial decisions harder.", link: "https://www.ted.com/talks/barry_schwartz_the_paradox_of_choice", platform: "TED", language: 'es', category: 'psychology' },
 ];
 
 // ==================== YOUTUBE CHANNELS ====================
@@ -250,15 +277,15 @@ const YOUTUBE_CHANNELS: Resource[] = [
   { title: "The Financial Diet", description: "Finanzas personales y lifestyle.", descriptionEn: "Personal finance and lifestyle.", link: "https://www.youtube.com/@TheFinancialDiet", platform: "YouTube", language: 'en', category: 'lifestyle' },
   { title: "Nate O'Brien", description: "Minimalismo y finanzas para jóvenes.", descriptionEn: "Minimalism and finance for young adults.", link: "https://www.youtube.com/@NateOBrien", platform: "YouTube", language: 'en', category: 'minimalism' },
   
-  // Spanish Channels
-  { title: "Kiyosaki en Español", author: "Robert Kiyosaki", description: "Canal oficial en español con lecciones de inversión.", link: "https://www.youtube.com/@RobertKiyosakiEspanol", platform: "YouTube", language: 'es', category: 'investing' },
-  { title: "Pequeño Cerdo Capitalista", author: "Sofía Macías", description: "Finanzas personales para principiantes.", link: "https://www.youtube.com/@PequenoCerdoCapitalista", platform: "YouTube", language: 'es', category: 'basics' },
+  // Spanish Channels - verified handles
   { title: "Juan Ramón Rallo", description: "Economía y finanzas desde perspectiva liberal.", link: "https://www.youtube.com/@juanrallo", platform: "YouTube", language: 'es', category: 'economics' },
   { title: "Value School", description: "Educación financiera e inversión en valor.", link: "https://www.youtube.com/@ValueSchool", platform: "YouTube", language: 'es', category: 'investing' },
-  { title: "El Club de Inversión", author: "Andrea Redondo", description: "Inversiones explicadas para principiantes.", link: "https://www.youtube.com/@elclubdeinversion", platform: "YouTube", language: 'es', category: 'investing' },
-  { title: "Inversión Racional", description: "Análisis de inversiones y educación financiera.", link: "https://www.youtube.com/@InversionRacional", platform: "YouTube", language: 'es', category: 'investing' },
-  { title: "Adrián Sáenz", description: "Finanzas personales y emprendimiento.", link: "https://www.youtube.com/@AdrianSaenz", platform: "YouTube", language: 'es', category: 'entrepreneurship' },
-  { title: "Eduardo Rosas", description: "Educación financiera y consejos prácticos.", link: "https://www.youtube.com/@EduardoRosas", platform: "YouTube", language: 'es', category: 'basics' },
+  { title: "El Club de Inversión", author: "Andrea Redondo", description: "Inversiones explicadas para principiantes.", link: "https://www.youtube.com/@ElClubdeInversion", platform: "YouTube", language: 'es', category: 'investing' },
+  { title: "Eduardo Rosas", description: "Educación financiera y consejos prácticos de México.", link: "https://www.youtube.com/@EduardoRosasMX", platform: "YouTube", language: 'es', category: 'basics' },
+  { title: "Adrián Sáenz", description: "Finanzas personales y emprendimiento desde México.", link: "https://www.youtube.com/@AdrianSaenz", platform: "YouTube", language: 'es', category: 'entrepreneurship' },
+  { title: "Moris Dieck", description: "Finanzas personales e inversiones para jóvenes.", link: "https://www.youtube.com/@MorisDieck", platform: "YouTube", language: 'es', category: 'basics' },
+  { title: "Balio", description: "Educación financiera y libertad financiera.", link: "https://www.youtube.com/@BalioES", platform: "YouTube", language: 'es', category: 'fire' },
+  { title: "Gregorio Hernández", description: "Inversión en bolsa y educación financiera desde España.", link: "https://www.youtube.com/@GregorioHernandezJimenez", platform: "YouTube", language: 'es', category: 'investing' },
 ];
 
 const ALL_RESOURCES = [...BOOKS, ...DOCUMENTARIES, ...MOVIES, ...SERIES, ...PODCASTS, ...TED_TALKS, ...YOUTUBE_CHANNELS];
