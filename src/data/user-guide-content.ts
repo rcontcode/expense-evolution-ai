@@ -183,88 +183,7 @@ export const guideSections: GuideSection[] = [
     ],
     color: 'border-yellow-500/30',
   },
-  {
-    id: 'phoenix-assistant',
-    emoji: '🤖',
-    title: { es: 'Asistente Phoenix', en: 'Phoenix Assistant' },
-    shortDesc: { es: 'Tu asistente financiero personal con IA', en: 'Your personal AI financial assistant' },
-    purpose: {
-      es: 'Phoenix es tu asistente financiero inteligente que conoce TODOS tus datos. Puedes hacerle preguntas en lenguaje natural sobre tus finanzas y te responde con información precisa basada en tus registros reales. Además, puede ejecutar acciones por ti: crear gastos, registrar pagos fijos, analizar tendencias. Disponible por texto y por voz con síntesis de alta calidad.',
-      en: 'Phoenix is your intelligent financial assistant that knows ALL your data. You can ask natural language questions about your finances and it responds with precise information based on your real records. Plus, it can execute actions for you: create expenses, record fixed payments, analyze trends. Available via text and voice with high-quality synthesis.'
-    },
-    steps: [
-      { es: 'Abre el Asistente Phoenix desde el botón flotante o la barra inferior', en: 'Open Phoenix Assistant from the floating button or bottom bar' },
-      { es: 'Escribe o dicta tu pregunta en lenguaje natural (ej: "¿Cuánto gasté en comida este mes?")', en: 'Type or dictate your question in natural language (e.g., "How much did I spend on food this month?")' },
-      { es: 'Phoenix consulta tus datos reales y te responde con cifras precisas', en: 'Phoenix queries your real data and responds with precise figures' },
-      { es: 'Pídele que ejecute acciones: "Registra un gasto de $50 en gasolina" o "Crea un pago fijo de internet por $60"', en: 'Ask it to execute actions: "Record a $50 gas expense" or "Create a fixed internet payment for $60"' },
-      { es: 'Usa el modo voz con Push-to-Talk para interacción manos libres', en: 'Use voice mode with Push-to-Talk for hands-free interaction' },
-      { es: 'Personaliza la voz de Phoenix eligiendo entre 20 voces premium (10 femeninas, 10 masculinas)', en: 'Customize Phoenix\'s voice choosing from 20 premium voices (10 female, 10 male)' },
-    ],
-    tips: [
-      { es: 'Pregúntale comparaciones: "¿Gasté más este mes que el anterior en transporte?"', en: 'Ask comparisons: "Did I spend more this month than last on transportation?"' },
-      { es: 'Úsalo para registrar gastos por voz mientras conduces o caminas', en: 'Use it to record expenses by voice while driving or walking' },
-      { es: 'Pídele análisis: "¿Cuáles son mis 3 categorías de mayor gasto?" o "¿Cuánto me debe el cliente X?"', en: 'Ask for analysis: "What are my top 3 spending categories?" or "How much does client X owe me?"' },
-      { es: 'Phoenix aprende de tu contexto — mientras más lo uses, mejores respuestas te da', en: 'Phoenix learns from your context — the more you use it, the better responses you get' },
-    ],
-    faq: [
-      {
-        question: { es: '¿Phoenix tiene acceso a mis datos bancarios?', en: 'Does Phoenix have access to my bank data?' },
-        answer: { es: 'Phoenix accede a todos los datos que tú has registrado en EvoFinz: gastos, ingresos, clientes, presupuestos, metas, etc. Todo se procesa de forma segura y privada.', en: 'Phoenix accesses all data you\'ve registered in EvoFinz: expenses, income, clients, budgets, goals, etc. Everything is processed securely and privately.' }
-      },
-      {
-        question: { es: '¿Puedo usar Phoenix por voz?', en: 'Can I use Phoenix by voice?' },
-        answer: { es: 'Sí, Phoenix incluye síntesis de voz de alta calidad (ElevenLabs Turbo v2.5) con 20 voces premium seleccionables. Usa Push-to-Talk para hablarle y escucha sus respuestas en voz alta. Hay fallback automático si el servicio premium no está disponible.', en: 'Yes, Phoenix includes high-quality voice synthesis (ElevenLabs Turbo v2.5) with 20 selectable premium voices. Use Push-to-Talk to speak to it and hear responses aloud. There\'s automatic fallback if the premium service is unavailable.' }
-      },
-      {
-        question: { es: '¿Qué acciones puede ejecutar Phoenix?', en: 'What actions can Phoenix execute?' },
-        answer: { es: 'Puede crear gastos, registrar ingresos, crear pagos fijos recurrentes, consultar balances, comparar períodos, analizar categorías de gasto, y más. Todo por comandos de texto o voz natural.', en: 'It can create expenses, record income, create recurring fixed payments, check balances, compare periods, analyze spending categories, and more. All through natural text or voice commands.' }
-      },
-    ],
-    connections: [
-      { es: 'Accede a datos de todas las secciones: Gastos, Ingresos, Clientes, Presupuesto, etc.', en: 'Accesses data from all sections: Expenses, Income, Clients, Budget, etc.' },
-      { es: 'Puede crear registros directamente en Gastos, Ingresos y Pagos Fijos', en: 'Can create records directly in Expenses, Income, and Fixed Payments' },
-      { es: 'Integrado con Captura Inteligente para registro por voz y texto natural', en: 'Integrated with Smart Capture for voice and natural text recording' },
-    ],
-    color: 'border-fuchsia-500/30',
-  },
-  {
-    id: 'smart-capture',
-    emoji: '⚡',
-    title: { es: 'Captura Inteligente', en: 'Smart Capture' },
-    shortDesc: { es: 'Registro financiero automatizado por texto, voz y foto', en: 'Automated financial recording via text, voice, and photo' },
-    purpose: {
-      es: 'El sistema de Captura Inteligente elimina la fricción del ingreso manual mediante cuatro métodos de entrada: texto libre con IA, foto de recibos con OCR, comandos de voz al asistente, y auto-detección de suscripciones. Escribe "pagué $50 de luz ayer" y la IA crea el gasto completo con categoría, fecha y proveedor. Fotografía una boleta de servicio y el sistema sugiere crear un pago fijo recurrente automáticamente.',
-      en: 'The Smart Capture system eliminates manual entry friction through four input methods: free text with AI, receipt photos with OCR, voice commands to the assistant, and auto-detection of subscriptions. Type "paid $50 for electricity yesterday" and AI creates the complete expense with category, date, and vendor. Photograph a service bill and the system suggests creating a recurring fixed payment automatically.'
-    },
-    steps: [
-      { es: 'Texto libre: Escribe en lenguaje natural (ej: "almuerzo $15 con cliente Juan")', en: 'Free text: Write in natural language (e.g., "lunch $15 with client John")' },
-      { es: 'La IA extrae monto, categoría, fecha, proveedor y cliente automáticamente', en: 'AI extracts amount, category, date, vendor, and client automatically' },
-      { es: 'Foto a Pago Fijo: Fotografía una boleta de servicio → se sugiere crear pago recurrente', en: 'Photo to Fixed Payment: Photograph a service bill → suggests creating recurring payment' },
-      { es: 'Voz: Usa Phoenix para dictar gastos mientras caminas o conduces', en: 'Voice: Use Phoenix to dictate expenses while walking or driving' },
-      { es: 'Auto-detección: El sistema analiza patrones en tus gastos y sugiere suscripciones recurrentes', en: 'Auto-detection: The system analyzes patterns in your expenses and suggests recurring subscriptions' },
-    ],
-    tips: [
-      { es: 'El texto libre entiende montos con y sin símbolo: "$50", "50 pesos", "50 USD"', en: 'Free text understands amounts with and without symbols: "$50", "50 pesos", "50 USD"' },
-      { es: 'Puedes incluir el cliente en el texto: "factura a Empresa ABC por $1000"', en: 'You can include the client in text: "invoice to Company ABC for $1000"' },
-      { es: 'Las fotos de boletas de servicios activan la sugerencia de pago fijo automáticamente', en: 'Service bill photos automatically trigger fixed payment suggestions' },
-    ],
-    faq: [
-      {
-        question: { es: '¿Qué tan precisa es la captura por texto?', en: 'How accurate is text capture?' },
-        answer: { es: 'La IA (Gemini 2.5 Flash) tiene una precisión superior al 90% en la extracción de datos. Siempre te muestra una previsualización para que confirmes antes de guardar.', en: 'The AI (Gemini 2.5 Flash) has over 90% accuracy in data extraction. It always shows a preview for you to confirm before saving.' }
-      },
-      {
-        question: { es: '¿Puede detectar suscripciones automáticamente?', en: 'Can it detect subscriptions automatically?' },
-        answer: { es: 'Sí, el algoritmo analiza patrones de gastos y extractos bancarios para identificar cobros recurrentes (Netflix, Spotify, seguros, etc.) y sugiere convertirlos en pagos fijos para mejor seguimiento.', en: 'Yes, the algorithm analyzes expense patterns and bank statements to identify recurring charges (Netflix, Spotify, insurance, etc.) and suggests converting them to fixed payments for better tracking.' }
-      },
-    ],
-    connections: [
-      { es: 'Envía datos capturados a Gastos, Ingresos y Pagos Fijos', en: 'Sends captured data to Expenses, Income, and Fixed Payments' },
-      { es: 'Integrado con Asistente Phoenix para captura por voz', en: 'Integrated with Phoenix Assistant for voice capture' },
-      { es: 'Las fotos se procesan via Bandeja del Caos para clasificación completa', en: 'Photos are processed via Chaos Inbox for full classification' },
-    ],
-    color: 'border-lime-500/30',
-  },
+  // Phoenix Assistant and Smart Capture sections removed — these features are disabled in stability-first mode
   {
     id: 'expenses',
     emoji: '🧾',
@@ -1001,15 +920,15 @@ export const guideSections: GuideSection[] = [
     title: { es: 'Configuración y Preferencias', en: 'Settings & Preferences' },
     shortDesc: { es: 'Personalización completa de tu experiencia', en: 'Complete customization of your experience' },
     purpose: {
-      es: 'Personaliza tu experiencia completa: idioma (español/inglés), tema visual (claro, oscuro, automático), notificaciones, exportación de datos en múltiples formatos, gestión de cuenta, preferencias de voz del asistente, y configuración de alertas. Incluye acceso al Manual de Usuario, Beta Guide y configuración del sistema de gamificación.',
-      en: 'Customize your complete experience: language (Spanish/English), visual theme (light, dark, auto), notifications, data export in multiple formats, account management, assistant voice preferences, and alert configuration. Includes access to User Manual, Beta Guide, and gamification system settings.'
+      es: 'Personaliza tu experiencia completa: idioma (español/inglés), tema visual (claro, oscuro, automático), notificaciones, exportación de datos en múltiples formatos, gestión de cuenta y configuración de alertas. Incluye acceso al Manual de Usuario y configuración del sistema de gamificación.',
+      en: 'Customize your complete experience: language (Spanish/English), visual theme (light, dark, auto), notifications, data export in multiple formats, account management, and alert configuration. Includes access to User Manual and gamification system settings.'
     },
     steps: [
       { es: 'Cambia entre español e inglés en tiempo real', en: 'Switch between Spanish and English in real-time' },
       { es: 'Selecciona tema visual: claro, oscuro o automático (según tu dispositivo)', en: 'Select visual theme: light, dark, or auto (based on your device)' },
       { es: 'Configura preferencias de notificaciones por tipo', en: 'Configure notification preferences by type' },
       { es: 'Exporta datos en Excel, CSV o PDF para tu contador o respaldo', en: 'Export data in Excel, CSV, or PDF for your accountant or backup' },
-      { es: 'Personaliza la voz de Phoenix desde el selector de voces premium', en: 'Customize Phoenix\'s voice from the premium voice selector' },
+      { es: 'Gestiona tu cuenta y datos personales', en: 'Manage your account and personal data' },
     ],
     tips: [
       { es: 'El tema oscuro ahorra batería en pantallas OLED y es más cómodo de noche', en: 'Dark theme saves battery on OLED screens and is more comfortable at night' },
@@ -1064,10 +983,7 @@ export const globalFAQ: GuideFAQ[] = [
     question: { es: '¿Cómo funciona la gamificación?', en: 'How does gamification work?' },
     answer: { es: 'Cada acción financiera (registrar gasto, crear cliente, importar extracto) te da XP. Subes de nivel, mantienes rachas diarias, desbloqueas logros y recibes celebraciones épicas. Es la motivación que necesitas para convertir la gestión financiera en un hábito diario.', en: 'Every financial action (recording expense, creating client, importing statement) gives you XP. You level up, maintain daily streaks, unlock achievements, and receive epic celebrations. It\'s the motivation you need to turn financial management into a daily habit.' }
   },
-  {
-    question: { es: '¿El asistente Phoenix entiende español?', en: 'Does Phoenix assistant understand Spanish?' },
-    answer: { es: 'Sí, Phoenix es completamente bilingüe (español/inglés). Entiende preguntas y comandos en ambos idiomas y responde en el idioma que estés usando en la app.', en: 'Yes, Phoenix is fully bilingual (Spanish/English). It understands questions and commands in both languages and responds in the language you\'re using in the app.' }
-  },
+  // Phoenix FAQ removed — feature disabled
   {
     question: { es: '¿Qué pasa si cometo un error?', en: 'What if I make a mistake?' },
     answer: { es: 'Todo es editable y los registros eliminados van a la Papelera (soft-delete) donde puedes restaurarlos. EvoFinz está diseñada para ser tolerante a errores — siempre hay forma de corregir.', en: 'Everything is editable and deleted records go to Trash (soft-delete) where you can restore them. EvoFinz is designed to be error-tolerant — there\'s always a way to correct.' }
@@ -1084,7 +1000,6 @@ export const connectionsDiagram = {
   title: { es: '¿Cómo fluye la información?', en: 'How does information flow?' },
   flows: [
     { from: '📸 Captura', to: '📥 Chaos Inbox', to2: '🧾 Gastos', es: 'Foto → IA clasifica → Gasto/Ingreso creado automáticamente', en: 'Photo → AI classifies → Expense/Income created automatically' },
-    { from: '⚡ Texto/Voz', to: '🤖 Phoenix IA', to2: '🧾 Gastos', es: 'Lenguaje natural → IA extrae datos → Registro instantáneo', en: 'Natural language → AI extracts data → Instant recording' },
     { from: '🧾 Gastos', to: '📊 Dashboard', to2: '🎯 Presupuesto', es: 'Cada gasto actualiza métricas, presupuestos y alertas en tiempo real', en: 'Each expense updates metrics, budgets, and alerts in real-time' },
     { from: '💰 Ingresos', to: '📊 Dashboard', to2: '📈 Patrimonio', es: 'Ingresos alimentan balance, proyecciones FIRE y rentabilidad por cliente', en: 'Income feeds balance, FIRE projections, and per-client profitability' },
     { from: '👥 Clientes', to: '💰 Ingresos', to2: '📄 Contratos', es: 'Clientes se vinculan a cobros, contratos y análisis de rentabilidad', en: 'Clients link to payments, contracts, and profitability analysis' },
