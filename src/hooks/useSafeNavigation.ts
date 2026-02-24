@@ -1,17 +1,27 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+declare global {
+  interface Window {
+    __APP_RENDERED_PATH__?: string;
+  }
+}
+
 /**
- * Safe navigation hook that guarantees the user actually moves to the target page.
- * If React Router's SPA navigation fails (URL changes but view doesn't update),
- * it forces a hard browser reload as fallback.
+ * Safe navigation hook that validates the *rendered* route, not just the URL.
+ * 
+ * The root cause of the "stuck in Settings" bug is that React Router's internal
+ * state can desynchronize from the browser URL. The URL changes but the component
+ * tree doesn't re-render. This hook detects that condition by comparing against
+ * `window.__APP_RENDERED_PATH__` (set by RouteRenderHeartbeat in App.tsx) and
+ * forces a hard navigation only when a true desync is detected.
  */
 export function useSafeNavigation() {
   const navigate = useNavigate();
 
   const safeNavigate = useCallback((path: string) => {
-    // If already on the target path, force reload to unstick
-    if (window.location.pathname === path) {
+    // If already on the target path AND rendered path matches, force reload to unstick
+    if (window.location.pathname === path && window.__APP_RENDERED_PATH__ === path) {
       window.location.replace(path);
       return;
     }
@@ -19,36 +29,34 @@ export function useSafeNavigation() {
     // Attempt SPA navigation
     navigate(path);
 
-    // Verify navigation actually happened after a short delay
+    // Check 1 (fast): Did the URL change?
     setTimeout(() => {
       if (window.location.pathname !== path) {
-        // URL didn't even change — force it
+        // URL didn't change at all — force hard navigation
         window.location.assign(path);
-      }
-    }, 150);
-
-    // Second check: even if URL changed, the view might be stuck
-    // This catches the "URL changes but UI doesn't re-render" bug
-    setTimeout(() => {
-      // If we're still supposedly navigating but the pathname matches,
-      // the router should have rendered. If not, force reload.
-      if (window.location.pathname === path) {
-        // Check if the document title or any route indicator changed
-        // As a simple heuristic: if we're here and the path is correct,
-        // the SPA navigation likely worked. But if not, the global guard
-        // in App.tsx will catch persistent mismatches.
         return;
       }
-      // URL still didn't change after 300ms — hard navigate
-      window.location.assign(path);
-    }, 300);
+
+      // Check 2 (render validation): URL changed but did React actually render?
+      // Give React a bit more time to flush the render
+      setTimeout(() => {
+        const renderedPath = window.__APP_RENDERED_PATH__;
+        if (renderedPath && renderedPath !== path) {
+          // URL changed but React Router didn't re-render — this is the exact bug
+          console.warn(
+            `[SafeNav] Desync detected: URL=${path}, rendered=${renderedPath}. Forcing reload.`
+          );
+          window.location.replace(path);
+        }
+      }, 200);
+    }, 100);
   }, [navigate]);
 
   return safeNavigate;
 }
 
 /**
- * Standalone function for use outside React components (e.g., event handlers).
+ * Standalone function for use outside React components.
  * Always does a hard navigation — no SPA attempt.
  */
 export function hardNavigate(path: string) {

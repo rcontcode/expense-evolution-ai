@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { useVoicePreferences } from './useVoicePreferences';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,25 +6,32 @@ import { toast } from 'sonner';
 
 /**
  * Global hook that checks voice reminders even when chat is closed.
- * Should be placed at app root level.
+ * Stabilized: memoizes voicePrefs values to prevent effect churn.
  */
 export function useGlobalReminders() {
   const { user } = useAuth();
   const { language } = useLanguage();
   const voicePrefs = useVoicePreferences();
   const lastCheckRef = useRef<string>('');
-  
+
+  // Stabilize references to prevent effect re-runs
+  const speechSpeed = voicePrefs.speechSpeed;
+  const volume = voicePrefs.volume;
+  const pitch = voicePrefs.pitch;
+  const checkReminders = voicePrefs.checkReminders;
+  const playSound = voicePrefs.playSound;
+
   const speakReminder = useCallback((text: string) => {
     if (!('speechSynthesis' in window)) return;
     
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
-    utterance.rate = voicePrefs.speechSpeed;
-    utterance.volume = voicePrefs.volume;
-    utterance.pitch = voicePrefs.pitch;
+    utterance.rate = speechSpeed;
+    utterance.volume = volume;
+    utterance.pitch = pitch;
     
     window.speechSynthesis.speak(utterance);
-  }, [language, voicePrefs.speechSpeed, voicePrefs.volume, voicePrefs.pitch]);
+  }, [language, speechSpeed, volume, pitch]);
 
   useEffect(() => {
     if (!user) return;
@@ -37,13 +44,11 @@ export function useGlobalReminders() {
       if (currentMinute === lastCheckRef.current) return;
       lastCheckRef.current = currentMinute;
       
-      const dueReminders = voicePrefs.checkReminders(language as 'es' | 'en');
+      const dueReminders = checkReminders(language as 'es' | 'en');
       
       if (dueReminders.length > 0) {
         dueReminders.forEach((reminder, index) => {
-          // Stagger notifications if multiple
           setTimeout(() => {
-            // Show toast notification
             toast.info(reminder, {
               icon: '🔔',
               duration: 10000,
@@ -53,10 +58,8 @@ export function useGlobalReminders() {
               },
             });
             
-            // Play notification sound
-            voicePrefs.playSound('notification');
+            playSound('notification');
             
-            // Optionally auto-speak if browser allows
             if (index === 0 && document.hasFocus()) {
               speakReminder(reminder);
             }
@@ -66,5 +69,5 @@ export function useGlobalReminders() {
     }, 30000); // Check every 30 seconds
     
     return () => clearInterval(checkInterval);
-  }, [user, language, voicePrefs, speakReminder]);
+  }, [user, language, checkReminders, playSound, speakReminder]);
 }

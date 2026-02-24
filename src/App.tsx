@@ -1,9 +1,9 @@
-import { lazy, Suspense, Component, type ReactNode, ComponentType } from "react";
+import { lazy, Suspense, Component, type ReactNode, ComponentType, useEffect, useRef } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, HashRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -165,6 +165,54 @@ function MissionListenerInitializer() {
   return null;
 }
 
+/**
+ * Heartbeat: writes the *actually rendered* React Router path to a global variable.
+ * This is the source of truth for detecting URL-vs-render desynchronization.
+ */
+function RouteRenderHeartbeat() {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.__APP_RENDERED_PATH__ = location.pathname;
+  }, [location.pathname]);
+
+  return null;
+}
+
+/**
+ * Global guard: detects persistent URL vs rendered-path mismatch and auto-repairs.
+ * Runs a lightweight check every 600ms. If the browser URL differs from the last
+ * rendered React Router path for 2 consecutive checks (~1.2s), it forces a reload.
+ */
+function RouteSyncGuard() {
+  const location = useLocation();
+  const mismatchCountRef = useRef(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const browserPath = window.location.pathname;
+      const renderedPath = window.__APP_RENDERED_PATH__;
+
+      if (renderedPath && browserPath !== renderedPath) {
+        mismatchCountRef.current += 1;
+        if (mismatchCountRef.current >= 2) {
+          console.warn(
+            `[RouteSyncGuard] Persistent desync: browser=${browserPath}, rendered=${renderedPath}. Auto-repairing.`
+          );
+          mismatchCountRef.current = 0;
+          window.location.replace(browserPath);
+        }
+      } else {
+        mismatchCountRef.current = 0;
+      }
+    }, 600);
+
+    return () => clearInterval(interval);
+  }, [location.pathname]);
+
+  return null;
+}
+
 // Router selection:
 // - Prefer clean URLs via BrowserRouter
 // - If the host redirected a deep-link to hash-based fallback (see public/404.html), use HashRouter.
@@ -185,6 +233,8 @@ const App = () => (
                 <HighlightProvider>
                   <GamificationProvider>
                   <MissionListenerInitializer />
+                  <RouteRenderHeartbeat />
+                  <RouteSyncGuard />
                   <LazyErrorBoundary name="Routes" fallback={<PageErrorFallback />}>
                     <Suspense fallback={<PageLoader />}>
                       <Routes>

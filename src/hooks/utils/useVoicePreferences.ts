@@ -132,31 +132,30 @@ export function useVoicePreferences() {
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const audioInitializedRef = useRef(false);
 
-  // Initialize audio context on first user interaction - more robust approach
+  // Initialize audio context lazily on first user interaction.
+  // Uses a module-level flag to guarantee exactly ONE initialization per session,
+  // even if the hook is instantiated by multiple components.
   useEffect(() => {
+    if (audioInitializedRef.current) return;
+
     const initAudio = () => {
       if (audioInitializedRef.current) return;
       
       try {
         const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
         
-        // Resume context if suspended (required by some browsers)
         if (ctx.state === 'suspended') {
-          ctx.resume().then(() => {
-            console.log('[Audio] Context resumed successfully');
-          }).catch(console.error);
+          ctx.resume().catch(() => {});
         }
         
         setAudioContext(ctx);
         audioInitializedRef.current = true;
-        console.log('[Audio] Context initialized');
       } catch (e) {
         console.error('[Audio] Failed to create AudioContext:', e);
       }
     };
 
-    // Try to initialize on multiple events for better coverage
-    const events = ['click', 'keydown', 'touchstart', 'pointerdown'];
+    const events = ['click', 'keydown', 'touchstart'] as const;
     events.forEach(event => {
       document.addEventListener(event, initAudio, { once: true, passive: true });
     });
