@@ -33,6 +33,7 @@ const SampleDataManager = lazy(() => import('@/components/settings/SampleDataMan
 const VoicePreferencesCard = lazy(() => import('@/components/settings/VoicePreferencesCard').then(m => ({ default: m.VoicePreferencesCard })));
 const SoundPreferencesPanel = lazy(() => import('@/components/settings/SoundPreferencesPanel').then(m => ({ default: m.SoundPreferencesPanel })));
 import { SecurityCard } from '@/components/settings/SecurityCard';
+const FeatureFlagManagerLazy = lazy(() => import('@/components/admin/FeatureFlagManager').then(m => ({ default: m.FeatureFlagManager })));
 
 const SectionSkeleton = () => (
   <div className="space-y-4">
@@ -388,13 +389,20 @@ export default function Settings() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <Button onClick={() => navigate('/admin/beta-codes')} className="gap-2 min-h-[44px]">
                     <Ticket className="h-4 w-4" />
                     {language === 'es' ? 'Códigos Beta' : 'Beta Codes'}
                   </Button>
                 </CardContent>
               </Card>
+            )}
+
+            {/* Feature Flag Manager - Admin only */}
+            {isAdmin && (
+              <Suspense fallback={<SectionSkeleton />}>
+                <FeatureFlagManagerLazy />
+              </Suspense>
             )}
           </TabsContent>
 
