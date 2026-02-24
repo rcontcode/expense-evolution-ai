@@ -24,6 +24,12 @@ import { PageHeader } from '@/components/PageHeader';
 import { motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useFeatureFlags } from '@/hooks/data/useFeatureFlags';
+import { FinancialBreathingExercise } from '@/components/ecosystem/FinancialBreathingExercise';
+import { FinancialFocusTimer } from '@/components/ecosystem/FinancialFocusTimer';
+import { FinancialWorryDump } from '@/components/ecosystem/FinancialWorryDump';
+import { UnifiedQuoteBanner } from '@/components/ecosystem/UnifiedQuoteBanner';
+import { EcosystemPromoCard } from '@/components/ecosystem/EcosystemPromoCard';
 
 const MENTOR_THEMES = {
   library: {
@@ -56,6 +62,12 @@ const MENTOR_THEMES = {
     icon: '🎯',
     color: 'text-blue-500',
   },
+  wellbeing: {
+    gradient: 'from-pink-500/10 via-rose-500/5 to-violet-500/10',
+    border: 'border-pink-500/20',
+    icon: '🧘',
+    color: 'text-pink-500',
+  },
 };
 
 const MENTOR_TABS = [
@@ -64,11 +76,17 @@ const MENTOR_TABS = [
   { value: 'kiyosaki', icon: '💰', labelEs: 'Kiyosaki', labelEn: 'Kiyosaki' },
   { value: 'rohn', icon: '🌟', labelEs: 'Jim Rohn', labelEn: 'Jim Rohn' },
   { value: 'tracy', icon: '🎯', labelEs: 'Tracy', labelEn: 'Tracy' },
+  { value: 'wellbeing', icon: '🧘', labelEs: 'Bienestar', labelEn: 'Wellbeing' },
 ];
 
 export default function Mentorship() {
   const { language } = useLanguage();
   const isMobile = useIsMobile();
+  const { isEnabled } = useFeatureFlags();
+
+  const showWellbeing = isEnabled('ecosystem_wellbeing_tab');
+  const visibleTabs = showWellbeing ? MENTOR_TABS : MENTOR_TABS.filter(t => t.value !== 'wellbeing');
+  const gridCols = showWellbeing ? 'grid-cols-6' : 'grid-cols-5';
 
   return (
     <Layout>
@@ -90,8 +108,8 @@ export default function Mentorship() {
         <Tabs defaultValue="library" className="space-y-4 sm:space-y-6" data-highlight="mentorship-tabs">
           {/* Mobile: Icon-only tabs with tooltips */}
           <TooltipProvider>
-            <TabsList className="grid grid-cols-5 w-full max-w-3xl mx-auto bg-muted/50 p-1 sm:p-1.5 rounded-xl" data-highlight="mentor-selector">
-              {MENTOR_TABS.map((tab) => (
+            <TabsList className={`grid ${gridCols} w-full max-w-3xl mx-auto bg-muted/50 p-1 sm:p-1.5 rounded-xl`} data-highlight="mentor-selector">
+              {visibleTabs.map((tab) => (
                 <Tooltip key={tab.value}>
                   <TooltipTrigger asChild>
                     <TabsTrigger 
@@ -270,6 +288,41 @@ export default function Mentorship() {
               <FinancialEducationCard />
             </div>
           </TabsContent>
+
+          {/* Wellbeing Tab - Evo Ecosystem */}
+          {showWellbeing && (
+            <TabsContent value="wellbeing" className="space-y-4 sm:space-y-6">
+              <motion.div
+                initial={isMobile ? false : { opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-gradient-to-r ${MENTOR_THEMES.wellbeing.gradient} border ${MENTOR_THEMES.wellbeing.border}`}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <span className="text-2xl sm:text-3xl">🧘</span>
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-lg font-bold flex items-center gap-2">
+                      <Brain className={`h-4 w-4 sm:h-5 sm:w-5 ${MENTOR_THEMES.wellbeing.color}`} />
+                      <span className="truncate">{language === 'es' ? 'Bienestar Financiero' : 'Financial Wellbeing'}</span>
+                    </h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
+                      {language === 'es' 
+                        ? 'Calma tu mente para tomar mejores decisiones financieras 🧠'
+                        : 'Calm your mind to make better financial decisions 🧠'}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <UnifiedQuoteBanner />
+              <EcosystemPromoCard />
+              
+              <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {isEnabled('ecosystem_breathing') && <FinancialBreathingExercise />}
+                {isEnabled('ecosystem_focus_timer') && <FinancialFocusTimer />}
+                {isEnabled('ecosystem_worry_dump') && <FinancialWorryDump />}
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </Layout>
