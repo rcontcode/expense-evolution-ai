@@ -27,10 +27,17 @@ export function useSafeNavigation() {
 
   const safeNavigate = useCallback((path: string) => {
     const normalized = normalizePath(path);
-    const current = normalizePath(window.__APP_RENDERED_PATH__ ?? "/");
+    const currentRendered = normalizePath(window.__APP_RENDERED_PATH__ ?? "/");
+    const currentBrowser = normalizePath(window.location.pathname || "/");
 
     // Skip navigation to same route
-    if (normalized === current) return;
+    if (normalized === currentRendered || normalized === currentBrowser) return;
+
+    // Hard-exit safeguard from Settings (root cause path where UI can stay visually stuck)
+    if (currentBrowser === "/settings" && normalized !== "/settings") {
+      window.location.assign(path);
+      return;
+    }
 
     // Cancel any pending verification from a previous rapid navigation
     if (pendingTimerRef.current) {
