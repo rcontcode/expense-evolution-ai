@@ -13,6 +13,8 @@ const PRODUCT_IDS = {
   premium_annual: "prod_TuPUaVFFZ9bBgf",
   pro_monthly: "prod_TuPUJPLiqh0kC7",
   pro_annual: "prod_TuPVHHsOi7e4Au",
+  bundle_monthly: "prod_U2ZIfWwlezukmF",
+  bundle_annual: "prod_U2ZNNkNSSVCIp5",
 };
 
 const logStep = (step: string, details?: any) => {
@@ -91,6 +93,7 @@ serve(async (req) => {
     let planType = "free";
     let billingPeriod = null;
     let subscriptionEnd = null;
+    let hasBundle = false;
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
@@ -105,7 +108,7 @@ serve(async (req) => {
       
       logStep("Active subscription found", { subscriptionId: subscription.id, productId, endDate: subscriptionEnd });
 
-      // Determine plan type and billing period from product ID
+      // Determine plan type, billing period, and bundle status from product ID
       if (productId === PRODUCT_IDS.premium_monthly) {
         planType = "premium";
         billingPeriod = "monthly";
@@ -118,9 +121,17 @@ serve(async (req) => {
       } else if (productId === PRODUCT_IDS.pro_annual) {
         planType = "pro";
         billingPeriod = "annual";
+      } else if (productId === PRODUCT_IDS.bundle_monthly) {
+        planType = "pro";
+        billingPeriod = "monthly";
+        hasBundle = true;
+      } else if (productId === PRODUCT_IDS.bundle_annual) {
+        planType = "pro";
+        billingPeriod = "annual";
+        hasBundle = true;
       }
 
-      logStep("Determined plan", { planType, billingPeriod });
+      logStep("Determined plan", { planType, billingPeriod, hasBundle });
 
       // Update user_subscriptions table
       await supabaseClient
@@ -133,6 +144,7 @@ serve(async (req) => {
           expires_at: subscriptionEnd,
           stripe_customer_id: customerId,
           stripe_subscription_id: subscription.id,
+          has_bundle: hasBundle,
           updated_at: new Date().toISOString(),
         }, { onConflict: "user_id" });
 
@@ -146,6 +158,7 @@ serve(async (req) => {
           user_id: user.id,
           plan_type: "free",
           is_active: true,
+          has_bundle: false,
           updated_at: new Date().toISOString(),
         }, { onConflict: "user_id" });
     }
@@ -154,7 +167,8 @@ serve(async (req) => {
       subscribed: hasActiveSub,
       plan_type: planType,
       billing_period: billingPeriod,
-      subscription_end: subscriptionEnd
+      subscription_end: subscriptionEnd,
+      has_bundle: hasBundle,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

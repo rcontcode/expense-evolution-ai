@@ -13,6 +13,8 @@ const PRODUCT_IDS = {
   premium_annual: "prod_TuPUaVFFZ9bBgf",
   pro_monthly: "prod_TuPUJPLiqh0kC7",
   pro_annual: "prod_TuPVHHsOi7e4Au",
+  bundle_monthly: "prod_U2ZIfWwlezukmF",
+  bundle_annual: "prod_U2ZNNkNSSVCIp5",
 };
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
@@ -61,18 +63,22 @@ function parseStripeDate(value: unknown): string | null {
   }
 }
 
-function getPlanFromProductId(productId: string): { planType: string; billingPeriod: string | null } {
+function getPlanFromProductId(productId: string): { planType: string; billingPeriod: string | null; isBundle: boolean } {
   switch (productId) {
     case PRODUCT_IDS.premium_monthly:
-      return { planType: "premium", billingPeriod: "monthly" };
+      return { planType: "premium", billingPeriod: "monthly", isBundle: false };
     case PRODUCT_IDS.premium_annual:
-      return { planType: "premium", billingPeriod: "annual" };
+      return { planType: "premium", billingPeriod: "annual", isBundle: false };
     case PRODUCT_IDS.pro_monthly:
-      return { planType: "pro", billingPeriod: "monthly" };
+      return { planType: "pro", billingPeriod: "monthly", isBundle: false };
     case PRODUCT_IDS.pro_annual:
-      return { planType: "pro", billingPeriod: "annual" };
+      return { planType: "pro", billingPeriod: "annual", isBundle: false };
+    case PRODUCT_IDS.bundle_monthly:
+      return { planType: "pro", billingPeriod: "monthly", isBundle: true };
+    case PRODUCT_IDS.bundle_annual:
+      return { planType: "pro", billingPeriod: "annual", isBundle: true };
     default:
-      return { planType: "free", billingPeriod: null };
+      return { planType: "free", billingPeriod: null, isBundle: false };
   }
 }
 
@@ -147,7 +153,7 @@ serve(async (req) => {
 
         const userId = profiles[0].id;
         const productId = subscription.items.data[0]?.price?.product as string;
-        const { planType, billingPeriod } = getPlanFromProductId(productId);
+        const { planType, billingPeriod, isBundle } = getPlanFromProductId(productId);
         const isActive = subscription.status === "active" || subscription.status === "trialing";
         
         // Log raw values for debugging
@@ -161,7 +167,7 @@ serve(async (req) => {
         // Only parse date if subscription is active
         const expiresAt = isActive ? parseStripeDate(subscription.current_period_end) : null;
 
-        logStep("Updating subscription", { userId, planType, billingPeriod, isActive, expiresAt });
+        logStep("Updating subscription", { userId, planType, billingPeriod, isActive, isBundle, expiresAt });
 
         const { error: upsertError } = await supabaseClient
           .from("user_subscriptions")
@@ -173,6 +179,7 @@ serve(async (req) => {
             expires_at: expiresAt,
             stripe_customer_id: customerId,
             stripe_subscription_id: subscription.id,
+            has_bundle: isActive ? isBundle : false,
             updated_at: new Date().toISOString(),
           }, { onConflict: "user_id" });
 
@@ -217,6 +224,7 @@ serve(async (req) => {
             expires_at: null,
             stripe_customer_id: customerId,
             stripe_subscription_id: null,
+            has_bundle: false,
             updated_at: new Date().toISOString(),
           }, { onConflict: "user_id" });
 
