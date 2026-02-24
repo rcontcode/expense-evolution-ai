@@ -1,4 +1,4 @@
-import { lazy, Suspense, Component, type ReactNode, ComponentType, useEffect, useRef } from "react";
+import { lazy, Suspense, Component, type ReactNode, ComponentType, useEffect, useRef, useCallback } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -180,46 +180,70 @@ function RouteRenderHeartbeat() {
 }
 
 /**
- * Global guard: detects persistent URL vs rendered-path mismatch and auto-repairs.
- * Runs a lightweight check every 600ms. If the browser URL differs from the last
- * rendered React Router path for 2 consecutive checks (~1.2s), it forces a reload.
- */
-/**
- * Global guard: monitors for URL vs render desync.
- * Instead of forcing a hard reload (which causes ugly 7s delays),
- * it nudges React Router to re-navigate to the current browser URL.
+ * Global guard: monitors URL vs rendered-path desync without polling loops.
+ * Uses event-driven checks + cooldown to avoid infinite soft-resync cycles.
  */
 function RouteSyncGuard() {
   const location = useLocation();
   const navigate = useNavigate();
-  const mismatchCountRef = useRef(0);
+  const lastRepairAtRef = useRef(0);
+  const isRepairingRef = useRef(false);
+  const pendingCheckRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    mismatchCountRef.current = 0;
-  }, [location.pathname]);
+  const runDesyncCheck = useCallback((reason: "render" | "event") => {
+    const browserPath = window.location.pathname;
+    const renderedPath = window.__APP_RENDERED_PATH__;
+    const now = Date.now();
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const browserPath = window.location.pathname;
-      const renderedPath = window.__APP_RENDERED_PATH__;
+    if (!renderedPath || browserPath === renderedPath) return;
+    if (isRepairingRef.current || now - lastRepairAtRef.current < 2000) return;
 
-      if (renderedPath && browserPath !== renderedPath) {
-        mismatchCountRef.current += 1;
-        if (mismatchCountRef.current >= 3) {
-          console.warn(
-            `[RouteSyncGuard] Soft resync: browser=${browserPath}, rendered=${renderedPath}`
-          );
-          mismatchCountRef.current = 0;
-          // Soft resync: tell React Router to re-navigate without a hard reload
-          navigate(browserPath, { replace: true });
-        }
-      } else {
-        mismatchCountRef.current = 0;
-      }
-    }, 800);
+    isRepairingRef.current = true;
+    lastRepairAtRef.current = now;
 
-    return () => clearInterval(interval);
+    console.warn(
+      `[RouteSyncGuard] ${reason} soft resync: browser=${browserPath}, rendered=${renderedPath}`
+    );
+
+    navigate(browserPath, { replace: true });
+
+    window.setTimeout(() => {
+      isRepairingRef.current = false;
+    }, 500);
   }, [navigate]);
+
+  useEffect(() => {
+    isRepairingRef.current = false;
+
+    const timeoutId = window.setTimeout(() => {
+      runDesyncCheck("render");
+    }, 120);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [location.pathname, runDesyncCheck]);
+
+  useEffect(() => {
+    const scheduleEventCheck = () => {
+      if (pendingCheckRef.current !== null) {
+        window.clearTimeout(pendingCheckRef.current);
+      }
+
+      pendingCheckRef.current = window.setTimeout(() => {
+        runDesyncCheck("event");
+      }, 120);
+    };
+
+    window.addEventListener("popstate", scheduleEventCheck);
+    window.addEventListener("pageshow", scheduleEventCheck);
+
+    return () => {
+      if (pendingCheckRef.current !== null) {
+        window.clearTimeout(pendingCheckRef.current);
+      }
+      window.removeEventListener("popstate", scheduleEventCheck);
+      window.removeEventListener("pageshow", scheduleEventCheck);
+    };
+  }, [runDesyncCheck]);
 
   return null;
 }
