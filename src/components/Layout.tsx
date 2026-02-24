@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSafeNavigation } from '@/hooks/useSafeNavigation';
+import { preloadRoute } from '@/App';
 import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
 import { GlobalSearch } from '@/components/search/GlobalSearch';
 import { 
@@ -720,6 +721,8 @@ export const Layout = ({ children }: LayoutProps) => {
                     const button = (
                       <button
                         onClick={() => navigate(item.path)}
+                        onMouseEnter={() => preloadRoute(item.path)}
+                        onFocus={() => preloadRoute(item.path)}
                         className={cn(
                           'flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm transition-all',
                           'hover:bg-background/60',
