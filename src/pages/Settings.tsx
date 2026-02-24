@@ -89,8 +89,21 @@ export default function Settings() {
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('preferences');
+  const [isExiting, setIsExiting] = useState(false);
   const highlightRef = useRef<HTMLDivElement>(null);
   const [highlightSection, setHighlightSection] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleSettingsExit = (event: Event) => {
+      const detail = (event as CustomEvent<{ to?: string }>).detail;
+      if (detail?.to && detail.to !== '/settings') {
+        setIsExiting(true);
+      }
+    };
+
+    window.addEventListener('__settings_exit__', handleSettingsExit as EventListener);
+    return () => window.removeEventListener('__settings_exit__', handleSettingsExit as EventListener);
+  }, []);
 
   // Deep-link: scroll to and highlight a section when arriving via ?tab=subscription etc.
   useEffect(() => {
@@ -132,6 +145,22 @@ export default function Settings() {
       clearTimeout(cleanupTimer);
     };
   }, [searchParams, setSearchParams]);
+
+  if (isExiting) {
+    return (
+      <Layout>
+        <div className="page-container section-gap">
+          <PageHeader
+            title={t('nav.settings')}
+            description={!isMobile ? (language === 'es'
+              ? 'Saliendo de configuración...'
+              : 'Leaving settings...') : undefined}
+          />
+          <SectionSkeleton />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
