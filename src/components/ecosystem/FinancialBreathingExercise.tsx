@@ -66,16 +66,18 @@ export function FinancialBreathingExercise() {
               setCycles(c => c + 1);
               setMessageIndex(mi => (mi + 1) % messages.length);
             }
+            // Set next phase duration via callback to avoid stale closure
+            setSecondsLeft(() => PHASES[next].duration);
             return next;
           });
-          return PHASES[(phaseIndex + 1) % PHASES.length].duration;
+          return prev; // Will be overwritten by inner setSecondsLeft
         }
         return prev - 1;
       });
     }, 1000);
 
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [isActive, phaseIndex, messages.length]);
+  }, [isActive, messages.length]);
 
   return (
     <Card className="overflow-hidden">
