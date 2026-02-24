@@ -3,21 +3,50 @@ import { useTheme } from '@/contexts/ThemeContext';
 
 export const ThemeBackground = memo(() => {
   const { style, animationSpeed, animationIntensity } = useTheme();
-  const [ready, setReady] = useState(false);
+  const [phase, setPhase] = useState<'hidden' | 'mounting' | 'visible'>('hidden');
   const prevStyleRef = useRef(style);
 
   // Delay rendering after theme change to avoid freezing UI
+  // Phase 1: hidden (nothing rendered)
+  // Phase 2: mounting (DOM rendered but opacity 0, browser paints off-screen)
+  // Phase 3: visible (fade in)
   useEffect(() => {
     if (prevStyleRef.current !== style) {
-      setReady(false);
+      setPhase('hidden');
       prevStyleRef.current = style;
     }
-    const timer = setTimeout(() => setReady(true), 350);
-    return () => clearTimeout(timer);
+
+    // Use requestIdleCallback if available for better scheduling
+    const scheduleMount = (cb: () => void) => {
+      if ('requestIdleCallback' in window) {
+        return (window as any).requestIdleCallback(cb, { timeout: 1000 });
+      }
+      return setTimeout(cb, 500);
+    };
+
+    const cancelMount = (id: number) => {
+      if ('requestIdleCallback' in window) {
+        (window as any).cancelIdleCallback(id);
+      } else {
+        clearTimeout(id);
+      }
+    };
+
+    const mountId = scheduleMount(() => {
+      setPhase('mounting');
+      // After mounting, fade in on next frame
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setPhase('visible');
+        });
+      });
+    });
+
+    return () => cancelMount(mountId);
   }, [style]);
 
   // Early exit if animations are disabled or not ready yet
-  if (animationSpeed === 'off' || !ready) {
+  if (animationSpeed === 'off' || phase === 'hidden') {
     return null;
   }
 
@@ -813,13 +842,18 @@ export const ThemeBackground = memo(() => {
   const speedMultiplier = animationSpeed === 'slow' ? 2 : animationSpeed === 'fast' ? 0.5 : 1;
   const opacityMultiplier = animationIntensity === 'subtle' ? 0.5 : animationIntensity === 'vibrant' ? 1.3 : 1;
   
+  const finalOpacity = phase === 'visible' ? Math.min(1, opacityMultiplier) : 0;
+
   const animationStyle = {
     '--animation-speed': speedMultiplier,
-    opacity: Math.min(1, opacityMultiplier),
+    opacity: finalOpacity,
+    transition: 'opacity 0.6s ease-in-out',
+    contain: 'layout style paint',
+    contentVisibility: 'auto',
   } as React.CSSProperties;
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 will-change-auto" style={animationStyle}>
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={animationStyle}>
       {renderPattern()}
     </div>
   );
