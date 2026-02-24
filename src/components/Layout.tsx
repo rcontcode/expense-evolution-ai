@@ -69,7 +69,7 @@ import { useGlobalReminders } from '@/hooks/utils/useGlobalReminders';
 import { useAutoReminders } from '@/hooks/data/useAutoReminders';
 import { ContactForm } from '@/components/ContactForm';
 import { SocialLinks } from '@/components/SocialLinks';
-// FloatingVoiceIndicator is managed by ChatAssistant, not needed here
+import { ChatAssistant } from '@/components/chat/ChatAssistant';
 
 interface LayoutProps {
   children: ReactNode;
@@ -575,9 +575,11 @@ export const Layout = ({ children }: LayoutProps) => {
           onOpenChange={setGlobalSearchOpen}
           onQuickCapture={() => setQuickCaptureOpen(true)}
         />
+        
+        {/* Chat Assistant */}
+        <ChatAssistant />
       </div>
     );
-  }
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -1025,6 +1027,9 @@ export const Layout = ({ children }: LayoutProps) => {
           onOpenChange={setGlobalSearchOpen}
           onQuickCapture={() => setQuickCaptureOpen(true)}
         />
+        
+        {/* Chat Assistant */}
+        <ChatAssistant />
       </div>
     </TooltipProvider>
   );
