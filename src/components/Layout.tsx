@@ -580,6 +580,7 @@ export const Layout = ({ children }: LayoutProps) => {
         <ChatAssistant />
       </div>
     );
+  }
 
   return (
     <TooltipProvider delayDuration={300}>
