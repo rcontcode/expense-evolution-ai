@@ -1,9 +1,9 @@
-import { lazy, Suspense, Component, type ReactNode, ComponentType, useEffect, useRef, useCallback } from "react";
+import { lazy, Suspense, Component, type ReactNode, ComponentType, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -180,71 +180,10 @@ function RouteRenderHeartbeat() {
 }
 
 /**
- * Global guard: monitors URL vs rendered-path desync without polling loops.
- * Uses event-driven checks + cooldown to avoid infinite soft-resync cycles.
+ * Global guard temporarily disabled.
+ * Previous auto-resync logic was causing navigation lockups.
  */
 function RouteSyncGuard() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const lastRepairAtRef = useRef(0);
-  const isRepairingRef = useRef(false);
-  const pendingCheckRef = useRef<number | null>(null);
-
-  const runDesyncCheck = useCallback((reason: "render" | "event") => {
-    const browserPath = window.location.pathname;
-    const renderedPath = window.__APP_RENDERED_PATH__;
-    const now = Date.now();
-
-    if (!renderedPath || browserPath === renderedPath) return;
-    if (isRepairingRef.current || now - lastRepairAtRef.current < 2000) return;
-
-    isRepairingRef.current = true;
-    lastRepairAtRef.current = now;
-
-    console.warn(
-      `[RouteSyncGuard] ${reason} soft resync: browser=${browserPath}, rendered=${renderedPath}`
-    );
-
-    navigate(browserPath, { replace: true });
-
-    window.setTimeout(() => {
-      isRepairingRef.current = false;
-    }, 500);
-  }, [navigate]);
-
-  useEffect(() => {
-    isRepairingRef.current = false;
-
-    const timeoutId = window.setTimeout(() => {
-      runDesyncCheck("render");
-    }, 120);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [location.pathname, runDesyncCheck]);
-
-  useEffect(() => {
-    const scheduleEventCheck = () => {
-      if (pendingCheckRef.current !== null) {
-        window.clearTimeout(pendingCheckRef.current);
-      }
-
-      pendingCheckRef.current = window.setTimeout(() => {
-        runDesyncCheck("event");
-      }, 120);
-    };
-
-    window.addEventListener("popstate", scheduleEventCheck);
-    window.addEventListener("pageshow", scheduleEventCheck);
-
-    return () => {
-      if (pendingCheckRef.current !== null) {
-        window.clearTimeout(pendingCheckRef.current);
-      }
-      window.removeEventListener("popstate", scheduleEventCheck);
-      window.removeEventListener("pageshow", scheduleEventCheck);
-    };
-  }, [runDesyncCheck]);
-
   return null;
 }
 
