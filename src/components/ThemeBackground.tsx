@@ -8,11 +8,28 @@ export const ThemeBackground = memo(() => {
   const [phase, setPhase] = useState<'hidden' | 'mounting' | 'visible'>('hidden');
   const prevStyleRef = useRef(style);
 
+  // Hard performance mode: disable decorative background globally
+  const isThemeBackgroundEnabled = false;
+
+  // Keep route detection for future re-enable without touching callers
+  const publicRoutes = ['/', '/quiz', '/auth', '/beta'];
+  const isPublicRoute = publicRoutes.some((route) =>
+    location.pathname === route ||
+    location.pathname.startsWith('/auth') ||
+    location.pathname.startsWith('/quiz') ||
+    location.pathname.startsWith('/beta')
+  );
+
   // Delay rendering after theme change to avoid freezing UI
   // Phase 1: hidden (nothing rendered)
   // Phase 2: mounting (DOM rendered but opacity 0, browser paints off-screen)
   // Phase 3: visible (fade in)
   useEffect(() => {
+    if (!isThemeBackgroundEnabled || !isPublicRoute) {
+      setPhase('hidden');
+      return;
+    }
+
     if (prevStyleRef.current !== style) {
       setPhase('hidden');
       prevStyleRef.current = style;
@@ -45,15 +62,9 @@ export const ThemeBackground = memo(() => {
     });
 
     return () => cancelMount(mountId);
-  }, [style]);
+  }, [style, isThemeBackgroundEnabled, isPublicRoute]);
 
-  // Only render on public routes - eliminates all performance issues in authenticated app
-  const publicRoutes = ['/', '/quiz', '/auth', '/beta'];
-  const isPublicRoute = publicRoutes.some(route => 
-    location.pathname === route || location.pathname.startsWith('/auth') || location.pathname.startsWith('/quiz')
-  );
-
-  if (animationSpeed === 'off' || phase === 'hidden' || !isPublicRoute) {
+  if (!isThemeBackgroundEnabled || animationSpeed === 'off' || phase === 'hidden' || !isPublicRoute) {
     return null;
   }
 
