@@ -2926,3 +2926,11 @@
   animation: highlight-beacon-color 1.1s ease-in-out infinite !important;
 }
 
+/* Stability-first mode (authenticated app): kill decorative motion */
+.stability-mode *,
+.stability-mode *::before,
+.stability-mode *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}

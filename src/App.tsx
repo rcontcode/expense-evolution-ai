@@ -79,13 +79,7 @@ const DataHealth = lazyWithRetry(() => import("./pages/DataHealth"));
 const FilesPage = lazyWithRetry(() => import("./pages/Files"));
 const UserGuide = lazyWithRetry(() => import("./pages/UserGuide"));
 
-// Lazy load heavy global components with retry
-const ChatAssistant = lazyWithRetry(() =>
-  import("./components/chat/ChatAssistant").then((m) => ({ default: m.ChatAssistant }))
-);
-const OnboardingTutorial = lazyWithRetry(() =>
-  import("./components/guidance/OnboardingTutorial").then((m) => ({ default: m.OnboardingTutorial }))
-);
+// Assistant and onboarding overlays disabled for stability-first mode
 const CookieConsent = lazyWithRetry(() =>
   import("./components/CookieConsent").then((m) => ({ default: m.CookieConsent }))
 );
@@ -244,15 +238,7 @@ const App = () => (
                     </Routes>
                   </Suspense>
                 </LazyErrorBoundary>
-                  {/* Lazy load global components with null fallback (non-blocking) */}
-                  <LazyErrorBoundary name="ChatAssistant">
-                    <Suspense fallback={null}>
-                      <ChatAssistant />
-                    </Suspense>
-                  </LazyErrorBoundary>
-                  <Suspense fallback={null}>
-                    <OnboardingTutorial />
-                  </Suspense>
+                  {/* Assistant and onboarding overlays intentionally disabled in stability-first mode */}
                   <Suspense fallback={null}>
                     <CookieConsent />
                   </Suspense>

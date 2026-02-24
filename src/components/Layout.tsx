@@ -249,6 +249,13 @@ export const Layout = ({ children }: LayoutProps) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Stability-first mode: disable non-essential animations in authenticated app
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add('stability-mode');
+    return () => root.classList.remove('stability-mode');
+  }, []);
   
   // Toggle theme between light/dark with optimized themes
   const toggleTheme = () => {
