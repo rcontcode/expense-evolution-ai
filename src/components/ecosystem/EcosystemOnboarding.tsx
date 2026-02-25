@@ -33,11 +33,11 @@ const steps = [
 
 export const EcosystemOnboarding = memo(() => {
   const { language } = useLanguage();
-  const { hasBundleAccess, isLoading } = useFeatureFlags();
+  const { hasBundleAccess, isEnabled, isLoading } = useFeatureFlags();
   const [dismissed, setDismissed] = useState(() => localStorage.getItem(DISMISS_KEY) === 'true');
   const [step, setStep] = useState(0);
 
-  if (isLoading || !hasBundleAccess || dismissed) return null;
+  if (isLoading || !hasBundleAccess || !isEnabled('ecosystem_onboarding') || dismissed) return null;
 
   const isEs = language === 'es';
   const current = steps[step];

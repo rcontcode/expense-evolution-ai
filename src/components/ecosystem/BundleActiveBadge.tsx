@@ -11,9 +11,9 @@ import { useFeatureFlags } from '@/hooks/data/useFeatureFlags';
  */
 export const BundleActiveBadge = memo(({ variant = 'compact' }: { variant?: 'compact' | 'full' }) => {
   const { language } = useLanguage();
-  const { hasBundleAccess, isLoading } = useFeatureFlags();
+  const { hasBundleAccess, isEnabled, isLoading } = useFeatureFlags();
 
-  if (isLoading || !hasBundleAccess) return null;
+  if (isLoading || !hasBundleAccess || !isEnabled('ecosystem_badge')) return null;
 
   if (variant === 'compact') {
     return (

@@ -1,47 +1,49 @@
 
+## Evo Ecosystem — Master Plan
 
-## Phase 4: Ecosystem Onboarding + Cross-App Dashboard
+### Phase 4: Ecosystem Onboarding + Cross-App Dashboard ✅ COMPLETE
 
-Based on the current state, here is my recommended step-by-step plan for the next phase of the Evo Ecosystem.
+- ✅ Step 1: `EcosystemOnboarding.tsx` — 3-step animated welcome for Bundle users
+- ✅ Step 2: `EcosystemInsights.tsx` — Cross-app correlation dashboard (focus vs expenses, 6-month chart)
+- ✅ Step 3: `BundleActiveBadge` integrated in Settings, Dashboard, Control Center
+- ✅ Step 4: Fokuspark alignment — instructions delivered and confirmed implemented
 
-### Step 1: Ecosystem Onboarding Welcome (new component)
+### Phase 5: Polish, Flag Granularity & Architecture ✅ COMPLETE
 
-Create `EcosystemOnboarding.tsx` — a welcome flow that triggers once for new Bundle users (`has_bundle = true` + not dismissed). It will:
+- ✅ Individual feature flag gating (`ecosystem_onboarding`, `ecosystem_insights`, `ecosystem_badge`) on all ecosystem components
+- ✅ MobileDashboard refactored: extracted `MobileStatsGrid` and `MobileAlertsBanner` (302→110 lines)
 
-- Show a 3-step animated card explaining Bundle benefits:
-  1. "Your finances and focus are now connected"
-  2. "Cross-app insights will appear automatically"
-  3. "Explore Fokuspark for the other half of your ecosystem"
-- Include a CTA to open Fokuspark and a dismiss button
-- Persist dismissal in `localStorage` (`ecosystem-onboarding-dismissed`)
-- Integrate into `MobileDashboard` and the desktop dashboard, shown only for Bundle users
+### Phase 6: Ecosystem Intelligence ✅ COMPLETE
 
-### Step 2: Cross-App Correlation Dashboard (new component)
+**Goal:** Make cross-app data actionable with smart alerts and AI-powered correlations.
 
-Create `EcosystemInsights.tsx` — a dashboard card exclusive to Bundle users that visualizes the relationship between focus/wellbeing data and financial behavior:
+#### Step 1: Ecosystem Weekly Digest
+- Create `EcosystemWeeklyDigest.tsx` — a dismissible card shown once per week to Bundle users
+- Summarizes: focus minutes this week, worry entries, spending delta vs previous week
+- Uses existing tables, no new DB needed
+- Gated by `ecosystem_insights` flag
 
-- Read from existing `financial_focus_sessions` and `financial_worry_entries` tables
-- Show metrics: total focus minutes, worry entries logged, correlation with spending patterns
-- Display a simple chart (recharts scatter or bar) showing focus session days vs expense amounts
-- Gated behind `hasBundleAccess` — non-bundle users see an upgrade prompt instead
+#### Step 2: Smart Correlation Alerts
+- When a user has high worry entries AND increased spending in the same week, surface an insight:
+  "Your spending increased 23% this week. You also logged 4 worry entries — consider a focus session before your next purchase."
+- Logic runs client-side from cached query data
+- Gated by `ecosystem_insights` flag + `hasBundleAccess`
 
-### Step 3: Integration into Settings
+#### Step 3: Ecosystem Health Score
+- Create `EcosystemHealthScore.tsx` — a 0-100 composite score
+- Factors: savings rate, focus consistency, worry trend (decreasing = good), expense stability
+- Displayed as a radial gauge in the dashboard
+- Bundle-only feature
 
-- Add the `BundleActiveBadge` (full variant) to the Settings page subscription section
-- Show ecosystem status alongside the current plan details
+### Phase 7: Cross-App Deep Linking & Handoffs (FUTURE)
 
-### Step 4: Instructions for Fokuspark
+- Deep links from EvoFinz insights to specific Fokuspark tools (e.g., "Start a breathing exercise" → opens Fokuspark breathing page)
+- Shared user preferences (theme, language) via cross-app sync
+- Unified notification system across both apps
 
-Provide copy-paste instructions for Fokuspark to:
-- Mirror the onboarding flow for Bundle users
-- Share the same `localStorage` key convention for onboarding dismissal
-- Implement their side of the cross-app data (focus sessions duration, meditation streaks)
+### Technical Notes
 
-### Technical details
-
-- **No database changes needed** — reuses existing `financial_focus_sessions`, `financial_worry_entries`, and `user_subscriptions.has_bundle`
-- **New files**: `src/components/ecosystem/EcosystemOnboarding.tsx`, `src/components/ecosystem/EcosystemInsights.tsx`
-- **Modified files**: `MobileDashboard.tsx` (add onboarding + insights), `Settings.tsx` (add badge), `.lovable/plan.md`
-- All components gated via `useFeatureFlags().hasBundleAccess`
-- Full ES/EN support via `useLanguage()`
-
+- **Shared tables:** `financial_focus_sessions`, `financial_worry_entries`, `user_subscriptions.has_bundle`
+- **Feature flags:** `ecosystem_enabled` (master), `ecosystem_onboarding`, `ecosystem_insights`, `ecosystem_badge`, `ecosystem_promo_card`
+- **localStorage keys:** `ecosystem-onboarding-dismissed`
+- **Stripe Bundle IDs:** Monthly `price_1T4U9U3wR30iWwFnq9YJeIHe`, Annual `price_1T4UEy3wR30iWwFnbIfKJtUb`

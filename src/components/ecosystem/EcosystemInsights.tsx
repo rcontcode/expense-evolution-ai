@@ -17,7 +17,7 @@ import { startOfMonth, subMonths, format } from 'date-fns';
  */
 export const EcosystemInsights = memo(() => {
   const { language } = useLanguage();
-  const { hasBundleAccess, isLoading: flagsLoading } = useFeatureFlags();
+  const { hasBundleAccess, isEnabled, isLoading: flagsLoading } = useFeatureFlags();
   const { user } = useAuth();
   const isEs = language === 'es';
 
@@ -81,7 +81,7 @@ export const EcosystemInsights = memo(() => {
     staleTime: 1000 * 60 * 5,
   });
 
-  if (flagsLoading) return null;
+  if (flagsLoading || !isEnabled('ecosystem_insights')) return null;
 
   // Non-bundle: upgrade prompt
   if (!hasBundleAccess) {
