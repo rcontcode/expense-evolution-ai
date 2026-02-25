@@ -25,6 +25,7 @@ import { MonthDetailPanel } from '@/components/dashboard/MonthDetailPanel';
 import { ProgressiveOnboarding } from '@/components/onboarding/ProgressiveOnboarding';
 import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
 import { AlertStack } from '@/components/mobile/AlertStack';
+import { BundleActiveBadge } from '@/components/ecosystem/BundleActiveBadge';
 import { cn } from '@/lib/utils';
 
 // Lazy load heavy components
@@ -119,6 +120,9 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
       
       {/* Progressive Onboarding - only for new users */}
       <ProgressiveOnboarding />
+      
+      {/* Bundle Ecosystem Badge */}
+      <BundleActiveBadge variant="full" />
       
       {/* 2x2 Stats Grid - Optimized for mobile */}
       <div className="stats-grid-2x2">
