@@ -3,6 +3,7 @@
  import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
  import { Settings2, HelpCircle, ChevronUp, ChevronDown } from 'lucide-react';
  import { useLanguage } from '@/contexts/LanguageContext';
+ import { BundleActiveBadge } from '@/components/ecosystem/BundleActiveBadge';
  
  interface ControlCenterHeaderProps {
    showGuide: boolean;
@@ -30,8 +31,9 @@
    return (
      <div className="flex items-center justify-between">
        <div>
-         <h2 className="text-xl font-semibold flex items-center gap-2">
-           {language === 'es' ? '🎛️ Centro de Control por Áreas' : '🎛️ Control Center by Areas'}
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            {language === 'es' ? '🎛️ Centro de Control por Áreas' : '🎛️ Control Center by Areas'}
+            <BundleActiveBadge variant="compact" />
          </h2>
          <p className="text-sm text-muted-foreground">
            {language === 'es'
