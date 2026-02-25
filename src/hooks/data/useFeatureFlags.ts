@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useIsAdmin } from '@/hooks/data/useIsAdmin';
 
 interface FeatureFlag {
   id: string;
@@ -13,9 +14,17 @@ interface FeatureFlag {
   updated_at: string;
 }
 
+const ADMIN_BUNDLE_PREVIEW_KEY = 'admin-bundle-preview-enabled';
+
+function readAdminBundlePreview(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.localStorage.getItem(ADMIN_BUNDLE_PREVIEW_KEY) === 'true';
+}
+
 export function useFeatureFlags() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { data: isAdmin = false, isLoading: isAdminLoading } = useIsAdmin();
 
   // Fetch all feature flags
   const { data: flagsData, isLoading: isLoadingFlags } = useQuery({
@@ -52,6 +61,9 @@ export function useFeatureFlags() {
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5,
   });
+
+  const adminBundlePreviewEnabled = readAdminBundlePreview();
+  const effectiveHasBundleAccess = (hasBundleAccess ?? false) || (isAdmin && adminBundlePreviewEnabled);
 
   // Build flags map
   const flags: Record<string, boolean> = {};
@@ -102,8 +114,11 @@ export function useFeatureFlags() {
     flags,
     flagsList,
     isEnabled,
-    hasBundleAccess: hasBundleAccess ?? false,
+    hasBundleAccess: effectiveHasBundleAccess,
+    hasRealBundleAccess: hasBundleAccess ?? false,
+    adminBundlePreviewEnabled,
     updateFlag,
-    isLoading: isLoadingFlags || isLoadingBundle,
+    isLoading: isLoadingFlags || isLoadingBundle || isAdminLoading,
   };
 }
+
