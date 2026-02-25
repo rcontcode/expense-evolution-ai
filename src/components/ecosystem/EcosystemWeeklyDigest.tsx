@@ -1,13 +1,15 @@
 import { useState, memo } from 'react';
 import { motion } from 'framer-motion';
-import { CalendarDays, Brain, CloudRain, TrendingDown, TrendingUp, X, Minus } from 'lucide-react';
+import { CalendarDays, Brain, CloudRain, TrendingDown, TrendingUp, X, Minus, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFeatureFlags } from '@/hooks/data/useFeatureFlags';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, subWeeks, format } from 'date-fns';
+import { openFokusparkTool, type FokusparkTool } from '@/lib/ecosystem/deeplinks';
 
 const DISMISS_KEY = 'ecosystem-weekly-digest-dismissed';
 
@@ -75,27 +77,39 @@ export const EcosystemWeeklyDigest = memo(() => {
   const SpendingIcon = data.spendingDelta > 5 ? TrendingUp : data.spendingDelta < -5 ? TrendingDown : Minus;
   const spendingColor = data.spendingDelta > 5 ? 'text-rose-500' : data.spendingDelta < -5 ? 'text-emerald-500' : 'text-muted-foreground';
 
-  // Generate smart insight
-  const getInsight = () => {
+  // Generate smart insight with contextual CTA
+  const getInsight = (): { text: string; cta?: { label: string; tool: FokusparkTool } } => {
     if (data.worryCount >= 3 && data.spendingDelta > 10) {
-      return isEs
-        ? '⚠️ Tus preocupaciones y gastos aumentaron esta semana. Prueba una sesión de enfoque antes de tu próxima compra.'
-        : '⚠️ Your worries and spending both increased this week. Try a focus session before your next purchase.';
+      return {
+        text: isEs
+          ? '⚠️ Tus preocupaciones y gastos aumentaron esta semana.'
+          : '⚠️ Your worries and spending both increased this week.',
+        cta: { label: isEs ? 'Sesión de enfoque' : 'Focus session', tool: 'breathing' },
+      };
     }
     if (data.focusMinutes > data.focusMinutesLast && data.spendingDelta < 0) {
-      return isEs
-        ? '🎯 Más enfoque, menos gastos — ¡excelente semana!'
-        : '🎯 More focus, less spending — great week!';
+      return {
+        text: isEs
+          ? '🎯 Más enfoque, menos gastos — ¡excelente semana!'
+          : '🎯 More focus, less spending — great week!',
+      };
     }
     if (data.focusMinutes === 0) {
-      return isEs
-        ? '💡 No has tenido sesiones de enfoque esta semana. ¡Intenta una de 15 minutos!'
-        : "💡 No focus sessions this week yet. Try a quick 15-minute one!";
+      return {
+        text: isEs
+          ? '💡 No has tenido sesiones de enfoque esta semana.'
+          : "💡 No focus sessions this week yet.",
+        cta: { label: isEs ? 'Iniciar en Fokuspark' : 'Start on Fokuspark', tool: 'focus-timer' },
+      };
     }
-    return isEs
-      ? '📊 Tu semana va bien. Mantén el enfoque para mejores decisiones financieras.'
-      : '📊 Your week is going well. Stay focused for better financial decisions.';
+    return {
+      text: isEs
+        ? '📊 Tu semana va bien. Mantén el enfoque.'
+        : '📊 Your week is going well. Stay focused.',
+    };
   };
+
+  const insight = getInsight();
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
@@ -137,10 +151,23 @@ export const EcosystemWeeklyDigest = memo(() => {
             </div>
           </div>
 
-          {/* Smart insight */}
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            {getInsight()}
-          </p>
+          {/* Smart insight + CTA */}
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[11px] text-muted-foreground leading-relaxed flex-1">
+              {insight.text}
+            </p>
+            {insight.cta && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="shrink-0 text-[10px] h-6 px-2 gap-1"
+                onClick={() => openFokusparkTool(insight.cta!.tool, 'weekly-digest')}
+              >
+                <ExternalLink className="h-3 w-3" />
+                {insight.cta.label}
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     </motion.div>

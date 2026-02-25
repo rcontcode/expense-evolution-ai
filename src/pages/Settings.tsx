@@ -19,6 +19,7 @@ import { NotificationPreferences } from '@/components/settings/NotificationPrefe
 import { ReminderPreferencesPanel } from '@/components/notifications/ReminderPreferencesPanel';
 import { SubscriptionManager } from '@/components/settings/SubscriptionManager';
 import { BundleActiveBadge } from '@/components/ecosystem/BundleActiveBadge';
+import { EcosystemSettingsCard } from '@/components/ecosystem/EcosystemSettingsCard';
 import { FiscalEntitiesCard } from '@/components/settings/FiscalEntitiesCard';
 import { resetOnboardingTutorial } from '@/components/guidance/OnboardingTutorial';
 import { PageHeader } from '@/components/PageHeader';
@@ -220,6 +221,7 @@ export default function Settings() {
               <div data-highlight="subscription-settings" className="space-y-3">
                 <SubscriptionManager />
                 <BundleActiveBadge variant="full" />
+                <EcosystemSettingsCard />
               </div>
             </SettingsSection>
 

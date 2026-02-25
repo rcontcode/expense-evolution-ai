@@ -19,6 +19,7 @@ import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding'
 import { EcosystemInsights } from '@/components/ecosystem/EcosystemInsights';
 import { EcosystemWeeklyDigest } from '@/components/ecosystem/EcosystemWeeklyDigest';
 import { EcosystemHealthScore } from '@/components/ecosystem/EcosystemHealthScore';
+import { EcosystemQuickActions } from '@/components/ecosystem/EcosystemQuickActions';
 
 const OrganizedDashboard = lazy(() => import('@/components/focus').then(m => ({ default: m.OrganizedDashboard })));
 
@@ -93,6 +94,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
       <EcosystemWeeklyDigest />
       <EcosystemHealthScore />
       <EcosystemInsights />
+      <EcosystemQuickActions />
 
       <Button
         variant="outline"

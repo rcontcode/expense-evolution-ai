@@ -1,13 +1,15 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
-import { Activity } from 'lucide-react';
+import { Activity, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFeatureFlags } from '@/hooks/data/useFeatureFlags';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { subMonths } from 'date-fns';
+import { openFokusparkTool } from '@/lib/ecosystem/deeplinks';
 
 /**
  * Composite ecosystem health score (0-100) based on:
@@ -131,13 +133,24 @@ export const EcosystemHealthScore = memo(() => {
               <span className={`text-lg font-bold ${getColor(score)}`}>{score}</span>
             </div>
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className={`text-sm font-bold ${getColor(score)}`}>{getLabel(score)}</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">
               {isEs
                 ? 'Basado en ahorro, enfoque, estrés y estabilidad'
                 : 'Based on savings, focus, stress & stability'}
             </p>
+            {score < 50 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-1 text-[10px] h-6 px-2 gap-1"
+                onClick={() => openFokusparkTool('breathing', 'health-score')}
+              >
+                <ExternalLink className="h-3 w-3" />
+                {isEs ? 'Mejorar con Fokuspark' : 'Improve with Fokuspark'}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
