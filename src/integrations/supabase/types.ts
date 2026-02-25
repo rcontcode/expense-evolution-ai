@@ -1192,6 +1192,90 @@ export type Database = {
           },
         ]
       }
+      ecosystem_notifications: {
+        Row: {
+          action_tool: string | null
+          action_url: string | null
+          created_at: string
+          emoji: string | null
+          id: string
+          is_read: boolean
+          message_en: string
+          message_es: string
+          notification_type: string
+          source_app: string
+          title_en: string
+          title_es: string
+          user_id: string
+        }
+        Insert: {
+          action_tool?: string | null
+          action_url?: string | null
+          created_at?: string
+          emoji?: string | null
+          id?: string
+          is_read?: boolean
+          message_en: string
+          message_es: string
+          notification_type: string
+          source_app?: string
+          title_en: string
+          title_es: string
+          user_id: string
+        }
+        Update: {
+          action_tool?: string | null
+          action_url?: string | null
+          created_at?: string
+          emoji?: string | null
+          id?: string
+          is_read?: boolean
+          message_en?: string
+          message_es?: string
+          notification_type?: string
+          source_app?: string
+          title_en?: string
+          title_es?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ecosystem_streaks: {
+        Row: {
+          best_streak: number
+          combined_days_this_week: number
+          current_streak: number
+          finance_days_this_week: number
+          focus_days_this_week: number
+          id: string
+          last_activity_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          best_streak?: number
+          combined_days_this_week?: number
+          current_streak?: number
+          finance_days_this_week?: number
+          focus_days_this_week?: number
+          id?: string
+          last_activity_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          best_streak?: number
+          combined_days_this_week?: number
+          current_streak?: number
+          finance_days_this_week?: number
+          focus_days_this_week?: number
+          id?: string
+          last_activity_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       education_daily_logs: {
         Row: {
           created_at: string
