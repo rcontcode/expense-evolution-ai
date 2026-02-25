@@ -57,11 +57,21 @@
 - ✅ `EcosystemCoaching.tsx` — Rule-based AI financial coaching analyzing savings rate, focus-spending correlation, worry-spending links, journal habits, and consistency patterns. Top 3 insights with contextual Fokuspark CTAs
 - ✅ DB tables: `ecosystem_notifications` and `ecosystem_streaks` with RLS policies
 
-### Phase 10: Future Enhancements (PLANNED)
+### Phase 10: AI Coaching, Leaderboard & Inline Widgets ✅ COMPLETE
 
-- True AI model coaching (Gemini/GPT integration for personalized advice)
-- Ecosystem leaderboard between bundle users
-- Cross-app widget system (embed Fokuspark tools inline)
+- ✅ `ecosystem-coaching` edge function — Gemini 2.5 Flash powered coaching with user data context, fallback to rule-based insights
+- ✅ `EcosystemAICoaching.tsx` — Frontend for AI coaching with loading state, refresh, and source indicator (AI vs Smart)
+- ✅ `EcosystemLeaderboard.tsx` — Anonymous weekly ranking of Bundle users with auto-submitted scores (health + focus + streak)
+- ✅ `EcosystemInlineWidgets.tsx` — Embedded Fokuspark mini-tools: 4-7-8 breathing animation and 5-min focus timer, sessions logged to DB
+- ✅ DB tables: `ecosystem_leaderboard` with public read + user write RLS
+
+### Technical Notes (Updated)
+
+- **Shared tables:** `financial_focus_sessions`, `financial_worry_entries`, `user_subscriptions.has_bundle`, `ecosystem_notifications`, `ecosystem_streaks`, `ecosystem_leaderboard`
+- **Feature flags:** `ecosystem_enabled` (master), `ecosystem_onboarding`, `ecosystem_insights`, `ecosystem_badge`, `ecosystem_promo_card`
+- **localStorage keys:** `ecosystem-onboarding-dismissed`, `ecosystem-weekly-digest-dismissed`, `ecosystem-predictive-dismissed`
+- **Edge functions:** `ecosystem-coaching` (Gemini AI)
+- **Stripe Bundle IDs:** Monthly `price_1T4U9U3wR30iWwFnq9YJeIHe`, Annual `price_1T4UEy3wR30iWwFnbIfKJtUb`
 
 ### Technical Notes
 
