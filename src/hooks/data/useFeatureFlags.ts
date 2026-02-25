@@ -76,6 +76,10 @@ export function useFeatureFlags() {
   const masterEnabled = flags['ecosystem_enabled'] ?? true;
 
   const isEnabled = (flagKey: string): boolean => {
+    // Admin preview mode: ALL ecosystem flags forced ON
+    if (isAdmin && adminBundlePreviewEnabled && flagKey.startsWith('ecosystem_')) {
+      return true;
+    }
     // If checking a non-ecosystem flag, just return its value
     if (!flagKey.startsWith('ecosystem_')) {
       return flags[flagKey] ?? false;
