@@ -103,6 +103,7 @@ const BetaFeatures = lazyWithRetry(() => import("./pages/BetaFeatures"));
 const BetaCodesAdmin = lazyWithRetry(() => import("./pages/admin/BetaCodes"));
 const BetaDashboardAdmin = lazyWithRetry(() => import("./pages/admin/BetaDashboard"));
 const LeadsManagementAdmin = lazyWithRetry(() => import("./pages/admin/LeadsManagement"));
+const EcosystemLabAdmin = lazyWithRetry(() => import("./pages/admin/EcosystemLab"));
 const FinancialQuiz = lazyWithRetry(() => import("./pages/FinancialQuiz"));
 const BetaFeedback = lazyWithRetry(() => import("./pages/BetaFeedback"));
 const BetaGuide = lazyWithRetry(() => import("./pages/BetaGuide"));
@@ -111,8 +112,6 @@ const Trash = lazyWithRetry(() => import("./pages/Trash"));
 const DataHealth = lazyWithRetry(() => import("./pages/DataHealth"));
 const FilesPage = lazyWithRetry(() => import("./pages/Files"));
 const UserGuide = lazyWithRetry(() => import("./pages/UserGuide"));
-
-// Assistant and onboarding overlays disabled for stability-first mode
 const CookieConsent = lazyWithRetry(() =>
   import("./components/CookieConsent").then((m) => ({ default: m.CookieConsent }))
 );
@@ -374,6 +373,7 @@ const App = () => (
                         <Route path="/admin/beta-codes" element={<AdminRoute><BetaCodesAdmin /></AdminRoute>} />
                         <Route path="/admin/beta-dashboard" element={<AdminRoute><BetaDashboardAdmin /></AdminRoute>} />
                         <Route path="/admin/leads" element={<AdminRoute><LeadsManagementAdmin /></AdminRoute>} />
+                        <Route path="/admin/ecosystem-lab" element={<AdminRoute><EcosystemLabAdmin /></AdminRoute>} />
                         <Route path="/beta-feedback" element={<ProtectedRoute><BetaFeedback /></ProtectedRoute>} />
                         <Route path="/beta-guide" element={<ProtectedRoute><BetaGuide /></ProtectedRoute>} />
                         <Route path="/adventure" element={<ProtectedRoute><FinancialAdventure /></ProtectedRoute>} />

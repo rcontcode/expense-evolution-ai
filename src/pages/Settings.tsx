@@ -12,7 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   RotateCcw, Globe, BookOpen,
-  Shield, Ticket, Settings2, Database, ChevronDown, ArrowLeft
+  Shield, Ticket, Settings2, Database, ChevronDown, ArrowLeft, FlaskConical
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { NotificationPreferences } from '@/components/settings/NotificationPreferences';
@@ -394,10 +394,16 @@ export default function Settings() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button onClick={() => navigate('/admin/beta-codes')} className="gap-2 min-h-[44px]">
-                    <Ticket className="h-4 w-4" />
-                    {language === 'es' ? 'Códigos Beta' : 'Beta Codes'}
-                  </Button>
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    <Button onClick={() => navigate('/admin/beta-codes')} className="gap-2 min-h-[44px]">
+                      <Ticket className="h-4 w-4" />
+                      {language === 'es' ? 'Códigos Beta' : 'Beta Codes'}
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate('/admin/ecosystem-lab')} className="gap-2 min-h-[44px]">
+                      <FlaskConical className="h-4 w-4" />
+                      {language === 'es' ? 'Laboratorio Ecosistema' : 'Ecosystem Lab'}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}
