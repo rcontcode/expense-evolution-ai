@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { NotificationPreferences } from '@/components/settings/NotificationPreferences';
 import { ReminderPreferencesPanel } from '@/components/notifications/ReminderPreferencesPanel';
 import { SubscriptionManager } from '@/components/settings/SubscriptionManager';
+import { BundleActiveBadge } from '@/components/ecosystem/BundleActiveBadge';
 import { FiscalEntitiesCard } from '@/components/settings/FiscalEntitiesCard';
 import { resetOnboardingTutorial } from '@/components/guidance/OnboardingTutorial';
 import { PageHeader } from '@/components/PageHeader';
@@ -216,8 +217,9 @@ export default function Settings() {
               icon={Shield} 
               isMobile={isMobile}
             >
-              <div data-highlight="subscription-settings">
+              <div data-highlight="subscription-settings" className="space-y-3">
                 <SubscriptionManager />
+                <BundleActiveBadge variant="full" />
               </div>
             </SettingsSection>
 
