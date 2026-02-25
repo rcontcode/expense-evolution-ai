@@ -50,11 +50,18 @@
 - ✅ `EcosystemAchievements.tsx` — 6 cross-app achievements: Connection, Focus Master, Zen Saver, Worry Free, Financial Reflector, Total Harmony
 - All components gated by `hasBundleAccess` + `ecosystem_insights` flag
 
-### Phase 9: Future Enhancements (PLANNED)
+### Phase 9: Cross-App Intelligence & Social ✅ COMPLETE
 
-- Cross-app notification bridge
-- Shared streaks between apps
-- AI-powered financial coaching via ecosystem data
+- ✅ `EcosystemNotifications.tsx` — Cross-app notification bridge with `ecosystem_notifications` table, read/unread state, expandable card with action CTAs
+- ✅ `EcosystemStreaks.tsx` — Shared streaks tracking combined daily activity (finance + focus), weekly progress bar, auto-persisted to `ecosystem_streaks` table
+- ✅ `EcosystemCoaching.tsx` — Rule-based AI financial coaching analyzing savings rate, focus-spending correlation, worry-spending links, journal habits, and consistency patterns. Top 3 insights with contextual Fokuspark CTAs
+- ✅ DB tables: `ecosystem_notifications` and `ecosystem_streaks` with RLS policies
+
+### Phase 10: Future Enhancements (PLANNED)
+
+- True AI model coaching (Gemini/GPT integration for personalized advice)
+- Ecosystem leaderboard between bundle users
+- Cross-app widget system (embed Fokuspark tools inline)
 
 ### Technical Notes
 
