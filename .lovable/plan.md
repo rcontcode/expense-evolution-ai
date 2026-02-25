@@ -1,62 +1,47 @@
 
 
-# Plan de Implementacion: Evo Ecosystem
+## Phase 4: Ecosystem Onboarding + Cross-App Dashboard
 
-## Fase 1: Fundamentos del Ecosistema ✅ COMPLETADA
+Based on the current state, here is my recommended step-by-step plan for the next phase of the Evo Ecosystem.
 
-### Paso 1: Migracion de Base de Datos ✅
-- Tabla `feature_flags` con RLS
-- Columna `has_bundle` en `user_subscriptions`
-- Tabla `financial_focus_sessions`
-- Tabla `financial_worry_entries`
+### Step 1: Ecosystem Onboarding Welcome (new component)
 
-### Paso 2: Hook `useFeatureFlags` ✅
-### Paso 3: Panel Admin `FeatureFlagManager` ✅
-### Paso 4: Componentes de Bienestar ✅
-### Paso 5: Constantes de Frases Unificadas ✅
-### Paso 6: Integracion en Mentorship ✅
-### Paso 7: Instrucciones para Fokuspark ✅
+Create `EcosystemOnboarding.tsx` — a welcome flow that triggers once for new Bundle users (`has_bundle = true` + not dismissed). It will:
 
----
+- Show a 3-step animated card explaining Bundle benefits:
+  1. "Your finances and focus are now connected"
+  2. "Cross-app insights will appear automatically"
+  3. "Explore Fokuspark for the other half of your ecosystem"
+- Include a CTA to open Fokuspark and a dismiss button
+- Persist dismissal in `localStorage` (`ecosystem-onboarding-dismissed`)
+- Integrate into `MobileDashboard` and the desktop dashboard, shown only for Bundle users
 
-## Fase 1.5: Pulido y Testing ✅ COMPLETADA
+### Step 2: Cross-App Correlation Dashboard (new component)
 
-- Fix: stale closure en breathing timer
-- Fix: eliminados `(supabase as any)` casts
-- Browser test de todos los componentes
+Create `EcosystemInsights.tsx` — a dashboard card exclusive to Bundle users that visualizes the relationship between focus/wellbeing data and financial behavior:
 
----
+- Read from existing `financial_focus_sessions` and `financial_worry_entries` tables
+- Show metrics: total focus minutes, worry entries logged, correlation with spending patterns
+- Display a simple chart (recharts scatter or bar) showing focus session days vs expense amounts
+- Gated behind `hasBundleAccess` — non-bundle users see an upgrade prompt instead
 
-## Fase 2: Stripe Bundle + Deteccion Automatica ✅ COMPLETADA
+### Step 3: Integration into Settings
 
-### Paso 1: Productos Stripe Bundle ✅
-- Bundle Monthly: prod_U2ZIfWwlezukmF / price_1T4U9U3wR30iWwFnq9YJeIHe ($14.99/mo)
-- Bundle Annual: prod_U2ZNNkNSSVCIp5 / price_1T4UEy3wR30iWwFnbIfKJtUb ($119.90/yr)
+- Add the `BundleActiveBadge` (full variant) to the Settings page subscription section
+- Show ecosystem status alongside the current plan details
 
-### Paso 2: Webhook actualizado ✅
-- `getPlanFromProductId` ahora retorna `isBundle`
-- Bundle products → planType "pro" + has_bundle = true
-- Cancellation resets has_bundle = false
+### Step 4: Instructions for Fokuspark
 
-### Paso 3: check-subscription actualizado ✅
-- Detecta bundle products
-- Retorna `has_bundle` en response
-- Upsert incluye has_bundle
+Provide copy-paste instructions for Fokuspark to:
+- Mirror the onboarding flow for Bundle users
+- Share the same `localStorage` key convention for onboarding dismissal
+- Implement their side of the cross-app data (focus sessions duration, meditation streaks)
 
-### Paso 4: Frontend STRIPE_CONFIG actualizado ✅
-- Bundle products/prices/pricing agregados a useSubscription.ts
+### Technical details
 
----
+- **No database changes needed** — reuses existing `financial_focus_sessions`, `financial_worry_entries`, and `user_subscriptions.has_bundle`
+- **New files**: `src/components/ecosystem/EcosystemOnboarding.tsx`, `src/components/ecosystem/EcosystemInsights.tsx`
+- **Modified files**: `MobileDashboard.tsx` (add onboarding + insights), `Settings.tsx` (add badge), `.lovable/plan.md`
+- All components gated via `useFeatureFlags().hasBundleAccess`
+- Full ES/EN support via `useLanguage()`
 
-## Fase 3: UI de Pricing + Bundle ✅ EN PROGRESO
-
-### Paso 1: UI de Pricing con opción Bundle ✅
-- SubscriptionManager muestra 3 planes (Premium, Pro, Bundle)
-- Bundle card con badge "Mejor valor" y features de ambas apps
-- createCheckout soporta planType 'bundle'
-- Traducciones ES/EN completas
-
-### Próximos pasos
-- Dashboard de datos cruzados para Bundle users
-- Onboarding del ecosistema
-- Cross-app correlation insights UI
