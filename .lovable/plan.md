@@ -73,9 +73,3 @@
 - **Edge functions:** `ecosystem-coaching` (Gemini AI)
 - **Stripe Bundle IDs:** Monthly `price_1T4U9U3wR30iWwFnq9YJeIHe`, Annual `price_1T4UEy3wR30iWwFnbIfKJtUb`
 
-### Technical Notes
-
-- **Shared tables:** `financial_focus_sessions`, `financial_worry_entries`, `user_subscriptions.has_bundle`
-- **Feature flags:** `ecosystem_enabled` (master), `ecosystem_onboarding`, `ecosystem_insights`, `ecosystem_badge`, `ecosystem_promo_card`
-- **localStorage keys:** `ecosystem-onboarding-dismissed`
-- **Stripe Bundle IDs:** Monthly `price_1T4U9U3wR30iWwFnq9YJeIHe`, Annual `price_1T4UEy3wR30iWwFnbIfKJtUb`
