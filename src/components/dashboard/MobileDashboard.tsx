@@ -26,6 +26,8 @@ import { ProgressiveOnboarding } from '@/components/onboarding/ProgressiveOnboar
 import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
 import { AlertStack } from '@/components/mobile/AlertStack';
 import { BundleActiveBadge } from '@/components/ecosystem/BundleActiveBadge';
+import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding';
+import { EcosystemInsights } from '@/components/ecosystem/EcosystemInsights';
 import { cn } from '@/lib/utils';
 
 // Lazy load heavy components
@@ -120,6 +122,9 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
       
       {/* Progressive Onboarding - only for new users */}
       <ProgressiveOnboarding />
+      
+      {/* Ecosystem Onboarding - Bundle users only */}
+      <EcosystemOnboarding />
       
       {/* Bundle Ecosystem Badge */}
       <BundleActiveBadge variant="full" />
@@ -261,6 +266,9 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
         onAddIncome={handleAddIncome}
         onAddExpense={handleAddExpense}
       />
+      
+      {/* Ecosystem Insights - Bundle cross-app data */}
+      <EcosystemInsights />
       
       {/* Advanced Tools Toggle */}
       <Button
