@@ -1192,6 +1192,45 @@ export type Database = {
           },
         ]
       }
+      ecosystem_leaderboard: {
+        Row: {
+          achievements_count: number
+          display_name: string
+          focus_minutes: number
+          health_score: number
+          id: string
+          streak_days: number
+          total_score: number
+          updated_at: string
+          user_id: string
+          week_key: string
+        }
+        Insert: {
+          achievements_count?: number
+          display_name?: string
+          focus_minutes?: number
+          health_score?: number
+          id?: string
+          streak_days?: number
+          total_score?: number
+          updated_at?: string
+          user_id: string
+          week_key: string
+        }
+        Update: {
+          achievements_count?: number
+          display_name?: string
+          focus_minutes?: number
+          health_score?: number
+          id?: string
+          streak_days?: number
+          total_score?: number
+          updated_at?: string
+          user_id?: string
+          week_key?: string
+        }
+        Relationships: []
+      }
       ecosystem_notifications: {
         Row: {
           action_tool: string | null

@@ -26,6 +26,9 @@ import { EcosystemAchievements } from '@/components/ecosystem/EcosystemAchieveme
 import { EcosystemNotifications } from '@/components/ecosystem/EcosystemNotifications';
 import { EcosystemStreaks } from '@/components/ecosystem/EcosystemStreaks';
 import { EcosystemCoaching } from '@/components/ecosystem/EcosystemCoaching';
+import { EcosystemAICoaching } from '@/components/ecosystem/EcosystemAICoaching';
+import { EcosystemLeaderboard } from '@/components/ecosystem/EcosystemLeaderboard';
+import { EcosystemInlineWidgets } from '@/components/ecosystem/EcosystemInlineWidgets';
 
 const OrganizedDashboard = lazy(() => import('@/components/focus').then(m => ({ default: m.OrganizedDashboard })));
 
@@ -98,11 +101,14 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
       />
 
       <EcosystemNotifications />
+      <EcosystemAICoaching />
       <EcosystemCoaching />
       <EcosystemPredictiveAlerts />
       <EcosystemStreaks />
+      <EcosystemInlineWidgets />
       <EcosystemWeeklyDigest />
       <EcosystemHealthScore />
+      <EcosystemLeaderboard />
       <EcosystemAchievements />
       <EcosystemMonthlyReport />
       <EcosystemInsights />
