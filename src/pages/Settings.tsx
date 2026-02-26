@@ -35,6 +35,7 @@ const SampleDataManager = lazy(() => import('@/components/settings/SampleDataMan
 const VoicePreferencesCard = lazy(() => import('@/components/settings/VoicePreferencesCard').then(m => ({ default: m.VoicePreferencesCard })));
 const SoundPreferencesPanel = lazy(() => import('@/components/settings/SoundPreferencesPanel').then(m => ({ default: m.SoundPreferencesPanel })));
 import { SecurityCard } from '@/components/settings/SecurityCard';
+import { ProfileCard } from '@/components/settings/ProfileCard';
 const FeatureFlagManagerLazy = lazy(() => import('@/components/admin/FeatureFlagManager').then(m => ({ default: m.FeatureFlagManager })));
 
 const SectionSkeleton = () => (
@@ -418,6 +419,7 @@ export default function Settings() {
 
           {/* ============== DATA TAB ============== */}
           <TabsContent value="data" className="space-y-4 sm:space-y-6">
+            <ProfileCard />
             <SecurityCard />
             <Suspense fallback={<SectionSkeleton />}>
               <SampleDataManager />
