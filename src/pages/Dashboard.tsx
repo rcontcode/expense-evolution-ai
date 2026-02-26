@@ -43,21 +43,8 @@ import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNu
 import { ProfileExtenderDialog } from '@/components/profile/ProfileExtenderDialog';
 import { LifeProfileSection } from '@/hooks/data/useLifeProfile';
 import { DashboardNotificationHub } from '@/components/dashboard/DashboardNotificationHub';
-import { BundleActiveBadge } from '@/components/ecosystem/BundleActiveBadge';
 import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding';
-import { EcosystemNotifications } from '@/components/ecosystem/EcosystemNotifications';
-import { EcosystemAICoaching } from '@/components/ecosystem/EcosystemAICoaching';
-import { EcosystemCoaching } from '@/components/ecosystem/EcosystemCoaching';
-import { EcosystemPredictiveAlerts } from '@/components/ecosystem/EcosystemPredictiveAlerts';
-import { EcosystemStreaks } from '@/components/ecosystem/EcosystemStreaks';
-import { EcosystemInlineWidgets } from '@/components/ecosystem/EcosystemInlineWidgets';
-import { EcosystemWeeklyDigest } from '@/components/ecosystem/EcosystemWeeklyDigest';
-import { EcosystemHealthScore } from '@/components/ecosystem/EcosystemHealthScore';
-import { EcosystemLeaderboard } from '@/components/ecosystem/EcosystemLeaderboard';
-import { EcosystemAchievements } from '@/components/ecosystem/EcosystemAchievements';
-import { EcosystemMonthlyReport } from '@/components/ecosystem/EcosystemMonthlyReport';
-import { EcosystemInsights } from '@/components/ecosystem/EcosystemInsights';
-import { EcosystemQuickActions } from '@/components/ecosystem/EcosystemQuickActions';
+import { EcosystemSection } from '@/components/ecosystem/EcosystemSection';
 
 // Lazy load chart components for better performance
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
@@ -303,9 +290,8 @@ export default function Dashboard() {
           {/* Progressive Onboarding - Mission-based for new users */}
           <ProgressiveOnboarding />
           
-          {/* Ecosystem — Onboarding & Badge (before timeline) */}
+          {/* Ecosystem Onboarding - one-time flow */}
           <EcosystemOnboarding />
-          <BundleActiveBadge variant="full" />
           
           {/* Profile Extender Dialog */}
           <ProfileExtenderDialog
@@ -342,20 +328,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Ecosystem — Intelligence & Engagement widgets */}
-          <EcosystemNotifications />
-          <EcosystemAICoaching />
-          <EcosystemCoaching />
-          <EcosystemPredictiveAlerts />
-          <EcosystemStreaks />
-          <EcosystemInlineWidgets />
-          <EcosystemWeeklyDigest />
-          <EcosystemHealthScore />
-          <EcosystemLeaderboard />
-          <EcosystemAchievements />
-          <EcosystemMonthlyReport />
-          <EcosystemInsights />
-          <EcosystemQuickActions />
+          {/* Ecosystem — Collapsible section for Bundle users */}
+          <EcosystemSection />
 
           {/* Visual Workflow Guide - "¿Qué flujo necesitas hoy?" */}
           <Suspense fallback={<Skeleton className="h-[300px]" />}>
