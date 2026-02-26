@@ -1,47 +1,37 @@
 
 
-## Plan: Integrar componentes del Ecosistema en el Dashboard de escritorio
+## Diagnóstico correcto
 
-### Problema
-Los 13 componentes del ecosistema solo están en `MobileDashboard.tsx`. El escritorio (`Dashboard.tsx`) no tiene ninguno. Por eso no ves nada.
+Tienes toda la razón. Corregir el nombre directamente en la base de datos es un parche para ti, no una solución real. **Cualquier usuario** podría terminar con un nombre incorrecto (por OAuth, por un error al registrarse, o como en tu caso, por una herramienta externa que modificó el perfil).
 
-### Cambios
+La solución correcta es: **agregar un campo editable de nombre en Settings**, disponible para todos los usuarios.
 
-**Archivo: `src/pages/Dashboard.tsx`**
+---
 
-1. **Agregar imports** de todos los componentes ecosistema (líneas 1-46):
-   - `BundleActiveBadge`, `EcosystemOnboarding`, `EcosystemNotifications`, `EcosystemAICoaching`, `EcosystemCoaching`, `EcosystemPredictiveAlerts`, `EcosystemStreaks`, `EcosystemInlineWidgets`, `EcosystemWeeklyDigest`, `EcosystemHealthScore`, `EcosystemLeaderboard`, `EcosystemAchievements`, `EcosystemMonthlyReport`, `EcosystemInsights`, `EcosystemQuickActions`
+## Plan: Tarjeta "Mi Perfil" en Settings
 
-2. **Insertar los componentes** después de `<ProgressiveOnboarding />` (aprox. línea 289), antes del timeline. Se colocan en el mismo orden que en móvil:
+### Cambio 1 — Nuevo componente `ProfileCard.tsx`
 
-```text
-  <EcosystemOnboarding />
-  <BundleActiveBadge variant="full" />
+Crear `src/components/settings/ProfileCard.tsx` con:
 
-  (después del timeline y month detail, antes del workflow)
+- Campo de texto para **Nombre completo** (`full_name`), pre-poblado desde `useProfile()`
+- Campo de **Email** (solo lectura, informativo)
+- Botón "Guardar" que usa el hook existente `useUpdateProfile()` para persistir el cambio
+- Feedback con toast de éxito/error
+- Textos bilingues (es/en)
 
-  <EcosystemNotifications />
-  <EcosystemAICoaching />
-  <EcosystemCoaching />
-  <EcosystemPredictiveAlerts />
-  <EcosystemStreaks />
-  <EcosystemInlineWidgets />
-  <EcosystemWeeklyDigest />
-  <EcosystemHealthScore />
-  <EcosystemLeaderboard />
-  <EcosystemAchievements />
-  <EcosystemMonthlyReport />
-  <EcosystemInsights />
-  <EcosystemQuickActions />
-```
+### Cambio 2 — Integrar en Settings.tsx
 
-### Resultado esperado
-- Con el **Ecosystem Lab activado** (Settings → Administración → Laboratorio Ecosistema → Activar prueba), verás todos los widgets del ecosistema en el dashboard de escritorio
-- Con el Lab **desactivado**, no se ve nada (cada componente retorna `null` si no hay acceso)
-- Después de verlo, decides si lo apagas con el flag `ecosystem_enabled` o lo dejas
+En la pestaña **"Datos"** (`TabsContent value="data"`), agregar `<ProfileCard />` como **primera tarjeta**, antes de `SecurityCard`. Esto agrupa lógicamente: Perfil + Contraseña + Privacidad de datos.
 
-### No se toca
-- Ningún componente ecosistema se modifica
-- `MobileDashboard.tsx` queda igual
-- Lógica de feature flags y admin preview queda igual
+### Archivos afectados
+
+| Archivo | Cambio |
+|---|---|
+| `src/components/settings/ProfileCard.tsx` | **Nuevo** — Formulario editable de nombre |
+| `src/pages/Settings.tsx` | Importar y renderizar `ProfileCard` en tab "Datos" |
+
+### Sin cambios en base de datos
+
+El campo `full_name` ya existe en la tabla `profiles` y el hook `useUpdateProfile()` ya soporta actualizarlo. No se necesitan migraciones.
 
