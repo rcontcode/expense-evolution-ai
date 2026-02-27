@@ -202,6 +202,7 @@ serve(async (req) => {
         comments: payload.comments || null,
         lead_score: leadScore,
         priority: leadPriority,
+        source: payload.source || 'evofinz',
       })
       .select()
       .single();
