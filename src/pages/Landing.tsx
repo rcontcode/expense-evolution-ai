@@ -8,7 +8,7 @@ import {
   Camera, Receipt, FileText, Calculator, Trophy, GraduationCap,
   BarChart3, BookOpen, Building2, CreditCard, Mic, TrendingUp,
   ArrowRight, Check, Sparkles, Shield, Zap, Gift, XCircle,
-  Star, Flame, Target, Crown, Heart, AlertTriangle, Clock, Lightbulb, ChevronRight, Quote, Globe, MessageSquare
+  Star, Flame, Target, Crown, Heart, AlertTriangle, Clock, Lightbulb, ChevronRight, Quote, Globe, MessageSquare, Layers
 } from 'lucide-react';
 import phoenixLogo from '@/assets/phoenix-clean-logo.png';
 import { FloatingStars } from '@/components/landing/FloatingStars';
@@ -349,6 +349,48 @@ const getPricingTiers = (language: string) => [
     cta: language === 'es' ? '¡Quiero Pro!' : 'Get Pro!',
     popular: false,
     gradient: 'from-violet-600 via-purple-600 to-indigo-600'
+  },
+  {
+    name: 'Evo Bundle',
+    monthlyPrice: 14.99,
+    isBundle: true,
+    description: language === 'es' 
+      ? 'EvoFinz Pro + Fokuspark Premium. Finanzas y bienestar mental en un solo plan.' 
+      : 'EvoFinz Pro + Fokuspark Premium. Finances and mental wellbeing in one plan.',
+    transformation: language === 'es' 
+      ? '💎 Mejor valor: 2 apps, 1 precio'
+      : '💎 Best value: 2 apps, 1 price',
+    features: language === 'es' ? [
+      '🔥 TODO de EvoFinz Pro incluido',
+      '🧠 Fokuspark Premium completo',
+      '🎯 Sesiones de enfoque y meditación',
+      '📓 Diario de preocupaciones financieras',
+      '📊 Insights cruzados finanzas ↔ enfoque',
+      '🏆 Leaderboard del ecosistema',
+      '🔗 Streaks y logros compartidos',
+      '💡 AI coaching financiero + mental',
+      '📈 Health Score unificado',
+      '⚡ Alertas predictivas cruzadas',
+      '📅 Reportes mensuales del ecosistema',
+      '⭐ Soporte prioritario'
+    ] : [
+      '🔥 ALL of EvoFinz Pro included',
+      '🧠 Full Fokuspark Premium',
+      '🎯 Focus & meditation sessions',
+      '📓 Financial worry journal',
+      '📊 Cross-app insights: finances ↔ focus',
+      '🏆 Ecosystem leaderboard',
+      '🔗 Shared streaks & achievements',
+      '💡 Financial + mental AI coaching',
+      '📈 Unified Health Score',
+      '⚡ Cross-app predictive alerts',
+      '📅 Monthly ecosystem reports',
+      '⭐ Priority support'
+    ],
+    notIncluded: [],
+    cta: language === 'es' ? '¡Quiero el Bundle!' : 'Get the Bundle!',
+    popular: false,
+    gradient: 'from-teal-500 via-cyan-500 to-blue-500'
   }
 ];
 
@@ -389,9 +431,18 @@ export default function Landing() {
   const stats = getStats(language);
   
   // Calculate prices based on billing period
-  const getPrice = (monthlyPrice: number) => {
+  const getPrice = (monthlyPrice: number, isBundle?: boolean) => {
     if (monthlyPrice === 0) return { display: '$0', period: language === 'es' ? '/mes' : '/mo', savings: '' };
     if (isAnnual) {
+      if (isBundle) {
+        // Bundle: $9.99/mo annual ($119.90/year) = 33% off vs separate plans
+        const monthlyEquivalent = '9.99';
+        return { 
+          display: `$${monthlyEquivalent} USD`, 
+          period: language === 'es' ? '/mes' : '/mo',
+          savings: language === 'es' ? '33% menos vs planes separados' : '33% off vs separate plans'
+        };
+      }
       const annualTotal = monthlyPrice * 12 * 0.8; // 20% discount
       const monthlyEquivalent = (annualTotal / 12).toFixed(2);
       return { 
@@ -783,6 +834,22 @@ export default function Landing() {
                 <span className="font-black text-white text-lg">${isAnnual ? '11.99' : '14.99'}</span>
                 <span className="text-violet-200/70 text-xs">{language === 'es' ? '/mes' : '/mo'}</span>
               </motion.div>
+
+              {/* Bundle */}
+              <motion.div 
+                whileHover={{ scale: 1.05, y: -2 }}
+                animate={{ boxShadow: ['0 0 10px rgba(20,184,166,0.2)', '0 0 20px rgba(20,184,166,0.4)', '0 0 10px rgba(20,184,166,0.2)'] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border border-teal-400/50"
+              >
+                <Layers className="w-5 h-5 text-teal-400" />
+                <span className="font-bold text-teal-300">Bundle</span>
+                <span className="font-black text-white text-lg">${isAnnual ? '9.99' : '14.99'}</span>
+                <span className="text-teal-200/70 text-xs">{language === 'es' ? '/mes' : '/mo'}</span>
+                <Badge className="bg-teal-500/30 text-teal-200 border-teal-400/40 text-[10px] px-1.5 py-0">
+                  2 apps
+                </Badge>
+              </motion.div>
             </div>
 
             {/* Divider with glow */}
@@ -1122,9 +1189,9 @@ export default function Landing() {
             </div>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {pricingTiers.map((tier, index) => {
-              const priceInfo = getPrice(tier.monthlyPrice);
+              const priceInfo = getPrice(tier.monthlyPrice, 'isBundle' in tier && tier.isBundle);
               return (
               <motion.div
                 key={tier.name}
@@ -1153,6 +1220,12 @@ export default function Landing() {
                     {language === 'es' ? 'Más Completo' : 'Most Complete'}
                   </Badge>
                 )}
+                {'isBundle' in tier && tier.isBundle && (
+                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2.5s_ease-in-out_infinite]">
+                    <Layers className="w-3 h-3 mr-1 inline" />
+                    {language === 'es' ? 'Mejor Valor' : 'Best Value'}
+                  </Badge>
+                )}
                 <Card 
                   className={`relative p-8 bg-slate-900/80 backdrop-blur-sm border-2 overflow-hidden h-full flex flex-col transition-all duration-300 ${
                     tier.popular 
@@ -1161,7 +1234,9 @@ export default function Landing() {
                         ? 'border-emerald-500 shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-2'
                         : 'featured' in tier && tier.featured
                           ? 'border-violet-500 shadow-2xl shadow-violet-500/25 scale-105 z-10 hover:shadow-violet-500/40 hover:-translate-y-2'
-                          : 'border-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-slate-900/50 hover:-translate-y-2'
+                          : 'isBundle' in tier && tier.isBundle
+                            ? 'border-teal-500 shadow-2xl shadow-teal-500/25 scale-105 z-10 hover:shadow-teal-500/40 hover:-translate-y-2'
+                            : 'border-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-slate-900/50 hover:-translate-y-2'
                   }`}
                 >
                   {/* Popular glow effect */}
@@ -1170,6 +1245,9 @@ export default function Landing() {
                   )}
                   {'isFree' in tier && tier.isFree && (
                     <div className="absolute -top-20 -left-20 w-40 h-40 bg-emerald-500/30 rounded-full blur-3xl" />
+                  )}
+                  {'isBundle' in tier && tier.isBundle && (
+                    <div className="absolute -top-20 -right-20 w-40 h-40 bg-teal-500/30 rounded-full blur-3xl" />
                   )}
                   
                   <div className="text-center mb-6 relative">
@@ -1224,9 +1302,11 @@ export default function Landing() {
                         ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-900' 
                         : 'featured' in tier && tier.featured
                           ? 'bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 text-white shadow-lg shadow-violet-500/30 ring-2 ring-white/30'
-                          : 'isFree' in tier && tier.isFree
-                            ? 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg shadow-emerald-500/30'
-                            : 'bg-slate-800 hover:bg-slate-700 text-white'
+                          : 'isBundle' in tier && tier.isBundle
+                            ? 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-lg shadow-teal-500/30 ring-2 ring-white/30'
+                            : 'isFree' in tier && tier.isFree
+                              ? 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg shadow-emerald-500/30'
+                              : 'bg-slate-800 hover:bg-slate-700 text-white'
                     }`}
                     onClick={() => navigate('/auth')}
                   >
@@ -1271,9 +1351,9 @@ export default function Landing() {
           </motion.div>
 
           {/* Compact pricing cards */}
-          <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
             {pricingTiers.map((tier, index) => {
-              const priceInfo = getPrice(tier.monthlyPrice);
+              const priceInfo = getPrice(tier.monthlyPrice, 'isBundle' in tier && tier.isBundle);
               return (
                 <motion.div
                   key={`compact-${tier.name}`}
@@ -1287,9 +1367,11 @@ export default function Landing() {
                       ? 'bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-500 text-white shadow-xl shadow-orange-500/30'
                       : 'featured' in tier && tier.featured
                         ? 'bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 text-white shadow-xl shadow-violet-500/30'
-                        : 'isFree' in tier && tier.isFree
-                          ? 'bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 text-white shadow-xl shadow-emerald-500/30'
-                          : 'bg-white/80 backdrop-blur-sm border border-slate-200 hover:shadow-lg'
+                        : 'isBundle' in tier && tier.isBundle
+                          ? 'bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-500 text-white shadow-xl shadow-teal-500/30'
+                          : 'isFree' in tier && tier.isFree
+                            ? 'bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 text-white shadow-xl shadow-emerald-500/30'
+                            : 'bg-white/80 backdrop-blur-sm border border-slate-200 hover:shadow-lg'
                   }`}
                   onClick={() => navigate('/auth')}
                 >
@@ -1317,16 +1399,24 @@ export default function Landing() {
                       </Badge>
                     </div>
                   )}
+                  {'isBundle' in tier && tier.isBundle && (
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-white text-teal-600 text-xs px-2 py-0.5 shadow-lg font-bold">
+                        <Layers className="w-2 h-2 mr-1 inline" />
+                        {language === 'es' ? 'Mejor Valor' : 'Best Value'}
+                      </Badge>
+                    </div>
+                  )}
                   
                   <div className="text-center">
-                    <h4 className={`font-bold text-lg ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) ? 'text-white' : 'text-slate-800'}`}>
+                    <h4 className={`font-bold text-lg ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white' : 'text-slate-800'}`}>
                       {tier.name}
                     </h4>
                     <div className="flex items-baseline justify-center gap-1 my-2">
-                      <span className={`text-3xl font-black ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) ? 'text-white' : `bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}`}>
+                      <span className={`text-3xl font-black ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white' : `bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}`}>
                         {priceInfo.display}
                       </span>
-                      <span className={`text-sm ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) ? 'text-white/80' : 'text-slate-500'}`}>
+                      <span className={`text-sm ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white/80' : 'text-slate-500'}`}>
                         {priceInfo.period}
                       </span>
                     </div>
@@ -1334,12 +1424,13 @@ export default function Landing() {
                     {/* Transformation highlight */}
                     {'transformation' in tier && tier.transformation && (
                       <div className={`text-xs font-medium px-2 py-1 rounded-full inline-block ${
-                        tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured)
+                        tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle)
                           ? 'bg-white/20 text-white' 
                           : 'bg-slate-100 text-slate-600'
                       }`}>
                         {'isFree' in tier && tier.isFree ? <Gift className="w-3 h-3 inline mr-1" /> : 
-                         'featured' in tier && tier.featured ? <Crown className="w-3 h-3 inline mr-1" /> : 
+                         'featured' in tier && tier.featured ? <Crown className="w-3 h-3 inline mr-1" /> :
+                         'isBundle' in tier && tier.isBundle ? <Layers className="w-3 h-3 inline mr-1" /> : 
                          <Flame className="w-3 h-3 inline mr-1" />}
                         {tier.transformation}
                       </div>
@@ -1352,9 +1443,11 @@ export default function Landing() {
                           ? 'bg-slate-900 hover:bg-slate-800 text-white'
                           : 'featured' in tier && tier.featured
                             ? 'bg-white hover:bg-slate-100 text-violet-600 font-bold shadow-lg'
-                            : 'isFree' in tier && tier.isFree
-                              ? 'bg-white hover:bg-slate-100 text-emerald-600 font-bold'
-                              : 'bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white'
+                            : 'isBundle' in tier && tier.isBundle
+                              ? 'bg-white hover:bg-slate-100 text-teal-600 font-bold shadow-lg'
+                              : 'isFree' in tier && tier.isFree
+                                ? 'bg-white hover:bg-slate-100 text-emerald-600 font-bold'
+                                : 'bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white'
                       }`}
                     >
                       {tier.cta}
