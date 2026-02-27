@@ -72,6 +72,7 @@ export function LeadsTable({ leads, onMarkContacted, onMarkConverted }: LeadsTab
               <TableHead className="w-[40px]"></TableHead>
               <TableHead>Nombre</TableHead>
               <TableHead>Prioridad</TableHead>
+              <TableHead>Fuente</TableHead>
               <TableHead>País</TableHead>
               <TableHead>Nivel</TableHead>
               <TableHead>Score Quiz</TableHead>
