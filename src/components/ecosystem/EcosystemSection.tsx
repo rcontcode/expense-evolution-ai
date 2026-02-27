@@ -54,6 +54,7 @@ export const EcosystemSection = memo(() => {
           animate={{ opacity: 1 }}
           className="space-y-4 pt-3"
         >
+          <EcoAppSwitcher currentApp="evofinz" />
           <BundleActiveBadge variant="full" />
           <EcosystemNotifications />
           <EcosystemAICoaching />
