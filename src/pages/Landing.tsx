@@ -352,7 +352,7 @@ const getPricingTiers = (language: string) => [
   },
   {
     name: 'Evo Bundle',
-    monthlyPrice: 14.99,
+    monthlyPrice: 19.99,
     isBundle: true,
     description: language === 'es' 
       ? 'EvoFinz Pro + Fokuspark Premium. Finanzas y bienestar mental en un solo plan.' 
@@ -844,7 +844,7 @@ export default function Landing() {
               >
                 <Layers className="w-5 h-5 text-teal-400" />
                 <span className="font-bold text-teal-300">Bundle</span>
-                <span className="font-black text-white text-lg">${isAnnual ? '9.99' : '14.99'}</span>
+                <span className="font-black text-white text-lg">${isAnnual ? '14.99' : '19.99'}</span>
                 <span className="text-teal-200/70 text-xs">{language === 'es' ? '/mes' : '/mo'}</span>
                 <Badge className="bg-teal-500/30 text-teal-200 border-teal-400/40 text-[10px] px-1.5 py-0">
                   2 apps
@@ -1199,29 +1199,29 @@ export default function Landing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
-                className={`relative ${tier.popular ? 'pt-4' : 'isFree' in tier && tier.isFree ? 'pt-4' : 'featured' in tier && tier.featured ? 'pt-4' : ''}`}
+                className="relative pt-6"
               >
                 {/* Badge FUERA del Card para evitar overflow-hidden */}
                 {tier.popular && (
-                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2s_ease-in-out_infinite]">
+                  <Badge className="absolute top-0 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2s_ease-in-out_infinite]">
                     <Star className="w-3 h-3 mr-1 inline" />
                     {language === 'es' ? 'Más Popular' : 'Most Popular'}
                   </Badge>
                 )}
                 {'isFree' in tier && tier.isFree && (
-                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-green-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-pulse">
+                  <Badge className="absolute top-0 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-green-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-pulse">
                     <Gift className="w-3 h-3 mr-1 inline" />
                     {language === 'es' ? '¡100% GRATIS!' : '100% FREE!'}
                   </Badge>
                 )}
                 {'featured' in tier && tier.featured && (
-                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2.2s_ease-in-out_infinite]">
+                  <Badge className="absolute top-0 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2.2s_ease-in-out_infinite]">
                     <Crown className="w-3 h-3 mr-1 inline" />
                     {language === 'es' ? 'Más Completo' : 'Most Complete'}
                   </Badge>
                 )}
                 {'isBundle' in tier && tier.isBundle && (
-                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2.5s_ease-in-out_infinite]">
+                  <Badge className="absolute top-0 left-1/2 -translate-x-1/2 bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2.5s_ease-in-out_infinite]">
                     <Layers className="w-3 h-3 mr-1 inline" />
                     {language === 'es' ? 'Mejor Valor' : 'Best Value'}
                   </Badge>
