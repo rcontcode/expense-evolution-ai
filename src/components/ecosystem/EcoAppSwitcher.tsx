@@ -40,7 +40,7 @@ export const EcoAppSwitcher = memo(({ currentApp = 'evofinz' }: EcoAppSwitcherPr
           <span className="text-2xl">{current.emoji}</span>
           <p className="text-xs font-semibold text-foreground">{current.name}</p>
           <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <Check className="h-3 w-3 text-green-500" />
+            <Check className="h-3 w-3 text-success" />
             {isEs ? 'Aquí estás' : "You're here"}
           </span>
         </div>
