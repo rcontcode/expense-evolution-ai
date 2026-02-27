@@ -145,10 +145,10 @@ export const EcosystemLeaderboard = memo(() => {
         <CardContent className="px-4 pb-3">
           <div className="space-y-1">
             {leaderboard.slice(0, 5).map((entry, i) => {
-              const isMe = entry.user_id === user?.id;
+              const isMe = entry.rank === myRank && myRank > 0;
               return (
                 <div
-                  key={entry.id}
+                  key={entry.rank}
                   className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors ${
                     isMe ? 'bg-primary/10 border border-primary/20' : 'bg-muted/30'
                   }`}
