@@ -10,6 +10,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { openFokusparkTool, type FokusparkTool } from '@/lib/ecosystem/deeplinks';
 import { formatDistanceToNow } from 'date-fns';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 import { es, enUS } from 'date-fns/locale';
 
 export const EcosystemNotifications = memo(() => {
