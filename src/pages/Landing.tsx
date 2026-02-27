@@ -834,6 +834,22 @@ export default function Landing() {
                 <span className="font-black text-white text-lg">${isAnnual ? '11.99' : '14.99'}</span>
                 <span className="text-violet-200/70 text-xs">{language === 'es' ? '/mes' : '/mo'}</span>
               </motion.div>
+
+              {/* Bundle */}
+              <motion.div 
+                whileHover={{ scale: 1.05, y: -2 }}
+                animate={{ boxShadow: ['0 0 10px rgba(20,184,166,0.2)', '0 0 20px rgba(20,184,166,0.4)', '0 0 10px rgba(20,184,166,0.2)'] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-500/30 to-cyan-500/30 border border-teal-400/50"
+              >
+                <Layers className="w-5 h-5 text-teal-400" />
+                <span className="font-bold text-teal-300">Bundle</span>
+                <span className="font-black text-white text-lg">${isAnnual ? '9.99' : '14.99'}</span>
+                <span className="text-teal-200/70 text-xs">{language === 'es' ? '/mes' : '/mo'}</span>
+                <Badge className="bg-teal-500/30 text-teal-200 border-teal-400/40 text-[10px] px-1.5 py-0">
+                  2 apps
+                </Badge>
+              </motion.div>
             </div>
 
             {/* Divider with glow */}
