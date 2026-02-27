@@ -8,7 +8,7 @@ import {
   Camera, Receipt, FileText, Calculator, Trophy, GraduationCap,
   BarChart3, BookOpen, Building2, CreditCard, Mic, TrendingUp,
   ArrowRight, Check, Sparkles, Shield, Zap, Gift, XCircle,
-  Star, Flame, Target, Crown, Heart, AlertTriangle, Clock, Lightbulb, ChevronRight, Quote, Globe, MessageSquare
+  Star, Flame, Target, Crown, Heart, AlertTriangle, Clock, Lightbulb, ChevronRight, Quote, Globe, MessageSquare, Layers
 } from 'lucide-react';
 import phoenixLogo from '@/assets/phoenix-clean-logo.png';
 import { FloatingStars } from '@/components/landing/FloatingStars';
