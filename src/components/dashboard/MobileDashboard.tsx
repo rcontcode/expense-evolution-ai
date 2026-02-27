@@ -88,18 +88,9 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
         onAddExpense={handleAddExpense}
       />
 
-      <EcosystemNotifications />
-      <EcosystemAICoaching />
-      <EcosystemCoaching />
-      <EcosystemPredictiveAlerts />
-      <EcosystemStreaks />
-      <EcosystemInlineWidgets />
-      <EcosystemWeeklyDigest />
-      <EcosystemHealthScore />
-      <EcosystemLeaderboard />
-      <EcosystemAchievements />
-      <EcosystemMonthlyReport />
-      <EcosystemInsights />
+      <Suspense fallback={null}>
+        <LazyEcosystemWidgets />
+      </Suspense>
       
 
       <Button
