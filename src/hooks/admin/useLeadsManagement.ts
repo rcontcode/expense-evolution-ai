@@ -39,6 +39,7 @@ export interface LeadFilters {
   situation: string;
   goal: string;
   obstacle: string;
+  source: string;
   dateFrom: string;
   dateTo: string;
 }
@@ -54,6 +55,7 @@ const defaultFilters: LeadFilters = {
   situation: '',
   goal: '',
   obstacle: '',
+  source: '',
   dateFrom: '',
   dateTo: '',
 };
