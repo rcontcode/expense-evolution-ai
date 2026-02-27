@@ -31,7 +31,7 @@ export const EcosystemWeeklyDigest = memo(() => {
 
   const [dismissed, setDismissed] = useState(() => getDismissedWeek() === currentWeek);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-weekly-digest', user?.id, currentWeek],
     queryFn: async () => {
       if (!user?.id) return null;
