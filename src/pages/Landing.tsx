@@ -1399,6 +1399,14 @@ export default function Landing() {
                       </Badge>
                     </div>
                   )}
+                  {'isBundle' in tier && tier.isBundle && (
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-white text-teal-600 text-xs px-2 py-0.5 shadow-lg font-bold">
+                        <Layers className="w-2 h-2 mr-1 inline" />
+                        {language === 'es' ? 'Mejor Valor' : 'Best Value'}
+                      </Badge>
+                    </div>
+                  )}
                   
                   <div className="text-center">
                     <h4 className={`font-bold text-lg ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) ? 'text-white' : 'text-slate-800'}`}>
