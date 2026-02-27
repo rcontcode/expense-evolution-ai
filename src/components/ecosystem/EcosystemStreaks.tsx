@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, differenceInCalendarDays } from 'date-fns';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
 /**
  * Shared streaks tracker — tracks combined activity across EvoFinz + Fokuspark.
