@@ -1,13 +1,21 @@
 
 
-## Evo App Switcher — Implementado
+## Lo que pasó
 
-### Archivos creados
-- `src/lib/ecosystem/app-switcher-spec.ts` — Spec compartible con URLs, metadata y UTM params
-- `src/components/ecosystem/EcoAppSwitcher.tsx` — Componente visual con dos cards lado a lado
+Revisé el proyecto Fokuspark directamente para verificar qué archivos existen y cuáles faltan, y así darte las instrucciones exactas sin errores.
 
-### Archivos modificados
-- `src/components/ecosystem/EcosystemSection.tsx` — AppSwitcher reemplaza QuickActions como primer elemento
+## Lo que te falta pegar en Fokuspark
 
-### Para Fokuspark
-Copiar ambos archivos nuevos a Fokuspark y usar `<EcoAppSwitcher currentApp="fokuspark" />`. El componente invierte automáticamente cuál app es "activa" y cuál es el link de salida.
+Las instrucciones que te di en el mensaje anterior siguen siendo correctas y completas. Son exactamente estas 2 tareas:
+
+1. **Crear** `src/components/ecosystem/EcoAppSwitcher.tsx` con el contenido exacto que te di
+2. **Integrar** en `MobileDashboardFokus.tsx` el import y el `<EcoAppSwitcher />` antes de `<EcosystemOnboarding />`
+
+No hay cambios que hacer aquí en EvoFinz. Todo está listo de este lado.
+
+### Plan
+
+No hay cambios de código en este proyecto. Solo necesitas copiar y pegar el bloque de texto que te di hace 2 mensajes en el chat de Fokuspark.
+
+Si lo perdiste, te lo vuelvo a generar idéntico en el siguiente mensaje (aprueba este plan).
+
