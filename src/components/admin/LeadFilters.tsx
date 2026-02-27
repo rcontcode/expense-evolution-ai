@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, X, Filter, MessageSquare, Flame, ThermometerSun, Snowflake } from 'lucide-react';
+import { Search, X, Filter, MessageSquare, Flame, ThermometerSun, Snowflake, Globe } from 'lucide-react';
 import type { LeadFilters as LeadFiltersType } from '@/hooks/admin/useLeadsManagement';
 
 interface LeadFiltersProps {
@@ -42,6 +42,7 @@ export function LeadFilters({
     filters.goal ||
     filters.obstacle ||
     filters.contacted ||
+    filters.source ||
     filters.dateFrom ||
     filters.dateTo;
 
@@ -148,7 +149,7 @@ export function LeadFilters({
       </div>
 
       {/* Second row - Status filters */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         {/* Contacted */}
         <Select
           value={filters.contacted || 'all'}
@@ -196,6 +197,31 @@ export function LeadFilters({
               </span>
             </SelectItem>
             <SelectItem value="no">Sin comentarios</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Source */}
+        <Select
+          value={filters.source || 'all'}
+          onValueChange={(value) => updateFilter('source', value === 'all' ? '' : value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Fuente" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas las fuentes</SelectItem>
+            <SelectItem value="evofinz">
+              <span className="flex items-center gap-2">
+                <Globe className="h-3 w-3 text-emerald-500" />
+                EvoFinz
+              </span>
+            </SelectItem>
+            <SelectItem value="fokuspark">
+              <span className="flex items-center gap-2">
+                <Globe className="h-3 w-3 text-violet-500" />
+                Fokuspark
+              </span>
+            </SelectItem>
           </SelectContent>
         </Select>
 

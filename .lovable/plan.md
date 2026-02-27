@@ -1,56 +1,72 @@
 
 
-## Situacion actual
+## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
 
-**EvoFinz** tiene un sistema completo de quiz con:
-- Quiz de 10 preguntas con scoring (0-100%)
-- Captura de leads (nombre, email, telefono, pais, situacion, meta, obstaculo)
-- Tabla `quiz_leads` en la DB compartida
-- Lead scoring automatico (hot/warm/cool/cold)
-- CRM admin completo (/admin/leads) con filtros, exportacion, follow-ups, timeline de interacciones
-- Edge function `send-quiz-lead` que guarda + envia a GHL
-- Persistencia de progreso en localStorage
+### ✅ Completado en EvoFinz
 
-**Fokuspark** tiene un quiz basico (`PlanQuiz.tsx`) embebido en el landing que:
-- Solo tiene 5 preguntas de opcion multiple
-- NO captura datos del usuario (ni nombre, ni email, nada)
-- NO guarda nada en la DB
-- Solo recomienda un plan de suscripcion al final
-- Es puramente client-side, sin backend
+| # | Tarea | Estado |
+|---|-------|--------|
+| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
+| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
+| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
+| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
+| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
 
-## Respuesta directa
+### ✅ Completado en Fokuspark
 
-**No se puede implementar desde aqui.** Los componentes UI (formularios, paginas, modales) deben crearse en el proyecto Fokuspark. Lo que SI comparten es la misma base de datos, asi que la tabla `quiz_leads` ya existe y el CRM admin de EvoFinz ya podria mostrar leads de ambas apps si Fokuspark los guarda ahi.
+| # | Tarea | Estado |
+|---|-------|--------|
+| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
+| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
+| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
+| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
 
-## Opciones
+### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
 
-### Opcion A: Reusar el CRM de EvoFinz para ambas apps
-Fokuspark envia leads a la misma tabla `quiz_leads` con un campo extra (`source: 'fokuspark'`). El admin de EvoFinz los ve todos. Solo se necesita:
-1. Agregar columna `source` a `quiz_leads` (migracion aqui)
-2. Crear el quiz + formulario de captura en Fokuspark (prompt para alla)
-3. Crear edge function `send-quiz-lead` en Fokuspark (o reusar la existente)
+---
 
-### Opcion B: Quiz independiente en Fokuspark
-Quiz diferente con preguntas de productividad, tabla separada, CRM separado. Mas trabajo, sistemas duplicados.
+## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
 
-## Recomendacion
+### ✅ Confirmado: Sistema funciona correctamente
 
-**Opcion A** es la correcta. Puedo:
-1. Agregar la columna `source` a `quiz_leads` desde aqui (migracion DB)
-2. Actualizar el CRM admin de EvoFinz para mostrar filtro por `source`
-3. Darte el prompt completo para Fokuspark con todo el quiz adaptado a productividad
+- Planes individuales (Free/Premium/Pro) son independientes por app
+- Bundle compartido usa mismos Stripe Price IDs en ambas apps
+- Ambos webhooks detectan Bundle y setean `has_bundle = true`
+- No hay acceso cruzado no autorizado entre apps
 
-### Paso 1 (aqui en EvoFinz)
-- Migracion: `ALTER TABLE quiz_leads ADD COLUMN source TEXT DEFAULT 'evofinz'`
-- Actualizar `LeadFilters` para incluir filtro por source
-- Actualizar `LeadsTable` para mostrar badge de source
-- Actualizar `LeadsExport` para incluir source
-- Actualizar edge function `send-quiz-lead` para aceptar source
+### ✅ Gaps implementados en Fokuspark
 
-### Paso 2 (prompt para Fokuspark)
-- Generar el texto completo para copiar y pegar en Fokuspark con:
-  - Quiz de productividad/enfoque (10 preguntas con scoring)
-  - Formulario de captura de datos
-  - Edge function que guarda en `quiz_leads` con `source: 'fokuspark'`
-  - Pagina dedicada `/quiz` con hero + modal + resultados
+| # | Gap | Estado |
+|---|-----|--------|
+| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
+| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
 
+### 📋 Gaps pendientes (baja prioridad)
+
+| # | Gap | Prioridad |
+|---|-----|-----------|
+| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
+| S3 | Texto del Bundle podría ser más descriptivo | Baja |
+
+---
+
+## Quiz Multi-App — CRM Unificado
+
+### ✅ Completado en EvoFinz
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
+| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
+| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
+| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
+| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
+
+### 📋 Pendiente en Fokuspark
+
+| # | Tarea | Prioridad |
+|---|-------|-----------|
+| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
+| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
+| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
+| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |

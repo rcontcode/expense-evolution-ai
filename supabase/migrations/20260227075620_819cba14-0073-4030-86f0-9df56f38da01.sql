@@ -1,0 +1,1 @@
+ALTER TABLE public.quiz_leads ADD COLUMN source TEXT NOT NULL DEFAULT 'evofinz';

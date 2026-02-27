@@ -24,6 +24,7 @@ export interface QuizLead {
   ghl_synced: boolean | null;
   lead_score: number | null;
   priority: string | null;
+  source: string;
   created_at: string;
 }
 
@@ -38,6 +39,7 @@ export interface LeadFilters {
   situation: string;
   goal: string;
   obstacle: string;
+  source: string;
   dateFrom: string;
   dateTo: string;
 }
@@ -53,6 +55,7 @@ const defaultFilters: LeadFilters = {
   situation: '',
   goal: '',
   obstacle: '',
+  source: '',
   dateFrom: '',
   dateTo: '',
 };
@@ -153,6 +156,9 @@ export const useLeadsManagement = () => {
 
       // Obstacle filter
       if (filters.obstacle && lead.obstacle !== filters.obstacle) return false;
+
+      // Source filter
+      if (filters.source && lead.source !== filters.source) return false;
 
       // Date range filter
       if (filters.dateFrom) {

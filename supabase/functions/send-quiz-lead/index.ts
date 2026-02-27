@@ -19,6 +19,7 @@ interface QuizLeadPayload {
   quiz_level: string;
   failed_questions: number[];
   comments?: string;
+  source?: string;
 }
 
 // Lead Scoring Functions
@@ -201,6 +202,7 @@ serve(async (req) => {
         comments: payload.comments || null,
         lead_score: leadScore,
         priority: leadPriority,
+        source: payload.source || 'evofinz',
       })
       .select()
       .single();
@@ -236,7 +238,7 @@ serve(async (req) => {
           quiz_level: payload.quiz_level,
           failed_questions: payload.failed_questions.join(","),
           comments: payload.comments || "",
-          source: "EvoFinz Quiz",
+          source: payload.source === 'fokuspark' ? 'Fokuspark Quiz' : 'EvoFinz Quiz',
           lead_id: savedLead.id,
           // NEW: Lead scoring fields for GHL segmentation
           lead_score: leadScore,

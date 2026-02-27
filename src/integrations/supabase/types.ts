@@ -2921,6 +2921,7 @@ export type Database = {
           quiz_level: string | null
           quiz_score: number | null
           situation: string | null
+          source: string
           time_spent: string | null
           updated_at: string
         }
@@ -2945,6 +2946,7 @@ export type Database = {
           quiz_level?: string | null
           quiz_score?: number | null
           situation?: string | null
+          source?: string
           time_spent?: string | null
           updated_at?: string
         }
@@ -2969,6 +2971,7 @@ export type Database = {
           quiz_level?: string | null
           quiz_score?: number | null
           situation?: string | null
+          source?: string
           time_spent?: string | null
           updated_at?: string
         }
