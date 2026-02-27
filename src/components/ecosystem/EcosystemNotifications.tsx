@@ -21,7 +21,7 @@ export const EcosystemNotifications = memo(() => {
   const isEs = language === 'es';
   const [expanded, setExpanded] = useState(false);
 
-  const { data: notifications, isLoading } = useQuery({
+  const { data: notifications, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-notifications', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
