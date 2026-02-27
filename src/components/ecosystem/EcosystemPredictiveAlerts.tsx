@@ -39,7 +39,7 @@ export const EcosystemPredictiveAlerts = memo(() => {
     return stored === today;
   });
 
-  const { data: alerts, isLoading } = useQuery({
+  const { data: alerts, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-predictive-alerts', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
