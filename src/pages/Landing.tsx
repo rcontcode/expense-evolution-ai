@@ -1367,9 +1367,11 @@ export default function Landing() {
                       ? 'bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-500 text-white shadow-xl shadow-orange-500/30'
                       : 'featured' in tier && tier.featured
                         ? 'bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 text-white shadow-xl shadow-violet-500/30'
-                        : 'isFree' in tier && tier.isFree
-                          ? 'bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 text-white shadow-xl shadow-emerald-500/30'
-                          : 'bg-white/80 backdrop-blur-sm border border-slate-200 hover:shadow-lg'
+                        : 'isBundle' in tier && tier.isBundle
+                          ? 'bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-500 text-white shadow-xl shadow-teal-500/30'
+                          : 'isFree' in tier && tier.isFree
+                            ? 'bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 text-white shadow-xl shadow-emerald-500/30'
+                            : 'bg-white/80 backdrop-blur-sm border border-slate-200 hover:shadow-lg'
                   }`}
                   onClick={() => navigate('/auth')}
                 >
