@@ -1409,7 +1409,7 @@ export default function Landing() {
                   )}
                   
                   <div className="text-center">
-                    <h4 className={`font-bold text-lg ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) ? 'text-white' : 'text-slate-800'}`}>
+                    <h4 className={`font-bold text-lg ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white' : 'text-slate-800'}`}>
                       {tier.name}
                     </h4>
                     <div className="flex items-baseline justify-center gap-1 my-2">
