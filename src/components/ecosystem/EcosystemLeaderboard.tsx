@@ -104,16 +104,13 @@ export const EcosystemLeaderboard = memo(() => {
     }
   }, [myScore?.totalScore]);
 
-  // Fetch leaderboard
+  // Fetch leaderboard via secure function (no user_id exposed)
   const { data: leaderboard, isLoading } = useQuery({
     queryKey: ['ecosystem-leaderboard', weekKey],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('ecosystem_leaderboard')
-        .select('*')
-        .eq('week_key', weekKey)
-        .order('total_score', { ascending: false })
-        .limit(10);
+      const { data } = await supabase.rpc('get_ecosystem_leaderboard', {
+        p_week_key: weekKey,
+      });
       return data || [];
     },
     enabled: hasBundleAccess,
