@@ -22,7 +22,7 @@ export const EcosystemInsights = memo(() => {
   const { user } = useAuth();
   const isEs = language === 'es';
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-insights', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
