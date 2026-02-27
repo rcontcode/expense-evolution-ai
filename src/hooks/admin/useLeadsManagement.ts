@@ -24,6 +24,7 @@ export interface QuizLead {
   ghl_synced: boolean | null;
   lead_score: number | null;
   priority: string | null;
+  source: string;
   created_at: string;
 }
 
