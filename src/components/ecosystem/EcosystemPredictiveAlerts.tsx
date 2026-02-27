@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { subMonths, format, getDay } from 'date-fns';
 import { openFokusparkTool } from '@/lib/ecosystem/deeplinks';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
 const DISMISS_KEY = 'ecosystem-predictive-dismissed';
 const DAY_NAMES_ES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
