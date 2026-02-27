@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, format, subMonths } from 'date-fns';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
 function getCurrentWeekKey(): string {
   return format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
@@ -105,7 +106,7 @@ export const EcosystemLeaderboard = memo(() => {
   }, [myScore?.totalScore]);
 
   // Fetch leaderboard via secure function (no user_id exposed)
-  const { data: leaderboard, isLoading } = useQuery({
+  const { data: leaderboard, isLoading, isError, refetch: refetchLb } = useQuery({
     queryKey: ['ecosystem-leaderboard', weekKey],
     queryFn: async () => {
       const { data } = await supabase.rpc('get_ecosystem_leaderboard', {
@@ -118,6 +119,7 @@ export const EcosystemLeaderboard = memo(() => {
   });
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetchLb()} compact />;
   if (isLoading || !leaderboard || leaderboard.length === 0) return null;
 
   const myRank = leaderboard.findIndex(e => e.display_name === (user?.email ? `${user.email.charAt(0).toUpperCase()}***` : '')) + 1;

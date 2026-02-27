@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { subMonths, subWeeks, startOfWeek, format, getDay } from 'date-fns';
 import { openFokusparkTool } from '@/lib/ecosystem/deeplinks';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
 interface CoachingInsight {
   id: string;
@@ -34,7 +35,7 @@ export const EcosystemCoaching = memo(() => {
   const isEs = language === 'es';
   const [expanded, setExpanded] = useState(true);
 
-  const { data: insights, isLoading } = useQuery({
+  const { data: insights, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-coaching', user?.id],
     queryFn: async (): Promise<CoachingInsight[]> => {
       if (!user?.id) return [];
@@ -189,6 +190,7 @@ export const EcosystemCoaching = memo(() => {
   });
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} />;
   if (isLoading || !insights || insights.length === 0) return null;
 
   return (

@@ -13,6 +13,7 @@ import { es, enUS } from 'date-fns/locale';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from 'sonner';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
 interface MonthlyReportData {
   month: string;
@@ -38,7 +39,7 @@ export const EcosystemMonthlyReport = memo(() => {
   const monthEnd = endOfMonth(lastMonth);
   const monthLabel = format(lastMonth, 'MMMM yyyy', { locale: isEs ? es : enUS });
 
-  const { data: report, isLoading } = useQuery({
+  const { data: report, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-monthly-report', user?.id, format(monthStart, 'yyyy-MM')],
     queryFn: async (): Promise<MonthlyReportData | null> => {
       if (!user?.id) return null;
@@ -202,6 +203,7 @@ export const EcosystemMonthlyReport = memo(() => {
   }, [report, isEs, monthStart]);
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} />;
   if (isLoading || !report) return null;
 
   return (

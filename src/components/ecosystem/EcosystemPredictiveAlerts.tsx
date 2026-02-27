@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { subMonths, format, getDay } from 'date-fns';
 import { openFokusparkTool } from '@/lib/ecosystem/deeplinks';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
 const DISMISS_KEY = 'ecosystem-predictive-dismissed';
 const DAY_NAMES_ES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
@@ -38,7 +39,7 @@ export const EcosystemPredictiveAlerts = memo(() => {
     return stored === today;
   });
 
-  const { data: alerts, isLoading } = useQuery({
+  const { data: alerts, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-predictive-alerts', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -132,6 +133,7 @@ export const EcosystemPredictiveAlerts = memo(() => {
   });
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights') || dismissed) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} compact />;
   if (isLoading || !alerts || alerts.length === 0) return null;
 
   const handleDismiss = () => {

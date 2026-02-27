@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { subMonths } from 'date-fns';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
 interface Achievement {
   id: string;
@@ -25,7 +26,7 @@ export const EcosystemAchievements = memo(() => {
   const { user } = useAuth();
   const isEs = language === 'es';
 
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-achievements-data', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -130,6 +131,7 @@ export const EcosystemAchievements = memo(() => {
   }, [stats]);
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} compact />;
   if (isLoading || !stats) return null;
 
   const unlockedCount = achievements.filter(a => a.unlocked).length;

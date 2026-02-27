@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { subMonths } from 'date-fns';
 import { openFokusparkTool } from '@/lib/ecosystem/deeplinks';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
 /**
  * Composite ecosystem health score (0-100) based on:
@@ -24,7 +25,7 @@ export const EcosystemHealthScore = memo(() => {
   const { user } = useAuth();
   const isEs = language === 'es';
 
-  const { data: score, isLoading } = useQuery({
+  const { data: score, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-health-score', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -82,6 +83,7 @@ export const EcosystemHealthScore = memo(() => {
   });
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} compact />;
   if (isLoading || score === null || score === undefined) return null;
 
   const getColor = (s: number) => {

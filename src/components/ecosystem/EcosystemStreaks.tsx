@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfWeek, differenceInCalendarDays } from 'date-fns';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
 /**
  * Shared streaks tracker — tracks combined activity across EvoFinz + Fokuspark.
@@ -21,7 +22,7 @@ export const EcosystemStreaks = memo(() => {
   const isEs = language === 'es';
 
   // Fetch/compute streak data
-  const { data: streakData, isLoading } = useQuery({
+  const { data: streakData, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-streaks', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -145,6 +146,7 @@ export const EcosystemStreaks = memo(() => {
   }, [streakData?.needsUpdate]);
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} compact />;
   if (isLoading || !streakData) return null;
 
   // Week dots (Mon-Sun)

@@ -8,6 +8,7 @@ import { useFeatureFlags } from '@/hooks/data/useFeatureFlags';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
 interface AIInsight {
   emoji: string;
@@ -25,7 +26,7 @@ export const EcosystemAICoaching = memo(() => {
   const { user } = useAuth();
   const isEs = language === 'es';
 
-  const { data, isLoading, refetch, isFetching } = useQuery({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ['ecosystem-ai-coaching', user?.id, language],
     queryFn: async (): Promise<{ insights: AIInsight[]; source: string }> => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -45,6 +46,7 @@ export const EcosystemAICoaching = memo(() => {
   });
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} />;
   if (isLoading) {
     return (
       <Card className="border-indigo-500/20 bg-gradient-to-br from-indigo-500/5 to-transparent">

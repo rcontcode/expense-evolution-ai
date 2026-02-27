@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, subWeeks, format } from 'date-fns';
 import { openFokusparkTool, type FokusparkTool } from '@/lib/ecosystem/deeplinks';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
 const DISMISS_KEY = 'ecosystem-weekly-digest-dismissed';
 
@@ -30,7 +31,7 @@ export const EcosystemWeeklyDigest = memo(() => {
 
   const [dismissed, setDismissed] = useState(() => getDismissedWeek() === currentWeek);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-weekly-digest', user?.id, currentWeek],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -67,6 +68,7 @@ export const EcosystemWeeklyDigest = memo(() => {
   });
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights') || dismissed) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} compact />;
   if (isLoading || !data) return null;
 
   const handleDismiss = () => {

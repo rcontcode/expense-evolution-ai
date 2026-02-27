@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 import { startOfMonth, subMonths, format } from 'date-fns';
 
 /**
@@ -21,7 +22,7 @@ export const EcosystemInsights = memo(() => {
   const { user } = useAuth();
   const isEs = language === 'es';
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-insights', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -109,7 +110,9 @@ export const EcosystemInsights = memo(() => {
           </CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4 space-y-3">
-          {isLoading ? (
+          {isError ? (
+            <EcosystemErrorFallback onRetry={() => refetch()} compact />
+          ) : isLoading ? (
             <Skeleton className="h-32 w-full" />
           ) : data ? (
             <>

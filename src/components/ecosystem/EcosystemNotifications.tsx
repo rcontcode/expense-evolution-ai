@@ -10,6 +10,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { openFokusparkTool, type FokusparkTool } from '@/lib/ecosystem/deeplinks';
 import { formatDistanceToNow } from 'date-fns';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 import { es, enUS } from 'date-fns/locale';
 
 export const EcosystemNotifications = memo(() => {
@@ -20,7 +21,7 @@ export const EcosystemNotifications = memo(() => {
   const isEs = language === 'es';
   const [expanded, setExpanded] = useState(false);
 
-  const { data: notifications, isLoading } = useQuery({
+  const { data: notifications, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-notifications', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -58,6 +59,7 @@ export const EcosystemNotifications = memo(() => {
   });
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} compact />;
   if (isLoading || !notifications || notifications.length === 0) return null;
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
