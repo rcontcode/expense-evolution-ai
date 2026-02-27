@@ -1215,7 +1215,7 @@ export default function Landing() {
                   </Badge>
                 )}
                 {'featured' in tier && tier.featured && (
-                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2.2s_ease-in-out_infinite]">
+                  <Badge className="absolute top-0 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2.2s_ease-in-out_infinite]">
                     <Crown className="w-3 h-3 mr-1 inline" />
                     {language === 'es' ? 'Más Completo' : 'Most Complete'}
                   </Badge>
