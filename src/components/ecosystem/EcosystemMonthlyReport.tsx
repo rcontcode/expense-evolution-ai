@@ -39,7 +39,7 @@ export const EcosystemMonthlyReport = memo(() => {
   const monthEnd = endOfMonth(lastMonth);
   const monthLabel = format(lastMonth, 'MMMM yyyy', { locale: isEs ? es : enUS });
 
-  const { data: report, isLoading } = useQuery({
+  const { data: report, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-monthly-report', user?.id, format(monthStart, 'yyyy-MM')],
     queryFn: async (): Promise<MonthlyReportData | null> => {
       if (!user?.id) return null;
