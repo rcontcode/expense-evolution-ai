@@ -22,7 +22,7 @@ export const EcosystemStreaks = memo(() => {
   const isEs = language === 'es';
 
   // Fetch/compute streak data
-  const { data: streakData, isLoading } = useQuery({
+  const { data: streakData, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-streaks', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
