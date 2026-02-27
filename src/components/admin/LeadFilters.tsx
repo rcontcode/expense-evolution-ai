@@ -42,6 +42,7 @@ export function LeadFilters({
     filters.goal ||
     filters.obstacle ||
     filters.contacted ||
+    filters.source ||
     filters.dateFrom ||
     filters.dateTo;
 
