@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, X, Filter, MessageSquare, Flame, ThermometerSun, Snowflake } from 'lucide-react';
+import { Search, X, Filter, MessageSquare, Flame, ThermometerSun, Snowflake, Globe } from 'lucide-react';
 import type { LeadFilters as LeadFiltersType } from '@/hooks/admin/useLeadsManagement';
 
 interface LeadFiltersProps {
