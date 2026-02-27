@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, subWeeks, format } from 'date-fns';
 import { openFokusparkTool, type FokusparkTool } from '@/lib/ecosystem/deeplinks';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
 const DISMISS_KEY = 'ecosystem-weekly-digest-dismissed';
 
