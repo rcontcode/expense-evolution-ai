@@ -149,7 +149,7 @@ export function LeadFilters({
       </div>
 
       {/* Second row - Status filters */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         {/* Contacted */}
         <Select
           value={filters.contacted || 'all'}
