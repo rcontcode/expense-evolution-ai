@@ -106,7 +106,7 @@ export const EcosystemLeaderboard = memo(() => {
   }, [myScore?.totalScore]);
 
   // Fetch leaderboard via secure function (no user_id exposed)
-  const { data: leaderboard, isLoading } = useQuery({
+  const { data: leaderboard, isLoading, isError, refetch: refetchLb } = useQuery({
     queryKey: ['ecosystem-leaderboard', weekKey],
     queryFn: async () => {
       const { data } = await supabase.rpc('get_ecosystem_leaderboard', {
