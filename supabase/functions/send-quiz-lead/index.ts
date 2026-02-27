@@ -19,6 +19,7 @@ interface QuizLeadPayload {
   quiz_level: string;
   failed_questions: number[];
   comments?: string;
+  source?: string;
 }
 
 // Lead Scoring Functions
