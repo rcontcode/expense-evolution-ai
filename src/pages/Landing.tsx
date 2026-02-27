@@ -1286,9 +1286,11 @@ export default function Landing() {
                         ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-900' 
                         : 'featured' in tier && tier.featured
                           ? 'bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600 text-white shadow-lg shadow-violet-500/30 ring-2 ring-white/30'
-                          : 'isFree' in tier && tier.isFree
-                            ? 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg shadow-emerald-500/30'
-                            : 'bg-slate-800 hover:bg-slate-700 text-white'
+                          : 'isBundle' in tier && tier.isBundle
+                            ? 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-lg shadow-teal-500/30 ring-2 ring-white/30'
+                            : 'isFree' in tier && tier.isFree
+                              ? 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg shadow-emerald-500/30'
+                              : 'bg-slate-800 hover:bg-slate-700 text-white'
                     }`}
                     onClick={() => navigate('/auth')}
                   >
