@@ -14,16 +14,20 @@ export type FokusparkTool =
   | 'journal'
   | 'worry-dump'
   | 'dashboard'
-  | 'tasks';
+  | 'tasks'
+  | 'progress'
+  | 'calendar';
 
 const TOOL_PATHS: Record<FokusparkTool, string> = {
-  'breathing': '/tools/breathing',
-  'focus-timer': '/tools/focus-timer',
-  'meditation': '/tools/meditation',
-  'journal': '/tools/journal',
-  'worry-dump': '/tools/worry-dump',
-  'dashboard': '/',
-  'tasks': '/tasks',
+  'breathing': '/adult',          // Breathing tool lives in adult dashboard
+  'focus-timer': '/adult',        // Focus timer lives in adult dashboard
+  'meditation': '/adult',         // Meditation lives in adult dashboard
+  'journal': '/adult/journal',    // Journal has its own route
+  'worry-dump': '/adult',         // Worry dump lives in adult dashboard
+  'dashboard': '/adult',          // Main adult dashboard
+  'tasks': '/adult',              // Tasks live in adult dashboard
+  'progress': '/adult/progress',  // Progress page
+  'calendar': '/adult/calendar',  // Calendar page
 };
 
 export function getFokusparkUrl(tool: FokusparkTool = 'dashboard', context?: string): string {
