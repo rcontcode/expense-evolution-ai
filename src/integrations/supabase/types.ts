@@ -3968,6 +3968,18 @@ export type Database = {
         Args: { p_days: number; p_reason?: string; p_user_id: string }
         Returns: undefined
       }
+      get_ecosystem_leaderboard: {
+        Args: { p_week_key?: string }
+        Returns: {
+          achievements_count: number
+          display_name: string
+          focus_minutes: number
+          health_score: number
+          rank: number
+          streak_days: number
+          total_score: number
+        }[]
+      }
       get_monthly_ai_credits_used: {
         Args: { user_uuid: string }
         Returns: number
