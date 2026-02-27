@@ -35,7 +35,7 @@ export const EcosystemCoaching = memo(() => {
   const isEs = language === 'es';
   const [expanded, setExpanded] = useState(true);
 
-  const { data: insights, isLoading } = useQuery({
+  const { data: insights, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-coaching', user?.id],
     queryFn: async (): Promise<CoachingInsight[]> => {
       if (!user?.id) return [];
