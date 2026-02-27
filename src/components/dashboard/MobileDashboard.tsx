@@ -14,21 +14,9 @@ import { MobileStatsGrid } from '@/components/dashboard/MobileStatsGrid';
 import { MobileAlertsBanner } from '@/components/dashboard/MobileAlertsBanner';
 import { ProgressiveOnboarding } from '@/components/onboarding/ProgressiveOnboarding';
 import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
-import { BundleActiveBadge } from '@/components/ecosystem/BundleActiveBadge';
 import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding';
-import { EcosystemInsights } from '@/components/ecosystem/EcosystemInsights';
-import { EcosystemWeeklyDigest } from '@/components/ecosystem/EcosystemWeeklyDigest';
-import { EcosystemHealthScore } from '@/components/ecosystem/EcosystemHealthScore';
 
-import { EcosystemPredictiveAlerts } from '@/components/ecosystem/EcosystemPredictiveAlerts';
-import { EcosystemMonthlyReport } from '@/components/ecosystem/EcosystemMonthlyReport';
-import { EcosystemAchievements } from '@/components/ecosystem/EcosystemAchievements';
-import { EcosystemNotifications } from '@/components/ecosystem/EcosystemNotifications';
-import { EcosystemStreaks } from '@/components/ecosystem/EcosystemStreaks';
-import { EcosystemCoaching } from '@/components/ecosystem/EcosystemCoaching';
-import { EcosystemAICoaching } from '@/components/ecosystem/EcosystemAICoaching';
-import { EcosystemLeaderboard } from '@/components/ecosystem/EcosystemLeaderboard';
-import { EcosystemInlineWidgets } from '@/components/ecosystem/EcosystemInlineWidgets';
+const LazyEcosystemWidgets = lazy(() => import('@/components/ecosystem/EcosystemDashboardWidgets'));
 
 const OrganizedDashboard = lazy(() => import('@/components/focus').then(m => ({ default: m.OrganizedDashboard })));
 
@@ -64,7 +52,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
       <BetaReminderBanner />
       <ProgressiveOnboarding />
       <EcosystemOnboarding />
-      <BundleActiveBadge variant="full" />
+      
 
       <MobileStatsGrid
         isLoading={isLoading}
@@ -100,18 +88,9 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
         onAddExpense={handleAddExpense}
       />
 
-      <EcosystemNotifications />
-      <EcosystemAICoaching />
-      <EcosystemCoaching />
-      <EcosystemPredictiveAlerts />
-      <EcosystemStreaks />
-      <EcosystemInlineWidgets />
-      <EcosystemWeeklyDigest />
-      <EcosystemHealthScore />
-      <EcosystemLeaderboard />
-      <EcosystemAchievements />
-      <EcosystemMonthlyReport />
-      <EcosystemInsights />
+      <Suspense fallback={null}>
+        <LazyEcosystemWidgets />
+      </Suspense>
       
 
       <Button

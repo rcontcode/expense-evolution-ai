@@ -1,31 +1,29 @@
 
 
-## Plan: Optimizar rendimiento del Dashboard
+## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
 
-### Problema principal detectado
+### ✅ Completado en EvoFinz
 
-`MobileDashboard.tsx` renderiza 12 widgets del ecosistema **sin** el `EcosystemContext.Provider`. Estos widgets usan `useEcosystemData()` que devuelve el contexto vacio por defecto (data: null, isLoading: false). Esto significa que:
-1. Los widgets que dependen del contexto reciben datos nulos y no renderizan nada util
-2. Widgets como `EcosystemLeaderboard`, `EcosystemPredictiveAlerts` y `EcosystemAICoaching` hacen sus propias queries individuales al montarse
-3. Todos se montan simultaneamente al cargar el dashboard, bloqueando el hilo principal
+| # | Tarea | Estado |
+|---|-------|--------|
+| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
+| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
+| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
+| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
+| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
 
-### Cambios propuestos
+### ✅ Completado en Fokuspark
 
-#### 1. Envolver los widgets del ecosistema con el Provider en MobileDashboard
-- Importar `useEcosystemDashboard` y `EcosystemContext` en `MobileDashboard.tsx`
-- Envolver los 12 widgets del ecosistema con `<EcosystemContext.Provider>` para que usen la unica llamada consolidada al edge function
+| # | Tarea | Estado |
+|---|-------|--------|
+| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
+| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
 
-#### 2. Lazy load de widgets del ecosistema (below the fold)
-- Crear un componente `EcosystemDashboardWidgets` que agrupe los 12 widgets
-- Cargarlo con `lazy()` + `Suspense` ya que estan debajo del fold y el usuario no los ve inmediatamente
+### ✅ Completado en Fokuspark (cont.)
 
-#### 3. Aumentar staleTime del dashboard stats
-- Cambiar `staleTime` de `useDashboardStats` de 30s a 5 minutos (300000ms) para consistencia con el estandar global de cache
+| # | Tarea | Estado |
+|---|-------|--------|
+| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
+| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
 
-#### 4. Reducir queries duplicadas en feature flags
-- `useFeatureFlags` se llama dentro de cada uno de los 12 widgets individualmente; mover la verificacion de bundle al nivel del wrapper para evitar 12 llamadas redundantes a `feature_flags` y `user_subscriptions`
-
-### Archivos a editar
-- `src/components/dashboard/MobileDashboard.tsx` -- wrapper con Provider + lazy loading
-- `src/hooks/data/useDashboardStats.ts` -- aumentar staleTime
-
+### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)

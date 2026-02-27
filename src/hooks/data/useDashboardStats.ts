@@ -254,6 +254,6 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
       };
     },
     enabled: !!user,
-    staleTime: 30000, // Cache for 30 seconds to reduce refetches
+    staleTime: 300000, // Cache for 5 minutes (global standard)
   });
 };
