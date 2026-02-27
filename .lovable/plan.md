@@ -1,13 +1,28 @@
 
 
-## Evo App Switcher — Implementado
+## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
 
-### Archivos creados
-- `src/lib/ecosystem/app-switcher-spec.ts` — Spec compartible con URLs, metadata y UTM params
-- `src/components/ecosystem/EcoAppSwitcher.tsx` — Componente visual con dos cards lado a lado
+### ✅ Completado en EvoFinz
 
-### Archivos modificados
-- `src/components/ecosystem/EcosystemSection.tsx` — AppSwitcher reemplaza QuickActions como primer elemento
+| # | Tarea | Estado |
+|---|-------|--------|
+| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
+| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
+| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
+| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
 
-### Para Fokuspark
-Copiar ambos archivos nuevos a Fokuspark y usar `<EcoAppSwitcher currentApp="fokuspark" />`. El componente invierte automáticamente cuál app es "activa" y cuál es el link de salida.
+### 🔲 Pendiente — Requiere cambios en Fokuspark
+
+| # | Tarea |
+|---|-------|
+| F2 | Fokuspark debe escribir a `financial_focus_sessions` y `financial_worry_entries` |
+| F3 | Sincronizar `has_bundle` — usar `user_subscriptions` como fuente de verdad |
+| F8 | Capturar UTM parameters en ambas apps |
+| F9 | Completar localización bilingüe en Fokuspark |
+
+### 🔲 Pendiente — EvoFinz (menor prioridad)
+
+| # | Tarea |
+|---|-------|
+| F7 | Consolidar queries del ecosistema en edge function |
+| F10 | Agregar estados de error/offline para widgets |
