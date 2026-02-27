@@ -1209,7 +1209,7 @@ export default function Landing() {
                   </Badge>
                 )}
                 {'isFree' in tier && tier.isFree && (
-                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-green-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-pulse">
+                  <Badge className="absolute top-0 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-green-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-pulse">
                     <Gift className="w-3 h-3 mr-1 inline" />
                     {language === 'es' ? '¡100% GRATIS!' : '100% FREE!'}
                   </Badge>
