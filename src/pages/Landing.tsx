@@ -1230,6 +1230,9 @@ export default function Landing() {
                   {'isFree' in tier && tier.isFree && (
                     <div className="absolute -top-20 -left-20 w-40 h-40 bg-emerald-500/30 rounded-full blur-3xl" />
                   )}
+                  {'isBundle' in tier && tier.isBundle && (
+                    <div className="absolute -top-20 -right-20 w-40 h-40 bg-teal-500/30 rounded-full blur-3xl" />
+                  )}
                   
                   <div className="text-center mb-6 relative">
                     <h3 className="text-xl font-bold text-white mb-2">{tier.name}</h3>
