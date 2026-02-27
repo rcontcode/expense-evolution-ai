@@ -19,7 +19,7 @@ import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding'
 import { EcosystemInsights } from '@/components/ecosystem/EcosystemInsights';
 import { EcosystemWeeklyDigest } from '@/components/ecosystem/EcosystemWeeklyDigest';
 import { EcosystemHealthScore } from '@/components/ecosystem/EcosystemHealthScore';
-import { EcosystemQuickActions } from '@/components/ecosystem/EcosystemQuickActions';
+
 import { EcosystemPredictiveAlerts } from '@/components/ecosystem/EcosystemPredictiveAlerts';
 import { EcosystemMonthlyReport } from '@/components/ecosystem/EcosystemMonthlyReport';
 import { EcosystemAchievements } from '@/components/ecosystem/EcosystemAchievements';
@@ -112,7 +112,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
       <EcosystemAchievements />
       <EcosystemMonthlyReport />
       <EcosystemInsights />
-      <EcosystemQuickActions />
+      
 
       <Button
         variant="outline"

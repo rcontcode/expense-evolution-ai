@@ -104,16 +104,13 @@ export const EcosystemLeaderboard = memo(() => {
     }
   }, [myScore?.totalScore]);
 
-  // Fetch leaderboard
+  // Fetch leaderboard via secure function (no user_id exposed)
   const { data: leaderboard, isLoading } = useQuery({
     queryKey: ['ecosystem-leaderboard', weekKey],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('ecosystem_leaderboard')
-        .select('*')
-        .eq('week_key', weekKey)
-        .order('total_score', { ascending: false })
-        .limit(10);
+      const { data } = await supabase.rpc('get_ecosystem_leaderboard', {
+        p_week_key: weekKey,
+      });
       return data || [];
     },
     enabled: hasBundleAccess,
@@ -123,7 +120,7 @@ export const EcosystemLeaderboard = memo(() => {
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
   if (isLoading || !leaderboard || leaderboard.length === 0) return null;
 
-  const myRank = leaderboard.findIndex(e => e.user_id === user?.id) + 1;
+  const myRank = leaderboard.findIndex(e => e.display_name === (user?.email ? `${user.email.charAt(0).toUpperCase()}***` : '')) + 1;
   const RankIcon = ({ rank }: { rank: number }) => {
     if (rank === 1) return <Crown className="h-3.5 w-3.5 text-amber-500" />;
     if (rank === 2) return <Medal className="h-3.5 w-3.5 text-gray-400" />;
@@ -148,10 +145,10 @@ export const EcosystemLeaderboard = memo(() => {
         <CardContent className="px-4 pb-3">
           <div className="space-y-1">
             {leaderboard.slice(0, 5).map((entry, i) => {
-              const isMe = entry.user_id === user?.id;
+              const isMe = entry.rank === myRank && myRank > 0;
               return (
                 <div
-                  key={entry.id}
+                  key={entry.rank}
                   className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors ${
                     isMe ? 'bg-primary/10 border border-primary/20' : 'bg-muted/30'
                   }`}
