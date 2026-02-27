@@ -26,7 +26,7 @@ export const EcosystemAchievements = memo(() => {
   const { user } = useAuth();
   const isEs = language === 'es';
 
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-achievements-data', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
