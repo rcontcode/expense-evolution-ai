@@ -13,6 +13,7 @@ import { es, enUS } from 'date-fns/locale';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from 'sonner';
+import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
 interface MonthlyReportData {
   month: string;
