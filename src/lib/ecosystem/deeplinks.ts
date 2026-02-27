@@ -72,14 +72,6 @@ export const FOKUSPARK_TOOLS: FokusparkToolInfo[] = [
     emoji: '⏱️',
   },
   {
-    key: 'meditation',
-    labelEs: 'Meditación',
-    labelEn: 'Meditation',
-    descEs: 'Mindfulness para claridad financiera',
-    descEn: 'Mindfulness for financial clarity',
-    emoji: '🧘',
-  },
-  {
     key: 'journal',
     labelEs: 'Diario',
     labelEn: 'Journal',
@@ -94,5 +86,13 @@ export const FOKUSPARK_TOOLS: FokusparkToolInfo[] = [
     descEs: 'Libera preocupaciones financieras',
     descEn: 'Release financial worries',
     emoji: '🌧️',
+  },
+  {
+    key: 'progress',
+    labelEs: 'Progreso',
+    labelEn: 'Progress',
+    descEs: 'Visualiza tu avance',
+    descEn: 'Visualize your progress',
+    emoji: '📊',
   },
 ];

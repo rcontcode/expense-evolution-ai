@@ -112,7 +112,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
       <EcosystemAchievements />
       <EcosystemMonthlyReport />
       <EcosystemInsights />
-      <EcosystemQuickActions />
+      
 
       <Button
         variant="outline"
