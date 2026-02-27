@@ -26,7 +26,7 @@ export const EcosystemAICoaching = memo(() => {
   const { user } = useAuth();
   const isEs = language === 'es';
 
-  const { data, isLoading, refetch, isFetching } = useQuery({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ['ecosystem-ai-coaching', user?.id, language],
     queryFn: async (): Promise<{ insights: AIInsight[]; source: string }> => {
       const { data: { session } } = await supabase.auth.getSession();
