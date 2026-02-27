@@ -35,7 +35,7 @@ export const EcoAppSwitcher = memo(({ currentApp = 'evofinz' }: EcoAppSwitcherPr
         {/* Current app — active state */}
         <div className={`relative rounded-xl border-2 border-primary/30 ${current.colorClass} p-3 flex flex-col items-center gap-1.5`}>
           <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
           </div>
           <span className="text-2xl">{current.emoji}</span>
           <p className="text-xs font-semibold text-foreground">{current.name}</p>
