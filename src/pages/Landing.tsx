@@ -1199,7 +1199,7 @@ export default function Landing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
-                className={`relative ${tier.popular ? 'pt-4' : 'isFree' in tier && tier.isFree ? 'pt-4' : 'featured' in tier && tier.featured ? 'pt-4' : ''}`}
+                className="relative pt-6"
               >
                 {/* Badge FUERA del Card para evitar overflow-hidden */}
                 {tier.popular && (
