@@ -1204,6 +1204,12 @@ export default function Landing() {
                     {language === 'es' ? 'Más Completo' : 'Most Complete'}
                   </Badge>
                 )}
+                {'isBundle' in tier && tier.isBundle && (
+                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2.5s_ease-in-out_infinite]">
+                    <Layers className="w-3 h-3 mr-1 inline" />
+                    {language === 'es' ? 'Mejor Valor' : 'Best Value'}
+                  </Badge>
+                )}
                 <Card 
                   className={`relative p-8 bg-slate-900/80 backdrop-blur-sm border-2 overflow-hidden h-full flex flex-col transition-all duration-300 ${
                     tier.popular 
@@ -1212,7 +1218,9 @@ export default function Landing() {
                         ? 'border-emerald-500 shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-2'
                         : 'featured' in tier && tier.featured
                           ? 'border-violet-500 shadow-2xl shadow-violet-500/25 scale-105 z-10 hover:shadow-violet-500/40 hover:-translate-y-2'
-                          : 'border-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-slate-900/50 hover:-translate-y-2'
+                          : 'isBundle' in tier && tier.isBundle
+                            ? 'border-teal-500 shadow-2xl shadow-teal-500/25 scale-105 z-10 hover:shadow-teal-500/40 hover:-translate-y-2'
+                            : 'border-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-slate-900/50 hover:-translate-y-2'
                   }`}
                 >
                   {/* Popular glow effect */}
