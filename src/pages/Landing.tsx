@@ -844,7 +844,7 @@ export default function Landing() {
               >
                 <Layers className="w-5 h-5 text-teal-400" />
                 <span className="font-bold text-teal-300">Bundle</span>
-                <span className="font-black text-white text-lg">${isAnnual ? '9.99' : '14.99'}</span>
+                <span className="font-black text-white text-lg">${isAnnual ? '14.99' : '19.99'}</span>
                 <span className="text-teal-200/70 text-xs">{language === 'es' ? '/mes' : '/mo'}</span>
                 <Badge className="bg-teal-500/30 text-teal-200 border-teal-400/40 text-[10px] px-1.5 py-0">
                   2 apps
