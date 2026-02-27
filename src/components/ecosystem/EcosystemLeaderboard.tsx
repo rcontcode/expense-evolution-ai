@@ -120,7 +120,7 @@ export const EcosystemLeaderboard = memo(() => {
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
   if (isLoading || !leaderboard || leaderboard.length === 0) return null;
 
-  const myRank = leaderboard.findIndex(e => e.user_id === user?.id) + 1;
+  const myRank = leaderboard.findIndex(e => e.display_name === (user?.email ? `${user.email.charAt(0).toUpperCase()}***` : '')) + 1;
   const RankIcon = ({ rank }: { rank: number }) => {
     if (rank === 1) return <Crown className="h-3.5 w-3.5 text-amber-500" />;
     if (rank === 2) return <Medal className="h-3.5 w-3.5 text-gray-400" />;
