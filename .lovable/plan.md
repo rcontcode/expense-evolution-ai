@@ -34,13 +34,39 @@
 - Ambos webhooks detectan Bundle y setean `has_bundle = true`
 - No hay acceso cruzado no autorizado entre apps
 
-### 📋 Gaps pendientes (a implementar en Fokuspark)
+### ✅ Gaps implementados en Fokuspark
 
-| # | Gap | Prioridad | Proyecto |
-|---|-----|-----------|----------|
-| S1 | `useSubscription` lee del profile estático, no consulta Stripe en tiempo real | Alta | Fokuspark |
-| S2 | No hay card de gestión de suscripción en Settings | Media | Fokuspark |
-| S3 | Texto del Bundle podría ser más descriptivo | Baja | Fokuspark |
-| S4 | Webhook almacena en `profiles` vs `user_subscriptions` (arquitectura diferente, no bug) | Info | N/A |
+| # | Gap | Estado |
+|---|-----|--------|
+| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
+| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
 
-### ⚠️ Estos cambios NO se hacen en EvoFinz — deben implementarse en el proyecto Fokuspark
+### 📋 Gaps pendientes (baja prioridad)
+
+| # | Gap | Prioridad |
+|---|-----|-----------|
+| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
+| S3 | Texto del Bundle podría ser más descriptivo | Baja |
+
+---
+
+## Quiz Multi-App — CRM Unificado
+
+### ✅ Completado en EvoFinz
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
+| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
+| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
+| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
+| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
+
+### 📋 Pendiente en Fokuspark
+
+| # | Tarea | Prioridad |
+|---|-------|-----------|
+| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
+| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
+| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
+| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
