@@ -1203,7 +1203,7 @@ export default function Landing() {
               >
                 {/* Badge FUERA del Card para evitar overflow-hidden */}
                 {tier.popular && (
-                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2s_ease-in-out_infinite]">
+                  <Badge className="absolute top-0 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2s_ease-in-out_infinite]">
                     <Star className="w-3 h-3 mr-1 inline" />
                     {language === 'es' ? 'Más Popular' : 'Most Popular'}
                   </Badge>
