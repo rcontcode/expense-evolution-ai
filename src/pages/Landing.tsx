@@ -1443,9 +1443,11 @@ export default function Landing() {
                           ? 'bg-slate-900 hover:bg-slate-800 text-white'
                           : 'featured' in tier && tier.featured
                             ? 'bg-white hover:bg-slate-100 text-violet-600 font-bold shadow-lg'
-                            : 'isFree' in tier && tier.isFree
-                              ? 'bg-white hover:bg-slate-100 text-emerald-600 font-bold'
-                              : 'bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white'
+                            : 'isBundle' in tier && tier.isBundle
+                              ? 'bg-white hover:bg-slate-100 text-teal-600 font-bold shadow-lg'
+                              : 'isFree' in tier && tier.isFree
+                                ? 'bg-white hover:bg-slate-100 text-emerald-600 font-bold'
+                                : 'bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white'
                       }`}
                     >
                       {tier.cta}
