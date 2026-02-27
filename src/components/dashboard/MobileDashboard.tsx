@@ -52,7 +52,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
       <BetaReminderBanner />
       <ProgressiveOnboarding />
       <EcosystemOnboarding />
-      <BundleActiveBadge variant="full" />
+      
 
       <MobileStatsGrid
         isLoading={isLoading}
