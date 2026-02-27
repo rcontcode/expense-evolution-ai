@@ -140,6 +140,20 @@ export function LeadsTable({ leads, onMarkContacted, onMarkConverted }: LeadsTab
                     </div>
                   </TableCell>
 
+                  <TableCell>
+                    <Badge 
+                      variant="outline" 
+                      className={cn(
+                        'text-xs',
+                        lead.source === 'fokuspark' 
+                          ? 'border-violet-300 text-violet-700 dark:border-violet-700 dark:text-violet-400'
+                          : 'border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-400'
+                      )}
+                    >
+                      {lead.source === 'fokuspark' ? 'Fokuspark' : 'EvoFinz'}
+                    </Badge>
+                  </TableCell>
+
                   <TableCell>{lead.country}</TableCell>
                   
                   <TableCell>

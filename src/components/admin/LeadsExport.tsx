@@ -46,6 +46,7 @@ export function LeadsExport({ leads, filename = 'quiz-leads' }: LeadsExportProps
         'Comentarios del quiz': lead.comments || '',
         Convertido: lead.converted_to_user ? 'Sí' : 'No',
         'Sincronizado GHL': lead.ghl_synced ? 'Sí' : 'No',
+        Fuente: lead.source === 'fokuspark' ? 'Fokuspark' : 'EvoFinz',
         'Fecha registro': new Date(lead.created_at).toLocaleDateString('es'),
       };
     });

@@ -238,7 +238,7 @@ serve(async (req) => {
           quiz_level: payload.quiz_level,
           failed_questions: payload.failed_questions.join(","),
           comments: payload.comments || "",
-          source: "EvoFinz Quiz",
+          source: payload.source === 'fokuspark' ? 'Fokuspark Quiz' : 'EvoFinz Quiz',
           lead_id: savedLead.id,
           // NEW: Lead scoring fields for GHL segmentation
           lead_score: leadScore,

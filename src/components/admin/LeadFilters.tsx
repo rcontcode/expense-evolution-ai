@@ -200,6 +200,31 @@ export function LeadFilters({
           </SelectContent>
         </Select>
 
+        {/* Source */}
+        <Select
+          value={filters.source || 'all'}
+          onValueChange={(value) => updateFilter('source', value === 'all' ? '' : value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Fuente" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas las fuentes</SelectItem>
+            <SelectItem value="evofinz">
+              <span className="flex items-center gap-2">
+                <Globe className="h-3 w-3 text-emerald-500" />
+                EvoFinz
+              </span>
+            </SelectItem>
+            <SelectItem value="fokuspark">
+              <span className="flex items-center gap-2">
+                <Globe className="h-3 w-3 text-violet-500" />
+                Fokuspark
+              </span>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+
         {/* Situation */}
         {situations.length > 0 && (
           <Select

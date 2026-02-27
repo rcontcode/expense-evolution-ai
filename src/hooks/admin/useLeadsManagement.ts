@@ -157,6 +157,9 @@ export const useLeadsManagement = () => {
       // Obstacle filter
       if (filters.obstacle && lead.obstacle !== filters.obstacle) return false;
 
+      // Source filter
+      if (filters.source && lead.source !== filters.source) return false;
+
       // Date range filter
       if (filters.dateFrom) {
         const leadDate = new Date(lead.created_at);
