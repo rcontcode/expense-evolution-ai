@@ -1416,7 +1416,7 @@ export default function Landing() {
                       <span className={`text-3xl font-black ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white' : `bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}`}>
                         {priceInfo.display}
                       </span>
-                      <span className={`text-sm ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) ? 'text-white/80' : 'text-slate-500'}`}>
+                      <span className={`text-sm ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white/80' : 'text-slate-500'}`}>
                         {priceInfo.period}
                       </span>
                     </div>
