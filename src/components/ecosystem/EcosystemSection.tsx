@@ -17,7 +17,7 @@ import { EcosystemLeaderboard } from './EcosystemLeaderboard';
 import { EcosystemAchievements } from './EcosystemAchievements';
 import { EcosystemMonthlyReport } from './EcosystemMonthlyReport';
 import { EcosystemInsights } from './EcosystemInsights';
-import { EcosystemQuickActions } from './EcosystemQuickActions';
+import { EcoAppSwitcher } from './EcoAppSwitcher';
 
 export const EcosystemSection = memo(() => {
   const { language } = useLanguage();
