@@ -46,6 +46,7 @@ export const EcosystemAICoaching = memo(() => {
   });
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} />;
   if (isLoading) {
     return (
       <Card className="border-indigo-500/20 bg-gradient-to-br from-indigo-500/5 to-transparent">

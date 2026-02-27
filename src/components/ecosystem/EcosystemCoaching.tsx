@@ -190,6 +190,7 @@ export const EcosystemCoaching = memo(() => {
   });
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} />;
   if (isLoading || !insights || insights.length === 0) return null;
 
   return (

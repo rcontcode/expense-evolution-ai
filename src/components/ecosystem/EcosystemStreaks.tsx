@@ -146,6 +146,7 @@ export const EcosystemStreaks = memo(() => {
   }, [streakData?.needsUpdate]);
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} compact />;
   if (isLoading || !streakData) return null;
 
   // Week dots (Mon-Sun)

@@ -203,6 +203,7 @@ export const EcosystemMonthlyReport = memo(() => {
   }, [report, isEs, monthStart]);
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} />;
   if (isLoading || !report) return null;
 
   return (

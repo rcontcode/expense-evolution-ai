@@ -110,7 +110,9 @@ export const EcosystemInsights = memo(() => {
           </CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4 space-y-3">
-          {isLoading ? (
+          {isError ? (
+            <EcosystemErrorFallback onRetry={() => refetch()} compact />
+          ) : isLoading ? (
             <Skeleton className="h-32 w-full" />
           ) : data ? (
             <>

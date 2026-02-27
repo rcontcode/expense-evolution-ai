@@ -68,6 +68,7 @@ export const EcosystemWeeklyDigest = memo(() => {
   });
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights') || dismissed) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} compact />;
   if (isLoading || !data) return null;
 
   const handleDismiss = () => {

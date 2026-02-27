@@ -131,6 +131,7 @@ export const EcosystemAchievements = memo(() => {
   }, [stats]);
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} compact />;
   if (isLoading || !stats) return null;
 
   const unlockedCount = achievements.filter(a => a.unlocked).length;

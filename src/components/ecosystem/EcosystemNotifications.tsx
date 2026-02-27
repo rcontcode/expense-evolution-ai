@@ -59,6 +59,7 @@ export const EcosystemNotifications = memo(() => {
   });
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} compact />;
   if (isLoading || !notifications || notifications.length === 0) return null;
 
   const unreadCount = notifications.filter(n => !n.is_read).length;

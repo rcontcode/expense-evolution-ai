@@ -133,6 +133,7 @@ export const EcosystemPredictiveAlerts = memo(() => {
   });
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights') || dismissed) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} compact />;
   if (isLoading || !alerts || alerts.length === 0) return null;
 
   const handleDismiss = () => {

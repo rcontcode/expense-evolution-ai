@@ -83,6 +83,7 @@ export const EcosystemHealthScore = memo(() => {
   });
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} compact />;
   if (isLoading || score === null || score === undefined) return null;
 
   const getColor = (s: number) => {

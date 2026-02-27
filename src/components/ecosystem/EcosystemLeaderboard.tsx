@@ -119,6 +119,7 @@ export const EcosystemLeaderboard = memo(() => {
   });
 
   if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={() => refetchLb()} compact />;
   if (isLoading || !leaderboard || leaderboard.length === 0) return null;
 
   const myRank = leaderboard.findIndex(e => e.display_name === (user?.email ? `${user.email.charAt(0).toUpperCase()}***` : '')) + 1;
