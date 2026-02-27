@@ -1413,7 +1413,7 @@ export default function Landing() {
                       {tier.name}
                     </h4>
                     <div className="flex items-baseline justify-center gap-1 my-2">
-                      <span className={`text-3xl font-black ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) ? 'text-white' : `bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}`}>
+                      <span className={`text-3xl font-black ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white' : `bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}`}>
                         {priceInfo.display}
                       </span>
                       <span className={`text-sm ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) ? 'text-white/80' : 'text-slate-500'}`}>
