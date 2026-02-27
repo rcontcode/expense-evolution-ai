@@ -26,8 +26,4 @@
 | F8 | Capturar UTM parameters en ambas apps |
 | F9 | Completar localización bilingüe en Fokuspark |
 
-### 🔲 Pendiente — EvoFinz (menor prioridad)
-
-| # | Tarea |
-|---|-------|
-| F7 | Consolidar queries del ecosistema en edge function |
+### ✅ Completado — Todos los items de EvoFinz finalizados

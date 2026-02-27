@@ -5,9 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFeatureFlags } from '@/hooks/data/useFeatureFlags';
-import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useEcosystemData } from '@/contexts/EcosystemContext';
 import { subMonths, format, startOfMonth, endOfMonth } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import jsPDF from 'jspdf';
@@ -15,117 +13,49 @@ import autoTable from 'jspdf-autotable';
 import { toast } from 'sonner';
 import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
-interface MonthlyReportData {
-  month: string;
-  totalIncome: number;
-  totalExpenses: number;
-  savingsRate: number;
-  focusMinutes: number;
-  focusSessions: number;
-  worryEntries: number;
-  topCategories: { category: string; amount: number }[];
-  healthScore: number;
-}
-
 export const EcosystemMonthlyReport = memo(() => {
   const { language } = useLanguage();
   const { hasBundleAccess, isEnabled, isLoading: flagsLoading } = useFeatureFlags();
-  const { user } = useAuth();
+  const { data: dashData, isLoading, isError, refetch } = useEcosystemData();
   const isEs = language === 'es';
   const [generating, setGenerating] = useState(false);
 
   const lastMonth = subMonths(new Date(), 1);
   const monthStart = startOfMonth(lastMonth);
-  const monthEnd = endOfMonth(lastMonth);
   const monthLabel = format(lastMonth, 'MMMM yyyy', { locale: isEs ? es : enUS });
 
-  const { data: report, isLoading, isError, refetch } = useQuery({
-    queryKey: ['ecosystem-monthly-report', user?.id, format(monthStart, 'yyyy-MM')],
-    queryFn: async (): Promise<MonthlyReportData | null> => {
-      if (!user?.id) return null;
+  if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={refetch} />;
+  if (isLoading || !dashData) return null;
 
-      const startStr = format(monthStart, 'yyyy-MM-dd');
-      const endStr = format(monthEnd, 'yyyy-MM-dd');
-      const startIso = monthStart.toISOString();
-      const endIso = monthEnd.toISOString();
+  // Use consolidated data for the report
+  const report = {
+    month: monthLabel,
+    totalIncome: dashData.totalIncome,
+    totalExpenses: dashData.totalExpenses,
+    savingsRate: dashData.savingsRate,
+    focusMinutes: dashData.focusMinutes,
+    focusSessions: dashData.focusSessionCount,
+    worryEntries: dashData.worryCount,
+    topCategories: dashData.topCategories,
+    healthScore: dashData.healthScore,
+  };
 
-      const [incomeRes, expensesRes, focusRes, worriesRes] = await Promise.all([
-        supabase.from('income').select('amount')
-          .eq('user_id', user.id).is('deleted_at', null)
-          .gte('date', startStr).lte('date', endStr),
-        supabase.from('expenses').select('amount, category')
-          .eq('user_id', user.id).is('deleted_at', null)
-          .gte('date', startStr).lte('date', endStr),
-        supabase.from('financial_focus_sessions').select('duration_minutes')
-          .eq('user_id', user.id)
-          .gte('created_at', startIso).lte('created_at', endIso),
-        supabase.from('financial_worry_entries').select('id')
-          .eq('user_id', user.id)
-          .gte('created_at', startIso).lte('created_at', endIso),
-      ]);
-
-      const totalIncome = (incomeRes.data || []).reduce((a, i) => a + (i.amount || 0), 0);
-      const totalExpenses = (expensesRes.data || []).reduce((a, e) => a + (e.amount || 0), 0);
-      const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome) * 100 : 0;
-      const focusData = focusRes.data || [];
-      const focusMinutes = focusData.reduce((a, s) => a + (s.duration_minutes || 0), 0);
-
-      // Top categories
-      const catMap = new Map<string, number>();
-      for (const e of (expensesRes.data || [])) {
-        const cat = e.category || (isEs ? 'Sin categoría' : 'Uncategorized');
-        catMap.set(cat, (catMap.get(cat) || 0) + (e.amount || 0));
-      }
-      const topCategories = Array.from(catMap.entries())
-        .map(([category, amount]) => ({ category, amount }))
-        .sort((a, b) => b.amount - a.amount)
-        .slice(0, 5);
-
-      // Simple health score
-      const savingsScore = Math.min(30, Math.max(0, savingsRate));
-      const focusScore = Math.min(25, (focusMinutes / 120) * 25);
-      const worryCount = (worriesRes.data || []).length;
-      const worryScore = Math.max(0, 20 - worryCount * 3);
-      const stabilityScore = totalIncome > 0 ? Math.min(25, ((1 - Math.abs(totalExpenses - totalIncome) / totalIncome)) * 25) : 10;
-      const healthScore = Math.min(100, Math.max(0, Math.round(savingsScore + focusScore + worryScore + stabilityScore)));
-
-      return {
-        month: monthLabel,
-        totalIncome,
-        totalExpenses,
-        savingsRate,
-        focusMinutes,
-        focusSessions: focusData.length,
-        worryEntries: worryCount,
-        topCategories,
-        healthScore,
-      };
-    },
-    enabled: !!user?.id && hasBundleAccess,
-    staleTime: 1000 * 60 * 30,
-  });
-
-  const generatePDF = useCallback(async () => {
-    if (!report) return;
+  const generatePDF = async () => {
     setGenerating(true);
-
     try {
       const doc = new jsPDF({ unit: 'mm', format: 'a4' });
       const pageWidth = doc.internal.pageSize.getWidth();
 
-      // Header
       doc.setFontSize(20);
-      doc.setTextColor(99, 102, 241); // primary-ish
+      doc.setTextColor(99, 102, 241);
       doc.text('Evo Ecosystem', 20, 25);
       doc.setFontSize(12);
       doc.setTextColor(100, 100, 100);
       doc.text(isEs ? `Reporte Mensual — ${report.month}` : `Monthly Report — ${report.month}`, 20, 33);
-
-      // Divider
       doc.setDrawColor(230, 230, 230);
       doc.line(20, 37, pageWidth - 20, 37);
 
-      // Summary section
       doc.setFontSize(14);
       doc.setTextColor(30, 30, 30);
       doc.text(isEs ? 'Resumen Financiero' : 'Financial Summary', 20, 48);
@@ -146,7 +76,6 @@ export const EcosystemMonthlyReport = memo(() => {
         margin: { left: 20, right: 20 },
       });
 
-      // Top categories
       const catY = (doc as any).lastAutoTable.finalY + 12;
       doc.setFontSize(14);
       doc.text(isEs ? 'Top Categorías de Gasto' : 'Top Spending Categories', 20, catY);
@@ -162,7 +91,6 @@ export const EcosystemMonthlyReport = memo(() => {
         });
       }
 
-      // Wellness section
       const wellY = (doc as any).lastAutoTable.finalY + 12;
       doc.setFontSize(14);
       doc.text(isEs ? 'Bienestar & Enfoque' : 'Wellness & Focus', 20, wellY);
@@ -181,16 +109,10 @@ export const EcosystemMonthlyReport = memo(() => {
         margin: { left: 20, right: 20 },
       });
 
-      // Footer
       const footY = (doc as any).lastAutoTable.finalY + 15;
       doc.setFontSize(9);
       doc.setTextColor(150, 150, 150);
-      doc.text(
-        isEs ? 'Generado por Evo Ecosystem — EvoFinz + Fokuspark' : 'Generated by Evo Ecosystem — EvoFinz + Fokuspark',
-        pageWidth / 2,
-        footY,
-        { align: 'center' }
-      );
+      doc.text(isEs ? 'Generado por Evo Ecosystem — EvoFinz + Fokuspark' : 'Generated by Evo Ecosystem — EvoFinz + Fokuspark', pageWidth / 2, footY, { align: 'center' });
 
       doc.save(`evo-ecosystem-${format(monthStart, 'yyyy-MM')}.pdf`);
       toast.success(isEs ? 'Reporte descargado' : 'Report downloaded');
@@ -200,11 +122,7 @@ export const EcosystemMonthlyReport = memo(() => {
     } finally {
       setGenerating(false);
     }
-  }, [report, isEs, monthStart]);
-
-  if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
-  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} />;
-  if (isLoading || !report) return null;
+  };
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
@@ -217,7 +135,6 @@ export const EcosystemMonthlyReport = memo(() => {
         </CardHeader>
         <CardContent className="px-4 pb-3 space-y-2">
           <p className="text-[11px] text-muted-foreground capitalize">{report.month}</p>
-          
           <div className="grid grid-cols-4 gap-1.5">
             <div className="p-1.5 rounded-lg bg-primary/5 text-center">
               <p className="text-[10px] font-bold text-foreground">${(report.totalIncome / 1000).toFixed(1)}k</p>
@@ -236,22 +153,9 @@ export const EcosystemMonthlyReport = memo(() => {
               <p className="text-[8px] text-muted-foreground">Score</p>
             </div>
           </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full text-xs h-8 gap-2"
-            onClick={generatePDF}
-            disabled={generating}
-          >
-            {generating ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Download className="h-3.5 w-3.5" />
-            )}
-            {generating
-              ? (isEs ? 'Generando...' : 'Generating...')
-              : (isEs ? 'Descargar PDF' : 'Download PDF')}
+          <Button variant="outline" size="sm" className="w-full text-xs h-8 gap-2" onClick={generatePDF} disabled={generating}>
+            {generating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+            {generating ? (isEs ? 'Generando...' : 'Generating...') : (isEs ? 'Descargar PDF' : 'Download PDF')}
           </Button>
         </CardContent>
       </Card>

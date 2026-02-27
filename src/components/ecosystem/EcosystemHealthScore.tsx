@@ -5,86 +5,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFeatureFlags } from '@/hooks/data/useFeatureFlags';
-import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { subMonths } from 'date-fns';
+import { useEcosystemData } from '@/contexts/EcosystemContext';
 import { openFokusparkTool } from '@/lib/ecosystem/deeplinks';
 import { EcosystemErrorFallback } from './EcosystemErrorFallback';
 
-/**
- * Composite ecosystem health score (0-100) based on:
- * - Savings rate (0-30 pts)
- * - Focus consistency (0-25 pts)
- * - Worry trend declining (0-20 pts)
- * - Expense stability (0-25 pts)
- */
 export const EcosystemHealthScore = memo(() => {
   const { language } = useLanguage();
-  const { hasBundleAccess, isEnabled, isLoading: flagsLoading } = useFeatureFlags();
-  const { user } = useAuth();
+  const { isEnabled, isLoading: flagsLoading } = useFeatureFlags();
+  const { data: dashData, isLoading, isError, refetch } = useEcosystemData();
   const isEs = language === 'es';
 
-  const { data: score, isLoading, isError, refetch } = useQuery({
-    queryKey: ['ecosystem-health-score', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
+  if (flagsLoading || !isEnabled('ecosystem_insights')) return null;
+  if (isError) return <EcosystemErrorFallback onRetry={refetch} compact />;
+  if (isLoading || !dashData) return null;
 
-      const oneMonthAgo = subMonths(new Date(), 1).toISOString();
-      const twoMonthsAgo = subMonths(new Date(), 2).toISOString();
-
-      const [incomeRes, expenseRes, focusRes, focusOldRes, worryRes, worryOldRes] = await Promise.all([
-        supabase.from('income').select('amount').eq('user_id', user.id)
-          .is('deleted_at', null).gte('date', oneMonthAgo.slice(0, 10)),
-        supabase.from('expenses').select('amount').eq('user_id', user.id)
-          .is('deleted_at', null).gte('date', oneMonthAgo.slice(0, 10)),
-        supabase.from('financial_focus_sessions').select('duration_minutes, created_at')
-          .eq('user_id', user.id).gte('created_at', oneMonthAgo),
-        supabase.from('financial_focus_sessions').select('duration_minutes')
-          .eq('user_id', user.id).gte('created_at', twoMonthsAgo).lt('created_at', oneMonthAgo),
-        supabase.from('financial_worry_entries').select('id')
-          .eq('user_id', user.id).gte('created_at', oneMonthAgo),
-        supabase.from('financial_worry_entries').select('id')
-          .eq('user_id', user.id).gte('created_at', twoMonthsAgo).lt('created_at', oneMonthAgo),
-      ]);
-
-      const totalIncome = (incomeRes.data || []).reduce((a, i) => a + (i.amount || 0), 0);
-      const totalExpenses = (expenseRes.data || []).reduce((a, e) => a + (e.amount || 0), 0);
-
-      // Savings rate score (0-30)
-      const savingsRate = totalIncome > 0 ? (totalIncome - totalExpenses) / totalIncome : 0;
-      const savingsScore = Math.min(30, Math.max(0, savingsRate * 100));
-
-      // Focus consistency (0-25) — based on sessions per week avg
-      const focusSessions = (focusRes.data || []);
-      const focusMinutes = focusSessions.reduce((a, s) => a + (s.duration_minutes || 0), 0);
-      const focusScore = Math.min(25, (focusMinutes / 120) * 25); // 120 min/month = max
-
-      // Worry trend (0-20) — fewer worries than last month = good
-      const worriesNow = (worryRes.data || []).length;
-      const worriesOld = (worryOldRes.data || []).length;
-      let worryScore = 10; // neutral
-      if (worriesOld > 0 && worriesNow < worriesOld) worryScore = 20;
-      else if (worriesNow === 0 && worriesOld === 0) worryScore = 15;
-      else if (worriesNow > worriesOld) worryScore = Math.max(0, 10 - (worriesNow - worriesOld) * 2);
-
-      // Expense stability (0-25) — low variance = good
-      const focusOldMinutes = (focusOldRes.data || []).reduce((a, s) => a + (s.duration_minutes || 0), 0);
-      const expenseChange = totalExpenses > 0 && totalIncome > 0
-        ? Math.abs(totalExpenses - totalIncome) / totalIncome
-        : 0.5;
-      const stabilityScore = Math.min(25, Math.max(0, (1 - expenseChange) * 25));
-
-      const total = Math.round(savingsScore + focusScore + worryScore + stabilityScore);
-      return Math.min(100, Math.max(0, total));
-    },
-    enabled: !!user?.id && hasBundleAccess,
-    staleTime: 1000 * 60 * 10,
-  });
-
-  if (flagsLoading || !hasBundleAccess || !isEnabled('ecosystem_insights')) return null;
-  if (isError) return <EcosystemErrorFallback onRetry={() => refetch()} compact />;
-  if (isLoading || score === null || score === undefined) return null;
+  const score = dashData.healthScore;
 
   const getColor = (s: number) => {
     if (s >= 75) return 'text-emerald-500';
@@ -118,7 +53,6 @@ export const EcosystemHealthScore = memo(() => {
           </CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-3 flex items-center gap-4">
-          {/* Radial gauge */}
           <div className="relative h-20 w-20 shrink-0">
             <svg className="-rotate-90" viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="40" fill="none" strokeWidth="8" className="stroke-muted" />
