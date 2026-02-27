@@ -19,11 +19,11 @@
 | F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
 | F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
 
-### 🔲 Pendiente — Fokuspark
+### ✅ Completado en Fokuspark (cont.)
 
-| # | Tarea |
-|---|-------|
-| F8 | Capturar UTM parameters en ambas apps |
-| F9 | Completar localización bilingüe en Fokuspark |
+| # | Tarea | Estado |
+|---|-------|--------|
+| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
+| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
 
-### ✅ Completado — Todos los items de EvoFinz finalizados
+### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
