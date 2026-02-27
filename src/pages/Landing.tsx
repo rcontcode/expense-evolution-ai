@@ -1322,9 +1322,9 @@ export default function Landing() {
           </motion.div>
 
           {/* Compact pricing cards */}
-          <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
             {pricingTiers.map((tier, index) => {
-              const priceInfo = getPrice(tier.monthlyPrice);
+              const priceInfo = getPrice(tier.monthlyPrice, 'isBundle' in tier && tier.isBundle);
               return (
                 <motion.div
                   key={`compact-${tier.name}`}
