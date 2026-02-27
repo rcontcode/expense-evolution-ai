@@ -68,7 +68,7 @@ export const EcosystemSection = memo(() => {
           <EcosystemAchievements />
           <EcosystemMonthlyReport />
           <EcosystemInsights />
-          <EcosystemQuickActions />
+          
         </motion.div>
       </CollapsibleContent>
     </Collapsible>
