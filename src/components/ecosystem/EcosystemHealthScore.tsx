@@ -25,7 +25,7 @@ export const EcosystemHealthScore = memo(() => {
   const { user } = useAuth();
   const isEs = language === 'es';
 
-  const { data: score, isLoading } = useQuery({
+  const { data: score, isLoading, isError, refetch } = useQuery({
     queryKey: ['ecosystem-health-score', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
