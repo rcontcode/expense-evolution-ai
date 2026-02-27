@@ -17,7 +17,7 @@ import { EcosystemLeaderboard } from './EcosystemLeaderboard';
 import { EcosystemAchievements } from './EcosystemAchievements';
 import { EcosystemMonthlyReport } from './EcosystemMonthlyReport';
 import { EcosystemInsights } from './EcosystemInsights';
-import { EcosystemQuickActions } from './EcosystemQuickActions';
+import { EcoAppSwitcher } from './EcoAppSwitcher';
 
 export const EcosystemSection = memo(() => {
   const { language } = useLanguage();
@@ -54,6 +54,7 @@ export const EcosystemSection = memo(() => {
           animate={{ opacity: 1 }}
           className="space-y-4 pt-3"
         >
+          <EcoAppSwitcher currentApp="evofinz" />
           <BundleActiveBadge variant="full" />
           <EcosystemNotifications />
           <EcosystemAICoaching />
@@ -67,7 +68,7 @@ export const EcosystemSection = memo(() => {
           <EcosystemAchievements />
           <EcosystemMonthlyReport />
           <EcosystemInsights />
-          <EcosystemQuickActions />
+          
         </motion.div>
       </CollapsibleContent>
     </Collapsible>
