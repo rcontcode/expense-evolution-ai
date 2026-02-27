@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.ecosystem-notifications]
 verify_jwt = false
+
+[functions.ecosystem-dashboard]
+verify_jwt = false
