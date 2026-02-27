@@ -349,6 +349,48 @@ const getPricingTiers = (language: string) => [
     cta: language === 'es' ? '¡Quiero Pro!' : 'Get Pro!',
     popular: false,
     gradient: 'from-violet-600 via-purple-600 to-indigo-600'
+  },
+  {
+    name: 'Evo Bundle',
+    monthlyPrice: 14.99,
+    isBundle: true,
+    description: language === 'es' 
+      ? 'EvoFinz Pro + Fokuspark Premium. Finanzas y bienestar mental en un solo plan.' 
+      : 'EvoFinz Pro + Fokuspark Premium. Finances and mental wellbeing in one plan.',
+    transformation: language === 'es' 
+      ? '💎 Mejor valor: 2 apps, 1 precio'
+      : '💎 Best value: 2 apps, 1 price',
+    features: language === 'es' ? [
+      '🔥 TODO de EvoFinz Pro incluido',
+      '🧠 Fokuspark Premium completo',
+      '🎯 Sesiones de enfoque y meditación',
+      '📓 Diario de preocupaciones financieras',
+      '📊 Insights cruzados finanzas ↔ enfoque',
+      '🏆 Leaderboard del ecosistema',
+      '🔗 Streaks y logros compartidos',
+      '💡 AI coaching financiero + mental',
+      '📈 Health Score unificado',
+      '⚡ Alertas predictivas cruzadas',
+      '📅 Reportes mensuales del ecosistema',
+      '⭐ Soporte prioritario'
+    ] : [
+      '🔥 ALL of EvoFinz Pro included',
+      '🧠 Full Fokuspark Premium',
+      '🎯 Focus & meditation sessions',
+      '📓 Financial worry journal',
+      '📊 Cross-app insights: finances ↔ focus',
+      '🏆 Ecosystem leaderboard',
+      '🔗 Shared streaks & achievements',
+      '💡 Financial + mental AI coaching',
+      '📈 Unified Health Score',
+      '⚡ Cross-app predictive alerts',
+      '📅 Monthly ecosystem reports',
+      '⭐ Priority support'
+    ],
+    notIncluded: [],
+    cta: language === 'es' ? '¡Quiero el Bundle!' : 'Get the Bundle!',
+    popular: false,
+    gradient: 'from-teal-500 via-cyan-500 to-blue-500'
   }
 ];
 
