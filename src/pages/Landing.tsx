@@ -431,9 +431,18 @@ export default function Landing() {
   const stats = getStats(language);
   
   // Calculate prices based on billing period
-  const getPrice = (monthlyPrice: number) => {
+  const getPrice = (monthlyPrice: number, isBundle?: boolean) => {
     if (monthlyPrice === 0) return { display: '$0', period: language === 'es' ? '/mes' : '/mo', savings: '' };
     if (isAnnual) {
+      if (isBundle) {
+        // Bundle: $9.99/mo annual ($119.90/year) = 33% off vs separate plans
+        const monthlyEquivalent = '9.99';
+        return { 
+          display: `$${monthlyEquivalent} USD`, 
+          period: language === 'es' ? '/mes' : '/mo',
+          savings: language === 'es' ? '33% menos vs planes separados' : '33% off vs separate plans'
+        };
+      }
       const annualTotal = monthlyPrice * 12 * 0.8; // 20% discount
       const monthlyEquivalent = (annualTotal / 12).toFixed(2);
       return { 
