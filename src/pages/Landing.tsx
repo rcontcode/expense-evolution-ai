@@ -1221,7 +1221,7 @@ export default function Landing() {
                   </Badge>
                 )}
                 {'isBundle' in tier && tier.isBundle && (
-                  <Badge className="absolute -top-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2.5s_ease-in-out_infinite]">
+                  <Badge className="absolute top-0 left-1/2 -translate-x-1/2 bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 text-white border-0 px-4 py-1 font-bold z-20 shadow-lg animate-[pulse-soft_2.5s_ease-in-out_infinite]">
                     <Layers className="w-3 h-3 mr-1 inline" />
                     {language === 'es' ? 'Mejor Valor' : 'Best Value'}
                   </Badge>
