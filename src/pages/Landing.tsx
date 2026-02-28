@@ -352,7 +352,7 @@ const getPricingTiers = (language: string) => [
   },
   {
     name: 'Evo Bundle',
-    monthlyPrice: 19.99,
+    monthlyPrice: 14.99,
     isBundle: true,
     description: language === 'es' 
       ? 'EvoFinz Pro + Fokuspark Premium. Finanzas y bienestar mental en un solo plan.' 
