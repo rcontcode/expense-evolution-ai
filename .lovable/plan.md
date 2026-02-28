@@ -1,72 +1,40 @@
 
 
-## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
+## Analysis: Bundle Pricing Discrepancy
 
-### ✅ Completado en EvoFinz
+**The problem:** The landing page shows $19.99/mo for the Bundle, but Stripe is configured at $14.99/mo. Users would see $19.99, click checkout, and get charged $14.99 -- inconsistent.
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
-| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
-| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
-| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
-| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
+**My recommendation:** Keep Bundle at $14.99/mo (matching Stripe) and position it as **"2 apps for the price of 1"**. The value proposition is clear:
 
-### ✅ Completado en Fokuspark
+```text
+Buying separately:        Bundle price:
+  Pro      = $14.99/mo      $14.99/mo  (same as Pro alone!)
++ Premium = $ 6.99/mo      
+= Total   = $21.98/mo      Savings: $6.99/mo = 32% off
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
-| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
-| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
-| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
+Annual separately:         Bundle annual:
+  Pro      = $143.88/yr      $119.90/yr ($9.99/mo)
++ Premium = $ 67.08/yr      
+= Total   = $210.96/yr      Savings: $91.06/yr = 43% off
+```
 
-### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
+## Changes
 
----
+### 1. Fix Bundle pricing in `Landing.tsx`
+- Change `monthlyPrice` from `19.99` to `14.99` (match Stripe reality)
+- Update `getPrice()` to show a "vs separate" savings callout for Bundle
+- Add strikethrough of $21.98 next to $14.99 for visual impact
 
-## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
+### 2. Fix Quick Pricing Bar
+- Monthly: show `$14.99` (not `$19.99`)
+- Annual: show `$9.99` (not `$14.99`)
+- Add small savings text like "Save $7/mo" or "2x1"
 
-### ✅ Confirmado: Sistema funciona correctamente
+### 3. Visual fixes for badge overlap
+- Increase card top padding and adjust badge `top` position so "Mejor Valor" / "Best Value" never overlaps with "Evo Bundle" title
+- Ensure consistent spacing across all 4 cards
 
-- Planes individuales (Free/Premium/Pro) son independientes por app
-- Bundle compartido usa mismos Stripe Price IDs en ambas apps
-- Ambos webhooks detectan Bundle y setean `has_bundle = true`
-- No hay acceso cruzado no autorizado entre apps
+### 4. Update `useSubscription.ts` and `SubscriptionManager.tsx`
+- Verify `bundle_monthly` pricing constant matches Stripe ($14.99) -- already correct
+- No Stripe changes needed (prices are already $14.99/mo and $119.90/yr)
 
-### ✅ Gaps implementados en Fokuspark
-
-| # | Gap | Estado |
-|---|-----|--------|
-| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
-| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
-
-### 📋 Gaps pendientes (baja prioridad)
-
-| # | Gap | Prioridad |
-|---|-----|-----------|
-| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
-| S3 | Texto del Bundle podría ser más descriptivo | Baja |
-
----
-
-## Quiz Multi-App — CRM Unificado
-
-### ✅ Completado en EvoFinz
-
-| # | Tarea | Estado |
-|---|-------|--------|
-| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
-| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
-| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
-| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
-| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
-
-### 📋 Pendiente en Fokuspark
-
-| # | Tarea | Prioridad |
-|---|-------|-----------|
-| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
-| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
-| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
-| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
