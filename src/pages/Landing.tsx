@@ -352,7 +352,7 @@ const getPricingTiers = (language: string) => [
   },
   {
     name: 'Evo Bundle',
-    monthlyPrice: 19.99,
+    monthlyPrice: 14.99,
     isBundle: true,
     description: language === 'es' 
       ? 'EvoFinz Pro + Fokuspark Premium. Finanzas y bienestar mental en un solo plan.' 
@@ -432,15 +432,15 @@ export default function Landing() {
   
   // Calculate prices based on billing period
   const getPrice = (monthlyPrice: number, isBundle?: boolean) => {
-    if (monthlyPrice === 0) return { display: '$0', period: language === 'es' ? '/mes' : '/mo', savings: '' };
+    if (monthlyPrice === 0) return { display: '$0', period: language === 'es' ? '/mes' : '/mo', savings: '', strikethrough: '' };
     if (isAnnual) {
       if (isBundle) {
-        // Bundle: $9.99/mo annual ($119.90/year) = 33% off vs separate plans
-        const monthlyEquivalent = '9.99';
+        // Bundle: $9.99/mo annual ($119.90/year) — save 43% vs buying Pro + Premium separately
         return { 
-          display: `$${monthlyEquivalent} USD`, 
+          display: '$9.99 USD', 
           period: language === 'es' ? '/mes' : '/mo',
-          savings: language === 'es' ? '33% menos vs planes separados' : '33% off vs separate plans'
+          savings: language === 'es' ? 'Ahorras $91/año vs planes separados' : 'Save $91/yr vs separate plans',
+          strikethrough: '$17.58',
         };
       }
       const annualTotal = monthlyPrice * 12 * 0.8; // 20% discount
@@ -448,10 +448,19 @@ export default function Landing() {
       return { 
         display: `$${monthlyEquivalent} USD`, 
         period: language === 'es' ? '/mes' : '/mo',
-        savings: language === 'es' ? `Ahorras $${(monthlyPrice * 12 * 0.2).toFixed(0)} USD/año` : `Save $${(monthlyPrice * 12 * 0.2).toFixed(0)} USD/year`
+        savings: language === 'es' ? `Ahorras $${(monthlyPrice * 12 * 0.2).toFixed(0)} USD/año` : `Save $${(monthlyPrice * 12 * 0.2).toFixed(0)} USD/year`,
+        strikethrough: '',
       };
     }
-    return { display: `$${monthlyPrice.toFixed(2)} USD`, period: language === 'es' ? '/mes' : '/mo', savings: '' };
+    if (isBundle) {
+      return { 
+        display: `$${monthlyPrice.toFixed(2)} USD`, 
+        period: language === 'es' ? '/mes' : '/mo', 
+        savings: language === 'es' ? '2 apps por el precio de 1' : '2 apps for the price of 1',
+        strikethrough: '$21.98',
+      };
+    }
+    return { display: `$${monthlyPrice.toFixed(2)} USD`, period: language === 'es' ? '/mes' : '/mo', savings: '', strikethrough: '' };
   };
 
   const handleGetStarted = () => {
@@ -844,7 +853,7 @@ export default function Landing() {
               >
                 <Layers className="w-5 h-5 text-teal-400" />
                 <span className="font-bold text-teal-300">Bundle</span>
-                <span className="font-black text-white text-lg">${isAnnual ? '14.99' : '19.99'}</span>
+                <span className="font-black text-white text-lg">${isAnnual ? '9.99' : '14.99'}</span>
                 <span className="text-teal-200/70 text-xs">{language === 'es' ? '/mes' : '/mo'}</span>
                 <Badge className="bg-teal-500/30 text-teal-200 border-teal-400/40 text-[10px] px-1.5 py-0">
                   2 apps
@@ -1253,6 +1262,9 @@ export default function Landing() {
                   <div className="text-center mb-6 relative">
                     <h3 className="text-xl font-bold text-white mb-2">{tier.name}</h3>
                     <div className="flex items-baseline justify-center gap-1">
+                      {priceInfo.strikethrough && (
+                        <span className="text-lg text-slate-500 line-through mr-1">{priceInfo.strikethrough}</span>
+                      )}
                       <span className={`text-5xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
                         {priceInfo.display}
                       </span>
@@ -1413,6 +1425,11 @@ export default function Landing() {
                       {tier.name}
                     </h4>
                     <div className="flex items-baseline justify-center gap-1 my-2">
+                      {priceInfo.strikethrough && (
+                        <span className={`text-sm line-through ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white/50' : 'text-slate-400'}`}>
+                          {priceInfo.strikethrough}
+                        </span>
+                      )}
                       <span className={`text-3xl font-black ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white' : `bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}`}>
                         {priceInfo.display}
                       </span>
