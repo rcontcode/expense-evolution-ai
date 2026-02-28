@@ -1262,6 +1262,9 @@ export default function Landing() {
                   <div className="text-center mb-6 relative">
                     <h3 className="text-xl font-bold text-white mb-2">{tier.name}</h3>
                     <div className="flex items-baseline justify-center gap-1">
+                      {priceInfo.strikethrough && (
+                        <span className="text-lg text-slate-500 line-through mr-1">{priceInfo.strikethrough}</span>
+                      )}
                       <span className={`text-5xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
                         {priceInfo.display}
                       </span>
