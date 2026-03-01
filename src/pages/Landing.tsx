@@ -389,20 +389,29 @@ export default function Landing() {
   const pricingTiers = getPricingTiers(language);
   const stats = getStats(language);
   
-  // Calculate prices based on billing period
+  // Calculate prices based on billing period - fixed prices matching Stripe
   const getPrice = (monthlyPrice: number, _isBundle?: boolean) => {
-    if (monthlyPrice === 0) return { display: '$0', period: language === 'es' ? '/mes' : '/mo', savings: '', strikethrough: '' };
+    if (monthlyPrice === 0) return { display: '$0', period: language === 'es' ? '/mes' : '/mo', savings: '', strikethrough: '', annualTotal: '' };
     if (isAnnual) {
-      const annualTotal = monthlyPrice * 12 * 0.8; // 20% discount
-      const monthlyEquivalent = (annualTotal / 12).toFixed(2);
-      return { 
-        display: `$${monthlyEquivalent} USD`, 
-        period: language === 'es' ? '/mes' : '/mo',
-        savings: '',
-        strikethrough: '',
+      // Fixed annual prices matching Stripe exactly
+      const annualPrices: Record<string, { monthly: string; total: string; saved: string }> = {
+        '7.99': { monthly: '6.49', total: '77.88', saved: '18' },
+        '14.99': { monthly: '11.99', total: '143.88', saved: '20' },
+        '19.99': { monthly: '15.99', total: '191.88', saved: '20' },
       };
+      const key = monthlyPrice.toFixed(2);
+      const prices = annualPrices[key];
+      if (prices) {
+        return { 
+          display: `$${prices.monthly}`, 
+          period: language === 'es' ? '/mes' : '/mo',
+          savings: language === 'es' ? `Ahorras ${prices.saved}%` : `Save ${prices.saved}%`,
+          strikethrough: `$${monthlyPrice.toFixed(2)}`,
+          annualTotal: language === 'es' ? `$${prices.total} USD/año` : `$${prices.total} USD/year`,
+        };
+      }
     }
-    return { display: `$${monthlyPrice.toFixed(2)} USD`, period: language === 'es' ? '/mes' : '/mo', savings: '', strikethrough: '' };
+    return { display: `$${monthlyPrice.toFixed(2)}`, period: language === 'es' ? '/mes' : '/mo', savings: '', strikethrough: '', annualTotal: '' };
   };
 
   const handleGetStarted = () => {
@@ -1203,10 +1212,13 @@ export default function Landing() {
                       <span className={`text-5xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
                         {priceInfo.display}
                       </span>
-                      <span className="text-slate-400">{priceInfo.period}</span>
+                      <span className="text-slate-400 text-sm">USD{priceInfo.period}</span>
                     </div>
+                    {priceInfo.annualTotal && (
+                      <p className="text-xs text-slate-500 mt-1">{priceInfo.annualTotal}</p>
+                    )}
                     {priceInfo.savings && (
-                      <p className="text-sm text-green-400 mt-1 font-medium">{priceInfo.savings}</p>
+                      <p className="text-sm text-green-400 mt-1 font-semibold">{priceInfo.savings}</p>
                     )}
                     <p className="text-sm text-slate-400 mt-2">{tier.description}</p>
                     
@@ -1360,9 +1372,15 @@ export default function Landing() {
                         {priceInfo.display}
                       </span>
                       <span className={`text-sm ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white/80' : 'text-slate-500'}`}>
-                        {priceInfo.period}
+                        USD{priceInfo.period}
                       </span>
                     </div>
+                    {priceInfo.annualTotal && (
+                      <p className={`text-xs mt-0.5 ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white/60' : 'text-slate-400'}`}>{priceInfo.annualTotal}</p>
+                    )}
+                    {priceInfo.savings && (
+                      <p className={`text-xs font-semibold mt-0.5 ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-green-300' : 'text-green-500'}`}>{priceInfo.savings}</p>
+                    )}
                     
                     {/* Transformation highlight */}
                     {'transformation' in tier && tier.transformation && (
