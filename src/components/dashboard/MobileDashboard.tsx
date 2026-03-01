@@ -31,7 +31,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
 
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [activeView, setActiveView] = useState<'resumen' | 'control'>('resumen');
 
   const handleAddIncome = useCallback(() => navigate('/income'), [navigate]);
   const handleAddExpense = useCallback(() => navigate('/expenses'), [navigate]);
