@@ -242,7 +242,7 @@ const getPricingTiers = (language: string) => [
   },
   {
     name: 'Premium',
-    monthlyPrice: 6.99,
+    monthlyPrice: 7.99,
     description: language === 'es' 
       ? 'Para freelancers y emprendedores que quieren control total de sus finanzas.' 
       : 'For freelancers and entrepreneurs who want total control of their finances.',
