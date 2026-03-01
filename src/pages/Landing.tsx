@@ -1185,70 +1185,38 @@ export default function Landing() {
                     {priceInfo.savings && (
                       <p className="text-sm text-green-400 mt-1 font-semibold">{priceInfo.savings}</p>
                     )}
-                    
-                    {/* Problem → Solution description */}
-                    <p className="text-sm text-slate-300 mt-2 italic leading-snug">{tier.description}</p>
-                    
-                    {/* Transformation Badge */}
-                    {'transformation' in tier && tier.transformation && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${tier.gradient} text-xs font-bold text-white shadow-lg`}
-                      >
-                        <Flame className="h-3 w-3" />
-                        {tier.transformation}
-                      </motion.div>
-                    )}
                   </div>
 
-                  {/* Hero Features - highlighted with details */}
-                  {'heroFeatures' in tier && tier.heroFeatures && (
-                    <div className="space-y-1.5 mb-5">
-                      {tier.heroFeatures.map((hf: { text: string; icon: string; detail?: string }, hfIdx: number) => (
-                        <motion.div 
-                          key={hf.text} 
-                          initial={{ opacity: 0, x: -10 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.1 * hfIdx }}
-                          className={`flex items-start gap-3 px-3.5 py-2.5 rounded-xl backdrop-blur-sm ${
-                            tier.popular 
-                              ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-400/20' 
-                              : 'isFree' in tier && tier.isFree
-                                ? 'bg-gradient-to-r from-emerald-500/15 to-green-500/10 border border-emerald-400/20'
-                                : 'featured' in tier && tier.featured
-                                  ? 'bg-gradient-to-r from-violet-500/15 to-purple-500/10 border border-violet-400/20'
-                                  : 'bg-gradient-to-r from-teal-500/15 to-cyan-500/10 border border-teal-400/20'
-                          }`}
-                        >
-                          <span className="text-xl flex-shrink-0 leading-none mt-0.5 drop-shadow-lg">{hf.icon}</span>
-                          <div className="min-w-0 flex-1">
-                            <span className="text-sm font-bold text-white leading-tight block">{hf.text}</span>
-                            {hf.detail && (
-                              <span className="text-[11px] text-slate-400/90 leading-snug block mt-0.5">{hf.detail}</span>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
+                  {/* Hero Features - compact single-line */}
+                  <div className="space-y-1 mb-3">
+                    {tier.heroFeatures.map((hf: { text: string; icon: string }, hfIdx: number) => (
+                      <div 
+                        key={hf.text} 
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${
+                          tier.popular 
+                            ? 'bg-amber-500/10 border border-amber-400/15' 
+                            : 'isFree' in tier && tier.isFree
+                              ? 'bg-emerald-500/10 border border-emerald-400/15'
+                              : 'featured' in tier && tier.featured
+                                ? 'bg-violet-500/10 border border-violet-400/15'
+                                : 'bg-teal-500/10 border border-teal-400/15'
+                        }`}
+                      >
+                        <span className="text-base flex-shrink-0">{hf.icon}</span>
+                        <span className="font-semibold text-white text-xs">{hf.text}</span>
+                      </div>
+                    ))}
+                  </div>
 
-                  {/* Regular Features - compact */}
-                  <ul className="space-y-1.5 mb-4 flex-grow">
+                  {/* Regular Features - ultra compact */}
+                  <ul className="space-y-0.5 mb-3 flex-grow">
                     {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2 text-sm">
-                        <Check className="h-3.5 w-3.5 flex-shrink-0 text-slate-500" />
+                      <li key={feature} className="flex items-center gap-1.5 text-xs">
+                        <Check className="h-3 w-3 flex-shrink-0 text-slate-500" />
                         <span className="text-slate-400">{feature}</span>
                       </li>
                     ))}
                   </ul>
-
-                  {/* Value Note */}
-                  {'valueNote' in tier && tier.valueNote && (
-                    <div className="px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 mb-6">
-                      <p className="text-xs text-emerald-400 leading-snug">{tier.valueNote}</p>
-                    </div>
-                  )}
 
                   <Button 
                     className={`w-full py-6 font-bold ${
