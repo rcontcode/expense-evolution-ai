@@ -338,7 +338,7 @@ const getPricingTiers = (language: string) => [
       : '💎 Unique: AI connecting money + mind',
     heroFeatures: language === 'es' ? [
       { text: 'EvoFinz Pro COMPLETO incluido', icon: '🔥', detail: 'Todas las herramientas financieras' },
-      { text: 'Fokuspark Premium COMPLETO', icon: '🧠', detail: 'Meditación, focus, journaling' },
+      { text: 'Fokuspark Pro COMPLETO', icon: '🧠', detail: 'Meditación, focus, journaling' },
       { text: 'IA cruza finanzas ↔ bienestar', icon: '📊', detail: '"Cuando meditas, gastas 23% menos"' },
     ] : [
       { text: 'Full EvoFinz Pro INCLUDED', icon: '🔥', detail: 'All financial tools unlocked' },
