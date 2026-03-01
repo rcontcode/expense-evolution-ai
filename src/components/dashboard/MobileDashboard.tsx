@@ -1,8 +1,6 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, BarChart3 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
@@ -12,6 +10,7 @@ import { YearTimelineChart } from '@/components/dashboard/YearTimelineChart';
 import { MonthDetailPanel } from '@/components/dashboard/MonthDetailPanel';
 import { MobileStatsGrid } from '@/components/dashboard/MobileStatsGrid';
 import { MobileAlertsBanner } from '@/components/dashboard/MobileAlertsBanner';
+import { DashboardViewTabs } from '@/components/dashboard/DashboardViewTabs';
 import { ProgressiveOnboarding } from '@/components/onboarding/ProgressiveOnboarding';
 import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
 import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding';
