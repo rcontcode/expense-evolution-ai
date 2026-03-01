@@ -1237,13 +1237,26 @@ export default function Landing() {
                     )}
                   </div>
 
-                  <ul className="space-y-3 mb-8 flex-grow">
-                    {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-3 text-sm">
-                        <div className={`p-1 rounded-full bg-gradient-to-r ${tier.gradient} flex-shrink-0`}>
-                          <Check className="h-3 w-3 text-white" />
+                  {/* Hero Features - highlighted */}
+                  {'heroFeatures' in tier && tier.heroFeatures && (
+                    <div className="space-y-2 mb-4">
+                      {tier.heroFeatures.map((hf: { text: string; icon: string }) => (
+                        <div key={hf.text} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg bg-gradient-to-r ${tier.gradient} bg-opacity-10 border border-white/10`}
+                          style={{ background: 'rgba(255,255,255,0.05)' }}
+                        >
+                          <span className="text-lg flex-shrink-0">{hf.icon}</span>
+                          <span className="text-sm font-semibold text-white">{hf.text}</span>
                         </div>
-                        <span className="text-slate-300">{feature}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Regular Features - compact */}
+                  <ul className="space-y-2 mb-8 flex-grow">
+                    {tier.features.map((feature) => (
+                      <li key={feature} className="flex items-center gap-2 text-sm">
+                        <Check className={`h-3.5 w-3.5 flex-shrink-0 text-slate-500`} />
+                        <span className="text-slate-400">{feature}</span>
                       </li>
                     ))}
                   </ul>
