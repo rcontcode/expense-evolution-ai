@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, lazy, Suspense, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useHighlightOnArrival } from '@/hooks/utils/useHighlightOnArrival';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
