@@ -25,7 +25,7 @@ const PRODUCT_DESCRIPTIONS: Record<string, { name: string; description: string }
   },
   premium_annual: {
     name: "EvoFinz Premium Anual",
-    description: "Ahorra 20% - Todo Premium: gastos ilimitados, 50 OCR/mes, mileage, gamificación, patrimonio neto, calendario fiscal, reporte IA, alertas, mentoría. Solo $5.59/mes.",
+    description: "Todo Premium: gastos ilimitados, 50 OCR/mes, mileage, gamificación, patrimonio neto, calendario fiscal, reporte IA, alertas, mentoría. $6.49/mes facturado anualmente.",
   },
   pro_monthly: {
     name: "EvoFinz Pro Mensual",
@@ -33,7 +33,7 @@ const PRODUCT_DESCRIPTIONS: Record<string, { name: string; description: string }
   },
   pro_annual: {
     name: "EvoFinz Pro Anual",
-    description: "Ahorra 20% - Todo Pro: OCR ilimitado, contratos IA, fiscal, FIRE, RRSP/TFSA, T2125, mentoría, voz (120 min/mes), soporte dedicado. Solo $11.99/mes.",
+    description: "Todo Pro: OCR ilimitado, contratos IA, fiscal, FIRE, RRSP/TFSA, T2125, mentoría, voz (120 min/mes), soporte dedicado. $11.99/mes facturado anualmente.",
   },
   bundle_monthly: {
     name: "Evo Bundle Mensual",
@@ -41,7 +41,7 @@ const PRODUCT_DESCRIPTIONS: Record<string, { name: string; description: string }
   },
   bundle_annual: {
     name: "Evo Bundle Anual",
-    description: "Ahorra 33% - EvoFinz Pro + Fokuspark Premium: acceso completo, datos cruzados, correlación enfoque↔finanzas, dashboard ecosistema. Solo $9.99/mes.",
+    description: "EvoFinz Pro + Fokuspark Premium: acceso completo, datos cruzados, correlación enfoque↔finanzas, dashboard ecosistema. $15.99/mes facturado anualmente.",
   },
 };
 
