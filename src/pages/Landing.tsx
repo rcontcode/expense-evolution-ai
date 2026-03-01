@@ -1142,7 +1142,7 @@ export default function Landing() {
                   </Badge>
                 )}
                 <Card 
-                  className={`relative p-8 bg-slate-900/80 backdrop-blur-sm border-2 overflow-hidden h-full flex flex-col transition-all duration-300 ${
+                  className={`relative p-5 bg-slate-900/80 backdrop-blur-sm border-2 overflow-hidden h-full flex flex-col transition-all duration-300 ${
                     tier.popular 
                       ? 'border-orange-500 shadow-2xl shadow-orange-500/20 z-10 hover:shadow-orange-500/40 hover:-translate-y-2' 
                       : 'isFree' in tier && tier.isFree
