@@ -1219,7 +1219,7 @@ export default function Landing() {
                   </ul>
 
                   <Button 
-                    className={`w-full py-6 font-bold ${
+                    className={`w-full py-4 font-bold ${
                       tier.popular 
                         ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-900' 
                         : 'featured' in tier && tier.featured
