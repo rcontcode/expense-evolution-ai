@@ -142,7 +142,6 @@ const planConfig: Record<string, {
       'Focus↔finance correlation insights',
       'Unified ecosystem quotes',
       'Ecosystem dashboard',
-      '33% savings vs separate plans',
       'Priority ecosystem support',
     ],
   },

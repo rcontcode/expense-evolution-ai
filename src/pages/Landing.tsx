@@ -1168,13 +1168,9 @@ export default function Landing() {
               <span className={`text-sm font-medium transition-colors ${isAnnual ? 'text-white' : 'text-slate-500'}`}>
                 {language === 'es' ? 'Anual' : 'Annual'}
               </span>
-              <Badge className={`transition-all duration-300 border-0 ${
-                isAnnual 
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white animate-pulse' 
-                  : 'opacity-0 pointer-events-none bg-transparent text-transparent'
-              }`}>
-                -20% OFF
-              </Badge>
+              <span className={`text-xs font-medium transition-opacity ${isAnnual ? 'text-green-400 opacity-100' : 'opacity-0'}`}>
+                {language === 'es' ? 'Facturación anual' : 'Annual billing'}
+              </span>
             </div>
           </motion.div>
 

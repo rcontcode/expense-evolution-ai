@@ -8,28 +8,28 @@ import { PlanType } from './usePlanLimits';
 // Stripe product and price configuration
 export const STRIPE_CONFIG = {
   products: {
-    premium_monthly: 'prod_TuPUlFnv10u2OA',
-    premium_annual: 'prod_TuPUaVFFZ9bBgf',
+    premium_monthly: 'prod_U4OdR9JHiXuKho',
+    premium_annual: 'prod_U4Ofsc9SskEad8',
     pro_monthly: 'prod_TuPUJPLiqh0kC7',
     pro_annual: 'prod_TuPVHHsOi7e4Au',
-    bundle_monthly: 'prod_U2ZIfWwlezukmF',
-    bundle_annual: 'prod_U2ZNNkNSSVCIp5',
+    bundle_monthly: 'prod_U4OgGM4CrkdVOP',
+    bundle_annual: 'prod_U4Ohr9YUiCNX76',
   },
   prices: {
-    premium_monthly: 'price_1SwafM3wR30iWwFnJpszo14u',
-    premium_annual: 'price_1Swaff3wR30iWwFnGvO9x4Fa',
+    premium_monthly: 'price_1T6Fpu3wR30iWwFnTiIn2JLe',
+    premium_annual: 'price_1T6Fs93wR30iWwFnjzId7AK4',
     pro_monthly: 'price_1Swafv3wR30iWwFn0z52B0W7',
     pro_annual: 'price_1SwagD3wR30iWwFn9RABKpl3',
-    bundle_monthly: 'price_1T4U9U3wR30iWwFnq9YJeIHe',
-    bundle_annual: 'price_1T4UEy3wR30iWwFnbIfKJtUb',
+    bundle_monthly: 'price_1T6FtG3wR30iWwFntfPozk4n',
+    bundle_annual: 'price_1T6Ftj3wR30iWwFnjQcJq4Mm',
   },
   pricing: {
-    premium_monthly: 6.99,
-    premium_annual: 67.08, // $5.59/month
+    premium_monthly: 7.99,
+    premium_annual: 77.88, // $6.49/month
     pro_monthly: 14.99,
     pro_annual: 143.88, // $11.99/month
-    bundle_monthly: 14.99,
-    bundle_annual: 119.90, // $9.99/month, 33% off
+    bundle_monthly: 19.99,
+    bundle_annual: 191.88, // $15.99/month
   },
 } as const;
 
