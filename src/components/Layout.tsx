@@ -23,6 +23,7 @@ import {
   Camera,
   Menu,
   X,
+  CalendarCheck,
   FolderKanban,
   Building2,
   Scale,
