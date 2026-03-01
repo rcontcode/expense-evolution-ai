@@ -9,12 +9,12 @@ const corsHeaders = {
 
 // Price IDs for EvoFinz plans
 const PRICE_IDS = {
-  premium_monthly: "price_1SwafM3wR30iWwFnJpszo14u",
-  premium_annual: "price_1Swaff3wR30iWwFnGvO9x4Fa",
+  premium_monthly: "price_1T6Fpu3wR30iWwFnTiIn2JLe",
+  premium_annual: "price_1T6Fs93wR30iWwFnjzId7AK4",
   pro_monthly: "price_1Swafv3wR30iWwFn0z52B0W7",
   pro_annual: "price_1SwagD3wR30iWwFn9RABKpl3",
-  bundle_monthly: "price_1T4U9U3wR30iWwFnq9YJeIHe",
-  bundle_annual: "price_1T4UEy3wR30iWwFnbIfKJtUb",
+  bundle_monthly: "price_1T6FtG3wR30iWwFntfPozk4n",
+  bundle_annual: "price_1T6Ftj3wR30iWwFnjQcJq4Mm",
 };
 
 // Short descriptions for Stripe (max 500 chars)
