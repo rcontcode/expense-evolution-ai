@@ -310,8 +310,13 @@ export function FeatureDemosCarousel() {
         })}
       </div>
 
+      {/* Disclaimer */}
+      <p className="text-center text-[10px] text-slate-400 mt-4">
+        {language === 'es' ? 'Simulación ilustrativa · La interfaz real puede variar' : 'Illustrative demo · Actual interface may vary'}
+      </p>
+
       {/* Mobile swipe hint */}
-      <p className="text-center text-[10px] text-slate-400 mt-4 md:hidden">
+      <p className="text-center text-[10px] text-slate-400 mt-1 md:hidden">
         {swipeHint}
       </p>
     </div>
