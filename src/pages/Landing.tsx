@@ -1264,19 +1264,31 @@ export default function Landing() {
 
                   {/* Hero Features - highlighted with details */}
                   {'heroFeatures' in tier && tier.heroFeatures && (
-                    <div className="space-y-2 mb-4">
-                      {tier.heroFeatures.map((hf: { text: string; icon: string; detail?: string }) => (
-                        <div key={hf.text} className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-white/10"
-                          style={{ background: 'rgba(255,255,255,0.05)' }}
+                    <div className="space-y-1.5 mb-5">
+                      {tier.heroFeatures.map((hf: { text: string; icon: string; detail?: string }, hfIdx: number) => (
+                        <motion.div 
+                          key={hf.text} 
+                          initial={{ opacity: 0, x: -10 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 * hfIdx }}
+                          className={`flex items-start gap-3 px-3.5 py-2.5 rounded-xl backdrop-blur-sm ${
+                            tier.popular 
+                              ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-400/20' 
+                              : 'isFree' in tier && tier.isFree
+                                ? 'bg-gradient-to-r from-emerald-500/15 to-green-500/10 border border-emerald-400/20'
+                                : 'featured' in tier && tier.featured
+                                  ? 'bg-gradient-to-r from-violet-500/15 to-purple-500/10 border border-violet-400/20'
+                                  : 'bg-gradient-to-r from-teal-500/15 to-cyan-500/10 border border-teal-400/20'
+                          }`}
                         >
-                          <span className="text-lg flex-shrink-0 mt-0.5">{hf.icon}</span>
-                          <div className="min-w-0">
-                            <span className="text-sm font-semibold text-white block">{hf.text}</span>
+                          <span className="text-xl flex-shrink-0 leading-none mt-0.5 drop-shadow-lg">{hf.icon}</span>
+                          <div className="min-w-0 flex-1">
+                            <span className="text-sm font-bold text-white leading-tight block">{hf.text}</span>
                             {hf.detail && (
-                              <span className="text-xs text-slate-400 block mt-0.5">{hf.detail}</span>
+                              <span className="text-[11px] text-slate-400/90 leading-snug block mt-0.5">{hf.detail}</span>
                             )}
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   )}
