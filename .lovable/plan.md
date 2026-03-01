@@ -1,91 +1,32 @@
 
 
-## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
+## Análisis y Plan
 
-### ✅ Completado en EvoFinz
+### Problema actual
+La sección de pricing en la Landing de EvoFinz muestra listas de features "no incluidas" (`notIncluded`) con tachado y icono X en los planes Free y Premium, lo que alarga mucho las tarjetas verticalmente. En cambio, Fokuspark (imagen 2) solo muestra lo que SI incluye cada plan -- mucho mas limpio y compacto.
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
-| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
-| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
-| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
-| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
+### Plan: Eliminar `notIncluded` de las tarjetas de pricing
 
-### ✅ Completado en Fokuspark
+1. **Eliminar las propiedades `notIncluded`** de los objetos Free y Premium en `pricingTiers` (lineas ~217-230 y ~283-300 aprox)
+2. **Eliminar el bloque JSX** que renderiza los items tachados (lineas 1276-1284)
+3. Esto reducira significativamente la altura de las tarjetas, especialmente Free y Premium
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
-| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
-| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
-| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
+### Sobre tener una /pricing separada
 
-### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
+**Pros:**
+- SEO: una pagina `/pricing` dedicada rankea mejor en Google para busquedas tipo "EvoFinz pricing"
+- Linking directo: puedes compartir `evofinz.com/pricing` en emails, ads, etc.
+- Mas espacio para detalles: FAQ de precios, comparativa lado a lado, testimonios de cada tier
+- La landing queda mas ligera si reduces la seccion de pricing a un resumen con "Ver todos los planes"
 
----
+**Contras:**
+- Duplicacion de contenido que hay que mantener sincronizado
+- Para una app en crecimiento temprano, una sola landing con pricing integrado suele ser suficiente
+- Mas paginas = mas mantenimiento
 
-## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
+**Mi recomendacion:** Por ahora NO es necesario. Tu landing ya tiene todo. Cuando tengas mas trafico o necesites campañas con links directos a pricing, creas la pagina dedicada. Es facil de agregar despues.
 
-### ✅ Confirmado: Sistema funciona correctamente
+### Cambios concretos
 
-- Planes individuales (Free/Premium/Pro) son independientes por app
-- Bundle compartido usa mismos Stripe Price IDs en ambas apps
-- Ambos webhooks detectan Bundle y setean `has_bundle = true`
-- No hay acceso cruzado no autorizado entre apps
+- **`src/pages/Landing.tsx`**: Eliminar arrays `notIncluded` de los tiers Free y Premium, y eliminar el bloque de render de `notIncluded` en el JSX (desktop y mobile)
 
-### ✅ Gaps implementados en Fokuspark
-
-| # | Gap | Estado |
-|---|-----|--------|
-| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
-| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
-
-### 📋 Gaps pendientes (baja prioridad)
-
-| # | Gap | Prioridad |
-|---|-----|-----------|
-| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
-| S3 | Texto del Bundle podría ser más descriptivo | Baja |
-
----
-
-## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
-
-### ✅ Veredicto: No igualar precios — estructura actual es óptima
-
-| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
-|------|---------|-----------|-----------|-------|
-| Free | $0 | $0 | ✅ Ya iguales | — |
-| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
-| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
-| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
-
-### 📋 Pendiente técnico
-
-| # | Tarea | App | Prioridad |
-|---|-------|-----|-----------|
-| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
-
----
-
-## Quiz Multi-App — CRM Unificado
-
-### ✅ Completado en EvoFinz
-
-| # | Tarea | Estado |
-|---|-------|--------|
-| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
-| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
-| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
-| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
-| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
-
-### 📋 Pendiente en Fokuspark
-
-| # | Tarea | Prioridad |
-|---|-------|-----------|
-| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
-| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
-| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
-| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
