@@ -662,6 +662,7 @@ export default function Dashboard() {
                 </Card>
               </motion.div>
             )}
+          </AnimatePresence>
 
           <ExportDialog 
             open={exportDialogOpen} 
