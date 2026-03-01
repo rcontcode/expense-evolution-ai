@@ -51,6 +51,7 @@ const routeImportMap: Record<string, () => Promise<unknown>> = {
   '/chaos': () => import("./pages/ChaosInbox"),
   '/clients': () => import("./pages/Clients"),
   '/projects': () => import("./pages/Projects"),
+  '/bills': () => import("./pages/Bills"),
 };
 
 const preloadedRoutes = new Set<string>();
