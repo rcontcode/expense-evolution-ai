@@ -1204,13 +1204,13 @@ export default function Landing() {
                 <Card 
                   className={`relative p-8 bg-slate-900/80 backdrop-blur-sm border-2 overflow-hidden h-full flex flex-col transition-all duration-300 ${
                     tier.popular 
-                      ? 'border-orange-500 shadow-2xl shadow-orange-500/20 scale-105 z-10 hover:shadow-orange-500/40 hover:-translate-y-2' 
+                      ? 'border-orange-500 shadow-2xl shadow-orange-500/20 z-10 hover:shadow-orange-500/40 hover:-translate-y-2' 
                       : 'isFree' in tier && tier.isFree
-                        ? 'border-emerald-500 shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-2'
+                        ? 'border-emerald-500 shadow-2xl shadow-emerald-500/20 z-10 hover:shadow-emerald-500/40 hover:-translate-y-2'
                         : 'featured' in tier && tier.featured
-                          ? 'border-violet-500 shadow-2xl shadow-violet-500/25 scale-105 z-10 hover:shadow-violet-500/40 hover:-translate-y-2'
+                          ? 'border-violet-500 shadow-2xl shadow-violet-500/25 z-10 hover:shadow-violet-500/40 hover:-translate-y-2'
                           : 'isBundle' in tier && tier.isBundle
-                            ? 'border-teal-500 shadow-2xl shadow-teal-500/25 scale-105 z-10 hover:shadow-teal-500/40 hover:-translate-y-2'
+                            ? 'border-teal-500 shadow-2xl shadow-teal-500/25 z-10 hover:shadow-teal-500/40 hover:-translate-y-2'
                             : 'border-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-slate-900/50 hover:-translate-y-2'
                   }`}
                 >
