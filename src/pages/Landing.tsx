@@ -1232,15 +1232,6 @@ export default function Landing() {
                         <span className="text-slate-300">{feature}</span>
                       </li>
                     ))}
-                    {/* Features not included - creates FOMO */}
-                    {tier.notIncluded && tier.notIncluded.map((feature) => (
-                      <li key={feature} className="flex items-center gap-3 text-sm opacity-50">
-                        <div className="p-1 rounded-full bg-slate-700 flex-shrink-0">
-                          <XCircle className="h-3 w-3 text-slate-500" />
-                        </div>
-                        <span className="text-slate-500 line-through">{feature}</span>
-                      </li>
-                    ))}
                   </ul>
 
                   <Button 
