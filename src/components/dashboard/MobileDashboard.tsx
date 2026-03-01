@@ -42,7 +42,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
   const savingsRate = monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses) / monthlyIncome * 100) : 0;
 
   return (
-    <div className="mobile-page mobile-gap">
+    <div className="mobile-page mobile-gap space-y-4">
       <MobileAlertsBanner
         pendingDocuments={pendingDocuments}
         incompleteExpenses={incompleteExpenses}
