@@ -346,7 +346,7 @@ const getPricingTiers = (language: string) => [
       '📅 Monthly ecosystem reports',
       '⭐ Priority support'
     ],
-    notIncluded: [],
+    
     cta: language === 'es' ? '¡Quiero el Bundle!' : 'Get the Bundle!',
     popular: false,
     gradient: 'from-teal-500 via-cyan-500 to-blue-500'
