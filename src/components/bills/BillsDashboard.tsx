@@ -15,6 +15,7 @@ import { PaymentChecklist } from './PaymentChecklist';
 import { CashFlowProjection } from './CashFlowProjection';
 import { NetCashFlowCard } from './NetCashFlowCard';
 import { BillsExportButtons } from './BillsExportButtons';
+import { BillsQuickOnboarding } from './BillsQuickOnboarding';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { differenceInDays, parseISO } from 'date-fns';
