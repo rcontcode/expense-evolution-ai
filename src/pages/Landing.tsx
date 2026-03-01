@@ -509,7 +509,7 @@ export default function Landing() {
                 >
                   <Star className="w-4 h-4 text-amber-400" />
                   <span className="text-amber-300 font-semibold text-sm">Premium</span>
-                  <span className="text-white font-bold">${isAnnual ? '5.59' : '6.99'}</span>
+                  <span className="text-white font-bold">${isAnnual ? '6.49' : '7.99'}</span>
                   <span className="text-amber-200/60 text-xs">/mo</span>
                 </motion.div>
                 
