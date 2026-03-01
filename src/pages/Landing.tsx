@@ -189,36 +189,25 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Free',
     monthlyPrice: 0,
-    subtitle: language === 'es' ? 'Para siempre, sin tarjeta' : 'Forever, no card needed',
-    description: language === 'es' 
-      ? '"No sé en qué se me va el dinero" → Claridad en minutos.' 
-      : '"I don\'t know where my money goes" → Clarity in minutes.',
-    transformation: language === 'es' 
-      ? '🎁 ¡Empieza HOY gratis!'
-      : '🎁 Start FREE today!',
+    subtitle: language === 'es' ? 'Para siempre' : 'Forever free',
     heroFeatures: language === 'es' ? [
-      { text: '50 gastos + 20 ingresos/mes', icon: '✏️', detail: 'Empieza a ver patrones reales' },
-      { text: '5 escaneos OCR — foto y listo', icon: '📷', detail: 'Prueba la magia de no tipear' },
-      { text: 'Dashboard visual del mes', icon: '📊', detail: 'Tu dinero, de un vistazo' },
+      { text: '50 gastos + 20 ingresos/mes', icon: '✏️' },
+      { text: '5 escaneos OCR', icon: '📷' },
+      { text: 'Dashboard visual', icon: '📊' },
     ] : [
-      { text: '50 expenses + 20 incomes/mo', icon: '✏️', detail: 'Start seeing real patterns' },
-      { text: '5 OCR scans — snap & done', icon: '📷', detail: 'Try the magic of zero typing' },
-      { text: 'Visual monthly dashboard', icon: '📊', detail: 'Your money, at a glance' },
+      { text: '50 expenses + 20 incomes/mo', icon: '✏️' },
+      { text: '5 OCR scans', icon: '📷' },
+      { text: 'Visual dashboard', icon: '📊' },
     ],
     features: language === 'es' ? [
       '2 clientes / 2 proyectos',
-      'Analytics básicos de tendencia',
-      'Tags predefinidos',
-      'Asistente de voz (3 min/mes)',
+      'Analytics básicos',
+      'Voz (3 min/mes)',
     ] : [
       '2 clients / 2 projects',
-      'Basic trend analytics',
-      'Predefined tags',
-      'Voice assistant (3 min/mo)',
+      'Basic analytics',
+      'Voice (3 min/mo)',
     ],
-    valueNote: language === 'es' 
-      ? '💡 La mayoría de apps "free" no incluyen OCR ni voz. EvoFinz sí.'
-      : '💡 Most "free" apps don\'t include OCR or voice. EvoFinz does.',
     cta: language === 'es' ? '¡Comenzar Gratis!' : 'Start Free!',
     popular: false,
     gradient: 'from-emerald-500 via-green-500 to-teal-500',
@@ -227,48 +216,31 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Premium',
     monthlyPrice: 7.99,
-    subtitle: language === 'es' ? 'El más popular para freelancers' : 'Most popular for freelancers',
-    description: language === 'es' 
-      ? '"Pierdo recibos, no controlo impuestos, no sé cuánto valgo" → Control total.' 
-      : '"I lose receipts, miss tax dates, don\'t know my net worth" → Total control.',
-    transformation: language === 'es' 
-      ? '🔥 De desorden → Control profesional'
-      : '🔥 From chaos → Pro-level control',
+    subtitle: language === 'es' ? 'El más popular' : 'Most popular',
     heroFeatures: language === 'es' ? [
-      { text: 'Gastos e ingresos ILIMITADOS', icon: '♾️', detail: 'Registra TODO, no pierdas nada' },
-      { text: '50 escaneos OCR/mes', icon: '📷', detail: '~1h/semana ahorrada en admin' },
-      { text: 'Net Worth + Calendario fiscal', icon: '💰', detail: 'Sabe cuánto VALES y cuándo pagar' },
+      { text: 'Gastos e ingresos ILIMITADOS', icon: '♾️' },
+      { text: '50 escaneos OCR/mes', icon: '📷' },
+      { text: 'Net Worth + Calendario fiscal', icon: '💰' },
     ] : [
-      { text: 'UNLIMITED expenses & income', icon: '♾️', detail: 'Track EVERYTHING, miss nothing' },
-      { text: '50 OCR scans/month', icon: '📷', detail: '~1h/week saved on admin' },
-      { text: 'Net Worth + Tax calendar', icon: '💰', detail: 'Know your WORTH and when to pay' },
+      { text: 'UNLIMITED expenses & income', icon: '♾️' },
+      { text: '50 OCR scans/month', icon: '📷' },
+      { text: 'Net Worth + Tax calendar', icon: '💰' },
     ],
     features: language === 'es' ? [
       'Clientes y proyectos ilimitados',
-      'Mileage GPS — deduce viajes legalmente',
-      'Tags personalizados infinitos',
-      'Exportación Excel/CSV',
+      'Mileage GPS',
+      'Tags personalizados',
+      'Excel/CSV export',
       'Gamificación + XP + Streaks',
-      '9+ gráficos: heatmaps, correlaciones',
-      'Alertas antes de que sea tarde',
-      '4 módulos de mentoría (Kiyosaki, Clear)',
-      'Asistente de voz (30 min/mes)',
-      'Educación financiera completa',
+      'Voz (30 min/mes)',
     ] : [
       'Unlimited clients & projects',
-      'GPS mileage — deduct trips legally',
-      'Infinite custom tags',
+      'GPS mileage',
+      'Custom tags',
       'Excel/CSV export',
       'Gamification + XP + Streaks',
-      '9+ charts: heatmaps, correlations',
-      'Alerts before it\'s too late',
-      '4 mentorship modules (Kiyosaki, Clear)',
-      'Voice assistant (30 min/mo)',
-      'Complete financial education',
+      'Voice (30 min/mo)',
     ],
-    valueNote: language === 'es' 
-      ? '💡 Si ahorras 1h/semana en admin = $200/mes de tu tiempo. Pagas $7.99.'
-      : '💡 If you save 1h/week on admin = $200/mo of your time. You pay $7.99.',
     cta: language === 'es' ? 'Elegir Premium' : 'Choose Premium',
     popular: true,
     gradient: 'from-amber-500 via-orange-500 to-red-500'
@@ -276,51 +248,34 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Pro',
     monthlyPrice: 14.99,
-    subtitle: language === 'es' ? 'Inteligencia artificial financiera' : 'Financial artificial intelligence',
-    description: language === 'es' 
-      ? '"Necesito IA para optimizar impuestos, analizar contratos y predecir mi futuro" → Dominio total.' 
-      : '"I need AI to optimize taxes, analyze contracts and predict my future" → Total mastery.',
-    transformation: language === 'es' 
-      ? '🚀 De control → Dominio experto con IA'
-      : '🚀 From control → AI-powered mastery',
+    subtitle: language === 'es' ? 'IA financiera' : 'Financial AI',
     featured: true,
     heroFeatures: language === 'es' ? [
-      { text: 'OCR ILIMITADO — escanea todo', icon: '📷', detail: 'Cada recibo, cada factura, siempre' },
-      { text: 'Contratos analizados por IA', icon: '📋', detail: 'Nunca más sorpresas en la letra chica' },
-      { text: 'Asistente de voz 120 min/mes', icon: '🎤', detail: '"¿Cuánto gasté en marketing este Q?"' },
+      { text: 'OCR ILIMITADO', icon: '📷' },
+      { text: 'Contratos analizados por IA', icon: '📋' },
+      { text: 'Voz 120 min/mes', icon: '🎤' },
     ] : [
-      { text: 'UNLIMITED OCR — scan everything', icon: '📷', detail: 'Every receipt, every invoice, always' },
-      { text: 'AI-analyzed contracts', icon: '📋', detail: 'No more fine print surprises' },
-      { text: 'Voice assistant 120 min/mo', icon: '🎤', detail: '"How much did I spend on marketing?"' },
+      { text: 'UNLIMITED OCR', icon: '📷' },
+      { text: 'AI contract analysis', icon: '📋' },
+      { text: 'Voice 120 min/mo', icon: '🎤' },
     ],
     features: language === 'es' ? [
-      '👑 Todo lo de Premium incluido',
-      'Análisis bancario + detección anomalías',
-      'Optimizador fiscal IA — paga menos, legal',
+      '👑 Todo lo de Premium',
+      'Optimizador fiscal IA',
       'Optimizador RRSP/TFSA/APV',
-      'FIRE Calculator — ¿cuándo me retiro?',
-      '8 módulos de mentoría completos',
-      'Exportación fiscal oficial (T2125/F29)',
-      'Detector de suscripciones fantasma',
-      'Predicciones y tendencias con IA',
-      'Reconciliación bancaria automática',
+      'FIRE Calculator',
+      'Detector suscripciones fantasma',
+      'Reconciliación bancaria',
       'Soporte dedicado',
     ] : [
-      '👑 Everything in Premium included',
-      'Bank analysis + anomaly detection',
-      'AI tax optimizer — pay less, legally',
+      '👑 Everything in Premium',
+      'AI tax optimizer',
       'RRSP/TFSA/APV optimizer',
-      'FIRE Calculator — when can I retire?',
-      '8 complete mentorship modules',
-      'Official tax export (T2125/F29)',
+      'FIRE Calculator',
       'Ghost subscription detector',
-      'AI predictions & trends',
-      'Automatic bank reconciliation',
+      'Bank reconciliation',
       'Dedicated support',
     ],
-    valueNote: language === 'es' 
-      ? '💡 Si Tax Optimizer te ahorra $500/año en impuestos = $41/mes. Pagas $14.99.'
-      : '💡 If Tax Optimizer saves you $500/yr in taxes = $41/mo. You pay $14.99.',
     cta: language === 'es' ? '¡Quiero Pro!' : 'Get Pro!',
     popular: false,
     gradient: 'from-violet-600 via-purple-600 to-indigo-600'
@@ -329,46 +284,31 @@ const getPricingTiers = (language: string) => [
     name: 'Evo Bundle',
     monthlyPrice: 19.99,
     isBundle: true,
-    subtitle: language === 'es' ? '2 apps, 1 precio — finanzas + mente' : '2 apps, 1 price — finance + mind',
-    description: language === 'es' 
-      ? '"El estrés financiero arruina mi productividad" → Bienestar integral.' 
-      : '"Financial stress ruins my productivity" → Total wellbeing.',
-    transformation: language === 'es' 
-      ? '💎 Único: IA que conecta dinero + mente'
-      : '💎 Unique: AI connecting money + mind',
+    subtitle: language === 'es' ? '2 apps × 1 precio' : '2 apps × 1 price',
     heroFeatures: language === 'es' ? [
-      { text: 'EvoFinz Pro COMPLETO incluido', icon: '🔥', detail: 'Todas las herramientas financieras' },
-      { text: 'Fokuspark Pro COMPLETO', icon: '🧠', detail: 'Meditación, focus, journaling' },
-      { text: 'IA cruza finanzas ↔ bienestar', icon: '📊', detail: '"Cuando meditas, gastas 23% menos"' },
+      { text: 'EvoFinz Pro COMPLETO', icon: '🔥' },
+      { text: 'Fokuspark Pro COMPLETO', icon: '🧠' },
+      { text: 'IA cruza finanzas ↔ bienestar', icon: '📊' },
     ] : [
-      { text: 'Full EvoFinz Pro INCLUDED', icon: '🔥', detail: 'All financial tools unlocked' },
-      { text: 'Full Fokuspark Pro', icon: '🧠', detail: 'Meditation, focus, journaling' },
-      { text: 'AI crosses finance ↔ wellness', icon: '📊', detail: '"When you meditate, you spend 23% less"' },
+      { text: 'Full EvoFinz Pro', icon: '🔥' },
+      { text: 'Full Fokuspark Pro', icon: '🧠' },
+      { text: 'AI: finance ↔ wellness', icon: '📊' },
     ],
     features: language === 'es' ? [
-      'Sesiones de enfoque y meditación',
-      'Diario de preocupaciones financieras',
-      'Leaderboard — compite y motívate',
-      'Streaks compartidos entre apps',
-      'AI coaching financiero + mental',
-      'Health Score unificado (0-100)',
-      'Alertas predictivas cruzadas',
-      'Reportes mensuales del ecosistema',
+      'Focus y meditación',
+      'Diario de preocupaciones',
+      'Leaderboard + Streaks',
+      'Health Score (0-100)',
+      'Alertas cruzadas con IA',
       'Soporte prioritario',
     ] : [
-      'Focus & meditation sessions',
+      'Focus & meditation',
       'Financial worry journal',
-      'Leaderboard — compete & motivate',
-      'Shared streaks across apps',
-      'Financial + mental AI coaching',
-      'Unified Health Score (0-100)',
-      'Cross-app predictive alerts',
-      'Monthly ecosystem reports',
+      'Leaderboard + Streaks',
+      'Health Score (0-100)',
+      'AI cross-app alerts',
       'Priority support',
     ],
-    valueNote: language === 'es' 
-      ? '💡 EvoFinz Pro ($14.99) + Fokuspark Pro ($14.99) = $29.98. Aquí pagas $19.99. Ahorras $120/año.'
-      : '💡 EvoFinz Pro ($14.99) + Fokuspark Pro ($14.99) = $29.98. Here you pay $19.99. Save $120/yr.',
     cta: language === 'es' ? '¡Quiero el Bundle!' : 'Get the Bundle!',
     popular: false,
     gradient: 'from-teal-500 via-cyan-500 to-blue-500'
