@@ -259,25 +259,6 @@ const getPricingTiers = (language: string) => [
       '🔔 Smart notifications',
       '📚 Financial education library'
     ],
-    notIncluded: language === 'es' ? [
-      '📋 Análisis inteligente de contratos',
-      '🏦 Análisis bancario avanzado',
-      '🧮 Optimizador fiscal inteligente',
-      '💎 Optimizador RRSP/APV',
-      '🔥 FIRE Calculator completo',
-      '🎓 8 módulos de mentoría',
-      '🎤 Asistente de voz',
-      '📄 Exportación fiscal (T2125/F29)'
-    ] : [
-      '📋 Smart contract analysis',
-      '🏦 Advanced bank analysis',
-      '🧮 Smart tax optimizer',
-      '💎 RRSP/APV optimizer',
-      '🔥 Complete FIRE Calculator',
-      '🎓 8 mentorship modules',
-      '🎤 Voice assistant',
-      '📄 Tax export (T2125/F29)'
-    ],
     cta: language === 'es' ? 'Elegir Premium' : 'Choose Premium',
     popular: true,
     gradient: 'from-amber-500 via-orange-500 to-red-500'
