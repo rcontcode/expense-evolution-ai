@@ -84,7 +84,7 @@
 | Categoría | Feature | Detalle | Valor para el usuario |
 |-----------|---------|---------|----------------------|
 | 🔥 **EvoFinz Pro** | COMPLETO incluido | Todo lo de arriba | La herramienta financiera más completa |
-| 🧠 **Fokuspark** | Premium completo | App de enfoque y bienestar mental | Meditación, focus sessions, journaling |
+| 🧠 **Fokuspark** | Pro completo | App de enfoque y bienestar mental | Meditación, focus sessions, journaling |
 | 📊 **Cross-Insights** | Finanzas ↔ Enfoque | IA conecta ambos mundos | "Cuando meditas, gastas 23% menos impulsivamente" |
 | 📓 **Worry Journal** | Diario de preocupaciones financieras | Procesa la ansiedad por dinero | Transforma preocupación en acción |
 | 🏆 **Leaderboard** | Del ecosistema | Compite con otros usuarios | Motivación social para mejorar |

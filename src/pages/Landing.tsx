@@ -338,11 +338,11 @@ const getPricingTiers = (language: string) => [
       : '💎 Unique: AI connecting money + mind',
     heroFeatures: language === 'es' ? [
       { text: 'EvoFinz Pro COMPLETO incluido', icon: '🔥', detail: 'Todas las herramientas financieras' },
-      { text: 'Fokuspark Premium COMPLETO', icon: '🧠', detail: 'Meditación, focus, journaling' },
+      { text: 'Fokuspark Pro COMPLETO', icon: '🧠', detail: 'Meditación, focus, journaling' },
       { text: 'IA cruza finanzas ↔ bienestar', icon: '📊', detail: '"Cuando meditas, gastas 23% menos"' },
     ] : [
       { text: 'Full EvoFinz Pro INCLUDED', icon: '🔥', detail: 'All financial tools unlocked' },
-      { text: 'Full Fokuspark Premium', icon: '🧠', detail: 'Meditation, focus, journaling' },
+      { text: 'Full Fokuspark Pro', icon: '🧠', detail: 'Meditation, focus, journaling' },
       { text: 'AI crosses finance ↔ wellness', icon: '📊', detail: '"When you meditate, you spend 23% less"' },
     ],
     features: language === 'es' ? [
@@ -367,8 +367,8 @@ const getPricingTiers = (language: string) => [
       'Priority support',
     ],
     valueNote: language === 'es' 
-      ? '💡 Pro ($14.99) + Fokuspark ($7.99) = $22.98. Aquí pagas $19.99. Ahorras $36/año.'
-      : '💡 Pro ($14.99) + Fokuspark ($7.99) = $22.98. Here you pay $19.99. Save $36/yr.',
+      ? '💡 EvoFinz Pro ($14.99) + Fokuspark Pro ($14.99) = $29.98. Aquí pagas $19.99. Ahorras $120/año.'
+      : '💡 EvoFinz Pro ($14.99) + Fokuspark Pro ($14.99) = $29.98. Here you pay $19.99. Save $120/yr.',
     cta: language === 'es' ? '¡Quiero el Bundle!' : 'Get the Bundle!',
     popular: false,
     gradient: 'from-teal-500 via-cyan-500 to-blue-500'
@@ -1264,19 +1264,31 @@ export default function Landing() {
 
                   {/* Hero Features - highlighted with details */}
                   {'heroFeatures' in tier && tier.heroFeatures && (
-                    <div className="space-y-2 mb-4">
-                      {tier.heroFeatures.map((hf: { text: string; icon: string; detail?: string }) => (
-                        <div key={hf.text} className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-white/10"
-                          style={{ background: 'rgba(255,255,255,0.05)' }}
+                    <div className="space-y-1.5 mb-5">
+                      {tier.heroFeatures.map((hf: { text: string; icon: string; detail?: string }, hfIdx: number) => (
+                        <motion.div 
+                          key={hf.text} 
+                          initial={{ opacity: 0, x: -10 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 * hfIdx }}
+                          className={`flex items-start gap-3 px-3.5 py-2.5 rounded-xl backdrop-blur-sm ${
+                            tier.popular 
+                              ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-400/20' 
+                              : 'isFree' in tier && tier.isFree
+                                ? 'bg-gradient-to-r from-emerald-500/15 to-green-500/10 border border-emerald-400/20'
+                                : 'featured' in tier && tier.featured
+                                  ? 'bg-gradient-to-r from-violet-500/15 to-purple-500/10 border border-violet-400/20'
+                                  : 'bg-gradient-to-r from-teal-500/15 to-cyan-500/10 border border-teal-400/20'
+                          }`}
                         >
-                          <span className="text-lg flex-shrink-0 mt-0.5">{hf.icon}</span>
-                          <div className="min-w-0">
-                            <span className="text-sm font-semibold text-white block">{hf.text}</span>
+                          <span className="text-xl flex-shrink-0 leading-none mt-0.5 drop-shadow-lg">{hf.icon}</span>
+                          <div className="min-w-0 flex-1">
+                            <span className="text-sm font-bold text-white leading-tight block">{hf.text}</span>
                             {hf.detail && (
-                              <span className="text-xs text-slate-400 block mt-0.5">{hf.detail}</span>
+                              <span className="text-[11px] text-slate-400/90 leading-snug block mt-0.5">{hf.detail}</span>
                             )}
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   )}
