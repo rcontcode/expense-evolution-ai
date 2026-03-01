@@ -1212,10 +1212,13 @@ export default function Landing() {
                       <span className={`text-5xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
                         {priceInfo.display}
                       </span>
-                      <span className="text-slate-400">{priceInfo.period}</span>
+                      <span className="text-slate-400 text-sm">USD{priceInfo.period}</span>
                     </div>
+                    {priceInfo.annualTotal && (
+                      <p className="text-xs text-slate-500 mt-1">{priceInfo.annualTotal}</p>
+                    )}
                     {priceInfo.savings && (
-                      <p className="text-sm text-green-400 mt-1 font-medium">{priceInfo.savings}</p>
+                      <p className="text-sm text-green-400 mt-1 font-semibold">{priceInfo.savings}</p>
                     )}
                     <p className="text-sm text-slate-400 mt-2">{tier.description}</p>
                     
