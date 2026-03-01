@@ -1208,7 +1208,7 @@ export default function Landing() {
                   <div className="text-center mb-3 relative">
                     <h3 className="text-lg font-bold text-white mb-0.5">{tier.name}</h3>
                     {'subtitle' in tier && tier.subtitle && (
-                      <p className="text-xs text-slate-500 mb-2 font-medium uppercase tracking-wide">{tier.subtitle}</p>
+                      <p className="text-[10px] text-slate-500 mb-1.5 font-medium uppercase tracking-wide">{tier.subtitle}</p>
                     )}
                     <div className="flex items-baseline justify-center gap-1">
                       {priceInfo.strikethrough && (
@@ -1217,22 +1217,28 @@ export default function Landing() {
                       <span className={`text-4xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
                         {priceInfo.display}
                       </span>
-                      <span className="text-slate-400 text-sm">USD{priceInfo.period}</span>
+                      <span className="text-slate-400 text-xs">USD{priceInfo.period}</span>
                     </div>
                     {priceInfo.annualTotal && (
-                      <p className="text-xs text-slate-500 mt-1">{priceInfo.annualTotal}</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">{priceInfo.annualTotal}</p>
                     )}
                     {priceInfo.savings && (
-                      <p className="text-sm text-green-400 mt-1 font-semibold">{priceInfo.savings}</p>
+                      <p className="text-xs text-green-400 mt-0.5 font-semibold">{priceInfo.savings}</p>
+                    )}
+                    {/* Tagline */}
+                    {'tagline' in tier && tier.tagline && (
+                      <p className={`text-[11px] font-bold mt-1.5 px-2 py-0.5 rounded-full inline-block bg-gradient-to-r ${tier.gradient} text-white`}>
+                        {tier.tagline}
+                      </p>
                     )}
                   </div>
 
-                  {/* Hero Features - compact single-line */}
-                  <div className="space-y-1 mb-3">
-                    {tier.heroFeatures.map((hf: { text: string; icon: string }, hfIdx: number) => (
+                  {/* Hero Features */}
+                  <div className="space-y-1 mb-2">
+                    {tier.heroFeatures.map((hf: { text: string; icon: string }) => (
                       <div 
                         key={hf.text} 
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${
+                        className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg ${
                           tier.popular 
                             ? 'bg-amber-500/10 border border-amber-400/15' 
                             : 'isFree' in tier && tier.isFree
@@ -1242,21 +1248,26 @@ export default function Landing() {
                                 : 'bg-teal-500/10 border border-teal-400/15'
                         }`}
                       >
-                        <span className="text-base flex-shrink-0">{hf.icon}</span>
-                        <span className="font-semibold text-white text-xs">{hf.text}</span>
+                        <span className="text-sm flex-shrink-0">{hf.icon}</span>
+                        <span className="font-semibold text-white text-[11px] leading-tight">{hf.text}</span>
                       </div>
                     ))}
                   </div>
 
-                  {/* Regular Features - ultra compact */}
-                  <ul className="space-y-0.5 mb-3 flex-grow">
+                  {/* Features - 2-column grid for density */}
+                  <div className="grid grid-cols-2 gap-x-1 gap-y-0.5 mb-2 flex-grow">
                     {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-1.5 text-xs">
-                        <Check className="h-3 w-3 flex-shrink-0 text-slate-500" />
+                      <div key={feature} className="flex items-start gap-1 text-[10px] leading-tight">
+                        <Check className="h-2.5 w-2.5 flex-shrink-0 text-slate-500 mt-0.5" />
                         <span className="text-slate-400">{feature}</span>
-                      </li>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
+
+                  {/* Value Note */}
+                  {'valueNote' in tier && tier.valueNote && (
+                    <p className="text-[10px] text-emerald-400/80 leading-snug mb-2 px-1">{tier.valueNote}</p>
+                  )}
 
                   <Button 
                     className={`w-full py-4 font-bold ${
