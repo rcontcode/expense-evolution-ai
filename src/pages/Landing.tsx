@@ -1225,8 +1225,11 @@ export default function Landing() {
                     <div className="absolute -top-20 -right-20 w-40 h-40 bg-teal-500/30 rounded-full blur-3xl" />
                   )}
                   
-                  <div className="text-center mb-6 relative">
-                    <h3 className="text-xl font-bold text-white mb-2">{tier.name}</h3>
+                  <div className="text-center mb-5 relative">
+                    <h3 className="text-xl font-bold text-white mb-0.5">{tier.name}</h3>
+                    {'subtitle' in tier && tier.subtitle && (
+                      <p className="text-xs text-slate-500 mb-2 font-medium uppercase tracking-wide">{tier.subtitle}</p>
+                    )}
                     <div className="flex items-baseline justify-center gap-1">
                       {priceInfo.strikethrough && (
                         <span className="text-lg text-slate-500 line-through mr-1">{priceInfo.strikethrough}</span>
@@ -1242,7 +1245,9 @@ export default function Landing() {
                     {priceInfo.savings && (
                       <p className="text-sm text-green-400 mt-1 font-semibold">{priceInfo.savings}</p>
                     )}
-                    <p className="text-sm text-slate-400 mt-2">{tier.description}</p>
+                    
+                    {/* Problem → Solution description */}
+                    <p className="text-sm text-slate-300 mt-2 italic leading-snug">{tier.description}</p>
                     
                     {/* Transformation Badge */}
                     {'transformation' in tier && tier.transformation && (
@@ -1257,29 +1262,41 @@ export default function Landing() {
                     )}
                   </div>
 
-                  {/* Hero Features - highlighted */}
+                  {/* Hero Features - highlighted with details */}
                   {'heroFeatures' in tier && tier.heroFeatures && (
                     <div className="space-y-2 mb-4">
-                      {tier.heroFeatures.map((hf: { text: string; icon: string }) => (
-                        <div key={hf.text} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg bg-gradient-to-r ${tier.gradient} bg-opacity-10 border border-white/10`}
+                      {tier.heroFeatures.map((hf: { text: string; icon: string; detail?: string }) => (
+                        <div key={hf.text} className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-white/10"
                           style={{ background: 'rgba(255,255,255,0.05)' }}
                         >
-                          <span className="text-lg flex-shrink-0">{hf.icon}</span>
-                          <span className="text-sm font-semibold text-white">{hf.text}</span>
+                          <span className="text-lg flex-shrink-0 mt-0.5">{hf.icon}</span>
+                          <div className="min-w-0">
+                            <span className="text-sm font-semibold text-white block">{hf.text}</span>
+                            {hf.detail && (
+                              <span className="text-xs text-slate-400 block mt-0.5">{hf.detail}</span>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
                   )}
 
                   {/* Regular Features - compact */}
-                  <ul className="space-y-2 mb-8 flex-grow">
+                  <ul className="space-y-1.5 mb-4 flex-grow">
                     {tier.features.map((feature) => (
                       <li key={feature} className="flex items-center gap-2 text-sm">
-                        <Check className={`h-3.5 w-3.5 flex-shrink-0 text-slate-500`} />
+                        <Check className="h-3.5 w-3.5 flex-shrink-0 text-slate-500" />
                         <span className="text-slate-400">{feature}</span>
                       </li>
                     ))}
                   </ul>
+
+                  {/* Value Note */}
+                  {'valueNote' in tier && tier.valueNote && (
+                    <div className="px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 mb-6">
+                      <p className="text-xs text-emerald-400 leading-snug">{tier.valueNote}</p>
+                    </div>
+                  )}
 
                   <Button 
                     className={`w-full py-6 font-bold ${
