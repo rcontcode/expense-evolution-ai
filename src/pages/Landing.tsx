@@ -1165,8 +1165,8 @@ export default function Landing() {
                     <div className="absolute -top-20 -right-20 w-40 h-40 bg-teal-500/30 rounded-full blur-3xl" />
                   )}
                   
-                  <div className="text-center mb-5 relative">
-                    <h3 className="text-xl font-bold text-white mb-0.5">{tier.name}</h3>
+                  <div className="text-center mb-3 relative">
+                    <h3 className="text-lg font-bold text-white mb-0.5">{tier.name}</h3>
                     {'subtitle' in tier && tier.subtitle && (
                       <p className="text-xs text-slate-500 mb-2 font-medium uppercase tracking-wide">{tier.subtitle}</p>
                     )}
