@@ -24,6 +24,7 @@ export function BillsDashboard() {
   const { language } = useLanguage();
   const l = language === 'es';
   const [view, setView] = useState('overview');
+  const [showOnboarding, setShowOnboarding] = useState(true);
   const { data: bills } = useRecurringBills();
   const { formatCurrency } = useFormatCurrency();
 
