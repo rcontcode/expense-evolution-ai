@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Camera,
@@ -31,6 +32,7 @@ import {
   ClipboardCheck,
   Download,
   ChevronRight,
+  ChevronDown,
   Play,
   Circle,
   Loader2
@@ -437,74 +439,91 @@ interface WorkflowCardProps {
 function WorkflowCard({ workflow, isCompact = false }: WorkflowCardProps) {
   const { language } = useLanguage();
   const navigate = useNavigate();
+  const [isExpanded, setIsExpanded] = useState(false);
   const Icon = workflow.icon;
 
   return (
     <Card className={cn(
-      "overflow-hidden transition-all duration-300 hover:shadow-lg border-2",
-      "hover:border-primary/30"
+      "overflow-hidden transition-all duration-300 border",
+      isExpanded ? "hover:shadow-lg border-primary/30" : "hover:border-primary/20"
     )}>
-      <div className={cn("bg-gradient-to-r p-4", workflow.bgGradient)}>
-        <div className="flex items-center gap-3">
-          <div className={cn(
-            "w-12 h-12 rounded-xl flex items-center justify-center",
-            "bg-white/80 dark:bg-gray-900/80 shadow-sm"
-          )}>
-            <Icon className={cn("h-6 w-6", workflow.accentColor)} />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-bold text-lg">{workflow.title[language]}</h3>
-            <p className="text-sm text-muted-foreground">{workflow.subtitle[language]}</p>
-          </div>
+      {/* Compact header — always visible, clickable to toggle */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className={cn(
+          "w-full text-left bg-gradient-to-r p-3 flex items-center gap-3 transition-colors",
+          workflow.bgGradient
+        )}
+      >
+        <div className={cn(
+          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+          "bg-white/80 dark:bg-gray-900/80 shadow-sm"
+        )}>
+          <Icon className={cn("h-5 w-5", workflow.accentColor)} />
         </div>
-      </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-sm leading-tight">{workflow.title[language]}</h3>
+          <p className="text-xs text-muted-foreground truncate">{workflow.subtitle[language]}</p>
+        </div>
+        {/* Steps count badge */}
+        <span className="text-[10px] text-muted-foreground shrink-0 hidden sm:block">
+          {workflow.steps.length} {language === 'es' ? 'pasos' : 'steps'}
+        </span>
+        <ChevronDown className={cn(
+          "h-4 w-4 text-muted-foreground shrink-0 transition-transform duration-200",
+          isExpanded && "rotate-180"
+        )} />
+      </button>
 
-      <CardContent className="p-4 pt-5">
-        {/* Steps visualization */}
-        <div className="relative">
-          {/* Connection line */}
-          <div className="absolute top-6 left-6 right-6 h-0.5 bg-gradient-to-r from-blue-200 via-purple-200 to-green-200 dark:from-blue-800 dark:via-purple-800 dark:to-green-800 z-0" />
-          
-          <div className="relative z-10 flex justify-between">
-            {workflow.steps.map((step, index) => {
-              const StepIcon = step.icon;
-              return (
-                <div key={step.id} className="flex flex-col items-center group">
-                  <div className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center",
-                    "border-2 transition-all duration-200",
-                    "group-hover:scale-110 group-hover:shadow-md",
-                    step.bgColor,
-                    step.borderColor
-                  )}>
-                    <StepIcon className={cn("h-5 w-5", step.color)} />
-                  </div>
-                  <div className="mt-2 text-center max-w-[70px]">
-                    <p className={cn("text-xs font-semibold", step.color)}>
-                      {step.title[language]}
-                    </p>
-                    {!isCompact && (
-                      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
-                        {step.description[language]}
+      {/* Expandable content — steps diagram + CTA */}
+      {isExpanded && (
+        <CardContent className="p-4 pt-4 animate-in slide-in-from-top-2 duration-200">
+          {/* Steps visualization */}
+          <div className="relative">
+            {/* Connection line */}
+            <div className="absolute top-6 left-6 right-6 h-0.5 bg-gradient-to-r from-blue-200 via-purple-200 to-green-200 dark:from-blue-800 dark:via-purple-800 dark:to-green-800 z-0" />
+            
+            <div className="relative z-10 flex justify-between">
+              {workflow.steps.map((step) => {
+                const StepIcon = step.icon;
+                return (
+                  <div key={step.id} className="flex flex-col items-center group">
+                    <div className={cn(
+                      "w-12 h-12 rounded-full flex items-center justify-center",
+                      "border-2 transition-all duration-200",
+                      "group-hover:scale-110 group-hover:shadow-md",
+                      step.bgColor,
+                      step.borderColor
+                    )}>
+                      <StepIcon className={cn("h-5 w-5", step.color)} />
+                    </div>
+                    <div className="mt-2 text-center max-w-[70px]">
+                      <p className={cn("text-xs font-semibold", step.color)}>
+                        {step.title[language]}
                       </p>
-                    )}
+                      {!isCompact && (
+                        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                          {step.description[language]}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
 
-        {/* CTA */}
-        <Button 
-          className="w-full mt-5"
-          onClick={() => navigate(workflow.ctaPath)}
-        >
-          <Play className="h-4 w-4 mr-2" />
-          {workflow.ctaLabel[language]}
-          <ChevronRight className="h-4 w-4 ml-2" />
-        </Button>
-      </CardContent>
+          {/* CTA */}
+          <Button 
+            className="w-full mt-5"
+            onClick={() => navigate(workflow.ctaPath)}
+          >
+            <Play className="h-4 w-4 mr-2" />
+            {workflow.ctaLabel[language]}
+            <ChevronRight className="h-4 w-4 ml-2" />
+          </Button>
+        </CardContent>
+      )}
     </Card>
   );
 }
