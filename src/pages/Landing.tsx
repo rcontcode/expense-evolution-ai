@@ -1174,7 +1174,7 @@ export default function Landing() {
                       {priceInfo.strikethrough && (
                         <span className="text-lg text-slate-500 line-through mr-1">{priceInfo.strikethrough}</span>
                       )}
-                      <span className={`text-5xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
+                      <span className={`text-4xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
                         {priceInfo.display}
                       </span>
                       <span className="text-slate-400 text-sm">USD{priceInfo.period}</span>
