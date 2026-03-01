@@ -52,8 +52,8 @@ const planConfig: Record<string, {
   premium: {
     name: 'Premium',
     nameEn: 'Premium',
-    price: '$6.99',
-    priceAnnual: '$5.59',
+    price: '$7.99',
+    priceAnnual: '$6.49',
     icon: Sparkles,
     color: 'from-amber-500 via-orange-500 to-red-500',
     features: [
@@ -122,8 +122,8 @@ const planConfig: Record<string, {
   bundle: {
     name: 'Evo Bundle',
     nameEn: 'Evo Bundle',
-    price: '$14.99',
-    priceAnnual: '$9.99',
+    price: '$19.99',
+    priceAnnual: '$15.99',
     icon: Layers,
     color: 'from-emerald-500 via-teal-500 to-cyan-600',
     features: [
@@ -133,7 +133,6 @@ const planConfig: Record<string, {
       'Insights de correlación enfoque↔finanzas',
       'Frases unificadas del ecosistema',
       'Dashboard de ecosistema',
-      'Ahorro de 33% vs planes separados',
       'Soporte prioritario del ecosistema',
     ],
     featuresEn: [
@@ -143,7 +142,6 @@ const planConfig: Record<string, {
       'Focus↔finance correlation insights',
       'Unified ecosystem quotes',
       'Ecosystem dashboard',
-      '33% savings vs separate plans',
       'Priority ecosystem support',
     ],
   },

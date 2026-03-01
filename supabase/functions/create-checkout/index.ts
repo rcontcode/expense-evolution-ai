@@ -9,12 +9,12 @@ const corsHeaders = {
 
 // Price IDs for EvoFinz plans
 const PRICE_IDS = {
-  premium_monthly: "price_1SwafM3wR30iWwFnJpszo14u",
-  premium_annual: "price_1Swaff3wR30iWwFnGvO9x4Fa",
+  premium_monthly: "price_1T6Fpu3wR30iWwFnTiIn2JLe",
+  premium_annual: "price_1T6Fs93wR30iWwFnjzId7AK4",
   pro_monthly: "price_1Swafv3wR30iWwFn0z52B0W7",
   pro_annual: "price_1SwagD3wR30iWwFn9RABKpl3",
-  bundle_monthly: "price_1T4U9U3wR30iWwFnq9YJeIHe",
-  bundle_annual: "price_1T4UEy3wR30iWwFnbIfKJtUb",
+  bundle_monthly: "price_1T6FtG3wR30iWwFntfPozk4n",
+  bundle_annual: "price_1T6Ftj3wR30iWwFnjQcJq4Mm",
 };
 
 // Short descriptions for Stripe (max 500 chars)
@@ -25,7 +25,7 @@ const PRODUCT_DESCRIPTIONS: Record<string, { name: string; description: string }
   },
   premium_annual: {
     name: "EvoFinz Premium Anual",
-    description: "Ahorra 20% - Todo Premium: gastos ilimitados, 50 OCR/mes, mileage, gamificación, patrimonio neto, calendario fiscal, reporte IA, alertas, mentoría. Solo $5.59/mes.",
+    description: "Todo Premium: gastos ilimitados, 50 OCR/mes, mileage, gamificación, patrimonio neto, calendario fiscal, reporte IA, alertas, mentoría. $6.49/mes facturado anualmente.",
   },
   pro_monthly: {
     name: "EvoFinz Pro Mensual",
@@ -33,7 +33,7 @@ const PRODUCT_DESCRIPTIONS: Record<string, { name: string; description: string }
   },
   pro_annual: {
     name: "EvoFinz Pro Anual",
-    description: "Ahorra 20% - Todo Pro: OCR ilimitado, contratos IA, fiscal, FIRE, RRSP/TFSA, T2125, mentoría, voz (120 min/mes), soporte dedicado. Solo $11.99/mes.",
+    description: "Todo Pro: OCR ilimitado, contratos IA, fiscal, FIRE, RRSP/TFSA, T2125, mentoría, voz (120 min/mes), soporte dedicado. $11.99/mes facturado anualmente.",
   },
   bundle_monthly: {
     name: "Evo Bundle Mensual",
@@ -41,7 +41,7 @@ const PRODUCT_DESCRIPTIONS: Record<string, { name: string; description: string }
   },
   bundle_annual: {
     name: "Evo Bundle Anual",
-    description: "Ahorra 33% - EvoFinz Pro + Fokuspark Premium: acceso completo, datos cruzados, correlación enfoque↔finanzas, dashboard ecosistema. Solo $9.99/mes.",
+    description: "EvoFinz Pro + Fokuspark Premium: acceso completo, datos cruzados, correlación enfoque↔finanzas, dashboard ecosistema. $15.99/mes facturado anualmente.",
   },
 };
 
@@ -135,9 +135,7 @@ serve(async (req) => {
         submit: {
           message: planType === 'bundle'
             ? '🌟 ¡Estás desbloqueando el ecosistema completo! EvoFinz + Fokuspark trabajando juntos por tu bienestar financiero y mental.'
-            : billingPeriod === 'annual' 
-              ? '🎉 ¡Felicidades! Estás ahorrando un 20% con el plan anual. Tu transformación financiera comienza ahora.'
-              : '🚀 Estás a un clic de tomar el control de tus finanzas. ¡Bienvenido a EvoFinz!',
+            : '🚀 Estás a un clic de tomar el control de tus finanzas. ¡Bienvenido a EvoFinz!',
         },
         terms_of_service_acceptance: {
           message: 'Al suscribirte, aceptas nuestros [términos de servicio](https://evofinz.lovable.app/legal) y confirmas que puedes cancelar en cualquier momento.',

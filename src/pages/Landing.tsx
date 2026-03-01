@@ -242,7 +242,7 @@ const getPricingTiers = (language: string) => [
   },
   {
     name: 'Premium',
-    monthlyPrice: 6.99,
+    monthlyPrice: 7.99,
     description: language === 'es' 
       ? 'Para freelancers y emprendedores que quieren control total de sus finanzas.' 
       : 'For freelancers and entrepreneurs who want total control of their finances.',
@@ -352,14 +352,14 @@ const getPricingTiers = (language: string) => [
   },
   {
     name: 'Evo Bundle',
-    monthlyPrice: 14.99,
+    monthlyPrice: 19.99,
     isBundle: true,
     description: language === 'es' 
       ? 'EvoFinz Pro + Fokuspark Premium. Finanzas y bienestar mental en un solo plan.' 
       : 'EvoFinz Pro + Fokuspark Premium. Finances and mental wellbeing in one plan.',
     transformation: language === 'es' 
-      ? '💎 Mejor valor: 2 apps, 1 precio'
-      : '💎 Best value: 2 apps, 1 price',
+      ? '💎 El ecosistema completo'
+      : '💎 The complete ecosystem',
     features: language === 'es' ? [
       '🔥 TODO de EvoFinz Pro incluido',
       '🧠 Fokuspark Premium completo',
@@ -431,33 +431,16 @@ export default function Landing() {
   const stats = getStats(language);
   
   // Calculate prices based on billing period
-  const getPrice = (monthlyPrice: number, isBundle?: boolean) => {
+  const getPrice = (monthlyPrice: number, _isBundle?: boolean) => {
     if (monthlyPrice === 0) return { display: '$0', period: language === 'es' ? '/mes' : '/mo', savings: '', strikethrough: '' };
     if (isAnnual) {
-      if (isBundle) {
-        // Bundle: $9.99/mo annual ($119.90/year) — save 43% vs buying Pro + Premium separately
-        return { 
-          display: '$9.99 USD', 
-          period: language === 'es' ? '/mes' : '/mo',
-          savings: language === 'es' ? 'Ahorras $91/año vs planes separados' : 'Save $91/yr vs separate plans',
-          strikethrough: '$17.58',
-        };
-      }
       const annualTotal = monthlyPrice * 12 * 0.8; // 20% discount
       const monthlyEquivalent = (annualTotal / 12).toFixed(2);
       return { 
         display: `$${monthlyEquivalent} USD`, 
         period: language === 'es' ? '/mes' : '/mo',
-        savings: language === 'es' ? `Ahorras $${(monthlyPrice * 12 * 0.2).toFixed(0)} USD/año` : `Save $${(monthlyPrice * 12 * 0.2).toFixed(0)} USD/year`,
+        savings: '',
         strikethrough: '',
-      };
-    }
-    if (isBundle) {
-      return { 
-        display: `$${monthlyPrice.toFixed(2)} USD`, 
-        period: language === 'es' ? '/mes' : '/mo', 
-        savings: language === 'es' ? '2 apps por el precio de 1' : '2 apps for the price of 1',
-        strikethrough: '$21.98',
       };
     }
     return { display: `$${monthlyPrice.toFixed(2)} USD`, period: language === 'es' ? '/mes' : '/mo', savings: '', strikethrough: '' };
@@ -526,7 +509,7 @@ export default function Landing() {
                 >
                   <Star className="w-4 h-4 text-amber-400" />
                   <span className="text-amber-300 font-semibold text-sm">Premium</span>
-                  <span className="text-white font-bold">${isAnnual ? '5.59' : '6.99'}</span>
+                  <span className="text-white font-bold">${isAnnual ? '6.49' : '7.99'}</span>
                   <span className="text-amber-200/60 text-xs">/mo</span>
                 </motion.div>
                 
@@ -827,7 +810,7 @@ export default function Landing() {
               >
                 <Star className="w-5 h-5 text-amber-400" />
                 <span className="font-bold text-amber-300">Premium</span>
-                <span className="font-black text-white text-lg">${isAnnual ? '5.59' : '6.99'}</span>
+                <span className="font-black text-white text-lg">${isAnnual ? '6.49' : '7.99'}</span>
                 <span className="text-amber-200/70 text-xs">{language === 'es' ? '/mes' : '/mo'}</span>
               </motion.div>
               
@@ -853,11 +836,8 @@ export default function Landing() {
               >
                 <Layers className="w-5 h-5 text-teal-400" />
                 <span className="font-bold text-teal-300">Bundle</span>
-                <span className="font-black text-white text-lg">${isAnnual ? '9.99' : '14.99'}</span>
+                <span className="font-black text-white text-lg">${isAnnual ? '15.99' : '19.99'}</span>
                 <span className="text-teal-200/70 text-xs">{language === 'es' ? '/mes' : '/mo'}</span>
-                <Badge className="bg-teal-500/30 text-teal-200 border-teal-400/40 text-[10px] px-1.5 py-0">
-                  2 apps
-                </Badge>
               </motion.div>
             </div>
 
@@ -1188,13 +1168,9 @@ export default function Landing() {
               <span className={`text-sm font-medium transition-colors ${isAnnual ? 'text-white' : 'text-slate-500'}`}>
                 {language === 'es' ? 'Anual' : 'Annual'}
               </span>
-              <Badge className={`transition-all duration-300 border-0 ${
-                isAnnual 
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white animate-pulse' 
-                  : 'opacity-0 pointer-events-none bg-transparent text-transparent'
-              }`}>
-                -20% OFF
-              </Badge>
+              <span className={`text-xs font-medium transition-opacity ${isAnnual ? 'text-green-400 opacity-100' : 'opacity-0'}`}>
+                {language === 'es' ? 'Facturación anual' : 'Annual billing'}
+              </span>
             </div>
           </motion.div>
 
