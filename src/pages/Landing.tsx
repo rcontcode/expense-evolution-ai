@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { 
   Camera, Receipt, FileText, Calculator, Trophy, GraduationCap,
   BarChart3, BookOpen, Building2, CreditCard, Mic, TrendingUp,
-  ArrowRight, Check, Sparkles, Shield, Zap, Gift, XCircle,
+  ArrowRight, Check, Sparkles, Shield, Zap, Gift,
   Star, Flame, Target, Crown, Heart, AlertTriangle, Clock, Lightbulb, ChevronRight, Quote, Globe, MessageSquare, Layers
 } from 'lucide-react';
 import phoenixLogo from '@/assets/phoenix-clean-logo.png';
@@ -214,27 +214,6 @@ const getPricingTiers = (language: string) => [
       '🏷️ Basic predefined tags',
       '📅 Simple monthly view'
     ],
-    notIncluded: language === 'es' ? [
-      '🚗 Mileage tracking',
-      '🎮 Gamificación y XP',
-      '📚 Mentoría financiera',
-      '💰 Net Worth tracking',
-      '📋 Contratos inteligentes',
-      '🏦 Análisis bancario',
-      '🧮 Calculadoras FIRE/RRSP',
-      '🎤 Asistente de voz',
-      '📤 Exportación avanzada'
-    ] : [
-      '🚗 Mileage tracking',
-      '🎮 Gamification & XP',
-      '📚 Financial mentorship',
-      '💰 Net Worth tracking',
-      '📋 Smart contracts',
-      '🏦 Bank analysis',
-      '🧮 FIRE/RRSP calculators',
-      '🎤 Voice assistant',
-      '📤 Advanced export'
-    ],
     cta: language === 'es' ? '¡Comenzar Gratis!' : 'Start Free!',
     popular: false,
     gradient: 'from-emerald-500 via-green-500 to-teal-500',
@@ -279,25 +258,6 @@ const getPricingTiers = (language: string) => [
       '📊 Advanced analytics (9+ charts)',
       '🔔 Smart notifications',
       '📚 Financial education library'
-    ],
-    notIncluded: language === 'es' ? [
-      '📋 Análisis inteligente de contratos',
-      '🏦 Análisis bancario avanzado',
-      '🧮 Optimizador fiscal inteligente',
-      '💎 Optimizador RRSP/APV',
-      '🔥 FIRE Calculator completo',
-      '🎓 8 módulos de mentoría',
-      '🎤 Asistente de voz',
-      '📄 Exportación fiscal (T2125/F29)'
-    ] : [
-      '📋 Smart contract analysis',
-      '🏦 Advanced bank analysis',
-      '🧮 Smart tax optimizer',
-      '💎 RRSP/APV optimizer',
-      '🔥 Complete FIRE Calculator',
-      '🎓 8 mentorship modules',
-      '🎤 Voice assistant',
-      '📄 Tax export (T2125/F29)'
     ],
     cta: language === 'es' ? 'Elegir Premium' : 'Choose Premium',
     popular: true,
@@ -345,7 +305,6 @@ const getPricingTiers = (language: string) => [
       '💳 Bank reconciliation',
       '⭐ Dedicated support'
     ],
-    notIncluded: [],
     cta: language === 'es' ? '¡Quiero Pro!' : 'Get Pro!',
     popular: false,
     gradient: 'from-violet-600 via-purple-600 to-indigo-600'
@@ -387,7 +346,7 @@ const getPricingTiers = (language: string) => [
       '📅 Monthly ecosystem reports',
       '⭐ Priority support'
     ],
-    notIncluded: [],
+    
     cta: language === 'es' ? '¡Quiero el Bundle!' : 'Get the Bundle!',
     popular: false,
     gradient: 'from-teal-500 via-cyan-500 to-blue-500'
@@ -1271,15 +1230,6 @@ export default function Landing() {
                           <Check className="h-3 w-3 text-white" />
                         </div>
                         <span className="text-slate-300">{feature}</span>
-                      </li>
-                    ))}
-                    {/* Features not included - creates FOMO */}
-                    {tier.notIncluded && tier.notIncluded.map((feature) => (
-                      <li key={feature} className="flex items-center gap-3 text-sm opacity-50">
-                        <div className="p-1 rounded-full bg-slate-700 flex-shrink-0">
-                          <XCircle className="h-3 w-3 text-slate-500" />
-                        </div>
-                        <span className="text-slate-500 line-through">{feature}</span>
                       </li>
                     ))}
                   </ul>
