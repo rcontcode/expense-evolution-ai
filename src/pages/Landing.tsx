@@ -305,7 +305,6 @@ const getPricingTiers = (language: string) => [
       '💳 Bank reconciliation',
       '⭐ Dedicated support'
     ],
-    notIncluded: [],
     cta: language === 'es' ? '¡Quiero Pro!' : 'Get Pro!',
     popular: false,
     gradient: 'from-violet-600 via-purple-600 to-indigo-600'
