@@ -122,8 +122,8 @@ const planConfig: Record<string, {
   bundle: {
     name: 'Evo Bundle',
     nameEn: 'Evo Bundle',
-    price: '$14.99',
-    priceAnnual: '$9.99',
+    price: '$19.99',
+    priceAnnual: '$15.99',
     icon: Layers,
     color: 'from-emerald-500 via-teal-500 to-cyan-600',
     features: [
