@@ -385,7 +385,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 
                 {/* Quick Access Grid - 4 columns with vibrant 3D icons */}
                 <div className="px-3 py-2.5 bg-gradient-to-r from-muted/50 via-muted/30 to-muted/50">
-                  <div className="grid grid-cols-4 gap-1.5">
+                  <div className="grid grid-cols-5 gap-1.5">
                     {[
                       { icon: LayoutDashboard, label: language === 'es' ? 'Panel' : 'Home', path: '/dashboard', gradient: 'from-amber-400 via-orange-500 to-red-500', shadow: 'shadow-amber-500/40' },
                       { icon: Receipt, label: language === 'es' ? 'Gastos' : 'Expenses', path: '/expenses', gradient: 'from-red-400 via-rose-500 to-pink-500', shadow: 'shadow-red-500/40' },
