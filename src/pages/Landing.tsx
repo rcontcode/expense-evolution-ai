@@ -431,33 +431,16 @@ export default function Landing() {
   const stats = getStats(language);
   
   // Calculate prices based on billing period
-  const getPrice = (monthlyPrice: number, isBundle?: boolean) => {
+  const getPrice = (monthlyPrice: number, _isBundle?: boolean) => {
     if (monthlyPrice === 0) return { display: '$0', period: language === 'es' ? '/mes' : '/mo', savings: '', strikethrough: '' };
     if (isAnnual) {
-      if (isBundle) {
-        // Bundle: $9.99/mo annual ($119.90/year) — save 43% vs buying Pro + Premium separately
-        return { 
-          display: '$9.99 USD', 
-          period: language === 'es' ? '/mes' : '/mo',
-          savings: language === 'es' ? 'Ahorras $91/año vs planes separados' : 'Save $91/yr vs separate plans',
-          strikethrough: '$17.58',
-        };
-      }
       const annualTotal = monthlyPrice * 12 * 0.8; // 20% discount
       const monthlyEquivalent = (annualTotal / 12).toFixed(2);
       return { 
         display: `$${monthlyEquivalent} USD`, 
         period: language === 'es' ? '/mes' : '/mo',
-        savings: language === 'es' ? `Ahorras $${(monthlyPrice * 12 * 0.2).toFixed(0)} USD/año` : `Save $${(monthlyPrice * 12 * 0.2).toFixed(0)} USD/year`,
+        savings: '',
         strikethrough: '',
-      };
-    }
-    if (isBundle) {
-      return { 
-        display: `$${monthlyPrice.toFixed(2)} USD`, 
-        period: language === 'es' ? '/mes' : '/mo', 
-        savings: language === 'es' ? '2 apps por el precio de 1' : '2 apps for the price of 1',
-        strikethrough: '$21.98',
       };
     }
     return { display: `$${monthlyPrice.toFixed(2)} USD`, period: language === 'es' ? '/mes' : '/mo', savings: '', strikethrough: '' };
