@@ -1133,7 +1133,7 @@ export default function Landing() {
             </div>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-7xl mx-auto">
             {pricingTiers.map((tier, index) => {
               const priceInfo = getPrice(tier.monthlyPrice, 'isBundle' in tier && tier.isBundle);
               return (
@@ -1289,7 +1289,7 @@ export default function Landing() {
           </motion.div>
 
           {/* Compact pricing cards */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
             {pricingTiers.map((tier, index) => {
               const priceInfo = getPrice(tier.monthlyPrice, 'isBundle' in tier && tier.isBundle);
               return (
