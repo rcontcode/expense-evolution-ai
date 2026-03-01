@@ -93,44 +93,9 @@ export function BillsDashboard() {
         </div>
       </div>
 
-      {/* ═══ ONBOARDING / EMPTY STATE ═══ */}
-      {!hasBills && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="border-2 border-dashed border-primary/30 bg-primary/5">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center">
-                <Sparkles className="h-8 w-8 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">
-                  {l ? '¡Registra tus pagos fijos!' : 'Register your recurring bills!'}
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1 max-w-lg mx-auto">
-                  {l 
-                    ? 'Añade tus servicios recurrentes (luz, agua, internet, seguros, suscripciones) para recibir recordatorios automáticos, ver tu flujo de caja y nunca olvidar un pago.'
-                    : 'Add your recurring services (electricity, water, internet, insurance, subscriptions) to receive automatic reminders, see your cash flow and never forget a payment.'}
-                </p>
-              </div>
-              <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
-                {[
-                  l ? '💡 Luz / Electricidad' : '💡 Electricity',
-                  l ? '💧 Agua' : '💧 Water',
-                  l ? '📡 Internet / TV' : '📡 Internet / TV',
-                  l ? '📱 Teléfono' : '📱 Phone',
-                  l ? '🏠 Alquiler / Hipoteca' : '🏠 Rent / Mortgage',
-                  l ? '🛡️ Seguros' : '🛡️ Insurance',
-                  l ? '🎵 Suscripciones' : '🎵 Subscriptions',
-                ].map(item => (
-                  <span key={item} className="px-2.5 py-1 rounded-full bg-background border text-[11px]">{item}</span>
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-                <Info className="h-3 w-3" />
-                {l ? 'Usa el botón "Nuevo Pago" en la lista para empezar' : 'Use the "New Bill" button in the list to get started'}
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
+      {/* ═══ ONBOARDING / QUICK SETUP ═══ */}
+      {!hasBills && showOnboarding && (
+        <BillsQuickOnboarding onComplete={() => setShowOnboarding(false)} />
       )}
 
       {/* ═══ VIEW TABS — PROMINENT AT TOP ═══ */}
