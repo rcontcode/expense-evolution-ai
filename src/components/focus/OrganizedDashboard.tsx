@@ -225,7 +225,8 @@ export const OrganizedDashboard = memo(() => {
                )}
              </SortableAreaWrapper>
            ))}
-         </SortableContext>
+            </div>
+          </SortableContext>
        </DndContext>
 
        {/* Empty state */}

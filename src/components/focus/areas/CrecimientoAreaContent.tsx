@@ -47,12 +47,12 @@
            <PayYourselfFirstCard />
            <DebtClassificationCard />
          </div>
-         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-           <SMARTGoalsCard />
-           <FinancialJournalCard />
-           <FinancialHabitsCard />
-           <FinancialEducationCard />
-         </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <SMARTGoalsCard />
+            <FinancialJournalCard />
+            <FinancialHabitsCard />
+          </div>
+          <FinancialEducationCard />
        </Suspense>
        <div className="flex gap-2 flex-wrap">
          <Button variant="outline" size="sm" onClick={() => navigate('/mentorship')}>

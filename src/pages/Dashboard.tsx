@@ -535,12 +535,12 @@ export default function Dashboard() {
                                 <PayYourselfFirstCard />
                                 <DebtClassificationCard />
                               </div>
-                              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                                 <SMARTGoalsCard />
                                 <FinancialJournalCard />
                                 <FinancialHabitsCard />
-                                <FinancialEducationCard />
                               </div>
+                              <FinancialEducationCard />
                             </div>
                           </Suspense>
                         )}
