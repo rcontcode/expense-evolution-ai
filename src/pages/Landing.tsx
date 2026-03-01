@@ -190,29 +190,30 @@ const getPricingTiers = (language: string) => [
     name: 'Free',
     monthlyPrice: 0,
     description: language === 'es' 
-      ? '¡Sin costo, para siempre! Perfecto para explorar y empezar tu viaje financiero.' 
-      : 'No cost, forever! Perfect to explore and start your financial journey.',
+      ? 'Perfecto para explorar y empezar tu viaje financiero.' 
+      : 'Perfect to explore and start your financial journey.',
     transformation: language === 'es' 
       ? '🎁 ¡Empieza HOY gratis!'
       : '🎁 Start FREE today!',
-    features: language === 'es' ? [
-      '✏️ 50 gastos manuales/mes',
-      '💵 20 ingresos manuales/mes',
-      '📷 5 escaneos OCR para probar',
-      '📊 Dashboard básico con resumen',
-      '👥 2 clientes / 2 proyectos',
-      '📈 Vista previa de analytics',
-      '🏷️ Tags básicos predefinidos',
-      '📅 Vista mensual simple'
+    heroFeatures: language === 'es' ? [
+      { text: '50 gastos + 20 ingresos/mes', icon: '✏️' },
+      { text: '5 escaneos OCR para probar', icon: '📷' },
+      { text: 'Dashboard básico', icon: '📊' },
     ] : [
-      '✏️ 50 manual expenses/month',
-      '💵 20 manual incomes/month',
-      '📷 5 OCR scans to try',
-      '📊 Basic dashboard with summary',
-      '👥 2 clients / 2 projects',
-      '📈 Analytics preview',
-      '🏷️ Basic predefined tags',
-      '📅 Simple monthly view'
+      { text: '50 expenses + 20 incomes/mo', icon: '✏️' },
+      { text: '5 OCR scans to try', icon: '📷' },
+      { text: 'Basic dashboard', icon: '📊' },
+    ],
+    features: language === 'es' ? [
+      '2 clientes / 2 proyectos',
+      'Vista previa de analytics',
+      'Tags básicos predefinidos',
+      'Vista mensual simple'
+    ] : [
+      '2 clients / 2 projects',
+      'Analytics preview',
+      'Basic predefined tags',
+      'Simple monthly view'
     ],
     cta: language === 'es' ? '¡Comenzar Gratis!' : 'Start Free!',
     popular: false,
@@ -223,41 +224,38 @@ const getPricingTiers = (language: string) => [
     name: 'Premium',
     monthlyPrice: 7.99,
     description: language === 'es' 
-      ? 'Para freelancers y emprendedores que quieren control total de sus finanzas.' 
-      : 'For freelancers and entrepreneurs who want total control of their finances.',
+      ? 'Control total para freelancers y emprendedores.' 
+      : 'Total control for freelancers and entrepreneurs.',
     transformation: language === 'es' 
       ? '🔥 De desorden → Control total'
       : '🔥 From chaos → Total control',
-    features: language === 'es' ? [
-      '✨ TODO lo del plan Free +',
-      '♾️ Gastos e ingresos ILIMITADOS',
-      '📷 50 escaneos OCR/mes',
-      '👥 Clientes ilimitados',
-      '📁 Proyectos ilimitados',
-      '🚗 Mileage tracking completo',
-      '🏷️ Tags personalizados infinitos',
-      '📤 Exportación Excel/CSV',
-      '🎮 Gamificación + XP + Logros',
-      '💰 Net Worth tracking completo',
-      '📅 Calendario fiscal con alertas',
-      '📊 Analytics avanzados (9+ gráficos)',
-      '🔔 Notificaciones inteligentes',
-      '📚 Biblioteca de educación financiera'
+    heroFeatures: language === 'es' ? [
+      { text: 'Gastos e ingresos ILIMITADOS', icon: '♾️' },
+      { text: '50 escaneos OCR/mes', icon: '📷' },
+      { text: 'Net Worth + Calendario fiscal', icon: '💰' },
     ] : [
-      '✨ EVERYTHING in Free +',
-      '♾️ UNLIMITED expenses & income',
-      '📷 50 OCR scans/month',
-      '👥 Unlimited clients',
-      '📁 Unlimited projects',
-      '🚗 Complete mileage tracking',
-      '🏷️ Infinite custom tags',
-      '📤 Excel/CSV export',
-      '🎮 Gamification + XP + Badges',
-      '💰 Complete Net Worth tracking',
-      '📅 Tax calendar with alerts',
-      '📊 Advanced analytics (9+ charts)',
-      '🔔 Smart notifications',
-      '📚 Financial education library'
+      { text: 'UNLIMITED expenses & income', icon: '♾️' },
+      { text: '50 OCR scans/month', icon: '📷' },
+      { text: 'Net Worth + Tax calendar', icon: '💰' },
+    ],
+    features: language === 'es' ? [
+      'Clientes y proyectos ilimitados',
+      'Mileage tracking completo',
+      'Tags personalizados infinitos',
+      'Exportación Excel/CSV',
+      'Gamificación + XP + Logros',
+      'Analytics avanzados (9+ gráficos)',
+      'Notificaciones inteligentes',
+      'Educación financiera'
+    ] : [
+      'Unlimited clients & projects',
+      'Complete mileage tracking',
+      'Infinite custom tags',
+      'Excel/CSV export',
+      'Gamification + XP + Badges',
+      'Advanced analytics (9+ charts)',
+      'Smart notifications',
+      'Financial education'
     ],
     cta: language === 'es' ? 'Elegir Premium' : 'Choose Premium',
     popular: true,
@@ -267,43 +265,45 @@ const getPricingTiers = (language: string) => [
     name: 'Pro',
     monthlyPrice: 14.99,
     description: language === 'es' 
-      ? 'Dominio absoluto. Todas las herramientas para convertirte en un profesional financiero.' 
-      : 'Absolute mastery. All the tools to become a financial professional.',
+      ? 'Todas las herramientas para dominar tus finanzas como un experto.' 
+      : 'All the tools to master your finances like an expert.',
     transformation: language === 'es' 
       ? '🚀 De empleado → Experto financiero'
       : '🚀 From employee → Financial expert',
-    // Highlight Pro as the most complete plan
     featured: true,
-    features: language === 'es' ? [
-      '👑 TODO lo del plan Premium +',
-      '📷 OCR ILIMITADO (sin límites)',
-      '📋 Análisis inteligente de contratos',
-      '🏦 Análisis bancario con detección de anomalías',
-      '🧮 Optimizador fiscal inteligente',
-      '💎 Optimizador RRSP/TFSA/APV',
-      '🔥 FIRE Calculator completo + proyecciones',
-      '🎓 8 módulos de mentoría (Kiyosaki, Tracy, Clear)',
-      '🎤 Asistente de voz inteligente',
-      '📄 Exportación fiscal oficial (T2125/F29)',
-      '🔄 Detector de suscripciones automático',
-      '📊 Predicciones y tendencias',
-      '💳 Reconciliación bancaria',
-      '⭐ Soporte dedicado'
+    heroFeatures: language === 'es' ? [
+      { text: 'OCR ILIMITADO (sin límites)', icon: '📷' },
+      { text: 'Análisis de contratos con IA', icon: '📋' },
+      { text: 'Asistente de voz inteligente', icon: '🎤' },
     ] : [
-      '👑 EVERYTHING in Premium +',
-      '📷 UNLIMITED OCR (no limits)',
-      '📋 Smart contract analysis',
-      '🏦 Bank analysis with anomaly detection',
-      '🧮 Smart tax optimizer',
-      '💎 RRSP/TFSA/APV optimizer',
-      '🔥 Complete FIRE Calculator + projections',
-      '🎓 8 mentorship modules (Kiyosaki, Tracy, Clear)',
-      '🎤 Smart voice assistant',
-      '📄 Official tax export (T2125/F29)',
-      '🔄 Automatic subscription detector',
-      '📊 Predictions & trends',
-      '💳 Bank reconciliation',
-      '⭐ Dedicated support'
+      { text: 'UNLIMITED OCR (no limits)', icon: '📷' },
+      { text: 'AI contract analysis', icon: '📋' },
+      { text: 'Smart voice assistant', icon: '🎤' },
+    ],
+    features: language === 'es' ? [
+      'Todo lo de Premium incluido',
+      'Análisis bancario + anomalías',
+      'Optimizador fiscal inteligente',
+      'Optimizador RRSP/TFSA/APV',
+      'FIRE Calculator + proyecciones',
+      '8 módulos de mentoría financiera',
+      'Exportación fiscal (T2125/F29)',
+      'Detector de suscripciones',
+      'Predicciones y tendencias',
+      'Reconciliación bancaria',
+      'Soporte dedicado'
+    ] : [
+      'Everything in Premium included',
+      'Bank analysis + anomalies',
+      'Smart tax optimizer',
+      'RRSP/TFSA/APV optimizer',
+      'FIRE Calculator + projections',
+      '8 financial mentorship modules',
+      'Tax export (T2125/F29)',
+      'Subscription detector',
+      'Predictions & trends',
+      'Bank reconciliation',
+      'Dedicated support'
     ],
     cta: language === 'es' ? '¡Quiero Pro!' : 'Get Pro!',
     popular: false,
@@ -314,39 +314,41 @@ const getPricingTiers = (language: string) => [
     monthlyPrice: 19.99,
     isBundle: true,
     description: language === 'es' 
-      ? 'EvoFinz Pro + Fokuspark Premium. Finanzas y bienestar mental en un solo plan.' 
-      : 'EvoFinz Pro + Fokuspark Premium. Finances and mental wellbeing in one plan.',
+      ? 'EvoFinz Pro + Fokuspark Premium. Finanzas y bienestar mental juntos.' 
+      : 'EvoFinz Pro + Fokuspark Premium. Finances and mental wellbeing together.',
     transformation: language === 'es' 
       ? '💎 El ecosistema completo'
       : '💎 The complete ecosystem',
-    features: language === 'es' ? [
-      '🔥 TODO de EvoFinz Pro incluido',
-      '🧠 Fokuspark Premium completo',
-      '🎯 Sesiones de enfoque y meditación',
-      '📓 Diario de preocupaciones financieras',
-      '📊 Insights cruzados finanzas ↔ enfoque',
-      '🏆 Leaderboard del ecosistema',
-      '🔗 Streaks y logros compartidos',
-      '💡 AI coaching financiero + mental',
-      '📈 Health Score unificado',
-      '⚡ Alertas predictivas cruzadas',
-      '📅 Reportes mensuales del ecosistema',
-      '⭐ Soporte prioritario'
+    heroFeatures: language === 'es' ? [
+      { text: 'EvoFinz Pro completo incluido', icon: '🔥' },
+      { text: 'Fokuspark Premium completo', icon: '🧠' },
+      { text: 'Insights cruzados finanzas ↔ foco', icon: '📊' },
     ] : [
-      '🔥 ALL of EvoFinz Pro included',
-      '🧠 Full Fokuspark Premium',
-      '🎯 Focus & meditation sessions',
-      '📓 Financial worry journal',
-      '📊 Cross-app insights: finances ↔ focus',
-      '🏆 Ecosystem leaderboard',
-      '🔗 Shared streaks & achievements',
-      '💡 Financial + mental AI coaching',
-      '📈 Unified Health Score',
-      '⚡ Cross-app predictive alerts',
-      '📅 Monthly ecosystem reports',
-      '⭐ Priority support'
+      { text: 'Full EvoFinz Pro included', icon: '🔥' },
+      { text: 'Full Fokuspark Premium', icon: '🧠' },
+      { text: 'Cross-app insights: finance ↔ focus', icon: '📊' },
     ],
-    
+    features: language === 'es' ? [
+      'Sesiones de enfoque y meditación',
+      'Diario de preocupaciones financieras',
+      'Leaderboard del ecosistema',
+      'Streaks y logros compartidos',
+      'AI coaching financiero + mental',
+      'Health Score unificado',
+      'Alertas predictivas cruzadas',
+      'Reportes mensuales ecosistema',
+      'Soporte prioritario'
+    ] : [
+      'Focus & meditation sessions',
+      'Financial worry journal',
+      'Ecosystem leaderboard',
+      'Shared streaks & achievements',
+      'Financial + mental AI coaching',
+      'Unified Health Score',
+      'Cross-app predictive alerts',
+      'Monthly ecosystem reports',
+      'Priority support'
+    ],
     cta: language === 'es' ? '¡Quiero el Bundle!' : 'Get the Bundle!',
     popular: false,
     gradient: 'from-teal-500 via-cyan-500 to-blue-500'
@@ -1235,13 +1237,26 @@ export default function Landing() {
                     )}
                   </div>
 
-                  <ul className="space-y-3 mb-8 flex-grow">
-                    {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-3 text-sm">
-                        <div className={`p-1 rounded-full bg-gradient-to-r ${tier.gradient} flex-shrink-0`}>
-                          <Check className="h-3 w-3 text-white" />
+                  {/* Hero Features - highlighted */}
+                  {'heroFeatures' in tier && tier.heroFeatures && (
+                    <div className="space-y-2 mb-4">
+                      {tier.heroFeatures.map((hf: { text: string; icon: string }) => (
+                        <div key={hf.text} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg bg-gradient-to-r ${tier.gradient} bg-opacity-10 border border-white/10`}
+                          style={{ background: 'rgba(255,255,255,0.05)' }}
+                        >
+                          <span className="text-lg flex-shrink-0">{hf.icon}</span>
+                          <span className="text-sm font-semibold text-white">{hf.text}</span>
                         </div>
-                        <span className="text-slate-300">{feature}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Regular Features - compact */}
+                  <ul className="space-y-2 mb-8 flex-grow">
+                    {tier.features.map((feature) => (
+                      <li key={feature} className="flex items-center gap-2 text-sm">
+                        <Check className={`h-3.5 w-3.5 flex-shrink-0 text-slate-500`} />
+                        <span className="text-slate-400">{feature}</span>
                       </li>
                     ))}
                   </ul>
