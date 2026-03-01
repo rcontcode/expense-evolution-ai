@@ -1372,9 +1372,15 @@ export default function Landing() {
                         {priceInfo.display}
                       </span>
                       <span className={`text-sm ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white/80' : 'text-slate-500'}`}>
-                        {priceInfo.period}
+                        USD{priceInfo.period}
                       </span>
                     </div>
+                    {priceInfo.annualTotal && (
+                      <p className={`text-xs mt-0.5 ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white/60' : 'text-slate-400'}`}>{priceInfo.annualTotal}</p>
+                    )}
+                    {priceInfo.savings && (
+                      <p className={`text-xs font-semibold mt-0.5 ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-green-300' : 'text-green-500'}`}>{priceInfo.savings}</p>
+                    )}
                     
                     {/* Transformation highlight */}
                     {'transformation' in tier && tier.transformation && (
