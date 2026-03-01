@@ -23,6 +23,7 @@ import {
   Camera,
   Menu,
   X,
+  CalendarCheck,
   FolderKanban,
   Building2,
   Scale,
@@ -129,6 +130,7 @@ const getNavSections = (language: string) => [
       { icon: TrendingUp, label: 'nav.income', path: '/income', badge: null, tooltipKey: 'income' as const },
       { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
       { icon: Wallet, label: 'nav.budget', path: '/budget', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
+      { icon: CalendarCheck, label: language === 'es' ? 'Pagos Fijos' : 'Bills', path: '/bills', badge: null, tooltipKey: 'dashboard' as const },
       { icon: Inbox, label: 'nav.chaos', path: '/chaos', badgeKey: 'nav.badgeSmart', tooltipKey: 'chaosInbox' as const },
     ]
   },
@@ -383,11 +385,12 @@ export const Layout = ({ children }: LayoutProps) => {
                 
                 {/* Quick Access Grid - 4 columns with vibrant 3D icons */}
                 <div className="px-3 py-2.5 bg-gradient-to-r from-muted/50 via-muted/30 to-muted/50">
-                  <div className="grid grid-cols-4 gap-1.5">
+                  <div className="grid grid-cols-5 gap-1.5">
                     {[
                       { icon: LayoutDashboard, label: language === 'es' ? 'Panel' : 'Home', path: '/dashboard', gradient: 'from-amber-400 via-orange-500 to-red-500', shadow: 'shadow-amber-500/40' },
                       { icon: Receipt, label: language === 'es' ? 'Gastos' : 'Expenses', path: '/expenses', gradient: 'from-red-400 via-rose-500 to-pink-500', shadow: 'shadow-red-500/40' },
                       { icon: TrendingUp, label: language === 'es' ? 'Ingresos' : 'Income', path: '/income', gradient: 'from-emerald-400 via-green-500 to-teal-500', shadow: 'shadow-emerald-500/40' },
+                      { icon: CalendarCheck, label: language === 'es' ? 'Pagos' : 'Bills', path: '/bills', gradient: 'from-violet-400 via-purple-500 to-indigo-500', shadow: 'shadow-violet-500/40' },
                       { icon: Inbox, label: language === 'es' ? 'Inbox' : 'Inbox', path: '/chaos', gradient: 'from-blue-400 via-cyan-500 to-sky-500', shadow: 'shadow-blue-500/40' },
                     ].map((item) => {
                       const Icon = item.icon;
