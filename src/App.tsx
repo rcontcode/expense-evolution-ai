@@ -51,6 +51,7 @@ const routeImportMap: Record<string, () => Promise<unknown>> = {
   '/chaos': () => import("./pages/ChaosInbox"),
   '/clients': () => import("./pages/Clients"),
   '/projects': () => import("./pages/Projects"),
+  '/bills': () => import("./pages/Bills"),
 };
 
 const preloadedRoutes = new Set<string>();
@@ -109,6 +110,7 @@ const BetaFeedback = lazyWithRetry(() => import("./pages/BetaFeedback"));
 const BetaGuide = lazyWithRetry(() => import("./pages/BetaGuide"));
 const FinancialAdventure = lazyWithRetry(() => import("./pages/FinancialAdventure"));
 const Trash = lazyWithRetry(() => import("./pages/Trash"));
+const Bills = lazyWithRetry(() => import("./pages/Bills"));
 const DataHealth = lazyWithRetry(() => import("./pages/DataHealth"));
 const FilesPage = lazyWithRetry(() => import("./pages/Files"));
 const UserGuide = lazyWithRetry(() => import("./pages/UserGuide"));
@@ -378,6 +380,7 @@ const App = () => (
                         <Route path="/beta-guide" element={<ProtectedRoute><BetaGuide /></ProtectedRoute>} />
                         <Route path="/adventure" element={<ProtectedRoute><FinancialAdventure /></ProtectedRoute>} />
                         <Route path="/budget" element={<ProtectedRoute><BudgetPage /></ProtectedRoute>} />
+                        <Route path="/bills" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
                         <Route path="/trash" element={<ProtectedRoute><Trash /></ProtectedRoute>} />
                         <Route path="/data-health" element={<ProtectedRoute><DataHealth /></ProtectedRoute>} />
                         <Route path="/files" element={<ProtectedRoute><FilesPage /></ProtectedRoute>} />
