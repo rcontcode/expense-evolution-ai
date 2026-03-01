@@ -214,27 +214,6 @@ const getPricingTiers = (language: string) => [
       '🏷️ Basic predefined tags',
       '📅 Simple monthly view'
     ],
-    notIncluded: language === 'es' ? [
-      '🚗 Mileage tracking',
-      '🎮 Gamificación y XP',
-      '📚 Mentoría financiera',
-      '💰 Net Worth tracking',
-      '📋 Contratos inteligentes',
-      '🏦 Análisis bancario',
-      '🧮 Calculadoras FIRE/RRSP',
-      '🎤 Asistente de voz',
-      '📤 Exportación avanzada'
-    ] : [
-      '🚗 Mileage tracking',
-      '🎮 Gamification & XP',
-      '📚 Financial mentorship',
-      '💰 Net Worth tracking',
-      '📋 Smart contracts',
-      '🏦 Bank analysis',
-      '🧮 FIRE/RRSP calculators',
-      '🎤 Voice assistant',
-      '📤 Advanced export'
-    ],
     cta: language === 'es' ? '¡Comenzar Gratis!' : 'Start Free!',
     popular: false,
     gradient: 'from-emerald-500 via-green-500 to-teal-500',
