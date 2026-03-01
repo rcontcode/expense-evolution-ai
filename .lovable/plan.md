@@ -50,6 +50,25 @@
 
 ---
 
+## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
+
+### ✅ Veredicto: No igualar precios — estructura actual es óptima
+
+| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
+|------|---------|-----------|-----------|-------|
+| Free | $0 | $0 | ✅ Ya iguales | — |
+| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
+| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+
+### 📋 Pendiente técnico
+
+| # | Tarea | App | Prioridad |
+|---|-------|-----|-----------|
+| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
+
+---
+
 ## Quiz Multi-App — CRM Unificado
 
 ### ✅ Completado en EvoFinz
