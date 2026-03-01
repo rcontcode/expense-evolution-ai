@@ -342,7 +342,7 @@ const getPricingTiers = (language: string) => [
       { text: 'IA cruza finanzas ↔ bienestar', icon: '📊', detail: '"Cuando meditas, gastas 23% menos"' },
     ] : [
       { text: 'Full EvoFinz Pro INCLUDED', icon: '🔥', detail: 'All financial tools unlocked' },
-      { text: 'Full Fokuspark Premium', icon: '🧠', detail: 'Meditation, focus, journaling' },
+      { text: 'Full Fokuspark Pro', icon: '🧠', detail: 'Meditation, focus, journaling' },
       { text: 'AI crosses finance ↔ wellness', icon: '📊', detail: '"When you meditate, you spend 23% less"' },
     ],
     features: language === 'es' ? [
