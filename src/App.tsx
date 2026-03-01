@@ -109,6 +109,7 @@ const BetaFeedback = lazyWithRetry(() => import("./pages/BetaFeedback"));
 const BetaGuide = lazyWithRetry(() => import("./pages/BetaGuide"));
 const FinancialAdventure = lazyWithRetry(() => import("./pages/FinancialAdventure"));
 const Trash = lazyWithRetry(() => import("./pages/Trash"));
+const Bills = lazyWithRetry(() => import("./pages/Bills"));
 const DataHealth = lazyWithRetry(() => import("./pages/DataHealth"));
 const FilesPage = lazyWithRetry(() => import("./pages/Files"));
 const UserGuide = lazyWithRetry(() => import("./pages/UserGuide"));
