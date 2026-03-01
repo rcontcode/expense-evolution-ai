@@ -52,8 +52,8 @@ const planConfig: Record<string, {
   premium: {
     name: 'Premium',
     nameEn: 'Premium',
-    price: '$6.99',
-    priceAnnual: '$5.59',
+    price: '$7.99',
+    priceAnnual: '$6.49',
     icon: Sparkles,
     color: 'from-amber-500 via-orange-500 to-red-500',
     features: [
