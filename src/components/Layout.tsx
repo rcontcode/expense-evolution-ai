@@ -390,6 +390,7 @@ export const Layout = ({ children }: LayoutProps) => {
                       { icon: LayoutDashboard, label: language === 'es' ? 'Panel' : 'Home', path: '/dashboard', gradient: 'from-amber-400 via-orange-500 to-red-500', shadow: 'shadow-amber-500/40' },
                       { icon: Receipt, label: language === 'es' ? 'Gastos' : 'Expenses', path: '/expenses', gradient: 'from-red-400 via-rose-500 to-pink-500', shadow: 'shadow-red-500/40' },
                       { icon: TrendingUp, label: language === 'es' ? 'Ingresos' : 'Income', path: '/income', gradient: 'from-emerald-400 via-green-500 to-teal-500', shadow: 'shadow-emerald-500/40' },
+                      { icon: CalendarCheck, label: language === 'es' ? 'Pagos' : 'Bills', path: '/bills', gradient: 'from-violet-400 via-purple-500 to-indigo-500', shadow: 'shadow-violet-500/40' },
                       { icon: Inbox, label: language === 'es' ? 'Inbox' : 'Inbox', path: '/chaos', gradient: 'from-blue-400 via-cyan-500 to-sky-500', shadow: 'shadow-blue-500/40' },
                     ].map((item) => {
                       const Icon = item.icon;
