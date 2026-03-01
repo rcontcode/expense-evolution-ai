@@ -133,7 +133,6 @@ const planConfig: Record<string, {
       'Insights de correlación enfoque↔finanzas',
       'Frases unificadas del ecosistema',
       'Dashboard de ecosistema',
-      'Ahorro de 33% vs planes separados',
       'Soporte prioritario del ecosistema',
     ],
     featuresEn: [
