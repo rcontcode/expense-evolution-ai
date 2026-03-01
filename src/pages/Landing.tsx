@@ -367,8 +367,8 @@ const getPricingTiers = (language: string) => [
       'Priority support',
     ],
     valueNote: language === 'es' 
-      ? '💡 Pro ($14.99) + Fokuspark ($7.99) = $22.98. Aquí pagas $19.99. Ahorras $36/año.'
-      : '💡 Pro ($14.99) + Fokuspark ($7.99) = $22.98. Here you pay $19.99. Save $36/yr.',
+      ? '💡 EvoFinz Pro ($14.99) + Fokuspark Pro ($14.99) = $29.98. Aquí pagas $19.99. Ahorras $120/año.'
+      : '💡 EvoFinz Pro ($14.99) + Fokuspark Pro ($14.99) = $29.98. Here you pay $19.99. Save $120/yr.',
     cta: language === 'es' ? '¡Quiero el Bundle!' : 'Get the Bundle!',
     popular: false,
     gradient: 'from-teal-500 via-cyan-500 to-blue-500'
