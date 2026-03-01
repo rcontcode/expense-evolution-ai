@@ -202,9 +202,10 @@ export const OrganizedDashboard = memo(() => {
          collisionDetection={closestCenter}
          onDragEnd={handleDragEnd}
        >
-         <SortableContext items={visibleAreas} strategy={verticalListSortingStrategy}>
-           {visibleAreas.map((areaId, index) => (
-             <SortableAreaWrapper key={areaId} id={areaId} index={index}>
+          <SortableContext items={visibleAreas} strategy={verticalListSortingStrategy}>
+            <div className="space-y-4 lg:space-y-5">
+            {visibleAreas.map((areaId, index) => (
+              <SortableAreaWrapper key={areaId} id={areaId} index={index}>
                {isMobile ? (
                  <SwipeableAreaSection
                    areaId={areaId}
