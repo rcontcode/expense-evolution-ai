@@ -189,36 +189,25 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Free',
     monthlyPrice: 0,
-    subtitle: language === 'es' ? 'Para siempre, sin tarjeta' : 'Forever, no card needed',
-    description: language === 'es' 
-      ? '"No sé en qué se me va el dinero" → Claridad en minutos.' 
-      : '"I don\'t know where my money goes" → Clarity in minutes.',
-    transformation: language === 'es' 
-      ? '🎁 ¡Empieza HOY gratis!'
-      : '🎁 Start FREE today!',
+    subtitle: language === 'es' ? 'Para siempre' : 'Forever free',
     heroFeatures: language === 'es' ? [
-      { text: '50 gastos + 20 ingresos/mes', icon: '✏️', detail: 'Empieza a ver patrones reales' },
-      { text: '5 escaneos OCR — foto y listo', icon: '📷', detail: 'Prueba la magia de no tipear' },
-      { text: 'Dashboard visual del mes', icon: '📊', detail: 'Tu dinero, de un vistazo' },
+      { text: '50 gastos + 20 ingresos/mes', icon: '✏️' },
+      { text: '5 escaneos OCR', icon: '📷' },
+      { text: 'Dashboard visual', icon: '📊' },
     ] : [
-      { text: '50 expenses + 20 incomes/mo', icon: '✏️', detail: 'Start seeing real patterns' },
-      { text: '5 OCR scans — snap & done', icon: '📷', detail: 'Try the magic of zero typing' },
-      { text: 'Visual monthly dashboard', icon: '📊', detail: 'Your money, at a glance' },
+      { text: '50 expenses + 20 incomes/mo', icon: '✏️' },
+      { text: '5 OCR scans', icon: '📷' },
+      { text: 'Visual dashboard', icon: '📊' },
     ],
     features: language === 'es' ? [
       '2 clientes / 2 proyectos',
-      'Analytics básicos de tendencia',
-      'Tags predefinidos',
-      'Asistente de voz (3 min/mes)',
+      'Analytics básicos',
+      'Voz (3 min/mes)',
     ] : [
       '2 clients / 2 projects',
-      'Basic trend analytics',
-      'Predefined tags',
-      'Voice assistant (3 min/mo)',
+      'Basic analytics',
+      'Voice (3 min/mo)',
     ],
-    valueNote: language === 'es' 
-      ? '💡 La mayoría de apps "free" no incluyen OCR ni voz. EvoFinz sí.'
-      : '💡 Most "free" apps don\'t include OCR or voice. EvoFinz does.',
     cta: language === 'es' ? '¡Comenzar Gratis!' : 'Start Free!',
     popular: false,
     gradient: 'from-emerald-500 via-green-500 to-teal-500',
@@ -227,48 +216,31 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Premium',
     monthlyPrice: 7.99,
-    subtitle: language === 'es' ? 'El más popular para freelancers' : 'Most popular for freelancers',
-    description: language === 'es' 
-      ? '"Pierdo recibos, no controlo impuestos, no sé cuánto valgo" → Control total.' 
-      : '"I lose receipts, miss tax dates, don\'t know my net worth" → Total control.',
-    transformation: language === 'es' 
-      ? '🔥 De desorden → Control profesional'
-      : '🔥 From chaos → Pro-level control',
+    subtitle: language === 'es' ? 'El más popular' : 'Most popular',
     heroFeatures: language === 'es' ? [
-      { text: 'Gastos e ingresos ILIMITADOS', icon: '♾️', detail: 'Registra TODO, no pierdas nada' },
-      { text: '50 escaneos OCR/mes', icon: '📷', detail: '~1h/semana ahorrada en admin' },
-      { text: 'Net Worth + Calendario fiscal', icon: '💰', detail: 'Sabe cuánto VALES y cuándo pagar' },
+      { text: 'Gastos e ingresos ILIMITADOS', icon: '♾️' },
+      { text: '50 escaneos OCR/mes', icon: '📷' },
+      { text: 'Net Worth + Calendario fiscal', icon: '💰' },
     ] : [
-      { text: 'UNLIMITED expenses & income', icon: '♾️', detail: 'Track EVERYTHING, miss nothing' },
-      { text: '50 OCR scans/month', icon: '📷', detail: '~1h/week saved on admin' },
-      { text: 'Net Worth + Tax calendar', icon: '💰', detail: 'Know your WORTH and when to pay' },
+      { text: 'UNLIMITED expenses & income', icon: '♾️' },
+      { text: '50 OCR scans/month', icon: '📷' },
+      { text: 'Net Worth + Tax calendar', icon: '💰' },
     ],
     features: language === 'es' ? [
       'Clientes y proyectos ilimitados',
-      'Mileage GPS — deduce viajes legalmente',
-      'Tags personalizados infinitos',
-      'Exportación Excel/CSV',
+      'Mileage GPS',
+      'Tags personalizados',
+      'Excel/CSV export',
       'Gamificación + XP + Streaks',
-      '9+ gráficos: heatmaps, correlaciones',
-      'Alertas antes de que sea tarde',
-      '4 módulos de mentoría (Kiyosaki, Clear)',
-      'Asistente de voz (30 min/mes)',
-      'Educación financiera completa',
+      'Voz (30 min/mes)',
     ] : [
       'Unlimited clients & projects',
-      'GPS mileage — deduct trips legally',
-      'Infinite custom tags',
+      'GPS mileage',
+      'Custom tags',
       'Excel/CSV export',
       'Gamification + XP + Streaks',
-      '9+ charts: heatmaps, correlations',
-      'Alerts before it\'s too late',
-      '4 mentorship modules (Kiyosaki, Clear)',
-      'Voice assistant (30 min/mo)',
-      'Complete financial education',
+      'Voice (30 min/mo)',
     ],
-    valueNote: language === 'es' 
-      ? '💡 Si ahorras 1h/semana en admin = $200/mes de tu tiempo. Pagas $7.99.'
-      : '💡 If you save 1h/week on admin = $200/mo of your time. You pay $7.99.',
     cta: language === 'es' ? 'Elegir Premium' : 'Choose Premium',
     popular: true,
     gradient: 'from-amber-500 via-orange-500 to-red-500'
@@ -276,51 +248,34 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Pro',
     monthlyPrice: 14.99,
-    subtitle: language === 'es' ? 'Inteligencia artificial financiera' : 'Financial artificial intelligence',
-    description: language === 'es' 
-      ? '"Necesito IA para optimizar impuestos, analizar contratos y predecir mi futuro" → Dominio total.' 
-      : '"I need AI to optimize taxes, analyze contracts and predict my future" → Total mastery.',
-    transformation: language === 'es' 
-      ? '🚀 De control → Dominio experto con IA'
-      : '🚀 From control → AI-powered mastery',
+    subtitle: language === 'es' ? 'IA financiera' : 'Financial AI',
     featured: true,
     heroFeatures: language === 'es' ? [
-      { text: 'OCR ILIMITADO — escanea todo', icon: '📷', detail: 'Cada recibo, cada factura, siempre' },
-      { text: 'Contratos analizados por IA', icon: '📋', detail: 'Nunca más sorpresas en la letra chica' },
-      { text: 'Asistente de voz 120 min/mes', icon: '🎤', detail: '"¿Cuánto gasté en marketing este Q?"' },
+      { text: 'OCR ILIMITADO', icon: '📷' },
+      { text: 'Contratos analizados por IA', icon: '📋' },
+      { text: 'Voz 120 min/mes', icon: '🎤' },
     ] : [
-      { text: 'UNLIMITED OCR — scan everything', icon: '📷', detail: 'Every receipt, every invoice, always' },
-      { text: 'AI-analyzed contracts', icon: '📋', detail: 'No more fine print surprises' },
-      { text: 'Voice assistant 120 min/mo', icon: '🎤', detail: '"How much did I spend on marketing?"' },
+      { text: 'UNLIMITED OCR', icon: '📷' },
+      { text: 'AI contract analysis', icon: '📋' },
+      { text: 'Voice 120 min/mo', icon: '🎤' },
     ],
     features: language === 'es' ? [
-      '👑 Todo lo de Premium incluido',
-      'Análisis bancario + detección anomalías',
-      'Optimizador fiscal IA — paga menos, legal',
+      '👑 Todo lo de Premium',
+      'Optimizador fiscal IA',
       'Optimizador RRSP/TFSA/APV',
-      'FIRE Calculator — ¿cuándo me retiro?',
-      '8 módulos de mentoría completos',
-      'Exportación fiscal oficial (T2125/F29)',
-      'Detector de suscripciones fantasma',
-      'Predicciones y tendencias con IA',
-      'Reconciliación bancaria automática',
+      'FIRE Calculator',
+      'Detector suscripciones fantasma',
+      'Reconciliación bancaria',
       'Soporte dedicado',
     ] : [
-      '👑 Everything in Premium included',
-      'Bank analysis + anomaly detection',
-      'AI tax optimizer — pay less, legally',
+      '👑 Everything in Premium',
+      'AI tax optimizer',
       'RRSP/TFSA/APV optimizer',
-      'FIRE Calculator — when can I retire?',
-      '8 complete mentorship modules',
-      'Official tax export (T2125/F29)',
+      'FIRE Calculator',
       'Ghost subscription detector',
-      'AI predictions & trends',
-      'Automatic bank reconciliation',
+      'Bank reconciliation',
       'Dedicated support',
     ],
-    valueNote: language === 'es' 
-      ? '💡 Si Tax Optimizer te ahorra $500/año en impuestos = $41/mes. Pagas $14.99.'
-      : '💡 If Tax Optimizer saves you $500/yr in taxes = $41/mo. You pay $14.99.',
     cta: language === 'es' ? '¡Quiero Pro!' : 'Get Pro!',
     popular: false,
     gradient: 'from-violet-600 via-purple-600 to-indigo-600'
@@ -329,46 +284,31 @@ const getPricingTiers = (language: string) => [
     name: 'Evo Bundle',
     monthlyPrice: 19.99,
     isBundle: true,
-    subtitle: language === 'es' ? '2 apps, 1 precio — finanzas + mente' : '2 apps, 1 price — finance + mind',
-    description: language === 'es' 
-      ? '"El estrés financiero arruina mi productividad" → Bienestar integral.' 
-      : '"Financial stress ruins my productivity" → Total wellbeing.',
-    transformation: language === 'es' 
-      ? '💎 Único: IA que conecta dinero + mente'
-      : '💎 Unique: AI connecting money + mind',
+    subtitle: language === 'es' ? '2 apps × 1 precio' : '2 apps × 1 price',
     heroFeatures: language === 'es' ? [
-      { text: 'EvoFinz Pro COMPLETO incluido', icon: '🔥', detail: 'Todas las herramientas financieras' },
-      { text: 'Fokuspark Pro COMPLETO', icon: '🧠', detail: 'Meditación, focus, journaling' },
-      { text: 'IA cruza finanzas ↔ bienestar', icon: '📊', detail: '"Cuando meditas, gastas 23% menos"' },
+      { text: 'EvoFinz Pro COMPLETO', icon: '🔥' },
+      { text: 'Fokuspark Pro COMPLETO', icon: '🧠' },
+      { text: 'IA cruza finanzas ↔ bienestar', icon: '📊' },
     ] : [
-      { text: 'Full EvoFinz Pro INCLUDED', icon: '🔥', detail: 'All financial tools unlocked' },
-      { text: 'Full Fokuspark Pro', icon: '🧠', detail: 'Meditation, focus, journaling' },
-      { text: 'AI crosses finance ↔ wellness', icon: '📊', detail: '"When you meditate, you spend 23% less"' },
+      { text: 'Full EvoFinz Pro', icon: '🔥' },
+      { text: 'Full Fokuspark Pro', icon: '🧠' },
+      { text: 'AI: finance ↔ wellness', icon: '📊' },
     ],
     features: language === 'es' ? [
-      'Sesiones de enfoque y meditación',
-      'Diario de preocupaciones financieras',
-      'Leaderboard — compite y motívate',
-      'Streaks compartidos entre apps',
-      'AI coaching financiero + mental',
-      'Health Score unificado (0-100)',
-      'Alertas predictivas cruzadas',
-      'Reportes mensuales del ecosistema',
+      'Focus y meditación',
+      'Diario de preocupaciones',
+      'Leaderboard + Streaks',
+      'Health Score (0-100)',
+      'Alertas cruzadas con IA',
       'Soporte prioritario',
     ] : [
-      'Focus & meditation sessions',
+      'Focus & meditation',
       'Financial worry journal',
-      'Leaderboard — compete & motivate',
-      'Shared streaks across apps',
-      'Financial + mental AI coaching',
-      'Unified Health Score (0-100)',
-      'Cross-app predictive alerts',
-      'Monthly ecosystem reports',
+      'Leaderboard + Streaks',
+      'Health Score (0-100)',
+      'AI cross-app alerts',
       'Priority support',
     ],
-    valueNote: language === 'es' 
-      ? '💡 EvoFinz Pro ($14.99) + Fokuspark Pro ($14.99) = $29.98. Aquí pagas $19.99. Ahorras $120/año.'
-      : '💡 EvoFinz Pro ($14.99) + Fokuspark Pro ($14.99) = $29.98. Here you pay $19.99. Save $120/yr.',
     cta: language === 'es' ? '¡Quiero el Bundle!' : 'Get the Bundle!',
     popular: false,
     gradient: 'from-teal-500 via-cyan-500 to-blue-500'
@@ -1202,7 +1142,7 @@ export default function Landing() {
                   </Badge>
                 )}
                 <Card 
-                  className={`relative p-8 bg-slate-900/80 backdrop-blur-sm border-2 overflow-hidden h-full flex flex-col transition-all duration-300 ${
+                  className={`relative p-5 bg-slate-900/80 backdrop-blur-sm border-2 overflow-hidden h-full flex flex-col transition-all duration-300 ${
                     tier.popular 
                       ? 'border-orange-500 shadow-2xl shadow-orange-500/20 z-10 hover:shadow-orange-500/40 hover:-translate-y-2' 
                       : 'isFree' in tier && tier.isFree
@@ -1225,8 +1165,8 @@ export default function Landing() {
                     <div className="absolute -top-20 -right-20 w-40 h-40 bg-teal-500/30 rounded-full blur-3xl" />
                   )}
                   
-                  <div className="text-center mb-5 relative">
-                    <h3 className="text-xl font-bold text-white mb-0.5">{tier.name}</h3>
+                  <div className="text-center mb-3 relative">
+                    <h3 className="text-lg font-bold text-white mb-0.5">{tier.name}</h3>
                     {'subtitle' in tier && tier.subtitle && (
                       <p className="text-xs text-slate-500 mb-2 font-medium uppercase tracking-wide">{tier.subtitle}</p>
                     )}
@@ -1234,7 +1174,7 @@ export default function Landing() {
                       {priceInfo.strikethrough && (
                         <span className="text-lg text-slate-500 line-through mr-1">{priceInfo.strikethrough}</span>
                       )}
-                      <span className={`text-5xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
+                      <span className={`text-4xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
                         {priceInfo.display}
                       </span>
                       <span className="text-slate-400 text-sm">USD{priceInfo.period}</span>
@@ -1245,73 +1185,41 @@ export default function Landing() {
                     {priceInfo.savings && (
                       <p className="text-sm text-green-400 mt-1 font-semibold">{priceInfo.savings}</p>
                     )}
-                    
-                    {/* Problem → Solution description */}
-                    <p className="text-sm text-slate-300 mt-2 italic leading-snug">{tier.description}</p>
-                    
-                    {/* Transformation Badge */}
-                    {'transformation' in tier && tier.transformation && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${tier.gradient} text-xs font-bold text-white shadow-lg`}
-                      >
-                        <Flame className="h-3 w-3" />
-                        {tier.transformation}
-                      </motion.div>
-                    )}
                   </div>
 
-                  {/* Hero Features - highlighted with details */}
-                  {'heroFeatures' in tier && tier.heroFeatures && (
-                    <div className="space-y-1.5 mb-5">
-                      {tier.heroFeatures.map((hf: { text: string; icon: string; detail?: string }, hfIdx: number) => (
-                        <motion.div 
-                          key={hf.text} 
-                          initial={{ opacity: 0, x: -10 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.1 * hfIdx }}
-                          className={`flex items-start gap-3 px-3.5 py-2.5 rounded-xl backdrop-blur-sm ${
-                            tier.popular 
-                              ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-400/20' 
-                              : 'isFree' in tier && tier.isFree
-                                ? 'bg-gradient-to-r from-emerald-500/15 to-green-500/10 border border-emerald-400/20'
-                                : 'featured' in tier && tier.featured
-                                  ? 'bg-gradient-to-r from-violet-500/15 to-purple-500/10 border border-violet-400/20'
-                                  : 'bg-gradient-to-r from-teal-500/15 to-cyan-500/10 border border-teal-400/20'
-                          }`}
-                        >
-                          <span className="text-xl flex-shrink-0 leading-none mt-0.5 drop-shadow-lg">{hf.icon}</span>
-                          <div className="min-w-0 flex-1">
-                            <span className="text-sm font-bold text-white leading-tight block">{hf.text}</span>
-                            {hf.detail && (
-                              <span className="text-[11px] text-slate-400/90 leading-snug block mt-0.5">{hf.detail}</span>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
+                  {/* Hero Features - compact single-line */}
+                  <div className="space-y-1 mb-3">
+                    {tier.heroFeatures.map((hf: { text: string; icon: string }, hfIdx: number) => (
+                      <div 
+                        key={hf.text} 
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${
+                          tier.popular 
+                            ? 'bg-amber-500/10 border border-amber-400/15' 
+                            : 'isFree' in tier && tier.isFree
+                              ? 'bg-emerald-500/10 border border-emerald-400/15'
+                              : 'featured' in tier && tier.featured
+                                ? 'bg-violet-500/10 border border-violet-400/15'
+                                : 'bg-teal-500/10 border border-teal-400/15'
+                        }`}
+                      >
+                        <span className="text-base flex-shrink-0">{hf.icon}</span>
+                        <span className="font-semibold text-white text-xs">{hf.text}</span>
+                      </div>
+                    ))}
+                  </div>
 
-                  {/* Regular Features - compact */}
-                  <ul className="space-y-1.5 mb-4 flex-grow">
+                  {/* Regular Features - ultra compact */}
+                  <ul className="space-y-0.5 mb-3 flex-grow">
                     {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2 text-sm">
-                        <Check className="h-3.5 w-3.5 flex-shrink-0 text-slate-500" />
+                      <li key={feature} className="flex items-center gap-1.5 text-xs">
+                        <Check className="h-3 w-3 flex-shrink-0 text-slate-500" />
                         <span className="text-slate-400">{feature}</span>
                       </li>
                     ))}
                   </ul>
 
-                  {/* Value Note */}
-                  {'valueNote' in tier && tier.valueNote && (
-                    <div className="px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 mb-6">
-                      <p className="text-xs text-emerald-400 leading-snug">{tier.valueNote}</p>
-                    </div>
-                  )}
-
                   <Button 
-                    className={`w-full py-6 font-bold ${
+                    className={`w-full py-4 font-bold ${
                       tier.popular 
                         ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-900' 
                         : 'featured' in tier && tier.featured
@@ -1446,20 +1354,7 @@ export default function Landing() {
                       <p className={`text-xs font-semibold mt-0.5 ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-green-300' : 'text-green-500'}`}>{priceInfo.savings}</p>
                     )}
                     
-                    {/* Transformation highlight */}
-                    {'transformation' in tier && tier.transformation && (
-                      <div className={`text-xs font-medium px-2 py-1 rounded-full inline-block ${
-                        tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle)
-                          ? 'bg-white/20 text-white' 
-                          : 'bg-slate-100 text-slate-600'
-                      }`}>
-                        {'isFree' in tier && tier.isFree ? <Gift className="w-3 h-3 inline mr-1" /> : 
-                         'featured' in tier && tier.featured ? <Crown className="w-3 h-3 inline mr-1" /> :
-                         'isBundle' in tier && tier.isBundle ? <Layers className="w-3 h-3 inline mr-1" /> : 
-                         <Flame className="w-3 h-3 inline mr-1" />}
-                        {tier.transformation}
-                      </div>
-                    )}
+                    
                     
                     <Button
                       size="sm"
