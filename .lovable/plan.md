@@ -1,91 +1,94 @@
 
 
-## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
+## Plan: Precios Unificados, Limpios y Basados en Valor
 
-### ✅ Completado en EvoFinz
+### Situacion actual (el desorden)
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
-| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
-| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
-| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
-| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
+```text
+                    EvoFinz         Fokuspark       ¿Match?
+Free                $0              $0              ✅
+Premium mensual     $6.99           $7.99           ❌ DIFERENTE
+Premium anual       $5.59/mo        $6.39/mo        ❌ DIFERENTE
+Pro mensual         $14.99          $14.99          ✅
+Pro anual           $11.99/mo       $11.99/mo       ✅
+Bundle mensual      $14.99          $14.99          ✅ pero = Pro
+Bundle anual        $9.99/mo        $9.99/mo        ✅ pero 33% off
+```
 
-### ✅ Completado en Fokuspark
+Problemas: Premium no coincide entre apps, Bundle cuesta igual o menos que Pro, strikethroughs y "savings" por todos lados.
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
-| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
-| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
-| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
+### Precios nuevos (ambas apps identicos)
 
-### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
+```text
+Plan             Mensual      Anual (/mes)     Anual total
+Free             $0           —                —
+Premium          $7.99        $6.49            $77.88
+Pro              $14.99       $11.99           $143.88
+Bundle           $19.99       $15.99           $191.88
+```
 
----
+Logica:
+- **Premium a $7.99**: Subir EvoFinz de $6.99 a $7.99 (igualar a Fokuspark, mejor margen, numero mas limpio)
+- **Pro se mantiene**: $14.99 ya funciona en ambas
+- **Bundle a $19.99**: Mayor que Pro como pediste. Menor que comprar 2 Pro ($29.98). Refleja el valor de acceso a 2 apps completas
+- **Descuento anual 20% uniforme**: Sin excepciones, sin "33% OFF"
+- **Cero marketing noise**: Sin strikethroughs, sin "Ahorras $X", sin badges "-20% OFF", sin "2 apps por el precio de 1"
 
-## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
+### Cambios en EvoFinz (este proyecto)
 
-### ✅ Confirmado: Sistema funciona correctamente
+**1. `src/hooks/data/useSubscription.ts`**
+- `premium_monthly: 6.99` → `7.99`
+- `premium_annual: 67.08` → `77.88`
+- `bundle_monthly: 14.99` → `19.99`
+- `bundle_annual: 119.90` → `191.88`
+- Actualizar Price IDs de Premium y Bundle (nuevos precios en Stripe)
 
-- Planes individuales (Free/Premium/Pro) son independientes por app
-- Bundle compartido usa mismos Stripe Price IDs en ambas apps
-- Ambos webhooks detectan Bundle y setean `has_bundle = true`
-- No hay acceso cruzado no autorizado entre apps
+**2. `src/pages/Landing.tsx`**
+- `monthlyPrice: 6.99` (Premium) → `7.99`
+- `monthlyPrice: 14.99` (Bundle) → `19.99`
+- `getPrice()`: eliminar toda logica de `strikethrough` y `savings` — retornar strings vacios siempre
+- Eliminar badge "-20% OFF" del toggle anual
+- Eliminar renderizado de strikethrough y savings en las cards
+- Actualizar precios en sticky bar y Quick Pricing Preview ($6.99 → $7.99, Bundle $14.99/$9.99 → $19.99/$15.99)
 
-### ✅ Gaps implementados en Fokuspark
+**3. `src/components/settings/SubscriptionManager.tsx`**
+- Premium price: `'$6.99'` → `'$7.99'`, priceAnnual: `'$5.59'` → `'$6.49'`
+- Bundle price: `'$14.99'` → `'$19.99'`, priceAnnual: `'$9.99'` → `'$15.99'`
+- Eliminar feature "33% savings vs separate plans"
+- Eliminar "2 apps por el precio de 1"
 
-| # | Gap | Estado |
-|---|-----|--------|
-| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
-| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
+**4. Stripe: Crear nuevos Price IDs**
+- Premium Monthly: $7.99/mo (EvoFinz actualmente tiene $6.99)
+- Premium Annual: $77.88/yr
+- Bundle Monthly: $19.99/mo (reemplaza $14.99)
+- Bundle Annual: $191.88/yr (reemplaza $119.90)
 
-### 📋 Gaps pendientes (baja prioridad)
+**5. `supabase/functions/create-checkout/index.ts`**
+- Actualizar `PRICE_IDS` con los 4 nuevos Price IDs
+- Actualizar descriptions: quitar "Ahorra 33%", "Ahorra 20%", poner descripciones limpias de valor
+- `custom_text.submit.message`: quitar referencia a porcentajes de ahorro
 
-| # | Gap | Prioridad |
-|---|-----|-----------|
-| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
-| S3 | Texto del Bundle podría ser más descriptivo | Baja |
+**6. `supabase/functions/check-subscription/index.ts` y `stripe-webhook/index.ts`**
+- Actualizar Product IDs del Bundle si se crean nuevos productos (solo si cambian)
 
----
+**7. `src/components/PlanUsageCard.tsx`**
+- Verificar que refleje los precios correctos (usa hooks, deberia actualizarse solo)
 
-## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
+**8. `src/test/integration/subscription.test.ts`**
+- Actualizar assertions de precios
 
-### ✅ Veredicto: No igualar precios — estructura actual es óptima
+**9. `.lovable/plan.md`**
+- Documentar la nueva filosofia de precios unificados
 
-| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
-|------|---------|-----------|-----------|-------|
-| Free | $0 | $0 | ✅ Ya iguales | — |
-| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
-| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
-| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+### Cambios necesarios en Fokuspark (proyecto separado)
 
-### 📋 Pendiente técnico
+**`src/pages/PricingPage.tsx`**:
+- Bundle: `monthlyPrice: '$14.99'` → `'$19.99'`, `annualPrice: '$9.99'` → `'$15.99'`, `annualTotal: '$119.90'` → `'$191.88'`
+- Eliminar `strikethroughMonthly`, `strikethroughAnnual`, `savings: '$100+'`
+- Eliminar feature "2 apps, 1 precio"
+- Crear nuevos Stripe Price IDs en cuenta Fokuspark ($19.99/mo y $191.88/yr)
+- Actualizar `PRICE_IDS.bundle_monthly` y `bundle_annual`
+- Eliminar savings/strikethrough de todos los demas planes tambien
 
-| # | Tarea | App | Prioridad |
-|---|-------|-----|-----------|
-| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
+**`src/components/AICreditsExhaustedDialog.tsx`** y otros componentes que muestren precios hardcodeados de $7.99
 
----
-
-## Quiz Multi-App — CRM Unificado
-
-### ✅ Completado en EvoFinz
-
-| # | Tarea | Estado |
-|---|-------|--------|
-| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
-| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
-| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
-| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
-| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
-
-### 📋 Pendiente en Fokuspark
-
-| # | Tarea | Prioridad |
-|---|-------|-----------|
-| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
-| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
-| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
-| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
