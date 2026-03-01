@@ -189,25 +189,31 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Free',
     monthlyPrice: 0,
-    subtitle: language === 'es' ? 'Para siempre' : 'Forever free',
+    subtitle: language === 'es' ? 'Para siempre, sin tarjeta' : 'Forever, no card needed',
+    tagline: language === 'es' ? '🎁 Claridad en minutos' : '🎁 Clarity in minutes',
     heroFeatures: language === 'es' ? [
       { text: '50 gastos + 20 ingresos/mes', icon: '✏️' },
-      { text: '5 escaneos OCR', icon: '📷' },
-      { text: 'Dashboard visual', icon: '📊' },
+      { text: '5 escaneos OCR — foto y listo', icon: '📷' },
+      { text: 'Dashboard visual del mes', icon: '📊' },
     ] : [
       { text: '50 expenses + 20 incomes/mo', icon: '✏️' },
-      { text: '5 OCR scans', icon: '📷' },
-      { text: 'Visual dashboard', icon: '📊' },
+      { text: '5 OCR scans — snap & done', icon: '📷' },
+      { text: 'Visual monthly dashboard', icon: '📊' },
     ],
     features: language === 'es' ? [
       '2 clientes / 2 proyectos',
-      'Analytics básicos',
-      'Voz (3 min/mes)',
+      'Analytics básicos de tendencia',
+      'Tags predefinidos',
+      'Asistente de voz (3 min/mes)',
     ] : [
       '2 clients / 2 projects',
-      'Basic analytics',
-      'Voice (3 min/mo)',
+      'Basic trend analytics',
+      'Predefined tags',
+      'Voice assistant (3 min/mo)',
     ],
+    valueNote: language === 'es' 
+      ? '💡 La mayoría de apps "free" no incluyen OCR ni voz. EvoFinz sí.'
+      : '💡 Most "free" apps don\'t include OCR or voice. EvoFinz does.',
     cta: language === 'es' ? '¡Comenzar Gratis!' : 'Start Free!',
     popular: false,
     gradient: 'from-emerald-500 via-green-500 to-teal-500',
@@ -216,31 +222,43 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Premium',
     monthlyPrice: 7.99,
-    subtitle: language === 'es' ? 'El más popular' : 'Most popular',
+    subtitle: language === 'es' ? 'El más popular para freelancers' : 'Most popular for freelancers',
+    tagline: language === 'es' ? '🔥 De desorden → Control total' : '🔥 From chaos → Total control',
     heroFeatures: language === 'es' ? [
       { text: 'Gastos e ingresos ILIMITADOS', icon: '♾️' },
-      { text: '50 escaneos OCR/mes', icon: '📷' },
+      { text: '50 escaneos OCR/mes (~1h/sem ahorrada)', icon: '📷' },
       { text: 'Net Worth + Calendario fiscal', icon: '💰' },
     ] : [
       { text: 'UNLIMITED expenses & income', icon: '♾️' },
-      { text: '50 OCR scans/month', icon: '📷' },
+      { text: '50 OCR scans/mo (~1h/wk saved)', icon: '📷' },
       { text: 'Net Worth + Tax calendar', icon: '💰' },
     ],
     features: language === 'es' ? [
       'Clientes y proyectos ilimitados',
-      'Mileage GPS',
-      'Tags personalizados',
-      'Excel/CSV export',
+      'Mileage GPS — deduce viajes',
+      'Tags personalizados infinitos',
+      'Exportación Excel/CSV',
       'Gamificación + XP + Streaks',
-      'Voz (30 min/mes)',
+      '9+ gráficos: heatmaps, correlaciones',
+      'Alertas inteligentes',
+      '4 módulos de mentoría',
+      'Asistente de voz (30 min/mes)',
+      'Educación financiera completa',
     ] : [
       'Unlimited clients & projects',
-      'GPS mileage',
-      'Custom tags',
+      'GPS mileage — deduct trips',
+      'Infinite custom tags',
       'Excel/CSV export',
       'Gamification + XP + Streaks',
-      'Voice (30 min/mo)',
+      '9+ charts: heatmaps, correlations',
+      'Smart alerts',
+      '4 mentorship modules',
+      'Voice assistant (30 min/mo)',
+      'Complete financial education',
     ],
+    valueNote: language === 'es' 
+      ? '💡 1h/sem ahorrada = ~$200/mes de tu tiempo. Pagas $7.99.'
+      : '💡 1h/wk saved = ~$200/mo of your time. You pay $7.99.',
     cta: language === 'es' ? 'Elegir Premium' : 'Choose Premium',
     popular: true,
     gradient: 'from-amber-500 via-orange-500 to-red-500'
@@ -248,34 +266,46 @@ const getPricingTiers = (language: string) => [
   {
     name: 'Pro',
     monthlyPrice: 14.99,
-    subtitle: language === 'es' ? 'IA financiera' : 'Financial AI',
+    subtitle: language === 'es' ? 'Inteligencia artificial financiera' : 'Financial AI powerhouse',
+    tagline: language === 'es' ? '🚀 Control → Dominio experto con IA' : '🚀 Control → AI-powered mastery',
     featured: true,
     heroFeatures: language === 'es' ? [
-      { text: 'OCR ILIMITADO', icon: '📷' },
+      { text: 'OCR ILIMITADO — escanea todo', icon: '📷' },
       { text: 'Contratos analizados por IA', icon: '📋' },
-      { text: 'Voz 120 min/mes', icon: '🎤' },
+      { text: 'Asistente de voz 120 min/mes', icon: '🎤' },
     ] : [
-      { text: 'UNLIMITED OCR', icon: '📷' },
-      { text: 'AI contract analysis', icon: '📋' },
-      { text: 'Voice 120 min/mo', icon: '🎤' },
+      { text: 'UNLIMITED OCR — scan everything', icon: '📷' },
+      { text: 'AI-analyzed contracts', icon: '📋' },
+      { text: 'Voice assistant 120 min/mo', icon: '🎤' },
     ],
     features: language === 'es' ? [
-      '👑 Todo lo de Premium',
-      'Optimizador fiscal IA',
+      '👑 Todo lo de Premium incluido',
+      'Optimizador fiscal IA — paga menos',
       'Optimizador RRSP/TFSA/APV',
-      'FIRE Calculator',
+      'FIRE Calculator — ¿cuándo me retiro?',
+      'Análisis bancario + anomalías',
       'Detector suscripciones fantasma',
-      'Reconciliación bancaria',
+      'Reconciliación bancaria automática',
+      '8 módulos de mentoría completos',
+      'Exportación fiscal oficial (T2125/F29)',
+      'Predicciones con IA',
       'Soporte dedicado',
     ] : [
-      '👑 Everything in Premium',
-      'AI tax optimizer',
+      '👑 Everything in Premium included',
+      'AI tax optimizer — pay less, legally',
       'RRSP/TFSA/APV optimizer',
-      'FIRE Calculator',
+      'FIRE Calculator — when can I retire?',
+      'Bank analysis + anomaly detection',
       'Ghost subscription detector',
-      'Bank reconciliation',
+      'Automatic bank reconciliation',
+      '8 complete mentorship modules',
+      'Official tax export (T2125/F29)',
+      'AI predictions & trends',
       'Dedicated support',
     ],
+    valueNote: language === 'es' 
+      ? '💡 Tax Optimizer ahorra ~$500/año en impuestos = $41/mes. Pagas $14.99.'
+      : '💡 Tax Optimizer saves ~$500/yr in taxes = $41/mo. You pay $14.99.',
     cta: language === 'es' ? '¡Quiero Pro!' : 'Get Pro!',
     popular: false,
     gradient: 'from-violet-600 via-purple-600 to-indigo-600'
@@ -284,31 +314,41 @@ const getPricingTiers = (language: string) => [
     name: 'Evo Bundle',
     monthlyPrice: 19.99,
     isBundle: true,
-    subtitle: language === 'es' ? '2 apps × 1 precio' : '2 apps × 1 price',
+    subtitle: language === 'es' ? '2 apps Pro × 1 precio — finanzas + mente' : '2 Pro apps × 1 price — finance + mind',
+    tagline: language === 'es' ? '💎 Único: IA que conecta dinero + mente' : '💎 Unique: AI connecting money + mind',
     heroFeatures: language === 'es' ? [
-      { text: 'EvoFinz Pro COMPLETO', icon: '🔥' },
-      { text: 'Fokuspark Pro COMPLETO', icon: '🧠' },
+      { text: 'EvoFinz Pro COMPLETO incluido', icon: '🔥' },
+      { text: 'Fokuspark Pro COMPLETO incluido', icon: '🧠' },
       { text: 'IA cruza finanzas ↔ bienestar', icon: '📊' },
     ] : [
-      { text: 'Full EvoFinz Pro', icon: '🔥' },
-      { text: 'Full Fokuspark Pro', icon: '🧠' },
-      { text: 'AI: finance ↔ wellness', icon: '📊' },
+      { text: 'Full EvoFinz Pro INCLUDED', icon: '🔥' },
+      { text: 'Full Fokuspark Pro INCLUDED', icon: '🧠' },
+      { text: 'AI crosses finance ↔ wellness', icon: '📊' },
     ],
     features: language === 'es' ? [
-      'Focus y meditación',
-      'Diario de preocupaciones',
-      'Leaderboard + Streaks',
-      'Health Score (0-100)',
-      'Alertas cruzadas con IA',
+      'Sesiones de enfoque y meditación',
+      'Diario de preocupaciones financieras',
+      'Leaderboard — compite y motívate',
+      'Streaks compartidos entre apps',
+      'AI coaching financiero + mental',
+      'Health Score unificado (0-100)',
+      'Alertas predictivas cruzadas',
+      'Reportes mensuales del ecosistema',
       'Soporte prioritario',
     ] : [
-      'Focus & meditation',
+      'Focus & meditation sessions',
       'Financial worry journal',
-      'Leaderboard + Streaks',
-      'Health Score (0-100)',
-      'AI cross-app alerts',
+      'Leaderboard — compete & motivate',
+      'Shared streaks across apps',
+      'Financial + mental AI coaching',
+      'Unified Health Score (0-100)',
+      'Cross-app predictive alerts',
+      'Monthly ecosystem reports',
       'Priority support',
     ],
+    valueNote: language === 'es' 
+      ? '💡 Pro + Pro = $29.98/mes. Bundle = $19.99. Ahorras $120/año.'
+      : '💡 Pro + Pro = $29.98/mo. Bundle = $19.99. Save $120/yr.',
     cta: language === 'es' ? '¡Quiero el Bundle!' : 'Get the Bundle!',
     popular: false,
     gradient: 'from-teal-500 via-cyan-500 to-blue-500'
@@ -1168,7 +1208,7 @@ export default function Landing() {
                   <div className="text-center mb-3 relative">
                     <h3 className="text-lg font-bold text-white mb-0.5">{tier.name}</h3>
                     {'subtitle' in tier && tier.subtitle && (
-                      <p className="text-xs text-slate-500 mb-2 font-medium uppercase tracking-wide">{tier.subtitle}</p>
+                      <p className="text-[10px] text-slate-500 mb-1.5 font-medium uppercase tracking-wide">{tier.subtitle}</p>
                     )}
                     <div className="flex items-baseline justify-center gap-1">
                       {priceInfo.strikethrough && (
@@ -1177,22 +1217,28 @@ export default function Landing() {
                       <span className={`text-4xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
                         {priceInfo.display}
                       </span>
-                      <span className="text-slate-400 text-sm">USD{priceInfo.period}</span>
+                      <span className="text-slate-400 text-xs">USD{priceInfo.period}</span>
                     </div>
                     {priceInfo.annualTotal && (
-                      <p className="text-xs text-slate-500 mt-1">{priceInfo.annualTotal}</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">{priceInfo.annualTotal}</p>
                     )}
                     {priceInfo.savings && (
-                      <p className="text-sm text-green-400 mt-1 font-semibold">{priceInfo.savings}</p>
+                      <p className="text-xs text-green-400 mt-0.5 font-semibold">{priceInfo.savings}</p>
+                    )}
+                    {/* Tagline */}
+                    {'tagline' in tier && tier.tagline && (
+                      <p className={`text-[11px] font-bold mt-1.5 px-2 py-0.5 rounded-full inline-block bg-gradient-to-r ${tier.gradient} text-white`}>
+                        {tier.tagline}
+                      </p>
                     )}
                   </div>
 
-                  {/* Hero Features - compact single-line */}
-                  <div className="space-y-1 mb-3">
-                    {tier.heroFeatures.map((hf: { text: string; icon: string }, hfIdx: number) => (
+                  {/* Hero Features */}
+                  <div className="space-y-1 mb-2">
+                    {tier.heroFeatures.map((hf: { text: string; icon: string }) => (
                       <div 
                         key={hf.text} 
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${
+                        className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg ${
                           tier.popular 
                             ? 'bg-amber-500/10 border border-amber-400/15' 
                             : 'isFree' in tier && tier.isFree
@@ -1202,21 +1248,26 @@ export default function Landing() {
                                 : 'bg-teal-500/10 border border-teal-400/15'
                         }`}
                       >
-                        <span className="text-base flex-shrink-0">{hf.icon}</span>
-                        <span className="font-semibold text-white text-xs">{hf.text}</span>
+                        <span className="text-sm flex-shrink-0">{hf.icon}</span>
+                        <span className="font-semibold text-white text-[11px] leading-tight">{hf.text}</span>
                       </div>
                     ))}
                   </div>
 
-                  {/* Regular Features - ultra compact */}
-                  <ul className="space-y-0.5 mb-3 flex-grow">
+                  {/* Features - 2-column grid for density */}
+                  <div className="grid grid-cols-2 gap-x-1 gap-y-0.5 mb-2 flex-grow">
                     {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-1.5 text-xs">
-                        <Check className="h-3 w-3 flex-shrink-0 text-slate-500" />
+                      <div key={feature} className="flex items-start gap-1 text-[10px] leading-tight">
+                        <Check className="h-2.5 w-2.5 flex-shrink-0 text-slate-500 mt-0.5" />
                         <span className="text-slate-400">{feature}</span>
-                      </li>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
+
+                  {/* Value Note */}
+                  {'valueNote' in tier && tier.valueNote && (
+                    <p className="text-[10px] text-emerald-400/80 leading-snug mb-2 px-1">{tier.valueNote}</p>
+                  )}
 
                   <Button 
                     className={`w-full py-4 font-bold ${
