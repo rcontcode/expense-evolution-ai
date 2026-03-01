@@ -1354,20 +1354,7 @@ export default function Landing() {
                       <p className={`text-xs font-semibold mt-0.5 ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-green-300' : 'text-green-500'}`}>{priceInfo.savings}</p>
                     )}
                     
-                    {/* Transformation highlight */}
-                    {'transformation' in tier && tier.transformation && (
-                      <div className={`text-xs font-medium px-2 py-1 rounded-full inline-block ${
-                        tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle)
-                          ? 'bg-white/20 text-white' 
-                          : 'bg-slate-100 text-slate-600'
-                      }`}>
-                        {'isFree' in tier && tier.isFree ? <Gift className="w-3 h-3 inline mr-1" /> : 
-                         'featured' in tier && tier.featured ? <Crown className="w-3 h-3 inline mr-1" /> :
-                         'isBundle' in tier && tier.isBundle ? <Layers className="w-3 h-3 inline mr-1" /> : 
-                         <Flame className="w-3 h-3 inline mr-1" />}
-                        {tier.transformation}
-                      </div>
-                    )}
+                    
                     
                     <Button
                       size="sm"
