@@ -135,9 +135,7 @@ serve(async (req) => {
         submit: {
           message: planType === 'bundle'
             ? '🌟 ¡Estás desbloqueando el ecosistema completo! EvoFinz + Fokuspark trabajando juntos por tu bienestar financiero y mental.'
-            : billingPeriod === 'annual' 
-              ? '🎉 ¡Felicidades! Estás ahorrando un 20% con el plan anual. Tu transformación financiera comienza ahora.'
-              : '🚀 Estás a un clic de tomar el control de tus finanzas. ¡Bienvenido a EvoFinz!',
+            : '🚀 Estás a un clic de tomar el control de tus finanzas. ¡Bienvenido a EvoFinz!',
         },
         terms_of_service_acceptance: {
           message: 'Al suscribirte, aceptas nuestros [términos de servicio](https://evofinz.lovable.app/legal) y confirmas que puedes cancelar en cualquier momento.',
