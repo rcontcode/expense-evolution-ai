@@ -236,7 +236,6 @@ export function CashFlowProjection() {
     );
   }
   
-  const { formatCompact: formatCurrency } = useFormatCurrency();
   
   const labels = {
     title: language === 'es' ? 'Proyección de Flujo de Caja' : 'Cash Flow Projection',
