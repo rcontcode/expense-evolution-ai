@@ -184,12 +184,9 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
             collapsed && "justify-center p-0 h-full"
           )}>
             {collapsed ? (
-              <motion.span 
-                className="text-xl"
-                whileHover={{ scale: 1.2, rotate: 5 }}
-              >
-                {countryFlags[primaryEntity.country] || '🌍'}
-              </motion.span>
+              <motion.div whileHover={{ scale: 1.2, rotate: 5 }}>
+                <CountryFlag code={primaryEntity.country} size="sm" className="rounded-sm shadow-md" />
+              </motion.div>
             ) : (
               <>
                 <motion.div 
