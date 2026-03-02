@@ -112,8 +112,10 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
               onAddExpense={handleAddExpense}
             />
 
-            <ProfileCompletionNudge />
-            <DashboardGamificationWidget compact={true} />
+            <div data-section="gamification">
+              <ProfileCompletionNudge />
+              <DashboardGamificationWidget compact={true} />
+            </div>
 
             <Suspense fallback={null}>
               <LazyEcosystemWidgets />
