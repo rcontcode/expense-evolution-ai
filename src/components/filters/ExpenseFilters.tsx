@@ -167,10 +167,10 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
           <button
             onClick={handleIncompleteFilterToggle}
             className={cn(
-              'inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border shrink-0 min-h-[36px]',
+              'inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all border-2 shrink-0 min-h-[36px]',
               filters.onlyIncomplete 
-                ? 'bg-destructive/10 text-destructive border-destructive/30' 
-                : 'bg-muted/50 text-muted-foreground border-transparent hover:bg-muted'
+                ? 'bg-destructive/10 text-destructive border-destructive/30 shadow-sm shadow-destructive/10' 
+                : 'bg-secondary/60 text-muted-foreground border-border/40 hover:bg-secondary'
             )}
           >
             <AlertTriangle className="h-3.5 w-3.5" />
@@ -224,10 +224,10 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
                       key={type.value}
                       onClick={() => handleReimbursementTypeChange(type.value)}
                       className={cn(
-                        'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-all',
+                        'inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all border-2',
                         isActive 
-                          ? `${type.color} ring-1 ring-offset-1 ring-offset-background ring-primary/50` 
-                          : 'bg-muted/50 text-muted-foreground'
+                          ? `${type.color} border-current/30 shadow-sm` 
+                          : 'bg-secondary/60 text-muted-foreground border-border/40'
                       )}
                     >
                       <Icon className="h-3 w-3" />
@@ -250,10 +250,10 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
                       key={status.value}
                       onClick={() => handleQuickStatusFilter(status.value)}
                       className={cn(
-                        'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-all',
+                        'inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all border-2',
                         isActive 
-                          ? `${status.color} ring-1 ring-offset-1 ring-offset-background ring-primary/50` 
-                          : 'bg-muted/50 text-muted-foreground'
+                          ? `${status.color} border-current/30 shadow-sm` 
+                          : 'bg-secondary/60 text-muted-foreground border-border/40'
                       )}
                     >
                       <Icon className="h-3 w-3" />
@@ -302,10 +302,10 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
         <button
           onClick={handleIncompleteFilterToggle}
           className={cn(
-            'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border-2 whitespace-nowrap shrink-0',
+            'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all border-2 whitespace-nowrap shrink-0 shadow-sm',
             filters.onlyIncomplete 
-              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-700 ring-2 ring-offset-1 ring-offset-background ring-red-500/50' 
-              : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30'
+              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-400 dark:border-red-600 shadow-md shadow-red-500/20 scale-[1.04]' 
+              : 'bg-red-50/80 text-red-600 dark:bg-red-900/20 dark:text-red-400 border-red-200/60 dark:border-red-800/60 hover:bg-red-100 dark:hover:bg-red-900/30 hover:shadow-md hover:-translate-y-0.5'
           )}
         >
           <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -322,10 +322,10 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
               key={type.value}
               onClick={() => handleReimbursementTypeChange(type.value)}
               className={cn(
-                'inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap shrink-0',
+                'inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap shrink-0 border-2',
                 isActive 
-                  ? `${type.color} ring-2 ring-offset-1 ring-offset-background ring-primary/50` 
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                  ? `${type.color} border-current/30 shadow-md shadow-current/10 scale-[1.04]` 
+                  : 'bg-secondary/60 text-muted-foreground border-border/40 hover:bg-secondary hover:shadow-sm hover:-translate-y-0.5'
               )}
             >
               <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
@@ -345,10 +345,10 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
               key={status.value}
               onClick={() => handleQuickStatusFilter(status.value)}
               className={cn(
-                'inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap shrink-0',
+                'inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap shrink-0 border-2',
                 isActive 
-                  ? `${status.color} ring-2 ring-offset-1 ring-offset-background ring-primary/50` 
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                  ? `${status.color} border-current/30 shadow-md shadow-current/10 scale-[1.04]` 
+                  : 'bg-secondary/60 text-muted-foreground border-border/40 hover:bg-secondary hover:shadow-sm hover:-translate-y-0.5'
               )}
             >
               <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
@@ -361,10 +361,10 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
         <button
           onClick={handleReceiptFilterToggle}
           className={cn(
-            'inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap shrink-0',
+            'inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap shrink-0 border-2',
             filters.hasReceipt 
-              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 ring-2 ring-offset-1 ring-offset-background ring-primary/50' 
-              : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-purple-400/30 shadow-md shadow-purple-500/10 scale-[1.04]' 
+              : 'bg-secondary/60 text-muted-foreground border-border/40 hover:bg-secondary hover:shadow-sm hover:-translate-y-0.5'
           )}
         >
           <Receipt className="h-3 w-3 sm:h-3.5 sm:w-3.5" />

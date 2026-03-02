@@ -187,13 +187,13 @@ export function PageContextGuide({
                   {workflows.map((step, idx) => (
                     <React.Fragment key={idx}>
                       <div className={cn(
-                        "flex items-center gap-1.5 px-2 py-1 rounded-full text-xs whitespace-nowrap",
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs whitespace-nowrap border-2 font-bold transition-all",
                         step.completed 
-                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-                          : "bg-muted text-muted-foreground"
+                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-400/30 shadow-sm shadow-green-500/10"
+                          : "bg-secondary/60 text-muted-foreground border-border/40"
                       )}>
                         {step.completed && <CheckCircle2 className="h-3 w-3" />}
-                        <span className="font-medium">{step.step}.</span>
+                        <span className="font-bold">{step.step}.</span>
                         {step.title[language]}
                       </div>
                       {idx < workflows.length - 1 && (
@@ -213,7 +213,7 @@ export function PageContextGuide({
                   <button
                     key={idx}
                     onClick={() => handleActionClick(action, idx)}
-                    className="group p-2.5 rounded-lg border border-border/50 hover:border-primary/50 hover:bg-accent/50 transition-all text-left"
+                    className="group p-3 rounded-xl border-2 border-border/50 hover:border-primary/40 hover:bg-primary/5 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5 transition-all text-left"
                   >
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">

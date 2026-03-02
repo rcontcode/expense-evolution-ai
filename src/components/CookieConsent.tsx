@@ -96,7 +96,7 @@ export function CookieConsent() {
   return (
     <div className="fixed bottom-4 left-4 right-4 z-40 pointer-events-none sm:left-auto sm:right-4 sm:bottom-4 sm:max-w-sm">
       <div className="pointer-events-auto">
-        <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-card border-2 border-border/60 rounded-2xl shadow-2xl shadow-primary/5 overflow-hidden">
           {/* Header */}
           <div className="p-4 md:p-6">
             <div className="flex items-start gap-4">
