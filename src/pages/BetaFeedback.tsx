@@ -32,6 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { useBetaFeedback } from '@/hooks/data/useBetaFeedback';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/data/useProfile';
 import { Layout } from '@/components/Layout';
 import { PhoenixLogo } from '@/components/ui/phoenix-logo';
 import { SystemAlertsBanner } from '@/components/beta/SystemAlertsBanner';
@@ -40,6 +41,7 @@ import { ScreenshotUpload } from '@/components/beta/ScreenshotUpload';
 import { BetaGamificationCard } from '@/components/beta/BetaGamificationCard';
 import { BetaRoadmapCard } from '@/components/beta/BetaRoadmapCard';
 import { BetaFeedbackTutorial } from '@/components/beta/BetaFeedbackTutorial';
+import { Navigate } from 'react-router-dom';
 
 const APP_SECTIONS = [
   { id: 'dashboard', label: { es: 'Dashboard', en: 'Dashboard' }, emoji: '📊', color: 'from-violet-500 to-purple-600' },
