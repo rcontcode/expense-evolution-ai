@@ -918,12 +918,8 @@ export const Layout = ({ children }: LayoutProps) => {
                           <button
                             key={`${child.path}-${childIdx}`}
                             onClick={() => {
-                              // Force navigation even when already on /dashboard
                               if (child.path.startsWith('/dashboard?')) {
-                                const url = new URL(child.path, window.location.origin);
-                                navigate(`/dashboard?${url.searchParams.toString()}`, { replace: false });
-                                // Force page to re-read params by dispatching popstate
-                                window.dispatchEvent(new Event('deep-link-trigger'));
+                                window.location.href = child.path;
                               } else {
                                 navigate(child.path);
                               }
