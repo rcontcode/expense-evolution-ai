@@ -1152,12 +1152,22 @@ export const Layout = ({ children }: LayoutProps) => {
                     collapsed && 'justify-center px-0 w-auto'
                   )}
                 >
-                  <div className="w-6 h-6 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground text-xs font-medium">
-                    {userInitial}
+                  <div className="relative">
+                    <div className="w-7 h-7 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold shadow-md">
+                      {userInitial}
+                    </div>
+                    {currentCountry && (
+                      <span className="absolute -bottom-1 -right-1 text-xs leading-none drop-shadow-md">
+                        {currentCountry === 'CA' ? '🇨🇦' : currentCountry === 'CL' ? '🇨🇱' : currentCountry === 'US' ? '🇺🇸' : '🌍'}
+                      </span>
+                    )}
                   </div>
                   {!collapsed && (
                     <div className="flex-1 text-left min-w-0">
-                      <span className="block text-xs font-medium truncate">{profile?.full_name || t('settings.profileTitle')}</span>
+                      <span className="block text-xs font-semibold truncate">{profile?.full_name || t('settings.profileTitle')}</span>
+                      <span className="block text-[10px] text-muted-foreground truncate">
+                        {currentCountry === 'CA' ? '🇨🇦 Canada' : currentCountry === 'CL' ? '🇨🇱 Chile' : currentCountry === 'US' ? '🇺🇸 USA' : ''}
+                      </span>
                     </div>
                   )}
                 </button>
