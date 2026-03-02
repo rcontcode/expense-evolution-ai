@@ -210,7 +210,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     items: [
       { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
         children: [
-          { label: language === 'es' ? '📊 Resumen Patrimonio' : '📊 Net Worth Summary', path: '/dashboard?area=familia&atab=portfolio' },
+          { label: language === 'es' ? '📊 Análisis Familiar' : '📊 Family Analysis', path: '/dashboard?area=familia&atab=analysis' },
           { label: language === 'es' ? '💳 Deudas' : '💳 Debts', path: '/dashboard?area=familia&atab=debts' },
         ],
       },
