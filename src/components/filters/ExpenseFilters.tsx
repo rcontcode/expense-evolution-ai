@@ -302,10 +302,10 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
         <button
           onClick={handleIncompleteFilterToggle}
           className={cn(
-            'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border-2 whitespace-nowrap shrink-0',
+            'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all border-2 whitespace-nowrap shrink-0 shadow-sm',
             filters.onlyIncomplete 
-              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-700 ring-2 ring-offset-1 ring-offset-background ring-red-500/50' 
-              : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30'
+              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-400 dark:border-red-600 shadow-md shadow-red-500/20 scale-[1.04]' 
+              : 'bg-red-50/80 text-red-600 dark:bg-red-900/20 dark:text-red-400 border-red-200/60 dark:border-red-800/60 hover:bg-red-100 dark:hover:bg-red-900/30 hover:shadow-md hover:-translate-y-0.5'
           )}
         >
           <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4" />
