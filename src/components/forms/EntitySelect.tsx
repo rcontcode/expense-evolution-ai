@@ -81,7 +81,7 @@ export function EntitySelect({ control, name = 'entity_id', required = false, sh
             <SelectContent>
               {activeEntities.map((entity) => {
                 const Icon = entityTypeIcons[entity.entity_type] || Globe;
-                const flag = countryFlags[entity.country] || '🌍';
+                const flag = entity.country;
                 
                 return (
                   <SelectItem key={entity.id} value={entity.id}>
