@@ -746,7 +746,8 @@ export const Layout = ({ children }: LayoutProps) => {
         {/* Sidebar */}
         <aside 
           className={cn(
-            "relative flex flex-col border-r border-border bg-card transition-all duration-300 ease-out",
+            "relative flex flex-col border-r border-border/50 bg-card/80 backdrop-blur-xl transition-all duration-300 ease-out",
+            "shadow-xl shadow-black/5 dark:shadow-black/20",
             collapsed ? "w-[72px]" : "w-72"
           )}
         >
