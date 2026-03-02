@@ -96,7 +96,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
               />
             )}
 
-            <div className="overflow-x-auto -mx-4 px-4">
+            <div className="overflow-x-auto -mx-4 px-4" data-section="timeline">
               <YearTimelineChart
                 selectedMonth={selectedMonth}
                 onMonthSelect={setSelectedMonth}
