@@ -202,7 +202,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     ]
   },
   {
-    titleKey: language === 'es' ? '📈 Patrimonio' : '📈 Wealth',
+    titleKey: 'layout.wealth',
     emoji: '📈',
     themeKey: 'wealth' as keyof typeof sectionThemes,
     items: [
@@ -217,11 +217,10 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
           { label: language === 'es' ? '🔄 Conciliación' : '🔄 Reconciliation', path: '/reconciliation' },
         ],
       },
-      { icon: RefreshCw, label: 'nav.reconciliation', path: '/reconciliation', badge: null, tooltipKey: 'reconciliation' as const },
     ]
   },
   {
-    titleKey: language === 'es' ? '📊 Análisis' : '📊 Analytics',
+    titleKey: 'layout.analytics',
     emoji: '📊',
     themeKey: 'growth' as keyof typeof sectionThemes,
     items: [
