@@ -333,7 +333,9 @@ export default function Dashboard() {
           </div>
 
           {/* Ecosystem — Collapsible section for Bundle users */}
-          <EcosystemSection />
+          <div data-section="ecosystem">
+            <EcosystemSection />
+          </div>
 
           {/* ===== PROMINENT VIEW TABS ===== */}
           <DashboardViewTabs 
