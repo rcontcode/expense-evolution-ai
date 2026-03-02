@@ -244,10 +244,12 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     items: [
       { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
         children: [
-          { label: language === 'es' ? '🧭 Cuadrante Kiyosaki' : '🧭 Kiyosaki Quadrant', path: '/dashboard?area=crecimiento&atab=mentorship&tool=kiyosaki' },
-          { label: language === 'es' ? '🏝️ Libertad Financiera' : '🏝️ Financial Freedom', path: '/dashboard?area=crecimiento&atab=mentorship&tool=freedom' },
-          { label: language === 'es' ? '📚 Educación Financiera' : '📚 Financial Education', path: '/dashboard?area=crecimiento&atab=education' },
-          { label: language === 'es' ? '✅ Hábitos Financieros' : '✅ Financial Habits', path: '/dashboard?area=crecimiento&atab=goals' },
+          { label: language === 'es' ? '📚 Biblioteca' : '📚 Library', path: '/mentorship?tab=library' },
+          { label: language === 'es' ? '⚛️ Hábitos Atómicos' : '⚛️ Atomic Habits', path: '/mentorship?tab=atomic' },
+          { label: language === 'es' ? '💰 Kiyosaki' : '💰 Kiyosaki', path: '/mentorship?tab=kiyosaki' },
+          { label: language === 'es' ? '🌟 Jim Rohn' : '🌟 Jim Rohn', path: '/mentorship?tab=rohn' },
+          { label: language === 'es' ? '🎯 Brian Tracy' : '🎯 Brian Tracy', path: '/mentorship?tab=tracy' },
+          { label: language === 'es' ? '🧘 Bienestar' : '🧘 Wellbeing', path: '/mentorship?tab=wellbeing' },
         ],
       },
       { icon: Briefcase, label: language === 'es' ? 'Inversiones' : 'Investments', path: '/investments', badge: null, tooltipKey: 'dashboard' as const,

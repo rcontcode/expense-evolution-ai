@@ -1,4 +1,5 @@
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   AtomicHabitsCard,
@@ -83,10 +84,23 @@ export default function Mentorship() {
   const { language } = useLanguage();
   const isMobile = useIsMobile();
   const { isEnabled } = useFeatureFlags();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const showWellbeing = isEnabled('ecosystem_wellbeing_tab');
   const visibleTabs = showWellbeing ? MENTOR_TABS : MENTOR_TABS.filter(t => t.value !== 'wellbeing');
   const gridCols = showWellbeing ? 'grid-cols-6' : 'grid-cols-5';
+
+  const validTabValues = visibleTabs.map(t => t.value);
+  const tabFromUrl = searchParams.get('tab');
+  const activeTab = tabFromUrl && validTabValues.includes(tabFromUrl) ? tabFromUrl : 'library';
+
+  const handleTabChange = (value: string) => {
+    if (value === 'library') {
+      setSearchParams({}, { replace: true });
+    } else {
+      setSearchParams({ tab: value }, { replace: true });
+    }
+  };
 
   return (
     <Layout>
@@ -105,7 +119,7 @@ export default function Mentorship() {
 
         {!isMobile && <MentorQuoteBanner context="dashboard" />}
 
-        <Tabs defaultValue="library" className="space-y-4 sm:space-y-6" data-highlight="mentorship-tabs">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4 sm:space-y-6" data-highlight="mentorship-tabs">
           {/* Mobile: Icon-only tabs with tooltips */}
           <TooltipProvider>
             <TabsList className={`grid ${gridCols} w-full max-w-3xl mx-auto bg-muted/50 p-1 sm:p-1.5 rounded-xl`} data-highlight="mentor-selector">
