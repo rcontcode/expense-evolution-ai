@@ -893,11 +893,12 @@ export const Layout = ({ children }: LayoutProps) => {
                   </Tooltip>
                 ) : (
                   <h3 className={cn(
-                    "px-1.5 mb-1 text-xs font-bold flex items-center gap-1.5",
+                    "px-2 mb-1.5 text-xs font-bold flex items-center gap-2",
                     theme.text
                   )}>
-                    <span className="text-sm">{section.emoji}</span>
-                    <span className="uppercase tracking-wider text-[10px]">{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
+                    <span className="text-sm drop-shadow-sm">{section.emoji}</span>
+                    <span className="uppercase tracking-widest text-[10px] font-extrabold">{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
+                    {!collapsed && <span className="flex-1 h-px bg-current opacity-15 ml-1" />}
                   </h3>
                 )}
                 <div className="space-y-0.5">
