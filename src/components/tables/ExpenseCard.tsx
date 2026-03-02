@@ -85,6 +85,7 @@ function getCompletenessStatus(expense: ExpenseWithRelations, language: string) 
 
 export const ExpenseCard = memo(function ExpenseCard({ expense, onEdit, onDelete, selectable, selected, onSelect }: ExpenseCardProps) {
   const { t, language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   
   const config = STATUS_CONFIG[expense.status] || STATUS_CONFIG.pending;
   const StatusIcon = config.icon;
