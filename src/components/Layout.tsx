@@ -150,9 +150,9 @@ const getNavSections = (language: string) => [
       { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
       { icon: Wallet, label: 'nav.budget', path: '/budget', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
         children: [
-          { label: language === 'es' ? 'Presupuesto Global' : 'Global Budget', path: '/dashboard?area=familia&atab=presupuesto' },
-          { label: language === 'es' ? 'Gestor de Deudas' : 'Debt Manager', path: '/dashboard?area=familia&atab=deudas' },
-          { label: language === 'es' ? 'Análisis Familiar' : 'Family Analysis', path: '/dashboard?area=familia&atab=analisis' },
+          { label: language === 'es' ? '📊 Presupuesto Global' : '📊 Global Budget', path: '/dashboard?area=familia&atab=presupuesto' },
+          { label: language === 'es' ? '💳 Gestor de Deudas' : '💳 Debt Manager', path: '/dashboard?area=familia&atab=deudas' },
+          { label: language === 'es' ? '👨‍👩‍👧 Análisis Familiar' : '👨‍👩‍👧 Family Analysis', path: '/dashboard?area=familia&atab=analisis' },
         ],
       },
       { icon: CalendarCheck, label: language === 'es' ? 'Pagos Fijos' : 'Bills', path: '/bills', badge: null, tooltipKey: 'dashboard' as const },
@@ -165,10 +165,18 @@ const getNavSections = (language: string) => [
     emoji: '🏢',
     themeKey: 'business' as keyof typeof sectionThemes,
     items: [
-      { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tooltipKey: 'clients' as const },
+      { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tooltipKey: 'clients' as const,
+        children: [
+          { label: language === 'es' ? '📋 Resumen Clientes' : '📋 Client Summary', path: '/dashboard?area=negocio&atab=clientes' },
+        ],
+      },
       { icon: FolderKanban, label: 'nav.projects', path: '/projects', badge: null, tooltipKey: 'clients' as const },
       { icon: FileText, label: 'nav.contracts', path: '/contracts', badge: null, tooltipKey: 'contracts' as const },
-      { icon: Car, label: 'nav.mileage', path: '/mileage', badgeType: 'tax' as const, tooltipKey: 'mileage' as const },
+      { icon: Car, label: 'nav.mileage', path: '/mileage', badgeType: 'tax' as const, tooltipKey: 'mileage' as const,
+        children: [
+          { label: language === 'es' ? '🛣️ Resumen Kilometraje' : '🛣️ Mileage Summary', path: '/dashboard?area=negocio&atab=kilometraje' },
+        ],
+      },
       { icon: Tag, label: 'nav.tags', path: '/tags', badge: null, tooltipKey: 'tags' as const },
     ]
   },
@@ -191,8 +199,8 @@ const getNavSections = (language: string) => [
       { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badgeType: 'tax' as const, tooltipKey: 'dashboard' as const },
       { icon: Receipt, label: language === 'es' ? 'Impuestos' : 'Taxes', path: '/tax-optimizer', badge: null, tooltipKey: 'dashboard' as const,
         children: [
-          { label: language === 'es' ? 'RRSP/TFSA Optimizer' : 'RRSP/TFSA Optimizer', path: '/dashboard?area=impuestos&atab=optimizacion' },
-          { label: language === 'es' ? 'Resumen Fiscal' : 'Tax Summary', path: '/dashboard?area=impuestos&atab=resumen' },
+          { label: language === 'es' ? '📈 RRSP/TFSA Optimizer' : '📈 RRSP/TFSA Optimizer', path: '/dashboard?area=impuestos&atab=optimizacion' },
+          { label: language === 'es' ? '📄 Resumen Fiscal' : '📄 Tax Summary', path: '/dashboard?area=impuestos&atab=resumen' },
         ],
       },
     ]
@@ -204,16 +212,16 @@ const getNavSections = (language: string) => [
     items: [
       { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
         children: [
-          { label: language === 'es' ? 'Cuadrante Kiyosaki' : 'Kiyosaki Quadrant', path: '/dashboard?area=crecimiento&atab=mentoria' },
-          { label: language === 'es' ? 'Libertad Financiera' : 'Financial Freedom', path: '/dashboard?area=crecimiento&atab=mentoria' },
-          { label: language === 'es' ? 'Hábitos Financieros' : 'Financial Habits', path: '/dashboard?area=crecimiento&atab=educacion' },
+          { label: language === 'es' ? '🧭 Cuadrante Kiyosaki' : '🧭 Kiyosaki Quadrant', path: '/dashboard?area=crecimiento&atab=mentoria' },
+          { label: language === 'es' ? '🏝️ Libertad Financiera' : '🏝️ Financial Freedom', path: '/dashboard?area=crecimiento&atab=mentoria' },
+          { label: language === 'es' ? '✅ Hábitos Financieros' : '✅ Financial Habits', path: '/dashboard?area=crecimiento&atab=educacion' },
         ],
       },
       { icon: Briefcase, label: language === 'es' ? 'Inversiones' : 'Investments', path: '/investments', badge: null, tooltipKey: 'dashboard' as const,
         children: [
-          { label: language === 'es' ? 'Calculadora FIRE' : 'FIRE Calculator', path: '/dashboard?area=crecimiento&atab=inversiones' },
-          { label: language === 'es' ? 'Portafolio' : 'Portfolio', path: '/dashboard?area=crecimiento&atab=inversiones' },
-          { label: language === 'es' ? 'Metas SMART' : 'SMART Goals', path: '/dashboard?area=crecimiento&atab=metas' },
+          { label: language === 'es' ? '🔥 Calculadora FIRE' : '🔥 FIRE Calculator', path: '/dashboard?area=crecimiento&atab=inversiones' },
+          { label: language === 'es' ? '💼 Portafolio' : '💼 Portfolio', path: '/dashboard?area=crecimiento&atab=inversiones' },
+          { label: language === 'es' ? '🎯 Metas SMART' : '🎯 SMART Goals', path: '/dashboard?area=crecimiento&atab=metas' },
         ],
       },
     ]
