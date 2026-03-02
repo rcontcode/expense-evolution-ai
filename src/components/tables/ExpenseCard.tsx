@@ -1,4 +1,5 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -84,6 +85,7 @@ function getCompletenessStatus(expense: ExpenseWithRelations, language: string) 
 
 export const ExpenseCard = memo(function ExpenseCard({ expense, onEdit, onDelete, selectable, selected, onSelect }: ExpenseCardProps) {
   const { t, language } = useLanguage();
+  const { formatCurrency } = useFormatCurrency();
   
   const config = STATUS_CONFIG[expense.status] || STATUS_CONFIG.pending;
   const StatusIcon = config.icon;
@@ -133,8 +135,7 @@ export const ExpenseCard = memo(function ExpenseCard({ expense, onEdit, onDelete
                 </p>
               </div>
               <div className="text-right shrink-0">
-                <p className="font-bold text-base">${Number(expense.amount).toFixed(2)}</p>
-                <p className="text-[10px] text-muted-foreground uppercase">{expense.currency || 'CAD'}</p>
+                <p className="font-bold text-base">{formatCurrency(Number(expense.amount), { currency: expense.currency || undefined })}</p>
               </div>
             </div>
             

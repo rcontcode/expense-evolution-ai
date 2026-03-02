@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useCreateInvestmentGoal } from '@/hooks/data/useInvestmentGoals';
 import { useCreateSavingsGoal } from '@/hooks/data/useSavingsGoals';
 import { Target, CheckCircle, Calendar as CalendarIcon, DollarSign, Lightbulb, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
@@ -76,6 +77,7 @@ const COLORS = [
 
 export function SMARTGoalWizard({ open, onOpenChange, goalType = 'savings' }: SMARTGoalWizardProps) {
   const { language } = useLanguage();
+  const { formatCompact: formatCurrencyAmount } = useFormatCurrency();
   const [step, setStep] = useState(1);
   const totalSteps = 5;
 
@@ -188,12 +190,7 @@ export function SMARTGoalWizard({ open, onOpenChange, goalType = 'savings' }: SM
     });
   };
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat(language === 'es' ? 'es-CA' : 'en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      maximumFractionDigits: 0,
-    }).format(amount);
+  const formatCurrency = (amount: number) => formatCurrencyAmount(amount);
 
   const canProceed = () => {
     switch (step) {

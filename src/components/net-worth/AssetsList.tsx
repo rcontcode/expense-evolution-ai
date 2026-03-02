@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Asset, ASSET_CATEGORIES, useDeleteAsset, useUpdateAsset } from '@/hooks/data/useNetWorth';
 import { useFinancialProfile } from '@/hooks/data/useFinancialProfile';
 import { useProfile } from '@/hooks/data/useProfile';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { 
   Plus, Pencil, Trash2, Wallet, TrendingUp, TrendingDown, Home, Car, PiggyBank, Bitcoin, 
   Gem, Building2, Package, Droplets, Hexagon, CircleDollarSign, Coins, Layers, ImageIcon,
@@ -195,14 +196,8 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
   const { data: financialProfile } = useFinancialProfile();
   const { data: userProfile } = useProfile();
 
-  const formatCurrency = (value: number, currency: string = 'CAD') => {
-    return new Intl.NumberFormat('es-CA', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  const { formatCompact } = useFormatCurrency();
+  const formatCurrency = (value: number, currency?: string | null) => formatCompact(value, currency ? { currency } : undefined);
 
   const totalAssets = assets.reduce((sum, a) => sum + a.current_value, 0);
   const liquidAssets = assets.filter(a => a.is_liquid).reduce((sum, a) => sum + a.current_value, 0);

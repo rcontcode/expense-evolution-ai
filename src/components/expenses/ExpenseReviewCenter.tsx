@@ -11,6 +11,7 @@ import {
   CameraOff, ChevronRight, Sparkles, FileCheck, DollarSign
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useAuth } from '@/contexts/AuthContext';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { useDocumentsForReview, useDocumentImageUrl } from '@/hooks/data/useDocumentReview';
@@ -185,6 +186,7 @@ function FlowStepIndicator({
 
 export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCenterProps) {
   const { language } = useLanguage();
+  const { formatCurrency: fmtCurr } = useFormatCurrency();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { data: documents = [] } = useDocumentsForReview();
@@ -789,7 +791,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
                                         💵 {language === 'es' ? 'Monto' : 'Amount'}
                                       </p>
                                       <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">
-                                        ${(ed.amount || 0).toLocaleString()} {ed.currency || 'CAD'}
+                                        {fmtCurr(ed.amount || 0, { currency: ed.currency || undefined })}
                                       </p>
                                     </div>
                                     <div className="p-3 rounded-lg bg-muted/50 border">
