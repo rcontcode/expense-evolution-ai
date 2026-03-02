@@ -98,6 +98,24 @@ export const OrganizedDashboard = memo(({ deepLinkArea, deepLinkTab }: Organized
   const [focusSelectorOpen, setFocusSelectorOpen] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const dialogShownRef = useRef(false);
+  const deepLinkAppliedRef = useRef(false);
+
+  // Deep-link: auto-expand the target area when deepLinkArea is provided
+  useEffect(() => {
+    if (deepLinkArea && !deepLinkAppliedRef.current) {
+      deepLinkAppliedRef.current = true;
+      const areaId = deepLinkArea as FocusAreaId;
+      // Ensure the area is expanded
+      if (isAreaCollapsed(areaId)) {
+        toggleCollapsed(areaId);
+      }
+      // Scroll to the area after a brief delay
+      setTimeout(() => {
+        const el = document.querySelector(`[data-area-id="${areaId}"]`);
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+  }, [deepLinkArea, isAreaCollapsed, toggleCollapsed]);
 
   useEffect(() => {
     // Only run once per mount when showFocusDialog is true
