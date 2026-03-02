@@ -363,6 +363,27 @@ export function GlobalSearch({ open, onOpenChange, onQuickCapture }: GlobalSearc
         </CommandGroup>
         
         <CommandSeparator />
+
+        {/* Dashboard Tools */}
+        <CommandGroup heading={language === 'es' ? '🛠️ Herramientas del Dashboard' : '🛠️ Dashboard Tools'}>
+          {DASHBOARD_TOOLS.map((tool) => (
+            <CommandItem
+              key={tool.path}
+              value={`${tool.label.es} ${tool.label.en} ${tool.keywords?.join(' ') || ''}`}
+              onSelect={() => handleSelect(tool.path)}
+              className="cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-sm">
+                  <span className="text-sm">{tool.emoji}</span>
+                </div>
+                <span>{tool.label[language as 'es' | 'en']}</span>
+              </div>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+        
+        <CommandSeparator />
         
         {/* Navigation */}
         <CommandGroup heading={language === 'es' ? '📍 Navegación' : '📍 Navigation'}>
