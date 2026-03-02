@@ -261,26 +261,10 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
           const incomeData = action.data as { amount: number; source?: string; income_type?: string; description?: string };
           if (incomeData && incomeData.amount) {
             try {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (user) {
-                const { error } = await supabase.from('income').insert({
-                  user_id: user.id,
-                  amount: incomeData.amount,
-                  source: incomeData.source || 'Sin especificar',
-                  income_type: mapIncomeType(incomeData.income_type),
-                  description: incomeData.description || incomeData.source,
-                  date: new Date().toISOString().split('T')[0],
-                });
-
-                if (error) throw error;
-
-                onCreateIncome?.(incomeData);
-                const msg = language === 'es'
-                  ? `Ingreso de $${incomeData.amount} registrado${incomeData.source ? ` de ${incomeData.source}` : ''}`
-                  : `Income of $${incomeData.amount} recorded${incomeData.source ? ` from ${incomeData.source}` : ''}`;
-                toast.success(msg);
-                result = { success: true, message: action.message, data: incomeData };
+              if (onCreateIncome) {
+                onCreateIncome(incomeData);
               }
+              result = { success: true, message: action.message, data: incomeData };
             } catch (err) {
               console.error('[Assistant] Failed to create income:', err);
               const errMsg = language === 'es'
