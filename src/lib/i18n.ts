@@ -313,6 +313,7 @@ export const translations = {
       business: '🏢 Mi Negocio',
       wealth: '📈 Patrimonio',
       growth: '🎓 Crecimiento',
+      analytics: '📊 Análisis',
       system: '⚙️ Sistema',
     },
     // Dashboard labels
@@ -1279,6 +1280,7 @@ export const translations = {
       business: '🏢 My Business',
       wealth: '📈 Wealth',
       growth: '🎓 Growth',
+      analytics: '📊 Analytics',
       system: '⚙️ System',
     },
     // Dashboard labels
