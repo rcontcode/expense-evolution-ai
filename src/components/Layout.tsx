@@ -237,7 +237,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
   {
     titleKey: 'layout.analytics',
     emoji: '📊',
-    themeKey: 'growth' as keyof typeof sectionThemes,
+    themeKey: 'analytics' as keyof typeof sectionThemes,
     items: [
       { icon: Scale, label: language === 'es' ? 'Análisis' : 'Analytics', path: '/analytics', badge: null, tooltipKey: 'dashboard' as const },
       { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badgeType: 'tax' as const, tooltipKey: 'dashboard' as const },
