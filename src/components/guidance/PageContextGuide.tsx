@@ -187,13 +187,13 @@ export function PageContextGuide({
                   {workflows.map((step, idx) => (
                     <React.Fragment key={idx}>
                       <div className={cn(
-                        "flex items-center gap-1.5 px-2 py-1 rounded-full text-xs whitespace-nowrap",
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs whitespace-nowrap border-2 font-bold transition-all",
                         step.completed 
-                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-                          : "bg-muted text-muted-foreground"
+                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-400/30 shadow-sm shadow-green-500/10"
+                          : "bg-secondary/60 text-muted-foreground border-border/40"
                       )}>
                         {step.completed && <CheckCircle2 className="h-3 w-3" />}
-                        <span className="font-medium">{step.step}.</span>
+                        <span className="font-bold">{step.step}.</span>
                         {step.title[language]}
                       </div>
                       {idx < workflows.length - 1 && (
