@@ -141,7 +141,22 @@ interface NavItem {
   children?: NavChild[];
 }
 
-const getNavSections = (language: string) => [
+const getNavSections = (language: string, isBetaTester: boolean = false) => {
+  const systemItems: NavItem[] = [
+    { icon: Sparkles, label: 'nav.notifications', path: '/notifications', badge: null, tooltipKey: 'dashboard' as const },
+    { icon: FolderOpen, label: 'nav.files', path: '/files', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
+    { icon: Settings, label: 'nav.config', path: '/settings', badge: null, tooltipKey: 'dashboard' as const },
+    { icon: Trash2, label: 'nav.trash', path: '/trash', badge: null, tooltipKey: 'dashboard' as const },
+    { icon: HeartPulse, label: 'nav.dataHealth', path: '/data-health', badge: null, tooltipKey: 'dashboard' as const },
+    { icon: BookOpen, label: 'nav.userGuide', path: '/user-guide', badge: null, tooltipKey: 'dashboard' as const },
+  ];
+
+  // Only show Beta Feedback to beta testers
+  if (isBetaTester) {
+    systemItems.push({ icon: MessageSquare, label: language === 'es' ? 'Beta Feedback' : 'Beta Feedback', path: '/beta-feedback', badge: null, tooltipKey: 'dashboard' as const });
+  }
+
+  return [
   {
     titleKey: 'layout.daily',
     emoji: '💰',
@@ -248,17 +263,10 @@ const getNavSections = (language: string) => [
     titleKey: 'layout.system',
     emoji: '⚙️',
     themeKey: 'system' as keyof typeof sectionThemes,
-    items: [
-      { icon: Sparkles, label: 'nav.notifications', path: '/notifications', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: FolderOpen, label: 'nav.files', path: '/files', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
-      { icon: Settings, label: 'nav.config', path: '/settings', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: Trash2, label: 'nav.trash', path: '/trash', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: HeartPulse, label: 'nav.dataHealth', path: '/data-health', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: BookOpen, label: 'nav.userGuide', path: '/user-guide', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: MessageSquare, label: language === 'es' ? 'Beta Feedback' : 'Beta Feedback', path: '/beta-feedback', badge: null, tooltipKey: 'dashboard' as const },
-    ]
+    items: systemItems,
   },
 ];
+};
 
 // Mobile navigation - 5 core items + FAB for native feel
 const getMobileNavItems = (language: string) => [
