@@ -86,7 +86,7 @@ export function EntitySelect({ control, name = 'entity_id', required = false, sh
                 return (
                   <SelectItem key={entity.id} value={entity.id}>
                     <div className="flex items-center gap-2">
-                      <span className="text-base">{flag}</span>
+                      <CountryFlag code={flag} size="xs" className="rounded-sm" />
                       <Icon className="h-4 w-4 text-muted-foreground" />
                       <span>{entity.name}</span>
                       <span className="text-xs text-muted-foreground">
