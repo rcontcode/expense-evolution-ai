@@ -403,6 +403,7 @@ export default function Dashboard() {
                 )}
 
                 {/* Smart Alerts + Profile + Gamification */}
+                <div data-section="alerts">
                 <Suspense fallback={null}>
                   <ProactiveAlertsWidget />
                 </Suspense>
