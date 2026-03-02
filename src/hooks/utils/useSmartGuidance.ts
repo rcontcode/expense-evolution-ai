@@ -231,7 +231,7 @@ const VOICE_TUTORIALS: Tutorial[] = [
           es: 'Ve al Dashboard y busca la pestaña "FIRE". Aquí puedes calcular cuánto necesitas ahorrar para jubilarte temprano.',
           en: 'Go to the Dashboard and find the "FIRE" tab. Here you can calculate how much you need to save for early retirement.'
         },
-        action: '/dashboard?tab=fire'
+        action: '/investments'
       },
       {
         title: { es: 'Paso 2: Ingresa tus datos', en: 'Step 2: Enter your data' },
@@ -404,7 +404,7 @@ const VOICE_TUTORIALS: Tutorial[] = [
           es: 'Ve al Dashboard y abre la pestaña de Impuestos. Busca el "Optimizador RRSP/TFSA" (en Chile es APV).',
           en: 'Go to the Dashboard and open the Taxes tab. Find the "RRSP/TFSA Optimizer" (in Chile it\'s APV).'
         },
-        action: '/dashboard?tab=tax'
+        action: '/tax-optimizer'
       },
       {
         title: { es: 'Paso 2: Ingresa tu información', en: 'Step 2: Enter your information' },

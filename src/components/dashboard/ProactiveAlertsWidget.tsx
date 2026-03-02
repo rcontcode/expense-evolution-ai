@@ -101,7 +101,7 @@ export function ProactiveAlertsWidget() {
         description: l
           ? `A este ritmo gastarás ${formatCompact(projectedTotal)} este mes, ${formatCompact(overspend)} más que tus ingresos. Te quedan ${remainingDays} días para ajustar.`
           : `At this pace you'll spend ${formatCompact(projectedTotal)} this month, ${formatCompact(overspend)} over income. ${remainingDays} days left to adjust.`,
-        action: { label: l ? 'Ver presupuesto' : 'View budget', route: '/dashboard?tab=budgets' },
+        action: { label: l ? 'Ver presupuesto' : 'View budget', route: '/budget' },
         priority: 1,
       });
     }
@@ -124,7 +124,7 @@ export function ProactiveAlertsWidget() {
           description: l
             ? `${upcomingBills.map(b => b.name).join(', ')} — Total: ${formatCompact(totalDue)}`
             : `${upcomingBills.map(b => b.name).join(', ')} — Total: ${formatCompact(totalDue)}`,
-          action: { label: l ? 'Centro de pagos' : 'Payment center', route: '/dashboard?tab=overview' },
+          action: { label: l ? 'Centro de pagos' : 'Payment center', route: '/dashboard' },
           priority: 2,
         });
       }
@@ -154,7 +154,7 @@ export function ProactiveAlertsWidget() {
             const pct = ((spent / b.monthly_budget) * 100).toFixed(0);
             return `${b.category}: ${pct}%`;
           }).join(', '),
-          action: { label: l ? 'Ajustar' : 'Adjust', route: '/dashboard?tab=budgets' },
+          action: { label: l ? 'Ajustar' : 'Adjust', route: '/budget' },
           priority: 3,
         });
       }
