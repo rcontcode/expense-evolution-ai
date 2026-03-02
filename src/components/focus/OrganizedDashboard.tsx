@@ -235,7 +235,7 @@ export const OrganizedDashboard = memo(({ deepLinkArea, deepLinkTab }: Organized
                    isCollapsed={isAreaCollapsed(areaId)}
                    onToggleCollapse={() => handleToggleCollapse(areaId)}
                  >
-                   <AreaContentRenderer areaId={areaId} isCollapsed={isAreaCollapsed(areaId)} />
+                    <AreaContentRenderer areaId={areaId} isCollapsed={isAreaCollapsed(areaId)} forcedTab={deepLinkArea === areaId ? deepLinkTab : undefined} />
                  </SwipeableAreaSection>
                ) : (
                  <AreaSection
