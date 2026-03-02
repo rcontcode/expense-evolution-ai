@@ -141,7 +141,7 @@ export default function Dashboard() {
   
   // UI state
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
-  const [showAllTools, setShowAllTools] = useState(false);
+  
   const [activeTab, setActiveTab] = useState('charts');
   const [showGuide, setShowGuide] = useState(false);
   
