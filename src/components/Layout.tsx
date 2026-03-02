@@ -39,6 +39,8 @@ import {
   Trash2,
   HeartPulse,
   BookOpen,
+  Briefcase,
+  BookOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
