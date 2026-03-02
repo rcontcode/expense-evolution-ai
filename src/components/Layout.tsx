@@ -320,7 +320,8 @@ export const Layout = ({ children }: LayoutProps) => {
     } catch { return {}; }
   });
   const isMobile = useIsMobile();
-  const NAV_SECTIONS = getNavSections(language);
+  const isBetaTester = !!profile?.is_beta_tester;
+  const NAV_SECTIONS = getNavSections(language, isBetaTester);
   const MOBILE_NAV_ITEMS = getMobileNavItems(language);
   const { data: unreadCount = 0 } = useUnreadNotifications();
   const sidebarNavRef = useRef<HTMLElement>(null);
