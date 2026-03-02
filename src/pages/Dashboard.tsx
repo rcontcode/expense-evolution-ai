@@ -411,6 +411,7 @@ export default function Dashboard() {
                 <div data-section="gamification">
                 <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
                 <DashboardGamificationWidget compact={true} />
+                </div>
 
                 {/* Visual Workflow Guide — moved below key data (#7) */}
                 <Suspense fallback={<Skeleton className="h-[200px]" />}>
