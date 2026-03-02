@@ -93,7 +93,6 @@ export function SMARTGoalsCard() {
     return score;
   };
 
-  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   return (
     <>
