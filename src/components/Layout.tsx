@@ -756,7 +756,9 @@ export const Layout = ({ children }: LayoutProps) => {
                 <div className="space-y-0.5">
                   {section.items.map((item) => {
                     const Icon = item.icon;
-                    const isActive = location.pathname === item.path;
+                    const isActive = item.path.includes('?')
+                      ? location.pathname + location.search === item.path
+                      : location.pathname === item.path;
 
                     const tooltipEntry = TOOLTIP_CONTENT[item.tooltipKey];
                     const tooltipText = tooltipEntry?.[language] ?? tooltipEntry?.es;
