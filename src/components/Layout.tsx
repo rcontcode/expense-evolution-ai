@@ -235,7 +235,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     ]
   },
   {
-    titleKey: language === 'es' ? '🎓 Crecimiento' : '🎓 Growth',
+    titleKey: 'layout.growth',
     emoji: '🎓',
     themeKey: 'growth' as keyof typeof sectionThemes,
     items: [
