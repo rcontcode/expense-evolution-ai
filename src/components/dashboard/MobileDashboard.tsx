@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useNudgeSystem } from '@/hooks/utils/useNudgeSystem';
 import { NextActionBanner } from '@/components/dashboard/NextActionBanner';
+import { DashboardNotificationHub } from '@/components/dashboard/DashboardNotificationHub';
 import { YearTimelineChart } from '@/components/dashboard/YearTimelineChart';
 import { MonthDetailPanel } from '@/components/dashboard/MonthDetailPanel';
 import { MobileStatsGrid } from '@/components/dashboard/MobileStatsGrid';
