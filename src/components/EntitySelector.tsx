@@ -291,8 +291,8 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
             <div className="ml-auto flex items-center gap-1">
               {/* Show flags of all configured jurisdictions */}
               {[...new Set(activeEntities.map(e => e.country))].map(country => (
-                <span key={country} className="text-base drop-shadow-sm">
-                  {countryFlags[country] || '🌍'}
+                <span key={country} className="drop-shadow-sm">
+                  <CountryFlag code={country} size="sm" className="rounded-sm shadow-sm" />
                 </span>
               ))}
               <Badge variant="secondary" className="text-[9px] px-1.5 ml-1">
