@@ -105,15 +105,34 @@ export default function Dashboard() {
   }, [searchParams, setSearchParams, refreshSubscription]);
 
   // Deep-link redirect: ?tab=X → dedicated route
+  // Deep-link to Centro de Control: ?area=X&tab=Y
+  const [deepLinkArea, setDeepLinkArea] = useState<string | null>(null);
+  const [deepLinkTab, setDeepLinkTab] = useState<string | null>(null);
+  
   useEffect(() => {
     const tab = searchParams.get('tab');
+    const area = searchParams.get('area');
+    const areaTab = searchParams.get('atab');
+    
+    // Deep-link to Centro de Control area
+    if (area) {
+      setDeepLinkArea(area);
+      setDeepLinkTab(areaTab || null);
+      // Auto-switch to organized/control view
+      if (viewMode !== 'organized') {
+        setViewMode('organized');
+      }
+      setSearchParams({});
+      return;
+    }
+    
     if (!tab) return;
     const redirectTo = TAB_REDIRECTS[tab];
     if (redirectTo) {
       setSearchParams({});
       navigate(redirectTo, { replace: true });
     }
-  }, [searchParams, setSearchParams, navigate]);
+  }, [searchParams, setSearchParams, navigate, viewMode, setViewMode]);
 
   // Track dashboard visit for missions
   usePageVisitTracker('view_dashboard');
