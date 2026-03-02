@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { motion, AnimatePresence, useDragControls, PanInfo } from 'framer-motion';
 import { Plus, Camera, TrendingUp, Receipt, Search, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { hapticFeedback } from '@/hooks/use-haptic';
@@ -28,31 +29,32 @@ export function QuickActionsDrawer({
 }: QuickActionsDrawerProps) {
   const { language } = useLanguage();
   const dragControls = useDragControls();
+  const navigate = useNavigate();
 
   // Default actions if none provided
   const defaultActions: QuickAction[] = [
     {
       icon: <Receipt className="h-5 w-5" />,
       label: language === 'es' ? 'Nuevo Gasto' : 'New Expense',
-      onClick: () => {},
+      onClick: () => navigate('/expenses'),
       color: 'from-rose-500 to-pink-600',
     },
     {
       icon: <TrendingUp className="h-5 w-5" />,
       label: language === 'es' ? 'Nuevo Ingreso' : 'New Income',
-      onClick: () => {},
+      onClick: () => navigate('/income'),
       color: 'from-emerald-500 to-teal-600',
     },
     {
       icon: <Camera className="h-5 w-5" />,
       label: language === 'es' ? 'Capturar Recibo' : 'Capture Receipt',
-      onClick: () => {},
+      onClick: () => navigate('/chaos'),
       color: 'from-amber-500 to-orange-600',
     },
     {
       icon: <Search className="h-5 w-5" />,
       label: language === 'es' ? 'Buscar' : 'Search',
-      onClick: () => {},
+      onClick: () => navigate('/expenses'),
       color: 'from-blue-500 to-indigo-600',
     },
   ];
