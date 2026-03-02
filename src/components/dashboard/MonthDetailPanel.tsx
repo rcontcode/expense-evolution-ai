@@ -247,6 +247,14 @@ export function MonthDetailPanel({
         utilities: 'Servicios',
         rent: 'Arriendo',
         insurance: 'Seguros',
+        healthcare: 'Salud',
+        education: 'Educación',
+        home_office: 'Oficina en Casa',
+        subscriptions: 'Suscripciones',
+        transportation: 'Transporte',
+        entertainment: 'Entretenimiento',
+        personal: 'Personal',
+        taxes: 'Impuestos',
         other: 'Otros',
       }
     : {
@@ -260,6 +268,14 @@ export function MonthDetailPanel({
         utilities: 'Utilities',
         rent: 'Rent',
         insurance: 'Insurance',
+        healthcare: 'Healthcare',
+        education: 'Education',
+        home_office: 'Home Office',
+        subscriptions: 'Subscriptions',
+        transportation: 'Transportation',
+        entertainment: 'Entertainment',
+        personal: 'Personal',
+        taxes: 'Taxes',
         other: 'Other',
       };
 
