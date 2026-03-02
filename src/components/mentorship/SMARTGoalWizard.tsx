@@ -77,6 +77,7 @@ const COLORS = [
 
 export function SMARTGoalWizard({ open, onOpenChange, goalType = 'savings' }: SMARTGoalWizardProps) {
   const { language } = useLanguage();
+  const { formatCompact: formatCurrencyAmount } = useFormatCurrency();
   const [step, setStep] = useState(1);
   const totalSteps = 5;
 
