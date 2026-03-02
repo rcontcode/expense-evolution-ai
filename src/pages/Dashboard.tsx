@@ -47,6 +47,7 @@ import { LifeProfileSection } from '@/hooks/data/useLifeProfile';
 import { DashboardNotificationHub } from '@/components/dashboard/DashboardNotificationHub';
 import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding';
 import { EcosystemSection } from '@/components/ecosystem/EcosystemSection';
+import { DashboardNavigator } from '@/components/dashboard/DashboardNavigator';
 
 // Lazy load chart components for better performance
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));

@@ -18,6 +18,7 @@ import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding'
 import { LiveClock } from '@/components/dashboard/LiveClock';
 import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
 import { DashboardGamificationWidget } from '@/components/gamification';
+import { MobileSectionPills } from '@/components/dashboard/MobileSectionPills';
 
 const LazyEcosystemWidgets = lazy(() => import('@/components/ecosystem/EcosystemDashboardWidgets'));
 
