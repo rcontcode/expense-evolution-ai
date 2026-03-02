@@ -131,6 +131,7 @@ const getNavSections = (language: string) => [
       { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
       { icon: Wallet, label: 'nav.budget', path: '/budget', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
       { icon: CalendarCheck, label: language === 'es' ? 'Pagos Fijos' : 'Bills', path: '/bills', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: RefreshCw, label: language === 'es' ? 'Suscripciones' : 'Subscriptions', path: '/dashboard?tab=subscriptions', badge: null, tooltipKey: 'dashboard' as const },
       { icon: Inbox, label: 'nav.chaos', path: '/chaos', badgeKey: 'nav.badgeSmart', tooltipKey: 'chaosInbox' as const },
     ]
   },
@@ -157,12 +158,21 @@ const getNavSections = (language: string) => [
     ]
   },
   {
-    titleKey: 'layout.growth',
+    titleKey: language === 'es' ? 'Análisis y Herramientas' : 'Analytics & Tools',
+    emoji: '📊',
+    themeKey: 'growth' as keyof typeof sectionThemes,
+    items: [
+      { icon: Scale, label: language === 'es' ? 'Análisis' : 'Analytics', path: '/dashboard?tab=analytics', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badgeType: 'tax' as const, tooltipKey: 'dashboard' as const },
+    ]
+  },
+  {
+    titleKey: language === 'es' ? 'Crecimiento' : 'Growth',
     emoji: '🎓',
     themeKey: 'growth' as keyof typeof sectionThemes,
     items: [
       { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
-      { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badgeType: 'tax' as const, tooltipKey: 'dashboard' as const },
+      { icon: BookOpen, label: language === 'es' ? 'Educación' : 'Education', path: '/dashboard?tab=education', badge: null, tooltipKey: 'dashboard' as const },
     ]
   },
   {
