@@ -833,6 +833,9 @@ export const Layout = ({ children }: LayoutProps) => {
                       badgeText = item.badge;
                     }
                     
+                    const hasChildren = 'children' in item && item.children && item.children.length > 0;
+                    const isSubmenuOpen = hasChildren && expandedSubmenus[item.path];
+                    
                     const button = (
                       <button
                         onClick={() => {
@@ -873,44 +876,54 @@ export const Layout = ({ children }: LayoutProps) => {
                       </button>
                     );
 
+                    // Chevron toggle for items with children
+                    const chevronButton = hasChildren && !collapsed ? (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); toggleSubmenu(item.path); }}
+                        className="p-1 rounded-full text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
+                      >
+                        <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", isSubmenuOpen && "rotate-180")} />
+                      </button>
+                    ) : null;
+
+                    // Submenu children
+                    const submenu = hasChildren && !collapsed && isSubmenuOpen ? (
+                      <div className="ml-8 mt-0.5 space-y-0.5 border-l-2 border-border/40 pl-2">
+                        {item.children!.map((child: NavChild) => (
+                          <button
+                            key={child.path}
+                            onClick={() => {
+                              navigate(child.path);
+                            }}
+                            className="flex items-center gap-1.5 w-full px-2 py-1 rounded text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                          >
+                            <Circle className="h-1.5 w-1.5 fill-current opacity-50" />
+                            <span>{child.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : null;
+
                     // If we don't have tooltip content configured, render without help bubble.
                     if (!tooltipText) {
                       return (
-                        <div key={item.path} className="flex items-center gap-1">
-                          {button}
+                        <div key={item.path}>
+                          <div className="flex items-center gap-1">
+                            {button}
+                            {chevronButton}
+                          </div>
+                          {submenu}
                         </div>
                       );
                     }
 
                     return (
-                      <div key={item.path} className="flex items-center gap-1">
-                        {collapsed ? (
-                          <Tooltip>
-                            <TooltipTrigger asChild>{button}</TooltipTrigger>
-                            <TooltipContent side="right" sideOffset={8} className="z-[100] max-w-xs p-3 bg-popover border shadow-lg">
-                              <div className="space-y-2">
-                                <span className="font-semibold">{tooltipText.title}</span>
-                                <p className="text-xs text-muted-foreground">{tooltipText.description}</p>
-                                {tooltipText.howToUse && (
-                                  <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
-                                    💡 {tooltipText.howToUse}
-                                  </p>
-                                )}
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        ) : (
-                          <>
-                            {button}
+                      <div key={item.path}>
+                        <div className="flex items-center gap-1">
+                          {collapsed ? (
                             <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  className="p-1 rounded-full text-muted-foreground/40 hover:text-muted-foreground transition-colors"
-                                >
-                                  <HelpCircle className="h-3.5 w-3.5" />
-                                </button>
-                              </TooltipTrigger>
+                              <TooltipTrigger asChild>{button}</TooltipTrigger>
                               <TooltipContent side="right" sideOffset={8} className="z-[100] max-w-xs p-3 bg-popover border shadow-lg">
                                 <div className="space-y-2">
                                   <span className="font-semibold">{tooltipText.title}</span>
@@ -923,8 +936,35 @@ export const Layout = ({ children }: LayoutProps) => {
                                 </div>
                               </TooltipContent>
                             </Tooltip>
-                          </>
-                        )}
+                          ) : (
+                            <>
+                              {button}
+                              {chevronButton}
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    className="p-1 rounded-full text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                                  >
+                                    <HelpCircle className="h-3.5 w-3.5" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="right" sideOffset={8} className="z-[100] max-w-xs p-3 bg-popover border shadow-lg">
+                                  <div className="space-y-2">
+                                    <span className="font-semibold">{tooltipText.title}</span>
+                                    <p className="text-xs text-muted-foreground">{tooltipText.description}</p>
+                                    {tooltipText.howToUse && (
+                                      <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
+                                        💡 {tooltipText.howToUse}
+                                      </p>
+                                    )}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </>
+                          )}
+                        </div>
+                        {submenu}
                       </div>
                     );
                   })}
