@@ -1127,7 +1127,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
           {/* Bottom actions - Compact */}
           <div className={cn(
-            "border-t border-border p-2 space-y-1",
+            "border-t border-border/40 p-2.5 space-y-1.5 bg-gradient-to-t from-muted/30 to-transparent",
             collapsed && "flex flex-col items-center"
           )}>
             {/* Profile Button */}
