@@ -14,10 +14,12 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-destructive-foreground shadow-lg shadow-destructive/30 border border-destructive/20 hover:bg-destructive/90 hover:shadow-xl hover:shadow-destructive/40 hover:-translate-y-1",
         outline:
-          "border-2 border-primary/40 bg-background shadow-md hover:bg-primary/10 hover:text-primary hover:border-primary hover:shadow-lg hover:-translate-y-0.5",
+          "border-2 border-primary/30 bg-primary/[0.08] text-primary shadow-sm hover:bg-primary/15 hover:border-primary/50 hover:shadow-md hover:shadow-primary/10 hover:-translate-y-0.5",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-md border border-secondary/50 hover:bg-secondary/80 hover:shadow-lg hover:-translate-y-0.5",
-        ghost: "hover:bg-accent hover:text-accent-foreground hover:shadow-md",
+          "bg-secondary text-secondary-foreground shadow-md shadow-secondary/20 border border-border/60 hover:bg-secondary/80 hover:shadow-lg hover:shadow-secondary/30 hover:-translate-y-0.5 hover:border-border",
+        ghost: "bg-muted/40 text-foreground border border-transparent hover:bg-accent hover:text-accent-foreground hover:border-border/40 hover:shadow-sm",
+        "outline-filled":
+          "bg-primary/15 text-primary border-2 border-primary/40 shadow-md shadow-primary/10 hover:bg-primary/25 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5",
         link: "text-primary underline-offset-4 hover:underline",
         success:
           "bg-success text-success-foreground shadow-lg shadow-success/30 border border-success/20 hover:bg-success/90 hover:shadow-xl hover:shadow-success/40 hover:-translate-y-1",
