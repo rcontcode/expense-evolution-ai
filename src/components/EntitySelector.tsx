@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Check, ChevronDown, Globe2, Building2, User, Briefcase, Plus, Sparkles } from 'lucide-react';
 import { CountryFlag } from '@/components/ui/country-flag';
+import copihueIcon from '@/assets/copihue-icon.png';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -61,10 +62,10 @@ const entityTypeConfig: Record<string, {
 };
 
 
-const currencySymbols: Record<string, string> = {
+const currencySymbols: Record<string, React.ReactNode> = {
   CAD: '🍁',
   USD: '💵',
-  CLP: '🌺',
+  CLP: <img src={copihueIcon} alt="Copihue" className="inline-block w-4 h-4 object-contain" />,
   MXN: '🌮',
   EUR: '💶',
   ARS: '🥩',
