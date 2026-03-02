@@ -1,170 +1,91 @@
 
 
-# Audit: Tools trapped in Dashboard - Analysis and Recommendations
+## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
 
-## Current State (Facts)
+### ✅ Completado en EvoFinz
 
-The dashboard (`Dashboard.tsx`, 611 lines) contains **13 tool tabs** rendered inline via `AdvancedToolsNav`:
+| # | Tarea | Estado |
+|---|-------|--------|
+| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
+| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
+| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
+| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
+| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
 
-| Tab | Components | Has dedicated route? |
-|---|---|---|
-| charts | DashboardCharts | NO |
-| analytics | 16 components (SmartMonthlyReport, IncomeVsExpenses, SavingsRate, Radar, Sankey, etc.) | NO |
-| budgets | 9 components (GlobalBudget, MonthlyPlan, CategoryBudgets, Projections, etc.) | YES → `/budget` |
-| mentorship | 7 components (Cashflow, Freedom, PayYourself, Journal, Habits, SMART) | YES → `/mentorship` |
-| goals | SavingsGoalsSection | YES → `/budget?tab=savings` |
-| tax | TaxSummary, TaxOptimizer, SavingsOptimizer | Partial → `/tax-calendar` |
-| mileage | MileageTabContent | YES → `/mileage` |
-| subscriptions | SubscriptionTracker | NO |
-| fire | FIRECalculator, InvestmentTips | NO |
-| debt | DebtManagerCard | NO |
-| portfolio | PortfolioTracker, InvestmentTips | NO |
-| education | GlobalLearning, ReadingPace, Reminders, FinancialEducation | Partial → `/mentorship` |
+### ✅ Completado en Fokuspark
 
-**Key finding**: 5 of 13 tabs are pure duplicates of existing routes. 8 tabs have no route and are "trapped."
+| # | Tarea | Estado |
+|---|-------|--------|
+| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
+| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
+| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
+| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
 
----
-
-## Three Proposals
+### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
 
 ---
 
-### Proposal A: "Extract & Route" (Create 4 new pages)
+## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
 
-Create dedicated pages for the trapped tools and remove all tabs from the dashboard.
+### ✅ Confirmado: Sistema funciona correctamente
 
-**New pages:**
-- `/analytics` — All 16 analytics components
-- `/tax-optimizer` — Tax summary + optimizer + savings optimizer  
-- `/investments` — FIRE + Portfolio + Debt + Investment Tips
-- `/subscriptions` — SubscriptionTracker (already partially linked)
+- Planes individuales (Free/Premium/Pro) son independientes por app
+- Bundle compartido usa mismos Stripe Price IDs en ambas apps
+- Ambos webhooks detectan Bundle y setean `has_bundle = true`
+- No hay acceso cruzado no autorizado entre apps
 
-**Dashboard becomes:** Timeline + MonthDetail + QuickActions + Workflows + Bills + Alerts + Gamification. No tabs, no AdvancedToolsNav. ~250 lines.
+### ✅ Gaps implementados en Fokuspark
 
-**Sidebar changes:** Add 4 new items to existing sections.
+| # | Gap | Estado |
+|---|-----|--------|
+| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
+| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
 
-| Criteria | Score |
-|---|---|
-| Clarity for user | 9/10 — Every tool has a URL, findable via sidebar |
-| Risk of breaking things | 4/10 — Must create 4 new page files, update routes, sidebar, deep links |
-| Effort | Medium-High (~4 new files, edit 3 existing) |
-| Data/logic impact | 0 — Pure visual reorganization |
-| Scalability | 9/10 — New tools get their own page |
-| Dashboard cleanliness | 10/10 — Becomes a true summary |
-| Deep link support | 10/10 — Everything has a real URL |
+### 📋 Gaps pendientes (baja prioridad)
 
-**Pros:**
-- Dashboard drops from 611 to ~250 lines
-- Every tool is bookmarkable, shareable
-- Sidebar becomes the single source of navigation
-- 50+ lazy imports removed from Dashboard.tsx
-- Faster initial dashboard load (no preloading 16 analytics components)
-
-**Cons:**
-- More files to create and maintain
-- Users who memorized `?tab=analytics` need redirects
-- 4 new pages = 4 new route registrations
-
-**TOTAL SCORE: 84/100**
+| # | Gap | Prioridad |
+|---|-----|-----------|
+| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
+| S3 | Texto del Bundle podría ser más descriptivo | Baja |
 
 ---
 
-### Proposal B: "Remove Duplicates Only" (Safe cleanup)
+## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
 
-Remove only the 5 tabs that already have dedicated routes (budgets, mentorship, goals, mileage, education). Keep the 8 "trapped" tools in the dashboard.
+### ✅ Veredicto: No igualar precios — estructura actual es óptima
 
-**Remove from dashboard:** budgets, mentorship, goals, mileage, education tabs.
-**Keep in dashboard:** charts, analytics, tax, subscriptions, fire, debt, portfolio.
+| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
+|------|---------|-----------|-----------|-------|
+| Free | $0 | $0 | ✅ Ya iguales | — |
+| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
+| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
 
-| Criteria | Score |
-|---|---|
-| Clarity for user | 6/10 — Less confusion but 8 tools still trapped |
-| Risk of breaking things | 9/10 — Minimal changes |
-| Effort | Low (~1 file edit) |
-| Data/logic impact | 0 |
-| Scalability | 4/10 — Problem persists for new tools |
-| Dashboard cleanliness | 5/10 — Still 8 tabs + AdvancedToolsNav |
-| Deep link support | 5/10 — Still using `?tab=` for 8 tools |
+### 📋 Pendiente técnico
 
-**Pros:**
-- Very safe, minimal code change
-- Eliminates obvious duplication
-- Quick win
-
-**Cons:**
-- Dashboard still has 8 tabs and ~400 lines of tool rendering
-- Doesn't solve the core "dashboard = mini-app" problem
-- Analytics still has no real URL
-
-**TOTAL SCORE: 62/100**
+| # | Tarea | App | Prioridad |
+|---|-------|-----|-----------|
+| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
 
 ---
 
-### Proposal C: "Hybrid Smart" (Create 2 pages, keep 2 tabs)
+## Quiz Multi-App — CRM Unificado
 
-Create pages only for the heaviest tools (analytics + investments). Keep lightweight tools (charts, tax, subscriptions) as dashboard tabs since they're small and contextually relevant.
+### ✅ Completado en EvoFinz
 
-**New pages:**
-- `/analytics` — 16 analytics components (the heaviest section)
-- `/investments` — FIRE + Portfolio + Debt + Tips
+| # | Tarea | Estado |
+|---|-------|--------|
+| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
+| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
+| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
+| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
+| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
 
-**Remove from dashboard:** budgets, mentorship, goals, mileage, education (duplicates) + analytics + fire/debt/portfolio (moved to new pages).
+### 📋 Pendiente en Fokuspark
 
-**Keep in dashboard as tabs:** charts (3 components), tax (3 components), subscriptions (1 component). Total: 3 lightweight tabs.
-
-| Criteria | Score |
-|---|---|
-| Clarity for user | 8/10 — Biggest tools have URLs, small ones stay contextual |
-| Risk of breaking things | 6/10 — Only 2 new pages needed |
-| Effort | Medium (~2 new files, edit 3 existing) |
-| Data/logic impact | 0 |
-| Scalability | 7/10 — Pattern established for future extractions |
-| Dashboard cleanliness | 7/10 — 3 small tabs vs 13 |
-| Deep link support | 8/10 — Heavy tools get real URLs |
-
-**Pros:**
-- Balances effort with impact
-- Charts and tax feel natural in dashboard context
-- Analytics page gets its own space to breathe
-
-**Cons:**
-- Still has some tabs in dashboard (3)
-- Mixed pattern: some tools in sidebar, some in dashboard
-- Users need to learn two navigation patterns
-
-**TOTAL SCORE: 74/100**
-
----
-
-## Comparison Matrix
-
-```text
-                    | A: Extract All | B: Remove Dupes | C: Hybrid
---------------------+----------------+-----------------+----------
-User Clarity        |      9         |       6         |    8
-Risk (low=good)     |      4         |       9         |    6
-Effort              |      5         |       9         |    7
-Dashboard Clean     |     10         |       5         |    7
-Scalability         |      9         |       4         |    7
-Deep Links          |     10         |       5         |    8
---------------------+----------------+-----------------+----------
-WEIGHTED TOTAL      |     84         |      62         |   74
-```
-
-## Recommendation: Proposal A
-
-Despite being the most work, Proposal A is the correct architectural decision because:
-
-1. **Zero data/logic changes** — only moves components to new files and updates imports
-2. **Each new page is trivial** — literally wrapping existing lazy-loaded components in a `<Layout>` with a title
-3. **Dashboard becomes what it should be** — a summary, not a toolbox
-4. **The sidebar already has the section structure** — we just add items to existing groups
-
-### Implementation plan (if approved):
-
-1. **Create 4 page files**: `Analytics.tsx`, `TaxOptimizer.tsx`, `Investments.tsx`, `Subscriptions.tsx` — each wrapping existing components
-2. **Register 4 routes** in `App.tsx`
-3. **Update sidebar** in `Layout.tsx` — add items to existing sections (Analytics → Wealth section, Investments → Growth, etc.)
-4. **Clean Dashboard.tsx** — remove AdvancedToolsNav, all 13 tab blocks, ~50 lazy imports. Keep: Timeline, MonthDetail, QuickActions, Workflows, Bills, Alerts, Gamification
-5. **Add redirects** for `?tab=` deep links to new routes for backwards compatibility
-
+| # | Tarea | Prioridad |
+|---|-------|-----------|
+| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
+| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
+| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
+| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |

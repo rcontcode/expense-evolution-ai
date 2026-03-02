@@ -52,6 +52,10 @@ const routeImportMap: Record<string, () => Promise<unknown>> = {
   '/clients': () => import("./pages/Clients"),
   '/projects': () => import("./pages/Projects"),
   '/bills': () => import("./pages/Bills"),
+  '/analytics': () => import("./pages/Analytics"),
+  '/tax-optimizer': () => import("./pages/TaxOptimizer"),
+  '/investments': () => import("./pages/Investments"),
+  '/subscriptions': () => import("./pages/Subscriptions"),
 };
 
 const preloadedRoutes = new Set<string>();
@@ -111,6 +115,10 @@ const BetaGuide = lazyWithRetry(() => import("./pages/BetaGuide"));
 const FinancialAdventure = lazyWithRetry(() => import("./pages/FinancialAdventure"));
 const Trash = lazyWithRetry(() => import("./pages/Trash"));
 const Bills = lazyWithRetry(() => import("./pages/Bills"));
+const AnalyticsPage = lazyWithRetry(() => import("./pages/Analytics"));
+const TaxOptimizerPage = lazyWithRetry(() => import("./pages/TaxOptimizer"));
+const InvestmentsPage = lazyWithRetry(() => import("./pages/Investments"));
+const SubscriptionsPage = lazyWithRetry(() => import("./pages/Subscriptions"));
 const DataHealth = lazyWithRetry(() => import("./pages/DataHealth"));
 const FilesPage = lazyWithRetry(() => import("./pages/Files"));
 const UserGuide = lazyWithRetry(() => import("./pages/UserGuide"));
@@ -381,6 +389,10 @@ const App = () => (
                         <Route path="/adventure" element={<ProtectedRoute><FinancialAdventure /></ProtectedRoute>} />
                         <Route path="/budget" element={<ProtectedRoute><BudgetPage /></ProtectedRoute>} />
                         <Route path="/bills" element={<ProtectedRoute><Bills /></ProtectedRoute>} />
+                        <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+                        <Route path="/tax-optimizer" element={<ProtectedRoute><TaxOptimizerPage /></ProtectedRoute>} />
+                        <Route path="/investments" element={<ProtectedRoute><InvestmentsPage /></ProtectedRoute>} />
+                        <Route path="/subscriptions" element={<ProtectedRoute><SubscriptionsPage /></ProtectedRoute>} />
                         <Route path="/trash" element={<ProtectedRoute><Trash /></ProtectedRoute>} />
                         <Route path="/data-health" element={<ProtectedRoute><DataHealth /></ProtectedRoute>} />
                         <Route path="/files" element={<ProtectedRoute><FilesPage /></ProtectedRoute>} />

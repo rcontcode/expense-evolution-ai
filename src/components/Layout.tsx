@@ -38,6 +38,7 @@ import {
   Wallet,
   Trash2,
   HeartPulse,
+  Briefcase,
   BookOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -131,7 +132,7 @@ const getNavSections = (language: string) => [
       { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
       { icon: Wallet, label: 'nav.budget', path: '/budget', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
       { icon: CalendarCheck, label: language === 'es' ? 'Pagos Fijos' : 'Bills', path: '/bills', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: RefreshCw, label: language === 'es' ? 'Suscripciones' : 'Subscriptions', path: '/dashboard?tab=subscriptions', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: RefreshCw, label: language === 'es' ? 'Suscripciones' : 'Subscriptions', path: '/subscriptions', badge: null, tooltipKey: 'dashboard' as const },
       { icon: Inbox, label: 'nav.chaos', path: '/chaos', badgeKey: 'nav.badgeSmart', tooltipKey: 'chaosInbox' as const },
     ]
   },
@@ -162,8 +163,9 @@ const getNavSections = (language: string) => [
     emoji: '📊',
     themeKey: 'growth' as keyof typeof sectionThemes,
     items: [
-      { icon: Scale, label: language === 'es' ? 'Análisis' : 'Analytics', path: '/dashboard?tab=analytics', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: Scale, label: language === 'es' ? 'Análisis' : 'Analytics', path: '/analytics', badge: null, tooltipKey: 'dashboard' as const },
       { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badgeType: 'tax' as const, tooltipKey: 'dashboard' as const },
+      { icon: Receipt, label: language === 'es' ? 'Impuestos' : 'Taxes', path: '/tax-optimizer', badge: null, tooltipKey: 'dashboard' as const },
     ]
   },
   {
@@ -172,7 +174,7 @@ const getNavSections = (language: string) => [
     themeKey: 'growth' as keyof typeof sectionThemes,
     items: [
       { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
-      { icon: BookOpen, label: language === 'es' ? 'Educación' : 'Education', path: '/dashboard?tab=education', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: Briefcase, label: language === 'es' ? 'Inversiones' : 'Investments', path: '/investments', badge: null, tooltipKey: 'dashboard' as const },
     ]
   },
   {
