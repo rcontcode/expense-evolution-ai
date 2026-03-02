@@ -196,14 +196,7 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
   const { data: financialProfile } = useFinancialProfile();
   const { data: userProfile } = useProfile();
 
-  const formatCurrency = (value: number, currency: string = 'CAD') => {
-    return new Intl.NumberFormat('es-CA', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   const totalAssets = assets.reduce((sum, a) => sum + a.current_value, 0);
   const liquidAssets = assets.filter(a => a.is_liquid).reduce((sum, a) => sum + a.current_value, 0);
