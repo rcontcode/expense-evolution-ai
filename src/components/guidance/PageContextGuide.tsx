@@ -213,7 +213,7 @@ export function PageContextGuide({
                   <button
                     key={idx}
                     onClick={() => handleActionClick(action, idx)}
-                    className="group p-2.5 rounded-lg border border-border/50 hover:border-primary/50 hover:bg-accent/50 transition-all text-left"
+                    className="group p-3 rounded-xl border-2 border-border/50 hover:border-primary/40 hover:bg-primary/5 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5 transition-all text-left"
                   >
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
