@@ -67,7 +67,12 @@ const ImpuestosAreaContent = lazy(() => import('./areas/ImpuestosAreaContent').t
   
   AreaContentRenderer.displayName = 'AreaContentRenderer';
 
-export const OrganizedDashboard = memo(() => {
+interface OrganizedDashboardProps {
+  deepLinkArea?: string | null;
+  deepLinkTab?: string | null;
+}
+
+export const OrganizedDashboard = memo(({ deepLinkArea, deepLinkTab }: OrganizedDashboardProps) => {
   const { language } = useLanguage();
    const [searchQuery, setSearchQuery] = useState('');
    const [isMobile, setIsMobile] = useState(false);
