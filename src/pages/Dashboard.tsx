@@ -658,6 +658,9 @@ export default function Dashboard() {
             )}
           </AnimatePresence>
 
+          {/* Desktop Navigator - floating TOC with scroll-spy */}
+          <DashboardNavigator viewMode={viewMode === 'organized' ? 'control' : 'resumen'} />
+
           <ExportDialog 
             open={exportDialogOpen} 
             onClose={() => setExportDialogOpen(false)} 

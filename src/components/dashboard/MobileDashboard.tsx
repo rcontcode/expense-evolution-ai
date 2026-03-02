@@ -72,6 +72,9 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
       />
 
       <DashboardViewTabs activeTab={activeView} onTabChange={setActiveView} />
+      
+      {/* Section navigation pills */}
+      <MobileSectionPills activeView={activeView} />
 
       <AnimatePresence mode="wait">
         {activeView === 'resumen' ? (
