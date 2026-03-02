@@ -54,19 +54,9 @@ export const AreaTabsLayout = memo(({ areaKey, tabs, footer, accentColor, forced
   return (
     <div className="space-y-3">
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="w-full flex-wrap h-auto gap-2 p-2.5 bg-muted/60 border-2 border-border/60 backdrop-blur-sm rounded-xl">
+        <TabsList className="w-full">
           {tabs.map(tab => (
-            <TabsTrigger
-              key={tab.id}
-              value={tab.id}
-              className={cn(
-                "text-xs sm:text-sm gap-2 px-4 py-2.5 rounded-lg transition-all duration-200 font-semibold",
-                "border-2 border-transparent",
-                "data-[state=inactive]:bg-card/80 data-[state=inactive]:border-border/60 data-[state=inactive]:text-muted-foreground data-[state=inactive]:shadow-sm",
-                "data-[state=inactive]:hover:bg-accent data-[state=inactive]:hover:text-accent-foreground data-[state=inactive]:hover:border-primary/40 data-[state=inactive]:hover:shadow-md data-[state=inactive]:hover:-translate-y-0.5",
-                "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-lg data-[state=active]:shadow-primary/30 data-[state=active]:font-bold data-[state=active]:scale-[1.02]",
-              )}
-            >
+            <TabsTrigger key={tab.id} value={tab.id} className="gap-2">
               {tab.emoji && <span className="text-base">{tab.emoji}</span>}
               {tab.label}
             </TabsTrigger>
