@@ -326,9 +326,7 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
                         className="relative"
                         whileHover={{ scale: 1.15, rotate: 5 }}
                       >
-                        <span className="text-2xl drop-shadow-md">
-                          {countryFlags[entity.country] || '🌍'}
-                        </span>
+                        <CountryFlag code={entity.country} size="lg" className="rounded-sm shadow-md drop-shadow-md" />
                         <span className="absolute -bottom-1 -right-1.5 text-sm">
                           {config.emoji}
                         </span>
