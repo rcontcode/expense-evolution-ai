@@ -150,9 +150,9 @@ const getNavSections = (language: string) => [
       { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
       { icon: Wallet, label: 'nav.budget', path: '/budget', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
         children: [
-          { label: language === 'es' ? '📊 Presupuesto Global' : '📊 Global Budget', path: '/dashboard?area=familia&atab=presupuesto' },
-          { label: language === 'es' ? '💳 Gestor de Deudas' : '💳 Debt Manager', path: '/dashboard?area=familia&atab=deudas' },
-          { label: language === 'es' ? '👨‍👩‍👧 Análisis Familiar' : '👨‍👩‍👧 Family Analysis', path: '/dashboard?area=familia&atab=analisis' },
+          { label: language === 'es' ? '📊 Presupuesto Global' : '📊 Global Budget', path: '/dashboard?area=familia&atab=budget' },
+          { label: language === 'es' ? '💳 Gestor de Deudas' : '💳 Debt Manager', path: '/dashboard?area=familia&atab=debts' },
+          { label: language === 'es' ? '👨‍👩‍👧 Análisis Familiar' : '👨‍👩‍👧 Family Analysis', path: '/dashboard?area=familia&atab=analysis' },
         ],
       },
       { icon: CalendarCheck, label: language === 'es' ? 'Pagos Fijos' : 'Bills', path: '/bills', badge: null, tooltipKey: 'dashboard' as const },
@@ -167,14 +167,14 @@ const getNavSections = (language: string) => [
     items: [
       { icon: Users, label: 'nav.clients', path: '/clients', badge: null, tooltipKey: 'clients' as const,
         children: [
-          { label: language === 'es' ? '📋 Resumen Clientes' : '📋 Client Summary', path: '/dashboard?area=negocio&atab=clientes' },
+          { label: language === 'es' ? '📋 Gráficos Negocio' : '📋 Business Charts', path: '/dashboard?area=negocio&atab=charts' },
         ],
       },
       { icon: FolderKanban, label: 'nav.projects', path: '/projects', badge: null, tooltipKey: 'clients' as const },
       { icon: FileText, label: 'nav.contracts', path: '/contracts', badge: null, tooltipKey: 'contracts' as const },
       { icon: Car, label: 'nav.mileage', path: '/mileage', badgeType: 'tax' as const, tooltipKey: 'mileage' as const,
         children: [
-          { label: language === 'es' ? '🛣️ Resumen Kilometraje' : '🛣️ Mileage Summary', path: '/dashboard?area=negocio&atab=kilometraje' },
+          { label: language === 'es' ? '🛣️ Resumen Kilometraje' : '🛣️ Mileage Summary', path: '/dashboard?area=negocio&atab=mileage' },
         ],
       },
       { icon: Tag, label: 'nav.tags', path: '/tags', badge: null, tooltipKey: 'tags' as const },
@@ -199,8 +199,8 @@ const getNavSections = (language: string) => [
       { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badgeType: 'tax' as const, tooltipKey: 'dashboard' as const },
       { icon: Receipt, label: language === 'es' ? 'Impuestos' : 'Taxes', path: '/tax-optimizer', badge: null, tooltipKey: 'dashboard' as const,
         children: [
-          { label: language === 'es' ? '📈 RRSP/TFSA Optimizer' : '📈 RRSP/TFSA Optimizer', path: '/dashboard?area=impuestos&atab=optimizacion' },
-          { label: language === 'es' ? '📄 Resumen Fiscal' : '📄 Tax Summary', path: '/dashboard?area=impuestos&atab=resumen' },
+          { label: language === 'es' ? '📈 RRSP/TFSA Optimizer' : '📈 RRSP/TFSA Optimizer', path: '/dashboard?area=impuestos&atab=optimization' },
+          { label: language === 'es' ? '📄 Resumen Fiscal' : '📄 Tax Summary', path: '/dashboard?area=impuestos&atab=summary' },
         ],
       },
     ]
@@ -212,16 +212,16 @@ const getNavSections = (language: string) => [
     items: [
       { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
         children: [
-          { label: language === 'es' ? '🧭 Cuadrante Kiyosaki' : '🧭 Kiyosaki Quadrant', path: '/dashboard?area=crecimiento&atab=mentoria' },
-          { label: language === 'es' ? '🏝️ Libertad Financiera' : '🏝️ Financial Freedom', path: '/dashboard?area=crecimiento&atab=mentoria' },
-          { label: language === 'es' ? '✅ Hábitos Financieros' : '✅ Financial Habits', path: '/dashboard?area=crecimiento&atab=educacion' },
+          { label: language === 'es' ? '🧭 Cuadrante Kiyosaki' : '🧭 Kiyosaki Quadrant', path: '/dashboard?area=crecimiento&atab=mentorship&tool=kiyosaki' },
+          { label: language === 'es' ? '🏝️ Libertad Financiera' : '🏝️ Financial Freedom', path: '/dashboard?area=crecimiento&atab=mentorship&tool=freedom' },
+          { label: language === 'es' ? '✅ Hábitos Financieros' : '✅ Financial Habits', path: '/dashboard?area=crecimiento&atab=education' },
         ],
       },
       { icon: Briefcase, label: language === 'es' ? 'Inversiones' : 'Investments', path: '/investments', badge: null, tooltipKey: 'dashboard' as const,
         children: [
-          { label: language === 'es' ? '🔥 Calculadora FIRE' : '🔥 FIRE Calculator', path: '/dashboard?area=crecimiento&atab=inversiones' },
-          { label: language === 'es' ? '💼 Portafolio' : '💼 Portfolio', path: '/dashboard?area=crecimiento&atab=inversiones' },
-          { label: language === 'es' ? '🎯 Metas SMART' : '🎯 SMART Goals', path: '/dashboard?area=crecimiento&atab=metas' },
+          { label: language === 'es' ? '🔥 Calculadora FIRE' : '🔥 FIRE Calculator', path: '/dashboard?area=crecimiento&atab=investments&tool=fire' },
+          { label: language === 'es' ? '💼 Portafolio' : '💼 Portfolio', path: '/dashboard?area=crecimiento&atab=investments&tool=portfolio' },
+          { label: language === 'es' ? '🎯 Metas SMART' : '🎯 SMART Goals', path: '/dashboard?area=crecimiento&atab=goals' },
         ],
       },
     ]
@@ -914,10 +914,16 @@ export const Layout = ({ children }: LayoutProps) => {
                         <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-2 pb-1">
                           {language === 'es' ? '🔧 Herramientas' : '🔧 Tools'}
                         </p>
-                        {item.children!.map((child: NavChild) => (
+                        {item.children!.map((child: NavChild, childIdx: number) => (
                           <button
-                            key={child.path}
-                            onClick={() => navigate(child.path)}
+                            key={`${child.path}-${childIdx}`}
+                            onClick={() => {
+                              if (child.path.startsWith('/dashboard?')) {
+                                window.location.href = child.path;
+                              } else {
+                                navigate(child.path);
+                              }
+                            }}
                             className={cn(
                               "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-[11px] transition-all duration-150",
                               "text-muted-foreground hover:text-foreground",
@@ -946,10 +952,10 @@ export const Layout = ({ children }: LayoutProps) => {
                               <div className="space-y-2">
                                 <span className="font-semibold">{t(item.label)}</span>
                                 <div className="space-y-1 pt-1 border-t border-border/50">
-                                  {item.children!.map((child: NavChild) => (
+                                  {item.children!.map((child: NavChild, ci: number) => (
                                     <button
-                                      key={child.path}
-                                      onClick={() => navigate(child.path)}
+                                      key={`${child.path}-${ci}`}
+                                      onClick={() => child.path.startsWith('/dashboard?') ? window.location.href = child.path : navigate(child.path)}
                                       className="flex items-center gap-1.5 w-full text-xs text-muted-foreground hover:text-foreground py-0.5"
                                     >
                                       <Circle className="h-1.5 w-1.5 fill-current opacity-50" />
