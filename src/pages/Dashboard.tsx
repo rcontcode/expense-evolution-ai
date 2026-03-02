@@ -407,6 +407,8 @@ export default function Dashboard() {
                 <Suspense fallback={null}>
                   <ProactiveAlertsWidget />
                 </Suspense>
+                </div>
+                <div data-section="gamification">
                 <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
                 <DashboardGamificationWidget compact={true} />
 
