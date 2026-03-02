@@ -7,7 +7,7 @@ export const LiveClock = memo(function LiveClock() {
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000);
+    const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
