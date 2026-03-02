@@ -44,6 +44,9 @@ import {
   Circle,
   Trophy,
   MessageSquare,
+  CreditCard,
+  Landmark,
+  PiggyBank,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -204,7 +207,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
       { icon: Building2, label: language === 'es' ? 'Perfil Empresa' : 'Business Profile', path: '/business-profile', badge: null, tooltipKey: 'dashboard' as const },
     ]
   },
-  {
+   {
     titleKey: 'layout.wealth',
     emoji: '📈',
     themeKey: 'wealth' as keyof typeof sectionThemes,
@@ -212,9 +215,10 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
       { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
         children: [
           { label: language === 'es' ? '📊 Análisis Familiar' : '📊 Family Analysis', path: '/dashboard?area=familia&atab=analysis' },
-          { label: language === 'es' ? '💳 Deudas' : '💳 Debts', path: '/dashboard?area=familia&atab=debts' },
         ],
       },
+      { icon: CreditCard, label: language === 'es' ? 'Deudas' : 'Debts', path: '/dashboard?area=familia&atab=debts', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: PiggyBank, label: language === 'es' ? 'Ahorro' : 'Savings', path: '/budget?tab=savings', badge: null, tooltipKey: 'dashboard' as const },
       { icon: Building2, label: 'nav.banking', path: '/banking', badgeKey: 'nav.badgeSmart', tooltipKey: 'dashboard' as const,
         children: [
           { label: language === 'es' ? '🔄 Conciliación' : '🔄 Reconciliation', path: '/reconciliation' },
@@ -258,6 +262,8 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
           { label: language === 'es' ? '💼 Portafolio' : '💼 Portfolio', path: '/dashboard?area=crecimiento&atab=investments&tool=portfolio' },
           { label: language === 'es' ? '🎯 Metas SMART' : '🎯 SMART Goals', path: '/dashboard?area=crecimiento&atab=goals' },
           { label: language === 'es' ? '📓 Diario Financiero' : '📓 Financial Journal', path: '/dashboard?area=crecimiento&atab=goals' },
+          { label: language === 'es' ? '💵 Págate Primero' : '💵 Pay Yourself First', path: '/mentorship?tab=atomic' },
+          { label: language === 'es' ? '💳 Clasificación Deuda' : '💳 Debt Classification', path: '/mentorship?tab=kiyosaki' },
         ],
       },
       { icon: Trophy, label: language === 'es' ? 'Aventura' : 'Adventure', path: '/adventure', badge: null, tooltipKey: 'dashboard' as const },
