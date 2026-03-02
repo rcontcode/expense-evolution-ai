@@ -197,11 +197,10 @@ export default function Dashboard() {
 
     if (!tab || !allowedTabs.includes(tab)) return;
 
-    setShowAllTools(true);
     setActiveTab(tab === 'budget' ? 'budgets' : tab);
 
     requestAnimationFrame(() => {
-      document.getElementById('control-center')?.scrollIntoView({
+      document.querySelector('[data-section="advanced-tools"]')?.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
       });
