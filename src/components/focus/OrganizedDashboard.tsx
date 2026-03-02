@@ -43,29 +43,29 @@ const ImpuestosAreaContent = lazy(() => import('./areas/ImpuestosAreaContent').t
    impuestos: 'Impuestos',
  };
 
- // Area content with error boundary - only renders when expanded
- const AreaContentRenderer = memo(({ areaId, isCollapsed }: { areaId: FocusAreaId; isCollapsed: boolean }) => {
-   // True lazy loading: don't mount anything if collapsed
-   if (isCollapsed) return null;
- 
-   const contentMap: Record<FocusAreaId, ReactNode> = {
-     negocio: <NegocioAreaContent />,
-     familia: <FamiliaAreaContent />,
-     diadia: <DiaDiaAreaContent />,
-     crecimiento: <CrecimientoAreaContent />,
-     impuestos: <ImpuestosAreaContent />,
-   };
- 
-   return (
-     <AreaErrorBoundary areaName={AREA_NAMES[areaId]}>
-       <Suspense fallback={<AreaSkeleton />}>
-         {contentMap[areaId]}
-       </Suspense>
-     </AreaErrorBoundary>
-   );
- });
- 
- AreaContentRenderer.displayName = 'AreaContentRenderer';
+  // Area content with error boundary - only renders when expanded
+  const AreaContentRenderer = memo(({ areaId, isCollapsed, forcedTab }: { areaId: FocusAreaId; isCollapsed: boolean; forcedTab?: string | null }) => {
+    // True lazy loading: don't mount anything if collapsed
+    if (isCollapsed) return null;
+  
+    const contentMap: Record<FocusAreaId, ReactNode> = {
+      negocio: <NegocioAreaContent forcedTab={forcedTab} />,
+      familia: <FamiliaAreaContent forcedTab={forcedTab} />,
+      diadia: <DiaDiaAreaContent forcedTab={forcedTab} />,
+      crecimiento: <CrecimientoAreaContent forcedTab={forcedTab} />,
+      impuestos: <ImpuestosAreaContent forcedTab={forcedTab} />,
+    };
+  
+    return (
+      <AreaErrorBoundary areaName={AREA_NAMES[areaId]}>
+        <Suspense fallback={<AreaSkeleton />}>
+          {contentMap[areaId]}
+        </Suspense>
+      </AreaErrorBoundary>
+    );
+  });
+  
+  AreaContentRenderer.displayName = 'AreaContentRenderer';
 
 export const OrganizedDashboard = memo(() => {
   const { language } = useLanguage();
