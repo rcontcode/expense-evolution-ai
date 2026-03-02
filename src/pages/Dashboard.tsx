@@ -438,16 +438,15 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0">
-                    <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+                  <CardContent className="pt-0 space-y-4">
                       <AdvancedToolsNav 
                         activeTab={activeTab} 
                         onTabChange={setActiveTab}
                         shouldHighlight={shouldHighlight}
                       />
 
-                      <TabsContent value="charts" className={cn("space-y-4", getHighlightProps('charts').className)} ref={getHighlightProps('charts').ref as any}>
-                        {activeTab === 'charts' && (
+                      {activeTab === 'charts' && (
+                        <div className={cn("space-y-4", getHighlightProps('charts').className)} ref={getHighlightProps('charts').ref as any}>
                           <Suspense fallback={<ChartsSkeleton />}>
                             <DashboardCharts
                               categoryBreakdown={stats?.categoryBreakdown || []}
@@ -456,11 +455,11 @@ export default function Dashboard() {
                               isLoading={isLoading}
                             />
                           </Suspense>
-                        )}
-                      </TabsContent>
+                        </div>
+                      )}
 
-                      <TabsContent value="analytics" className={cn("space-y-4", getHighlightProps('analytics').className)} ref={getHighlightProps('analytics').ref as any}>
-                        {activeTab === 'analytics' && (
+                      {activeTab === 'analytics' && (
+                        <div className={cn("space-y-4", getHighlightProps('analytics').className)} ref={getHighlightProps('analytics').ref as any}>
                           <Suspense fallback={<AnalyticsSkeleton />}>
                             <div className="space-y-6">
                               <SmartMonthlyReport />
@@ -495,11 +494,11 @@ export default function Dashboard() {
                               </div>
                             </div>
                           </Suspense>
-                        )}
-                      </TabsContent>
+                        </div>
+                      )}
 
-                      <TabsContent value="budgets" className={cn("space-y-4", getHighlightProps('budget').className)} ref={getHighlightProps('budget').ref as any}>
-                        {activeTab === 'budgets' && (
+                      {activeTab === 'budgets' && (
+                        <div className={cn("space-y-4", getHighlightProps('budget').className)} ref={getHighlightProps('budget').ref as any}>
                           <Suspense fallback={<AnalyticsSkeleton />}>
                             <div className="space-y-6">
                               <GlobalBudgetCard />
@@ -513,11 +512,11 @@ export default function Dashboard() {
                               <CashFlowProjection />
                             </div>
                           </Suspense>
-                        )}
-                      </TabsContent>
+                        </div>
+                      )}
 
-                      <TabsContent value="mentorship" className={cn("space-y-4", getHighlightProps('mentorship').className)} ref={getHighlightProps('mentorship').ref as any}>
-                        {activeTab === 'mentorship' && (
+                      {activeTab === 'mentorship' && (
+                        <div className={cn("space-y-4", getHighlightProps('mentorship').className)} ref={getHighlightProps('mentorship').ref as any}>
                           <Suspense fallback={<AnalyticsSkeleton />}>
                             <div className="space-y-6">
                               <CashflowQuadrantCard />
@@ -533,19 +532,19 @@ export default function Dashboard() {
                               <SMARTGoalsCard />
                             </div>
                           </Suspense>
-                        )}
-                      </TabsContent>
+                        </div>
+                      )}
 
-                      <TabsContent value="goals" className={cn("space-y-4", getHighlightProps('goals').className)} ref={getHighlightProps('goals').ref as any}>
-                        {activeTab === 'goals' && (
+                      {activeTab === 'goals' && (
+                        <div className={cn("space-y-4", getHighlightProps('goals').className)} ref={getHighlightProps('goals').ref as any}>
                           <Suspense fallback={<AnalyticsSkeleton />}>
                             <SavingsGoalsSection />
                           </Suspense>
-                        )}
-                      </TabsContent>
+                        </div>
+                      )}
 
-                      <TabsContent value="tax" className={cn("space-y-4", getHighlightProps('tax').className)} ref={getHighlightProps('tax').ref as any}>
-                        {activeTab === 'tax' && (
+                      {activeTab === 'tax' && (
+                        <div className={cn("space-y-4", getHighlightProps('tax').className)} ref={getHighlightProps('tax').ref as any}>
                           <Suspense fallback={<AnalyticsSkeleton />}>
                             <div className="space-y-4">
                               <TaxSummaryCards taxSummary={taxSummary} />
@@ -553,60 +552,60 @@ export default function Dashboard() {
                               <SavingsOptimizerSection />
                             </div>
                           </Suspense>
-                        )}
-                      </TabsContent>
+                        </div>
+                      )}
 
-                      <TabsContent value="mileage" className={cn("space-y-4", getHighlightProps('mileage').className)} ref={getHighlightProps('mileage').ref as any}>
-                        {activeTab === 'mileage' && (
+                      {activeTab === 'mileage' && (
+                        <div className={cn("space-y-4", getHighlightProps('mileage').className)} ref={getHighlightProps('mileage').ref as any}>
                           <Suspense fallback={<MileageSkeleton />}>
                             <MileageTabContent
                               mileageSummary={mileageSummary}
                               isLoading={mileageLoading}
                             />
                           </Suspense>
-                        )}
-                      </TabsContent>
+                        </div>
+                      )}
 
-                      <TabsContent value="subscriptions" className={cn("space-y-4", getHighlightProps('subscriptions').className)} ref={getHighlightProps('subscriptions').ref as any}>
-                        {activeTab === 'subscriptions' && (
+                      {activeTab === 'subscriptions' && (
+                        <div className={cn("space-y-4", getHighlightProps('subscriptions').className)} ref={getHighlightProps('subscriptions').ref as any}>
                           <Suspense fallback={<AnalyticsSkeleton />}>
                             <SubscriptionTracker />
                           </Suspense>
-                        )}
-                      </TabsContent>
+                        </div>
+                      )}
 
-                      <TabsContent value="fire" className={cn("space-y-4", getHighlightProps('fire').className)} ref={getHighlightProps('fire').ref as any}>
-                        {activeTab === 'fire' && (
+                      {activeTab === 'fire' && (
+                        <div className={cn("space-y-4", getHighlightProps('fire').className)} ref={getHighlightProps('fire').ref as any}>
                           <Suspense fallback={<AnalyticsSkeleton />}>
                             <div className="space-y-6">
                               <FIRECalculatorCard />
                               <PersonalizedInvestmentTips />
                             </div>
                           </Suspense>
-                        )}
-                      </TabsContent>
+                        </div>
+                      )}
 
-                      <TabsContent value="debt" className={cn("space-y-4", getHighlightProps('debt').className)} ref={getHighlightProps('debt').ref as any}>
-                        {activeTab === 'debt' && (
+                      {activeTab === 'debt' && (
+                        <div className={cn("space-y-4", getHighlightProps('debt').className)} ref={getHighlightProps('debt').ref as any}>
                           <Suspense fallback={<AnalyticsSkeleton />}>
                             <DebtManagerCard />
                           </Suspense>
-                        )}
-                      </TabsContent>
+                        </div>
+                      )}
 
-                      <TabsContent value="portfolio" className={cn("space-y-4", getHighlightProps('portfolio').className)} ref={getHighlightProps('portfolio').ref as any}>
-                        {activeTab === 'portfolio' && (
+                      {activeTab === 'portfolio' && (
+                        <div className={cn("space-y-4", getHighlightProps('portfolio').className)} ref={getHighlightProps('portfolio').ref as any}>
                           <Suspense fallback={<AnalyticsSkeleton />}>
                             <div className="space-y-6">
                               <PortfolioTrackerCard />
                               <PersonalizedInvestmentTips />
                             </div>
                           </Suspense>
-                        )}
-                      </TabsContent>
+                        </div>
+                      )}
 
-                      <TabsContent value="education" className={cn("space-y-4", getHighlightProps('education').className)} ref={getHighlightProps('education').ref as any}>
-                        {activeTab === 'education' && (
+                      {activeTab === 'education' && (
+                        <div className={cn("space-y-4", getHighlightProps('education').className)} ref={getHighlightProps('education').ref as any}>
                           <Suspense fallback={<AnalyticsSkeleton />}>
                             <div className="space-y-6">
                               <GlobalLearningChart />
@@ -617,9 +616,8 @@ export default function Dashboard() {
                               <FinancialEducationCard />
                             </div>
                           </Suspense>
-                        )}
-                      </TabsContent>
-                    </Tabs>
+                        </div>
+                      )}
                   </CardContent>
                 </Card>
               </motion.div>
