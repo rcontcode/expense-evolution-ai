@@ -44,6 +44,9 @@ import {
   Circle,
   Trophy,
   MessageSquare,
+  CreditCard,
+  Landmark,
+  PiggyBank,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
