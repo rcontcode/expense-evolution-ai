@@ -562,31 +562,69 @@ export const Layout = ({ children }: LayoutProps) => {
                             const isActive = item.path.includes('?')
                               ? location.pathname + location.search === item.path
                               : location.pathname === item.path;
+                            const hasChildren = 'children' in item && item.children && item.children.length > 0;
+                            const isSubmenuOpen = hasChildren && expandedSubmenus[item.path];
                             
                             return (
-                              <button
-                                key={item.path}
-                                onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
-                                className={cn(
-                                  "flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all text-left group w-full",
-                                  isActive 
-                                    ? cn("bg-background shadow-md border", theme.border)
-                                    : "hover:bg-background/80 bg-background/40"
-                                )}
-                              >
-                                <div className={cn(
-                                  "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
-                                  theme.iconWrapper
-                                )}>
-                                  <Icon className="h-4 w-4 text-white drop-shadow-sm" />
+                              <div key={item.path}>
+                                <div className="flex items-center">
+                                  <button
+                                    onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
+                                    className={cn(
+                                      "flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all text-left group flex-1",
+                                      isActive 
+                                        ? cn("bg-background shadow-md border", theme.border)
+                                        : "hover:bg-background/80 bg-background/40"
+                                    )}
+                                  >
+                                    <div className={cn(
+                                      "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                                      theme.iconWrapper
+                                    )}>
+                                      <Icon className="h-4 w-4 text-white drop-shadow-sm" />
+                                    </div>
+                                    <span className={cn(
+                                      "text-sm font-medium transition-colors flex-1",
+                                      isActive ? theme.text : "text-foreground/80 group-hover:text-foreground"
+                                    )}>
+                                      {t(item.label)}
+                                    </span>
+                                  </button>
+                                  {hasChildren && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => { e.stopPropagation(); toggleSubmenu(item.path); }}
+                                      className={cn(
+                                        "p-2 rounded-lg transition-all shrink-0",
+                                        isSubmenuOpen ? "bg-primary/10 text-primary" : "text-muted-foreground/50"
+                                      )}
+                                    >
+                                      <ChevronDown className={cn("h-4 w-4 transition-transform", isSubmenuOpen && "rotate-180")} />
+                                    </button>
+                                  )}
                                 </div>
-                                <span className={cn(
-                                  "text-sm font-medium transition-colors",
-                                  isActive ? theme.text : "text-foreground/80 group-hover:text-foreground"
-                                )}>
-                                  {t(item.label)}
-                                </span>
-                              </button>
+                                {hasChildren && isSubmenuOpen && (
+                                  <div className={cn("ml-9 mt-0.5 mb-1 space-y-0.5 pl-2 border-l-2", theme.border)}>
+                                    {item.children!.map((child: NavChild, ci: number) => (
+                                      <button
+                                        key={`${child.path}-${ci}`}
+                                        onClick={() => {
+                                          if (child.path.startsWith('/dashboard?')) {
+                                            window.location.href = child.path;
+                                          } else {
+                                            navigate(child.path);
+                                          }
+                                          setMobileMenuOpen(false);
+                                        }}
+                                        className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-background/60 transition-all"
+                                      >
+                                        <span className={cn("w-1.5 h-1.5 rounded-full bg-current opacity-40", theme.text)} />
+                                        <span className="truncate">{child.label}</span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             );
                           })}
                         </div>
