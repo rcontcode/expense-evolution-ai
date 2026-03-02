@@ -534,7 +534,7 @@ export default function Dashboard() {
                               <BudgetProjectionChart />
                               <BudgetHistoryChart />
                               <CategoryYearComparison />
-                              <ExpensePredictions />
+                              <ExpensePredictions expenses={allExpenses || []} />
                               <CashFlowProjection />
                             </div>
                           </Suspense>
