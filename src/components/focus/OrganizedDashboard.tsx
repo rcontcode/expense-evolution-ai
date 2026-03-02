@@ -228,7 +228,7 @@ export const OrganizedDashboard = memo(({ deepLinkArea, deepLinkTab }: Organized
           <SortableContext items={visibleAreas} strategy={verticalListSortingStrategy}>
             <div className="space-y-4 lg:space-y-5">
             {visibleAreas.map((areaId, index) => (
-              <SortableAreaWrapper key={areaId} id={areaId} index={index}>
+              <SortableAreaWrapper key={areaId} id={areaId} index={index} data-area-id={areaId}>
                {isMobile ? (
                  <SwipeableAreaSection
                    areaId={areaId}
