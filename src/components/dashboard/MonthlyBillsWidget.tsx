@@ -194,7 +194,7 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
                 </div>
               </div>
               <Button size="sm" variant="secondary" className="h-6 text-[10px] shrink-0"
-                onClick={() => navigate('/budget?tab=bills')}>
+                onClick={() => navigate('/bills')}>
                 {l ? 'Pagar' : 'Pay'}
               </Button>
             </motion.div>
