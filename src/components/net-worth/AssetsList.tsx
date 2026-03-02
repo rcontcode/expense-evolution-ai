@@ -196,7 +196,8 @@ export function AssetsList({ assets, onAdd, onEdit }: AssetsListProps) {
   const { data: financialProfile } = useFinancialProfile();
   const { data: userProfile } = useProfile();
 
-  const { formatCompact: formatCurrency } = useFormatCurrency();
+  const { formatCompact } = useFormatCurrency();
+  const formatCurrency = (value: number, currency?: string | null) => formatCompact(value, currency ? { currency } : undefined);
 
   const totalAssets = assets.reduce((sum, a) => sum + a.current_value, 0);
   const liquidAssets = assets.filter(a => a.is_liquid).reduce((sum, a) => sum + a.current_value, 0);
