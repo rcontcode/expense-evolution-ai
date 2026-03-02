@@ -250,10 +250,10 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
                       key={status.value}
                       onClick={() => handleQuickStatusFilter(status.value)}
                       className={cn(
-                        'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-all',
+                        'inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all border-2',
                         isActive 
-                          ? `${status.color} ring-1 ring-offset-1 ring-offset-background ring-primary/50` 
-                          : 'bg-muted/50 text-muted-foreground'
+                          ? `${status.color} border-current/30 shadow-sm` 
+                          : 'bg-secondary/60 text-muted-foreground border-border/40'
                       )}
                     >
                       <Icon className="h-3 w-3" />
