@@ -119,7 +119,7 @@ export default function Mentorship() {
 
         {!isMobile && <MentorQuoteBanner context="dashboard" />}
 
-        <Tabs defaultValue="library" className="space-y-4 sm:space-y-6" data-highlight="mentorship-tabs">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4 sm:space-y-6" data-highlight="mentorship-tabs">
           {/* Mobile: Icon-only tabs with tooltips */}
           <TooltipProvider>
             <TabsList className={`grid ${gridCols} w-full max-w-3xl mx-auto bg-muted/50 p-1 sm:p-1.5 rounded-xl`} data-highlight="mentor-selector">
