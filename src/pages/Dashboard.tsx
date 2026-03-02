@@ -573,7 +573,7 @@ export default function Dashboard() {
                         {activeTab === 'tax' && (
                           <Suspense fallback={<AnalyticsSkeleton />}>
                             <div className="space-y-4">
-                              <TaxSummaryCards taxSummary={taxSummary} isLoading={isLoading} />
+                              <TaxSummaryCards taxSummary={taxSummary} />
                               <TaxOptimizerCard />
                               <SavingsOptimizerSection />
                             </div>
