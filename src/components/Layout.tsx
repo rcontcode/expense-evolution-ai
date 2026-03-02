@@ -191,10 +191,18 @@ const getNavSections = (language: string) => [
     emoji: '📈',
     themeKey: 'wealth' as keyof typeof sectionThemes,
     items: [
-      { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
-      { icon: Building2, label: 'nav.banking', path: '/banking', badgeKey: 'nav.badgeSmart', tooltipKey: 'dashboard' as const },
+      { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
+        children: [
+          { label: language === 'es' ? '📊 Resumen Patrimonio' : '📊 Net Worth Summary', path: '/dashboard?area=familia&atab=portfolio' },
+          { label: language === 'es' ? '💳 Deudas' : '💳 Debts', path: '/dashboard?area=familia&atab=debts' },
+        ],
+      },
+      { icon: Building2, label: 'nav.banking', path: '/banking', badgeKey: 'nav.badgeSmart', tooltipKey: 'dashboard' as const,
+        children: [
+          { label: language === 'es' ? '🔄 Conciliación' : '🔄 Reconciliation', path: '/reconciliation' },
+        ],
+      },
       { icon: RefreshCw, label: 'nav.reconciliation', path: '/reconciliation', badge: null, tooltipKey: 'reconciliation' as const },
-      { icon: Wallet, label: language === 'es' ? 'Deudas' : 'Debts', path: '/dashboard?area=familia&atab=debts', badge: null, tooltipKey: 'dashboard' as const },
     ]
   },
   {
