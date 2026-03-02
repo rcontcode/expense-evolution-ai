@@ -141,7 +141,13 @@ const StarRating = ({ value, onChange, label, emoji, language }: StarRatingProps
 const BetaFeedback = () => {
   const { language } = useLanguage();
   const { user } = useAuth();
+  const { data: profile, isLoading: profileLoading } = useProfile();
   const { submitFeedback, submitBugReport } = useBetaFeedback();
+
+  // Gate: only beta testers can access this page
+  if (!profileLoading && !profile?.is_beta_tester) {
+    return <Navigate to="/dashboard" replace />;
+  }
   const [userName, setUserName] = useState('');
   
   useEffect(() => {
