@@ -215,7 +215,7 @@ const INTERACTIVE_QUESTIONS: InteractiveQuestion[] = [
       en: '🤔 What concerns you about your finances?' 
     },
     actions: [
-      { label: { es: 'No sé qué puedo deducir', en: "I don't know what I can deduct" }, path: '/dashboard?tab=tax', icon: Shield, color: 'text-blue-600' },
+      { label: { es: 'No sé qué puedo deducir', en: "I don't know what I can deduct" }, path: '/tax-optimizer', icon: Shield, color: 'text-blue-600' },
       { label: { es: 'Tengo recibos sin procesar', en: 'I have unprocessed receipts' }, path: '/chaos', highlight: true, icon: Camera, color: 'text-red-600' },
       { label: { es: 'Entender mis contratos', en: 'Understand my contracts' }, path: '/contracts', icon: FileText, color: 'text-purple-600' },
       { label: { es: 'Quiero ahorrar más', en: 'I want to save more' }, path: '/net-worth', icon: PiggyBank, color: 'text-emerald-600' }
