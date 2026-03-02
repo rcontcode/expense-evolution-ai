@@ -119,12 +119,12 @@ const sectionThemes = {
     glow: 'shadow-purple-500/20',
   },
   system: {
-    gradient: 'from-slate-500/20 to-gray-500/20',
-    border: 'border-slate-500/30',
-    text: 'text-slate-600 dark:text-slate-400',
-    iconWrapper: 'bg-gradient-to-br from-slate-400 via-gray-500 to-zinc-600 shadow-lg shadow-slate-500/50',
+    gradient: 'from-indigo-500/20 to-violet-500/20',
+    border: 'border-indigo-500/30',
+    text: 'text-indigo-600 dark:text-indigo-400',
+    iconWrapper: 'bg-gradient-to-br from-indigo-400 via-violet-500 to-purple-600 shadow-lg shadow-indigo-500/50',
     iconColor: 'text-white drop-shadow-md',
-    glow: 'shadow-slate-500/20',
+    glow: 'shadow-indigo-500/20',
   },
 };
 
@@ -746,18 +746,20 @@ export const Layout = ({ children }: LayoutProps) => {
         {/* Sidebar */}
         <aside 
           className={cn(
-            "relative flex flex-col border-r border-border bg-card transition-all duration-300 ease-out",
+            "relative flex flex-col border-r border-border/50 bg-card/80 backdrop-blur-xl transition-all duration-300 ease-out",
+            "shadow-xl shadow-black/5 dark:shadow-black/20",
             collapsed ? "w-[72px]" : "w-72"
           )}
         >
           {/* Logo */}
           <div className={cn(
-            "flex h-20 items-center border-b border-border px-4 transition-all gap-3",
+            "flex h-20 items-center border-b border-border/40 px-4 transition-all gap-3",
+            "bg-gradient-to-r from-primary/5 via-transparent to-primary/5",
             collapsed ? "justify-center" : "px-4"
           )}>
             <PhoenixLogo variant={collapsed ? "mini" : "sidebar"} />
             {!collapsed && (
-              <span className="text-xl font-bold bg-gradient-to-r from-primary via-cyan-500 to-teal-500 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r from-primary via-cyan-500 to-teal-500 bg-clip-text text-transparent drop-shadow-sm">
                 EvoFinz
               </span>
             )}
@@ -766,12 +768,12 @@ export const Layout = ({ children }: LayoutProps) => {
           {/* Collapse button */}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="absolute -right-3 top-20 z-10 flex h-6 w-6 items-center justify-center rounded-full border bg-card shadow-sm hover:bg-secondary transition-colors"
+            className="absolute -right-3 top-20 z-10 flex h-7 w-7 items-center justify-center rounded-full border-2 border-primary/20 bg-card shadow-lg shadow-primary/10 hover:bg-primary hover:text-primary-foreground hover:border-primary hover:shadow-primary/30 transition-all duration-200 hover:scale-110"
           >
             {collapsed ? (
-              <ChevronRight className="h-3 w-3" />
+              <ChevronRight className="h-3.5 w-3.5" />
             ) : (
-              <ChevronLeft className="h-3 w-3" />
+              <ChevronLeft className="h-3.5 w-3.5" />
             )}
           </button>
 
@@ -860,18 +862,19 @@ export const Layout = ({ children }: LayoutProps) => {
           </div>
 
           {/* Navigation */}
-          <nav ref={sidebarNavRef} className="flex-1 py-2 px-2 space-y-1.5 overflow-y-auto" data-highlight="sidebar-nav">
+          <nav ref={sidebarNavRef} className="flex-1 py-2 px-2 space-y-2 overflow-y-auto scrollbar-thin" data-highlight="sidebar-nav">
             {NAV_SECTIONS.map((section) => {
               const theme = sectionThemes[section.themeKey];
               return (
               <div 
                 key={section.titleKey}
                 className={cn(
-                  "rounded-lg transition-all duration-300",
-                  collapsed ? "p-1" : "p-2",
+                  "rounded-xl transition-all duration-300 overflow-hidden",
+                  collapsed ? "p-1" : "p-2.5",
                   `bg-gradient-to-br ${theme.gradient}`,
                   `border ${theme.border}`,
-                  `hover:shadow-md ${theme.glow}`
+                  `hover:shadow-lg ${theme.glow}`,
+                  "backdrop-blur-sm"
                 )}
               >
                 {collapsed ? (
@@ -890,11 +893,12 @@ export const Layout = ({ children }: LayoutProps) => {
                   </Tooltip>
                 ) : (
                   <h3 className={cn(
-                    "px-1.5 mb-1 text-xs font-bold flex items-center gap-1.5",
+                    "px-2 mb-1.5 text-xs font-bold flex items-center gap-2",
                     theme.text
                   )}>
-                    <span className="text-sm">{section.emoji}</span>
-                    <span className="uppercase tracking-wider text-[10px]">{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
+                    <span className="text-sm drop-shadow-sm">{section.emoji}</span>
+                    <span className="uppercase tracking-widest text-[10px] font-extrabold">{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
+                    {!collapsed && <span className="flex-1 h-px bg-current opacity-15 ml-1" />}
                   </h3>
                 )}
                 <div className="space-y-0.5">
@@ -932,17 +936,18 @@ export const Layout = ({ children }: LayoutProps) => {
                         onMouseEnter={() => preloadRoute(item.path)}
                         onFocus={() => preloadRoute(item.path)}
                         className={cn(
-                          'flex items-center gap-2 flex-1 px-2 py-1.5 rounded-md text-sm transition-all',
-                          'hover:bg-background/60',
-                          isActive && 'bg-primary text-primary-foreground shadow-sm',
+                          'flex items-center gap-2 flex-1 px-2.5 py-2 rounded-xl text-sm transition-all duration-200',
+                          'hover:bg-background/70 hover:shadow-sm hover:-translate-y-0.5',
+                          'active:translate-y-0 active:shadow-none',
+                          isActive && 'bg-primary text-primary-foreground shadow-md shadow-primary/30 scale-[1.02] font-semibold',
                           collapsed && 'justify-center px-0 w-full'
                         )}
                       >
                         <span className={cn(
-                          "flex items-center justify-center w-6 h-6 rounded transition-transform duration-200 hover:scale-105",
-                          isActive ? "bg-primary-foreground/20" : theme.iconWrapper
+                          "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 group-hover:scale-110",
+                          isActive ? "bg-primary-foreground/20 shadow-inner" : theme.iconWrapper
                         )}>
-                          <Icon className={cn("h-3.5 w-3.5 flex-shrink-0", isActive ? "text-primary-foreground" : theme.iconColor)} />
+                          <Icon className={cn("h-3.5 w-3.5 flex-shrink-0", isActive ? "text-primary-foreground drop-shadow-sm" : theme.iconColor)} />
                         </span>
                         {!collapsed && (
                           <>
@@ -1123,7 +1128,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
           {/* Bottom actions - Compact */}
           <div className={cn(
-            "border-t border-border p-2 space-y-1",
+            "border-t border-border/40 p-2.5 space-y-1.5 bg-gradient-to-t from-muted/30 to-transparent",
             collapsed && "flex flex-col items-center"
           )}>
             {/* Profile Button */}
@@ -1132,8 +1137,8 @@ export const Layout = ({ children }: LayoutProps) => {
                 <button
                   onClick={() => navigate('/business-profile')}
                   className={cn(
-                    'flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm transition-all hover:bg-muted/50',
-                    location.pathname === '/business-profile' && 'bg-primary text-primary-foreground',
+                    'flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-sm transition-all duration-200 hover:bg-muted/50 hover:-translate-y-0.5 hover:shadow-sm',
+                    location.pathname === '/business-profile' && 'bg-primary text-primary-foreground shadow-md shadow-primary/30',
                     collapsed && 'justify-center px-0 w-auto'
                   )}
                 >
