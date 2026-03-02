@@ -18,6 +18,7 @@ interface AreaTabsLayoutProps {
   tabs: AreaTab[];
   footer?: ReactNode;
   accentColor?: string;
+  forcedTab?: string | null;
 }
 
 const STORAGE_PREFIX = 'evofinz-area-tab-';
