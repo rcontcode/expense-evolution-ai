@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEntity } from '@/contexts/EntityContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
@@ -228,14 +229,7 @@ export function MonthDetailPanel({
     return expenses?.filter(e => !e.category || !e.vendor).length || 0;
   }, [expenses]);
   
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(language === 'es' ? 'es-CL' : 'en-CA', {
-      style: 'currency',
-      currency: currentCurrency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  const { formatCompact: formatCurrency } = useFormatCurrency();
   
   const fullMonthNames = language === 'es'
     ? ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
@@ -253,6 +247,14 @@ export function MonthDetailPanel({
         utilities: 'Servicios',
         rent: 'Arriendo',
         insurance: 'Seguros',
+        healthcare: 'Salud',
+        education: 'Educación',
+        home_office: 'Oficina en Casa',
+        subscriptions: 'Suscripciones',
+        transportation: 'Transporte',
+        entertainment: 'Entretenimiento',
+        personal: 'Personal',
+        taxes: 'Impuestos',
         other: 'Otros',
       }
     : {
@@ -266,6 +268,14 @@ export function MonthDetailPanel({
         utilities: 'Utilities',
         rent: 'Rent',
         insurance: 'Insurance',
+        healthcare: 'Healthcare',
+        education: 'Education',
+        home_office: 'Home Office',
+        subscriptions: 'Subscriptions',
+        transportation: 'Transportation',
+        entertainment: 'Entertainment',
+        personal: 'Personal',
+        taxes: 'Taxes',
         other: 'Other',
       };
 

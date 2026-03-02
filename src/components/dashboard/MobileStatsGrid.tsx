@@ -4,6 +4,7 @@ import { TrendingUp, TrendingDown, Wallet, PiggyBank } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { cn } from '@/lib/utils';
 
 interface MobileStatsGridProps {
@@ -14,12 +15,6 @@ interface MobileStatsGridProps {
   savingsRate: number;
 }
 
-const formatCompact = (value: number) => {
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-  if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
-  return `$${value.toFixed(0)}`;
-};
-
 export const MobileStatsGrid = memo(({
   isLoading,
   monthlyIncome,
@@ -28,6 +23,7 @@ export const MobileStatsGrid = memo(({
   savingsRate,
 }: MobileStatsGridProps) => {
   const { language } = useLanguage();
+  const { formatCompact } = useFormatCurrency();
   const navigate = useNavigate();
   const isPositive = monthlyBalance >= 0;
 
@@ -54,7 +50,7 @@ export const MobileStatsGrid = memo(({
             <TrendingUp className="h-5 w-5 text-emerald-500" />
           </div>
           <div className="min-w-0">
-            <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 truncate">
+            <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 truncate" title={formatCompact(monthlyIncome)}>
               {formatCompact(monthlyIncome)}
             </p>
             <p className="text-[10px] text-muted-foreground truncate">
@@ -74,7 +70,7 @@ export const MobileStatsGrid = memo(({
             <TrendingDown className="h-5 w-5 text-rose-500" />
           </div>
           <div className="min-w-0">
-            <p className="text-lg font-bold text-rose-600 dark:text-rose-400 truncate">
+            <p className="text-lg font-bold text-rose-600 dark:text-rose-400 truncate" title={formatCompact(monthlyExpenses)}>
               {formatCompact(monthlyExpenses)}
             </p>
             <p className="text-[10px] text-muted-foreground truncate">
@@ -118,7 +114,7 @@ export const MobileStatsGrid = memo(({
       {/* Savings Rate */}
       <Card
         className="bg-gradient-to-br from-purple-500/10 to-violet-500/10 border-purple-500/20 cursor-pointer active:scale-[0.98] transition-transform"
-        onClick={() => navigate('/banking')}
+        onClick={() => navigate('/budget')}
       >
         <CardContent className="p-3 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0">

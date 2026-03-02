@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { Clock, CalendarDays } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-export function LiveClock() {
+export const LiveClock = memo(function LiveClock() {
   const { language } = useLanguage();
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000);
+    const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
@@ -21,7 +21,6 @@ export function LiveClock() {
   const timeStr = now.toLocaleTimeString(language === 'es' ? 'es-CL' : 'en-CA', {
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit',
   });
 
   // Capitalize first letter
@@ -39,4 +38,6 @@ export function LiveClock() {
       </div>
     </div>
   );
-}
+});
+
+LiveClock.displayName = 'LiveClock';

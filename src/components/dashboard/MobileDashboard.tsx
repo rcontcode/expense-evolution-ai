@@ -14,6 +14,7 @@ import { DashboardViewTabs } from '@/components/dashboard/DashboardViewTabs';
 import { ProgressiveOnboarding } from '@/components/onboarding/ProgressiveOnboarding';
 import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
 import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding';
+import { LiveClock } from '@/components/dashboard/LiveClock';
 
 const LazyEcosystemWidgets = lazy(() => import('@/components/ecosystem/EcosystemDashboardWidgets'));
 
@@ -36,13 +37,17 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
   const handleAddIncome = useCallback(() => navigate('/income'), [navigate]);
   const handleAddExpense = useCallback(() => navigate('/expenses'), [navigate]);
 
-  const monthlyIncome = stats?.billableExpenses || 0;
+  const monthlyIncome = stats?.monthlyIncome || 0;
   const monthlyExpenses = stats?.monthlyTotal || 0;
   const monthlyBalance = monthlyIncome - monthlyExpenses;
   const savingsRate = monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses) / monthlyIncome * 100) : 0;
 
   return (
     <div className="mobile-page mobile-gap space-y-4">
+      <div className="flex items-center justify-between">
+        <LiveClock />
+      </div>
+
       <MobileAlertsBanner
         pendingDocuments={pendingDocuments}
         incompleteExpenses={incompleteExpenses}
@@ -51,7 +56,6 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
       <BetaReminderBanner />
       <ProgressiveOnboarding />
       <EcosystemOnboarding />
-      
 
       <MobileStatsGrid
         isLoading={isLoading}

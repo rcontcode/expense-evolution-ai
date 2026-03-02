@@ -186,6 +186,7 @@ export default function Dashboard() {
       'charts',
       'analytics',
       'budget',
+      'budgets',
       'mentorship',
       'goals',
       'tax',
@@ -200,7 +201,7 @@ export default function Dashboard() {
     if (!tab || !allowedTabs.includes(tab)) return;
 
     setShowAllTools(true);
-    setActiveTab(tab);
+    setActiveTab(tab === 'budget' ? 'budgets' : tab);
 
     requestAnimationFrame(() => {
       document.getElementById('control-center')?.scrollIntoView({
