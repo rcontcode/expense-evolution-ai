@@ -250,12 +250,9 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
               ) : (
                 <>
                   <span className="flex items-center gap-2.5 text-sm truncate">
-                    <motion.span 
-                      className="text-xl"
-                      whileHover={{ scale: 1.1 }}
-                    >
-                      {primaryEntity ? countryFlags[primaryEntity.country] || '🌍' : '🌍'}
-                    </motion.span>
+                    <motion.div whileHover={{ scale: 1.1 }}>
+                      <CountryFlag code={primaryEntity?.country || 'CA'} size="md" className="rounded-sm shadow-md" />
+                    </motion.div>
                     <div className="text-left">
                       <span className="font-medium truncate block">{primaryEntity?.name || (language === 'es' ? 'Seleccionar' : 'Select')}</span>
                       {primaryEntity && (
