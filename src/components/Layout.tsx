@@ -943,10 +943,10 @@ export const Layout = ({ children }: LayoutProps) => {
                         )}
                       >
                         <span className={cn(
-                          "flex items-center justify-center w-6 h-6 rounded transition-transform duration-200 hover:scale-105",
-                          isActive ? "bg-primary-foreground/20" : theme.iconWrapper
+                          "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 group-hover:scale-110",
+                          isActive ? "bg-primary-foreground/20 shadow-inner" : theme.iconWrapper
                         )}>
-                          <Icon className={cn("h-3.5 w-3.5 flex-shrink-0", isActive ? "text-primary-foreground" : theme.iconColor)} />
+                          <Icon className={cn("h-3.5 w-3.5 flex-shrink-0", isActive ? "text-primary-foreground drop-shadow-sm" : theme.iconColor)} />
                         </span>
                         {!collapsed && (
                           <>
