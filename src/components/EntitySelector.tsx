@@ -307,9 +307,17 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
               🌍
             </motion.span>
             {language === 'es' ? 'Jurisdicciones Fiscales' : 'Fiscal Jurisdictions'}
-            <Badge variant="secondary" className="ml-auto text-[9px] px-1.5">
-              {activeEntities.length}
-            </Badge>
+            <div className="ml-auto flex items-center gap-1">
+              {/* Show flags of all configured jurisdictions */}
+              {[...new Set(activeEntities.map(e => e.country))].map(country => (
+                <span key={country} className="text-base drop-shadow-sm">
+                  {countryFlags[country] || '🌍'}
+                </span>
+              ))}
+              <Badge variant="secondary" className="text-[9px] px-1.5 ml-1">
+                {activeEntities.length}
+              </Badge>
+            </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator className="bg-border/50" />
           
