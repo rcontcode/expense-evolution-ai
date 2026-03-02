@@ -358,12 +358,29 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
-                className="space-y-6"
+                 className="space-y-6"
               >
-                {/* Visual Workflow Guide */}
-                <Suspense fallback={<Skeleton className="h-[300px]" />}>
-                  <WorkflowVisualizer compact={true} />
-                </Suspense>
+                {/* Quick Actions — prominent position for fast access (#9) */}
+                <Card className="border-dashed">
+                  <CardHeader className="pb-2 pt-3">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      {t('dashboard.quickActions')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 pb-3">
+                    <div className="flex flex-wrap gap-2">
+                      <Button onClick={() => navigate('/chaos')} size="sm" className="gap-2">
+                        <Upload className="h-4 w-4" /> {t('dashboard.uploadDocument')}
+                      </Button>
+                      <Button onClick={() => navigate('/expenses')} variant="outline" size="sm" className="gap-2">
+                        <Receipt className="h-4 w-4" /> {t('dashboard.addExpense')}
+                      </Button>
+                      <Button onClick={() => navigate('/clients')} variant="outline" size="sm" className="gap-2">
+                        <Users className="h-4 w-4" /> {t('dashboard.addClient')}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Workflow Progress + Bills */}
                 <div className="grid gap-4 lg:grid-cols-2">
@@ -388,6 +405,11 @@ export default function Dashboard() {
                 </Suspense>
                 <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
                 <DashboardGamificationWidget compact={true} />
+
+                {/* Visual Workflow Guide — moved below key data (#7) */}
+                <Suspense fallback={<Skeleton className="h-[200px]" />}>
+                  <WorkflowVisualizer compact={true} />
+                </Suspense>
 
                 {/* Advanced Tools Card */}
                 <Card className="border-2 border-primary/30 bg-gradient-to-br from-card via-primary/5 to-accent/10 backdrop-blur-sm overflow-hidden shadow-2xl shadow-primary/20 ring-1 ring-primary/10" data-highlight="control-center">
@@ -505,19 +527,14 @@ export default function Dashboard() {
                         {activeTab === 'budgets' && (
                           <Suspense fallback={<AnalyticsSkeleton />}>
                             <div className="space-y-6">
+                              <GlobalBudgetCard />
                               <MonthlyPlanCard />
-                              <div className="grid gap-6 lg:grid-cols-2">
-                                <GlobalBudgetCard />
-                                <BudgetHistoryChart />
-                              </div>
-                              <div className="grid gap-6 lg:grid-cols-2">
-                                <BudgetAlertsCard />
-                                <CategoryBudgetsCard />
-                              </div>
-                              <div className="grid gap-6 lg:grid-cols-2">
-                                <BudgetProjectionChart />
-                                <ExpensePredictions expenses={allExpenses || []} isLoading={isLoading} />
-                              </div>
+                              <CategoryBudgetsCard />
+                              <BudgetAlertsCard />
+                              <BudgetProjectionChart />
+                              <BudgetHistoryChart />
+                              <CategoryYearComparison />
+                              <ExpensePredictions />
                               <CashFlowProjection />
                             </div>
                           </Suspense>
@@ -528,20 +545,17 @@ export default function Dashboard() {
                         {activeTab === 'mentorship' && (
                           <Suspense fallback={<AnalyticsSkeleton />}>
                             <div className="space-y-6">
-                              <div className="grid gap-6 md:grid-cols-2">
-                                <CashflowQuadrantCard />
-                                <FinancialFreedomCard />
-                              </div>
-                              <div className="grid gap-6 md:grid-cols-2">
+                              <CashflowQuadrantCard />
+                              <FinancialFreedomCard />
+                              <div className="grid gap-6 lg:grid-cols-2">
                                 <PayYourselfFirstCard />
                                 <DebtClassificationCard />
                               </div>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                <SMARTGoalsCard />
+                              <div className="grid gap-6 lg:grid-cols-2">
                                 <FinancialJournalCard />
                                 <FinancialHabitsCard />
                               </div>
-                              <FinancialEducationCard />
+                              <SMARTGoalsCard />
                             </div>
                           </Suspense>
                         )}
@@ -549,7 +563,7 @@ export default function Dashboard() {
 
                       <TabsContent value="goals" className={cn("space-y-4", getHighlightProps('goals').className)} ref={getHighlightProps('goals').ref as any}>
                         {activeTab === 'goals' && (
-                          <Suspense fallback={<Skeleton className="h-[400px]" />}>
+                          <Suspense fallback={<AnalyticsSkeleton />}>
                             <SavingsGoalsSection />
                           </Suspense>
                         )}
@@ -557,17 +571,13 @@ export default function Dashboard() {
 
                       <TabsContent value="tax" className={cn("space-y-4", getHighlightProps('tax').className)} ref={getHighlightProps('tax').ref as any}>
                         {activeTab === 'tax' && (
-                          <div className="space-y-6">
-                            <div className="grid gap-6 lg:grid-cols-2">
-                              <Suspense fallback={<Skeleton className="h-[500px]" />}>
-                                <TaxOptimizerCard />
-                              </Suspense>
-                              <Suspense fallback={<Skeleton className="h-[500px]" />}>
-                                <SavingsOptimizerSection />
-                              </Suspense>
+                          <Suspense fallback={<AnalyticsSkeleton />}>
+                            <div className="space-y-4">
+                              <TaxSummaryCards taxSummary={taxSummary} isLoading={isLoading} />
+                              <TaxOptimizerCard />
+                              <SavingsOptimizerSection />
                             </div>
-                            <TaxSummaryCards taxSummary={taxSummary} />
-                          </div>
+                          </Suspense>
                         )}
                       </TabsContent>
 
@@ -576,7 +586,7 @@ export default function Dashboard() {
                           <Suspense fallback={<MileageSkeleton />}>
                             <MileageTabContent
                               mileageSummary={mileageSummary}
-                              isLoading={mileageLoading}
+                              mileageLoading={mileageLoading}
                             />
                           </Suspense>
                         )}
@@ -584,7 +594,7 @@ export default function Dashboard() {
 
                       <TabsContent value="subscriptions" className={cn("space-y-4", getHighlightProps('subscriptions').className)} ref={getHighlightProps('subscriptions').ref as any}>
                         {activeTab === 'subscriptions' && (
-                          <Suspense fallback={<Skeleton className="h-64" />}>
+                          <Suspense fallback={<AnalyticsSkeleton />}>
                             <SubscriptionTracker />
                           </Suspense>
                         )}
@@ -592,15 +602,18 @@ export default function Dashboard() {
 
                       <TabsContent value="fire" className={cn("space-y-4", getHighlightProps('fire').className)} ref={getHighlightProps('fire').ref as any}>
                         {activeTab === 'fire' && (
-                          <Suspense fallback={<Skeleton className="h-[600px]" />}>
-                            <FIRECalculatorCard />
+                          <Suspense fallback={<AnalyticsSkeleton />}>
+                            <div className="space-y-6">
+                              <FIRECalculatorCard />
+                              <PersonalizedInvestmentTips />
+                            </div>
                           </Suspense>
                         )}
                       </TabsContent>
 
                       <TabsContent value="debt" className={cn("space-y-4", getHighlightProps('debt').className)} ref={getHighlightProps('debt').ref as any}>
                         {activeTab === 'debt' && (
-                          <Suspense fallback={<Skeleton className="h-[600px]" />}>
+                          <Suspense fallback={<AnalyticsSkeleton />}>
                             <DebtManagerCard />
                           </Suspense>
                         )}
@@ -608,18 +621,12 @@ export default function Dashboard() {
 
                       <TabsContent value="portfolio" className={cn("space-y-4", getHighlightProps('portfolio').className)} ref={getHighlightProps('portfolio').ref as any}>
                         {activeTab === 'portfolio' && (
-                          <div className="grid gap-6 lg:grid-cols-3">
-                            <div className="lg:col-span-2">
-                              <Suspense fallback={<Skeleton className="h-[600px]" />}>
-                                <PortfolioTrackerCard />
-                              </Suspense>
+                          <Suspense fallback={<AnalyticsSkeleton />}>
+                            <div className="space-y-6">
+                              <PortfolioTrackerCard />
+                              <PersonalizedInvestmentTips />
                             </div>
-                            <div className="lg:col-span-1">
-                              <Suspense fallback={<Skeleton className="h-[400px]" />}>
-                                <PersonalizedInvestmentTips />
-                              </Suspense>
-                            </div>
-                          </div>
+                          </Suspense>
                         )}
                       </TabsContent>
 
@@ -638,28 +645,6 @@ export default function Dashboard() {
                         )}
                       </TabsContent>
                     </Tabs>
-                  </CardContent>
-                </Card>
-
-                {/* Quick Actions */}
-                <Card className="border-dashed">
-                  <CardHeader className="pb-2 pt-3">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      {t('dashboard.quickActions')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0 pb-3">
-                    <div className="flex flex-wrap gap-2">
-                      <Button onClick={() => navigate('/chaos')} size="sm" className="gap-2">
-                        <Upload className="h-4 w-4" /> {t('dashboard.uploadDocument')}
-                      </Button>
-                      <Button onClick={() => navigate('/expenses')} variant="outline" size="sm" className="gap-2">
-                        <Receipt className="h-4 w-4" /> {t('dashboard.addExpense')}
-                      </Button>
-                      <Button onClick={() => navigate('/clients')} variant="outline" size="sm" className="gap-2">
-                        <Users className="h-4 w-4" /> {t('dashboard.addClient')}
-                      </Button>
-                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
