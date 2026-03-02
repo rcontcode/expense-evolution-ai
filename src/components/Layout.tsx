@@ -845,7 +845,7 @@ export const Layout = ({ children }: LayoutProps) => {
                     theme.text
                   )}>
                     <span className="text-sm">{section.emoji}</span>
-                    <span className="uppercase tracking-wider text-[10px]">{t(section.titleKey).replace(/^[^\s]+\s/, '')}</span>
+                    <span className="uppercase tracking-wider text-[10px]">{t(section.titleKey)}</span>
                   </h3>
                 )}
                 <div className="space-y-0.5">
