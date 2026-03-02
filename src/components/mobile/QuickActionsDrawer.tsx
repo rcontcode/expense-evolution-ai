@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { motion, AnimatePresence, useDragControls, PanInfo } from 'framer-motion';
 import { Plus, Camera, TrendingUp, Receipt, Search, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { hapticFeedback } from '@/hooks/use-haptic';
