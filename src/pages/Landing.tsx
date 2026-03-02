@@ -239,6 +239,7 @@ const getPricingTiers = (language: string) => [
       'Tags personalizados infinitos',
       'Exportación Excel/CSV',
       'Gamificación + XP + Streaks',
+      'Centro de Pagos Fijos + Calendario',
       '9+ gráficos: heatmaps, correlaciones',
       'Alertas inteligentes',
       '4 módulos de mentoría',
