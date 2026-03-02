@@ -753,12 +753,13 @@ export const Layout = ({ children }: LayoutProps) => {
         >
           {/* Logo */}
           <div className={cn(
-            "flex h-20 items-center border-b border-border px-4 transition-all gap-3",
+            "flex h-20 items-center border-b border-border/40 px-4 transition-all gap-3",
+            "bg-gradient-to-r from-primary/5 via-transparent to-primary/5",
             collapsed ? "justify-center" : "px-4"
           )}>
             <PhoenixLogo variant={collapsed ? "mini" : "sidebar"} />
             {!collapsed && (
-              <span className="text-xl font-bold bg-gradient-to-r from-primary via-cyan-500 to-teal-500 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r from-primary via-cyan-500 to-teal-500 bg-clip-text text-transparent drop-shadow-sm">
                 EvoFinz
               </span>
             )}
