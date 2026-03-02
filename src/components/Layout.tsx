@@ -952,10 +952,10 @@ export const Layout = ({ children }: LayoutProps) => {
                               <div className="space-y-2">
                                 <span className="font-semibold">{t(item.label)}</span>
                                 <div className="space-y-1 pt-1 border-t border-border/50">
-                                  {item.children!.map((child: NavChild) => (
+                                  {item.children!.map((child: NavChild, ci: number) => (
                                     <button
-                                      key={child.path}
-                                      onClick={() => navigate(child.path)}
+                                      key={`${child.path}-${ci}`}
+                                      onClick={() => child.path.startsWith('/dashboard?') ? window.location.href = child.path : navigate(child.path)}
                                       className="flex items-center gap-1.5 w-full text-xs text-muted-foreground hover:text-foreground py-0.5"
                                     >
                                       <Circle className="h-1.5 w-1.5 fill-current opacity-50" />
