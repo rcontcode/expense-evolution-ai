@@ -440,44 +440,11 @@ export default function Dashboard() {
                   </CardHeader>
                   <CardContent className="pt-0">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-                      <TabsList className="flex flex-wrap gap-1.5 h-auto bg-muted/80 p-2.5 rounded-2xl border border-border/50">
-                        <TabsTrigger value="charts" className={cn("px-4 py-2.5 text-sm font-bold rounded-xl flex items-center gap-2", shouldHighlight('charts') && 'highlight-tab-active')}>
-                          <BarChart3 className="h-4 w-4" /> {t('taxAnalysis.charts')}
-                        </TabsTrigger>
-                        <TabsTrigger value="analytics" className={cn("px-4 py-2.5 text-sm font-bold rounded-xl flex items-center gap-2", shouldHighlight('analytics') && 'highlight-tab-active')}>
-                          <Scale className="h-4 w-4" /> {language === 'es' ? 'Análisis' : 'Analytics'}
-                        </TabsTrigger>
-                        <TabsTrigger value="budgets" className={cn("px-4 py-2.5 text-sm font-bold rounded-xl flex items-center gap-2", shouldHighlight('budget') && 'highlight-tab-active')}>
-                          <Wallet className="h-4 w-4" /> {language === 'es' ? 'Presupuesto' : 'Budget'}
-                        </TabsTrigger>
-                        <TabsTrigger value="mentorship" className={cn("px-4 py-2.5 text-sm font-bold rounded-xl flex items-center gap-2", shouldHighlight('mentorship') && 'highlight-tab-active')}>
-                          <GraduationCap className="h-4 w-4" /> {language === 'es' ? 'Mentoría' : 'Mentorship'}
-                        </TabsTrigger>
-                        <TabsTrigger value="goals" className={cn("px-4 py-2.5 text-sm font-bold rounded-xl flex items-center gap-2", shouldHighlight('goals') && 'highlight-tab-active')}>
-                          <Target className="h-4 w-4" /> {language === 'es' ? 'Metas' : 'Goals'}
-                        </TabsTrigger>
-                        <TabsTrigger value="tax" className={cn("px-4 py-2.5 text-sm font-bold rounded-xl flex items-center gap-2", shouldHighlight('tax') && 'highlight-tab-active')}>
-                          <Receipt className="h-4 w-4" /> {language === 'es' ? 'Impuestos' : 'Taxes'}
-                        </TabsTrigger>
-                        <TabsTrigger value="mileage" className={cn("px-4 py-2.5 text-sm font-bold rounded-xl flex items-center gap-2", shouldHighlight('mileage') && 'highlight-tab-active')}>
-                          <MapPin className="h-4 w-4" /> {language === 'es' ? 'Km' : 'Mileage'}
-                        </TabsTrigger>
-                        <TabsTrigger value="subscriptions" className={cn("px-4 py-2.5 text-sm font-bold rounded-xl flex items-center gap-2", shouldHighlight('subscriptions') && 'highlight-tab-active')}>
-                          <RefreshCw className="h-4 w-4" /> {language === 'es' ? 'Suscrip.' : 'Subs'}
-                        </TabsTrigger>
-                        <TabsTrigger value="fire" className={cn("px-4 py-2.5 text-sm font-bold rounded-xl flex items-center gap-2", shouldHighlight('fire') && 'highlight-tab-active')}>
-                          🔥 FIRE
-                        </TabsTrigger>
-                        <TabsTrigger value="debt" className={cn("px-4 py-2.5 text-sm font-bold rounded-xl flex items-center gap-2", shouldHighlight('debt') && 'highlight-tab-active')}>
-                          <Landmark className="h-4 w-4" /> {language === 'es' ? 'Deudas' : 'Debt'}
-                        </TabsTrigger>
-                        <TabsTrigger value="portfolio" className={cn("px-4 py-2.5 text-sm font-bold rounded-xl flex items-center gap-2", shouldHighlight('portfolio') && 'highlight-tab-active')}>
-                          <Briefcase className="h-4 w-4" /> Portfolio
-                        </TabsTrigger>
-                        <TabsTrigger value="education" className={cn("px-4 py-2.5 text-sm font-bold rounded-xl flex items-center gap-2", shouldHighlight('education') && 'highlight-tab-active')}>
-                          <GraduationCap className="h-4 w-4" /> {language === 'es' ? 'Educación' : 'Education'}
-                        </TabsTrigger>
-                      </TabsList>
+                      <AdvancedToolsNav 
+                        activeTab={activeTab} 
+                        onTabChange={setActiveTab}
+                        shouldHighlight={shouldHighlight}
+                      />
 
                       <TabsContent value="charts" className={cn("space-y-4", getHighlightProps('charts').className)} ref={getHighlightProps('charts').ref as any}>
                         {activeTab === 'charts' && (
