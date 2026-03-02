@@ -386,7 +386,7 @@ export default function Dashboard() {
                 </Card>
 
                 {/* Workflow Progress + Bills */}
-                <div className="grid gap-4 lg:grid-cols-2">
+                <div className="grid gap-4 lg:grid-cols-2" data-section="workflows">
                   <Suspense fallback={<Skeleton className="h-[200px]" />}>
                     <WorkflowSummaryWidget />
                   </Suspense>
