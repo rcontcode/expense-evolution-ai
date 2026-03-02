@@ -112,7 +112,7 @@
                </p>
              </div>
            </div>
-           <Link to="/dashboard?section=budgets">
+           <Link to="/budget">
              <Button size="sm" variant="outline">
                {l ? 'Ver todo' : 'View all'}
                <ChevronRight className="h-3 w-3 ml-1" />
