@@ -17,6 +17,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Sparkles,
   HelpCircle,
   TrendingUp,
@@ -40,6 +41,7 @@ import {
   HeartPulse,
   Briefcase,
   BookOpen,
+  Circle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
