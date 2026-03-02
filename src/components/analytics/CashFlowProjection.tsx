@@ -31,6 +31,7 @@ interface ProjectionData {
 export function CashFlowProjection() {
   const { language } = useLanguage();
   const locale = language === 'es' ? es : enUS;
+  const { formatCompact: formatCurrency } = useFormatCurrency();
   
   const { data: allIncome, isLoading: incomeLoading } = useIncome();
   const { data: allExpenses, isLoading: expensesLoading } = useExpenses();
