@@ -154,6 +154,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
   // Only show Beta Feedback to beta testers
   if (isBetaTester) {
     systemItems.push({ icon: MessageSquare, label: language === 'es' ? 'Beta Feedback' : 'Beta Feedback', path: '/beta-feedback', badge: null, tooltipKey: 'dashboard' as const });
+    systemItems.push({ icon: BookOpen, label: language === 'es' ? 'Guía Beta' : 'Beta Guide', path: '/beta-guide', badge: null, tooltipKey: 'dashboard' as const });
   }
 
   return [
