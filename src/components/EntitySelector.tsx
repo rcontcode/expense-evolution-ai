@@ -241,13 +241,12 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
               )}
             >
               {collapsed ? (
-                <motion.span 
-                  className="text-xl"
+                <motion.div
                   animate={open ? { rotate: 360 } : { rotate: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  {primaryEntity ? countryFlags[primaryEntity.country] || '🌍' : '🌍'}
-                </motion.span>
+                  <CountryFlag code={primaryEntity?.country || 'CA'} size="sm" className="rounded-sm shadow-md" />
+                </motion.div>
               ) : (
                 <>
                   <span className="flex items-center gap-2.5 text-sm truncate">
