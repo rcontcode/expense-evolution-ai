@@ -914,10 +914,20 @@ export const Layout = ({ children }: LayoutProps) => {
                         <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-2 pb-1">
                           {language === 'es' ? '🔧 Herramientas' : '🔧 Tools'}
                         </p>
-                        {item.children!.map((child: NavChild) => (
+                        {item.children!.map((child: NavChild, childIdx: number) => (
                           <button
-                            key={child.path}
-                            onClick={() => navigate(child.path)}
+                            key={`${child.path}-${childIdx}`}
+                            onClick={() => {
+                              // Force navigation even when already on /dashboard
+                              if (child.path.startsWith('/dashboard?')) {
+                                const url = new URL(child.path, window.location.origin);
+                                navigate(`/dashboard?${url.searchParams.toString()}`, { replace: false });
+                                // Force page to re-read params by dispatching popstate
+                                window.dispatchEvent(new Event('deep-link-trigger'));
+                              } else {
+                                navigate(child.path);
+                              }
+                            }}
                             className={cn(
                               "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-[11px] transition-all duration-150",
                               "text-muted-foreground hover:text-foreground",
