@@ -1,31 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
-
-type IncomeType = Database['public']['Enums']['income_type'];
-
-// Map common income type strings to valid enum values
-const mapIncomeType = (type?: string): IncomeType => {
-  if (!type) return 'other';
-  const normalized = type.toLowerCase();
-  
-  if (normalized.includes('salario') || normalized.includes('salary') || normalized.includes('sueldo')) return 'salary';
-  if (normalized.includes('cliente') || normalized.includes('client')) return 'client_payment';
-  if (normalized.includes('bono') || normalized.includes('bonus')) return 'bonus';
-  if (normalized.includes('regalo') || normalized.includes('gift')) return 'gift';
-  if (normalized.includes('reembolso') || normalized.includes('refund')) return 'refund';
-  if (normalized.includes('acciones') || normalized.includes('stock')) return 'investment_stocks';
-  if (normalized.includes('crypto')) return 'investment_crypto';
-  if (normalized.includes('fondo') || normalized.includes('fund')) return 'investment_funds';
-  if (normalized.includes('arriendo') || normalized.includes('rental') || normalized.includes('alquiler')) return 'passive_rental';
-  if (normalized.includes('royalty') || normalized.includes('regalía')) return 'passive_royalties';
-  if (normalized.includes('online') || normalized.includes('negocio')) return 'online_business';
-  if (normalized.includes('freelance') || normalized.includes('independiente')) return 'freelance';
-  
-  return 'other';
-};
 
 interface ActionResult {
   success: boolean;
@@ -261,26 +236,10 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
           const incomeData = action.data as { amount: number; source?: string; income_type?: string; description?: string };
           if (incomeData && incomeData.amount) {
             try {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (user) {
-                const { error } = await supabase.from('income').insert({
-                  user_id: user.id,
-                  amount: incomeData.amount,
-                  source: incomeData.source || 'Sin especificar',
-                  income_type: mapIncomeType(incomeData.income_type),
-                  description: incomeData.description || incomeData.source,
-                  date: new Date().toISOString().split('T')[0],
-                });
-
-                if (error) throw error;
-
-                onCreateIncome?.(incomeData);
-                const msg = language === 'es'
-                  ? `Ingreso de $${incomeData.amount} registrado${incomeData.source ? ` de ${incomeData.source}` : ''}`
-                  : `Income of $${incomeData.amount} recorded${incomeData.source ? ` from ${incomeData.source}` : ''}`;
-                toast.success(msg);
-                result = { success: true, message: action.message, data: incomeData };
+              if (onCreateIncome) {
+                onCreateIncome(incomeData);
               }
+              result = { success: true, message: action.message, data: incomeData };
             } catch (err) {
               console.error('[Assistant] Failed to create income:', err);
               const errMsg = language === 'es'

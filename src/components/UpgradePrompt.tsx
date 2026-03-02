@@ -52,6 +52,20 @@ const planDetails = {
     color: 'from-violet-600 via-purple-600 to-indigo-600',
     icon: Crown,
   },
+  bundle: {
+    name: 'Evo Bundle',
+    price: '$19.99',
+    priceAnnual: '$15.99',
+    color: 'from-teal-500 via-emerald-500 to-cyan-500',
+    icon: Rocket,
+  },
+  pro_beta: {
+    name: 'Pro (Beta)',
+    price: '$14.99',
+    priceAnnual: '$11.99',
+    color: 'from-violet-600 via-purple-600 to-indigo-600',
+    icon: Crown,
+  },
 };
 
 const featureIcons: Record<string, typeof Camera> = {
