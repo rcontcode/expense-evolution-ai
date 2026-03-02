@@ -316,8 +316,8 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
 
         case 'export': {
           const reportType = action.data?.reportType as string;
-          navigate('/dashboard?tab=analytics');
-          onNavigate?.('/dashboard?tab=analytics');
+          navigate('/analytics');
+          onNavigate?.('/analytics');
           const msg = language === 'es'
             ? `Preparando reporte de ${reportType}...`
             : `Preparing ${reportType} report...`;

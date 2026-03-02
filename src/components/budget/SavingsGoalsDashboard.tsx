@@ -330,7 +330,7 @@
                    ? 'Las metas te ayudan a mantener el enfoque y celebrar tus logros.'
                    : 'Goals help you stay focused and celebrate your achievements.'}
                </p>
-               <Link to="/dashboard?tab=goals">
+               <Link to="/budget?tab=savings">
                  <Button>
                    <Plus className="h-4 w-4 mr-2" />
                    {l ? 'Crear Meta' : 'Create Goal'}

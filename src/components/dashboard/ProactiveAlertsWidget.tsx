@@ -154,7 +154,7 @@ export function ProactiveAlertsWidget() {
             const pct = ((spent / b.monthly_budget) * 100).toFixed(0);
             return `${b.category}: ${pct}%`;
           }).join(', '),
-          action: { label: l ? 'Ajustar' : 'Adjust', route: '/dashboard?tab=budgets' },
+          action: { label: l ? 'Ajustar' : 'Adjust', route: '/budget' },
           priority: 3,
         });
       }

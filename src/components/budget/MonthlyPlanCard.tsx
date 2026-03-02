@@ -678,7 +678,7 @@ export function MonthlyPlanCard() {
                 size="sm"
                 variant="outline"
                 className="h-8 text-[10px] justify-start gap-1.5"
-                onClick={() => navigate("/dashboard?tab=goals")}
+                onClick={() => navigate("/budget?tab=savings")}
               >
                 <Target className="h-3 w-3" />
                 {l ? "Metas" : "Goals"}

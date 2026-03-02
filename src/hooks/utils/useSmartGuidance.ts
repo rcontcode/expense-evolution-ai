@@ -404,7 +404,7 @@ const VOICE_TUTORIALS: Tutorial[] = [
           es: 'Ve al Dashboard y abre la pestaña de Impuestos. Busca el "Optimizador RRSP/TFSA" (en Chile es APV).',
           en: 'Go to the Dashboard and open the Taxes tab. Find the "RRSP/TFSA Optimizer" (in Chile it\'s APV).'
         },
-        action: '/dashboard?tab=tax'
+        action: '/tax-optimizer'
       },
       {
         title: { es: 'Paso 2: Ingresa tu información', en: 'Step 2: Enter your information' },

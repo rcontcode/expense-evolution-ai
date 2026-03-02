@@ -13,7 +13,6 @@ const RESUMEN_SECTIONS: ScrollSpySection[] = [
   { id: 'workflows', label: { es: 'Flujos', en: 'Workflows' }, emoji: '🔄', color: 'from-violet-400 to-purple-500' },
   { id: 'alerts', label: { es: 'Alertas', en: 'Alerts' }, emoji: '🔔', color: 'from-rose-400 to-red-500' },
   { id: 'gamification', label: { es: 'Aventura', en: 'Adventure' }, emoji: '🏆', color: 'from-yellow-400 to-amber-500' },
-  { id: 'advanced-tools', label: { es: 'Herramientas', en: 'Tools' }, emoji: '🛠️', color: 'from-blue-400 to-indigo-500' },
 ];
 
 // Sections for "Control" view

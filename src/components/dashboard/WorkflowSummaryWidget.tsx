@@ -66,7 +66,7 @@ const WORKFLOW_CONFIGS: WorkflowConfig[] = [
     description: { es: 'Prepara tu declaración fiscal', en: 'Prepare your tax filing' },
     hint: { es: 'Clasifica gastos como deducibles para CRA/SII', en: 'Classify expenses as deductible for tax' },
     icon: Calculator,
-    path: '/dashboard?tab=tax',
+    path: '/tax-optimizer',
     color: 'text-emerald-600',
     bgColor: 'bg-emerald-100 dark:bg-emerald-900/40',
     borderColor: 'border-emerald-300 dark:border-emerald-700'

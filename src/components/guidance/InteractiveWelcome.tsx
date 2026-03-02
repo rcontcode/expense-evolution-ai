@@ -232,10 +232,10 @@ const INTERACTIVE_QUESTIONS: InteractiveQuestion[] = [
       en: '💡 Do you have any financial plan in mind?' 
     },
     actions: [
-      { label: { es: 'Planificar retiro (FIRE)', en: 'Plan retirement (FIRE)' }, path: '/dashboard?tab=fire', icon: TrendingUp, color: 'text-orange-600' },
+      { label: { es: 'Planificar retiro (FIRE)', en: 'Plan retirement (FIRE)' }, path: '/investments', icon: TrendingUp, color: 'text-orange-600' },
       { label: { es: 'Reducir deudas', en: 'Reduce debt' }, path: '/net-worth', icon: TrendingUp, color: 'text-red-600' },
-      { label: { es: 'Maximizar inversiones', en: 'Maximize investments' }, path: '/dashboard?tab=portfolio', icon: Zap, color: 'text-amber-600' },
-      { label: { es: 'Optimizar RRSP/TFSA', en: 'Optimize RRSP/TFSA' }, path: '/dashboard?tab=tax', icon: PiggyBank, color: 'text-emerald-600' }
+      { label: { es: 'Maximizar inversiones', en: 'Maximize investments' }, path: '/investments', icon: Zap, color: 'text-amber-600' },
+      { label: { es: 'Optimizar RRSP/TFSA', en: 'Optimize RRSP/TFSA' }, path: '/tax-optimizer', icon: PiggyBank, color: 'text-emerald-600' }
     ]
   }
 ];

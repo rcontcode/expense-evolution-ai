@@ -63,18 +63,18 @@ interface DashboardToolItem {
 }
 
 const DASHBOARD_TOOLS: DashboardToolItem[] = [
-  { label: { es: 'Gráficos', en: 'Charts' }, emoji: '📊', path: '/dashboard?tab=charts', keywords: ['charts', 'graficos', 'estadisticas'] },
-  { label: { es: 'Análisis', en: 'Analytics' }, emoji: '📈', path: '/dashboard?tab=analytics', keywords: ['analytics', 'analisis', 'radar', 'sankey', 'heatmap'] },
-  { label: { es: 'Presupuesto', en: 'Budget' }, emoji: '💰', path: '/dashboard?tab=budget', keywords: ['budget', 'presupuesto', 'plan mensual'] },
-  { label: { es: 'Mentoría', en: 'Mentorship' }, emoji: '🎓', path: '/dashboard?tab=mentorship', keywords: ['mentorship', 'mentoria', 'cashflow', 'journal', 'habitos'] },
-  { label: { es: 'Metas', en: 'Goals' }, emoji: '🎯', path: '/dashboard?tab=goals', keywords: ['goals', 'metas', 'savings', 'ahorro', 'SMART'] },
-  { label: { es: 'Impuestos', en: 'Taxes' }, emoji: '📋', path: '/dashboard?tab=tax', keywords: ['tax', 'impuestos', 'SII', 'CRA', 'optimizador'] },
-  { label: { es: 'Kilometraje', en: 'Mileage' }, emoji: '🚗', path: '/dashboard?tab=mileage', keywords: ['mileage', 'kilometraje', 'viaje', 'km'] },
-  { label: { es: 'Suscripciones', en: 'Subscriptions' }, emoji: '🔄', path: '/dashboard?tab=subscriptions', keywords: ['subscriptions', 'suscripciones', 'recurrentes'] },
-  { label: { es: 'FIRE', en: 'FIRE' }, emoji: '🔥', path: '/dashboard?tab=fire', keywords: ['fire', 'libertad financiera', 'retiro', 'retirement'] },
-  { label: { es: 'Deudas', en: 'Debt' }, emoji: '🏦', path: '/dashboard?tab=debt', keywords: ['debt', 'deudas', 'prestamos', 'loans'] },
-  { label: { es: 'Portfolio', en: 'Portfolio' }, emoji: '💼', path: '/dashboard?tab=portfolio', keywords: ['portfolio', 'inversiones', 'investments'] },
-  { label: { es: 'Educación', en: 'Education' }, emoji: '📚', path: '/dashboard?tab=education', keywords: ['education', 'educacion', 'lectura', 'reading', 'libros'] },
+  { label: { es: 'Gráficos', en: 'Charts' }, emoji: '📊', path: '/analytics', keywords: ['charts', 'graficos', 'estadisticas'] },
+  { label: { es: 'Análisis', en: 'Analytics' }, emoji: '📈', path: '/analytics', keywords: ['analytics', 'analisis', 'radar', 'sankey', 'heatmap'] },
+  { label: { es: 'Presupuesto', en: 'Budget' }, emoji: '💰', path: '/budget', keywords: ['budget', 'presupuesto', 'plan mensual'] },
+  { label: { es: 'Mentoría', en: 'Mentorship' }, emoji: '🎓', path: '/mentorship', keywords: ['mentorship', 'mentoria', 'cashflow', 'journal', 'habitos'] },
+  { label: { es: 'Metas', en: 'Goals' }, emoji: '🎯', path: '/budget?tab=savings', keywords: ['goals', 'metas', 'savings', 'ahorro', 'SMART'] },
+  { label: { es: 'Impuestos', en: 'Taxes' }, emoji: '📋', path: '/tax-optimizer', keywords: ['tax', 'impuestos', 'SII', 'CRA', 'optimizador'] },
+  { label: { es: 'Kilometraje', en: 'Mileage' }, emoji: '🚗', path: '/mileage', keywords: ['mileage', 'kilometraje', 'viaje', 'km'] },
+  { label: { es: 'Suscripciones', en: 'Subscriptions' }, emoji: '🔄', path: '/subscriptions', keywords: ['subscriptions', 'suscripciones', 'recurrentes'] },
+  { label: { es: 'FIRE', en: 'FIRE' }, emoji: '🔥', path: '/investments', keywords: ['fire', 'libertad financiera', 'retiro', 'retirement'] },
+  { label: { es: 'Deudas', en: 'Debt' }, emoji: '🏦', path: '/investments', keywords: ['debt', 'deudas', 'prestamos', 'loans'] },
+  { label: { es: 'Portfolio', en: 'Portfolio' }, emoji: '💼', path: '/investments', keywords: ['portfolio', 'inversiones', 'investments'] },
+  { label: { es: 'Educación', en: 'Education' }, emoji: '📚', path: '/mentorship', keywords: ['education', 'educacion', 'lectura', 'reading', 'libros'] },
 ];
 
 const NAVIGATION_ITEMS: NavigationItem[] = [
