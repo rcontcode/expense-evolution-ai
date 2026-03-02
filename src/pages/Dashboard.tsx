@@ -419,7 +419,7 @@ export default function Dashboard() {
                 </Suspense>
 
                 {/* Advanced Tools Card */}
-                <Card className="border-2 border-primary/30 bg-gradient-to-br from-card via-primary/5 to-accent/10 backdrop-blur-sm overflow-hidden shadow-2xl shadow-primary/20 ring-1 ring-primary/10" data-highlight="control-center">
+                <Card className="border-2 border-primary/30 bg-gradient-to-br from-card via-primary/5 to-accent/10 backdrop-blur-sm overflow-hidden shadow-2xl shadow-primary/20 ring-1 ring-primary/10" data-section="advanced-tools" data-highlight="control-center">
                   <div className="h-2 bg-gradient-to-r from-primary via-accent to-destructive shadow-lg shadow-primary/30" />
                   <CardHeader className="pb-4 pt-5">
                     <div className="flex items-center gap-3">
