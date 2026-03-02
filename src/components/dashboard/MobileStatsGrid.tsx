@@ -23,6 +23,7 @@ export const MobileStatsGrid = memo(({
   savingsRate,
 }: MobileStatsGridProps) => {
   const { language } = useLanguage();
+  const { formatCompact } = useFormatCurrency();
   const navigate = useNavigate();
   const isPositive = monthlyBalance >= 0;
 
