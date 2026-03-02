@@ -36,6 +36,7 @@ export function PayYourselfFirstCard() {
 
   const updateSettings = useUpdatePayYourselfFirst();
   const recordPayment = useRecordPayment();
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   if (isLoading) {
     return (
@@ -49,8 +50,6 @@ export function PayYourselfFirstCard() {
       </Card>
     );
   }
-
-  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   const handleSaveSettings = () => {
     updateSettings.mutate({ target_percentage: targetPercentage });
