@@ -11,6 +11,7 @@ import {
   CameraOff, ChevronRight, Sparkles, FileCheck, DollarSign
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useAuth } from '@/contexts/AuthContext';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { useDocumentsForReview, useDocumentImageUrl } from '@/hooks/data/useDocumentReview';
