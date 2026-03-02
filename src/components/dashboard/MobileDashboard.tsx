@@ -4,24 +4,18 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
-import { useNudgeSystem } from '@/hooks/utils/useNudgeSystem';
-import { NextActionBanner } from '@/components/dashboard/NextActionBanner';
 import { DashboardNotificationHub } from '@/components/dashboard/DashboardNotificationHub';
 import { YearTimelineChart } from '@/components/dashboard/YearTimelineChart';
 import { MonthDetailPanel } from '@/components/dashboard/MonthDetailPanel';
 import { MobileStatsGrid } from '@/components/dashboard/MobileStatsGrid';
-import { MobileAlertsBanner } from '@/components/dashboard/MobileAlertsBanner';
 import { DashboardViewTabs } from '@/components/dashboard/DashboardViewTabs';
 import { ProgressiveOnboarding } from '@/components/onboarding/ProgressiveOnboarding';
-import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
-import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding';
 import { LiveClock } from '@/components/dashboard/LiveClock';
 import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
 import { DashboardGamificationWidget } from '@/components/gamification';
 import { MobileSectionPills } from '@/components/dashboard/MobileSectionPills';
 
 const LazyEcosystemWidgets = lazy(() => import('@/components/ecosystem/EcosystemDashboardWidgets'));
-
 const OrganizedDashboard = lazy(() => import('@/components/focus').then(m => ({ default: m.OrganizedDashboard })));
 
 interface MobileDashboardProps {
@@ -32,7 +26,6 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const { data: stats, isLoading } = useDashboardStats();
-  const { pendingDocuments, incompleteExpenses, totalClients, totalIncomes } = useNudgeSystem();
 
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -52,16 +45,11 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
         <LiveClock />
       </div>
 
+      {/* THE ONLY alert center — no more MobileAlertsBanner or NextActionBanner */}
       <DashboardNotificationHub />
 
-      <MobileAlertsBanner
-        pendingDocuments={pendingDocuments}
-        incompleteExpenses={incompleteExpenses}
-      />
-
-      <BetaReminderBanner />
+      {/* Onboarding (auto-hides when complete) */}
       <ProgressiveOnboarding />
-      <EcosystemOnboarding />
 
       <MobileStatsGrid
         isLoading={isLoading}
@@ -71,6 +59,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
         savingsRate={savingsRate}
       />
 
+      {/* VIEW TABS — above content as primary navigation */}
       <DashboardViewTabs activeTab={activeView} onTabChange={setActiveView} />
       
       {/* Section navigation pills */}
@@ -86,16 +75,6 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
             transition={{ duration: 0.2 }}
             className="space-y-4"
           >
-            {(pendingDocuments > 0 || incompleteExpenses > 0 || totalClients === 0) && (
-              <NextActionBanner
-                pendingDocuments={pendingDocuments}
-                incompleteExpenses={incompleteExpenses}
-                totalClients={totalClients}
-                totalIncomes={totalIncomes}
-                totalExpenses={stats?.totalExpenses || 0}
-              />
-            )}
-
             <div className="overflow-x-auto -mx-4 px-4" data-section="timeline">
               <YearTimelineChart
                 selectedMonth={selectedMonth}

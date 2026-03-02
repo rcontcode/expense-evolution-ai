@@ -6,10 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Receipt, Users, Download } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
-import { useSubscription } from '@/hooks/data/useSubscription';
-import { toast } from 'sonner';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useExpensesRealtime } from '@/hooks/data/useExpensesRealtime';
 import { ExportDialog } from '@/components/export/ExportDialog';
@@ -24,9 +22,7 @@ import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { YearTimelineChart } from '@/components/dashboard/YearTimelineChart';
 import { LiveClock } from '@/components/dashboard/LiveClock';
 import { MonthDetailPanel } from '@/components/dashboard/MonthDetailPanel';
-import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
-import { NextActionBanner } from '@/components/dashboard/NextActionBanner';
-import { useNudgeSystem } from '@/hooks/utils/useNudgeSystem';
+import { DashboardNotificationHub } from '@/components/dashboard/DashboardNotificationHub';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileDashboard } from '@/components/dashboard/MobileDashboard';
 import { QuickCaptureDialog } from '@/components/dialogs/QuickCaptureDialog';
@@ -34,37 +30,18 @@ import { DashboardGamificationWidget } from '@/components/gamification';
 import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
 import { ProfileExtenderDialog } from '@/components/profile/ProfileExtenderDialog';
 import { LifeProfileSection } from '@/hooks/data/useLifeProfile';
-import { DashboardNotificationHub } from '@/components/dashboard/DashboardNotificationHub';
-import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding';
 import { EcosystemSection } from '@/components/ecosystem/EcosystemSection';
 import { DashboardNavigator } from '@/components/dashboard/DashboardNavigator';
+import { useDashboardDeepLinks } from '@/hooks/utils/useDashboardDeepLinks';
 
 // Lazy load only dashboard-specific components
 const WorkflowSummaryWidget = lazy(() => import('@/components/dashboard/WorkflowSummaryWidget').then(m => ({ default: m.WorkflowSummaryWidget })));
 const MonthlyBillsWidget = lazy(() => import('@/components/dashboard/MonthlyBillsWidget').then(m => ({ default: m.MonthlyBillsWidget })));
 const ProactiveAlertsWidget = lazy(() => import('@/components/dashboard/ProactiveAlertsWidget').then(m => ({ default: m.ProactiveAlertsWidget })));
 
-// Tab → route redirect map
-const TAB_REDIRECTS: Record<string, string> = {
-  charts: '/analytics',
-  analytics: '/analytics',
-  budget: '/budget',
-  budgets: '/budget',
-  mentorship: '/mentorship',
-  goals: '/budget?tab=savings',
-  tax: '/tax-optimizer',
-  mileage: '/mileage',
-  subscriptions: '/subscriptions',
-  fire: '/investments',
-  debt: '/investments',
-  portfolio: '/investments',
-  education: '/mentorship',
-};
-
 export default function Dashboard() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   
   // Timeline state
@@ -84,61 +61,10 @@ export default function Dashboard() {
     setProfileExtenderOpen(true);
   }, []);
 
-  const { refreshSubscription } = useSubscription();
   const { viewMode, setViewMode, isLoading: prefsLoading } = useDisplayPreferences();
 
-  // Handle subscription success/cancel from Stripe redirect
-  useEffect(() => {
-    const subscriptionStatus = searchParams.get('subscription');
-    if (subscriptionStatus === 'success') {
-      toast.success('¡Suscripción activada! 🎉', {
-        description: 'Tu plan ha sido actualizado correctamente',
-      });
-      refreshSubscription();
-      setSearchParams({});
-    } else if (subscriptionStatus === 'cancelled') {
-      toast.info('Pago cancelado', {
-        description: 'Puedes intentar de nuevo cuando quieras',
-      });
-      setSearchParams({});
-    }
-  }, [searchParams, setSearchParams, refreshSubscription]);
-
-  // Deep-link redirect: ?tab=X → dedicated route
-  // Deep-link to Centro de Control: ?area=X&atab=Y
-  const [deepLinkArea, setDeepLinkArea] = useState<string | null>(null);
-  const [deepLinkTab, setDeepLinkTab] = useState<string | null>(null);
-  const [deepLinkKey, setDeepLinkKey] = useState(0); // Force re-render on repeated deep-links
-  
-  useEffect(() => {
-    const tab = searchParams.get('tab');
-    const area = searchParams.get('area');
-    const areaTab = searchParams.get('atab');
-    
-    // Deep-link to Centro de Control area
-    if (area) {
-      setDeepLinkArea(area);
-      setDeepLinkTab(areaTab || null);
-      setDeepLinkKey(k => k + 1);
-      // Auto-switch to organized/control view
-      if (viewMode !== 'organized') {
-        setViewMode('organized');
-      }
-      // Clear params after reading
-      searchParams.delete('area');
-      searchParams.delete('atab');
-      searchParams.delete('tool');
-      setSearchParams(searchParams, { replace: true });
-      return;
-    }
-    
-    if (!tab) return;
-    const redirectTo = TAB_REDIRECTS[tab];
-    if (redirectTo) {
-      setSearchParams({}, { replace: true });
-      navigate(redirectTo, { replace: true });
-    }
-  }, [searchParams, setSearchParams, navigate, viewMode, setViewMode]);
+  // Deep-link & Stripe redirect handling (extracted)
+  const { deepLinkArea, deepLinkTab, deepLinkKey } = useDashboardDeepLinks(viewMode, setViewMode);
 
   // Track dashboard visit for missions
   usePageVisitTracker('view_dashboard');
@@ -148,15 +74,9 @@ export default function Dashboard() {
 
   const { data: stats, isLoading } = useDashboardStats();
   const { data: allExpenses } = useExpenses();
-  const { pendingDocuments, incompleteExpenses, totalClients, totalIncomes } = useNudgeSystem();
 
-  const handleAddIncome = useCallback(() => {
-    navigate('/income');
-  }, [navigate]);
-
-  const handleAddExpense = useCallback(() => {
-    navigate('/expenses');
-  }, [navigate]);
+  const handleAddIncome = useCallback(() => navigate('/income'), [navigate]);
+  const handleAddExpense = useCallback(() => navigate('/expenses'), [navigate]);
 
   // Check if first visit to show guide
   useEffect(() => {
@@ -168,8 +88,6 @@ export default function Dashboard() {
   }, [user]);
 
   const isMobile = useIsMobile();
-  
-  // Quick capture dialog state for mobile
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
 
   // Mobile-optimized dashboard
@@ -179,15 +97,8 @@ export default function Dashboard() {
         <div className="p-4">
           <MobileDashboard onQuickCapture={() => setQuickCaptureOpen(true)} />
         </div>
-        <ExportDialog 
-          open={exportDialogOpen} 
-          onClose={() => setExportDialogOpen(false)} 
-          expenses={allExpenses || []} 
-        />
-        <QuickCaptureDialog 
-          open={quickCaptureOpen} 
-          onClose={() => setQuickCaptureOpen(false)} 
-        />
+        <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} expenses={allExpenses || []} />
+        <QuickCaptureDialog open={quickCaptureOpen} onClose={() => setQuickCaptureOpen(false)} />
       </Layout>
     );
   }
@@ -197,76 +108,56 @@ export default function Dashboard() {
       <TooltipProvider delayDuration={200}>
         <div className="page-container section-gap">
           
-          {/* Live Date & Time */}
+          {/* 1. Live Clock */}
           <LiveClock />
 
-          {/* Notification Hub */}
+          {/* 2. Notification Hub — THE ONLY alert center */}
           <DashboardNotificationHub />
 
-          {/* Beta Reminder Banner */}
-          <BetaReminderBanner />
-          
-          {/* Next Action Nudge Banner */}
-          <NextActionBanner 
-            pendingDocuments={pendingDocuments}
-            incompleteExpenses={incompleteExpenses}
-            totalClients={totalClients}
-            totalIncomes={totalIncomes}
-            totalExpenses={stats?.totalExpenses || 0}
-          />
-          
-          {/* Progressive Onboarding */}
+          {/* 3. Onboarding (only for new users, auto-hides) */}
           <ProgressiveOnboarding />
-          
-          {/* Ecosystem Onboarding */}
-          <EcosystemOnboarding />
-          
-          {/* Profile Extender Dialog */}
+
+          {/* 4. Profile Extender Dialog */}
           <ProfileExtenderDialog
             open={profileExtenderOpen}
             onOpenChange={setProfileExtenderOpen}
             section={selectedProfileSection}
           />
           
-          {/* Interactive Guide */}
+          {/* 5. Interactive Guide (first visit only) */}
           {showGuide && (
             <div className="animate-in fade-in slide-in-from-top-4 duration-300">
               <InteractiveWelcome />
             </div>
           )}
+
+          {/* 6. Quick Actions — ALWAYS VISIBLE */}
+          <Card className="border-dashed" data-section="quick-actions">
+            <CardContent className="py-3">
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => navigate('/chaos')} size="sm" className="gap-2">
+                  <Upload className="h-4 w-4" /> {t('dashboard.uploadDocument')}
+                </Button>
+                <Button onClick={() => navigate('/expenses')} variant="outline" size="sm" className="gap-2">
+                  <Receipt className="h-4 w-4" /> {t('dashboard.addExpense')}
+                </Button>
+                <Button onClick={() => navigate('/clients')} variant="outline" size="sm" className="gap-2">
+                  <Users className="h-4 w-4" /> {t('dashboard.addClient')}
+                </Button>
+                <Button onClick={() => setExportDialogOpen(true)} variant="outline" size="sm" className="gap-2">
+                  <Download className="h-4 w-4" /> {t('export.exportButton')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
           
-          {/* Timeline + Month Detail */}
-          <div className="side-by-side" data-section="timeline" data-highlight="timeline-section">
-            <div data-highlight="timeline-chart" className="flex flex-col">
-              <YearTimelineChart
-                selectedMonth={selectedMonth}
-                onMonthSelect={setSelectedMonth}
-                selectedYear={selectedYear}
-                onYearChange={setSelectedYear}
-              />
-            </div>
-
-            <div data-highlight="balance-card">
-              <MonthDetailPanel
-                year={selectedYear}
-                month={selectedMonth}
-                onAddIncome={handleAddIncome}
-                onAddExpense={handleAddExpense}
-              />
-            </div>
-          </div>
-
-          {/* Ecosystem */}
-          <div data-section="ecosystem">
-            <EcosystemSection />
-          </div>
-
-          {/* ===== VIEW TABS ===== */}
+          {/* 7. VIEW TABS — ABOVE the timeline as primary navigation */}
           <DashboardViewTabs 
             activeTab={viewMode === 'organized' ? 'control' : 'resumen'} 
             onTabChange={(tab) => setViewMode(tab === 'control' ? 'organized' : 'classic')} 
           />
 
+          {/* 8. View Content */}
           <AnimatePresence mode="wait">
             {viewMode === 'organized' ? (
               <motion.div
@@ -287,25 +178,30 @@ export default function Dashboard() {
                 transition={{ duration: 0.2 }}
                 className="space-y-6"
               >
-                {/* Quick Actions */}
-                <Card className="border-dashed" data-section="quick-actions">
-                  <CardContent className="py-3">
-                    <div className="flex flex-wrap gap-2">
-                      <Button onClick={() => navigate('/chaos')} size="sm" className="gap-2">
-                        <Upload className="h-4 w-4" /> {t('dashboard.uploadDocument')}
-                      </Button>
-                      <Button onClick={() => navigate('/expenses')} variant="outline" size="sm" className="gap-2">
-                        <Receipt className="h-4 w-4" /> {t('dashboard.addExpense')}
-                      </Button>
-                      <Button onClick={() => navigate('/clients')} variant="outline" size="sm" className="gap-2">
-                        <Users className="h-4 w-4" /> {t('dashboard.addClient')}
-                      </Button>
-                      <Button onClick={() => setExportDialogOpen(true)} variant="outline" size="sm" className="gap-2">
-                        <Download className="h-4 w-4" /> {t('export.exportButton')}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* Timeline + Month Detail */}
+                <div className="side-by-side" data-section="timeline" data-highlight="timeline-section">
+                  <div data-highlight="timeline-chart" className="flex flex-col">
+                    <YearTimelineChart
+                      selectedMonth={selectedMonth}
+                      onMonthSelect={setSelectedMonth}
+                      selectedYear={selectedYear}
+                      onYearChange={setSelectedYear}
+                    />
+                  </div>
+                  <div data-highlight="balance-card">
+                    <MonthDetailPanel
+                      year={selectedYear}
+                      month={selectedMonth}
+                      onAddIncome={handleAddIncome}
+                      onAddExpense={handleAddExpense}
+                    />
+                  </div>
+                </div>
+
+                {/* Ecosystem */}
+                <div data-section="ecosystem">
+                  <EcosystemSection />
+                </div>
 
                 {/* Workflow Progress + Bills */}
                 <div className="grid gap-4 lg:grid-cols-2" data-section="workflows">
@@ -317,12 +213,14 @@ export default function Dashboard() {
                   </Suspense>
                 </div>
 
-                {/* Smart Alerts + Gamification */}
+                {/* Smart Alerts */}
                 <div data-section="alerts">
                   <Suspense fallback={null}>
                     <ProactiveAlertsWidget />
                   </Suspense>
                 </div>
+
+                {/* Gamification */}
                 <div data-section="gamification">
                   <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
                   <DashboardGamificationWidget compact={true} />
@@ -334,11 +232,7 @@ export default function Dashboard() {
           {/* Desktop Navigator */}
           <DashboardNavigator viewMode={viewMode === 'organized' ? 'control' : 'resumen'} />
 
-          <ExportDialog 
-            open={exportDialogOpen} 
-            onClose={() => setExportDialogOpen(false)} 
-            expenses={allExpenses || []} 
-          />
+          <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} expenses={allExpenses || []} />
         </div>
       </TooltipProvider>
     </Layout>
