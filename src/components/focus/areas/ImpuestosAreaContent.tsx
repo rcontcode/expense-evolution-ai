@@ -57,7 +57,7 @@ export const ImpuestosAreaContent = memo(({ forcedTab }: { forcedTab?: string | 
     </div>
   );
 
-  return <AreaTabsLayout areaKey="impuestos" tabs={tabs} footer={footer} />;
+  return <AreaTabsLayout areaKey="impuestos" tabs={tabs} footer={footer} forcedTab={forcedTab} />;
 });
 
 ImpuestosAreaContent.displayName = 'ImpuestosAreaContent';

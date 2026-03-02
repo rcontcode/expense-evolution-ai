@@ -60,7 +60,7 @@ export const NegocioAreaContent = memo(({ forcedTab }: { forcedTab?: string | nu
     </div>
   );
 
-  return <AreaTabsLayout areaKey="negocio" tabs={tabs} footer={footer} />;
+  return <AreaTabsLayout areaKey="negocio" tabs={tabs} footer={footer} forcedTab={forcedTab} />;
 });
 
 NegocioAreaContent.displayName = 'NegocioAreaContent';

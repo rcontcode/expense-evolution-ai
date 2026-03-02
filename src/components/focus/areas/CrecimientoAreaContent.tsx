@@ -93,7 +93,7 @@ export const CrecimientoAreaContent = memo(({ forcedTab }: { forcedTab?: string 
     </div>
   );
 
-  return <AreaTabsLayout areaKey="crecimiento" tabs={tabs} footer={footer} />;
+  return <AreaTabsLayout areaKey="crecimiento" tabs={tabs} footer={footer} forcedTab={forcedTab} />;
 });
 
 CrecimientoAreaContent.displayName = 'CrecimientoAreaContent';
