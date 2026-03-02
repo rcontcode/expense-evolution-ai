@@ -1,4 +1,5 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { ExpenseWithRelations } from '@/types/expense.types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

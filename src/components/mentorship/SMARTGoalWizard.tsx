@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useCreateInvestmentGoal } from '@/hooks/data/useInvestmentGoals';
 import { useCreateSavingsGoal } from '@/hooks/data/useSavingsGoals';
 import { Target, CheckCircle, Calendar as CalendarIcon, DollarSign, Lightbulb, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
