@@ -119,12 +119,12 @@ const sectionThemes = {
     glow: 'shadow-purple-500/20',
   },
   system: {
-    gradient: 'from-slate-500/20 to-gray-500/20',
-    border: 'border-slate-500/30',
-    text: 'text-slate-600 dark:text-slate-400',
-    iconWrapper: 'bg-gradient-to-br from-slate-400 via-gray-500 to-zinc-600 shadow-lg shadow-slate-500/50',
+    gradient: 'from-indigo-500/20 to-violet-500/20',
+    border: 'border-indigo-500/30',
+    text: 'text-indigo-600 dark:text-indigo-400',
+    iconWrapper: 'bg-gradient-to-br from-indigo-400 via-violet-500 to-purple-600 shadow-lg shadow-indigo-500/50',
     iconColor: 'text-white drop-shadow-md',
-    glow: 'shadow-slate-500/20',
+    glow: 'shadow-indigo-500/20',
   },
 };
 
