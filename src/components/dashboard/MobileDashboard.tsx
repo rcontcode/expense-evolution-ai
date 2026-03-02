@@ -14,6 +14,7 @@ import { DashboardViewTabs } from '@/components/dashboard/DashboardViewTabs';
 import { ProgressiveOnboarding } from '@/components/onboarding/ProgressiveOnboarding';
 import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
 import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding';
+import { LiveClock } from '@/components/dashboard/LiveClock';
 
 const LazyEcosystemWidgets = lazy(() => import('@/components/ecosystem/EcosystemDashboardWidgets'));
 
