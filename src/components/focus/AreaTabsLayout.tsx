@@ -1,11 +1,15 @@
-import { memo, useState, useCallback, lazy, Suspense, ReactNode } from 'react';
+import { memo, useState, useCallback, ReactNode } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export interface AreaTab {
   id: string;
   label: string;
   emoji?: string;
+  description?: string;
   content: ReactNode;
 }
 
@@ -13,11 +17,12 @@ interface AreaTabsLayoutProps {
   areaKey: string;
   tabs: AreaTab[];
   footer?: ReactNode;
+  accentColor?: string;
 }
 
 const STORAGE_PREFIX = 'evofinz-area-tab-';
 
-export const AreaTabsLayout = memo(({ areaKey, tabs, footer }: AreaTabsLayoutProps) => {
+export const AreaTabsLayout = memo(({ areaKey, tabs, footer, accentColor }: AreaTabsLayoutProps) => {
   const storageKey = `${STORAGE_PREFIX}${areaKey}`;
   const [activeTab, setActiveTab] = useState(() => {
     try {
@@ -34,26 +39,64 @@ export const AreaTabsLayout = memo(({ areaKey, tabs, footer }: AreaTabsLayoutPro
 
   if (tabs.length === 0) return null;
 
+  const activeTabData = tabs.find(t => t.id === activeTab);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted/50">
+        <TabsList className="w-full flex-wrap h-auto gap-1.5 p-2 bg-muted/40 border border-border/50 backdrop-blur-sm">
           {tabs.map(tab => (
-            <TabsTrigger key={tab.id} value={tab.id} className="text-xs sm:text-sm gap-1">
-              {tab.emoji && <span>{tab.emoji}</span>}
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className={cn(
+                "text-xs sm:text-sm gap-1.5 px-3 py-2 rounded-lg transition-all duration-200",
+                "data-[state=active]:shadow-md data-[state=active]:font-bold",
+                "hover:bg-accent/50"
+              )}
+            >
+              {tab.emoji && <span className="text-base">{tab.emoji}</span>}
               {tab.label}
             </TabsTrigger>
           ))}
         </TabsList>
+
+        {/* Active tab description */}
+        {activeTabData?.description && (
+          <motion.p
+            key={activeTabData.id}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-xs text-muted-foreground px-1 pt-2"
+          >
+            {activeTabData.description}
+          </motion.p>
+        )}
+
         {tabs.map(tab => (
-          <TabsContent key={tab.id} value={tab.id}>
-            <Suspense fallback={<Skeleton className="h-[200px] rounded-xl" />}>
-              {tab.content}
-            </Suspense>
+          <TabsContent key={tab.id} value={tab.id} className="mt-4">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={tab.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                {tab.content}
+              </motion.div>
+            </AnimatePresence>
           </TabsContent>
         ))}
       </Tabs>
-      {footer}
+
+      {/* Separator between content and footer links */}
+      {footer && (
+        <>
+          <Separator className="my-2 opacity-50" />
+          {footer}
+        </>
+      )}
     </div>
   );
 });

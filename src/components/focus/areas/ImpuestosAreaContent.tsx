@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useTaxCalculations } from '@/hooks/data/useTaxCalculations';
 import { AreaTabsLayout, type AreaTab } from '../AreaTabsLayout';
+import { Calendar, Building2, GitCompare } from 'lucide-react';
 
 const TaxOptimizerCard = lazy(() => import('@/components/dashboard/TaxOptimizerCard').then(m => ({ default: m.TaxOptimizerCard })));
 const RrspTfsaOptimizerCard = lazy(() => import('@/components/dashboard/RrspTfsaOptimizerCard').then(m => ({ default: m.RrspTfsaOptimizerCard })));
@@ -22,6 +23,7 @@ export const ImpuestosAreaContent = memo(() => {
       id: 'optimization',
       label: es ? 'Optimización' : 'Optimization',
       emoji: '🛡️',
+      description: es ? 'Análisis IA de deducciones CRA y optimización TFSA/RRSP' : 'AI analysis of CRA deductions and TFSA/RRSP optimization',
       content: (
         <div className="grid gap-6 lg:grid-cols-2">
           <TaxOptimizerCard />
@@ -33,20 +35,24 @@ export const ImpuestosAreaContent = memo(() => {
       id: 'summary',
       label: es ? 'Resumen' : 'Summary',
       emoji: '📋',
+      description: es ? 'Desglose fiscal por categoría: deducible, reembolsable e ITC' : 'Tax breakdown by category: deductible, reimbursable and ITC',
       content: <TaxSummaryCards taxSummary={taxSummary} />,
     },
   ];
 
   const footer = (
     <div className="flex gap-2 flex-wrap">
-      <Button variant="outline" size="sm" onClick={() => navigate('/tax-calendar')}>
-        {es ? '→ Calendario Fiscal' : '→ Tax Calendar'}
+      <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/tax-calendar')}>
+        <Calendar className="h-3.5 w-3.5" />
+        {es ? 'Calendario Fiscal' : 'Tax Calendar'}
       </Button>
-      <Button variant="outline" size="sm" onClick={() => navigate('/banking')}>
-        {es ? '→ Análisis Bancario' : '→ Banking Analysis'}
+      <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/banking')}>
+        <Building2 className="h-3.5 w-3.5" />
+        {es ? 'Análisis Bancario' : 'Banking'}
       </Button>
-      <Button variant="outline" size="sm" onClick={() => navigate('/reconciliation')}>
-        {es ? '→ Reconciliación' : '→ Reconciliation'}
+      <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/reconciliation')}>
+        <GitCompare className="h-3.5 w-3.5" />
+        {es ? 'Reconciliación' : 'Reconciliation'}
       </Button>
     </div>
   );

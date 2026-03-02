@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AreaTabsLayout, type AreaTab } from '../AreaTabsLayout';
+import { GraduationCap } from 'lucide-react';
 
 const FIRECalculatorCard = lazy(() => import('@/components/dashboard/FIRECalculatorCard').then(m => ({ default: m.FIRECalculatorCard })));
 const PortfolioTrackerCard = lazy(() => import('@/components/dashboard/PortfolioTrackerCard').then(m => ({ default: m.PortfolioTrackerCard })));
@@ -26,6 +27,7 @@ export const CrecimientoAreaContent = memo(() => {
       id: 'investments',
       label: es ? 'Inversiones' : 'Investments',
       emoji: '💼',
+      description: es ? 'Calculadora FIRE, portafolio y tips personalizados de inversión' : 'FIRE calculator, portfolio and personalized investment tips',
       content: (
         <div className="space-y-6">
           <FIRECalculatorCard />
@@ -44,6 +46,7 @@ export const CrecimientoAreaContent = memo(() => {
       id: 'mentorship',
       label: es ? 'Mentoría' : 'Mentorship',
       emoji: '📖',
+      description: es ? 'Cuadrante Kiyosaki, libertad financiera, págate primero y clasificación de deuda' : 'Kiyosaki quadrant, financial freedom, pay yourself first and debt classification',
       content: (
         <div className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
@@ -61,6 +64,7 @@ export const CrecimientoAreaContent = memo(() => {
       id: 'goals',
       label: es ? 'Metas' : 'Goals',
       emoji: '🎯',
+      description: es ? 'Metas SMART, diario financiero y hábitos para construir riqueza' : 'SMART goals, financial journal and habits to build wealth',
       content: (
         <div className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -75,14 +79,16 @@ export const CrecimientoAreaContent = memo(() => {
       id: 'education',
       label: es ? 'Educación' : 'Education',
       emoji: '📚',
+      description: es ? 'Libros, cursos y recursos para tu educación financiera continua' : 'Books, courses and resources for your ongoing financial education',
       content: <FinancialEducationCard />,
     },
   ];
 
   const footer = (
     <div className="flex gap-2 flex-wrap">
-      <Button variant="outline" size="sm" onClick={() => navigate('/mentorship')}>
-        {es ? '→ Página de Mentoría' : '→ Mentorship Page'}
+      <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/mentorship')}>
+        <GraduationCap className="h-3.5 w-3.5" />
+        {es ? 'Mentoría Completa' : 'Full Mentorship'}
       </Button>
     </div>
   );
