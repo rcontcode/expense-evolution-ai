@@ -345,10 +345,10 @@ export function ExpenseFilters({ filters, onChange }: ExpenseFiltersProps) {
               key={status.value}
               onClick={() => handleQuickStatusFilter(status.value)}
               className={cn(
-                'inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap shrink-0',
+                'inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap shrink-0 border-2',
                 isActive 
-                  ? `${status.color} ring-2 ring-offset-1 ring-offset-background ring-primary/50` 
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                  ? `${status.color} border-current/30 shadow-md shadow-current/10 scale-[1.04]` 
+                  : 'bg-secondary/60 text-muted-foreground border-border/40 hover:bg-secondary hover:shadow-sm hover:-translate-y-0.5'
               )}
             >
               <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
