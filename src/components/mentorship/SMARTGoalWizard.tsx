@@ -190,7 +190,7 @@ export function SMARTGoalWizard({ open, onOpenChange, goalType = 'savings' }: SM
     });
   };
 
-  const fmtCurrency = (amount: number) => formatCurrencyAmount(amount);
+  const formatCurrency = (amount: number) => formatCurrencyAmount(amount);
 
   const canProceed = () => {
     switch (step) {
