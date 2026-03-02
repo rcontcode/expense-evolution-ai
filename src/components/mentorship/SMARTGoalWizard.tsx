@@ -190,12 +190,7 @@ export function SMARTGoalWizard({ open, onOpenChange, goalType = 'savings' }: SM
     });
   };
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat(language === 'es' ? 'es-CA' : 'en-CA', {
-      style: 'currency',
-      currency: 'CAD',
-      maximumFractionDigits: 0,
-    }).format(amount);
+  const fmtCurrency = (amount: number) => formatCurrencyAmount(amount);
 
   const canProceed = () => {
     switch (step) {
