@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Globe, Building2, User, Briefcase, Home } from 'lucide-react';
 import { Control } from 'react-hook-form';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CountryFlag } from '@/components/ui/country-flag';
 
 interface EntitySelectProps {
   control: Control<any>;
@@ -23,16 +24,6 @@ const entityTypeIcons: Record<string, typeof Building2> = {
   other: Globe,
 };
 
-const countryFlags: Record<string, string> = {
-  CA: '🇨🇦',
-  CL: '🇨🇱',
-  US: '🇺🇸',
-  MX: '🇲🇽',
-  ES: '🇪🇸',
-  GB: '🇬🇧',
-  FR: '🇫🇷',
-  DE: '🇩🇪',
-};
 
 export function EntitySelect({ control, name = 'entity_id', required = false, showDescription = true }: EntitySelectProps) {
   const { language } = useLanguage();
@@ -90,12 +81,12 @@ export function EntitySelect({ control, name = 'entity_id', required = false, sh
             <SelectContent>
               {activeEntities.map((entity) => {
                 const Icon = entityTypeIcons[entity.entity_type] || Globe;
-                const flag = countryFlags[entity.country] || '🌍';
+                const flag = entity.country;
                 
                 return (
                   <SelectItem key={entity.id} value={entity.id}>
                     <div className="flex items-center gap-2">
-                      <span className="text-base">{flag}</span>
+                      <CountryFlag code={flag} size="xs" className="rounded-sm" />
                       <Icon className="h-4 w-4 text-muted-foreground" />
                       <span>{entity.name}</span>
                       <span className="text-xs text-muted-foreground">

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Check, ChevronDown, Globe2, Building2, User, Briefcase, Plus, Sparkles } from 'lucide-react';
+import { CountryFlag } from '@/components/ui/country-flag';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -59,17 +60,6 @@ const entityTypeConfig: Record<string, {
   },
 };
 
-const countryFlags: Record<string, string> = {
-  CA: '🇨🇦',
-  CL: '🇨🇱',
-  US: '🇺🇸',
-  MX: '🇲🇽',
-  ES: '🇪🇸',
-  AR: '🇦🇷',
-  CO: '🇨🇴',
-  PE: '🇵🇪',
-  BR: '🇧🇷',
-};
 
 const currencySymbols: Record<string, string> = {
   CAD: '🍁',
@@ -194,21 +184,16 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
             collapsed && "justify-center p-0 h-full"
           )}>
             {collapsed ? (
-              <motion.span 
-                className="text-xl"
-                whileHover={{ scale: 1.2, rotate: 5 }}
-              >
-                {countryFlags[primaryEntity.country] || '🌍'}
-              </motion.span>
+              <motion.div whileHover={{ scale: 1.2, rotate: 5 }}>
+                <CountryFlag code={primaryEntity.country} size="sm" className="rounded-sm shadow-md" />
+              </motion.div>
             ) : (
               <>
                 <motion.div 
                   className="relative"
                   whileHover={{ scale: 1.1 }}
                 >
-                  <span className="text-2xl drop-shadow-md">
-                    {countryFlags[primaryEntity.country] || '🌍'}
-                  </span>
+                  <CountryFlag code={primaryEntity.country} size="lg" className="rounded-sm shadow-md drop-shadow-md" />
                   <span className="absolute -bottom-1 -right-1 text-xs">
                     {config.emoji}
                   </span>
@@ -256,22 +241,18 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
               )}
             >
               {collapsed ? (
-                <motion.span 
-                  className="text-xl"
+                <motion.div
                   animate={open ? { rotate: 360 } : { rotate: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  {primaryEntity ? countryFlags[primaryEntity.country] || '🌍' : '🌍'}
-                </motion.span>
+                  <CountryFlag code={primaryEntity?.country || 'CA'} size="sm" className="rounded-sm shadow-md" />
+                </motion.div>
               ) : (
                 <>
                   <span className="flex items-center gap-2.5 text-sm truncate">
-                    <motion.span 
-                      className="text-xl"
-                      whileHover={{ scale: 1.1 }}
-                    >
-                      {primaryEntity ? countryFlags[primaryEntity.country] || '🌍' : '🌍'}
-                    </motion.span>
+                    <motion.div whileHover={{ scale: 1.1 }}>
+                      <CountryFlag code={primaryEntity?.country || 'CA'} size="md" className="rounded-sm shadow-md" />
+                    </motion.div>
                     <div className="text-left">
                       <span className="font-medium truncate block">{primaryEntity?.name || (language === 'es' ? 'Seleccionar' : 'Select')}</span>
                       {primaryEntity && (
@@ -310,8 +291,8 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
             <div className="ml-auto flex items-center gap-1">
               {/* Show flags of all configured jurisdictions */}
               {[...new Set(activeEntities.map(e => e.country))].map(country => (
-                <span key={country} className="text-base drop-shadow-sm">
-                  {countryFlags[country] || '🌍'}
+                <span key={country} className="drop-shadow-sm">
+                  <CountryFlag code={country} size="sm" className="rounded-sm shadow-sm" />
                 </span>
               ))}
               <Badge variant="secondary" className="text-[9px] px-1.5 ml-1">
@@ -345,9 +326,7 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
                         className="relative"
                         whileHover={{ scale: 1.15, rotate: 5 }}
                       >
-                        <span className="text-2xl drop-shadow-md">
-                          {countryFlags[entity.country] || '🌍'}
-                        </span>
+                        <CountryFlag code={entity.country} size="lg" className="rounded-sm shadow-md drop-shadow-md" />
                         <span className="absolute -bottom-1 -right-1.5 text-sm">
                           {config.emoji}
                         </span>

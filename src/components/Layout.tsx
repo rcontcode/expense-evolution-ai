@@ -79,6 +79,7 @@ import { useAutoReminders } from '@/hooks/data/useAutoReminders';
 import { ContactForm } from '@/components/ContactForm';
 import { SocialLinks } from '@/components/SocialLinks';
 import { ChatAssistant } from '@/components/chat/ChatAssistant';
+import { CountryFlag } from '@/components/ui/country-flag';
 
 interface LayoutProps {
   children: ReactNode;
@@ -1157,16 +1158,17 @@ export const Layout = ({ children }: LayoutProps) => {
                       {userInitial}
                     </div>
                     {currentCountry && (
-                      <span className="absolute -bottom-1 -right-1 text-xs leading-none drop-shadow-md">
-                        {currentCountry === 'CA' ? '🇨🇦' : currentCountry === 'CL' ? '🇨🇱' : currentCountry === 'US' ? '🇺🇸' : '🌍'}
+                      <span className="absolute -bottom-1.5 -right-1.5 drop-shadow-md">
+                        <CountryFlag code={currentCountry} size="xs" className="rounded-full ring-2 ring-background" />
                       </span>
                     )}
                   </div>
                   {!collapsed && (
                     <div className="flex-1 text-left min-w-0">
                       <span className="block text-xs font-semibold truncate">{profile?.full_name || t('settings.profileTitle')}</span>
-                      <span className="block text-[10px] text-muted-foreground truncate">
-                        {currentCountry === 'CA' ? '🇨🇦 Canada' : currentCountry === 'CL' ? '🇨🇱 Chile' : currentCountry === 'US' ? '🇺🇸 USA' : ''}
+                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground truncate">
+                        {currentCountry && <CountryFlag code={currentCountry} size="xs" />}
+                        {currentCountry === 'CA' ? 'Canada' : currentCountry === 'CL' ? 'Chile' : currentCountry === 'US' ? 'USA' : ''}
                       </span>
                     </div>
                   )}
