@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEntity } from '@/contexts/EntityContext';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
