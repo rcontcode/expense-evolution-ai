@@ -141,7 +141,22 @@ interface NavItem {
   children?: NavChild[];
 }
 
-const getNavSections = (language: string) => [
+const getNavSections = (language: string, isBetaTester: boolean = false) => {
+  const systemItems: NavItem[] = [
+    { icon: Sparkles, label: 'nav.notifications', path: '/notifications', badge: null, tooltipKey: 'dashboard' as const },
+    { icon: FolderOpen, label: 'nav.files', path: '/files', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
+    { icon: Settings, label: 'nav.config', path: '/settings', badge: null, tooltipKey: 'dashboard' as const },
+    { icon: Trash2, label: 'nav.trash', path: '/trash', badge: null, tooltipKey: 'dashboard' as const },
+    { icon: HeartPulse, label: 'nav.dataHealth', path: '/data-health', badge: null, tooltipKey: 'dashboard' as const },
+    { icon: BookOpen, label: 'nav.userGuide', path: '/user-guide', badge: null, tooltipKey: 'dashboard' as const },
+  ];
+
+  // Only show Beta Feedback to beta testers
+  if (isBetaTester) {
+    systemItems.push({ icon: MessageSquare, label: language === 'es' ? 'Beta Feedback' : 'Beta Feedback', path: '/beta-feedback', badge: null, tooltipKey: 'dashboard' as const });
+  }
+
+  return [
   {
     titleKey: 'layout.daily',
     emoji: '💰',
@@ -191,10 +206,18 @@ const getNavSections = (language: string) => [
     emoji: '📈',
     themeKey: 'wealth' as keyof typeof sectionThemes,
     items: [
-      { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
-      { icon: Building2, label: 'nav.banking', path: '/banking', badgeKey: 'nav.badgeSmart', tooltipKey: 'dashboard' as const },
+      { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
+        children: [
+          { label: language === 'es' ? '📊 Resumen Patrimonio' : '📊 Net Worth Summary', path: '/dashboard?area=familia&atab=portfolio' },
+          { label: language === 'es' ? '💳 Deudas' : '💳 Debts', path: '/dashboard?area=familia&atab=debts' },
+        ],
+      },
+      { icon: Building2, label: 'nav.banking', path: '/banking', badgeKey: 'nav.badgeSmart', tooltipKey: 'dashboard' as const,
+        children: [
+          { label: language === 'es' ? '🔄 Conciliación' : '🔄 Reconciliation', path: '/reconciliation' },
+        ],
+      },
       { icon: RefreshCw, label: 'nav.reconciliation', path: '/reconciliation', badge: null, tooltipKey: 'reconciliation' as const },
-      { icon: Wallet, label: language === 'es' ? 'Deudas' : 'Debts', path: '/dashboard?area=familia&atab=debts', badge: null, tooltipKey: 'dashboard' as const },
     ]
   },
   {
@@ -240,17 +263,10 @@ const getNavSections = (language: string) => [
     titleKey: 'layout.system',
     emoji: '⚙️',
     themeKey: 'system' as keyof typeof sectionThemes,
-    items: [
-      { icon: Sparkles, label: 'nav.notifications', path: '/notifications', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: FolderOpen, label: 'nav.files', path: '/files', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
-      { icon: Settings, label: 'nav.config', path: '/settings', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: Trash2, label: 'nav.trash', path: '/trash', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: HeartPulse, label: 'nav.dataHealth', path: '/data-health', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: BookOpen, label: 'nav.userGuide', path: '/user-guide', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: MessageSquare, label: language === 'es' ? 'Beta Feedback' : 'Beta Feedback', path: '/beta-feedback', badge: null, tooltipKey: 'dashboard' as const },
-    ]
+    items: systemItems,
   },
 ];
+};
 
 // Mobile navigation - 5 core items + FAB for native feel
 const getMobileNavItems = (language: string) => [
@@ -304,7 +320,8 @@ export const Layout = ({ children }: LayoutProps) => {
     } catch { return {}; }
   });
   const isMobile = useIsMobile();
-  const NAV_SECTIONS = getNavSections(language);
+  const isBetaTester = !!profile?.is_beta_tester;
+  const NAV_SECTIONS = getNavSections(language, isBetaTester);
   const MOBILE_NAV_ITEMS = getMobileNavItems(language);
   const { data: unreadCount = 0 } = useUnreadNotifications();
   const sidebarNavRef = useRef<HTMLElement>(null);
