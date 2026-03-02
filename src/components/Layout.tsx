@@ -954,10 +954,10 @@ export const Layout = ({ children }: LayoutProps) => {
                         )}
                       >
                         <span className={cn(
-                          "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 group-hover:scale-110",
-                          isActive ? "bg-primary-foreground/20 shadow-inner" : theme.iconWrapper
+                          "flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 group-hover:scale-110 group-hover:rotate-3",
+                          isActive ? "bg-primary-foreground/20 shadow-inner ring-1 ring-white/30" : cn(theme.iconWrapper, "ring-1 ring-white/20")
                         )}>
-                          <Icon className={cn("h-3.5 w-3.5 flex-shrink-0", isActive ? "text-primary-foreground drop-shadow-sm" : theme.iconColor)} />
+                          <Icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "text-primary-foreground drop-shadow-md" : theme.iconColor)} />
                         </span>
                         {!collapsed && (
                           <>
