@@ -26,6 +26,7 @@ import { InteractiveWelcome } from '@/components/guidance/InteractiveWelcome';
 import { ProgressiveOnboarding } from '@/components/onboarding/ProgressiveOnboarding';
 import { useAuth } from '@/contexts/AuthContext';
 import { OrganizedDashboard } from '@/components/focus';
+import { AdvancedToolsNav } from '@/components/dashboard/AdvancedToolsNav';
 import { DashboardViewTabs } from '@/components/dashboard/DashboardViewTabs';
 import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { YearTimelineChart } from '@/components/dashboard/YearTimelineChart';
