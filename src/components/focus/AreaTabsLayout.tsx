@@ -1,4 +1,4 @@
-import { memo, useState, useCallback, ReactNode } from 'react';
+import { memo, useState, useCallback, useEffect, ReactNode } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
