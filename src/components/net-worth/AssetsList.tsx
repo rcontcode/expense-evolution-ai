@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Asset, ASSET_CATEGORIES, useDeleteAsset, useUpdateAsset } from '@/hooks/data/useNetWorth';
 import { useFinancialProfile } from '@/hooks/data/useFinancialProfile';
 import { useProfile } from '@/hooks/data/useProfile';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { 
   Plus, Pencil, Trash2, Wallet, TrendingUp, TrendingDown, Home, Car, PiggyBank, Bitcoin, 
   Gem, Building2, Package, Droplets, Hexagon, CircleDollarSign, Coins, Layers, ImageIcon,
