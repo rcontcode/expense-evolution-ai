@@ -51,6 +51,8 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
         <LiveClock />
       </div>
 
+      <DashboardNotificationHub />
+
       <MobileAlertsBanner
         pendingDocuments={pendingDocuments}
         incompleteExpenses={incompleteExpenses}
