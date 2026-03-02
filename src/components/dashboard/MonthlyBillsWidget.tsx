@@ -145,7 +145,7 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
           <p className="text-sm text-muted-foreground mb-3">
             {l ? 'Sin pagos recurrentes configurados' : 'No recurring bills configured'}
           </p>
-          <Button size="sm" variant="outline" onClick={() => navigate('/budget?tab=bills')}>
+          <Button size="sm" variant="outline" onClick={() => navigate('/bills')}>
             {l ? 'Configurar Pagos' : 'Set Up Bills'}
             <ArrowRight className="ml-1 h-3 w-3" />
           </Button>
