@@ -11,7 +11,7 @@ const TaxOptimizerCard = lazy(() => import('@/components/dashboard/TaxOptimizerC
 const RrspTfsaOptimizerCard = lazy(() => import('@/components/dashboard/RrspTfsaOptimizerCard').then(m => ({ default: m.RrspTfsaOptimizerCard })));
 const TaxSummaryCards = lazy(() => import('@/components/dashboard/TaxSummaryCards').then(m => ({ default: m.TaxSummaryCards })));
 
-export const ImpuestosAreaContent = memo(() => {
+export const ImpuestosAreaContent = memo(({ forcedTab }: { forcedTab?: string | null }) => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const { data: allExpenses } = useExpenses({});
@@ -57,7 +57,7 @@ export const ImpuestosAreaContent = memo(() => {
     </div>
   );
 
-  return <AreaTabsLayout areaKey="impuestos" tabs={tabs} footer={footer} />;
+  return <AreaTabsLayout areaKey="impuestos" tabs={tabs} footer={footer} forcedTab={forcedTab} />;
 });
 
 ImpuestosAreaContent.displayName = 'ImpuestosAreaContent';

@@ -8,7 +8,7 @@ import { Inbox, PlusCircle, Zap } from 'lucide-react';
 
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
 
-export const DiaDiaAreaContent = memo(() => {
+export const DiaDiaAreaContent = memo(({ forcedTab: _forcedTab }: { forcedTab?: string | null }) => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const { data: stats, isLoading } = useDashboardStats({});

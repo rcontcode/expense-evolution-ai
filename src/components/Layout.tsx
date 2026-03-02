@@ -17,6 +17,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Sparkles,
   HelpCircle,
   TrendingUp,
@@ -40,6 +41,7 @@ import {
   HeartPulse,
   Briefcase,
   BookOpen,
+  Circle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -121,6 +123,22 @@ const sectionThemes = {
   },
 };
 
+interface NavChild {
+  label: string;
+  path: string;
+}
+
+interface NavItem {
+  icon: any;
+  label: string;
+  path: string;
+  badge?: string | null;
+  badgeKey?: string;
+  badgeType?: 'tax';
+  tooltipKey: keyof typeof TOOLTIP_CONTENT;
+  children?: NavChild[];
+}
+
 const getNavSections = (language: string) => [
   {
     titleKey: 'layout.daily',
@@ -130,7 +148,13 @@ const getNavSections = (language: string) => [
       { icon: LayoutDashboard, label: 'nav.dashboard', path: '/dashboard', badge: null, tooltipKey: 'dashboard' as const },
       { icon: TrendingUp, label: 'nav.income', path: '/income', badge: null, tooltipKey: 'income' as const },
       { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
-      { icon: Wallet, label: 'nav.budget', path: '/budget', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
+      { icon: Wallet, label: 'nav.budget', path: '/budget', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
+        children: [
+          { label: language === 'es' ? 'Presupuesto Global' : 'Global Budget', path: '/dashboard?area=familia&atab=presupuesto' },
+          { label: language === 'es' ? 'Gestor de Deudas' : 'Debt Manager', path: '/dashboard?area=familia&atab=deudas' },
+          { label: language === 'es' ? 'Análisis Familiar' : 'Family Analysis', path: '/dashboard?area=familia&atab=analisis' },
+        ],
+      },
       { icon: CalendarCheck, label: language === 'es' ? 'Pagos Fijos' : 'Bills', path: '/bills', badge: null, tooltipKey: 'dashboard' as const },
       { icon: RefreshCw, label: language === 'es' ? 'Suscripciones' : 'Subscriptions', path: '/subscriptions', badge: null, tooltipKey: 'dashboard' as const },
       { icon: Inbox, label: 'nav.chaos', path: '/chaos', badgeKey: 'nav.badgeSmart', tooltipKey: 'chaosInbox' as const },
@@ -165,7 +189,12 @@ const getNavSections = (language: string) => [
     items: [
       { icon: Scale, label: language === 'es' ? 'Análisis' : 'Analytics', path: '/analytics', badge: null, tooltipKey: 'dashboard' as const },
       { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badgeType: 'tax' as const, tooltipKey: 'dashboard' as const },
-      { icon: Receipt, label: language === 'es' ? 'Impuestos' : 'Taxes', path: '/tax-optimizer', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: Receipt, label: language === 'es' ? 'Impuestos' : 'Taxes', path: '/tax-optimizer', badge: null, tooltipKey: 'dashboard' as const,
+        children: [
+          { label: language === 'es' ? 'RRSP/TFSA Optimizer' : 'RRSP/TFSA Optimizer', path: '/dashboard?area=impuestos&atab=optimizacion' },
+          { label: language === 'es' ? 'Resumen Fiscal' : 'Tax Summary', path: '/dashboard?area=impuestos&atab=resumen' },
+        ],
+      },
     ]
   },
   {
@@ -173,8 +202,20 @@ const getNavSections = (language: string) => [
     emoji: '🎓',
     themeKey: 'growth' as keyof typeof sectionThemes,
     items: [
-      { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
-      { icon: Briefcase, label: language === 'es' ? 'Inversiones' : 'Investments', path: '/investments', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
+        children: [
+          { label: language === 'es' ? 'Cuadrante Kiyosaki' : 'Kiyosaki Quadrant', path: '/dashboard?area=crecimiento&atab=mentoria' },
+          { label: language === 'es' ? 'Libertad Financiera' : 'Financial Freedom', path: '/dashboard?area=crecimiento&atab=mentoria' },
+          { label: language === 'es' ? 'Hábitos Financieros' : 'Financial Habits', path: '/dashboard?area=crecimiento&atab=educacion' },
+        ],
+      },
+      { icon: Briefcase, label: language === 'es' ? 'Inversiones' : 'Investments', path: '/investments', badge: null, tooltipKey: 'dashboard' as const,
+        children: [
+          { label: language === 'es' ? 'Calculadora FIRE' : 'FIRE Calculator', path: '/dashboard?area=crecimiento&atab=inversiones' },
+          { label: language === 'es' ? 'Portafolio' : 'Portfolio', path: '/dashboard?area=crecimiento&atab=inversiones' },
+          { label: language === 'es' ? 'Metas SMART' : 'SMART Goals', path: '/dashboard?area=crecimiento&atab=metas' },
+        ],
+      },
     ]
   },
   {
@@ -237,6 +278,12 @@ export const Layout = ({ children }: LayoutProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
   const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
+  const [expandedSubmenus, setExpandedSubmenus] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem('evofinz-sidebar-submenus');
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
   const isMobile = useIsMobile();
   const NAV_SECTIONS = getNavSections(language);
   const MOBILE_NAV_ITEMS = getMobileNavItems(language);
@@ -310,6 +357,15 @@ export const Layout = ({ children }: LayoutProps) => {
     return () => root.classList.remove('stability-mode');
   }, []);
   
+  // Toggle submenu
+  const toggleSubmenu = useCallback((path: string) => {
+    setExpandedSubmenus(prev => {
+      const next = { ...prev, [path]: !prev[path] };
+      try { localStorage.setItem('evofinz-sidebar-submenus', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
+
   // Toggle theme between light/dark with optimized themes
   const toggleTheme = () => {
     const newMode = mode === 'dark' ? 'light' : 'dark';
@@ -777,6 +833,9 @@ export const Layout = ({ children }: LayoutProps) => {
                       badgeText = item.badge;
                     }
                     
+                    const hasChildren = 'children' in item && item.children && item.children.length > 0;
+                    const isSubmenuOpen = hasChildren && expandedSubmenus[item.path];
+                    
                     const button = (
                       <button
                         onClick={() => {
@@ -817,44 +876,54 @@ export const Layout = ({ children }: LayoutProps) => {
                       </button>
                     );
 
+                    // Chevron toggle for items with children
+                    const chevronButton = hasChildren && !collapsed ? (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); toggleSubmenu(item.path); }}
+                        className="p-1 rounded-full text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
+                      >
+                        <ChevronDown className={cn("h-3 w-3 transition-transform duration-200", isSubmenuOpen && "rotate-180")} />
+                      </button>
+                    ) : null;
+
+                    // Submenu children
+                    const submenu = hasChildren && !collapsed && isSubmenuOpen ? (
+                      <div className="ml-8 mt-0.5 space-y-0.5 border-l-2 border-border/40 pl-2">
+                        {item.children!.map((child: NavChild) => (
+                          <button
+                            key={child.path}
+                            onClick={() => {
+                              navigate(child.path);
+                            }}
+                            className="flex items-center gap-1.5 w-full px-2 py-1 rounded text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                          >
+                            <Circle className="h-1.5 w-1.5 fill-current opacity-50" />
+                            <span>{child.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : null;
+
                     // If we don't have tooltip content configured, render without help bubble.
                     if (!tooltipText) {
                       return (
-                        <div key={item.path} className="flex items-center gap-1">
-                          {button}
+                        <div key={item.path}>
+                          <div className="flex items-center gap-1">
+                            {button}
+                            {chevronButton}
+                          </div>
+                          {submenu}
                         </div>
                       );
                     }
 
                     return (
-                      <div key={item.path} className="flex items-center gap-1">
-                        {collapsed ? (
-                          <Tooltip>
-                            <TooltipTrigger asChild>{button}</TooltipTrigger>
-                            <TooltipContent side="right" sideOffset={8} className="z-[100] max-w-xs p-3 bg-popover border shadow-lg">
-                              <div className="space-y-2">
-                                <span className="font-semibold">{tooltipText.title}</span>
-                                <p className="text-xs text-muted-foreground">{tooltipText.description}</p>
-                                {tooltipText.howToUse && (
-                                  <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
-                                    💡 {tooltipText.howToUse}
-                                  </p>
-                                )}
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        ) : (
-                          <>
-                            {button}
+                      <div key={item.path}>
+                        <div className="flex items-center gap-1">
+                          {collapsed ? (
                             <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  className="p-1 rounded-full text-muted-foreground/40 hover:text-muted-foreground transition-colors"
-                                >
-                                  <HelpCircle className="h-3.5 w-3.5" />
-                                </button>
-                              </TooltipTrigger>
+                              <TooltipTrigger asChild>{button}</TooltipTrigger>
                               <TooltipContent side="right" sideOffset={8} className="z-[100] max-w-xs p-3 bg-popover border shadow-lg">
                                 <div className="space-y-2">
                                   <span className="font-semibold">{tooltipText.title}</span>
@@ -867,8 +936,35 @@ export const Layout = ({ children }: LayoutProps) => {
                                 </div>
                               </TooltipContent>
                             </Tooltip>
-                          </>
-                        )}
+                          ) : (
+                            <>
+                              {button}
+                              {chevronButton}
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    className="p-1 rounded-full text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                                  >
+                                    <HelpCircle className="h-3.5 w-3.5" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="right" sideOffset={8} className="z-[100] max-w-xs p-3 bg-popover border shadow-lg">
+                                  <div className="space-y-2">
+                                    <span className="font-semibold">{tooltipText.title}</span>
+                                    <p className="text-xs text-muted-foreground">{tooltipText.description}</p>
+                                    {tooltipText.howToUse && (
+                                      <p className="text-xs text-primary/80 pt-1 border-t border-border/50">
+                                        💡 {tooltipText.howToUse}
+                                      </p>
+                                    )}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </>
+                          )}
+                        </div>
+                        {submenu}
                       </div>
                     );
                   })}

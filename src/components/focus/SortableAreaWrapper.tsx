@@ -5,13 +5,14 @@
  import { GripVertical } from 'lucide-react';
  import { cn } from '@/lib/utils';
  
- interface SortableAreaWrapperProps {
-   id: string;
-   index: number;
-   children: ReactNode;
- }
- 
- export const SortableAreaWrapper = memo(({ id, index, children }: SortableAreaWrapperProps) => {
+  interface SortableAreaWrapperProps {
+    id: string;
+    index: number;
+    children: ReactNode;
+    'data-area-id'?: string;
+  }
+  
+  export const SortableAreaWrapper = memo(({ id, index, children, 'data-area-id': dataAreaId }: SortableAreaWrapperProps) => {
    const {
      attributes,
      listeners,
@@ -27,9 +28,10 @@
    };
  
    return (
-     <motion.div
-       ref={setNodeRef}
-       style={style}
+      <motion.div
+        ref={setNodeRef}
+        style={style}
+        data-area-id={dataAreaId}
        initial={{ opacity: 0, y: 20 }}
        animate={{ opacity: 1, y: 0 }}
        transition={{ delay: index * 0.05, duration: 0.3 }}

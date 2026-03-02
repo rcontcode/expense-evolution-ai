@@ -11,7 +11,7 @@ import { Users, FileText, Car } from 'lucide-react';
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
 const MileageTabContent = lazy(() => import('@/components/dashboard/MileageTabContent').then(m => ({ default: m.MileageTabContent })));
 
-export const NegocioAreaContent = memo(() => {
+export const NegocioAreaContent = memo(({ forcedTab }: { forcedTab?: string | null }) => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const { data: stats, isLoading } = useDashboardStats({});
@@ -60,7 +60,7 @@ export const NegocioAreaContent = memo(() => {
     </div>
   );
 
-  return <AreaTabsLayout areaKey="negocio" tabs={tabs} footer={footer} />;
+  return <AreaTabsLayout areaKey="negocio" tabs={tabs} footer={footer} forcedTab={forcedTab} />;
 });
 
 NegocioAreaContent.displayName = 'NegocioAreaContent';

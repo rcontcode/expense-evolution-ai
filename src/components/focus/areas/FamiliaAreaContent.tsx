@@ -13,7 +13,7 @@ const BudgetAlertsCard = lazy(() => import('@/components/dashboard/BudgetAlertsC
 const DebtManagerCard = lazy(() => import('@/components/dashboard/DebtManagerCard').then(m => ({ default: m.DebtManagerCard })));
 const SubscriptionTracker = lazy(() => import('@/components/subscriptions/SubscriptionTracker').then(m => ({ default: m.SubscriptionTracker })));
 
-export const FamiliaAreaContent = memo(() => {
+export const FamiliaAreaContent = memo(({ forcedTab }: { forcedTab?: string | null }) => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const now = new Date();
@@ -72,7 +72,7 @@ export const FamiliaAreaContent = memo(() => {
     </div>
   );
 
-  return <AreaTabsLayout areaKey="familia" tabs={tabs} footer={footer} />;
+  return <AreaTabsLayout areaKey="familia" tabs={tabs} footer={footer} forcedTab={forcedTab} />;
 });
 
 FamiliaAreaContent.displayName = 'FamiliaAreaContent';

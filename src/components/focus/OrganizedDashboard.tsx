@@ -43,31 +43,36 @@ const ImpuestosAreaContent = lazy(() => import('./areas/ImpuestosAreaContent').t
    impuestos: 'Impuestos',
  };
 
- // Area content with error boundary - only renders when expanded
- const AreaContentRenderer = memo(({ areaId, isCollapsed }: { areaId: FocusAreaId; isCollapsed: boolean }) => {
-   // True lazy loading: don't mount anything if collapsed
-   if (isCollapsed) return null;
- 
-   const contentMap: Record<FocusAreaId, ReactNode> = {
-     negocio: <NegocioAreaContent />,
-     familia: <FamiliaAreaContent />,
-     diadia: <DiaDiaAreaContent />,
-     crecimiento: <CrecimientoAreaContent />,
-     impuestos: <ImpuestosAreaContent />,
-   };
- 
-   return (
-     <AreaErrorBoundary areaName={AREA_NAMES[areaId]}>
-       <Suspense fallback={<AreaSkeleton />}>
-         {contentMap[areaId]}
-       </Suspense>
-     </AreaErrorBoundary>
-   );
- });
- 
- AreaContentRenderer.displayName = 'AreaContentRenderer';
+  // Area content with error boundary - only renders when expanded
+  const AreaContentRenderer = memo(({ areaId, isCollapsed, forcedTab }: { areaId: FocusAreaId; isCollapsed: boolean; forcedTab?: string | null }) => {
+    // True lazy loading: don't mount anything if collapsed
+    if (isCollapsed) return null;
+  
+    const contentMap: Record<FocusAreaId, ReactNode> = {
+      negocio: <NegocioAreaContent forcedTab={forcedTab} />,
+      familia: <FamiliaAreaContent forcedTab={forcedTab} />,
+      diadia: <DiaDiaAreaContent forcedTab={forcedTab} />,
+      crecimiento: <CrecimientoAreaContent forcedTab={forcedTab} />,
+      impuestos: <ImpuestosAreaContent forcedTab={forcedTab} />,
+    };
+  
+    return (
+      <AreaErrorBoundary areaName={AREA_NAMES[areaId]}>
+        <Suspense fallback={<AreaSkeleton />}>
+          {contentMap[areaId]}
+        </Suspense>
+      </AreaErrorBoundary>
+    );
+  });
+  
+  AreaContentRenderer.displayName = 'AreaContentRenderer';
 
-export const OrganizedDashboard = memo(() => {
+interface OrganizedDashboardProps {
+  deepLinkArea?: string | null;
+  deepLinkTab?: string | null;
+}
+
+export const OrganizedDashboard = memo(({ deepLinkArea, deepLinkTab }: OrganizedDashboardProps) => {
   const { language } = useLanguage();
    const [searchQuery, setSearchQuery] = useState('');
    const [isMobile, setIsMobile] = useState(false);
@@ -93,6 +98,24 @@ export const OrganizedDashboard = memo(() => {
   const [focusSelectorOpen, setFocusSelectorOpen] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const dialogShownRef = useRef(false);
+  const deepLinkAppliedRef = useRef(false);
+
+  // Deep-link: auto-expand the target area when deepLinkArea is provided
+  useEffect(() => {
+    if (deepLinkArea && !deepLinkAppliedRef.current) {
+      deepLinkAppliedRef.current = true;
+      const areaId = deepLinkArea as FocusAreaId;
+      // Ensure the area is expanded
+      if (isAreaCollapsed(areaId)) {
+        toggleCollapsed(areaId);
+      }
+      // Scroll to the area after a brief delay
+      setTimeout(() => {
+        const el = document.querySelector(`[data-area-id="${areaId}"]`);
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+  }, [deepLinkArea, isAreaCollapsed, toggleCollapsed]);
 
   useEffect(() => {
     // Only run once per mount when showFocusDialog is true
@@ -205,14 +228,14 @@ export const OrganizedDashboard = memo(() => {
           <SortableContext items={visibleAreas} strategy={verticalListSortingStrategy}>
             <div className="space-y-4 lg:space-y-5">
             {visibleAreas.map((areaId, index) => (
-              <SortableAreaWrapper key={areaId} id={areaId} index={index}>
+              <SortableAreaWrapper key={areaId} id={areaId} index={index} data-area-id={areaId}>
                {isMobile ? (
                  <SwipeableAreaSection
                    areaId={areaId}
                    isCollapsed={isAreaCollapsed(areaId)}
                    onToggleCollapse={() => handleToggleCollapse(areaId)}
                  >
-                   <AreaContentRenderer areaId={areaId} isCollapsed={isAreaCollapsed(areaId)} />
+                    <AreaContentRenderer areaId={areaId} isCollapsed={isAreaCollapsed(areaId)} forcedTab={deepLinkArea === areaId ? deepLinkTab : undefined} />
                  </SwipeableAreaSection>
                ) : (
                  <AreaSection
@@ -220,7 +243,7 @@ export const OrganizedDashboard = memo(() => {
                    isCollapsed={isAreaCollapsed(areaId)}
                    onToggleCollapse={() => handleToggleCollapse(areaId)}
                  >
-                   <AreaContentRenderer areaId={areaId} isCollapsed={isAreaCollapsed(areaId)} />
+                   <AreaContentRenderer areaId={areaId} isCollapsed={isAreaCollapsed(areaId)} forcedTab={deepLinkArea === areaId ? deepLinkTab : undefined} />
                  </AreaSection>
                )}
              </SortableAreaWrapper>
