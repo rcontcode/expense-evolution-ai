@@ -65,7 +65,7 @@ const entityTypeConfig: Record<string, {
 const currencySymbols: Record<string, React.ReactNode> = {
   CAD: '🍁',
   USD: '💵',
-  CLP: <img src={copihueIcon} alt="Copihue" className="inline-block w-4 h-4 object-contain" />,
+  CLP: <img src={copihueIcon} alt="Copihue" className="inline-block w-6 h-6 object-contain drop-shadow-sm" />,
   MXN: '🌮',
   EUR: '💶',
   ARS: '🥩',
