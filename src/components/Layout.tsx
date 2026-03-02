@@ -1136,8 +1136,8 @@ export const Layout = ({ children }: LayoutProps) => {
                 <button
                   onClick={() => navigate('/business-profile')}
                   className={cn(
-                    'flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm transition-all hover:bg-muted/50',
-                    location.pathname === '/business-profile' && 'bg-primary text-primary-foreground',
+                    'flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-sm transition-all duration-200 hover:bg-muted/50 hover:-translate-y-0.5 hover:shadow-sm',
+                    location.pathname === '/business-profile' && 'bg-primary text-primary-foreground shadow-md shadow-primary/30',
                     collapsed && 'justify-center px-0 w-auto'
                   )}
                 >
