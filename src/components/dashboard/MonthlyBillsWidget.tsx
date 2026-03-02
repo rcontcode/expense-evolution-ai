@@ -272,7 +272,7 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
             {l ? 'Pagos del Mes' : 'Monthly Bills'}
           </CardTitle>
           <Button variant="ghost" size="sm" className="h-6 text-xs text-muted-foreground hover:text-primary"
-            onClick={() => navigate('/budget?tab=bills')}>
+            onClick={() => navigate('/bills')}>
             {l ? 'Ver todo' : 'View all'} <ArrowRight className="ml-1 h-3 w-3" />
           </Button>
         </div>
