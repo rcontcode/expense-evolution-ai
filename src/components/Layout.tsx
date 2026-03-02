@@ -947,9 +947,9 @@ export const Layout = ({ children }: LayoutProps) => {
                         onFocus={() => preloadRoute(item.path)}
                         className={cn(
                           'flex items-center gap-2 flex-1 px-2.5 py-2 rounded-xl text-sm transition-all duration-200',
-                          'hover:bg-background/70 hover:shadow-sm hover:-translate-y-0.5',
-                          'active:translate-y-0 active:shadow-none',
-                          isActive && 'bg-primary text-primary-foreground shadow-md shadow-primary/30 scale-[1.02] font-semibold',
+                          'hover:bg-background/70 hover:shadow-md hover:-translate-y-0.5',
+                          'active:translate-y-0.5 active:shadow-none active:scale-[0.98]',
+                          isActive && 'bg-primary text-primary-foreground shadow-lg shadow-primary/40 scale-[1.03] font-bold ring-1 ring-primary/20',
                           collapsed && 'justify-center px-0 w-full'
                         )}
                       >
