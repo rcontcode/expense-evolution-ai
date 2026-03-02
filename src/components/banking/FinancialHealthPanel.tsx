@@ -154,7 +154,7 @@
          description: l
            ? 'Configura presupuestos por categoría para un control más detallado de tus finanzas'
            : 'Set up category budgets for more detailed control of your finances',
-         action: { label: l ? 'Crear metas' : 'Create goals', to: '/dashboard?section=budgets' }
+         action: { label: l ? 'Crear metas' : 'Create goals', to: '/budget' }
        });
      }
  
