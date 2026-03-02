@@ -35,6 +35,11 @@ const rewards = [
 
 export default function BetaGuide() {
   const navigate = useNavigate();
+  const { data: profile } = useProfile();
+
+  if (profile && !profile.is_beta_tester) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
