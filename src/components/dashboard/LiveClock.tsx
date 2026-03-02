@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { Clock, CalendarDays } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-export function LiveClock() {
+export const LiveClock = memo(function LiveClock() {
   const { language } = useLanguage();
   const [now, setNow] = useState(new Date());
 
