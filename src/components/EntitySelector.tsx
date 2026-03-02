@@ -64,7 +64,7 @@ const entityTypeConfig: Record<string, {
 const currencySymbols: Record<string, string> = {
   CAD: '🍁',
   USD: '💵',
-  CLP: '🌶️',
+  CLP: '🌺',
   MXN: '🌮',
   EUR: '💶',
   ARS: '🥩',
