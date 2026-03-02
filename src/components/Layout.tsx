@@ -357,6 +357,15 @@ export const Layout = ({ children }: LayoutProps) => {
     return () => root.classList.remove('stability-mode');
   }, []);
   
+  // Toggle submenu
+  const toggleSubmenu = useCallback((path: string) => {
+    setExpandedSubmenus(prev => {
+      const next = { ...prev, [path]: !prev[path] };
+      try { localStorage.setItem('evofinz-sidebar-submenus', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
+
   // Toggle theme between light/dark with optimized themes
   const toggleTheme = () => {
     const newMode = mode === 'dark' ? 'light' : 'dark';
