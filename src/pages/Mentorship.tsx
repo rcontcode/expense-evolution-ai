@@ -84,10 +84,23 @@ export default function Mentorship() {
   const { language } = useLanguage();
   const isMobile = useIsMobile();
   const { isEnabled } = useFeatureFlags();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const showWellbeing = isEnabled('ecosystem_wellbeing_tab');
   const visibleTabs = showWellbeing ? MENTOR_TABS : MENTOR_TABS.filter(t => t.value !== 'wellbeing');
   const gridCols = showWellbeing ? 'grid-cols-6' : 'grid-cols-5';
+
+  const validTabValues = visibleTabs.map(t => t.value);
+  const tabFromUrl = searchParams.get('tab');
+  const activeTab = tabFromUrl && validTabValues.includes(tabFromUrl) ? tabFromUrl : 'library';
+
+  const handleTabChange = (value: string) => {
+    if (value === 'library') {
+      setSearchParams({}, { replace: true });
+    } else {
+      setSearchParams({ tab: value }, { replace: true });
+    }
+  };
 
   return (
     <Layout>
