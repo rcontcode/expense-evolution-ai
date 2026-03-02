@@ -124,7 +124,7 @@ export function ProactiveAlertsWidget() {
           description: l
             ? `${upcomingBills.map(b => b.name).join(', ')} — Total: ${formatCompact(totalDue)}`
             : `${upcomingBills.map(b => b.name).join(', ')} — Total: ${formatCompact(totalDue)}`,
-          action: { label: l ? 'Centro de pagos' : 'Payment center', route: '/dashboard?tab=overview' },
+          action: { label: l ? 'Centro de pagos' : 'Payment center', route: '/dashboard' },
           priority: 2,
         });
       }
