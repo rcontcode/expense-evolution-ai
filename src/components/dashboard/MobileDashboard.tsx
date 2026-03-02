@@ -44,6 +44,10 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
 
   return (
     <div className="mobile-page mobile-gap space-y-4">
+      <div className="flex items-center justify-between">
+        <LiveClock />
+      </div>
+
       <MobileAlertsBanner
         pendingDocuments={pendingDocuments}
         incompleteExpenses={incompleteExpenses}
@@ -52,7 +56,6 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
       <BetaReminderBanner />
       <ProgressiveOnboarding />
       <EcosystemOnboarding />
-      
 
       <MobileStatsGrid
         isLoading={isLoading}

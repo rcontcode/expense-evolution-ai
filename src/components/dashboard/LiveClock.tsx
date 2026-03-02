@@ -21,7 +21,6 @@ export const LiveClock = memo(function LiveClock() {
   const timeStr = now.toLocaleTimeString(language === 'es' ? 'es-CL' : 'en-CA', {
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit',
   });
 
   // Capitalize first letter
