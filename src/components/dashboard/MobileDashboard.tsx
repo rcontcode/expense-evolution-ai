@@ -117,9 +117,11 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
               <DashboardGamificationWidget compact={true} />
             </div>
 
-            <Suspense fallback={null}>
-              <LazyEcosystemWidgets />
-            </Suspense>
+            <div data-section="ecosystem">
+              <Suspense fallback={null}>
+                <LazyEcosystemWidgets />
+              </Suspense>
+            </div>
           </motion.div>
         ) : (
           <motion.div
