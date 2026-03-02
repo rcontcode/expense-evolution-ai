@@ -1,12 +1,12 @@
-import { useState, useMemo, useCallback, lazy, Suspense, useEffect } from 'react';
+import { useState, useCallback, lazy, Suspense, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useHighlightOnArrival } from '@/hooks/utils/useHighlightOnArrival';
 import { Layout } from '@/components/Layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Upload, Receipt, Users, Download, Scale, MapPin, RefreshCw, Landmark, Briefcase, BarChart3, GraduationCap, ChevronDown, ChevronUp, MoreHorizontal, Target, Wallet } from 'lucide-react';
+import { Upload, Receipt, Users, Download, BarChart3 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/data/useDashboardStats';
 import { useSubscription } from '@/hooks/data/useSubscription';
@@ -31,9 +31,7 @@ import { useDisplayPreferences } from '@/hooks/data/useDisplayPreferences';
 import { YearTimelineChart } from '@/components/dashboard/YearTimelineChart';
 import { LiveClock } from '@/components/dashboard/LiveClock';
 import { MonthDetailPanel } from '@/components/dashboard/MonthDetailPanel';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
 import { NextActionBanner } from '@/components/dashboard/NextActionBanner';
 import { useNudgeSystem } from '@/hooks/utils/useNudgeSystem';
@@ -100,8 +98,6 @@ const CategoryBudgetsCard = lazy(() => import('@/components/dashboard/CategoryBu
 const BudgetAlertsCard = lazy(() => import('@/components/dashboard/BudgetAlertsCard').then(m => ({ default: m.BudgetAlertsCard })));
 const CategoryYearComparison = lazy(() => import('@/components/analytics/CategoryYearComparison').then(m => ({ default: m.CategoryYearComparison })));
 const WorkflowSummaryWidget = lazy(() => import('@/components/dashboard/WorkflowSummaryWidget').then(m => ({ default: m.WorkflowSummaryWidget })));
-const CompletenessCard = lazy(() => import('@/components/dashboard/CompletenessCard').then(m => ({ default: m.CompletenessCard })));
-const WorkflowVisualizer = lazy(() => import('@/components/guidance/WorkflowVisualizer').then(m => ({ default: m.WorkflowVisualizer })));
 const MonthlyBillsWidget = lazy(() => import('@/components/dashboard/MonthlyBillsWidget').then(m => ({ default: m.MonthlyBillsWidget })));
 
 // Skeleton fallback for lazy loaded components
@@ -145,7 +141,7 @@ export default function Dashboard() {
   
   // UI state
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
-  const [showAllTools, setShowAllTools] = useState(false);
+  
   const [activeTab, setActiveTab] = useState('charts');
   const [showGuide, setShowGuide] = useState(false);
   
@@ -201,11 +197,10 @@ export default function Dashboard() {
 
     if (!tab || !allowedTabs.includes(tab)) return;
 
-    setShowAllTools(true);
     setActiveTab(tab === 'budget' ? 'budgets' : tab);
 
     requestAnimationFrame(() => {
-      document.getElementById('control-center')?.scrollIntoView({
+      document.querySelector('[data-section="advanced-tools"]')?.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
       });
@@ -337,7 +332,7 @@ export default function Dashboard() {
             <EcosystemSection />
           </div>
 
-          {/* ===== PROMINENT VIEW TABS ===== */}
+          {/* ===== VIEW TABS ===== */}
           <DashboardViewTabs 
             activeTab={viewMode === 'organized' ? 'control' : 'resumen'} 
             onTabChange={(tab) => setViewMode(tab === 'control' ? 'organized' : 'classic')} 
@@ -363,14 +358,9 @@ export default function Dashboard() {
                 transition={{ duration: 0.2 }}
                  className="space-y-6"
               >
-                {/* Quick Actions — prominent position for fast access (#9) */}
+                {/* Quick Actions */}
                 <Card className="border-dashed" data-section="quick-actions">
-                  <CardHeader className="pb-2 pt-3">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      {t('dashboard.quickActions')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0 pb-3">
+                  <CardContent className="py-3">
                     <div className="flex flex-wrap gap-2">
                       <Button onClick={() => navigate('/chaos')} size="sm" className="gap-2">
                         <Upload className="h-4 w-4" /> {t('dashboard.uploadDocument')}
@@ -380,6 +370,9 @@ export default function Dashboard() {
                       </Button>
                       <Button onClick={() => navigate('/clients')} variant="outline" size="sm" className="gap-2">
                         <Users className="h-4 w-4" /> {t('dashboard.addClient')}
+                      </Button>
+                      <Button onClick={() => setExportDialogOpen(true)} variant="outline" size="sm" className="gap-2">
+                        <Download className="h-4 w-4" /> {t('export.exportButton')}
                       </Button>
                     </div>
                   </CardContent>
@@ -395,230 +388,210 @@ export default function Dashboard() {
                   </Suspense>
                 </div>
 
-                {/* Completeness */}
-                {allExpenses && allExpenses.length > 0 && (
-                  <Suspense fallback={<Skeleton className="h-[200px]" />}>
-                    <CompletenessCard expenses={allExpenses} isLoading={isLoading} />
-                  </Suspense>
-                )}
-
-                {/* Smart Alerts + Profile + Gamification */}
+                {/* Smart Alerts + Gamification */}
                 <div data-section="alerts">
-                <Suspense fallback={null}>
-                  <ProactiveAlertsWidget />
-                </Suspense>
+                  <Suspense fallback={null}>
+                    <ProactiveAlertsWidget />
+                  </Suspense>
                 </div>
                 <div data-section="gamification">
-                <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
-                <DashboardGamificationWidget compact={true} />
+                  <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
+                  <DashboardGamificationWidget compact={true} />
                 </div>
 
-                {/* Visual Workflow Guide — moved below key data (#7) */}
-                <Suspense fallback={<Skeleton className="h-[200px]" />}>
-                  <WorkflowVisualizer compact={true} />
-                </Suspense>
-
-                {/* Advanced Tools Card */}
-                <Card className="border-2 border-primary/30 bg-gradient-to-br from-card via-primary/5 to-accent/10 backdrop-blur-sm overflow-hidden shadow-2xl shadow-primary/20 ring-1 ring-primary/10" data-section="advanced-tools" data-highlight="control-center">
-                  <div className="h-2 bg-gradient-to-r from-primary via-accent to-destructive shadow-lg shadow-primary/30" />
-                  <CardHeader className="pb-4 pt-5">
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 rounded-xl bg-gradient-to-br from-primary via-accent to-warning shadow-lg shadow-primary/40">
-                        <BarChart3 className="h-6 w-6 text-primary-foreground" />
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <CardTitle className="text-xl font-black">
-                          {language === 'es' ? 'Herramientas Avanzadas' : 'Advanced Tools'}
-                        </CardTitle>
-                        <Button onClick={() => setExportDialogOpen(true)} variant="outline" size="sm">
-                          <Download className="mr-2 h-4 w-4" />
-                          {t('export.exportButton')}
-                        </Button>
-                      </div>
+                {/* Tools Section — Clean, categorized */}
+                <div data-section="advanced-tools" data-highlight="control-center">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-accent shadow-md">
+                      <BarChart3 className="h-5 w-5 text-primary-foreground" />
                     </div>
-                  </CardHeader>
-                  <CardContent className="pt-0 space-y-4">
-                      <AdvancedToolsNav 
-                        activeTab={activeTab} 
-                        onTabChange={setActiveTab}
-                        shouldHighlight={shouldHighlight}
-                      />
+                    <h2 className="text-lg font-bold">
+                      {language === 'es' ? 'Herramientas' : 'Tools'}
+                    </h2>
+                  </div>
+                  
+                  <AdvancedToolsNav 
+                    activeTab={activeTab} 
+                    onTabChange={setActiveTab}
+                    shouldHighlight={shouldHighlight}
+                  />
 
-                      {activeTab === 'charts' && (
-                        <div className={cn("space-y-4", getHighlightProps('charts').className)} ref={getHighlightProps('charts').ref as any}>
-                          <Suspense fallback={<ChartsSkeleton />}>
-                            <DashboardCharts
-                              categoryBreakdown={stats?.categoryBreakdown || []}
-                              clientBreakdown={stats?.clientBreakdown || []}
-                              monthlyTrends={stats?.monthlyTrends || []}
-                              isLoading={isLoading}
-                            />
-                          </Suspense>
-                        </div>
-                      )}
+                  <div className="mt-4">
+                    {activeTab === 'charts' && (
+                      <div className={cn("space-y-4", getHighlightProps('charts').className)} ref={getHighlightProps('charts').ref as any}>
+                        <Suspense fallback={<ChartsSkeleton />}>
+                          <DashboardCharts
+                            categoryBreakdown={stats?.categoryBreakdown || []}
+                            clientBreakdown={stats?.clientBreakdown || []}
+                            monthlyTrends={stats?.monthlyTrends || []}
+                            isLoading={isLoading}
+                          />
+                        </Suspense>
+                      </div>
+                    )}
 
-                      {activeTab === 'analytics' && (
-                        <div className={cn("space-y-4", getHighlightProps('analytics').className)} ref={getHighlightProps('analytics').ref as any}>
-                          <Suspense fallback={<AnalyticsSkeleton />}>
-                            <div className="space-y-6">
-                              <SmartMonthlyReport />
-                              <IncomeVsExpensesChart />
-                              <div className="grid gap-6 lg:grid-cols-2">
-                                <SavingsRateChart />
-                                <YearOverYearComparison />
-                              </div>
-                              <div className="grid gap-6 lg:grid-cols-2">
-                                <CategoryTrendsChart />
-                                <FinancialHealthRadar />
-                              </div>
-                              <CashFlowSankey />
-                              <div className="grid gap-6 lg:grid-cols-2">
-                                <ProjectProfitability />
-                                <ClientProfitability />
-                              </div>
-                              <FinancialCorrelations />
-                              <div className="grid gap-6 lg:grid-cols-2">
-                                <MoneyMomentumScore />
-                                <WhatIfSimulator />
-                              </div>
-                              <NegotiationScriptGenerator />
-                              <TransactionTimeline />
-                              <div className="grid gap-6 lg:grid-cols-2">
-                                <NetWorthTreemap />
-                                <SpendingHeatmap expenses={allExpenses || []} isLoading={isLoading} />
-                              </div>
-                              <div className="grid gap-6 lg:grid-cols-2">
-                                <SeasonalityChart expenses={allExpenses || []} isLoading={isLoading} />
-                                <MonthComparisonChart expenses={allExpenses || []} isLoading={isLoading} />
-                              </div>
+                    {activeTab === 'analytics' && (
+                      <div className={cn("space-y-4", getHighlightProps('analytics').className)} ref={getHighlightProps('analytics').ref as any}>
+                        <Suspense fallback={<AnalyticsSkeleton />}>
+                          <div className="space-y-6">
+                            <SmartMonthlyReport />
+                            <IncomeVsExpensesChart />
+                            <div className="grid gap-6 lg:grid-cols-2">
+                              <SavingsRateChart />
+                              <YearOverYearComparison />
                             </div>
-                          </Suspense>
-                        </div>
-                      )}
-
-                      {activeTab === 'budgets' && (
-                        <div className={cn("space-y-4", getHighlightProps('budget').className)} ref={getHighlightProps('budget').ref as any}>
-                          <Suspense fallback={<AnalyticsSkeleton />}>
-                            <div className="space-y-6">
-                              <GlobalBudgetCard />
-                              <MonthlyPlanCard />
-                              <CategoryBudgetsCard />
-                              <BudgetAlertsCard />
-                              <BudgetProjectionChart />
-                              <BudgetHistoryChart />
-                              <CategoryYearComparison />
-                              <ExpensePredictions expenses={allExpenses || []} />
-                              <CashFlowProjection />
+                            <div className="grid gap-6 lg:grid-cols-2">
+                              <CategoryTrendsChart />
+                              <FinancialHealthRadar />
                             </div>
-                          </Suspense>
-                        </div>
-                      )}
-
-                      {activeTab === 'mentorship' && (
-                        <div className={cn("space-y-4", getHighlightProps('mentorship').className)} ref={getHighlightProps('mentorship').ref as any}>
-                          <Suspense fallback={<AnalyticsSkeleton />}>
-                            <div className="space-y-6">
-                              <CashflowQuadrantCard />
-                              <FinancialFreedomCard />
-                              <div className="grid gap-6 lg:grid-cols-2">
-                                <PayYourselfFirstCard />
-                                <DebtClassificationCard />
-                              </div>
-                              <div className="grid gap-6 lg:grid-cols-2">
-                                <FinancialJournalCard />
-                                <FinancialHabitsCard />
-                              </div>
-                              <SMARTGoalsCard />
+                            <CashFlowSankey />
+                            <div className="grid gap-6 lg:grid-cols-2">
+                              <ProjectProfitability />
+                              <ClientProfitability />
                             </div>
-                          </Suspense>
-                        </div>
-                      )}
-
-                      {activeTab === 'goals' && (
-                        <div className={cn("space-y-4", getHighlightProps('goals').className)} ref={getHighlightProps('goals').ref as any}>
-                          <Suspense fallback={<AnalyticsSkeleton />}>
-                            <SavingsGoalsSection />
-                          </Suspense>
-                        </div>
-                      )}
-
-                      {activeTab === 'tax' && (
-                        <div className={cn("space-y-4", getHighlightProps('tax').className)} ref={getHighlightProps('tax').ref as any}>
-                          <Suspense fallback={<AnalyticsSkeleton />}>
-                            <div className="space-y-4">
-                              <TaxSummaryCards taxSummary={taxSummary} />
-                              <TaxOptimizerCard />
-                              <SavingsOptimizerSection />
+                            <FinancialCorrelations />
+                            <div className="grid gap-6 lg:grid-cols-2">
+                              <MoneyMomentumScore />
+                              <WhatIfSimulator />
                             </div>
-                          </Suspense>
-                        </div>
-                      )}
-
-                      {activeTab === 'mileage' && (
-                        <div className={cn("space-y-4", getHighlightProps('mileage').className)} ref={getHighlightProps('mileage').ref as any}>
-                          <Suspense fallback={<MileageSkeleton />}>
-                            <MileageTabContent
-                              mileageSummary={mileageSummary}
-                              isLoading={mileageLoading}
-                            />
-                          </Suspense>
-                        </div>
-                      )}
-
-                      {activeTab === 'subscriptions' && (
-                        <div className={cn("space-y-4", getHighlightProps('subscriptions').className)} ref={getHighlightProps('subscriptions').ref as any}>
-                          <Suspense fallback={<AnalyticsSkeleton />}>
-                            <SubscriptionTracker />
-                          </Suspense>
-                        </div>
-                      )}
-
-                      {activeTab === 'fire' && (
-                        <div className={cn("space-y-4", getHighlightProps('fire').className)} ref={getHighlightProps('fire').ref as any}>
-                          <Suspense fallback={<AnalyticsSkeleton />}>
-                            <div className="space-y-6">
-                              <FIRECalculatorCard />
-                              <PersonalizedInvestmentTips />
+                            <NegotiationScriptGenerator />
+                            <TransactionTimeline />
+                            <div className="grid gap-6 lg:grid-cols-2">
+                              <NetWorthTreemap />
+                              <SpendingHeatmap expenses={allExpenses || []} isLoading={isLoading} />
                             </div>
-                          </Suspense>
-                        </div>
-                      )}
-
-                      {activeTab === 'debt' && (
-                        <div className={cn("space-y-4", getHighlightProps('debt').className)} ref={getHighlightProps('debt').ref as any}>
-                          <Suspense fallback={<AnalyticsSkeleton />}>
-                            <DebtManagerCard />
-                          </Suspense>
-                        </div>
-                      )}
-
-                      {activeTab === 'portfolio' && (
-                        <div className={cn("space-y-4", getHighlightProps('portfolio').className)} ref={getHighlightProps('portfolio').ref as any}>
-                          <Suspense fallback={<AnalyticsSkeleton />}>
-                            <div className="space-y-6">
-                              <PortfolioTrackerCard />
-                              <PersonalizedInvestmentTips />
+                            <div className="grid gap-6 lg:grid-cols-2">
+                              <SeasonalityChart expenses={allExpenses || []} isLoading={isLoading} />
+                              <MonthComparisonChart expenses={allExpenses || []} isLoading={isLoading} />
                             </div>
-                          </Suspense>
-                        </div>
-                      )}
+                          </div>
+                        </Suspense>
+                      </div>
+                    )}
 
-                      {activeTab === 'education' && (
-                        <div className={cn("space-y-4", getHighlightProps('education').className)} ref={getHighlightProps('education').ref as any}>
-                          <Suspense fallback={<AnalyticsSkeleton />}>
-                            <div className="space-y-6">
-                              <GlobalLearningChart />
-                              <div className="grid gap-6 md:grid-cols-2">
-                                <ReadingPaceComparison />
-                                <ReadingReminderSettings />
-                              </div>
-                              <FinancialEducationCard />
+                    {activeTab === 'budgets' && (
+                      <div className={cn("space-y-4", getHighlightProps('budget').className)} ref={getHighlightProps('budget').ref as any}>
+                        <Suspense fallback={<AnalyticsSkeleton />}>
+                          <div className="space-y-6">
+                            <GlobalBudgetCard />
+                            <MonthlyPlanCard />
+                            <CategoryBudgetsCard />
+                            <BudgetAlertsCard />
+                            <BudgetProjectionChart />
+                            <BudgetHistoryChart />
+                            <CategoryYearComparison />
+                            <ExpensePredictions expenses={allExpenses || []} />
+                            <CashFlowProjection />
+                          </div>
+                        </Suspense>
+                      </div>
+                    )}
+
+                    {activeTab === 'mentorship' && (
+                      <div className={cn("space-y-4", getHighlightProps('mentorship').className)} ref={getHighlightProps('mentorship').ref as any}>
+                        <Suspense fallback={<AnalyticsSkeleton />}>
+                          <div className="space-y-6">
+                            <CashflowQuadrantCard />
+                            <FinancialFreedomCard />
+                            <div className="grid gap-6 lg:grid-cols-2">
+                              <PayYourselfFirstCard />
+                              <DebtClassificationCard />
                             </div>
-                          </Suspense>
-                        </div>
-                      )}
-                  </CardContent>
-                </Card>
+                            <div className="grid gap-6 lg:grid-cols-2">
+                              <FinancialJournalCard />
+                              <FinancialHabitsCard />
+                            </div>
+                            <SMARTGoalsCard />
+                          </div>
+                        </Suspense>
+                      </div>
+                    )}
+
+                    {activeTab === 'goals' && (
+                      <div className={cn("space-y-4", getHighlightProps('goals').className)} ref={getHighlightProps('goals').ref as any}>
+                        <Suspense fallback={<AnalyticsSkeleton />}>
+                          <SavingsGoalsSection />
+                        </Suspense>
+                      </div>
+                    )}
+
+                    {activeTab === 'tax' && (
+                      <div className={cn("space-y-4", getHighlightProps('tax').className)} ref={getHighlightProps('tax').ref as any}>
+                        <Suspense fallback={<AnalyticsSkeleton />}>
+                          <div className="space-y-4">
+                            <TaxSummaryCards taxSummary={taxSummary} />
+                            <TaxOptimizerCard />
+                            <SavingsOptimizerSection />
+                          </div>
+                        </Suspense>
+                      </div>
+                    )}
+
+                    {activeTab === 'mileage' && (
+                      <div className={cn("space-y-4", getHighlightProps('mileage').className)} ref={getHighlightProps('mileage').ref as any}>
+                        <Suspense fallback={<MileageSkeleton />}>
+                          <MileageTabContent
+                            mileageSummary={mileageSummary}
+                            isLoading={mileageLoading}
+                          />
+                        </Suspense>
+                      </div>
+                    )}
+
+                    {activeTab === 'subscriptions' && (
+                      <div className={cn("space-y-4", getHighlightProps('subscriptions').className)} ref={getHighlightProps('subscriptions').ref as any}>
+                        <Suspense fallback={<AnalyticsSkeleton />}>
+                          <SubscriptionTracker />
+                        </Suspense>
+                      </div>
+                    )}
+
+                    {activeTab === 'fire' && (
+                      <div className={cn("space-y-4", getHighlightProps('fire').className)} ref={getHighlightProps('fire').ref as any}>
+                        <Suspense fallback={<AnalyticsSkeleton />}>
+                          <div className="space-y-6">
+                            <FIRECalculatorCard />
+                            <PersonalizedInvestmentTips />
+                          </div>
+                        </Suspense>
+                      </div>
+                    )}
+
+                    {activeTab === 'debt' && (
+                      <div className={cn("space-y-4", getHighlightProps('debt').className)} ref={getHighlightProps('debt').ref as any}>
+                        <Suspense fallback={<AnalyticsSkeleton />}>
+                          <DebtManagerCard />
+                        </Suspense>
+                      </div>
+                    )}
+
+                    {activeTab === 'portfolio' && (
+                      <div className={cn("space-y-4", getHighlightProps('portfolio').className)} ref={getHighlightProps('portfolio').ref as any}>
+                        <Suspense fallback={<AnalyticsSkeleton />}>
+                          <div className="space-y-6">
+                            <PortfolioTrackerCard />
+                            <PersonalizedInvestmentTips />
+                          </div>
+                        </Suspense>
+                      </div>
+                    )}
+
+                    {activeTab === 'education' && (
+                      <div className={cn("space-y-4", getHighlightProps('education').className)} ref={getHighlightProps('education').ref as any}>
+                        <Suspense fallback={<AnalyticsSkeleton />}>
+                          <div className="space-y-6">
+                            <GlobalLearningChart />
+                            <div className="grid gap-6 md:grid-cols-2">
+                              <ReadingPaceComparison />
+                              <ReadingReminderSettings />
+                            </div>
+                            <FinancialEducationCard />
+                          </div>
+                        </Suspense>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
