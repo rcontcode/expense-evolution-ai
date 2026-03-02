@@ -50,7 +50,7 @@ export const MobileStatsGrid = memo(({
             <TrendingUp className="h-5 w-5 text-emerald-500" />
           </div>
           <div className="min-w-0">
-            <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 truncate">
+            <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 truncate" title={formatCompact(monthlyIncome)}>
               {formatCompact(monthlyIncome)}
             </p>
             <p className="text-[10px] text-muted-foreground truncate">
