@@ -70,7 +70,7 @@ export const MobileStatsGrid = memo(({
             <TrendingDown className="h-5 w-5 text-rose-500" />
           </div>
           <div className="min-w-0">
-            <p className="text-lg font-bold text-rose-600 dark:text-rose-400 truncate">
+            <p className="text-lg font-bold text-rose-600 dark:text-rose-400 truncate" title={formatCompact(monthlyExpenses)}>
               {formatCompact(monthlyExpenses)}
             </p>
             <p className="text-[10px] text-muted-foreground truncate">
