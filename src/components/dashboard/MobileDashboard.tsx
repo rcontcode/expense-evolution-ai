@@ -18,6 +18,7 @@ import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding'
 import { LiveClock } from '@/components/dashboard/LiveClock';
 import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
 import { DashboardGamificationWidget } from '@/components/gamification';
+import { MobileSectionPills } from '@/components/dashboard/MobileSectionPills';
 
 const LazyEcosystemWidgets = lazy(() => import('@/components/ecosystem/EcosystemDashboardWidgets'));
 
@@ -71,6 +72,9 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
       />
 
       <DashboardViewTabs activeTab={activeView} onTabChange={setActiveView} />
+      
+      {/* Section navigation pills */}
+      <MobileSectionPills activeView={activeView} />
 
       <AnimatePresence mode="wait">
         {activeView === 'resumen' ? (
@@ -92,7 +96,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
               />
             )}
 
-            <div className="overflow-x-auto -mx-4 px-4">
+            <div className="overflow-x-auto -mx-4 px-4" data-section="timeline">
               <YearTimelineChart
                 selectedMonth={selectedMonth}
                 onMonthSelect={setSelectedMonth}
@@ -108,12 +112,16 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
               onAddExpense={handleAddExpense}
             />
 
-            <ProfileCompletionNudge />
-            <DashboardGamificationWidget compact={true} />
+            <div data-section="gamification">
+              <ProfileCompletionNudge />
+              <DashboardGamificationWidget compact={true} />
+            </div>
 
-            <Suspense fallback={null}>
-              <LazyEcosystemWidgets />
-            </Suspense>
+            <div data-section="ecosystem">
+              <Suspense fallback={null}>
+                <LazyEcosystemWidgets />
+              </Suspense>
+            </div>
           </motion.div>
         ) : (
           <motion.div

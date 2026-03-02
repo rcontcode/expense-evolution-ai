@@ -1,55 +1,91 @@
 
 
-## Respuesta corta: No, el plan original era solo para desktop
+## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
 
-El Navigator lateral flotante y el botón ⌘K fueron diseñados exclusivamente para desktop. En móvil no tienen sentido porque:
-- No hay espacio para un panel lateral flotante
-- ⌘K no existe como atajo en celulares
-- El scroll-spy lateral compite con el bottom nav existente
+### ✅ Completado en EvoFinz
 
-## Plan actualizado: Adaptaciones móviles
+| # | Tarea | Estado |
+|---|-------|--------|
+| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
+| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
+| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
+| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
+| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
 
-Además de las 2 soluciones desktop, agregaremos **2 adaptaciones específicas para móvil**:
+### ✅ Completado en Fokuspark
 
-### 1. Sticky Section Pills (Mobile)
-Una barra horizontal sticky justo debajo de las `DashboardViewTabs` con pills/chips desplazables que representan las secciones visibles. Funciona como un mini-índice horizontal:
+| # | Tarea | Estado |
+|---|-------|--------|
+| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
+| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
+| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
+| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
 
-```text
-┌─────────────────────────────────────┐
-│ [Resumen] [Control]                 │  ← Tabs existentes
-├─────────────────────────────────────┤
-│ ● Timeline  ● Acciones  ● Mes  ... │  ← Nuevos pills (scroll horizontal)
-├─────────────────────────────────────┤
-│                                     │
-│  Contenido del dashboard...         │
-│                                     │
-└─────────────────────────────────────┘
-│  🏠   📊   ➕   👤   ⋯   │  ← Bottom nav existente
-```
+### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
 
-- Scroll-spy: la pill activa se resalta mientras el usuario hace scroll
-- Tap en una pill = smooth scroll a esa sección
-- Solo aparece en la vista activa (Resumen o Control)
-- Ocupa ~36px de alto, se oculta al hacer scroll down y reaparece al scroll up
+---
 
-### 2. Botón flotante de búsqueda (Mobile)
-Un pequeño botón circular (🔍) sobre el bottom nav que abre el `GlobalSearch` existente como un drawer de pantalla completa. Reemplaza el ⌘K que no existe en móvil.
+## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
 
-### Archivos a crear/modificar
+### ✅ Confirmado: Sistema funciona correctamente
 
-| Archivo | Cambio |
-|---------|--------|
-| **Nuevo**: `src/components/dashboard/DashboardNavigator.tsx` | Panel TOC flotante derecho (desktop only) con scroll-spy via IntersectionObserver |
-| **Nuevo**: `src/components/dashboard/MobileSectionPills.tsx` | Barra horizontal sticky con chips de secciones + scroll-spy (mobile only) |
-| **Modificar**: `src/pages/Dashboard.tsx` | Agregar `data-section` attrs, montar Navigator desktop |
-| **Modificar**: `src/components/dashboard/MobileDashboard.tsx` | Montar `MobileSectionPills` debajo de tabs |
-| **Modificar**: `src/components/search/GlobalSearch.tsx` | Agregar dashboard tabs y áreas del Centro de Control como items buscables |
-| **Modificar**: `src/components/Layout.tsx` | Agregar botón flotante 🔍 en mobile (sobre bottom nav) y botón ⌘K en desktop |
+- Planes individuales (Free/Premium/Pro) son independientes por app
+- Bundle compartido usa mismos Stripe Price IDs en ambas apps
+- Ambos webhooks detectan Bundle y setean `has_bundle = true`
+- No hay acceso cruzado no autorizado entre apps
 
-### Resumen de experiencia por dispositivo
+### ✅ Gaps implementados en Fokuspark
 
-- **Desktop**: Navigator lateral derecho (TOC con scroll-spy) + botón ⌘K flotante
-- **Mobile**: Section Pills horizontales (scroll-spy) + botón 🔍 flotante que abre GlobalSearch
+| # | Gap | Estado |
+|---|-----|--------|
+| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
+| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
 
-Ambos comparten la misma lógica de `IntersectionObserver` y los mismos `data-section` attributes, solo cambia la presentación visual.
+### 📋 Gaps pendientes (baja prioridad)
 
+| # | Gap | Prioridad |
+|---|-----|-----------|
+| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
+| S3 | Texto del Bundle podría ser más descriptivo | Baja |
+
+---
+
+## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
+
+### ✅ Veredicto: No igualar precios — estructura actual es óptima
+
+| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
+|------|---------|-----------|-----------|-------|
+| Free | $0 | $0 | ✅ Ya iguales | — |
+| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
+| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+
+### 📋 Pendiente técnico
+
+| # | Tarea | App | Prioridad |
+|---|-------|-----|-----------|
+| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
+
+---
+
+## Quiz Multi-App — CRM Unificado
+
+### ✅ Completado en EvoFinz
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
+| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
+| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
+| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
+| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
+
+### 📋 Pendiente en Fokuspark
+
+| # | Tarea | Prioridad |
+|---|-------|-----------|
+| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
+| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
+| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
+| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |

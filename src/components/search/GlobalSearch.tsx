@@ -55,6 +55,28 @@ interface ActionItem {
   keywords?: string[];
 }
 
+interface DashboardToolItem {
+  label: { es: string; en: string };
+  emoji: string;
+  path: string;
+  keywords?: string[];
+}
+
+const DASHBOARD_TOOLS: DashboardToolItem[] = [
+  { label: { es: 'Gráficos', en: 'Charts' }, emoji: '📊', path: '/dashboard?tab=charts', keywords: ['charts', 'graficos', 'estadisticas'] },
+  { label: { es: 'Análisis', en: 'Analytics' }, emoji: '📈', path: '/dashboard?tab=analytics', keywords: ['analytics', 'analisis', 'radar', 'sankey', 'heatmap'] },
+  { label: { es: 'Presupuesto', en: 'Budget' }, emoji: '💰', path: '/dashboard?tab=budget', keywords: ['budget', 'presupuesto', 'plan mensual'] },
+  { label: { es: 'Mentoría', en: 'Mentorship' }, emoji: '🎓', path: '/dashboard?tab=mentorship', keywords: ['mentorship', 'mentoria', 'cashflow', 'journal', 'habitos'] },
+  { label: { es: 'Metas', en: 'Goals' }, emoji: '🎯', path: '/dashboard?tab=goals', keywords: ['goals', 'metas', 'savings', 'ahorro', 'SMART'] },
+  { label: { es: 'Impuestos', en: 'Taxes' }, emoji: '📋', path: '/dashboard?tab=tax', keywords: ['tax', 'impuestos', 'SII', 'CRA', 'optimizador'] },
+  { label: { es: 'Kilometraje', en: 'Mileage' }, emoji: '🚗', path: '/dashboard?tab=mileage', keywords: ['mileage', 'kilometraje', 'viaje', 'km'] },
+  { label: { es: 'Suscripciones', en: 'Subscriptions' }, emoji: '🔄', path: '/dashboard?tab=subscriptions', keywords: ['subscriptions', 'suscripciones', 'recurrentes'] },
+  { label: { es: 'FIRE', en: 'FIRE' }, emoji: '🔥', path: '/dashboard?tab=fire', keywords: ['fire', 'libertad financiera', 'retiro', 'retirement'] },
+  { label: { es: 'Deudas', en: 'Debt' }, emoji: '🏦', path: '/dashboard?tab=debt', keywords: ['debt', 'deudas', 'prestamos', 'loans'] },
+  { label: { es: 'Portfolio', en: 'Portfolio' }, emoji: '💼', path: '/dashboard?tab=portfolio', keywords: ['portfolio', 'inversiones', 'investments'] },
+  { label: { es: 'Educación', en: 'Education' }, emoji: '📚', path: '/dashboard?tab=education', keywords: ['education', 'educacion', 'lectura', 'reading', 'libros'] },
+];
+
 const NAVIGATION_ITEMS: NavigationItem[] = [
   { 
     icon: LayoutDashboard, 
@@ -338,6 +360,27 @@ export function GlobalSearch({ open, onOpenChange, onQuickCapture }: GlobalSearc
               </CommandItem>
             );
           })}
+        </CommandGroup>
+        
+        <CommandSeparator />
+
+        {/* Dashboard Tools */}
+        <CommandGroup heading={language === 'es' ? '🛠️ Herramientas del Dashboard' : '🛠️ Dashboard Tools'}>
+          {DASHBOARD_TOOLS.map((tool) => (
+            <CommandItem
+              key={tool.path}
+              value={`${tool.label.es} ${tool.label.en} ${tool.keywords?.join(' ') || ''}`}
+              onSelect={() => handleSelect(tool.path)}
+              className="cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center shadow-sm">
+                  <span className="text-sm">{tool.emoji}</span>
+                </div>
+                <span>{tool.label[language as 'es' | 'en']}</span>
+              </div>
+            </CommandItem>
+          ))}
         </CommandGroup>
         
         <CommandSeparator />

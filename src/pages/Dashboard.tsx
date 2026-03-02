@@ -47,6 +47,7 @@ import { LifeProfileSection } from '@/hooks/data/useLifeProfile';
 import { DashboardNotificationHub } from '@/components/dashboard/DashboardNotificationHub';
 import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding';
 import { EcosystemSection } from '@/components/ecosystem/EcosystemSection';
+import { DashboardNavigator } from '@/components/dashboard/DashboardNavigator';
 
 // Lazy load chart components for better performance
 const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.DashboardCharts })));
@@ -311,7 +312,7 @@ export default function Dashboard() {
           )}
           
           {/* Timeline + Month Detail */}
-          <div className="side-by-side" data-highlight="timeline-section">
+          <div className="side-by-side" data-section="timeline" data-highlight="timeline-section">
             <div data-highlight="timeline-chart" className="flex flex-col">
               <YearTimelineChart
                 selectedMonth={selectedMonth}
@@ -332,7 +333,9 @@ export default function Dashboard() {
           </div>
 
           {/* Ecosystem — Collapsible section for Bundle users */}
-          <EcosystemSection />
+          <div data-section="ecosystem">
+            <EcosystemSection />
+          </div>
 
           {/* ===== PROMINENT VIEW TABS ===== */}
           <DashboardViewTabs 
@@ -361,7 +364,7 @@ export default function Dashboard() {
                  className="space-y-6"
               >
                 {/* Quick Actions — prominent position for fast access (#9) */}
-                <Card className="border-dashed">
+                <Card className="border-dashed" data-section="quick-actions">
                   <CardHeader className="pb-2 pt-3">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
                       {t('dashboard.quickActions')}
@@ -383,7 +386,7 @@ export default function Dashboard() {
                 </Card>
 
                 {/* Workflow Progress + Bills */}
-                <div className="grid gap-4 lg:grid-cols-2">
+                <div className="grid gap-4 lg:grid-cols-2" data-section="workflows">
                   <Suspense fallback={<Skeleton className="h-[200px]" />}>
                     <WorkflowSummaryWidget />
                   </Suspense>
@@ -400,11 +403,15 @@ export default function Dashboard() {
                 )}
 
                 {/* Smart Alerts + Profile + Gamification */}
+                <div data-section="alerts">
                 <Suspense fallback={null}>
                   <ProactiveAlertsWidget />
                 </Suspense>
+                </div>
+                <div data-section="gamification">
                 <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
                 <DashboardGamificationWidget compact={true} />
+                </div>
 
                 {/* Visual Workflow Guide — moved below key data (#7) */}
                 <Suspense fallback={<Skeleton className="h-[200px]" />}>
@@ -412,7 +419,7 @@ export default function Dashboard() {
                 </Suspense>
 
                 {/* Advanced Tools Card */}
-                <Card className="border-2 border-primary/30 bg-gradient-to-br from-card via-primary/5 to-accent/10 backdrop-blur-sm overflow-hidden shadow-2xl shadow-primary/20 ring-1 ring-primary/10" data-highlight="control-center">
+                <Card className="border-2 border-primary/30 bg-gradient-to-br from-card via-primary/5 to-accent/10 backdrop-blur-sm overflow-hidden shadow-2xl shadow-primary/20 ring-1 ring-primary/10" data-section="advanced-tools" data-highlight="control-center">
                   <div className="h-2 bg-gradient-to-r from-primary via-accent to-destructive shadow-lg shadow-primary/30" />
                   <CardHeader className="pb-4 pt-5">
                     <div className="flex items-center gap-3">
@@ -650,6 +657,9 @@ export default function Dashboard() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Desktop Navigator - floating TOC with scroll-spy */}
+          <DashboardNavigator viewMode={viewMode === 'organized' ? 'control' : 'resumen'} />
 
           <ExportDialog 
             open={exportDialogOpen} 
