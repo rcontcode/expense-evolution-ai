@@ -24,16 +24,6 @@ const entityTypeIcons: Record<string, typeof Building2> = {
   other: Globe,
 };
 
-const countryFlags: Record<string, string> = {
-  CA: '🇨🇦',
-  CL: '🇨🇱',
-  US: '🇺🇸',
-  MX: '🇲🇽',
-  ES: '🇪🇸',
-  GB: '🇬🇧',
-  FR: '🇫🇷',
-  DE: '🇩🇪',
-};
 
 export function EntitySelect({ control, name = 'entity_id', required = false, showDescription = true }: EntitySelectProps) {
   const { language } = useLanguage();
