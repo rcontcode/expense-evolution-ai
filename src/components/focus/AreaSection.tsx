@@ -1,7 +1,7 @@
- import { ReactNode, memo, useMemo } from 'react';
- import { AreaStatsPreview } from './AreaStatsPreview';
- import { AreaHealthBadge } from './AreaHealthBadge';
-import { ChevronDown, ChevronRight, Sparkles } from 'lucide-react';
+import { ReactNode, memo, useMemo } from 'react';
+import { AreaStatsPreview } from './AreaStatsPreview';
+import { AreaHealthBadge } from './AreaHealthBadge';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -24,31 +24,37 @@ const getAreaStyles = (areaId: FocusAreaId) => {
     gradientClass: string;
     iconBgClass: string;
     accentClass: string;
+    borderActiveClass: string;
   }> = {
     negocio: {
-      gradientClass: 'from-[hsl(var(--chart-1)/0.2)] via-[hsl(var(--chart-1)/0.1)] to-transparent',
+      gradientClass: 'from-[hsl(var(--chart-1)/0.15)] via-[hsl(var(--chart-1)/0.05)] to-transparent',
       iconBgClass: 'bg-[hsl(var(--chart-1))]',
       accentClass: 'text-[hsl(var(--chart-1))]',
+      borderActiveClass: 'border-[hsl(var(--chart-1)/0.4)]',
     },
     familia: {
-      gradientClass: 'from-[hsl(var(--chart-2)/0.2)] via-[hsl(var(--chart-2)/0.1)] to-transparent',
+      gradientClass: 'from-[hsl(var(--chart-2)/0.15)] via-[hsl(var(--chart-2)/0.05)] to-transparent',
       iconBgClass: 'bg-[hsl(var(--chart-2))]',
       accentClass: 'text-[hsl(var(--chart-2))]',
+      borderActiveClass: 'border-[hsl(var(--chart-2)/0.4)]',
     },
     diadia: {
-      gradientClass: 'from-[hsl(var(--chart-3)/0.2)] via-[hsl(var(--chart-3)/0.1)] to-transparent',
+      gradientClass: 'from-[hsl(var(--chart-3)/0.15)] via-[hsl(var(--chart-3)/0.05)] to-transparent',
       iconBgClass: 'bg-[hsl(var(--chart-3))]',
       accentClass: 'text-[hsl(var(--chart-3))]',
+      borderActiveClass: 'border-[hsl(var(--chart-3)/0.4)]',
     },
     crecimiento: {
-      gradientClass: 'from-[hsl(var(--chart-4)/0.2)] via-[hsl(var(--chart-4)/0.1)] to-transparent',
+      gradientClass: 'from-[hsl(var(--chart-4)/0.15)] via-[hsl(var(--chart-4)/0.05)] to-transparent',
       iconBgClass: 'bg-[hsl(var(--chart-4))]',
       accentClass: 'text-[hsl(var(--chart-4))]',
+      borderActiveClass: 'border-[hsl(var(--chart-4)/0.4)]',
     },
     impuestos: {
-      gradientClass: 'from-[hsl(var(--chart-5)/0.2)] via-[hsl(var(--chart-5)/0.1)] to-transparent',
+      gradientClass: 'from-[hsl(var(--chart-5)/0.15)] via-[hsl(var(--chart-5)/0.05)] to-transparent',
       iconBgClass: 'bg-[hsl(var(--chart-5))]',
       accentClass: 'text-[hsl(var(--chart-5))]',
+      borderActiveClass: 'border-[hsl(var(--chart-5)/0.4)]',
     },
   };
   return styleMap[areaId];
@@ -70,100 +76,83 @@ export const AreaSection = memo(({
   return (
     <Collapsible open={!isCollapsed} onOpenChange={() => onToggleCollapse()}>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.25 }}
       >
         <Card 
           className={cn(
-            "border-2 transition-all duration-300 overflow-hidden relative",
-            !isCollapsed && "shadow-lg shadow-primary/20",
-            isCollapsed && "hover:shadow-md",
+            "border transition-all duration-300 overflow-hidden relative",
+            !isCollapsed && "shadow-lg",
+            !isCollapsed && styles.borderActiveClass,
+            isCollapsed && "border-border/60 hover:shadow-sm",
             className
           )}
-          style={{ 
-            borderColor: area.borderColor,
-          }}
         >
-          {/* Gradient background overlay */}
-          <div 
-            className={cn(
-              "absolute inset-0 bg-gradient-to-br opacity-50 pointer-events-none",
-              styles.gradientClass
-            )}
-          />
+          {/* Subtle gradient background */}
+          {!isCollapsed && (
+            <div 
+              className={cn(
+                "absolute inset-0 bg-gradient-to-br opacity-60 pointer-events-none",
+                styles.gradientClass
+              )}
+            />
+          )}
           
           <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-muted/30 transition-all duration-200 py-4 relative z-10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  {/* Animated emoji container with gradient background */}
+            <CardHeader className="cursor-pointer hover:bg-muted/20 transition-all duration-200 py-3.5 px-4 sm:px-6 relative z-10">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  {/* Emoji icon */}
                   <motion.div
-                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileHover={{ scale: 1.08 }}
                     whileTap={{ scale: 0.95 }}
                     className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-lg text-white",
+                      "w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center text-xl shadow-md text-white shrink-0",
                       styles.iconBgClass
                     )}
                   >
-                    <span className="drop-shadow-md">{area.emoji}</span>
+                    <span>{area.emoji}</span>
                   </motion.div>
                   
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 
-                        className={cn(
-                          "font-bold text-xl drop-shadow-sm",
-                          styles.accentClass
-                        )}
-                      >
-                        {area.name[language as 'es' | 'en'] || area.name.es}
-                      </h3>
-                      {!isCollapsed && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className={cn("p-1 rounded-full", styles.iconBgClass)}
-                        >
-                          <Sparkles className="h-3 w-3 text-white" />
-                        </motion.div>
-                      )}
-                    </div>
-                     <p className="text-sm text-muted-foreground hidden sm:block">
-                       {area.description[language as 'es' | 'en'] || area.description.es}
-                     </p>
-                     {/* Show stats preview when collapsed */}
-                     {isCollapsed && (
-                       <div className="mt-1">
-                         <AreaStatsPreview areaId={areaId} />
-                       </div>
-                     )}
-                   </div>
-                 </div>
-                 
-                 <div className="flex items-center gap-2">
-                   <AreaHealthBadge areaId={areaId} />
-                   <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
+                  <div className="min-w-0">
+                    <h3 className={cn("font-bold text-base sm:text-lg leading-tight", styles.accentClass)}>
+                      {area.name[language as 'es' | 'en'] || area.name.es}
+                    </h3>
+                    {isCollapsed ? (
+                      <div className="mt-0.5">
+                        <AreaStatsPreview areaId={areaId} />
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
+                        {area.description[language as 'es' | 'en'] || area.description.es}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <AreaHealthBadge areaId={areaId} />
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     className={cn(
-                      "h-10 w-10 p-0 rounded-full",
-                      !isCollapsed && styles.iconBgClass,
-                      !isCollapsed && "text-white shadow-md"
+                      "h-8 w-8 p-0 rounded-full transition-colors",
+                      !isCollapsed && "bg-muted/50"
                     )}
                   >
-                    {isCollapsed ? (
-                      <ChevronRight className="h-5 w-5" />
-                    ) : (
-                      <ChevronDown className="h-5 w-5" />
-                    )}
-                     </Button>
-                   </motion.div>
-                 </div>
+                    <motion.div
+                      animate={{ rotate: isCollapsed ? 0 : 180 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {isCollapsed ? (
+                        <ChevronRight className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </motion.div>
+                  </Button>
+                </div>
               </div>
             </CardHeader>
           </CollapsibleTrigger>
@@ -177,14 +166,9 @@ export const AreaSection = memo(({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <CardContent className="pt-2 pb-6 relative z-10">
-                    {/* Decorative top border */}
-                    <div 
-                      className={cn(
-                        "h-1 w-full rounded-full mb-6",
-                        styles.iconBgClass
-                      )}
-                    />
+                  <CardContent className="pt-0 pb-5 px-4 sm:px-6 relative z-10">
+                    {/* Thin accent divider */}
+                    <div className={cn("h-0.5 w-full rounded-full mb-5 opacity-60", styles.iconBgClass)} />
                     {children}
                   </CardContent>
                 </motion.div>
