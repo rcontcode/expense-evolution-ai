@@ -278,6 +278,12 @@ export const Layout = ({ children }: LayoutProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
   const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
+  const [expandedSubmenus, setExpandedSubmenus] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem('evofinz-sidebar-submenus');
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
   const isMobile = useIsMobile();
   const NAV_SECTIONS = getNavSections(language);
   const MOBILE_NAV_ITEMS = getMobileNavItems(language);
