@@ -1157,8 +1157,8 @@ export const Layout = ({ children }: LayoutProps) => {
                       {userInitial}
                     </div>
                     {currentCountry && (
-                      <span className="absolute -bottom-1 -right-1 text-xs leading-none drop-shadow-md">
-                        {currentCountry === 'CA' ? '🇨🇦' : currentCountry === 'CL' ? '🇨🇱' : currentCountry === 'US' ? '🇺🇸' : '🌍'}
+                      <span className="absolute -bottom-1.5 -right-1.5 drop-shadow-md">
+                        <CountryFlag code={currentCountry} size="xs" className="rounded-full ring-2 ring-background" />
                       </span>
                     )}
                   </div>
