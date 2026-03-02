@@ -15,6 +15,8 @@ import { ProgressiveOnboarding } from '@/components/onboarding/ProgressiveOnboar
 import { BetaReminderBanner } from '@/components/beta/BetaReminderBanner';
 import { EcosystemOnboarding } from '@/components/ecosystem/EcosystemOnboarding';
 import { LiveClock } from '@/components/dashboard/LiveClock';
+import { ProfileCompletionNudge } from '@/components/profile/ProfileCompletionNudge';
+import { DashboardGamificationWidget } from '@/components/gamification';
 
 const LazyEcosystemWidgets = lazy(() => import('@/components/ecosystem/EcosystemDashboardWidgets'));
 
@@ -102,6 +104,9 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
               onAddIncome={handleAddIncome}
               onAddExpense={handleAddExpense}
             />
+
+            <ProfileCompletionNudge />
+            <DashboardGamificationWidget compact={true} />
 
             <Suspense fallback={null}>
               <LazyEcosystemWidgets />
