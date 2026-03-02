@@ -440,14 +440,14 @@ export function InteractiveWelcome({ className }: { className?: string }) {
                 onClick={() => navigate(action.path)}
                 className={cn(
                   "group p-4 rounded-xl border-2 transition-all text-left",
-                  "hover:shadow-lg hover:scale-[1.02]",
+                  "hover:shadow-lg hover:shadow-primary/5 hover:scale-[1.02] hover:-translate-y-1",
                   action.borderColor,
-                  "bg-gradient-to-br from-background to-muted/30"
+                  "bg-gradient-to-br from-background via-background to-muted/40"
                 )}
               >
                 <div className="flex flex-col gap-3">
                   <div className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center transition-all",
+                    "w-12 h-12 rounded-xl flex items-center justify-center transition-all shadow-sm",
                     "group-hover:scale-110 group-hover:shadow-md",
                     action.bgColor
                   )}>
@@ -455,7 +455,7 @@ export function InteractiveWelcome({ className }: { className?: string }) {
                   </div>
                   <div>
                     <h4 className={cn(
-                      "font-semibold text-sm transition-colors",
+                      "font-bold text-sm transition-colors",
                       "group-hover:text-primary"
                     )}>
                       {action.title[language]}
