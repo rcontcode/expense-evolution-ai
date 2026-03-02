@@ -38,6 +38,7 @@ export function SMARTGoalsCard() {
 
   const { data: savingsGoals, isLoading: savingsLoading } = useSavingsGoals();
   const { data: investmentGoals, isLoading: investmentLoading } = useInvestmentGoals();
+  const { formatCompact: formatCurrency } = useFormatCurrency();
 
   const isLoading = savingsLoading || investmentLoading;
 
