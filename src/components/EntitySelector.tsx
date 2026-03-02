@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Check, ChevronDown, Globe2, Building2, User, Briefcase, Plus, Sparkles } from 'lucide-react';
 import { CountryFlag } from '@/components/ui/country-flag';
+import copihueIcon from '@/assets/copihue-icon.png';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
