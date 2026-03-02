@@ -199,7 +199,7 @@ const INTERACTIVE_QUESTIONS: InteractiveQuestion[] = [
     },
     actions: [
       { label: { es: 'Organizar mis gastos', en: 'Organize my expenses' }, path: '/expenses', highlight: true, icon: Receipt, color: 'text-blue-600' },
-      { label: { es: 'Preparar impuestos', en: 'Prepare taxes' }, path: '/dashboard?tab=tax', icon: Calculator, color: 'text-emerald-600' },
+      { label: { es: 'Preparar impuestos', en: 'Prepare taxes' }, path: '/tax-optimizer', icon: Calculator, color: 'text-emerald-600' },
       { label: { es: 'Facturar a clientes', en: 'Bill clients' }, path: '/clients', icon: Users, color: 'text-purple-600' },
       { label: { es: 'Ver mi patrimonio', en: 'View my net worth' }, path: '/net-worth', icon: Wallet, color: 'text-amber-600' }
     ]
