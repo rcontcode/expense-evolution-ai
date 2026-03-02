@@ -586,7 +586,7 @@ export default function Dashboard() {
                           <Suspense fallback={<MileageSkeleton />}>
                             <MileageTabContent
                               mileageSummary={mileageSummary}
-                              mileageLoading={mileageLoading}
+                              isLoading={mileageLoading}
                             />
                           </Suspense>
                         )}
