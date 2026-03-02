@@ -1,91 +1,56 @@
 
 
-## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
+## Propuesta Estrategica: Homogeneizacion de Botones
 
-### ✅ Completado en EvoFinz
+### Diagnostico
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
-| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
-| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
-| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
-| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
+Tras analizar 241+ archivos con `variant="outline"`, 191+ con `variant="ghost"`, 101+ con `variant="secondary"`, y 12 archivos con `<button className>` nativo, estos son los problemas encontrados:
 
-### ✅ Completado en Fokuspark
+**Problema principal**: El variante `outline` (usado en 241 archivos, ~2870 instancias) se ve "vacio" - solo tiene borde sin color de fondo. Es el boton mas usado en la app y el que peor se ve. Esto genera una sensacion de inconsistencia general.
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
-| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
-| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
-| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
+**Problemas especificos**:
+1. **`outline`** - Border transparente sin relleno, se ve plano y sin vida
+2. **`ghost`** - Demasiado invisible, sin ninguna pista visual de que es un boton interactivo
+3. **`secondary`** - Aceptable pero carece del "punch" 3D candy que tienen los otros
+4. **Botones `<button>` nativos** - ~12 archivos usan `<button className>` directo sin el componente `Button`, saltandose todo el sistema de variantes
 
-### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
+### Estrategia: Mejora Centralizada (Solo `button.tsx`)
 
----
+La belleza de tener un sistema de variantes centralizado es que **modificando SOLO el archivo `src/components/ui/button.tsx`**, todos los ~4500+ botones de la app mejoran instantaneamente. No hay que tocar los 241 archivos individuales.
 
-## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
+### Cambios propuestos en `button.tsx`
 
-### ✅ Confirmado: Sistema funciona correctamente
+| Variante | Estado actual | Mejora |
+|----------|--------------|--------|
+| `default` | Ya bien - 3D con sombra primaria | Sin cambios |
+| `destructive` | Ya bien - 3D con sombra roja | Sin cambios |
+| `success` | Ya bien - 3D con sombra verde | Sin cambios |
+| `gradient` | Ya bien - gradiente con sombra | Sin cambios |
+| **`outline`** | Solo borde, fondo transparente | Agregar `bg-primary/8` de fondo sutil + borde mas definido + `text-primary` por defecto + sombra suave. En hover: relleno mas visible |
+| **`ghost`** | Totalmente invisible hasta hover | Agregar `bg-muted/40` muy sutil de fondo + borde `border border-transparent` para que al hacer hover aparezca estructura |
+| **`secondary`** | Plano, sin profundidad | Agregar sombra interna sutil + borde mas definido + efecto hover con elevacion |
+| **`link`** | OK como esta | Sin cambios |
 
-- Planes individuales (Free/Premium/Pro) son independientes por app
-- Bundle compartido usa mismos Stripe Price IDs en ambas apps
-- Ambos webhooks detectan Bundle y setean `has_bundle = true`
-- No hay acceso cruzado no autorizado entre apps
+### Ademas: Nuevo variante `outline-filled`
 
-### ✅ Gaps implementados en Fokuspark
+Para CTAs secundarios importantes (como "Descargar", "Agregar", "Crear"), agregar un variante intermedio entre `outline` y `default`:
+- Fondo con color primario al 15%
+- Texto primario
+- Borde primario visible
+- Sombra media
+- Hover con elevacion
 
-| # | Gap | Estado |
-|---|-----|--------|
-| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
-| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
+### Archivos a modificar
 
-### 📋 Gaps pendientes (baja prioridad)
+1. **`src/components/ui/button.tsx`** - Unica modificacion central: mejorar `outline`, `ghost`, `secondary`, agregar `outline-filled`
 
-| # | Gap | Prioridad |
-|---|-----|-----------|
-| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
-| S3 | Texto del Bundle podría ser más descriptivo | Baja |
+### Lo que NO se toca
 
----
+- Los 241 archivos que usan `variant="outline"` - se benefician automaticamente
+- Los 191 archivos con `variant="ghost"` - mejoran solos
+- Los variantes que ya se ven bien (`default`, `destructive`, `success`, `gradient`)
 
-## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
+### Resultado esperado
 
-### ✅ Veredicto: No igualar precios — estructura actual es óptima
+Todos los botones de la app tendran presencia visual, profundidad y coherencia con la estetica 3D candy ya establecida, sin perder la jerarquia visual (primary > outline-filled > outline > secondary > ghost > link).
 
-| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
-|------|---------|-----------|-----------|-------|
-| Free | $0 | $0 | ✅ Ya iguales | — |
-| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
-| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
-| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
-
-### 📋 Pendiente técnico
-
-| # | Tarea | App | Prioridad |
-|---|-------|-----|-----------|
-| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
-
----
-
-## Quiz Multi-App — CRM Unificado
-
-### ✅ Completado en EvoFinz
-
-| # | Tarea | Estado |
-|---|-------|--------|
-| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
-| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
-| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
-| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
-| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
-
-### 📋 Pendiente en Fokuspark
-
-| # | Tarea | Prioridad |
-|---|-------|-----------|
-| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
-| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
-| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
-| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
