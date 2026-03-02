@@ -276,7 +276,7 @@ export default function Dashboard() {
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
               >
-                <OrganizedDashboard deepLinkArea={deepLinkArea} deepLinkTab={deepLinkTab} />
+                <OrganizedDashboard deepLinkArea={deepLinkArea} deepLinkTab={deepLinkTab} deepLinkKey={deepLinkKey} />
               </motion.div>
             ) : (
               <motion.div
