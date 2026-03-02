@@ -127,12 +127,12 @@ const sectionThemes = {
     glow: 'shadow-violet-500/20',
   },
   system: {
-    gradient: 'from-slate-500/20 to-zinc-500/20',
-    border: 'border-slate-500/30',
-    text: 'text-slate-600 dark:text-slate-400',
-    iconWrapper: 'bg-gradient-to-br from-slate-400 via-zinc-500 to-gray-600 shadow-lg shadow-slate-500/50',
+    gradient: 'from-sky-500/20 to-indigo-500/20',
+    border: 'border-sky-500/30',
+    text: 'text-sky-600 dark:text-sky-400',
+    iconWrapper: 'bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 shadow-lg shadow-sky-500/50',
     iconColor: 'text-white drop-shadow-md',
-    glow: 'shadow-slate-500/20',
+    glow: 'shadow-sky-500/20',
   },
 };
 
@@ -877,12 +877,14 @@ export const Layout = ({ children }: LayoutProps) => {
               <div 
                 key={section.titleKey}
                 className={cn(
-                  "rounded-xl transition-all duration-300 overflow-hidden",
+                  "rounded-2xl transition-all duration-300 overflow-hidden",
                   collapsed ? "p-1" : "p-2.5",
                   `bg-gradient-to-br ${theme.gradient}`,
-                  `border ${theme.border}`,
-                  `hover:shadow-lg ${theme.glow}`,
-                  "backdrop-blur-sm"
+                  `border-2 ${theme.border}`,
+                  `hover:shadow-xl ${theme.glow}`,
+                  "backdrop-blur-sm",
+                  "hover:scale-[1.01] hover:-translate-y-0.5",
+                  "shadow-md shadow-black/5 dark:shadow-black/15"
                 )}
               >
                 {collapsed ? (
@@ -945,17 +947,17 @@ export const Layout = ({ children }: LayoutProps) => {
                         onFocus={() => preloadRoute(item.path)}
                         className={cn(
                           'flex items-center gap-2 flex-1 px-2.5 py-2 rounded-xl text-sm transition-all duration-200',
-                          'hover:bg-background/70 hover:shadow-sm hover:-translate-y-0.5',
-                          'active:translate-y-0 active:shadow-none',
-                          isActive && 'bg-primary text-primary-foreground shadow-md shadow-primary/30 scale-[1.02] font-semibold',
+                          'hover:bg-background/70 hover:shadow-md hover:-translate-y-0.5',
+                          'active:translate-y-0.5 active:shadow-none active:scale-[0.98]',
+                          isActive && 'bg-primary text-primary-foreground shadow-lg shadow-primary/40 scale-[1.03] font-bold ring-1 ring-primary/20',
                           collapsed && 'justify-center px-0 w-full'
                         )}
                       >
                         <span className={cn(
-                          "flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 group-hover:scale-110",
-                          isActive ? "bg-primary-foreground/20 shadow-inner" : theme.iconWrapper
+                          "flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 group-hover:scale-110 group-hover:rotate-3",
+                          isActive ? "bg-primary-foreground/20 shadow-inner ring-1 ring-white/30" : cn(theme.iconWrapper, "ring-1 ring-white/20")
                         )}>
-                          <Icon className={cn("h-3.5 w-3.5 flex-shrink-0", isActive ? "text-primary-foreground drop-shadow-sm" : theme.iconColor)} />
+                          <Icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "text-primary-foreground drop-shadow-md" : theme.iconColor)} />
                         </span>
                         {!collapsed && (
                           <>
