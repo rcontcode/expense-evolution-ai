@@ -23,15 +23,24 @@ interface AreaTabsLayoutProps {
 
 const STORAGE_PREFIX = 'evofinz-area-tab-';
 
-export const AreaTabsLayout = memo(({ areaKey, tabs, footer, accentColor }: AreaTabsLayoutProps) => {
+export const AreaTabsLayout = memo(({ areaKey, tabs, footer, accentColor, forcedTab }: AreaTabsLayoutProps) => {
   const storageKey = `${STORAGE_PREFIX}${areaKey}`;
   const [activeTab, setActiveTab] = useState(() => {
+    if (forcedTab && tabs.some(t => t.id === forcedTab)) return forcedTab;
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved && tabs.some(t => t.id === saved)) return saved;
     } catch {}
     return tabs[0]?.id || '';
   });
+
+  // React to forcedTab changes (deep-linking)
+  useEffect(() => {
+    if (forcedTab && tabs.some(t => t.id === forcedTab)) {
+      setActiveTab(forcedTab);
+      try { localStorage.setItem(storageKey, forcedTab); } catch {}
+    }
+  }, [forcedTab, tabs, storageKey]);
 
   const handleTabChange = useCallback((value: string) => {
     setActiveTab(value);
