@@ -316,10 +316,8 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
 
         case 'export': {
           const reportType = action.data?.reportType as string;
-          const format = (action.data?.format as string) || 'excel';
-          // Navigate to reports section
-          navigate('/reports');
-          onNavigate?.('/reports');
+          navigate('/dashboard?tab=analytics');
+          onNavigate?.('/dashboard?tab=analytics');
           const msg = language === 'es'
             ? `Preparando reporte de ${reportType}...`
             : `Preparing ${reportType} report...`;
