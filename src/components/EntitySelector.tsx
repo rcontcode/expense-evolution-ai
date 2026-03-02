@@ -60,17 +60,6 @@ const entityTypeConfig: Record<string, {
   },
 };
 
-const countryFlags: Record<string, string> = {
-  CA: '🇨🇦',
-  CL: '🇨🇱',
-  US: '🇺🇸',
-  MX: '🇲🇽',
-  ES: '🇪🇸',
-  AR: '🇦🇷',
-  CO: '🇨🇴',
-  PE: '🇵🇪',
-  BR: '🇧🇷',
-};
 
 const currencySymbols: Record<string, string> = {
   CAD: '🍁',

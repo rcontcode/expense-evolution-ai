@@ -79,6 +79,7 @@ import { useAutoReminders } from '@/hooks/data/useAutoReminders';
 import { ContactForm } from '@/components/ContactForm';
 import { SocialLinks } from '@/components/SocialLinks';
 import { ChatAssistant } from '@/components/chat/ChatAssistant';
+import { CountryFlag } from '@/components/ui/country-flag';
 
 interface LayoutProps {
   children: ReactNode;
