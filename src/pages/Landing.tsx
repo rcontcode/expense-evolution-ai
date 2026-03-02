@@ -251,6 +251,7 @@ const getPricingTiers = (language: string) => [
       'Infinite custom tags',
       'Excel/CSV export',
       'Gamification + XP + Streaks',
+      'Bills Center + Calendar',
       '9+ charts: heatmaps, correlations',
       'Smart alerts',
       '4 mentorship modules',

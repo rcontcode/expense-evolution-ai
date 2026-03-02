@@ -463,6 +463,31 @@ export const PAGE_GUIDES = {
       { es: 'puedes capturar múltiples recibos en secuencia con la cámara continua.', en: 'you can capture multiple receipts in sequence with continuous camera.' }
     ]
   },
+  bills: {
+    pageKey: 'bills',
+    pageTitle: { es: 'aquí gestionas tus pagos fijos', en: 'here you manage your recurring bills' },
+    pageDescription: { 
+      es: 'Controla servicios, suscripciones y compromisos mensuales', 
+      en: 'Control services, subscriptions and monthly commitments' 
+    },
+    goals: [
+      { es: 'Configurar pagos recurrentes', en: 'Set up recurring payments' },
+      { es: 'Ver calendario de vencimientos', en: 'View due date calendar' },
+      { es: 'Detectar pagos atrasados', en: 'Detect overdue payments' },
+      { es: 'Proyectar flujo de caja', en: 'Project cash flow' }
+    ],
+    workflows: [
+      { step: 1, title: { es: 'Agregar', en: 'Add' }, description: { es: 'Pago fijo', en: 'Fixed bill' } },
+      { step: 2, title: { es: 'Configurar', en: 'Configure' }, description: { es: 'Monto y fecha', en: 'Amount & date' } },
+      { step: 3, title: { es: 'Seguir', en: 'Track' }, description: { es: 'Estado mensual', en: 'Monthly status' } },
+      { step: 4, title: { es: 'Optimizar', en: 'Optimize' }, description: { es: 'Reducir costos', en: 'Reduce costs' } }
+    ],
+    tips: [
+      { es: 'usa el Quick Setup para agregar tus pagos típicos en segundos.', en: 'use Quick Setup to add your typical bills in seconds.' },
+      { es: 'el Kanban te permite arrastrar pagos de "Pendiente" a "Pagado" fácilmente.', en: 'the Kanban lets you drag bills from "Pending" to "Paid" easily.' },
+      { es: 'la vista Calendario te muestra exactamente cuándo vence cada pago del mes.', en: 'the Calendar view shows you exactly when each payment is due this month.' }
+    ]
+  },
   contracts: {
     pageKey: 'contracts',
     pageTitle: { es: 'aquí gestionas tus contratos', en: 'here you manage your contracts' },
