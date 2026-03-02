@@ -364,7 +364,7 @@ export default function Dashboard() {
                  className="space-y-6"
               >
                 {/* Quick Actions — prominent position for fast access (#9) */}
-                <Card className="border-dashed">
+                <Card className="border-dashed" data-section="quick-actions">
                   <CardHeader className="pb-2 pt-3">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
                       {t('dashboard.quickActions')}
