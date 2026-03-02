@@ -41,9 +41,14 @@ const ROUTE_CONFIG: Record<string, { labelEs: string; labelEn: string; parent?: 
   '/business-profile': { labelEs: 'Perfil de Negocio', labelEn: 'Business Profile', parent: '/settings' },
   '/capture': { labelEs: 'Captura Rápida', labelEn: 'Quick Capture', parent: '/expenses' },
   '/budget': { labelEs: 'Presupuesto', labelEn: 'Budget', parent: '/dashboard' },
+  '/bills': { labelEs: 'Pagos Fijos', labelEn: 'Fixed Payments', parent: '/dashboard' },
+  '/tax-calendar': { labelEs: 'Calendario Fiscal', labelEn: 'Tax Calendar', parent: '/dashboard' },
+  '/adventure': { labelEs: 'Aventura Financiera', labelEn: 'Financial Adventure', parent: '/dashboard' },
   '/files': { labelEs: 'Centro de Archivos', labelEn: 'File Center', parent: '/dashboard' },
   '/trash': { labelEs: 'Papelera', labelEn: 'Trash', parent: '/dashboard' },
   '/data-health': { labelEs: 'Salud de Datos', labelEn: 'Data Health', parent: '/dashboard' },
+  '/beta-feedback': { labelEs: 'Feedback Beta', labelEn: 'Beta Feedback', parent: '/dashboard' },
+  '/beta-guide': { labelEs: 'Guía Beta', labelEn: 'Beta Guide', parent: '/dashboard' },
 };
 
 export function PageHeader({ title, description, showBack = true, children }: PageHeaderProps) {
