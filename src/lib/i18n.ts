@@ -1280,6 +1280,7 @@ export const translations = {
       business: '🏢 My Business',
       wealth: '📈 Wealth',
       growth: '🎓 Growth',
+      analytics: '📊 Analytics',
       system: '⚙️ System',
     },
     // Dashboard labels
