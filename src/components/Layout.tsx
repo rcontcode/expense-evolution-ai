@@ -158,7 +158,7 @@ const getNavSections = (language: string) => [
     ]
   },
   {
-    titleKey: language === 'es' ? 'Análisis y Herramientas' : 'Analytics & Tools',
+    titleKey: language === 'es' ? '📊 Análisis' : '📊 Analytics',
     emoji: '📊',
     themeKey: 'growth' as keyof typeof sectionThemes,
     items: [
