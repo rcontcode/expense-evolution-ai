@@ -105,9 +105,10 @@ export default function Dashboard() {
   }, [searchParams, setSearchParams, refreshSubscription]);
 
   // Deep-link redirect: ?tab=X → dedicated route
-  // Deep-link to Centro de Control: ?area=X&tab=Y
+  // Deep-link to Centro de Control: ?area=X&atab=Y
   const [deepLinkArea, setDeepLinkArea] = useState<string | null>(null);
   const [deepLinkTab, setDeepLinkTab] = useState<string | null>(null);
+  const [deepLinkKey, setDeepLinkKey] = useState(0); // Force re-render on repeated deep-links
   
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -118,18 +119,23 @@ export default function Dashboard() {
     if (area) {
       setDeepLinkArea(area);
       setDeepLinkTab(areaTab || null);
+      setDeepLinkKey(k => k + 1);
       // Auto-switch to organized/control view
       if (viewMode !== 'organized') {
         setViewMode('organized');
       }
-      setSearchParams({});
+      // Clear params after reading
+      searchParams.delete('area');
+      searchParams.delete('atab');
+      searchParams.delete('tool');
+      setSearchParams(searchParams, { replace: true });
       return;
     }
     
     if (!tab) return;
     const redirectTo = TAB_REDIRECTS[tab];
     if (redirectTo) {
-      setSearchParams({});
+      setSearchParams({}, { replace: true });
       navigate(redirectTo, { replace: true });
     }
   }, [searchParams, setSearchParams, navigate, viewMode, setViewMode]);
