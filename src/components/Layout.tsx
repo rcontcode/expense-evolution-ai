@@ -869,11 +869,12 @@ export const Layout = ({ children }: LayoutProps) => {
               <div 
                 key={section.titleKey}
                 className={cn(
-                  "rounded-lg transition-all duration-300",
-                  collapsed ? "p-1" : "p-2",
+                  "rounded-xl transition-all duration-300 overflow-hidden",
+                  collapsed ? "p-1" : "p-2.5",
                   `bg-gradient-to-br ${theme.gradient}`,
                   `border ${theme.border}`,
-                  `hover:shadow-md ${theme.glow}`
+                  `hover:shadow-lg ${theme.glow}`,
+                  "backdrop-blur-sm"
                 )}
               >
                 {collapsed ? (
