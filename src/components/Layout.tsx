@@ -123,6 +123,22 @@ const sectionThemes = {
   },
 };
 
+interface NavChild {
+  label: string;
+  path: string;
+}
+
+interface NavItem {
+  icon: any;
+  label: string;
+  path: string;
+  badge?: string | null;
+  badgeKey?: string;
+  badgeType?: 'tax';
+  tooltipKey: keyof typeof TOOLTIP_CONTENT;
+  children?: NavChild[];
+}
+
 const getNavSections = (language: string) => [
   {
     titleKey: 'layout.daily',
@@ -132,7 +148,13 @@ const getNavSections = (language: string) => [
       { icon: LayoutDashboard, label: 'nav.dashboard', path: '/dashboard', badge: null, tooltipKey: 'dashboard' as const },
       { icon: TrendingUp, label: 'nav.income', path: '/income', badge: null, tooltipKey: 'income' as const },
       { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const },
-      { icon: Wallet, label: 'nav.budget', path: '/budget', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
+      { icon: Wallet, label: 'nav.budget', path: '/budget', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
+        children: [
+          { label: language === 'es' ? 'Presupuesto Global' : 'Global Budget', path: '/dashboard?area=familia&atab=presupuesto' },
+          { label: language === 'es' ? 'Gestor de Deudas' : 'Debt Manager', path: '/dashboard?area=familia&atab=deudas' },
+          { label: language === 'es' ? 'Análisis Familiar' : 'Family Analysis', path: '/dashboard?area=familia&atab=analisis' },
+        ],
+      },
       { icon: CalendarCheck, label: language === 'es' ? 'Pagos Fijos' : 'Bills', path: '/bills', badge: null, tooltipKey: 'dashboard' as const },
       { icon: RefreshCw, label: language === 'es' ? 'Suscripciones' : 'Subscriptions', path: '/subscriptions', badge: null, tooltipKey: 'dashboard' as const },
       { icon: Inbox, label: 'nav.chaos', path: '/chaos', badgeKey: 'nav.badgeSmart', tooltipKey: 'chaosInbox' as const },
@@ -167,7 +189,12 @@ const getNavSections = (language: string) => [
     items: [
       { icon: Scale, label: language === 'es' ? 'Análisis' : 'Analytics', path: '/analytics', badge: null, tooltipKey: 'dashboard' as const },
       { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badgeType: 'tax' as const, tooltipKey: 'dashboard' as const },
-      { icon: Receipt, label: language === 'es' ? 'Impuestos' : 'Taxes', path: '/tax-optimizer', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: Receipt, label: language === 'es' ? 'Impuestos' : 'Taxes', path: '/tax-optimizer', badge: null, tooltipKey: 'dashboard' as const,
+        children: [
+          { label: language === 'es' ? 'RRSP/TFSA Optimizer' : 'RRSP/TFSA Optimizer', path: '/dashboard?area=impuestos&atab=optimizacion' },
+          { label: language === 'es' ? 'Resumen Fiscal' : 'Tax Summary', path: '/dashboard?area=impuestos&atab=resumen' },
+        ],
+      },
     ]
   },
   {
@@ -175,8 +202,20 @@ const getNavSections = (language: string) => [
     emoji: '🎓',
     themeKey: 'growth' as keyof typeof sectionThemes,
     items: [
-      { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
-      { icon: Briefcase, label: language === 'es' ? 'Inversiones' : 'Investments', path: '/investments', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
+        children: [
+          { label: language === 'es' ? 'Cuadrante Kiyosaki' : 'Kiyosaki Quadrant', path: '/dashboard?area=crecimiento&atab=mentoria' },
+          { label: language === 'es' ? 'Libertad Financiera' : 'Financial Freedom', path: '/dashboard?area=crecimiento&atab=mentoria' },
+          { label: language === 'es' ? 'Hábitos Financieros' : 'Financial Habits', path: '/dashboard?area=crecimiento&atab=educacion' },
+        ],
+      },
+      { icon: Briefcase, label: language === 'es' ? 'Inversiones' : 'Investments', path: '/investments', badge: null, tooltipKey: 'dashboard' as const,
+        children: [
+          { label: language === 'es' ? 'Calculadora FIRE' : 'FIRE Calculator', path: '/dashboard?area=crecimiento&atab=inversiones' },
+          { label: language === 'es' ? 'Portafolio' : 'Portfolio', path: '/dashboard?area=crecimiento&atab=inversiones' },
+          { label: language === 'es' ? 'Metas SMART' : 'SMART Goals', path: '/dashboard?area=crecimiento&atab=metas' },
+        ],
+      },
     ]
   },
   {
