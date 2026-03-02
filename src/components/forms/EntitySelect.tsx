@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Globe, Building2, User, Briefcase, Home } from 'lucide-react';
 import { Control } from 'react-hook-form';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CountryFlag } from '@/components/ui/country-flag';
 
 interface EntitySelectProps {
   control: Control<any>;
