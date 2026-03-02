@@ -135,8 +135,7 @@ export const ExpenseCard = memo(function ExpenseCard({ expense, onEdit, onDelete
                 </p>
               </div>
               <div className="text-right shrink-0">
-                <p className="font-bold text-base">${Number(expense.amount).toFixed(2)}</p>
-                <p className="text-[10px] text-muted-foreground uppercase">{expense.currency || 'CAD'}</p>
+                <p className="font-bold text-base">{formatCurrency(Number(expense.amount), { currency: expense.currency || undefined })}</p>
               </div>
             </div>
             
