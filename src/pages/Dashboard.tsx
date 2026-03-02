@@ -186,6 +186,7 @@ export default function Dashboard() {
       'charts',
       'analytics',
       'budget',
+      'budgets',
       'mentorship',
       'goals',
       'tax',
