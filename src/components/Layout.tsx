@@ -154,6 +154,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
   // Only show Beta Feedback to beta testers
   if (isBetaTester) {
     systemItems.push({ icon: MessageSquare, label: language === 'es' ? 'Beta Feedback' : 'Beta Feedback', path: '/beta-feedback', badge: null, tooltipKey: 'dashboard' as const });
+    systemItems.push({ icon: BookOpen, label: language === 'es' ? 'Guía Beta' : 'Beta Guide', path: '/beta-guide', badge: null, tooltipKey: 'dashboard' as const });
   }
 
   return [
@@ -179,6 +180,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
       { icon: CalendarCheck, label: language === 'es' ? 'Pagos Fijos' : 'Bills', path: '/bills', badge: null, tooltipKey: 'dashboard' as const },
       { icon: RefreshCw, label: language === 'es' ? 'Suscripciones' : 'Subscriptions', path: '/subscriptions', badge: null, tooltipKey: 'dashboard' as const },
       { icon: Inbox, label: 'nav.chaos', path: '/chaos', badgeKey: 'nav.badgeSmart', tooltipKey: 'chaosInbox' as const },
+      { icon: Camera, label: language === 'es' ? 'Captura Rápida' : 'Quick Capture', path: '/capture', badge: null, tooltipKey: 'dashboard' as const },
     ]
   },
   {
@@ -199,6 +201,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
         ],
       },
       { icon: Tag, label: 'nav.tags', path: '/tags', badge: null, tooltipKey: 'tags' as const },
+      { icon: Building2, label: language === 'es' ? 'Perfil Empresa' : 'Business Profile', path: '/business-profile', badge: null, tooltipKey: 'dashboard' as const },
     ]
   },
   {
@@ -208,7 +211,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     items: [
       { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
         children: [
-          { label: language === 'es' ? '📊 Resumen Patrimonio' : '📊 Net Worth Summary', path: '/dashboard?area=familia&atab=portfolio' },
+          { label: language === 'es' ? '📊 Análisis Familiar' : '📊 Family Analysis', path: '/dashboard?area=familia&atab=analysis' },
           { label: language === 'es' ? '💳 Deudas' : '💳 Debts', path: '/dashboard?area=familia&atab=debts' },
         ],
       },
