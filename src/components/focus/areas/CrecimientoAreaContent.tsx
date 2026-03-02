@@ -17,7 +17,7 @@ const FinancialJournalCard = lazy(() => import('@/components/mentorship/Financia
 const FinancialHabitsCard = lazy(() => import('@/components/mentorship/FinancialHabitsCard').then(m => ({ default: m.FinancialHabitsCard })));
 const FinancialEducationCard = lazy(() => import('@/components/mentorship/FinancialEducationCard').then(m => ({ default: m.FinancialEducationCard })));
 
-export const CrecimientoAreaContent = memo(() => {
+export const CrecimientoAreaContent = memo(({ forcedTab }: { forcedTab?: string | null }) => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const es = language === 'es';
