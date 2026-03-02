@@ -396,6 +396,11 @@ const BetaFeedback = () => {
     </motion.div>
   );
 
+  // Gate: only beta testers can access this page
+  if (!profileLoading && !profile?.is_beta_tester) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <Layout>
       <BetaFeedbackTutorial />
