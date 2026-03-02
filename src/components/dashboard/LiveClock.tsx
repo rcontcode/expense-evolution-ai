@@ -39,4 +39,6 @@ export const LiveClock = memo(function LiveClock() {
       </div>
     </div>
   );
-}
+});
+
+LiveClock.displayName = 'LiveClock';

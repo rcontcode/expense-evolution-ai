@@ -228,14 +228,7 @@ export function MonthDetailPanel({
     return expenses?.filter(e => !e.category || !e.vendor).length || 0;
   }, [expenses]);
   
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(language === 'es' ? 'es-CL' : 'en-CA', {
-      style: 'currency',
-      currency: currentCurrency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  const { formatCompact: formatCurrency } = useFormatCurrency();
   
   const fullMonthNames = language === 'es'
     ? ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']

@@ -114,7 +114,7 @@ export const MobileStatsGrid = memo(({
       {/* Savings Rate */}
       <Card
         className="bg-gradient-to-br from-purple-500/10 to-violet-500/10 border-purple-500/20 cursor-pointer active:scale-[0.98] transition-transform"
-        onClick={() => navigate('/banking')}
+        onClick={() => navigate('/budget')}
       >
         <CardContent className="p-3 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0">

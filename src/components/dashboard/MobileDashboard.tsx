@@ -36,7 +36,7 @@ export function MobileDashboard({ onQuickCapture }: MobileDashboardProps) {
   const handleAddIncome = useCallback(() => navigate('/income'), [navigate]);
   const handleAddExpense = useCallback(() => navigate('/expenses'), [navigate]);
 
-  const monthlyIncome = stats?.billableExpenses || 0;
+  const monthlyIncome = stats?.monthlyIncome || 0;
   const monthlyExpenses = stats?.monthlyTotal || 0;
   const monthlyBalance = monthlyIncome - monthlyExpenses;
   const savingsRate = monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses) / monthlyIncome * 100) : 0;
