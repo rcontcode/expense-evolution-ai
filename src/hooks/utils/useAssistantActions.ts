@@ -41,30 +41,60 @@ interface UseAssistantActionsOptions {
 
 const ROUTE_MAP: Record<string, string> = {
   expenses: '/expenses',
+  gastos: '/expenses',
   income: '/income',
+  ingresos: '/income',
   clients: '/clients',
+  clientes: '/clients',
   projects: '/projects',
+  proyectos: '/projects',
   contracts: '/contracts',
+  contratos: '/contracts',
   dashboard: '/dashboard',
   mileage: '/mileage',
+  kilometraje: '/mileage',
   networth: '/net-worth',
+  patrimonio: '/net-worth',
   banking: '/banking',
+  banco: '/banking',
   settings: '/settings',
+  configuracion: '/settings',
   capture: '/capture',
+  captura: '/capture',
   chaos: '/chaos',
   reconciliation: '/reconciliation',
+  conciliacion: '/reconciliation',
   bills: '/bills',
   pagos: '/bills',
   pagosfijos: '/bills',
+  budget: '/budget',
+  presupuesto: '/budget',
   business: '/business-profile',
+  negocio: '/business-profile',
   notifications: '/notifications',
+  notificaciones: '/notifications',
   mentorship: '/mentorship',
+  mentoria: '/mentorship',
   taxes: '/tax-calendar',
+  impuestos: '/tax-calendar',
   tags: '/tags',
+  etiquetas: '/tags',
   betafeedback: '/beta-feedback',
   report: '/dashboard?tab=analytics',
+  reporte: '/dashboard?tab=analytics',
   alerts: '/dashboard',
+  alertas: '/dashboard',
   monthlyreport: '/dashboard?tab=analytics',
+  trash: '/trash',
+  papelera: '/trash',
+  datahealth: '/data-health',
+  saluddatos: '/data-health',
+  files: '/files',
+  archivos: '/files',
+  adventure: '/adventure',
+  aventura: '/adventure',
+  guide: '/user-guide',
+  guia: '/user-guide',
 };
 
 export function useAssistantActions(options: UseAssistantActionsOptions) {
@@ -286,10 +316,8 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
 
         case 'export': {
           const reportType = action.data?.reportType as string;
-          const format = (action.data?.format as string) || 'excel';
-          // Navigate to reports section
-          navigate('/reports');
-          onNavigate?.('/reports');
+          navigate('/dashboard?tab=analytics');
+          onNavigate?.('/dashboard?tab=analytics');
           const msg = language === 'es'
             ? `Preparando reporte de ${reportType}...`
             : `Preparing ${reportType} report...`;
@@ -333,7 +361,7 @@ export function useAssistantActions(options: UseAssistantActionsOptions) {
     } finally {
       setIsExecuting(false);
     }
-  }, [language, navigate, onNavigate, onClarify, onHighlight, onActionStart, onActionComplete]);
+  }, [language, navigate, onNavigate, onClarify, onHighlight, onActionStart, onActionComplete, onRunTutorial, onShowInsights, onSetGoal, onCreateExpense, onCreateIncome]);
 
   const undoLastAction = useCallback(() => {
     if (!lastAction) return;
