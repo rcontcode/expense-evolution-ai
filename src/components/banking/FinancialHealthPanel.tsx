@@ -141,7 +141,7 @@
          description: l
            ? `Gastaste $${totalSpent.toFixed(0)} este mes. Establecer un presupuesto te ayudará a controlar tus gastos`
            : `You spent $${totalSpent.toFixed(0)} this month. Setting a budget will help you control expenses`,
-         action: { label: l ? 'Configurar' : 'Set up', to: '/dashboard?section=budgets' }
+         action: { label: l ? 'Configurar' : 'Set up', to: '/budget' }
        });
      }
  
@@ -154,7 +154,7 @@
          description: l
            ? 'Configura presupuestos por categoría para un control más detallado de tus finanzas'
            : 'Set up category budgets for more detailed control of your finances',
-         action: { label: l ? 'Crear metas' : 'Create goals', to: '/dashboard?section=budgets' }
+         action: { label: l ? 'Crear metas' : 'Create goals', to: '/budget' }
        });
      }
  

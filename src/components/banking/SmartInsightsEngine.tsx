@@ -139,7 +139,7 @@
             description: l 
               ? `Has superado tu presupuesto por ${fc(currentTotal - globalBudget)}`
               : `You've exceeded your budget by ${fc(currentTotal - globalBudget)}`,
-            action: { label: l ? 'Ajustar presupuesto' : 'Adjust budget', to: '/dashboard?section=budgets' }
+            action: { label: l ? 'Ajustar presupuesto' : 'Adjust budget', to: '/budget' }
           });
         }
      }

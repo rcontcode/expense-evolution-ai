@@ -112,7 +112,7 @@
                </p>
              </div>
            </div>
-           <Link to="/dashboard?section=budgets">
+           <Link to="/budget">
              <Button size="sm" variant="outline">
                {l ? 'Ver todo' : 'View all'}
                <ChevronRight className="h-3 w-3 ml-1" />
@@ -235,7 +235,7 @@
                })}
              </div>
              {budgets.length > 3 && (
-               <Link to="/dashboard?section=budgets">
+               <Link to="/budget">
                  <Button variant="ghost" size="sm" className="w-full">
                    {l ? `Ver ${budgets.length - 3} más` : `View ${budgets.length - 3} more`}
                    <ArrowUpRight className="h-3 w-3 ml-1" />
