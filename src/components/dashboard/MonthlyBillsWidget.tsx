@@ -145,7 +145,7 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
           <p className="text-sm text-muted-foreground mb-3">
             {l ? 'Sin pagos recurrentes configurados' : 'No recurring bills configured'}
           </p>
-          <Button size="sm" variant="outline" onClick={() => navigate('/budget?tab=bills')}>
+          <Button size="sm" variant="outline" onClick={() => navigate('/bills')}>
             {l ? 'Configurar Pagos' : 'Set Up Bills'}
             <ArrowRight className="ml-1 h-3 w-3" />
           </Button>
@@ -194,7 +194,7 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
                 </div>
               </div>
               <Button size="sm" variant="secondary" className="h-6 text-[10px] shrink-0"
-                onClick={() => navigate('/budget?tab=bills')}>
+                onClick={() => navigate('/bills')}>
                 {l ? 'Pagar' : 'Pay'}
               </Button>
             </motion.div>
@@ -272,7 +272,7 @@ export function MonthlyBillsWidget({ className }: { className?: string }) {
             {l ? 'Pagos del Mes' : 'Monthly Bills'}
           </CardTitle>
           <Button variant="ghost" size="sm" className="h-6 text-xs text-muted-foreground hover:text-primary"
-            onClick={() => navigate('/budget?tab=bills')}>
+            onClick={() => navigate('/bills')}>
             {l ? 'Ver todo' : 'View all'} <ArrowRight className="ml-1 h-3 w-3" />
           </Button>
         </div>
