@@ -38,8 +38,8 @@ import {
   Wallet,
   Trash2,
   HeartPulse,
-  BookOpen,
   Briefcase,
+  BookOpen,
   BookOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
