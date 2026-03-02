@@ -262,6 +262,8 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
           { label: language === 'es' ? '💼 Portafolio' : '💼 Portfolio', path: '/dashboard?area=crecimiento&atab=investments&tool=portfolio' },
           { label: language === 'es' ? '🎯 Metas SMART' : '🎯 SMART Goals', path: '/dashboard?area=crecimiento&atab=goals' },
           { label: language === 'es' ? '📓 Diario Financiero' : '📓 Financial Journal', path: '/dashboard?area=crecimiento&atab=goals' },
+          { label: language === 'es' ? '💵 Págate Primero' : '💵 Pay Yourself First', path: '/mentorship?tab=atomic' },
+          { label: language === 'es' ? '💳 Clasificación Deuda' : '💳 Debt Classification', path: '/mentorship?tab=kiyosaki' },
         ],
       },
       { icon: Trophy, label: language === 'es' ? 'Aventura' : 'Adventure', path: '/adventure', badge: null, tooltipKey: 'dashboard' as const },
