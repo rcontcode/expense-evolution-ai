@@ -467,7 +467,6 @@ export const Layout = ({ children }: LayoutProps) => {
   const toggleSubmenu = useCallback((path: string) => {
     setExpandedSubmenus(prev => {
       const next = { ...prev, [path]: !prev[path] };
-      try { localStorage.setItem('evofinz-sidebar-submenus', JSON.stringify(next)); } catch {}
       return next;
     });
   }, []);
