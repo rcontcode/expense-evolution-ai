@@ -76,6 +76,7 @@ import { MobileMenuEntitySelector, MobileMenuLanguageSelector } from '@/componen
 import { EntitySelector } from '@/components/EntitySelector';
 import { useGlobalReminders } from '@/hooks/utils/useGlobalReminders';
 import { useAutoReminders } from '@/hooks/data/useAutoReminders';
+import { useHighlight } from '@/contexts/HighlightContext';
 import { ContactForm } from '@/components/ContactForm';
 import { SocialLinks } from '@/components/SocialLinks';
 import { ChatAssistant } from '@/components/chat/ChatAssistant';
