@@ -112,7 +112,10 @@ const STREAK_QUOTES = {
    };
    
    const intensity = getIntensity();
-  const randomQuote = STREAK_QUOTES[language][Math.floor(Math.random() * STREAK_QUOTES[language].length)];
+  const randomQuote = useMemo(() => {
+    const index = Math.floor(Date.now() / 86400000) % STREAK_QUOTES[language].length;
+    return STREAK_QUOTES[language][index];
+  }, [language]);
    
    const t = {
      es: {
