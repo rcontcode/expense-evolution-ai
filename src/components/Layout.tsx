@@ -272,7 +272,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     emoji: '🎓',
     themeKey: 'growth' as keyof typeof sectionThemes,
     items: [
-      { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
+      { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badge: null, tooltipKey: 'dashboard' as const,
         children: [
           { label: language === 'es' ? '📚 Biblioteca' : '📚 Library', path: '/mentorship?tab=library' },
           { label: language === 'es' ? '⚛️ Hábitos Atómicos' : '⚛️ Atomic Habits', path: '/mentorship?tab=atomic' },
