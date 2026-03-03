@@ -1,91 +1,40 @@
 
 
-## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
+## Diagnóstico
 
-### ✅ Completado en EvoFinz
+El item **"Análisis"** (`/analytics`) en la sección **📊 Análisis** del sidebar actualmente **no tiene submenús**. Sin embargo, la página de Analytics es muy rica — incluye:
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
-| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
-| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
-| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
-| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
+- Reporte Mensual Inteligente
+- Gráfico Ingresos vs Gastos  
+- Predicciones de Gastos
+- Proyección Cash Flow
+- Análisis de Rentabilidad
+- Simulador de Escenarios
 
-### ✅ Completado en Fokuspark
+Tiene todo el sentido agregarle submenús para acceso directo a cada herramienta, igual que Presupuesto, Inversiones, etc.
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
-| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
-| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
-| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
+## Plan
 
-### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
+### 1. Agregar submenús al item "Análisis" en el sidebar
 
----
+En `Layout.tsx`, expandir el item de Análisis (línea ~243) con children que apunten a secciones de la página Analytics:
 
-## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
+```
+children: [
+  { label: '📊 Ingresos vs Gastos', path: '/analytics#income-vs-expenses' },
+  { label: '🔮 Predicciones', path: '/analytics#predictions' },
+  { label: '💰 Cash Flow', path: '/analytics#cashflow' },
+  { label: '📈 Rentabilidad', path: '/analytics#profitability' },
+  { label: '🎛️ Simulador', path: '/analytics#simulator' },
+]
+```
 
-### ✅ Confirmado: Sistema funciona correctamente
+### 2. Agregar anchors (`id`) en la página Analytics
 
-- Planes individuales (Free/Premium/Pro) son independientes por app
-- Bundle compartido usa mismos Stripe Price IDs en ambas apps
-- Ambos webhooks detectan Bundle y setean `has_bundle = true`
-- No hay acceso cruzado no autorizado entre apps
+En `Analytics.tsx`, asignar `id` a cada sección lazy-loaded para que los links con `#hash` funcionen como scroll-to-section.
 
-### ✅ Gaps implementados en Fokuspark
+### Detalle técnico
+- Se usa el mismo patrón de `children` ya implementado en Presupuesto, Inversiones, Kilometraje, etc.
+- Los links usan hash fragments (`#section`) para scroll directo
+- No se crean rutas nuevas — solo navegación intra-página
 
-| # | Gap | Estado |
-|---|-----|--------|
-| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
-| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
-
-### 📋 Gaps pendientes (baja prioridad)
-
-| # | Gap | Prioridad |
-|---|-----|-----------|
-| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
-| S3 | Texto del Bundle podría ser más descriptivo | Baja |
-
----
-
-## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
-
-### ✅ Veredicto: No igualar precios — estructura actual es óptima
-
-| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
-|------|---------|-----------|-----------|-------|
-| Free | $0 | $0 | ✅ Ya iguales | — |
-| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
-| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
-| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
-
-### 📋 Pendiente técnico
-
-| # | Tarea | App | Prioridad |
-|---|-------|-----|-----------|
-| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
-
----
-
-## Quiz Multi-App — CRM Unificado
-
-### ✅ Completado en EvoFinz
-
-| # | Tarea | Estado |
-|---|-------|--------|
-| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
-| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
-| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
-| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
-| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
-
-### 📋 Pendiente en Fokuspark
-
-| # | Tarea | Prioridad |
-|---|-------|-----------|
-| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
-| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
-| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
-| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
