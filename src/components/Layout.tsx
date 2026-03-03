@@ -237,7 +237,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
       },
       { icon: CreditCard, label: language === 'es' ? 'Deudas' : 'Debts', path: '/dashboard?area=familia&atab=debts', badge: null, tooltipKey: 'dashboard' as const },
       { icon: PiggyBank, label: language === 'es' ? 'Ahorro' : 'Savings', path: '/budget?tab=savings', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: Building2, label: 'nav.banking', path: '/banking', badgeKey: 'nav.badgeSmart', tooltipKey: 'dashboard' as const,
+      { icon: Building2, label: 'nav.banking', path: '/banking', badge: null, tooltipKey: 'dashboard' as const,
         children: [
           { label: language === 'es' ? '🔄 Conciliación' : '🔄 Reconciliation', path: '/reconciliation' },
         ],
