@@ -675,11 +675,13 @@ export const Layout = ({ children }: LayoutProps) => {
                                       type="button"
                                       onClick={(e) => { e.stopPropagation(); toggleSubmenu(item.path); }}
                                       className={cn(
-                                        "p-2 rounded-lg transition-all shrink-0",
-                                        isSubmenuOpen ? "bg-primary/10 text-primary" : "text-muted-foreground/50"
+                                        "p-2.5 rounded-xl transition-all shrink-0 border",
+                                        isSubmenuOpen 
+                                          ? "bg-primary/15 text-primary border-primary/30 shadow-sm" 
+                                          : "text-muted-foreground bg-muted/40 border-border/50 hover:bg-primary/10 hover:text-primary hover:border-primary/30"
                                       )}
                                     >
-                                      <ChevronDown className={cn("h-4 w-4 transition-transform", isSubmenuOpen && "rotate-180")} />
+                                      <ChevronDown className={cn("h-5 w-5 transition-transform duration-300", isSubmenuOpen && "rotate-180")} />
                                     </button>
                                   )}
                                 </div>
