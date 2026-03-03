@@ -175,7 +175,15 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     emoji: '💰',
     themeKey: 'daily' as keyof typeof sectionThemes,
     items: [
-      { icon: LayoutDashboard, label: 'nav.dashboard', path: '/dashboard', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: LayoutDashboard, label: 'nav.dashboard', path: '/dashboard', badge: null, tooltipKey: 'dashboard' as const,
+        children: [
+          { label: language === 'es' ? '📅 Timeline Anual' : '📅 Year Timeline', path: '/dashboard#timeline' },
+          { label: language === 'es' ? '🌐 Ecosistema' : '🌐 Ecosystem', path: '/dashboard#ecosystem' },
+          { label: language === 'es' ? '⚡ Workflows' : '⚡ Workflows', path: '/dashboard#workflows' },
+          { label: language === 'es' ? '🔔 Alertas' : '🔔 Alerts', path: '/dashboard#alerts' },
+          { label: language === 'es' ? '🎮 Aventura' : '🎮 Adventure', path: '/dashboard#gamification' },
+        ],
+      },
       { icon: TrendingUp, label: 'nav.income', path: '/income', badge: null, tooltipKey: 'income' as const },
       { icon: Receipt, label: 'nav.expenses', path: '/expenses', badge: null, tooltipKey: 'expenses' as const,
         children: [

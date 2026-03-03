@@ -179,7 +179,7 @@ export default function Dashboard() {
                 className="space-y-6"
               >
                 {/* Timeline + Month Detail */}
-                <div className="side-by-side" data-section="timeline" data-highlight="timeline-section">
+                <div id="timeline" className="side-by-side" data-section="timeline" data-highlight="timeline-section">
                   <div data-highlight="timeline-chart" className="flex flex-col">
                     <YearTimelineChart
                       selectedMonth={selectedMonth}
@@ -199,12 +199,12 @@ export default function Dashboard() {
                 </div>
 
                 {/* Ecosystem */}
-                <div data-section="ecosystem">
+                <div id="ecosystem" data-section="ecosystem">
                   <EcosystemSection />
                 </div>
 
                 {/* Workflow Progress + Bills */}
-                <div className="grid gap-4 lg:grid-cols-2" data-section="workflows">
+                <div id="workflows" className="grid gap-4 lg:grid-cols-2" data-section="workflows">
                   <Suspense fallback={<Skeleton className="h-[200px]" />}>
                     <WorkflowSummaryWidget />
                   </Suspense>
@@ -214,14 +214,14 @@ export default function Dashboard() {
                 </div>
 
                 {/* Smart Alerts */}
-                <div data-section="alerts">
+                <div id="alerts" data-section="alerts">
                   <Suspense fallback={null}>
                     <ProactiveAlertsWidget />
                   </Suspense>
                 </div>
 
                 {/* Gamification */}
-                <div data-section="gamification">
+                <div id="gamification" data-section="gamification">
                   <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
                   <DashboardGamificationWidget compact={true} />
                 </div>
