@@ -223,7 +223,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
         ],
       },
       { icon: Tag, label: 'nav.tags', path: '/tags', badge: null, tooltipKey: 'tags' as const },
-      { icon: Building2, label: language === 'es' ? 'Perfil Empresa' : 'Business Profile', path: '/business-profile', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: Building2, label: language === 'es' ? 'Perfil Empresa' : 'Business Profile', path: '/business-profile', badge: null, tooltipKey: 'businessProfile' as const },
     ]
   },
    {
