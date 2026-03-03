@@ -47,6 +47,7 @@ import {
   CreditCard,
   Landmark,
   PiggyBank,
+  Mic,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -841,15 +842,19 @@ export const Layout = ({ children }: LayoutProps) => {
                   onClick={() => setQuickCaptureOpen(true)}
                   className={cn(
                     "rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02]",
-                    collapsed ? "w-10 h-10 justify-center p-0" : "w-full px-3 py-2"
+                    collapsed ? "w-10 h-10 justify-center p-0" : "w-full px-2.5 py-2"
                   )}
                 >
                   {collapsed ? (
                     <span className="text-lg">📸</span>
                   ) : (
                     <>
-                      <Camera className="h-5 w-5 shrink-0" />
-                      <span className="font-bold text-sm truncate">{t('layout.quickCapture')}</span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Camera className="h-3.5 w-3.5" />
+                        <Upload className="h-3.5 w-3.5 opacity-80" />
+                        <Mic className="h-3.5 w-3.5 opacity-80" />
+                      </div>
+                      <span className="font-bold text-xs truncate">{t('layout.quickCapture')}</span>
                     </>
                   )}
                 </button>
