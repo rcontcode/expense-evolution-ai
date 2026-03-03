@@ -38,7 +38,7 @@ export function DashboardNavigator({ viewMode }: DashboardNavigatorProps) {
 
   return (
     <motion.div
-      className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col items-end"
+      className="fixed right-3 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col items-end"
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}
       initial={{ opacity: 0, x: 20 }}
