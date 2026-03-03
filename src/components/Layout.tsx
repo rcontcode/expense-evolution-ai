@@ -1040,14 +1040,14 @@ export const Layout = ({ children }: LayoutProps) => {
                         type="button"
                         onClick={(e) => { e.stopPropagation(); toggleSubmenu(item.path); }}
                         className={cn(
-                          "p-1.5 rounded-md transition-all duration-200 shrink-0",
+                          "p-2 rounded-lg transition-all duration-200 shrink-0 border",
                           isSubmenuOpen 
-                            ? "bg-primary/10 text-primary" 
-                            : "text-muted-foreground/60 hover:text-foreground hover:bg-muted/60"
+                            ? "bg-primary/15 text-primary border-primary/30 shadow-sm" 
+                            : "text-muted-foreground bg-muted/40 border-border/50 hover:bg-primary/10 hover:text-primary hover:border-primary/30"
                         )}
                         title={isSubmenuOpen ? (language === 'es' ? 'Ocultar herramientas' : 'Hide tools') : (language === 'es' ? 'Ver herramientas' : 'Show tools')}
                       >
-                        <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", isSubmenuOpen && "rotate-180")} />
+                        <ChevronDown className={cn("h-4.5 w-4.5 transition-transform duration-300", isSubmenuOpen && "rotate-180")} />
                       </button>
                     ) : null;
 
