@@ -834,4 +834,282 @@ export const TOOLTIP_CONTENT = {
       howToUse: "Review regularly to identify most profitable clients.",
     },
   },
+
+  // ========== BUDGET ==========
+  budget: {
+    es: {
+      title: "Presupuesto",
+      description: "Planifica y controla tu presupuesto mensual por categorías. Detecta desvíos antes de que ocurran.",
+      howToUse: "Define límites por categoría y recibe alertas al acercarte al tope.",
+    },
+    en: {
+      title: "Budget",
+      description: "Plan and control your monthly budget by category. Detect deviations before they happen.",
+      howToUse: "Set category limits and get alerts when approaching the cap.",
+    },
+  },
+  bills: {
+    es: {
+      title: "Pagos Fijos",
+      description: "Gestiona tus pagos recurrentes obligatorios: alquiler, servicios, seguros y más.",
+      howToUse: "Registra cada pago fijo para proyectar tu flujo de caja mensual.",
+    },
+    en: {
+      title: "Fixed Bills",
+      description: "Manage your mandatory recurring payments: rent, utilities, insurance and more.",
+      howToUse: "Register each fixed payment to project your monthly cash flow.",
+    },
+  },
+  subscriptions: {
+    es: {
+      title: "Suscripciones",
+      description: "Controla todas tus suscripciones activas: streaming, apps, membresías. Detecta gastos fantasma.",
+      howToUse: "Revisa periódicamente para cancelar servicios que no uses.",
+    },
+    en: {
+      title: "Subscriptions",
+      description: "Track all your active subscriptions: streaming, apps, memberships. Detect phantom charges.",
+      howToUse: "Review periodically to cancel services you don't use.",
+    },
+  },
+  quickCaptureNav: {
+    es: {
+      title: "Captura Rápida",
+      description: "Registra gastos al instante usando foto de recibo, texto libre o entrada por voz con IA.",
+      howToUse: "Elige el método más conveniente: foto, texto o voz.",
+    },
+    en: {
+      title: "Quick Capture",
+      description: "Record expenses instantly using receipt photo, free text or AI voice input.",
+      howToUse: "Choose the most convenient method: photo, text or voice.",
+    },
+  },
+  businessProfile: {
+    es: {
+      title: "Perfil de Empresa",
+      description: "Configura tu información de negocio: tipo de trabajador, provincia, régimen fiscal y datos de facturación.",
+      howToUse: "Mantén actualizado para cálculos fiscales precisos.",
+    },
+    en: {
+      title: "Business Profile",
+      description: "Configure your business info: worker type, province, tax regime and billing details.",
+      howToUse: "Keep updated for accurate tax calculations.",
+    },
+  },
+  projects: {
+    es: {
+      title: "Proyectos",
+      description: "Organiza tus gastos e ingresos por proyecto. Mide la rentabilidad de cada uno.",
+      howToUse: "Crea proyectos y asócialos a clientes para seguimiento financiero detallado.",
+    },
+    en: {
+      title: "Projects",
+      description: "Organize your expenses and income by project. Measure profitability of each one.",
+      howToUse: "Create projects and link them to clients for detailed financial tracking.",
+    },
+  },
+  netWorth: {
+    es: {
+      title: "Patrimonio Neto",
+      description: "Calcula tu patrimonio total: activos menos deudas. Visualiza tu progreso financiero a largo plazo.",
+      howToUse: "Actualiza tus activos y deudas regularmente para un cálculo preciso.",
+    },
+    en: {
+      title: "Net Worth",
+      description: "Calculate your total net worth: assets minus debts. Visualize your long-term financial progress.",
+      howToUse: "Update your assets and debts regularly for accurate calculation.",
+    },
+  },
+  debts: {
+    es: {
+      title: "Deudas",
+      description: "Gestiona y prioriza tus deudas. Usa estrategias como avalancha o bola de nieve para pagarlas más rápido.",
+      howToUse: "Registra cada deuda con su tasa de interés para optimizar el plan de pago.",
+    },
+    en: {
+      title: "Debts",
+      description: "Manage and prioritize your debts. Use avalanche or snowball strategies to pay them faster.",
+      howToUse: "Register each debt with its interest rate to optimize the payment plan.",
+    },
+  },
+  savings: {
+    es: {
+      title: "Ahorro",
+      description: "Establece metas de ahorro y rastrea tu progreso. Fondo de emergencia, vacaciones, inversiones.",
+      howToUse: "Define un monto objetivo y fecha límite para cada meta.",
+    },
+    en: {
+      title: "Savings",
+      description: "Set savings goals and track your progress. Emergency fund, vacation, investments.",
+      howToUse: "Define a target amount and deadline for each goal.",
+    },
+  },
+  banking: {
+    es: {
+      title: "Banca",
+      description: "Importa estados bancarios y concilia transacciones automáticamente con tus gastos registrados.",
+      howToUse: "Sube tu extracto CSV o PDF para conciliación automática.",
+    },
+    en: {
+      title: "Banking",
+      description: "Import bank statements and automatically reconcile transactions with your recorded expenses.",
+      howToUse: "Upload your CSV or PDF statement for automatic reconciliation.",
+    },
+  },
+  analytics: {
+    es: {
+      title: "Análisis Financiero",
+      description: "Gráficos avanzados, predicciones, cash flow y simuladores para entender tu situación financiera a fondo.",
+      howToUse: "Explora cada pestaña para insights diferentes sobre tu dinero.",
+    },
+    en: {
+      title: "Financial Analytics",
+      description: "Advanced charts, predictions, cash flow and simulators to deeply understand your financial situation.",
+      howToUse: "Explore each tab for different insights about your money.",
+    },
+  },
+  taxCalendar: {
+    es: {
+      title: "Calendario Fiscal",
+      description: "Fechas importantes de declaraciones y pagos fiscales. Nunca pierdas una fecha límite.",
+      howToUse: "Revisa las fechas próximas y configura recordatorios.",
+    },
+    en: {
+      title: "Tax Calendar",
+      description: "Important dates for tax declarations and payments. Never miss a deadline.",
+      howToUse: "Check upcoming dates and set reminders.",
+    },
+  },
+  taxes: {
+    es: {
+      title: "Optimización Fiscal",
+      description: "Análisis de deducciones, estrategias de ahorro fiscal y preparación de declaraciones.",
+      howToUse: "Revisa las recomendaciones para maximizar tus deducciones legales.",
+    },
+    en: {
+      title: "Tax Optimization",
+      description: "Deduction analysis, tax-saving strategies and declaration preparation.",
+      howToUse: "Review recommendations to maximize your legal deductions.",
+    },
+  },
+  mentorship: {
+    es: {
+      title: "Mentoría Financiera",
+      description: "Aprende de los mejores: Kiyosaki, Brian Tracy, Jim Rohn. Hábitos, estrategias y bienestar financiero.",
+      howToUse: "Explora cada mentor y aplica sus enseñanzas a tu plan financiero.",
+    },
+    en: {
+      title: "Financial Mentorship",
+      description: "Learn from the best: Kiyosaki, Brian Tracy, Jim Rohn. Habits, strategies and financial wellbeing.",
+      howToUse: "Explore each mentor and apply their teachings to your financial plan.",
+    },
+  },
+  investments: {
+    es: {
+      title: "Inversiones",
+      description: "Portafolio de inversiones, calculadora FIRE, metas SMART y diario financiero.",
+      howToUse: "Define tus metas de inversión y usa las herramientas para planificar.",
+    },
+    en: {
+      title: "Investments",
+      description: "Investment portfolio, FIRE calculator, SMART goals and financial journal.",
+      howToUse: "Define your investment goals and use the tools to plan.",
+    },
+  },
+  adventure: {
+    es: {
+      title: "Aventura Financiera",
+      description: "Gamificación de tus finanzas: gana puntos, desbloquea logros y sube de nivel gestionando tu dinero.",
+      howToUse: "Completa desafíos financieros para ganar recompensas.",
+    },
+    en: {
+      title: "Financial Adventure",
+      description: "Gamify your finances: earn points, unlock achievements and level up by managing your money.",
+      howToUse: "Complete financial challenges to earn rewards.",
+    },
+  },
+  notifications: {
+    es: {
+      title: "Notificaciones",
+      description: "Alertas y avisos sobre tu actividad financiera: pagos próximos, metas alcanzadas y más.",
+      howToUse: "Revisa regularmente para no perderte información importante.",
+    },
+    en: {
+      title: "Notifications",
+      description: "Alerts and notices about your financial activity: upcoming payments, goals reached and more.",
+      howToUse: "Check regularly to not miss important information.",
+    },
+  },
+  files: {
+    es: {
+      title: "Archivos",
+      description: "Todos tus documentos financieros organizados: recibos, contratos, extractos bancarios.",
+      howToUse: "Busca y filtra documentos por tipo, fecha o estado.",
+    },
+    en: {
+      title: "Files",
+      description: "All your financial documents organized: receipts, contracts, bank statements.",
+      howToUse: "Search and filter documents by type, date or status.",
+    },
+  },
+  trash: {
+    es: {
+      title: "Papelera",
+      description: "Elementos eliminados que puedes recuperar dentro de 30 días antes de la eliminación permanente.",
+      howToUse: "Restaura elementos eliminados por error o vacía la papelera.",
+    },
+    en: {
+      title: "Trash",
+      description: "Deleted items you can recover within 30 days before permanent deletion.",
+      howToUse: "Restore accidentally deleted items or empty the trash.",
+    },
+  },
+  dataHealth: {
+    es: {
+      title: "Salud de Datos",
+      description: "Diagnóstico de la calidad de tus datos financieros: completitud, consistencia y precisión.",
+      howToUse: "Corrige los problemas detectados para mejorar tus reportes.",
+    },
+    en: {
+      title: "Data Health",
+      description: "Diagnosis of your financial data quality: completeness, consistency and accuracy.",
+      howToUse: "Fix detected issues to improve your reports.",
+    },
+  },
+  userGuide: {
+    es: {
+      title: "Guía de Usuario",
+      description: "Tutorial completo de todas las funciones de EvoFinz con ejemplos paso a paso.",
+      howToUse: "Consulta cuando necesites ayuda con alguna funcionalidad.",
+    },
+    en: {
+      title: "User Guide",
+      description: "Complete tutorial of all EvoFinz features with step-by-step examples.",
+      howToUse: "Consult when you need help with any feature.",
+    },
+  },
+  betaFeedback: {
+    es: {
+      title: "Beta Feedback",
+      description: "Envía comentarios, sugerencias y reportes de errores para mejorar EvoFinz.",
+      howToUse: "Tu feedback es valioso para priorizar mejoras.",
+    },
+    en: {
+      title: "Beta Feedback",
+      description: "Send comments, suggestions and bug reports to improve EvoFinz.",
+      howToUse: "Your feedback is valuable for prioritizing improvements.",
+    },
+  },
+  betaGuide: {
+    es: {
+      title: "Guía Beta",
+      description: "Información sobre el programa beta: metas, recompensas y cómo contribuir.",
+      howToUse: "Completa las metas para ganar puntos y desbloquear recompensas.",
+    },
+    en: {
+      title: "Beta Guide",
+      description: "Information about the beta program: goals, rewards and how to contribute.",
+      howToUse: "Complete goals to earn points and unlock rewards.",
+    },
+  },
 } as const;
