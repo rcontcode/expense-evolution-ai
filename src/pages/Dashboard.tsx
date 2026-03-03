@@ -221,7 +221,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Gamification */}
-                <div data-section="gamification">
+                <div id="gamification" data-section="gamification">
                   <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
                   <DashboardGamificationWidget compact={true} />
                 </div>
