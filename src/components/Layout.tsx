@@ -921,7 +921,7 @@ export const Layout = ({ children }: LayoutProps) => {
           </div>
 
           {/* Entity/Jurisdiction Selector */}
-          <div data-highlight="entity-selector" className="px-2">
+          <div data-highlight="entity-selector">
             <EntitySelector collapsed={collapsed} />
           </div>
 
