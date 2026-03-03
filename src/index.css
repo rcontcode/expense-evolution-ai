@@ -2228,20 +2228,30 @@
    ================================================================ */
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-muted/30 rounded-full;
+  background: hsl(var(--muted) / 0.4);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/20 rounded-full transition-colors;
+  background: hsl(var(--muted-foreground) / 0.35);
+  border-radius: 9999px;
+  border: 2px solid hsl(var(--background));
+  transition: background 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground/40;
+  background: hsl(var(--muted-foreground) / 0.55);
+}
+
+/* Firefox scrollbar visibility */
+* {
+  scrollbar-width: auto;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.35) hsl(var(--muted) / 0.4);
 }
 
 /* ================================================================
