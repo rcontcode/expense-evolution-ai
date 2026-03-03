@@ -460,20 +460,15 @@ export const Layout = ({ children }: LayoutProps) => {
         }
       };
 
-      // If already on the target page, scroll directly
-      if (location.pathname === basePath) {
-        scrollToElement(5);
-      } else {
-        navigate(basePath);
-        setTimeout(() => scrollToElement(5), 500);
-      }
+      // Navigate with view=summary param so Dashboard switches to summary tab
+      navigate(`${basePath}?view=summary#${hash}`);
+      setTimeout(() => scrollToElement(8), 600);
     } else if (path.includes('?')) {
-      // For query param paths (e.g., /dashboard?area=...), use navigate to preserve SPA behavior
       navigate(path);
     } else {
       navigate(path);
     }
-  }, [navigate, location.pathname]);
+  }, [navigate]);
   
   // Toggle submenu
   const toggleSubmenu = useCallback((path: string) => {
