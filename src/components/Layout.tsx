@@ -448,17 +448,23 @@ export const Layout = ({ children }: LayoutProps) => {
     if (hashIndex !== -1) {
       const basePath = path.substring(0, hashIndex);
       const hash = path.substring(hashIndex + 1);
-      navigate(basePath);
-      setTimeout(() => {
+      
+      const scrollToElement = (retriesLeft: number) => {
         const el = document.getElementById(hash);
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'start' });
           el.classList.add('highlight-on-arrival');
           setTimeout(() => el.classList.remove('highlight-on-arrival'), 8000);
+        } else if (retriesLeft > 0) {
+          setTimeout(() => scrollToElement(retriesLeft - 1), 400);
         }
-      }, 300);
-    } else if (path.startsWith('/dashboard?')) {
-      window.location.href = path;
+      };
+
+      // Navigate with view=summary param so Dashboard switches to summary tab
+      navigate(`${basePath}?view=summary#${hash}`);
+      setTimeout(() => scrollToElement(8), 600);
+    } else if (path.includes('?')) {
+      navigate(path);
     } else {
       navigate(path);
     }
