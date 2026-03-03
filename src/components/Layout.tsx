@@ -157,18 +157,18 @@ interface NavItem {
 
 const getNavSections = (language: string, isBetaTester: boolean = false) => {
   const systemItems: NavItem[] = [
-    { icon: Sparkles, label: 'nav.notifications', path: '/notifications', badge: null, tooltipKey: 'dashboard' as const },
-    { icon: FolderOpen, label: 'nav.files', path: '/files', badge: null, tooltipKey: 'dashboard' as const },
-    { icon: Settings, label: 'nav.config', path: '/settings', badge: null, tooltipKey: 'dashboard' as const },
-    { icon: Trash2, label: 'nav.trash', path: '/trash', badge: null, tooltipKey: 'dashboard' as const },
-    { icon: HeartPulse, label: 'nav.dataHealth', path: '/data-health', badge: null, tooltipKey: 'dashboard' as const },
-    { icon: BookOpen, label: 'nav.userGuide', path: '/user-guide', badge: null, tooltipKey: 'dashboard' as const },
+    { icon: Sparkles, label: 'nav.notifications', path: '/notifications', badge: null, tooltipKey: 'notifications' as const },
+    { icon: FolderOpen, label: 'nav.files', path: '/files', badge: null, tooltipKey: 'files' as const },
+    { icon: Settings, label: 'nav.config', path: '/settings', badge: null, tooltipKey: 'settings' as const },
+    { icon: Trash2, label: 'nav.trash', path: '/trash', badge: null, tooltipKey: 'trash' as const },
+    { icon: HeartPulse, label: 'nav.dataHealth', path: '/data-health', badge: null, tooltipKey: 'dataHealth' as const },
+    { icon: BookOpen, label: 'nav.userGuide', path: '/user-guide', badge: null, tooltipKey: 'userGuide' as const },
   ];
 
   // Only show Beta Feedback to beta testers
   if (isBetaTester) {
-    systemItems.push({ icon: MessageSquare, label: language === 'es' ? 'Beta Feedback' : 'Beta Feedback', path: '/beta-feedback', badge: null, tooltipKey: 'dashboard' as const });
-    systemItems.push({ icon: BookOpen, label: language === 'es' ? 'Guía Beta' : 'Beta Guide', path: '/beta-guide', badge: null, tooltipKey: 'dashboard' as const });
+    systemItems.push({ icon: MessageSquare, label: language === 'es' ? 'Beta Feedback' : 'Beta Feedback', path: '/beta-feedback', badge: null, tooltipKey: 'betaFeedback' as const });
+    systemItems.push({ icon: BookOpen, label: language === 'es' ? 'Guía Beta' : 'Beta Guide', path: '/beta-guide', badge: null, tooltipKey: 'betaGuide' as const });
   }
 
   return [
