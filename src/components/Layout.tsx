@@ -645,7 +645,16 @@ export const Layout = ({ children }: LayoutProps) => {
                                       <button
                                         key={`${child.path}-${ci}`}
                                         onClick={() => {
-                                          if (child.path.startsWith('/dashboard?')) {
+                                          const hashIndex = child.path.indexOf('#');
+                                          if (hashIndex !== -1) {
+                                            const basePath = child.path.substring(0, hashIndex);
+                                            const hash = child.path.substring(hashIndex + 1);
+                                            navigate(basePath);
+                                            setTimeout(() => {
+                                              const el = document.getElementById(hash);
+                                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                            }, 100);
+                                          } else if (child.path.startsWith('/dashboard?')) {
                                             window.location.href = child.path;
                                           } else {
                                             navigate(child.path);
@@ -1063,7 +1072,22 @@ export const Layout = ({ children }: LayoutProps) => {
                                   {item.children!.map((child: NavChild, ci: number) => (
                                     <button
                                       key={`${child.path}-${ci}`}
-                                      onClick={() => child.path.startsWith('/dashboard?') ? window.location.href = child.path : navigate(child.path)}
+                                      onClick={() => {
+                                        const hashIndex = child.path.indexOf('#');
+                                        if (hashIndex !== -1) {
+                                          const basePath = child.path.substring(0, hashIndex);
+                                          const hash = child.path.substring(hashIndex + 1);
+                                          navigate(basePath);
+                                          setTimeout(() => {
+                                            const el = document.getElementById(hash);
+                                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                          }, 100);
+                                        } else if (child.path.startsWith('/dashboard?')) {
+                                          window.location.href = child.path;
+                                        } else {
+                                          navigate(child.path);
+                                        }
+                                      }}
                                       className="flex items-center gap-1.5 w-full text-xs text-muted-foreground hover:text-foreground py-0.5"
                                     >
                                       <Circle className="h-1.5 w-1.5 fill-current opacity-50" />
