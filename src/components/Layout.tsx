@@ -216,7 +216,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
       },
       { icon: FolderKanban, label: 'nav.projects', path: '/projects', badge: null, tooltipKey: 'clients' as const },
       { icon: FileText, label: 'nav.contracts', path: '/contracts', badge: null, tooltipKey: 'contracts' as const },
-      { icon: Car, label: 'nav.mileage', path: '/mileage', badgeType: 'tax' as const, tooltipKey: 'mileage' as const,
+      { icon: Car, label: 'nav.mileage', path: '/mileage', badge: null, tooltipKey: 'mileage' as const,
         children: [
           { label: language === 'es' ? '🛣️ Resumen Kilometraje' : '🛣️ Mileage Summary', path: '/dashboard?area=negocio&atab=mileage' },
         ],
