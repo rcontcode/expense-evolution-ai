@@ -310,7 +310,7 @@ export const translations = {
       aiFinance: 'Evoluciona tus Finanzas',
       // New grouped sidebar
       daily: '💰 Día a Día',
-      business: '🏢 Mi Negocio',
+      business: '🏢 Mi Negocio / Empleo',
       wealth: '📈 Patrimonio',
       growth: '🎓 Crecimiento',
       analytics: '📊 Análisis',
@@ -1277,7 +1277,7 @@ export const translations = {
       aiFinance: 'Evolve Your Finances',
       // New grouped sidebar
       daily: '💰 Daily',
-      business: '🏢 My Business',
+      business: '🏢 My Business / Employment',
       wealth: '📈 Wealth',
       growth: '🎓 Growth',
       analytics: '📊 Analytics',
