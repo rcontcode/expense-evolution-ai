@@ -273,7 +273,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     emoji: '🎓',
     themeKey: 'growth' as keyof typeof sectionThemes,
     items: [
-      { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badge: null, tooltipKey: 'dashboard' as const,
+      { icon: GraduationCap, label: 'nav.mentorship', path: '/mentorship', badge: null, tooltipKey: 'mentorship' as const,
         children: [
           { label: language === 'es' ? '📚 Biblioteca' : '📚 Library', path: '/mentorship?tab=library' },
           { label: language === 'es' ? '⚛️ Hábitos Atómicos' : '⚛️ Atomic Habits', path: '/mentorship?tab=atomic' },
@@ -283,7 +283,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
           { label: language === 'es' ? '🧘 Bienestar' : '🧘 Wellbeing', path: '/mentorship?tab=wellbeing' },
         ],
       },
-      { icon: Briefcase, label: language === 'es' ? 'Inversiones' : 'Investments', path: '/investments', badge: null, tooltipKey: 'dashboard' as const,
+      { icon: Briefcase, label: language === 'es' ? 'Inversiones' : 'Investments', path: '/investments', badge: null, tooltipKey: 'investments' as const,
         children: [
           { label: language === 'es' ? '🔥 Calculadora FIRE' : '🔥 FIRE Calculator', path: '/dashboard?area=crecimiento&atab=investments&tool=fire' },
           { label: language === 'es' ? '💼 Portafolio' : '💼 Portfolio', path: '/dashboard?area=crecimiento&atab=investments&tool=portfolio' },
@@ -293,7 +293,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
           { label: language === 'es' ? '💳 Clasificación Deuda' : '💳 Debt Classification', path: '/mentorship?tab=kiyosaki' },
         ],
       },
-      { icon: Trophy, label: language === 'es' ? 'Aventura' : 'Adventure', path: '/adventure', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: Trophy, label: language === 'es' ? 'Aventura' : 'Adventure', path: '/adventure', badge: null, tooltipKey: 'adventure' as const },
     ]
   },
   {
