@@ -55,7 +55,7 @@ interface HighlightResult {
  * ```
  */
 export function useHighlightOnArrival(options: UseHighlightOnArrivalOptions = {}): HighlightResult {
-  const { paramKey = 'tab', duration = 5000, scrollIntoView = true } = options;
+  const { paramKey = 'tab', duration = 8000, scrollIntoView = true } = options;
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
   const [isHighlighted, setIsHighlighted] = useState(false);

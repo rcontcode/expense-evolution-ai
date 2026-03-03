@@ -76,6 +76,7 @@ import { MobileMenuEntitySelector, MobileMenuLanguageSelector } from '@/componen
 import { EntitySelector } from '@/components/EntitySelector';
 import { useGlobalReminders } from '@/hooks/utils/useGlobalReminders';
 import { useAutoReminders } from '@/hooks/data/useAutoReminders';
+import { useHighlight } from '@/contexts/HighlightContext';
 import { ContactForm } from '@/components/ContactForm';
 import { SocialLinks } from '@/components/SocialLinks';
 import { ChatAssistant } from '@/components/chat/ChatAssistant';
@@ -344,6 +345,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const { data: profile } = useProfile();
   const { currentCountry } = useEntity();
   const { mode, setMode, setStyle } = useTheme();
+  const { highlightColor } = useHighlight();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
@@ -361,6 +363,22 @@ export const Layout = ({ children }: LayoutProps) => {
   const { data: unreadCount = 0 } = useUnreadNotifications();
   const sidebarNavRef = useRef<HTMLElement>(null);
   const SIDEBAR_SCROLL_KEY = '__sidebar_scroll__';
+
+  // Inject highlight CSS color vars based on user preference
+  const ARRIVAL_COLOR_RGB: Record<string, [number, number, number]> = {
+    orange: [249, 115, 22],
+    green:  [34,  197, 94],
+    red:    [239, 68,  68],
+    blue:   [59,  130, 246],
+    purple: [168, 85,  247],
+  };
+
+  useEffect(() => {
+    const rgb = ARRIVAL_COLOR_RGB[highlightColor] ?? ARRIVAL_COLOR_RGB.orange;
+    document.documentElement.style.setProperty('--har', String(rgb[0]));
+    document.documentElement.style.setProperty('--hag', String(rgb[1]));
+    document.documentElement.style.setProperty('--hab', String(rgb[2]));
+  }, [highlightColor]);
 
   // Persist sidebar scroll while user navigates between pages
   useEffect(() => {
@@ -427,6 +445,28 @@ export const Layout = ({ children }: LayoutProps) => {
     root.classList.add('stability-mode');
     return () => root.classList.remove('stability-mode');
   }, []);
+
+  // Unified submenu navigation handler with highlight effect (8 seconds)
+  const handleSubmenuNavigation = useCallback((path: string) => {
+    const hashIndex = path.indexOf('#');
+    if (hashIndex !== -1) {
+      const basePath = path.substring(0, hashIndex);
+      const hash = path.substring(hashIndex + 1);
+      navigate(basePath);
+      setTimeout(() => {
+        const el = document.getElementById(hash);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          el.classList.add('highlight-on-arrival');
+          setTimeout(() => el.classList.remove('highlight-on-arrival'), 8000);
+        }
+      }, 300);
+    } else if (path.startsWith('/dashboard?')) {
+      window.location.href = path;
+    } else {
+      navigate(path);
+    }
+  }, [navigate]);
   
   // Toggle submenu
   const toggleSubmenu = useCallback((path: string) => {
@@ -436,7 +476,6 @@ export const Layout = ({ children }: LayoutProps) => {
       return next;
     });
   }, []);
-
   // Toggle theme between light/dark with optimized themes
   const toggleTheme = () => {
     const newMode = mode === 'dark' ? 'light' : 'dark';
@@ -645,20 +684,7 @@ export const Layout = ({ children }: LayoutProps) => {
                                       <button
                                         key={`${child.path}-${ci}`}
                                         onClick={() => {
-                                          const hashIndex = child.path.indexOf('#');
-                                          if (hashIndex !== -1) {
-                                            const basePath = child.path.substring(0, hashIndex);
-                                            const hash = child.path.substring(hashIndex + 1);
-                                            navigate(basePath);
-                                            setTimeout(() => {
-                                              const el = document.getElementById(hash);
-                                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                            }, 100);
-                                          } else if (child.path.startsWith('/dashboard?')) {
-                                            window.location.href = child.path;
-                                          } else {
-                                            navigate(child.path);
-                                          }
+                                          handleSubmenuNavigation(child.path);
                                           setMobileMenuOpen(false);
                                         }}
                                         className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-background/60 transition-all"
@@ -1034,22 +1060,7 @@ export const Layout = ({ children }: LayoutProps) => {
                         {item.children!.map((child: NavChild, childIdx: number) => (
                           <button
                             key={`${child.path}-${childIdx}`}
-                            onClick={() => {
-                              const hashIndex = child.path.indexOf('#');
-                              if (hashIndex !== -1) {
-                                const basePath = child.path.substring(0, hashIndex);
-                                const hash = child.path.substring(hashIndex + 1);
-                                navigate(basePath);
-                                setTimeout(() => {
-                                  const el = document.getElementById(hash);
-                                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                }, 100);
-                              } else if (child.path.startsWith('/dashboard?')) {
-                                window.location.href = child.path;
-                              } else {
-                                navigate(child.path);
-                              }
-                            }}
+                             onClick={() => handleSubmenuNavigation(child.path)}
                             className={cn(
                               "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-[11px] transition-all duration-150",
                               "text-muted-foreground hover:text-foreground",
@@ -1081,22 +1092,7 @@ export const Layout = ({ children }: LayoutProps) => {
                                   {item.children!.map((child: NavChild, ci: number) => (
                                     <button
                                       key={`${child.path}-${ci}`}
-                                      onClick={() => {
-                                        const hashIndex = child.path.indexOf('#');
-                                        if (hashIndex !== -1) {
-                                          const basePath = child.path.substring(0, hashIndex);
-                                          const hash = child.path.substring(hashIndex + 1);
-                                          navigate(basePath);
-                                          setTimeout(() => {
-                                            const el = document.getElementById(hash);
-                                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                          }, 100);
-                                        } else if (child.path.startsWith('/dashboard?')) {
-                                          window.location.href = child.path;
-                                        } else {
-                                          navigate(child.path);
-                                        }
-                                      }}
+                                      onClick={() => handleSubmenuNavigation(child.path)}
                                       className="flex items-center gap-1.5 w-full text-xs text-muted-foreground hover:text-foreground py-0.5"
                                     >
                                       <Circle className="h-1.5 w-1.5 fill-current opacity-50" />
