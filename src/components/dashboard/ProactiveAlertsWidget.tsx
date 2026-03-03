@@ -261,8 +261,6 @@ export function ProactiveAlertsWidget() {
     info: 'text-blue-500',
   };
 
-  if (alerts.length === 0) return null;
-
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -271,40 +269,56 @@ export function ProactiveAlertsWidget() {
             <Zap className="h-5 w-5 text-amber-500" />
             {l ? 'Alertas Inteligentes' : 'Smart Alerts'}
           </span>
-          <Badge variant="outline" className="text-xs">{alerts.length}</Badge>
+          {alerts.length > 0 && (
+            <Badge variant="outline" className="text-xs">{alerts.length}</Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        <AnimatePresence>
-          {alerts.map((alert, i) => (
-            <motion.div
-              key={alert.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className={cn("p-3 rounded-lg border", typeStyles[alert.type])}
-            >
-              <div className="flex items-start gap-2.5">
-                <alert.icon className={cn("h-4 w-4 mt-0.5 shrink-0", iconStyles[alert.type])} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold">{alert.title}</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">{alert.description}</p>
-                  {alert.action && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-[10px] mt-1.5"
-                      onClick={() => navigate(alert.action!.route)}
-                    >
-                      {alert.action.label}
-                      <ArrowRight className="h-3 w-3 ml-1" />
-                    </Button>
-                  )}
+        {alerts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center mb-3">
+              <Bell className="h-5 w-5 text-green-500" />
+            </div>
+            <p className="text-sm font-medium text-foreground">
+              {l ? '✨ Todo en orden' : '✨ All clear'}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-[240px]">
+              {l ? 'No hay alertas activas. ¡Tus finanzas van bien!' : 'No active alerts. Your finances are on track!'}
+            </p>
+          </div>
+        ) : (
+          <AnimatePresence>
+            {alerts.map((alert, i) => (
+              <motion.div
+                key={alert.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className={cn("p-3 rounded-lg border", typeStyles[alert.type])}
+              >
+                <div className="flex items-start gap-2.5">
+                  <alert.icon className={cn("h-4 w-4 mt-0.5 shrink-0", iconStyles[alert.type])} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold">{alert.title}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{alert.description}</p>
+                    {alert.action && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-[10px] mt-1.5"
+                        onClick={() => navigate(alert.action!.route)}
+                      >
+                        {alert.action.label}
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        )}
       </CardContent>
     </Card>
   );
