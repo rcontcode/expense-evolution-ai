@@ -353,7 +353,12 @@ export const Layout = ({ children }: LayoutProps) => {
   const [expandedSubmenus, setExpandedSubmenus] = useState<Record<string, boolean>>(() => {
     try {
       const saved = localStorage.getItem('evofinz-sidebar-submenus');
-      return saved ? JSON.parse(saved) : {};
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Only restore if user has explicitly toggled before
+        if (Object.keys(parsed).length > 0) return parsed;
+      }
+      return {}; // All collapsed by default
     } catch { return {}; }
   });
   const isMobile = useIsMobile();
