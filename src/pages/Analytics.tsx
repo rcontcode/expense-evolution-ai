@@ -71,7 +71,9 @@ export default function Analytics() {
               isLoading={isLoading}
             />
             <SmartMonthlyReport />
-            <IncomeVsExpensesChart />
+            <div id="income-vs-expenses">
+              <IncomeVsExpensesChart />
+            </div>
             <div className="grid gap-6 lg:grid-cols-2">
               <SavingsRateChart />
               <YearOverYearComparison />
@@ -80,19 +82,21 @@ export default function Analytics() {
               <CategoryTrendsChart />
               <FinancialHealthRadar />
             </div>
-            <CashFlowSankey />
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div id="cashflow">
+              <CashFlowSankey />
+            </div>
+            <div id="profitability" className="grid gap-6 lg:grid-cols-2">
               <ProjectProfitability />
               <ClientProfitability />
             </div>
             <FinancialCorrelations />
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div id="simulator" className="grid gap-6 lg:grid-cols-2">
               <MoneyMomentumScore />
               <WhatIfSimulator />
             </div>
             <NegotiationScriptGenerator />
             <BudgetProjectionChart />
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div id="predictions" className="grid gap-6 lg:grid-cols-2">
               <ExpensePredictions expenses={allExpenses || []} />
               <CashFlowProjection />
             </div>
