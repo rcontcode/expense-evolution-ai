@@ -231,14 +231,14 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     emoji: '📈',
     themeKey: 'wealth' as keyof typeof sectionThemes,
     items: [
-      { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badge: null, tooltipKey: 'dashboard' as const,
+      { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badge: null, tooltipKey: 'netWorth' as const,
         children: [
           { label: language === 'es' ? '📊 Análisis Familiar' : '📊 Family Analysis', path: '/dashboard?area=familia&atab=analysis' },
         ],
       },
-      { icon: CreditCard, label: language === 'es' ? 'Deudas' : 'Debts', path: '/dashboard?area=familia&atab=debts', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: PiggyBank, label: language === 'es' ? 'Ahorro' : 'Savings', path: '/budget?tab=savings', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: Building2, label: 'nav.banking', path: '/banking', badge: null, tooltipKey: 'dashboard' as const,
+      { icon: CreditCard, label: language === 'es' ? 'Deudas' : 'Debts', path: '/dashboard?area=familia&atab=debts', badge: null, tooltipKey: 'debts' as const },
+      { icon: PiggyBank, label: language === 'es' ? 'Ahorro' : 'Savings', path: '/budget?tab=savings', badge: null, tooltipKey: 'savings' as const },
+      { icon: Building2, label: 'nav.banking', path: '/banking', badge: null, tooltipKey: 'banking' as const,
         children: [
           { label: language === 'es' ? '🔄 Conciliación' : '🔄 Reconciliation', path: '/reconciliation' },
         ],
