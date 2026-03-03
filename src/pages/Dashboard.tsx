@@ -204,7 +204,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Workflow Progress + Bills */}
-                <div className="grid gap-4 lg:grid-cols-2" data-section="workflows">
+                <div id="workflows" className="grid gap-4 lg:grid-cols-2" data-section="workflows">
                   <Suspense fallback={<Skeleton className="h-[200px]" />}>
                     <WorkflowSummaryWidget />
                   </Suspense>
