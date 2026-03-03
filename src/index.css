@@ -2934,3 +2934,11 @@
   transition: none !important;
   scroll-behavior: auto !important;
 }
+
+/* Exception: highlight-on-arrival must animate even in stability mode */
+.stability-mode .highlight-on-arrival {
+  animation: highlight-beacon-color 1.1s ease-in-out infinite !important;
+}
+.stability-mode .highlight-tab-on-arrival {
+  animation: highlight-tab-pulse-color 1.1s ease-in-out infinite !important;
+}
