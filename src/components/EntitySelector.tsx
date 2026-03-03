@@ -116,7 +116,7 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
   // Don't show if no entities exist - show attractive setup prompt
   if (!entities || entities.length === 0) {
     return (
-      <div className={cn("px-2", collapsed && "flex justify-center")}>
+      <div className={cn("px-3", collapsed && "flex justify-center px-1")}>
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
