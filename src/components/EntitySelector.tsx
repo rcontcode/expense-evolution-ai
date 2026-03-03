@@ -107,7 +107,7 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
 
   if (isLoading) {
     return (
-      <div className={cn("px-2", collapsed && "flex justify-center")}>
+      <div className={cn("px-3", collapsed && "flex justify-center px-1")}>
         <Skeleton className={cn("h-12 rounded-xl", collapsed ? "w-12" : "w-full")} />
       </div>
     );
