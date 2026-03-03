@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { LayoutGrid, Calendar, KanbanSquare, ListChecks, TrendingUp, CalendarCheck, ChevronDown, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -17,6 +16,9 @@ import { CashFlowProjection } from './CashFlowProjection';
 import { NetCashFlowCard } from './NetCashFlowCard';
 import { BillsExportButtons } from './BillsExportButtons';
 import { BillsQuickOnboarding } from './BillsQuickOnboarding';
+import { BillHealthScore } from './BillHealthScore';
+import { BillSmartInsights } from './BillSmartInsights';
+import { BillStreakTracker } from './BillStreakTracker';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { differenceInDays, parseISO } from 'date-fns';
@@ -41,11 +43,11 @@ export function BillsDashboard() {
   const [onboardingOpen, setOnboardingOpen] = useState(!hasBills);
 
   const tabs = [
-    { value: 'overview', icon: LayoutGrid, label: l ? 'Lista' : 'List', desc: l ? 'Todos tus pagos' : 'All your bills', color: 'bg-primary text-primary-foreground' },
-    { value: 'calendar', icon: Calendar, label: l ? 'Calendario' : 'Calendar', desc: l ? 'Vista mensual' : 'Monthly view', color: 'bg-chart-4 text-white' },
-    { value: 'kanban', icon: KanbanSquare, label: 'Kanban', desc: l ? 'Arrastra y paga' : 'Drag & pay', color: 'bg-chart-2 text-white' },
-    { value: 'checklist', icon: ListChecks, label: 'Checklist', desc: l ? 'Marca completados' : 'Mark as done', color: 'bg-chart-3 text-white' },
-    { value: 'projection', icon: TrendingUp, label: l ? 'Proyección' : 'Projection', desc: l ? 'Flujo de caja' : 'Cash flow', color: 'bg-chart-1 text-white' },
+    { value: 'overview', icon: LayoutGrid, label: l ? 'Lista' : 'List', desc: l ? 'Todos tus pagos' : 'All your bills' },
+    { value: 'calendar', icon: Calendar, label: l ? 'Calendario' : 'Calendar', desc: l ? 'Vista mensual' : 'Monthly view' },
+    { value: 'kanban', icon: KanbanSquare, label: 'Kanban', desc: l ? 'Arrastra y paga' : 'Drag & pay' },
+    { value: 'checklist', icon: ListChecks, label: 'Checklist', desc: l ? 'Marca completados' : 'Mark as done' },
+    { value: 'projection', icon: TrendingUp, label: l ? 'Proyección' : 'Projection', desc: l ? 'Flujo de caja' : 'Cash flow' },
   ];
 
   return (
@@ -95,6 +97,17 @@ export function BillsDashboard() {
         </div>
       </div>
 
+      {/* ═══ HEALTH SCORE + STREAK (side by side on desktop) ═══ */}
+      {hasBills && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <BillHealthScore />
+          <BillStreakTracker />
+        </div>
+      )}
+
+      {/* ═══ SMART INSIGHTS ═══ */}
+      {hasBills && <BillSmartInsights />}
+
       {/* ═══ COLLAPSIBLE ONBOARDING ═══ */}
       <Collapsible open={onboardingOpen} onOpenChange={setOnboardingOpen}>
         <CollapsibleTrigger asChild>
@@ -125,7 +138,7 @@ export function BillsDashboard() {
         </CollapsibleContent>
       </Collapsible>
 
-      {/* ═══ VIEW TABS — PROMINENT AT TOP ═══ */}
+      {/* ═══ VIEW TABS — 3D CANDY BUTTON STYLE ═══ */}
       <Tabs value={view} onValueChange={setView} className="space-y-3">
         <Card className="overflow-hidden border-primary/10">
           <CardContent className="p-1.5">
@@ -138,13 +151,15 @@ export function BillsDashboard() {
                     key={tab.value}
                     value={tab.value}
                     className={cn(
-                      "relative flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg text-xs transition-all duration-200 border border-transparent",
-                      "data-[state=active]:shadow-md data-[state=active]:scale-[1.02]",
-                      isActive ? tab.color + " border-transparent" : "hover:bg-muted/60 border-border/40"
+                      "relative flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl text-xs transition-all duration-200",
+                      "border-2 font-semibold",
+                      isActive
+                        ? "bg-primary text-primary-foreground border-primary shadow-[0_4px_12px_-2px_hsl(var(--primary)/0.4)] scale-[1.04] -translate-y-0.5"
+                        : "bg-secondary text-secondary-foreground border-border/60 shadow-[0_2px_4px_0_rgba(0,0,0,0.1),inset_0_1px_0_0_rgba(255,255,255,0.1)] hover:shadow-[0_3px_8px_-1px_rgba(0,0,0,0.15)] hover:-translate-y-[3px] active:translate-y-0.5 active:shadow-[0_1px_2px_0_rgba(0,0,0,0.1)]",
                     )}
                   >
                     <Icon className="h-4 w-4" />
-                    <span className="font-semibold text-[10px] leading-tight">{tab.label}</span>
+                    <span className="font-bold text-[10px] leading-tight">{tab.label}</span>
                     <span className={cn(
                       "text-[8px] leading-tight hidden sm:block",
                       isActive ? "opacity-80" : "text-muted-foreground"
