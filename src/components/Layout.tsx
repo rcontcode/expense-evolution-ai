@@ -834,25 +834,32 @@ export const Layout = ({ children }: LayoutProps) => {
             )}
           </button>
 
-          {/* Quick Capture CTA - Top position for visibility */}
-          <div className={cn("px-2 pt-2", collapsed && "flex justify-center")}>
+          {/* Top Action Buttons - Uniform sizing */}
+          <div className={cn("px-2 pt-2 space-y-1.5", collapsed && "flex flex-col items-center")}>
+            {/* Quick Capture */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   onClick={() => setQuickCaptureOpen(true)}
                   className={cn(
-                    "rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02]",
-                    collapsed ? "w-10 h-10 justify-center p-0" : "w-full px-2.5 py-2"
+                    "group rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white transition-all shadow-md hover:shadow-lg hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] active:translate-y-0.5",
+                    collapsed ? "w-10 h-10 flex items-center justify-center p-0" : "w-full h-12 flex items-center gap-2.5 px-3"
                   )}
                 >
                   {collapsed ? (
-                    <span className="text-lg">📸</span>
+                    <Camera className="h-5 w-5" />
                   ) : (
                     <>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Camera className="h-3.5 w-3.5" />
-                        <Upload className="h-3.5 w-3.5 opacity-80" />
-                        <Mic className="h-3.5 w-3.5 opacity-80" />
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center">
+                          <Camera className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="w-6 h-6 rounded-lg bg-white/15 flex items-center justify-center">
+                          <Upload className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="w-6 h-6 rounded-lg bg-white/15 flex items-center justify-center">
+                          <Mic className="h-3.5 w-3.5" />
+                        </div>
                       </div>
                       <span className="font-bold text-xs truncate">{t('layout.quickCapture')}</span>
                     </>
@@ -865,40 +872,40 @@ export const Layout = ({ children }: LayoutProps) => {
                   <p className="text-xs text-muted-foreground">{TOOLTIP_CONTENT.quickCapture[language].description}</p>
                 </div>
               </TooltipContent>
-          </Tooltip>
-          
-          {/* Global Search Button - Prominent and Visible */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => setGlobalSearchOpen(true)}
-                className={cn(
-                  "rounded-xl bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white flex items-center gap-3 hover:opacity-90 transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-[1.02]",
-                  collapsed ? "w-10 h-10 justify-center p-0" : "w-full p-3"
-                )}
-              >
-                {collapsed ? (
-                  <Search className="h-5 w-5" />
-                ) : (
-                  <>
-                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-                      <Search className="h-5 w-5" />
-                    </div>
-                    <div className="text-left flex-1">
-                      <p className="font-bold text-sm">{language === 'es' ? 'Buscar' : 'Search'}</p>
-                      <p className="text-[10px] opacity-90 font-medium">{language === 'es' ? 'Gastos, clientes, proyectos...' : 'Expenses, clients, projects...'}</p>
-                    </div>
-                  </>
-                )}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8} className="z-[100] max-w-xs p-3 bg-popover border shadow-lg">
-              <div className="space-y-2">
-                <span className="font-semibold">{language === 'es' ? 'Búsqueda Global' : 'Global Search'}</span>
-                <p className="text-xs text-muted-foreground">{language === 'es' ? 'Busca gastos, clientes y proyectos en tiempo real' : 'Search expenses, clients and projects in real time'}</p>
-              </div>
-            </TooltipContent>
-          </Tooltip>
+            </Tooltip>
+
+            {/* Global Search */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setGlobalSearchOpen(true)}
+                  className={cn(
+                    "group rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white transition-all shadow-md hover:shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98] active:translate-y-0.5",
+                    collapsed ? "w-10 h-10 flex items-center justify-center p-0" : "w-full h-12 flex items-center gap-2.5 px-3"
+                  )}
+                >
+                  {collapsed ? (
+                    <Search className="h-5 w-5" />
+                  ) : (
+                    <>
+                      <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                        <Search className="h-4 w-4" />
+                      </div>
+                      <div className="text-left flex-1 min-w-0">
+                        <p className="font-bold text-xs leading-tight">{language === 'es' ? 'Buscar' : 'Search'}</p>
+                        <p className="text-[9px] opacity-80 font-medium truncate">{language === 'es' ? 'Gastos, clientes, proyectos…' : 'Expenses, clients, projects…'}</p>
+                      </div>
+                    </>
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8} className="z-[100] max-w-xs p-3 bg-popover border shadow-lg">
+                <div className="space-y-2">
+                  <span className="font-semibold">{language === 'es' ? 'Búsqueda Global' : 'Global Search'}</span>
+                  <p className="text-xs text-muted-foreground">{language === 'es' ? 'Busca gastos, clientes y proyectos en tiempo real' : 'Search expenses, clients and projects in real time'}</p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           {/* Entity/Jurisdiction Selector */}
