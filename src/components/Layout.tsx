@@ -834,8 +834,8 @@ export const Layout = ({ children }: LayoutProps) => {
             )}
           </button>
 
-          {/* Top Action Buttons - Premium 3D style */}
-          <div className={cn("px-2 pt-2 space-y-1.5", collapsed && "flex flex-col items-center")}>
+          {/* Top Action Buttons - Premium 3D style, aligned with nav sections */}
+          <div className={cn("px-2 pt-2 space-y-1.5", collapsed && "flex flex-col items-center gap-1.5 space-y-0")}>
             {/* Quick Capture */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -846,10 +846,10 @@ export const Layout = ({ children }: LayoutProps) => {
                     "bg-gradient-to-br from-emerald-400 via-teal-500 to-emerald-600",
                     "shadow-[0_4px_12px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-2px_4px_rgba(0,0,0,0.15)]",
                     "hover:shadow-[0_6px_20px_rgba(16,185,129,0.5),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.15)]",
-                    "hover:scale-[1.03] hover:-translate-y-0.5",
+                    "hover:scale-[1.02] hover:-translate-y-0.5",
                     "active:scale-[0.97] active:translate-y-0.5 active:shadow-[0_2px_6px_rgba(16,185,129,0.3),inset_0_2px_4px_rgba(0,0,0,0.2)]",
                     "border border-emerald-300/30",
-                    collapsed ? "w-10 h-10 flex items-center justify-center p-0" : "w-full h-[52px] flex items-center gap-2 px-2.5"
+                    collapsed ? "w-10 h-10 flex items-center justify-center p-0" : "w-full h-11 flex items-center gap-1.5 px-2"
                   )}
                 >
                   {collapsed ? (
@@ -857,17 +857,17 @@ export const Layout = ({ children }: LayoutProps) => {
                   ) : (
                     <>
                       <div className="flex items-center gap-1 shrink-0">
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.15)] border border-white/20 backdrop-blur-sm">
-                          <Camera className="h-3.5 w-3.5 drop-shadow-sm" />
+                        <div className="w-6 h-6 rounded-md bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_3px_rgba(0,0,0,0.15)] border border-white/20">
+                          <Camera className="h-3 w-3 drop-shadow-sm" />
                         </div>
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-300/40 to-orange-400/30 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_4px_rgba(0,0,0,0.15)] border border-amber-200/30 backdrop-blur-sm">
-                          <Upload className="h-3.5 w-3.5 drop-shadow-sm" />
+                        <div className="w-6 h-6 rounded-md bg-gradient-to-br from-amber-300/40 to-orange-400/30 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_1px_3px_rgba(0,0,0,0.15)] border border-amber-200/30">
+                          <Upload className="h-3 w-3 drop-shadow-sm" />
                         </div>
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-rose-300/40 to-pink-400/30 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_2px_4px_rgba(0,0,0,0.15)] border border-rose-200/30 backdrop-blur-sm">
-                          <Mic className="h-3.5 w-3.5 drop-shadow-sm" />
+                        <div className="w-6 h-6 rounded-md bg-gradient-to-br from-rose-300/40 to-pink-400/30 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_1px_3px_rgba(0,0,0,0.15)] border border-rose-200/30">
+                          <Mic className="h-3 w-3 drop-shadow-sm" />
                         </div>
                       </div>
-                      <span className="font-extrabold text-xs truncate drop-shadow-sm tracking-wide">{t('layout.quickCapture')}</span>
+                      <span className="font-bold text-[11px] truncate drop-shadow-sm">{t('layout.quickCapture')}</span>
                     </>
                   )}
                 </button>
@@ -890,22 +890,22 @@ export const Layout = ({ children }: LayoutProps) => {
                     "bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600",
                     "shadow-[0_4px_12px_rgba(99,102,241,0.4),inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-2px_4px_rgba(0,0,0,0.15)]",
                     "hover:shadow-[0_6px_20px_rgba(99,102,241,0.5),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.15)]",
-                    "hover:scale-[1.03] hover:-translate-y-0.5",
+                    "hover:scale-[1.02] hover:-translate-y-0.5",
                     "active:scale-[0.97] active:translate-y-0.5 active:shadow-[0_2px_6px_rgba(99,102,241,0.3),inset_0_2px_4px_rgba(0,0,0,0.2)]",
                     "border border-indigo-300/30",
-                    collapsed ? "w-10 h-10 flex items-center justify-center p-0" : "w-full h-[52px] flex items-center gap-2.5 px-2.5"
+                    collapsed ? "w-10 h-10 flex items-center justify-center p-0" : "w-full h-11 flex items-center gap-2 px-2"
                   )}
                 >
                   {collapsed ? (
                     <Search className="h-5 w-5 drop-shadow-md" />
                   ) : (
                     <>
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.15)] border border-white/20 backdrop-blur-sm shrink-0">
-                        <Search className="h-4 w-4 drop-shadow-sm" />
+                      <div className="w-7 h-7 rounded-md bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_3px_rgba(0,0,0,0.15)] border border-white/20 shrink-0">
+                        <Search className="h-3.5 w-3.5 drop-shadow-sm" />
                       </div>
                       <div className="text-left flex-1 min-w-0">
-                        <p className="font-extrabold text-xs leading-tight drop-shadow-sm tracking-wide">{language === 'es' ? 'Buscar' : 'Search'}</p>
-                        <p className="text-[9px] opacity-85 font-medium truncate">{language === 'es' ? 'Gastos, clientes, proyectos…' : 'Expenses, clients, projects…'}</p>
+                        <p className="font-bold text-[11px] leading-tight drop-shadow-sm">{language === 'es' ? 'Buscar' : 'Search'}</p>
+                        <p className="text-[9px] opacity-80 font-medium truncate">{language === 'es' ? 'Gastos, clientes, proyectos…' : 'Expenses, clients, projects…'}</p>
                       </div>
                     </>
                   )}
