@@ -897,14 +897,14 @@ export const Layout = ({ children }: LayoutProps) => {
                   )}
                 >
                   {collapsed ? (
-                    <Search className="h-5 w-5 drop-shadow-md" />
+                    <Search className="h-5 w-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]" />
                   ) : (
                     <>
-                      <div className="w-7 h-7 rounded-md bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_1px_3px_rgba(0,0,0,0.15)] border border-white/20 shrink-0">
-                        <Search className="h-3.5 w-3.5 drop-shadow-sm" />
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-300 via-indigo-400 to-blue-500 flex items-center justify-center shadow-[0_3px_8px_rgba(99,102,241,0.5),inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-2px_4px_rgba(0,0,0,0.2)] border border-indigo-200/40 group-hover:shadow-[0_4px_12px_rgba(99,102,241,0.6),inset_0_1px_0_rgba(255,255,255,0.5)] transition-shadow shrink-0">
+                        <Search className="h-4 w-4 text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)]" />
                       </div>
                       <div className="text-left flex-1 min-w-0">
-                        <p className="font-bold text-[11px] leading-tight drop-shadow-sm">{language === 'es' ? 'Buscar' : 'Search'}</p>
+                        <p className="font-extrabold text-[11px] leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">{language === 'es' ? 'Buscar' : 'Search'}</p>
                         <p className="text-[9px] opacity-80 font-medium truncate">{language === 'es' ? 'Gastos, clientes, proyectos…' : 'Expenses, clients, projects…'}</p>
                       </div>
                     </>
