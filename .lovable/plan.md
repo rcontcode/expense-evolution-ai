@@ -1,91 +1,48 @@
 
 
-## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
+## Plan: Highlight de Sección al Navegar desde Submenús
 
-### ✅ Completado en EvoFinz
+### Problema Actual
+Los submenús navegan correctamente (hash links y query params funcionan), pero **no se resalta visualmente** la sección destino al llegar. El efecto `highlight-on-arrival` solo se activa con query params (`?tab=X`), no con hash fragments (`#timeline`, `#predictions`, etc.).
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
-| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
-| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
-| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
-| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
+### Cambios
 
-### ✅ Completado en Fokuspark
+#### 1. Layout.tsx — Aplicar highlight al navegar con hash
+En los 3 onClick handlers (mobile, desktop expandido, tooltip colapsado), después de hacer `scrollIntoView`, añadir la clase `highlight-on-arrival` al elemento destino y removerla tras 8 segundos:
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
-| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
-| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
-| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
+```typescript
+// Después del scrollIntoView existente:
+setTimeout(() => {
+  const el = document.getElementById(hash);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el.classList.add('highlight-on-arrival');
+    setTimeout(() => el.classList.remove('highlight-on-arrival'), 8000);
+  }
+}, 300); // Aumentar delay para asegurar que la página cargó
+```
 
-### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
+Inyectar las variables CSS de color (`--har`, `--hag`, `--hab`) basándose en el `highlightColor` del `HighlightContext` al montar el Layout.
 
----
+#### 2. Layout.tsx — Aplicar highlight al navegar con query params
+Para paths como `/dashboard?area=familia&atab=budget` y `/mentorship?tab=library`, los handlers usan `window.location.href` o `navigate()`. Añadir lógica similar: tras navegar, esperar a que la página cargue y aplicar highlight al tab/sección activa.
 
-## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
+#### 3. useHighlightOnArrival.ts — Aumentar duración default a 8000ms
+Cambiar `duration = 5000` → `duration = 8000` para que el efecto dure 8 segundos.
 
-### ✅ Confirmado: Sistema funciona correctamente
+#### 4. index.css — Asegurar que stability-mode no bloquee el highlight
+La regla `.stability-mode * { animation: none !important }` mata el efecto pulsante. Añadir excepción:
+```css
+.stability-mode .highlight-on-arrival {
+  animation: highlight-beacon-color 1.1s ease-in-out infinite !important;
+}
+```
 
-- Planes individuales (Free/Premium/Pro) son independientes por app
-- Bundle compartido usa mismos Stripe Price IDs en ambas apps
-- Ambos webhooks detectan Bundle y setean `has_bundle = true`
-- No hay acceso cruzado no autorizado entre apps
+### Archivos a modificar
+- `src/components/Layout.tsx` — 3 onClick handlers + import HighlightContext + inyectar CSS vars
+- `src/hooks/utils/useHighlightOnArrival.ts` — duration default 5000 → 8000
+- `src/index.css` — excepción stability-mode para highlight
 
-### ✅ Gaps implementados en Fokuspark
+### Resultado
+Al hacer click en cualquier submenú del sidebar, el usuario navega a la sección y ve un recuadro pulsante del color configurado (naranja por defecto) durante 8 segundos.
 
-| # | Gap | Estado |
-|---|-----|--------|
-| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
-| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
-
-### 📋 Gaps pendientes (baja prioridad)
-
-| # | Gap | Prioridad |
-|---|-----|-----------|
-| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
-| S3 | Texto del Bundle podría ser más descriptivo | Baja |
-
----
-
-## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
-
-### ✅ Veredicto: No igualar precios — estructura actual es óptima
-
-| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
-|------|---------|-----------|-----------|-------|
-| Free | $0 | $0 | ✅ Ya iguales | — |
-| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
-| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
-| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
-
-### 📋 Pendiente técnico
-
-| # | Tarea | App | Prioridad |
-|---|-------|-----|-----------|
-| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
-
----
-
-## Quiz Multi-App — CRM Unificado
-
-### ✅ Completado en EvoFinz
-
-| # | Tarea | Estado |
-|---|-------|--------|
-| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
-| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
-| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
-| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
-| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
-
-### 📋 Pendiente en Fokuspark
-
-| # | Tarea | Prioridad |
-|---|-------|-----------|
-| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
-| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
-| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
-| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
