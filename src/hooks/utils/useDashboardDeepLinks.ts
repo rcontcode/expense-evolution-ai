@@ -61,6 +61,17 @@ export function useDashboardDeepLinks(
     const tab = searchParams.get('tab');
     const area = searchParams.get('area');
     const areaTab = searchParams.get('atab');
+    const viewParam = searchParams.get('view');
+
+    // Handle view=summary to switch to summary/classic view for hash navigation
+    if (viewParam === 'summary') {
+      if (viewMode !== 'classic') {
+        setViewMode('classic');
+      }
+      searchParams.delete('view');
+      setSearchParams(searchParams, { replace: true });
+      return;
+    }
 
     if (area) {
       setDeepLinkArea(area);
