@@ -646,20 +646,7 @@ export const Layout = ({ children }: LayoutProps) => {
                                       <button
                                         key={`${child.path}-${ci}`}
                                         onClick={() => {
-                                          const hashIndex = child.path.indexOf('#');
-                                          if (hashIndex !== -1) {
-                                            const basePath = child.path.substring(0, hashIndex);
-                                            const hash = child.path.substring(hashIndex + 1);
-                                            navigate(basePath);
-                                            setTimeout(() => {
-                                              const el = document.getElementById(hash);
-                                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                            }, 100);
-                                          } else if (child.path.startsWith('/dashboard?')) {
-                                            window.location.href = child.path;
-                                          } else {
-                                            navigate(child.path);
-                                          }
+                                          handleSubmenuNavigation(child.path);
                                           setMobileMenuOpen(false);
                                         }}
                                         className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-background/60 transition-all"
