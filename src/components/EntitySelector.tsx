@@ -107,7 +107,7 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
 
   if (isLoading) {
     return (
-      <div className={cn("px-2", collapsed && "flex justify-center")}>
+      <div className={cn("px-3", collapsed && "flex justify-center px-1")}>
         <Skeleton className={cn("h-12 rounded-xl", collapsed ? "w-12" : "w-full")} />
       </div>
     );
@@ -116,7 +116,7 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
   // Don't show if no entities exist - show attractive setup prompt
   if (!entities || entities.length === 0) {
     return (
-      <div className={cn("px-2", collapsed && "flex justify-center")}>
+      <div className={cn("px-3", collapsed && "flex justify-center px-1")}>
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -166,7 +166,7 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
     const config = getEntityConfig(primaryEntity.entity_type);
     
     return (
-      <div className={cn("px-2", collapsed && "flex justify-center")}>
+      <div className={cn("px-3", collapsed && "flex justify-center px-1")}>
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -225,7 +225,7 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
   const primaryConfig = primaryEntity ? getEntityConfig(primaryEntity.entity_type) : entityTypeConfig.personal;
   
   return (
-    <div className={cn("px-2", collapsed && "flex justify-center")}>
+    <div className={cn("px-3", collapsed && "flex justify-center px-1")}>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
