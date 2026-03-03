@@ -1035,7 +1035,16 @@ export const Layout = ({ children }: LayoutProps) => {
                           <button
                             key={`${child.path}-${childIdx}`}
                             onClick={() => {
-                              if (child.path.startsWith('/dashboard?')) {
+                              const hashIndex = child.path.indexOf('#');
+                              if (hashIndex !== -1) {
+                                const basePath = child.path.substring(0, hashIndex);
+                                const hash = child.path.substring(hashIndex + 1);
+                                navigate(basePath);
+                                setTimeout(() => {
+                                  const el = document.getElementById(hash);
+                                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }, 100);
+                              } else if (child.path.startsWith('/dashboard?')) {
                                 window.location.href = child.path;
                               } else {
                                 navigate(child.path);
