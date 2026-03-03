@@ -214,7 +214,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Smart Alerts */}
-                <div data-section="alerts">
+                <div id="alerts" data-section="alerts">
                   <Suspense fallback={null}>
                     <ProactiveAlertsWidget />
                   </Suspense>
