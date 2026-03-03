@@ -240,7 +240,15 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     emoji: '📊',
     themeKey: 'analytics' as keyof typeof sectionThemes,
     items: [
-      { icon: Scale, label: language === 'es' ? 'Análisis' : 'Analytics', path: '/analytics', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: Scale, label: language === 'es' ? 'Análisis' : 'Analytics', path: '/analytics', badge: null, tooltipKey: 'dashboard' as const,
+        children: [
+          { label: language === 'es' ? '📊 Ingresos vs Gastos' : '📊 Income vs Expenses', path: '/analytics#income-vs-expenses' },
+          { label: language === 'es' ? '🔮 Predicciones' : '🔮 Predictions', path: '/analytics#predictions' },
+          { label: language === 'es' ? '💰 Cash Flow' : '💰 Cash Flow', path: '/analytics#cashflow' },
+          { label: language === 'es' ? '📈 Rentabilidad' : '📈 Profitability', path: '/analytics#profitability' },
+          { label: language === 'es' ? '🎛️ Simulador' : '🎛️ Simulator', path: '/analytics#simulator' },
+        ],
+      },
       { icon: FileText, label: 'nav.taxCalendar', path: '/tax-calendar', badgeType: 'tax' as const, tooltipKey: 'dashboard' as const },
       { icon: Receipt, label: language === 'es' ? 'Impuestos' : 'Taxes', path: '/tax-optimizer', badge: null, tooltipKey: 'dashboard' as const,
         children: [
