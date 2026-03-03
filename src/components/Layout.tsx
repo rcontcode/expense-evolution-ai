@@ -345,6 +345,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const { data: profile } = useProfile();
   const { currentCountry } = useEntity();
   const { mode, setMode, setStyle } = useTheme();
+  const { highlightColor } = useHighlight();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
@@ -362,6 +363,22 @@ export const Layout = ({ children }: LayoutProps) => {
   const { data: unreadCount = 0 } = useUnreadNotifications();
   const sidebarNavRef = useRef<HTMLElement>(null);
   const SIDEBAR_SCROLL_KEY = '__sidebar_scroll__';
+
+  // Inject highlight CSS color vars based on user preference
+  const ARRIVAL_COLOR_RGB: Record<string, [number, number, number]> = {
+    orange: [249, 115, 22],
+    green:  [34,  197, 94],
+    red:    [239, 68,  68],
+    blue:   [59,  130, 246],
+    purple: [168, 85,  247],
+  };
+
+  useEffect(() => {
+    const rgb = ARRIVAL_COLOR_RGB[highlightColor] ?? ARRIVAL_COLOR_RGB.orange;
+    document.documentElement.style.setProperty('--har', String(rgb[0]));
+    document.documentElement.style.setProperty('--hag', String(rgb[1]));
+    document.documentElement.style.setProperty('--hab', String(rgb[2]));
+  }, [highlightColor]);
 
   // Persist sidebar scroll while user navigates between pages
   useEffect(() => {
@@ -428,6 +445,28 @@ export const Layout = ({ children }: LayoutProps) => {
     root.classList.add('stability-mode');
     return () => root.classList.remove('stability-mode');
   }, []);
+
+  // Unified submenu navigation handler with highlight effect (8 seconds)
+  const handleSubmenuNavigation = useCallback((path: string) => {
+    const hashIndex = path.indexOf('#');
+    if (hashIndex !== -1) {
+      const basePath = path.substring(0, hashIndex);
+      const hash = path.substring(hashIndex + 1);
+      navigate(basePath);
+      setTimeout(() => {
+        const el = document.getElementById(hash);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          el.classList.add('highlight-on-arrival');
+          setTimeout(() => el.classList.remove('highlight-on-arrival'), 8000);
+        }
+      }, 300);
+    } else if (path.startsWith('/dashboard?')) {
+      window.location.href = path;
+    } else {
+      navigate(path);
+    }
+  }, [navigate]);
   
   // Toggle submenu
   const toggleSubmenu = useCallback((path: string) => {
@@ -437,7 +476,6 @@ export const Layout = ({ children }: LayoutProps) => {
       return next;
     });
   }, []);
-
   // Toggle theme between light/dark with optimized themes
   const toggleTheme = () => {
     const newMode = mode === 'dark' ? 'light' : 'dark';
