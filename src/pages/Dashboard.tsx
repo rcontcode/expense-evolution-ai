@@ -199,7 +199,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Ecosystem */}
-                <div data-section="ecosystem">
+                <div id="ecosystem" data-section="ecosystem">
                   <EcosystemSection />
                 </div>
 
