@@ -230,7 +230,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
     emoji: '📈',
     themeKey: 'wealth' as keyof typeof sectionThemes,
     items: [
-      { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const,
+      { icon: Scale, label: 'nav.netWorth', path: '/net-worth', badge: null, tooltipKey: 'dashboard' as const,
         children: [
           { label: language === 'es' ? '📊 Análisis Familiar' : '📊 Family Analysis', path: '/dashboard?area=familia&atab=analysis' },
         ],
