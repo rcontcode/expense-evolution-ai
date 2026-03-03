@@ -192,17 +192,17 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
           { label: language === 'es' ? '📊 Gráficos Día a Día' : '📊 Daily Charts', path: '/dashboard?area=diadia' },
         ],
       },
-      { icon: Wallet, label: 'nav.budget', path: '/budget', badge: null, tooltipKey: 'dashboard' as const,
+      { icon: Wallet, label: 'nav.budget', path: '/budget', badge: null, tooltipKey: 'budget' as const,
         children: [
           { label: language === 'es' ? '📊 Presupuesto Global' : '📊 Global Budget', path: '/dashboard?area=familia&atab=budget' },
           { label: language === 'es' ? '📊 Análisis Familiar' : '📊 Family Analysis', path: '/dashboard?area=familia&atab=analysis' },
           { label: language === 'es' ? '🔄 Suscripciones' : '🔄 Subscriptions', path: '/dashboard?area=familia&atab=subscriptions' },
         ],
       },
-      { icon: CalendarCheck, label: language === 'es' ? 'Pagos Fijos' : 'Bills', path: '/bills', badge: null, tooltipKey: 'dashboard' as const },
-      { icon: RefreshCw, label: language === 'es' ? 'Suscripciones' : 'Subscriptions', path: '/subscriptions', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: CalendarCheck, label: language === 'es' ? 'Pagos Fijos' : 'Bills', path: '/bills', badge: null, tooltipKey: 'bills' as const },
+      { icon: RefreshCw, label: language === 'es' ? 'Suscripciones' : 'Subscriptions', path: '/subscriptions', badge: null, tooltipKey: 'subscriptions' as const },
       { icon: Inbox, label: 'nav.chaos', path: '/chaos', badge: null, tooltipKey: 'chaosInbox' as const },
-      { icon: Camera, label: language === 'es' ? 'Captura Rápida' : 'Quick Capture', path: '/capture', badge: null, tooltipKey: 'dashboard' as const },
+      { icon: Camera, label: language === 'es' ? 'Captura Rápida' : 'Quick Capture', path: '/capture', badge: null, tooltipKey: 'quickCaptureNav' as const },
     ]
   },
   {
