@@ -225,7 +225,7 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
   const primaryConfig = primaryEntity ? getEntityConfig(primaryEntity.entity_type) : entityTypeConfig.personal;
   
   return (
-    <div className={cn("px-2", collapsed && "flex justify-center")}>
+    <div className={cn("px-3", collapsed && "flex justify-center px-1")}>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
