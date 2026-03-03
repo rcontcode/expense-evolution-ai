@@ -448,21 +448,32 @@ export const Layout = ({ children }: LayoutProps) => {
     if (hashIndex !== -1) {
       const basePath = path.substring(0, hashIndex);
       const hash = path.substring(hashIndex + 1);
-      navigate(basePath);
-      setTimeout(() => {
+      
+      const scrollToElement = (retriesLeft: number) => {
         const el = document.getElementById(hash);
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'start' });
           el.classList.add('highlight-on-arrival');
           setTimeout(() => el.classList.remove('highlight-on-arrival'), 8000);
+        } else if (retriesLeft > 0) {
+          setTimeout(() => scrollToElement(retriesLeft - 1), 400);
         }
-      }, 300);
-    } else if (path.startsWith('/dashboard?')) {
-      window.location.href = path;
+      };
+
+      // If already on the target page, scroll directly
+      if (location.pathname === basePath) {
+        scrollToElement(5);
+      } else {
+        navigate(basePath);
+        setTimeout(() => scrollToElement(5), 500);
+      }
+    } else if (path.includes('?')) {
+      // For query param paths (e.g., /dashboard?area=...), use navigate to preserve SPA behavior
+      navigate(path);
     } else {
       navigate(path);
     }
-  }, [navigate]);
+  }, [navigate, location.pathname]);
   
   // Toggle submenu
   const toggleSubmenu = useCallback((path: string) => {
