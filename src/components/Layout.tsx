@@ -157,7 +157,7 @@ interface NavItem {
 const getNavSections = (language: string, isBetaTester: boolean = false) => {
   const systemItems: NavItem[] = [
     { icon: Sparkles, label: 'nav.notifications', path: '/notifications', badge: null, tooltipKey: 'dashboard' as const },
-    { icon: FolderOpen, label: 'nav.files', path: '/files', badgeKey: 'nav.badgeNew', tooltipKey: 'dashboard' as const },
+    { icon: FolderOpen, label: 'nav.files', path: '/files', badge: null, tooltipKey: 'dashboard' as const },
     { icon: Settings, label: 'nav.config', path: '/settings', badge: null, tooltipKey: 'dashboard' as const },
     { icon: Trash2, label: 'nav.trash', path: '/trash', badge: null, tooltipKey: 'dashboard' as const },
     { icon: HeartPulse, label: 'nav.dataHealth', path: '/data-health', badge: null, tooltipKey: 'dashboard' as const },
