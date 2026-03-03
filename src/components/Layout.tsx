@@ -1126,7 +1126,7 @@ export const Layout = ({ children }: LayoutProps) => {
                                 <TooltipTrigger asChild>
                                   <button
                                     type="button"
-                                    className="p-1 rounded-full text-muted-foreground/40 hover:text-muted-foreground transition-colors shrink-0"
+                                    className="p-1 rounded-full text-primary/50 hover:text-primary hover:bg-primary/10 transition-colors shrink-0"
                                   >
                                     <HelpCircle className="h-3 w-3" />
                                   </button>

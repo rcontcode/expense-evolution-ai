@@ -1277,7 +1277,7 @@ export const translations = {
       aiFinance: 'Evolve Your Finances',
       // New grouped sidebar
       daily: '💰 Daily',
-      business: '🏢 My Business',
+      business: '🏢 My Business / Employment',
       wealth: '📈 Wealth',
       growth: '🎓 Growth',
       analytics: '📊 Analytics',
