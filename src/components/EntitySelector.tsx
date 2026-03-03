@@ -166,7 +166,7 @@ export function EntitySelector({ collapsed = false }: EntitySelectorProps) {
     const config = getEntityConfig(primaryEntity.entity_type);
     
     return (
-      <div className={cn("px-2", collapsed && "flex justify-center")}>
+      <div className={cn("px-3", collapsed && "flex justify-center px-1")}>
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
