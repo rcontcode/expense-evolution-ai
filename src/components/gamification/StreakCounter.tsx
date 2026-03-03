@@ -1,4 +1,5 @@
- import { motion } from 'framer-motion';
+import { useMemo } from 'react';
+import { motion } from 'framer-motion';
  import { useLanguage } from '@/contexts/LanguageContext';
  import { useUserLevel } from '@/hooks/data/useGamification';
 import { Flame, Zap, Crown, Star, Trophy, Calendar, Target, TrendingUp, Sparkles } from 'lucide-react';
