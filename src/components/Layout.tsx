@@ -835,7 +835,7 @@ export const Layout = ({ children }: LayoutProps) => {
           </button>
 
           {/* Top Action Buttons - Premium 3D style, aligned with nav sections */}
-          <div className={cn("px-2 pt-2 space-y-1.5", collapsed && "flex flex-col items-center gap-1.5 space-y-0")}>
+          <div className={cn("px-3 pt-2 space-y-1.5", collapsed && "flex flex-col items-center gap-1.5 space-y-0 px-1")}>
             {/* Quick Capture */}
             <Tooltip>
               <TooltipTrigger asChild>
