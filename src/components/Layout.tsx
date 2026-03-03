@@ -1022,22 +1022,7 @@ export const Layout = ({ children }: LayoutProps) => {
                         {item.children!.map((child: NavChild, childIdx: number) => (
                           <button
                             key={`${child.path}-${childIdx}`}
-                            onClick={() => {
-                              const hashIndex = child.path.indexOf('#');
-                              if (hashIndex !== -1) {
-                                const basePath = child.path.substring(0, hashIndex);
-                                const hash = child.path.substring(hashIndex + 1);
-                                navigate(basePath);
-                                setTimeout(() => {
-                                  const el = document.getElementById(hash);
-                                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                }, 100);
-                              } else if (child.path.startsWith('/dashboard?')) {
-                                window.location.href = child.path;
-                              } else {
-                                navigate(child.path);
-                              }
-                            }}
+                             onClick={() => handleSubmenuNavigation(child.path)}
                             className={cn(
                               "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-[11px] transition-all duration-150",
                               "text-muted-foreground hover:text-foreground",
