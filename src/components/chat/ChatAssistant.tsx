@@ -167,7 +167,7 @@ export const ChatAssistant: React.FC = () => {
   const createIncome = useCreateIncome();
   
   // Plan limits for voice assistant
-  const { canUseVoice, planType, hasFeature } = usePlanLimits();
+  const { canUseVoice, planType, hasFeature, isGodMode } = usePlanLimits();
 
   // Smart guidance system
   const { 
