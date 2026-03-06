@@ -12,6 +12,15 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Authenticate: only allow cron/admin calls with shared secret
+    const cronSecret = req.headers.get("x-cron-secret");
+    if (!cronSecret || cronSecret !== Deno.env.get("CRON_SECRET")) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
