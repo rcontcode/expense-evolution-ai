@@ -1126,7 +1126,7 @@ export function useDeleteSampleDataBySection() {
               await supabase.from('project_clients').delete().in('project_id', sampleProjects.map(p => p.id));
             }
             await supabase.from('projects').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
-            await supabase.from('clients').delete().eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
+            await supabase.from('clients').update({ deleted_at: new Date().toISOString() }).eq('user_id', userId).like('name', `%${SAMPLE_MARKER}%`);
             break;
             
           case 'projects':
