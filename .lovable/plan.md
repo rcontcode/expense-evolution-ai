@@ -1,80 +1,91 @@
 
 
-## Configurar evofinz.com en Hostinger → Paso a paso detallado
+## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
 
-### Paso 1: Entrar al panel de Hostinger
+### ✅ Completado en EvoFinz
 
-1. Ve a **https://hpanel.hostinger.com** e inicia sesión
-2. En el panel principal, busca tu dominio **evofinz.com** y haz clic en **"Administrar"** (o "Manage")
+| # | Tarea | Estado |
+|---|-------|--------|
+| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
+| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
+| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
+| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
+| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
 
-### Paso 2: Ir a la zona DNS
+### ✅ Completado en Fokuspark
 
-1. En el menú lateral izquierdo, busca la sección **"DNS / Nameservers"** o **"Zona DNS"**
-2. Haz clic en **"DNS Records"** o **"Registros DNS"**
-3. Verás una lista de registros existentes (A, CNAME, TXT, MX, etc.)
+| # | Tarea | Estado |
+|---|-------|--------|
+| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
+| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
+| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
+| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
 
-### Paso 3: Limpiar registros A antiguos
+### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
 
-Antes de agregar los nuevos, **elimina** cualquier registro A existente que apunte a otra IP:
+---
 
-- Busca registros de tipo **A** con nombre **@** → haz clic en el ícono de basura/eliminar
-- Busca registros de tipo **A** con nombre **www** → elimínalo también
-- **No elimines** registros MX (correo) ni otros que no sean tipo A
+## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
 
-### Paso 4: Crear registro A para el dominio raíz (@)
+### ✅ Confirmado: Sistema funciona correctamente
 
-1. Haz clic en **"Añadir registro"** (o "Add Record")
-2. Selecciona tipo: **A**
-3. En **Nombre** (Name/Host): escribe **@**
-4. En **Apunta a** (Points to / Value): escribe **185.158.133.1**
-5. TTL: déjalo en **14400** (o el valor por defecto)
-6. Haz clic en **"Añadir"** o **"Save"**
+- Planes individuales (Free/Premium/Pro) son independientes por app
+- Bundle compartido usa mismos Stripe Price IDs en ambas apps
+- Ambos webhooks detectan Bundle y setean `has_bundle = true`
+- No hay acceso cruzado no autorizado entre apps
 
-### Paso 5: Crear registro A para www
+### ✅ Gaps implementados en Fokuspark
 
-1. Haz clic en **"Añadir registro"** otra vez
-2. Tipo: **A**
-3. Nombre: **www**
-4. Apunta a: **185.158.133.1**
-5. TTL: **14400**
-6. Guardar
+| # | Gap | Estado |
+|---|-----|--------|
+| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
+| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
 
-### Paso 6: Crear registro TXT de verificación
+### 📋 Gaps pendientes (baja prioridad)
 
-1. Haz clic en **"Añadir registro"**
-2. Tipo: **TXT**
-3. Nombre: **_lovable**
-4. Valor: el código que Lovable te da en Settings → Domains (algo como `lovable_verify=ABC123...`)
-5. TTL: **14400**
-6. Guardar
+| # | Gap | Prioridad |
+|---|-----|-----------|
+| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
+| S3 | Texto del Bundle podría ser más descriptivo | Baja |
 
-### Paso 7: Conectar el dominio en Lovable
+---
 
-1. En Lovable, ve a **Settings → Domains**
-2. Haz clic en **"Connect Domain"**
-3. Escribe **evofinz.com** y sigue las instrucciones — ahí verás el valor exacto del TXT que necesitas copiar a Hostinger
-4. Repite para **www.evofinz.com**
-5. Marca **evofinz.com** como dominio **Primary**
+## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
 
-### Paso 8: Esperar propagación
+### ✅ Veredicto: No igualar precios — estructura actual es óptima
 
-- Los cambios DNS pueden tardar entre **15 minutos y 72 horas**
-- Puedes verificar en **https://dnschecker.org** buscando `evofinz.com` tipo A → debe mostrar `185.158.133.1`
-- Una vez verificado, Lovable provisiona SSL automáticamente (HTTPS)
+| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
+|------|---------|-----------|-----------|-------|
+| Free | $0 | $0 | ✅ Ya iguales | — |
+| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
+| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
 
-### Resumen visual de registros DNS finales en Hostinger
+### 📋 Pendiente técnico
 
-```text
-Tipo  | Nombre    | Valor                        | TTL
-------+-----------+------------------------------+------
-A     | @         | 185.158.133.1                | 14400
-A     | www       | 185.158.133.1                | 14400
-TXT   | _lovable  | lovable_verify=XXXXXXXX      | 14400
-```
+| # | Tarea | App | Prioridad |
+|---|-------|-----|-----------|
+| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
 
-### Importante
+---
 
-- **No uses proxy/CDN de Hostinger** (si te ofrece activar algún proxy o acelerador, déjalo desactivado)
-- Si Hostinger tiene **Nameservers personalizados** configurados (como Cloudflare), los registros DNS se deben hacer en ese otro panel, no en Hostinger
-- Si ya tenías el dominio apuntando a un hosting web en Hostinger, al cambiar los registros A dejarás de usar ese hosting — el sitio se servirá desde Lovable
+## Quiz Multi-App — CRM Unificado
 
+### ✅ Completado en EvoFinz
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
+| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
+| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
+| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
+| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
+
+### 📋 Pendiente en Fokuspark
+
+| # | Tarea | Prioridad |
+|---|-------|-----------|
+| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
+| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
+| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
+| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
