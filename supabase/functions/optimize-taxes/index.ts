@@ -1,9 +1,47 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+async function checkFeatureAccess(req: Request, featureFlag: string) {
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader) {
+    return { error: new Response(JSON.stringify({ error: 'Authorization required' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) };
+  }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  const token = authHeader.replace('Bearer ', '');
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+  if (authError || !user) {
+    return { error: new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) };
+  }
+
+  const { data: roleData } = await supabase.from('user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle();
+  if (roleData) return { user, supabase, isAdmin: true };
+
+  const { data: sub } = await supabase.from('user_subscriptions').select('plan_type').eq('user_id', user.id).maybeSingle();
+  const planType = sub?.plan_type || 'free';
+
+  const { data: planConfig } = await supabase.from('plan_configurations').select(featureFlag).eq('plan_type', planType).eq('is_active', true).maybeSingle();
+  const hasAccess = (planConfig as any)?.[featureFlag] ?? false;
+
+  if (!hasAccess) {
+    return {
+      error: new Response(JSON.stringify({
+        error: 'feature_not_available',
+        message: 'Esta función no está disponible en tu plan actual. Actualiza para acceder.',
+      }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    };
+  }
+
+  return { user, supabase, isAdmin: false };
+}
 
 interface ExpenseSummary {
   category: string;
