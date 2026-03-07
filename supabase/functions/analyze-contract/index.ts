@@ -58,6 +58,9 @@ serve(async (req) => {
   }
 
   try {
+    // Server-side quota enforcement
+    const quota = await checkContractQuota(req);
+    if (quota.error) return quota.error;
     const { documentBase64, documentType, contractTitle, targetLanguage = 'es' } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
