@@ -250,6 +250,15 @@ Remember: ALL descriptions and summaries must be in ${outputLanguage}, but origi
 
     console.log("Extracted contract terms:", extracted);
 
+    // Increment usage after successful processing
+    if (quota.user && quota.supabase) {
+      try {
+        await quota.supabase.rpc('increment_usage', { p_user_id: quota.user.id, p_usage_type: 'contract' });
+      } catch (e) {
+        console.error('Failed to increment usage:', e);
+      }
+    }
+
     return new Response(JSON.stringify(extracted), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
