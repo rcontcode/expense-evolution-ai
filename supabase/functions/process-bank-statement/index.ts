@@ -59,6 +59,9 @@ serve(async (req) => {
   }
 
   try {
+    // Server-side quota enforcement
+    const quota = await checkBankQuota(req);
+    if (quota.error) return quota.error;
     const { image } = await req.json();
 
     if (!image) {
