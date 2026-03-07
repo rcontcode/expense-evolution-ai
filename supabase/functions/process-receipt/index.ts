@@ -66,6 +66,9 @@ serve(async (req) => {
   }
 
   try {
+    // Server-side quota enforcement
+    const quota = await checkQuota(req, 'ocr_scans_count', 'ocr_scans_per_month', OCR_FALLBACK_LIMITS);
+    if (quota.error) return quota.error;
     const body = await req.json();
     const { imageBase64, voiceText, detectMultipleReceipts } = body;
 
