@@ -68,6 +68,10 @@ serve(async (req) => {
   }
 
   try {
+    // Server-side feature access check
+    const access = await checkFeatureAccess(req, 'tax_optimizer');
+    if (access.error) return access.error;
+
     const { expenses, workTypes, province, gstHstRegistered, totalIncome, businessName, country = 'CA', taxRegime, rut } = await req.json() as TaxOptimizationRequest;
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
