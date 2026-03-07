@@ -447,6 +447,15 @@ Extract expense information and return a JSON object with expenses array. If mul
     console.log("Processed result:", result);
     console.log(`Found ${result.receipts_detected} receipts with ${result.expenses.length} expense items`);
 
+    // Increment usage after successful processing
+    if (quota.user && quota.supabase) {
+      try {
+        await quota.supabase.rpc('increment_usage', { p_user_id: quota.user.id, p_usage_type: 'ocr' });
+      } catch (e) {
+        console.error('Failed to increment usage:', e);
+      }
+    }
+
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
