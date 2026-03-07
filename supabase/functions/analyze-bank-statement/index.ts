@@ -401,6 +401,15 @@ Return ONLY valid JSON, no explanations.`;
       };
     }
 
+    // Increment usage after successful processing
+    if (quota.user && quota.supabase) {
+      try {
+        await quota.supabase.rpc('increment_usage', { p_user_id: quota.user.id, p_usage_type: 'bank' });
+      } catch (e) {
+        console.error('Failed to increment usage:', e);
+      }
+    }
+
     return new Response(
       JSON.stringify(analysis),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
