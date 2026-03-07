@@ -1,9 +1,56 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+const BANK_FALLBACK_LIMITS: Record<string, number> = {
+  free: 0, premium: 0, pro: 999999, bundle: 999999, pro_beta: 999999,
+};
+
+async function checkBankQuota(req: Request) {
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader) {
+    return { error: new Response(JSON.stringify({ error: 'Authorization required' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) };
+  }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  const token = authHeader.replace('Bearer ', '');
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+  if (authError || !user) {
+    return { error: new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) };
+  }
+
+  const { data: roleData } = await supabase.from('user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle();
+  if (roleData) return { user, supabase, isAdmin: true };
+
+  const { data: sub } = await supabase.from('user_subscriptions').select('plan_type').eq('user_id', user.id).maybeSingle();
+  const planType = sub?.plan_type || 'free';
+
+  const { data: planConfig } = await supabase.from('plan_configurations').select('bank_analyses_per_month').eq('plan_type', planType).eq('is_active', true).maybeSingle();
+  const limit = (planConfig as any)?.bank_analyses_per_month ?? BANK_FALLBACK_LIMITS[planType] ?? 0;
+
+  const currentPeriod = new Date().toISOString().slice(0, 7) + '-01';
+  const { data: usage } = await supabase.from('usage_tracking').select('bank_analyses_count').eq('user_id', user.id).eq('period_start', currentPeriod).maybeSingle();
+  const currentCount = (usage as any)?.bank_analyses_count ?? 0;
+
+  if (limit < 999999 && currentCount >= limit) {
+    return {
+      error: new Response(JSON.stringify({
+        error: 'quota_exceeded',
+        message: `Has alcanzado tu límite mensual de análisis bancarios (${currentCount}/${limit}).`,
+        currentUsage: currentCount, limit,
+      }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    };
+  }
+
+  return { user, supabase, isAdmin: false };
+}
 
 interface Transaction {
   date: string;
@@ -52,6 +99,10 @@ serve(async (req) => {
   }
 
   try {
+    // Server-side quota enforcement
+    const quota = await checkBankQuota(req);
+    if (quota.error) return quota.error;
+
 const { content, contentType, bankName, existingTransactions } = await req.json();
 
     if (!content) {
@@ -348,6 +399,15 @@ Return ONLY valid JSON, no explanations.`;
         }],
         insights: [],
       };
+    }
+
+    // Increment usage after successful processing
+    if (quota.user && quota.supabase) {
+      try {
+        await quota.supabase.rpc('increment_usage', { p_user_id: quota.user.id, p_usage_type: 'bank' });
+      } catch (e) {
+        console.error('Failed to increment usage:', e);
+      }
     }
 
     return new Response(
