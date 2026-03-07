@@ -154,6 +154,15 @@ Do not include any explanation, only the JSON array.`;
       transactions = [];
     }
 
+    // Increment usage after successful processing
+    if (quota.user && quota.supabase) {
+      try {
+        await quota.supabase.rpc('increment_usage', { p_user_id: quota.user.id, p_usage_type: 'bank' });
+      } catch (e) {
+        console.error('Failed to increment usage:', e);
+      }
+    }
+
     return new Response(
       JSON.stringify({ transactions }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
