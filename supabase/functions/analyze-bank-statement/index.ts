@@ -99,6 +99,10 @@ serve(async (req) => {
   }
 
   try {
+    // Server-side quota enforcement
+    const quota = await checkBankQuota(req);
+    if (quota.error) return quota.error;
+
 const { content, contentType, bankName, existingTransactions } = await req.json();
 
     if (!content) {
