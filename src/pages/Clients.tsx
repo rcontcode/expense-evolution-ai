@@ -188,6 +188,9 @@ export default function Clients() {
             </Card>
           )}
 
+          {/* Profitability Radar */}
+          <ClientProfitabilityRadar />
+
           {isLoading ? (
             <Card className="border-dashed">
               <CardContent className="flex items-center justify-center py-12">

@@ -17,6 +17,7 @@ import { AssetsList } from '@/components/net-worth/AssetsList';
 import { LiabilitiesList } from '@/components/net-worth/LiabilitiesList';
 import { AssetDialog } from '@/components/net-worth/AssetDialog';
 import { AssetAllocationChart } from '@/components/net-worth/AssetAllocationChart';
+import { NetWorthVelocityTracker } from '@/components/net-worth/NetWorthVelocityTracker';
 import { LiabilityDialog } from '@/components/net-worth/LiabilityDialog';
 import { InvestmentOnboardingWizard } from '@/components/investments/InvestmentOnboardingWizard';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
