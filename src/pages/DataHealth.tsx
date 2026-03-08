@@ -45,6 +45,37 @@ export default function DataHealth() {
   const expenseLevelIssues = expenseMissingReceipt + expensePendingClassification + expenseNoCategory;
   const totalIssues = dbIssueCount + expenseLevelIssues;
 
+  // Health score calculation (0-100)
+  const healthScore = useMemo(() => {
+    if (healthLoading) return null;
+    // Max penalty: 50 for DB issues, 50 for expense issues
+    const dbPenalty = Math.min(dbIssueCount * 5, 50);
+    const expPenalty = Math.min(expenseLevelIssues * 2, 50);
+    return Math.max(0, 100 - dbPenalty - expPenalty);
+  }, [dbIssueCount, expenseLevelIssues, healthLoading]);
+
+  const scoreColor = healthScore !== null
+    ? healthScore >= 80 ? 'text-emerald-600 dark:text-emerald-400' : healthScore >= 50 ? 'text-amber-600' : 'text-destructive'
+    : 'text-muted-foreground';
+  const scoreLabel = healthScore !== null
+    ? healthScore >= 80 ? (l ? 'Excelente' : 'Excellent') : healthScore >= 50 ? (l ? 'Aceptable' : 'Fair') : (l ? 'Necesita atención' : 'Needs attention')
+    : '';
+
+  // Activity stats from audit log
+  const recentActivity = useMemo(() => {
+    if (!auditLogs || auditLogs.length === 0) return null;
+    const today = new Date();
+    const last7 = auditLogs.filter(e => {
+      const d = parseISO(e.created_at);
+      return (today.getTime() - d.getTime()) < 7 * 24 * 60 * 60 * 1000;
+    });
+    const last30 = auditLogs.filter(e => {
+      const d = parseISO(e.created_at);
+      return (today.getTime() - d.getTime()) < 30 * 24 * 60 * 60 * 1000;
+    });
+    return { week: last7.length, month: last30.length, total: auditLogs.length };
+  }, [auditLogs]);
+
   return (
     <Layout>
       <div className="page-container section-gap">
