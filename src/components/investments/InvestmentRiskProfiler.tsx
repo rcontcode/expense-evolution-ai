@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAssets } from '@/hooks/data/useAssets';
+import { useAssets } from '@/hooks/data/useNetWorth';
 import { useIncome } from '@/hooks/data/useIncome';
 import { ShieldCheck, TrendingUp, AlertTriangle, Target, ChevronDown, ChevronUp, PieChart } from 'lucide-react';
 

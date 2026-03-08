@@ -52,7 +52,7 @@ export function CashFlowRunwayCalculator() {
 
     // Recurring bills
     const monthlyRecurring = (bills || [])
-      .filter(b => b.is_active)
+      .filter(b => b.status === 'active')
       .reduce((sum, b) => {
         const amount = Number(b.amount);
         if (b.frequency === 'weekly') return sum + amount * 4.33;
