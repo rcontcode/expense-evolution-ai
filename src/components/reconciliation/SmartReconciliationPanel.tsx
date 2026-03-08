@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Sparkles, CheckCircle2, XCircle, ArrowRight, Loader2, Zap, Link2, Plus,
-  Brain, ChevronDown, ChevronUp, AlertTriangle, RotateCcw
+  Brain, ChevronDown, ChevronUp, AlertTriangle, RotateCcw, PlusCircle
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
@@ -18,7 +18,7 @@ import {
   useMarkAsDiscrepancy,
   TransactionWithMatches,
 } from '@/hooks/data/useBankTransactions';
-import { useExpenses } from '@/hooks/data/useExpenses';
+import { useExpenses, useCreateExpense } from '@/hooks/data/useExpenses';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -57,6 +57,7 @@ export function SmartReconciliationPanel() {
   const { data: expenses = [] } = useExpenses();
   const matchTransaction = useMatchTransaction();
   const markAsDiscrepancy = useMarkAsDiscrepancy();
+  const createExpense = useCreateExpense();
 
   const [aiResult, setAiResult] = useState<AIReconciliationResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -404,13 +405,48 @@ export function SmartReconciliationPanel() {
               if (!tx) return null;
               return (
                 <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-amber-500/5 border border-amber-500/10 text-xs">
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p className="font-medium">{tx.description || '—'} — {fc(Number(tx.amount))}</p>
                     <p className="text-[10px] text-muted-foreground">
                       {l ? 'Categoría sugerida' : 'Suggested category'}: <span className="capitalize">{s.suggested_category}</span>
+                      {s.suggested_vendor && ` • ${s.suggested_vendor}`}
                       {s.reason && ` • ${s.reason}`}
                     </p>
                   </div>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-7 text-xs border-amber-500/30 text-amber-700 hover:bg-amber-500/10 shrink-0 ml-2"
+                    disabled={createExpense.isPending}
+                    onClick={async () => {
+                      try {
+                        const newExpense = await createExpense.mutateAsync({
+                          date: tx.transaction_date,
+                          amount: Number(tx.amount),
+                          vendor: s.suggested_vendor || tx.description || '',
+                          category: s.suggested_category as any || 'other',
+                          description: tx.description || '',
+                        });
+                        // Auto-link the new expense to this transaction
+                        if (newExpense?.id) {
+                          await matchTransaction.mutateAsync({ transactionId: tx.id, expenseId: newExpense.id });
+                          toast.success(l ? 'Gasto creado y vinculado' : 'Expense created & linked');
+                          // Remove from suggestions
+                          setAiResult(prev => prev ? {
+                            ...prev,
+                            unmatched_suggestions: prev.unmatched_suggestions.filter(u => u.transaction_id !== s.transaction_id)
+                          } : null);
+                        }
+                      } catch (err: any) {
+                        if (err.message !== 'DUPLICATE_DETECTED') {
+                          toast.error(l ? 'Error al crear gasto' : 'Error creating expense');
+                        }
+                      }
+                    }}
+                  >
+                    <PlusCircle className="h-3 w-3 mr-1" />
+                    {l ? 'Crear y vincular' : 'Create & link'}
+                  </Button>
                 </div>
               );
             })}

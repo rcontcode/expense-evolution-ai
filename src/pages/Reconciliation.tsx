@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Layout } from '@/components/Layout';
 import { PageHeader } from '@/components/PageHeader';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
@@ -48,6 +49,8 @@ import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ReconciliationWizard } from '@/components/reconciliation/ReconciliationWizard';
 import { SmartReconciliationPanel } from '@/components/reconciliation/SmartReconciliationPanel';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 function MatchScoreBadge({ score, matchType }: { score: number; matchType: string }) {
   const { language } = useLanguage();
@@ -539,7 +542,20 @@ export default function Reconciliation() {
                             </div>
                           </div>
                         </div>
-                        <span className="font-bold">${Number(transaction.amount).toFixed(2)}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold">${Number(transaction.amount).toFixed(2)}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-warning"
+                            title={language === 'es' ? 'Desvincular' : 'Unlink'}
+                            onClick={() => {
+                              matchTransaction.mutate({ transactionId: transaction.id, expenseId: '' });
+                            }}
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))
                   )}
@@ -573,8 +589,26 @@ export default function Reconciliation() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           <span className="font-bold text-destructive">${Number(transaction.amount).toFixed(2)}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary"
+                            title={language === 'es' ? 'Reenviar a pendientes' : 'Return to pending'}
+                            onClick={async () => {
+                              const { error } = await supabase
+                                .from('bank_transactions')
+                                .update({ status: 'pending', matched_expense_id: null })
+                                .eq('id', transaction.id);
+                              if (!error) {
+                                toast.success(language === 'es' ? 'Movida a pendientes' : 'Moved to pending');
+                                window.location.reload();
+                              }
+                            }}
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
