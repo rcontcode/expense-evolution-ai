@@ -221,6 +221,13 @@ export default function Dashboard() {
                   </Suspense>
                 </div>
 
+                {/* AI Financial Autopilot */}
+                <div id="autopilot" data-section="autopilot">
+                  <Suspense fallback={<Skeleton className="h-[200px]" />}>
+                    <FinancialAutopilot />
+                  </Suspense>
+                </div>
+
                 {/* Gamification */}
                 <div id="gamification" data-section="gamification">
                   <ProfileCompletionNudge onStartSection={handleStartProfileSection} />
