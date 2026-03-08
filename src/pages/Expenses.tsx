@@ -36,6 +36,7 @@ import { useDeleteExpense } from '@/hooks/data/useExpenses';
 import { ExpenseInsightsSummary } from '@/components/expenses/ExpenseInsightsSummary';
 import { MoneyCalendarHeatmap } from '@/components/expenses/MoneyCalendarHeatmap';
 import { VendorIntelligenceAnalyzer } from '@/components/expenses/VendorIntelligenceAnalyzer';
+import { SpendingAnomalyDetector } from '@/components/expenses/SpendingAnomalyDetector';
 import {
   DropdownMenu,
   DropdownMenuContent,
