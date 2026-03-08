@@ -95,7 +95,8 @@ export function SmartBudgetIntegration() {
       const spent = spendingByCategory[b.category] || 0;
       const lastSpent = lastSpendingByCategory[b.category] || 0;
       const pct = b.monthly_budget > 0 ? (spent / b.monthly_budget) * 100 : 0;
-      const avgLast3 = budgetSuggestions.suggestions.find(s => s.category === b.category)?.avgSpent || lastSpent;
+      const catSugg = budgetSuggestions.categorySuggestions[b.category];
+      const avgLast3 = catSugg?.averageSpent || lastSpent;
       const isUnderfunded = avgLast3 > b.monthly_budget * 1.15;
       const isOverfunded = avgLast3 > 0 && b.monthly_budget > avgLast3 * 1.5;
       const suggestedAdjust = isUnderfunded
