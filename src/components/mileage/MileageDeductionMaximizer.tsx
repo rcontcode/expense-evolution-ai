@@ -20,9 +20,10 @@ export function MileageDeductionMaximizer() {
   const analysis = useMemo(() => {
     if (!records?.length || !summary) return null;
 
-    const totalKm = summary.yearToDateKm || 0;
-    const businessKm = summary.businessKm || 0;
-    const personalKm = totalKm - businessKm;
+    const totalKm = summary.yearToDateKm || summary.totalKilometers || 0;
+    // All mileage tracked is considered business use for CRA purposes
+    const businessKm = totalKm;
+    const personalKm = 0;
 
     // CRA deduction calculation
     const first5k = Math.min(businessKm, 5000);
