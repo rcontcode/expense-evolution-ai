@@ -11,6 +11,7 @@ import { SpendingVelocityMonitor } from '@/components/banking/SpendingVelocityMo
 import { WeeklySpendingDigest } from '@/components/banking/WeeklySpendingDigest';
 import { MerchantIntelligence } from '@/components/banking/MerchantIntelligence';
 import { SmartSearchChat } from '@/components/banking/SmartSearchChat';
+import { CashFlowRunwayCalculator } from '@/components/banking/CashFlowRunwayCalculator';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
