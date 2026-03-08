@@ -34,6 +34,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileActionBar } from '@/components/mobile';
 import { useDeleteExpense } from '@/hooks/data/useExpenses';
 import { ExpenseInsightsSummary } from '@/components/expenses/ExpenseInsightsSummary';
+import { MoneyCalendarHeatmap } from '@/components/expenses/MoneyCalendarHeatmap';
+import { VendorIntelligenceAnalyzer } from '@/components/expenses/VendorIntelligenceAnalyzer';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -257,6 +259,16 @@ export default function Expenses() {
               onSelectExpenses={handleSelectExpenses}
               onDeleteDuplicate={handleDeleteDuplicate}
             />
+          )}
+
+          {/* Money Calendar Heatmap */}
+          {allExpenses && allExpenses.length > 5 && (
+            <MoneyCalendarHeatmap />
+          )}
+
+          {/* Vendor Intelligence */}
+          {allExpenses && allExpenses.length > 5 && (
+            <VendorIntelligenceAnalyzer />
           )}
 
           {/* Unified Review Center */}
