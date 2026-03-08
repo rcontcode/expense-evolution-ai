@@ -88,6 +88,9 @@ export default function Contracts() {
           </>
         )}
 
+        {/* Contract Renewal Countdown */}
+        <ContractRenewalCountdown />
+
         {isLoading ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">{t('common.loading')}</p>
