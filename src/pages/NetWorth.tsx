@@ -16,6 +16,7 @@ import { NetWorthChart } from '@/components/net-worth/NetWorthChart';
 import { AssetsList } from '@/components/net-worth/AssetsList';
 import { LiabilitiesList } from '@/components/net-worth/LiabilitiesList';
 import { AssetDialog } from '@/components/net-worth/AssetDialog';
+import { AssetAllocationChart } from '@/components/net-worth/AssetAllocationChart';
 import { LiabilityDialog } from '@/components/net-worth/LiabilityDialog';
 import { InvestmentOnboardingWizard } from '@/components/investments/InvestmentOnboardingWizard';
 import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContextGuide';
@@ -208,21 +209,26 @@ export default function NetWorth() {
               />
             </div>
 
-            {/* Assets and Liabilities Lists */}
-            <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-              <div data-highlight="assets-section">
-                <AssetsList 
-                  assets={assets}
-                  onAdd={handleAddAsset}
-                  onEdit={handleEditAsset}
-                />
+            {/* Asset Allocation + Lists */}
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
+              <div className="lg:col-span-1">
+                <AssetAllocationChart assets={assets} />
               </div>
-              <div data-highlight="liabilities-section">
-                <LiabilitiesList 
-                  liabilities={liabilities}
-                  onAdd={handleAddLiability}
-                  onEdit={handleEditLiability}
-                />
+              <div className="lg:col-span-2 grid gap-4 grid-cols-1 md:grid-cols-2">
+                <div data-highlight="assets-section">
+                  <AssetsList 
+                    assets={assets}
+                    onAdd={handleAddAsset}
+                    onEdit={handleEditAsset}
+                  />
+                </div>
+                <div data-highlight="liabilities-section">
+                  <LiabilitiesList 
+                    liabilities={liabilities}
+                    onAdd={handleAddLiability}
+                    onEdit={handleEditLiability}
+                  />
+                </div>
               </div>
             </div>
           </>

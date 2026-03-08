@@ -33,6 +33,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileActionBar } from '@/components/mobile';
 import { useDeleteExpense } from '@/hooks/data/useExpenses';
+import { ExpenseInsightsSummary } from '@/components/expenses/ExpenseInsightsSummary';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -235,6 +236,11 @@ export default function Expenses() {
               {/* Setup Progress Banner - Compact */}
               <SetupProgressBanner variant="compact" />
             </>
+          )}
+
+          {/* Quick Insights Summary */}
+          {allExpenses && allExpenses.length > 0 && (
+            <ExpenseInsightsSummary expenses={allExpenses} />
           )}
 
           <div data-highlight="expense-filters">

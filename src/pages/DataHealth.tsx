@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,13 +7,15 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDataHealthCheck, ISSUE_LABELS } from '@/hooks/data/useDataHealthCheck';
 import { useAuditLog } from '@/hooks/data/useAuditLog';
 import { useNudgeSystem } from '@/hooks/utils/useNudgeSystem';
-import { ShieldCheck, AlertTriangle, AlertCircle, History, Plus, FileEdit, Trash2, RotateCcw, Receipt, Tag, HelpCircle, ArrowRight } from 'lucide-react';
-import { formatDistanceToNow, parseISO } from 'date-fns';
+import { ShieldCheck, AlertTriangle, AlertCircle, History, Plus, FileEdit, Trash2, RotateCcw, Receipt, Tag, HelpCircle, ArrowRight, Activity, TrendingUp, Clock } from 'lucide-react';
+import { formatDistanceToNow, parseISO, format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import { Progress } from '@/components/ui/progress';
 
 const ACTION_ICONS: Record<string, React.ReactNode> = {
   create: <Plus className="h-3.5 w-3.5 text-emerald-500" />,
@@ -42,6 +45,37 @@ export default function DataHealth() {
   const expenseLevelIssues = expenseMissingReceipt + expensePendingClassification + expenseNoCategory;
   const totalIssues = dbIssueCount + expenseLevelIssues;
 
+  // Health score calculation (0-100)
+  const healthScore = useMemo(() => {
+    if (healthLoading) return null;
+    // Max penalty: 50 for DB issues, 50 for expense issues
+    const dbPenalty = Math.min(dbIssueCount * 5, 50);
+    const expPenalty = Math.min(expenseLevelIssues * 2, 50);
+    return Math.max(0, 100 - dbPenalty - expPenalty);
+  }, [dbIssueCount, expenseLevelIssues, healthLoading]);
+
+  const scoreColor = healthScore !== null
+    ? healthScore >= 80 ? 'text-emerald-600 dark:text-emerald-400' : healthScore >= 50 ? 'text-amber-600' : 'text-destructive'
+    : 'text-muted-foreground';
+  const scoreLabel = healthScore !== null
+    ? healthScore >= 80 ? (l ? 'Excelente' : 'Excellent') : healthScore >= 50 ? (l ? 'Aceptable' : 'Fair') : (l ? 'Necesita atención' : 'Needs attention')
+    : '';
+
+  // Activity stats from audit log
+  const recentActivity = useMemo(() => {
+    if (!auditLogs || auditLogs.length === 0) return null;
+    const today = new Date();
+    const last7 = auditLogs.filter(e => {
+      const d = parseISO(e.created_at);
+      return (today.getTime() - d.getTime()) < 7 * 24 * 60 * 60 * 1000;
+    });
+    const last30 = auditLogs.filter(e => {
+      const d = parseISO(e.created_at);
+      return (today.getTime() - d.getTime()) < 30 * 24 * 60 * 60 * 1000;
+    });
+    return { week: last7.length, month: last30.length, total: auditLogs.length };
+  }, [auditLogs]);
+
   return (
     <Layout>
       <div className="page-container section-gap">
@@ -49,6 +83,53 @@ export default function DataHealth() {
           title={l ? 'Salud de Datos & Auditoría' : 'Data Health & Audit'}
           description={l ? 'Detecta registros huérfanos, datos incompletos y revisa el historial completo de cambios.' : 'Detect orphaned records, incomplete data and review complete change history.'}
         />
+
+        {/* Health Score Overview */}
+        {healthScore !== null && (
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <Card className="relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-chart-2/5" />
+                <CardContent className="p-4 relative">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{l ? 'Puntuación' : 'Score'}</p>
+                  <div className="flex items-end gap-2">
+                    <span className={cn("text-3xl font-bold", scoreColor)}>{healthScore}</span>
+                    <span className="text-xs text-muted-foreground mb-1">/100</span>
+                  </div>
+                  <Progress value={healthScore} className="h-1.5 mt-2" />
+                  <p className={cn("text-[10px] mt-1 font-medium", scoreColor)}>{scoreLabel}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{l ? 'Problemas' : 'Issues'}</p>
+                  <p className={cn("text-3xl font-bold", totalIssues > 0 ? 'text-amber-600' : 'text-emerald-600')}>{totalIssues}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{l ? 'Requieren atención' : 'Need attention'}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{l ? 'Actividad 7d' : '7-day activity'}</p>
+                  <p className="text-3xl font-bold">{recentActivity?.week || 0}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{l ? 'Acciones registradas' : 'Actions logged'}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{l ? 'Total auditoría' : 'Total audit'}</p>
+                  <p className="text-3xl font-bold">{recentActivity?.total || 0}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{l ? 'Registros históricos' : 'Historical records'}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        )}
 
         <Tabs defaultValue="health" className="space-y-4">
           <TabsList>
