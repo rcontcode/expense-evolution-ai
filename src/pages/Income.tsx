@@ -23,6 +23,7 @@ import { SwipeableCard } from '@/components/mobile/SwipeableCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { IncomeDuplicatePanel } from '@/components/income/IncomeDuplicatePanel';
 import { IncomeInsightsSummary } from '@/components/income/IncomeInsightsSummary';
+import { IncomeStabilityScore } from '@/components/income/IncomeStabilityScore';
 import {
   Plus,
   TrendingUp,
@@ -192,6 +193,9 @@ export default function Income() {
 
         {/* Income Insights Summary */}
         <IncomeInsightsSummary />
+
+        {/* Income Stability Score */}
+        <IncomeStabilityScore />
 
         {/* Year Selector - positioned above summary cards */}
         <div className="flex items-center justify-between">

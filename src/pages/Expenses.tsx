@@ -36,6 +36,7 @@ import { useDeleteExpense } from '@/hooks/data/useExpenses';
 import { ExpenseInsightsSummary } from '@/components/expenses/ExpenseInsightsSummary';
 import { MoneyCalendarHeatmap } from '@/components/expenses/MoneyCalendarHeatmap';
 import { VendorIntelligenceAnalyzer } from '@/components/expenses/VendorIntelligenceAnalyzer';
+import { SpendingAnomalyDetector } from '@/components/expenses/SpendingAnomalyDetector';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -269,6 +270,11 @@ export default function Expenses() {
           {/* Vendor Intelligence */}
           {allExpenses && allExpenses.length > 5 && (
             <VendorIntelligenceAnalyzer />
+          )}
+
+          {/* Spending Anomaly Detector */}
+          {allExpenses && allExpenses.length > 10 && (
+            <SpendingAnomalyDetector />
           )}
 
           {/* Unified Review Center */}
