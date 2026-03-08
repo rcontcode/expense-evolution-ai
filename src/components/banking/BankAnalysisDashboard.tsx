@@ -345,89 +345,116 @@ export function BankAnalysisDashboard({ onImportClick }: BankAnalysisDashboardPr
         </TabsContent>
 
         <TabsContent value="overview" className="space-y-4">
+          {/* Reconciliation Progress */}
+          {totalTransactions > 0 && (
+            <Card className="border-primary/20">
+              <CardContent className="pt-4 pb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">{language === 'es' ? 'Progreso de Conciliación' : 'Reconciliation Progress'}</span>
+                  <span className="text-xs font-bold text-primary">
+                    {totalTransactions > 0 ? ((matchedCount / totalTransactions) * 100).toFixed(0) : 0}%
+                  </span>
+                </div>
+                <Progress value={totalTransactions > 0 ? (matchedCount / totalTransactions) * 100 : 0} className="h-2.5" />
+                <div className="flex justify-between mt-2 text-[10px] text-muted-foreground">
+                  <span>{matchedCount} {language === 'es' ? 'conciliados' : 'matched'}</span>
+                  <span>{pendingCount} {language === 'es' ? 'pendientes' : 'pending'}</span>
+                  <span>{totalTransactions - matchedCount - pendingCount} {language === 'es' ? 'otros' : 'other'}</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="grid gap-4 md:grid-cols-2">
-            {/* Top Vendors/Bills */}
+            {/* Top Vendors with bar visualization */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  {language === 'es' ? 'Principales Comercios' : 'Top Vendors'}
-                </CardTitle>
-                <CardDescription>
-                  {language === 'es' ? 'Dónde gastas más' : 'Where you spend the most'}
-                </CardDescription>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{language === 'es' ? '🏪 Principales Comercios' : '🏪 Top Vendors'}</CardTitle>
+                <CardDescription className="text-xs">{language === 'es' ? 'Dónde concentras tu gasto' : 'Where your spending concentrates'}</CardDescription>
               </CardHeader>
               <CardContent>
                 {vendorSummary.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    {language === 'es' 
-                      ? 'Importa un estado de cuenta para ver análisis'
-                      : 'Import a bank statement to see analysis'}
+                  <p className="text-center text-muted-foreground py-6 text-sm">
+                    {language === 'es' ? 'Importa transacciones para ver análisis' : 'Import transactions to see analysis'}
                   </p>
                 ) : (
-                  <div className="space-y-3">
-                    {vendorSummary.map((vendor, index) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold">
-                            {index + 1}
-                          </span>
-                          <span className="text-sm font-medium">{vendor.vendor}</span>
+                  <div className="space-y-2.5">
+                    {vendorSummary.map((vendor, index) => {
+                      const maxTotal = vendorSummary[0]?.total || 1;
+                      const pct = (vendor.total / maxTotal) * 100;
+                      return (
+                        <div key={index} className="space-y-1">
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold">{index + 1}</span>
+                              <span className="font-medium truncate max-w-[140px]">{vendor.vendor}</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-bold text-xs">${vendor.total.toFixed(0)}</span>
+                              <span className="text-[10px] text-muted-foreground ml-1">({vendor.count}x)</span>
+                            </div>
+                          </div>
+                          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div className="h-full bg-primary/60 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <span className="font-bold">${vendor.total.toFixed(2)}</span>
-                          <span className="text-xs text-muted-foreground ml-1">
-                            ({vendor.count}x)
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Quick Insights */}
+            {/* Insights Summary */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Lightbulb className="h-5 w-5 text-amber-500" />
-                  {language === 'es' ? 'Observaciones' : 'Insights'}
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Lightbulb className="h-4 w-4 text-amber-500" />
+                  {language === 'es' ? 'Resumen Inteligente' : 'Smart Summary'}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {totalTransactions === 0 ? (
-                  <div className="text-center py-8">
-                    <Building2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <p className="text-muted-foreground">
-                      {language === 'es' 
-                        ? 'Sube un estado de cuenta bancario para obtener análisis inteligente'
-                        : 'Upload a bank statement to get smart analysis'}
+                  <div className="text-center py-6">
+                    <Building2 className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
+                    <p className="text-sm text-muted-foreground">
+                      {language === 'es' ? 'Importa para obtener análisis' : 'Import to get analysis'}
                     </p>
-                    <Button 
-                      variant="outline" 
-                      className="mt-4"
-                      onClick={() => setImportDialogOpen(true)}
-                    >
-                      {language === 'es' ? 'Importar Ahora' : 'Import Now'}
+                    <Button variant="outline" size="sm" className="mt-3" onClick={() => setImportDialogOpen(true)}>
+                      {language === 'es' ? 'Importar' : 'Import'}
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {insights.recurringPayments.length > 0 && (
-                      <div className="p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg">
-                        <p className="text-sm">
-                          {language === 'es' 
-                            ? `Tienes ${insights.recurringPayments.length} pagos recurrentes detectados que suman $${insights.recurringPayments.reduce((s, p) => s + p.amount, 0).toFixed(2)}/mes`
-                            : `You have ${insights.recurringPayments.length} detected recurring payments totaling $${insights.recurringPayments.reduce((s, p) => s + p.amount, 0).toFixed(2)}/month`}
+                      <div className="flex items-start gap-2 p-2.5 bg-primary/5 rounded-lg">
+                        <RefreshCw className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                        <p className="text-xs">
+                          <span className="font-medium">{insights.recurringPayments.length}</span> {language === 'es' ? 'pagos recurrentes' : 'recurring payments'}: <span className="font-bold">${insights.recurringPayments.reduce((s, p) => s + p.amount, 0).toFixed(0)}</span>/{language === 'es' ? 'mes' : 'mo'}
                         </p>
                       </div>
                     )}
                     {pendingCount > 0 && (
-                      <div className="p-3 bg-amber-50/50 dark:bg-amber-900/10 rounded-lg">
-                        <p className="text-sm">
-                          {language === 'es' 
-                            ? `${pendingCount} transacciones pendientes de clasificar o conciliar`
-                            : `${pendingCount} transactions pending classification or reconciliation`}
+                      <div className="flex items-start gap-2 p-2.5 bg-amber-500/5 rounded-lg">
+                        <Clock className="h-3.5 w-3.5 text-amber-600 mt-0.5 shrink-0" />
+                        <p className="text-xs">
+                          <span className="font-medium">{pendingCount}</span> {language === 'es' ? 'transacciones por conciliar' : 'transactions to reconcile'}
+                        </p>
+                      </div>
+                    )}
+                    {pendingCount > 5 && (
+                      <div className="flex items-start gap-2 p-2.5 bg-destructive/5 rounded-lg">
+                        <AlertTriangle className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" />
+                        <p className="text-xs">
+                          {language === 'es' ? 'Muchas transacciones sin conciliar' : 'Many unreconciled transactions'}
+                        </p>
+                      </div>
+                    )}
+                    {matchedCount > 0 && (
+                      <div className="flex items-start gap-2 p-2.5 bg-emerald-500/5 rounded-lg">
+                        <CheckCircle className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" />
+                        <p className="text-xs">
+                          <span className="font-medium">{matchedCount}</span> {language === 'es' ? 'conciliadas correctamente' : 'correctly reconciled'}
                         </p>
                       </div>
                     )}
