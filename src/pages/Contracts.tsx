@@ -13,6 +13,7 @@ import { SectionEmptyState } from '@/components/guidance/SectionEmptyState';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { PageHeader } from '@/components/PageHeader';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ContractRenewalCountdown } from '@/components/contracts/ContractRenewalCountdown';
 import { supabase } from '@/integrations/supabase/client';
 import { ContractWithClient } from '@/types/contract.types';
 import {
@@ -86,6 +87,9 @@ export default function Contracts() {
             />
           </>
         )}
+
+        {/* Contract Renewal Countdown */}
+        <ContractRenewalCountdown />
 
         {isLoading ? (
           <div className="text-center py-12">

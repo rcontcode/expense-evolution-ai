@@ -15,6 +15,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { BankingInsightsSummary } from '@/components/banking/BankingInsightsSummary';
 
 export default function Banking() {
   const { language } = useLanguage();
@@ -56,6 +57,9 @@ export default function Banking() {
           </div>
         )}
         
+        {/* Banking Insights Summary */}
+        <BankingInsightsSummary />
+
         {/* Smart Search Chat - prominent standalone */}
         <SmartSearchChat />
 
