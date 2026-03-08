@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 import { parseISO, differenceInDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { Store, TrendingUp, TrendingDown, Clock, ChevronDown, ChevronUp, BarChart3 } from 'lucide-react';
+import { Store, TrendingUp, TrendingDown, Clock, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
 
 interface MerchantProfile {
   name: string;
@@ -25,6 +25,7 @@ interface MerchantProfile {
   trend: 'increasing' | 'decreasing' | 'stable';
   recentAvg: number;
   olderAvg: number;
+  priceChangePercent: number;
 }
 
 export function MerchantIntelligence() {
@@ -37,7 +38,6 @@ export function MerchantIntelligence() {
 
   const merchants = useMemo<MerchantProfile[]>(() => {
     const items: { date: string; amount: number; vendor: string }[] = [];
-    const matchedIds = new Set(transactions?.filter(t => t.matched_expense_id).map(t => t.matched_expense_id) || []);
 
     (expenses || []).forEach(e => {
       if (!e.deleted_at && (e.vendor || e.description)) {
@@ -52,7 +52,6 @@ export function MerchantIntelligence() {
 
     if (items.length === 0) return [];
 
-    // Group by normalized vendor name
     const groups: Record<string, { amounts: number[]; dates: string[]; name: string }> = {};
     items.forEach(i => {
       const normalized = i.vendor.toLowerCase().trim().replace(/[#\d]+$/g, '').trim();
@@ -80,7 +79,7 @@ export function MerchantIntelligence() {
         else if (avgInterval >= 12 && avgInterval <= 18) frequency = 'biweekly';
         else if (avgInterval >= 25 && avgInterval <= 35) frequency = 'monthly';
 
-        // Trend: compare recent half vs older half
+        // Trend: recent half vs older half
         const mid = Math.floor(g.amounts.length / 2);
         const olderHalf = g.amounts.slice(0, mid);
         const recentHalf = g.amounts.slice(mid);
@@ -101,6 +100,7 @@ export function MerchantIntelligence() {
           trend,
           recentAvg,
           olderAvg,
+          priceChangePercent: changePercent,
         };
       })
       .sort((a, b) => b.totalSpent - a.totalSpent);
@@ -110,6 +110,9 @@ export function MerchantIntelligence() {
 
   const visible = showAll ? merchants : merchants.slice(0, 8);
   const totalMerchantSpend = merchants.reduce((s, m) => s + m.totalSpent, 0);
+
+  // Price increase alerts
+  const priceAlerts = merchants.filter(m => m.trend === 'increasing' && m.priceChangePercent > 20 && m.transactionCount >= 3);
 
   const freqLabels: Record<string, { es: string; en: string }> = {
     weekly: { es: 'Semanal', en: 'Weekly' },
@@ -139,7 +142,10 @@ export function MerchantIntelligence() {
                 {l ? '🏪 Inteligencia de Comercios' : '🏪 Merchant Intelligence'}
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                {merchants.length} {l ? 'comercios frecuentes detectados' : 'frequent merchants detected'}
+                {merchants.length} {l ? 'comercios frecuentes' : 'frequent merchants'}
+                {priceAlerts.length > 0 && (
+                  <span className="text-destructive font-medium"> · {priceAlerts.length} {l ? 'alerta(s)' : 'alert(s)'}</span>
+                )}
               </p>
             </div>
           </div>
@@ -150,6 +156,28 @@ export function MerchantIntelligence() {
       </CardHeader>
 
       <CardContent className="space-y-2 relative">
+        {/* Price increase alerts */}
+        {priceAlerts.length > 0 && (
+          <div className="space-y-1.5 mb-3">
+            {priceAlerts.slice(0, 3).map(alert => (
+              <motion.div
+                key={alert.normalizedName}
+                initial={{ opacity: 0, x: -5 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-2 p-2 rounded-lg bg-destructive/10 border border-destructive/20"
+              >
+                <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
+                <p className="text-[11px] text-muted-foreground">
+                  <span className="font-medium capitalize text-foreground">{alert.normalizedName}</span>
+                  {' '}{l ? 'aumentó' : 'increased'}{' '}
+                  <span className="text-destructive font-semibold">+{alert.priceChangePercent.toFixed(0)}%</span>
+                  {' '}({fc(alert.olderAvg)} → {fc(alert.recentAvg)})
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
         <ScrollArea className={showAll ? "max-h-[500px]" : ""}>
           <div className="space-y-2">
             {visible.map((m, i) => {
@@ -177,6 +205,11 @@ export function MerchantIntelligence() {
                       <span>{m.transactionCount}x</span>
                       <span>~{fc(m.avgAmount)}/{l ? 'vez' : 'each'}</span>
                       <span>{format(parseISO(m.lastDate), 'dd MMM', { locale: l ? es : undefined })}</span>
+                      {m.trend !== 'stable' && (
+                        <span className={cn(m.trend === 'increasing' ? 'text-destructive' : 'text-emerald-500')}>
+                          {m.priceChangePercent > 0 ? '+' : ''}{m.priceChangePercent.toFixed(0)}%
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="text-right shrink-0">

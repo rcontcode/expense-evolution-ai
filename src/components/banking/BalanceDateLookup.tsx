@@ -9,18 +9,21 @@ import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { getMonthlyEquivalent } from '@/lib/constants/bill-categories';
-import { format, addDays, differenceInDays, startOfDay, endOfDay, parseISO, startOfMonth, endOfMonth, isBefore, isAfter, eachDayOfInterval } from 'date-fns';
+import { format, addDays, differenceInDays, startOfDay, parseISO, startOfMonth, endOfMonth, isBefore, isAfter, eachDayOfInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CalendarIcon, TrendingUp, TrendingDown, Target, Wallet } from 'lucide-react';
+import { CalendarIcon, TrendingUp, TrendingDown, Target, Shield, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts';
+
+type ScenarioMode = 'realistic' | 'optimistic' | 'pessimistic';
 
 export function BalanceDateLookup() {
   const { language } = useLanguage();
   const l = language === 'es';
   const { formatCurrency, formatCompact } = useFormatCurrency();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [scenario, setScenario] = useState<ScenarioMode>('realistic');
 
   const now = new Date();
   const { data: bills } = useRecurringBills();
@@ -29,7 +32,6 @@ export function BalanceDateLookup() {
     dateRange: { start: startOfMonth(now), end: endOfMonth(addDays(now, 90)) }
   });
 
-  // Build daily projection for next 90 days
   const dailyProjection = useMemo(() => {
     const today = startOfDay(now);
     const endDate = addDays(today, 90);
@@ -37,7 +39,6 @@ export function BalanceDateLookup() {
 
     const activeBills = (bills || []).filter(b => b.status === 'active');
 
-    // Calculate average daily income from historical data
     const incomeEntries = allIncome || [];
     const currentMonthIncome = incomeEntries
       .filter(i => {
@@ -46,11 +47,9 @@ export function BalanceDateLookup() {
       })
       .reduce((s, i) => s + Number(i.amount), 0);
 
-    // Avg daily income
     const daysInMonth = differenceInDays(endOfMonth(now), startOfMonth(now)) + 1;
     const avgDailyIncome = currentMonthIncome > 0 ? currentMonthIncome / daysInMonth : 0;
 
-    // Calculate average daily variable expenses
     const expEntries = allExpenses || [];
     const currentMonthExpenses = expEntries
       .filter(e => {
@@ -62,15 +61,22 @@ export function BalanceDateLookup() {
     const daysPassed = differenceInDays(now, startOfMonth(now)) || 1;
     const avgDailyVariableExpense = currentMonthExpenses / daysPassed;
 
-    // Daily fixed bills
     const totalMonthlyBills = activeBills.reduce((s, b) => {
       return s + getMonthlyEquivalent(Number(b.amount), b.frequency, b.frequency_months || undefined);
     }, 0);
     const avgDailyFixed = totalMonthlyBills / 30;
 
+    // Scenario multipliers
+    const multipliers: Record<ScenarioMode, { income: number; expense: number }> = {
+      optimistic: { income: 1.1, expense: 0.85 },
+      realistic: { income: 1.0, expense: 1.0 },
+      pessimistic: { income: 0.9, expense: 1.2 },
+    };
+    const m = multipliers[scenario];
+
     let runningBalance = 0;
     const data = days.map((day, i) => {
-      const dailyNet = avgDailyIncome - avgDailyVariableExpense - avgDailyFixed;
+      const dailyNet = (avgDailyIncome * m.income) - (avgDailyVariableExpense * m.expense) - avgDailyFixed;
       runningBalance += dailyNet;
 
       return {
@@ -78,16 +84,15 @@ export function BalanceDateLookup() {
         dateStr: format(day, 'MMM dd', { locale: l ? es : undefined }),
         dayLabel: format(day, 'd'),
         balance: runningBalance,
-        income: avgDailyIncome,
-        expenses: avgDailyVariableExpense + avgDailyFixed,
+        income: avgDailyIncome * m.income,
+        expenses: (avgDailyVariableExpense * m.expense) + avgDailyFixed,
         isToday: i === 0,
       };
     });
 
     return data;
-  }, [bills, allIncome, allExpenses, now, l]);
+  }, [bills, allIncome, allExpenses, now, l, scenario]);
 
-  // Find balance for selected date
   const selectedBalance = useMemo(() => {
     if (!selectedDate || dailyProjection.length === 0) return null;
     const target = startOfDay(selectedDate);
@@ -101,9 +106,13 @@ export function BalanceDateLookup() {
 
   const finalBalance = dailyProjection[dailyProjection.length - 1]?.balance || 0;
   const isPositiveTrend = finalBalance >= 0;
-
-  // Chart data (show every 3rd day for readability)
   const chartData = dailyProjection.filter((_, i) => i % 3 === 0 || i === dailyProjection.length - 1);
+
+  const scenarioButtons: { mode: ScenarioMode; label: { es: string; en: string }; icon: typeof Target }[] = [
+    { mode: 'optimistic', label: { es: 'Optimista', en: 'Optimistic' }, icon: Zap },
+    { mode: 'realistic', label: { es: 'Realista', en: 'Realistic' }, icon: Target },
+    { mode: 'pessimistic', label: { es: 'Pesimista', en: 'Pessimistic' }, icon: Shield },
+  ];
 
   return (
     <Card className="relative overflow-hidden">
@@ -124,7 +133,7 @@ export function BalanceDateLookup() {
                 {l ? '🔮 Balance en Fecha' : '🔮 Balance on Date'}
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                {l ? 'Consulta tu balance proyectado para cualquier día' : 'Check your projected balance for any day'}
+                {l ? 'Proyección con escenarios' : 'Projection with scenarios'}
               </p>
             </div>
           </div>
@@ -158,6 +167,22 @@ export function BalanceDateLookup() {
       </CardHeader>
 
       <CardContent className="space-y-4 relative">
+        {/* Scenario toggle */}
+        <div className="flex gap-1 p-1 rounded-lg bg-muted/50">
+          {scenarioButtons.map(({ mode, label, icon: Icon }) => (
+            <Button
+              key={mode}
+              variant={scenario === mode ? 'default' : 'ghost'}
+              size="sm"
+              className={cn("flex-1 text-xs gap-1.5 h-8", scenario !== mode && "text-muted-foreground")}
+              onClick={() => setScenario(mode)}
+            >
+              <Icon className="h-3 w-3" />
+              {l ? label.es : label.en}
+            </Button>
+          ))}
+        </div>
+
         {/* Selected date result */}
         {selectedBalance && (
           <motion.div
@@ -195,12 +220,12 @@ export function BalanceDateLookup() {
           </motion.div>
         )}
 
-        {/* Daily balance timeline chart */}
+        {/* Chart */}
         <div className="h-[180px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
               <defs>
-                <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="balanceGradientLookup" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={isPositiveTrend ? "hsl(var(--chart-4))" : "hsl(var(--destructive))"} stopOpacity={0.3} />
                   <stop offset="95%" stopColor={isPositiveTrend ? "hsl(var(--chart-4))" : "hsl(var(--destructive))"} stopOpacity={0} />
                 </linearGradient>
@@ -232,7 +257,7 @@ export function BalanceDateLookup() {
                 type="monotone"
                 dataKey="balance"
                 stroke={isPositiveTrend ? "hsl(var(--chart-4))" : "hsl(var(--destructive))"}
-                fill="url(#balanceGradient)"
+                fill="url(#balanceGradientLookup)"
                 strokeWidth={2}
               />
             </AreaChart>
@@ -260,6 +285,13 @@ export function BalanceDateLookup() {
             </p>
           </div>
         </div>
+
+        {/* Scenario info */}
+        <p className="text-[10px] text-center text-muted-foreground">
+          {scenario === 'optimistic' && (l ? '📈 +10% ingreso, -15% gasto variable' : '📈 +10% income, -15% variable spending')}
+          {scenario === 'realistic' && (l ? '📊 Basado en promedios reales' : '📊 Based on actual averages')}
+          {scenario === 'pessimistic' && (l ? '📉 -10% ingreso, +20% gasto variable' : '📉 -10% income, +20% variable spending')}
+        </p>
       </CardContent>
     </Card>
   );
