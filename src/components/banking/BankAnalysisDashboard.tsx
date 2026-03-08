@@ -442,11 +442,11 @@ export function BankAnalysisDashboard({ onImportClick }: BankAnalysisDashboardPr
                         </p>
                       </div>
                     )}
-                    {insights.alerts.length > 0 && (
+                    {pendingCount > 5 && (
                       <div className="flex items-start gap-2 p-2.5 bg-destructive/5 rounded-lg">
                         <AlertTriangle className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" />
                         <p className="text-xs">
-                          <span className="font-medium">{insights.alerts.length}</span> {language === 'es' ? 'alertas activas' : 'active alerts'}
+                          {language === 'es' ? 'Muchas transacciones sin conciliar' : 'Many unreconciled transactions'}
                         </p>
                       </div>
                     )}
