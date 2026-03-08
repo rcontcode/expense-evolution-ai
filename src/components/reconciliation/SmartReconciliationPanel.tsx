@@ -57,6 +57,7 @@ export function SmartReconciliationPanel() {
   const { data: expenses = [] } = useExpenses();
   const matchTransaction = useMatchTransaction();
   const markAsDiscrepancy = useMarkAsDiscrepancy();
+  const createExpense = useCreateExpense();
 
   const [aiResult, setAiResult] = useState<AIReconciliationResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
