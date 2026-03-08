@@ -596,14 +596,12 @@ export default function Reconciliation() {
                             className="h-8 w-8 text-muted-foreground hover:text-primary"
                             title={language === 'es' ? 'Reenviar a pendientes' : 'Return to pending'}
                             onClick={async () => {
-                              const { error } = await (await import('@/integrations/supabase/client')).supabase
+                              const { error } = await supabase
                                 .from('bank_transactions')
                                 .update({ status: 'pending', matched_expense_id: null })
                                 .eq('id', transaction.id);
                               if (!error) {
-                                (await import('@tanstack/react-query')).QueryClient.prototype
                                 toast.success(language === 'es' ? 'Movida a pendientes' : 'Moved to pending');
-                                // Force refetch
                                 window.location.reload();
                               }
                             }}
