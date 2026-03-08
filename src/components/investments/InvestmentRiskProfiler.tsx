@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAssets } from '@/hooks/data/useNetWorth';
-import { useIncome } from '@/hooks/data/useIncome';
+
 import { ShieldCheck, TrendingUp, AlertTriangle, Target, ChevronDown, ChevronUp, PieChart } from 'lucide-react';
 
 interface AssetAllocation {
@@ -43,7 +43,7 @@ export function InvestmentRiskProfiler() {
   const { language } = useLanguage();
   const l = language === 'es';
   const { data: assets } = useAssets();
-  const { data: income } = useIncome();
+  
   const [expanded, setExpanded] = useState(false);
 
   const profile = useMemo<RiskProfile>(() => {
