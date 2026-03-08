@@ -23,6 +23,7 @@ import { SwipeableCard } from '@/components/mobile/SwipeableCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { IncomeDuplicatePanel } from '@/components/income/IncomeDuplicatePanel';
 import { IncomeInsightsSummary } from '@/components/income/IncomeInsightsSummary';
+import { IncomeStabilityScore } from '@/components/income/IncomeStabilityScore';
 import {
   Plus,
   TrendingUp,
