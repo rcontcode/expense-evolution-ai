@@ -41,6 +41,7 @@ import { BudgetRulesWidget } from "./family/BudgetRulesWidget";
 import { BudgetAuditLogWidget } from "./family/BudgetAuditLogWidget";
 import { YearComparisonChart } from "./family/YearComparisonChart";
 import { BudgetExportWidget } from "./family/BudgetExportWidget";
+import { ZeroBasedBudgetView } from "./ZeroBasedBudgetView";
 
 import { BudgetContextBar } from "./BudgetContextBar";
 import { CaptureHub } from "./CaptureHub";
@@ -714,6 +715,15 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
 
             {/* ===== TAB 6: HERRAMIENTAS ===== */}
             <TabsContent value="tools" className={cn("space-y-5 mt-0", getHighlightProps('tools').className)} ref={getHighlightProps('tools').ref as any}>
+              <CollapsibleSection
+                emoji="✉️"
+                title={l ? "Presupuesto Base Cero" : "Zero-Based Budget"}
+                subtitle={l ? "Cada dólar tiene un trabajo" : "Every dollar has a job"}
+                defaultOpen={false}
+              >
+                <ZeroBasedBudgetView />
+              </CollapsibleSection>
+
               <div className="grid gap-5 lg:grid-cols-3">
                 <CollapsibleSection
                   emoji="⚡"
