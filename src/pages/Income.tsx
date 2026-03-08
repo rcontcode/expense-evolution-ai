@@ -194,6 +194,9 @@ export default function Income() {
         {/* Income Insights Summary */}
         <IncomeInsightsSummary />
 
+        {/* Income Stability Score */}
+        <IncomeStabilityScore />
+
         {/* Year Selector - positioned above summary cards */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
