@@ -52,6 +52,8 @@ export default function Banking() {
           </div>
         )}
         
+        <BalanceDateLookup />
+
         <div data-highlight="bank-analysis-dashboard">
           <BankAnalysisDashboard onImportClick={() => setImportDialogOpen(true)} />
         </div>
