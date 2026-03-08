@@ -11,6 +11,7 @@ import { useMileage } from '@/hooks/data/useMileage';
 import { useContracts } from '@/hooks/data/useContracts';
 import { ClientDialog } from '@/components/dialogs/ClientDialog';
 import { ClientFinancialOverview } from '@/components/clients/ClientFinancialOverview';
+import { ClientProfitabilityRadar } from '@/components/clients/ClientProfitabilityRadar';
 import { ClientCard } from '@/components/clients/ClientCard';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { Client } from '@/types/expense.types';
@@ -186,6 +187,9 @@ export default function Clients() {
               </CardContent>
             </Card>
           )}
+
+          {/* Profitability Radar */}
+          <ClientProfitabilityRadar />
 
           {isLoading ? (
             <Card className="border-dashed">
