@@ -57,6 +57,9 @@ export default function Banking() {
           </div>
         )}
         
+        {/* Banking Insights Summary */}
+        <BankingInsightsSummary />
+
         {/* Smart Search Chat - prominent standalone */}
         <SmartSearchChat />
 
