@@ -7,6 +7,9 @@ import { MiniWorkflow } from '@/components/guidance/WorkflowVisualizer';
 import { BankingIntegrationGuide } from '@/components/banking/BankingIntegrationGuide';
 import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
 import { BalanceDateLookup } from '@/components/banking/BalanceDateLookup';
+import { SpendingVelocityMonitor } from '@/components/banking/SpendingVelocityMonitor';
+import { WeeklySpendingDigest } from '@/components/banking/WeeklySpendingDigest';
+import { MerchantIntelligence } from '@/components/banking/MerchantIntelligence';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
@@ -52,7 +55,16 @@ export default function Banking() {
           </div>
         )}
         
-        <BalanceDateLookup />
+        {/* Intelligence Cards */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          <SpendingVelocityMonitor />
+          <WeeklySpendingDigest />
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <BalanceDateLookup />
+          <MerchantIntelligence />
+        </div>
 
         <div data-highlight="bank-analysis-dashboard">
           <BankAnalysisDashboard onImportClick={() => setImportDialogOpen(true)} />

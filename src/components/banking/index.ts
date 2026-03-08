@@ -13,3 +13,7 @@
  
  export { CashFlowForecast } from './CashFlowForecast';
  export { SmartInsightsEngine } from './SmartInsightsEngine';
+ export { BalanceDateLookup } from './BalanceDateLookup';
+ export { SpendingVelocityMonitor } from './SpendingVelocityMonitor';
+ export { WeeklySpendingDigest } from './WeeklySpendingDigest';
+ export { MerchantIntelligence } from './MerchantIntelligence';
