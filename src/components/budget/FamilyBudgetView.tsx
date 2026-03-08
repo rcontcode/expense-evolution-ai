@@ -41,6 +41,7 @@ import { BudgetRulesWidget } from "./family/BudgetRulesWidget";
 import { BudgetAuditLogWidget } from "./family/BudgetAuditLogWidget";
 import { YearComparisonChart } from "./family/YearComparisonChart";
 import { BudgetExportWidget } from "./family/BudgetExportWidget";
+import { ZeroBasedBudgetView } from "./ZeroBasedBudgetView";
 
 import { BudgetContextBar } from "./BudgetContextBar";
 import { CaptureHub } from "./CaptureHub";
