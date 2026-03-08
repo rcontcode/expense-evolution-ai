@@ -11,6 +11,7 @@ import { MileageDialog } from '@/components/dialogs/MileageDialog';
 import { MileageTable } from '@/components/tables/MileageTable';
 import { MileageCard } from '@/components/mileage/MileageCard';
 import { MileageSummaryCard } from '@/components/dashboard/MileageSummaryCard';
+import { MileageDeductionMaximizer } from '@/components/mileage/MileageDeductionMaximizer';
 import { MileageImportDialog } from '@/components/mileage/MileageImportDialog';
 import { MileageMonthlyChart } from '@/components/mileage/MileageMonthlyChart';
 import { TooltipProvider } from '@/components/ui/tooltip';
