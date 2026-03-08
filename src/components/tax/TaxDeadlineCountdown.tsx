@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useEntityOptional } from '@/contexts/EntityContext';
 import { CalendarClock, AlertTriangle, CheckCircle2, Clock, Bell } from 'lucide-react';
-import { differenceInDays, format, isBefore, addYears } from 'date-fns';
+import { differenceInDays, format } from 'date-fns';
 import { es as esLocale } from 'date-fns/locale';
 
 interface TaxDeadline {

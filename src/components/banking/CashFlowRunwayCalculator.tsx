@@ -7,7 +7,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { Fuel, TrendingDown, TrendingUp, AlertTriangle, Shield, Zap } from 'lucide-react';
-import { subMonths, isAfter, startOfMonth, differenceInDays } from 'date-fns';
+import { subMonths, isAfter, differenceInDays } from 'date-fns';
 
 interface RunwayMetrics {
   avgDailyExpense: number;
