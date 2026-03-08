@@ -10,6 +10,7 @@ import { BalanceDateLookup } from '@/components/banking/BalanceDateLookup';
 import { SpendingVelocityMonitor } from '@/components/banking/SpendingVelocityMonitor';
 import { WeeklySpendingDigest } from '@/components/banking/WeeklySpendingDigest';
 import { MerchantIntelligence } from '@/components/banking/MerchantIntelligence';
+import { SmartSearchChat } from '@/components/banking/SmartSearchChat';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
@@ -55,6 +56,9 @@ export default function Banking() {
           </div>
         )}
         
+        {/* Smart Search Chat - prominent standalone */}
+        <SmartSearchChat />
+
         {/* Intelligence Cards */}
         <div className="grid gap-4 lg:grid-cols-2">
           <SpendingVelocityMonitor />
