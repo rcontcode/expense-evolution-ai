@@ -47,6 +47,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ReconciliationWizard } from '@/components/reconciliation/ReconciliationWizard';
+import { SmartReconciliationPanel } from '@/components/reconciliation/SmartReconciliationPanel';
 
 function MatchScoreBadge({ score, matchType }: { score: number; matchType: string }) {
   const { language } = useLanguage();
@@ -440,6 +441,9 @@ export default function Reconciliation() {
             </CardContent>
           </Card>
         )}
+
+        {/* Smart AI Reconciliation Panel */}
+        <SmartReconciliationPanel />
 
         {/* Main Content */}
         {isLoading || isLoadingMatches ? (
