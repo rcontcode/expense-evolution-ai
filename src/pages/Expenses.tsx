@@ -33,6 +33,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileActionBar } from '@/components/mobile';
 import { useDeleteExpense } from '@/hooks/data/useExpenses';
+import { ExpenseInsightsSummary } from '@/components/expenses/ExpenseInsightsSummary';
 import {
   DropdownMenu,
   DropdownMenuContent,
