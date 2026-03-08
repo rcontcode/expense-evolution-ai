@@ -261,6 +261,16 @@ export default function Expenses() {
             />
           )}
 
+          {/* Money Calendar Heatmap */}
+          {allExpenses && allExpenses.length > 5 && (
+            <MoneyCalendarHeatmap />
+          )}
+
+          {/* Vendor Intelligence */}
+          {allExpenses && allExpenses.length > 5 && (
+            <VendorIntelligenceAnalyzer />
+          )}
+
           {/* Unified Review Center */}
           <ExpenseReviewCenter
             expenses={allExpenses || []}
