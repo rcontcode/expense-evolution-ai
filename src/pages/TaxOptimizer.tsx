@@ -5,6 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useTaxCalculations } from '@/hooks/data/useTaxCalculations';
 import { TaxSummaryCards } from '@/components/dashboard/TaxSummaryCards';
+import { TaxDeadlineCountdown } from '@/components/tax/TaxDeadlineCountdown';
 import { Receipt } from 'lucide-react';
 
 const TaxOptimizerCard = lazy(() => import('@/components/dashboard/TaxOptimizerCard').then(m => ({ default: m.TaxOptimizerCard })));
@@ -33,6 +34,7 @@ export default function TaxOptimizer() {
         </div>
 
         <div className="space-y-6">
+          <TaxDeadlineCountdown />
           <TaxSummaryCards taxSummary={taxSummary} />
           <Suspense fallback={<Skeleton className="h-[300px]" />}>
             <TaxOptimizerCard />
