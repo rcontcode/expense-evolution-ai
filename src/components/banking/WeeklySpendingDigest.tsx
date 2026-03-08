@@ -6,10 +6,11 @@ import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { motion } from 'framer-motion';
-import { parseISO, startOfWeek, endOfWeek, subWeeks, format, differenceInDays } from 'date-fns';
+import { parseISO, startOfWeek, endOfWeek, subWeeks, format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { Calendar, TrendingUp, TrendingDown, ShoppingBag, CreditCard, Star, ArrowRight } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown, ShoppingBag, CreditCard, Star } from 'lucide-react';
+import { CATEGORY_LABELS } from '@/hooks/data/useBankAnalysis';
 
 interface WeeklyDigest {
   weekTotal: number;
@@ -20,7 +21,8 @@ interface WeeklyDigest {
   topMerchant: { name: string; total: number; count: number } | null;
   biggestExpense: { vendor: string; amount: number; date: string } | null;
   dailyBreakdown: { day: string; amount: number }[];
-  streakDays: number; // days with no spending
+  streakDays: number;
+  categoryBreakdown: { category: string; total: number; pct: number }[];
 }
 
 export function WeeklySpendingDigest() {
@@ -37,12 +39,10 @@ export function WeeklySpendingDigest() {
   const prevWeekEnd = endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
 
   const digest = useMemo<WeeklyDigest | null>(() => {
-    // Unify data sources
-    const items: { date: string; amount: number; vendor: string }[] = [];
-    const matchedIds = new Set(transactions?.filter(t => t.matched_expense_id).map(t => t.matched_expense_id) || []);
+    const items: { date: string; amount: number; vendor: string; category?: string }[] = [];
 
     (expenses || []).forEach(e => {
-      if (!e.deleted_at) items.push({ date: e.date, amount: Math.abs(Number(e.amount)), vendor: e.vendor || e.description || 'Unknown' });
+      if (!e.deleted_at) items.push({ date: e.date, amount: Math.abs(Number(e.amount)), vendor: e.vendor || e.description || 'Unknown', category: e.category || undefined });
     });
     (transactions || []).forEach(t => {
       if (!t.matched_expense_id) items.push({ date: t.transaction_date, amount: Math.abs(Number(t.amount)), vendor: t.description || 'Unknown' });
@@ -50,23 +50,20 @@ export function WeeklySpendingDigest() {
 
     if (items.length === 0) return null;
 
-    // This week
     const weekItems = items.filter(i => {
       const d = parseISO(i.date);
       return d >= currentWeekStart && d <= currentWeekEnd;
     });
     const weekTotal = weekItems.reduce((s, i) => s + i.amount, 0);
 
-    // Previous week
     const prevItems = items.filter(i => {
       const d = parseISO(i.date);
       return d >= prevWeekStart && d <= prevWeekEnd;
     });
     const prevWeekTotal = prevItems.reduce((s, i) => s + i.amount, 0);
-
     const percentChange = prevWeekTotal > 0 ? ((weekTotal - prevWeekTotal) / prevWeekTotal) * 100 : 0;
 
-    // Top merchant this week
+    // Top merchant
     const merchantMap: Record<string, { total: number; count: number }> = {};
     weekItems.forEach(i => {
       const key = i.vendor.toLowerCase().trim();
@@ -79,12 +76,12 @@ export function WeeklySpendingDigest() {
       ? { name: topMerchantEntry[0], total: topMerchantEntry[1].total, count: topMerchantEntry[1].count }
       : null;
 
-    // Biggest single expense
+    // Biggest expense
     const biggestExpense = weekItems.length > 0
       ? weekItems.reduce((max, i) => i.amount > max.amount ? i : max, weekItems[0])
       : null;
 
-    // Daily breakdown (Mon-Sun)
+    // Daily breakdown
     const dayNames = l
       ? ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
       : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -97,7 +94,7 @@ export function WeeklySpendingDigest() {
       return { day, amount: dayTotal };
     });
 
-    // No-spend streak (consecutive days with 0 spending ending today)
+    // No-spend streak
     let streakDays = 0;
     for (let i = 0; i < 7; i++) {
       const checkDate = new Date(now);
@@ -107,6 +104,17 @@ export function WeeklySpendingDigest() {
       if (dayTotal === 0) streakDays++;
       else break;
     }
+
+    // Category breakdown for this week
+    const catMap: Record<string, number> = {};
+    weekItems.forEach(i => {
+      const cat = i.category || 'other';
+      catMap[cat] = (catMap[cat] || 0) + i.amount;
+    });
+    const categoryBreakdown = Object.entries(catMap)
+      .map(([category, total]) => ({ category, total, pct: weekTotal > 0 ? (total / weekTotal) * 100 : 0 }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
 
     return {
       weekTotal,
@@ -118,6 +126,7 @@ export function WeeklySpendingDigest() {
       biggestExpense: biggestExpense ? { vendor: biggestExpense.vendor, amount: biggestExpense.amount, date: biggestExpense.date } : null,
       dailyBreakdown,
       streakDays,
+      categoryBreakdown,
     };
   }, [transactions, expenses, currentWeekStart, currentWeekEnd, prevWeekStart, prevWeekEnd, now, l]);
 
@@ -194,6 +203,35 @@ export function WeeklySpendingDigest() {
             })}
           </div>
         </div>
+
+        {/* Category breakdown for this week */}
+        {digest.categoryBreakdown.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium text-muted-foreground">{l ? 'Por categoría' : 'By category'}</p>
+            <div className="space-y-1">
+              {digest.categoryBreakdown.map((cat, i) => {
+                const label = CATEGORY_LABELS[cat.category];
+                const icon = label?.icon || '📦';
+                const name = label ? (l ? label.es : label.en) : cat.category;
+                return (
+                  <div key={cat.category} className="flex items-center gap-2 text-xs">
+                    <span className="text-sm">{icon}</span>
+                    <span className="truncate flex-1 text-muted-foreground">{name}</span>
+                    <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${cat.pct}%` }}
+                        transition={{ duration: 0.5, delay: i * 0.05 }}
+                        className="h-full rounded-full bg-primary/60"
+                      />
+                    </div>
+                    <span className="font-medium w-16 text-right">{fc(cat.total)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Highlights */}
         <div className="grid grid-cols-2 gap-2">

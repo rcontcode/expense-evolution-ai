@@ -1,16 +1,15 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useBankTransactions } from '@/hooks/data/useBankTransactions';
 import { useUserSettings, UserPreferences } from '@/hooks/data/useUserSettings';
 import { motion } from 'framer-motion';
-import { startOfMonth, endOfMonth, subDays, parseISO, differenceInDays, getDaysInMonth, startOfWeek, endOfWeek } from 'date-fns';
+import { startOfMonth, endOfMonth, subDays, parseISO, getDaysInMonth, startOfWeek, format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { Gauge, Zap, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Flame } from 'lucide-react';
+import { Gauge, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Flame } from 'lucide-react';
 
 export function SpendingVelocityMonitor() {
   const { language } = useLanguage();
@@ -31,9 +30,7 @@ export function SpendingVelocityMonitor() {
   const { data: transactions } = useBankTransactions();
 
   const velocity = useMemo(() => {
-    // Unify expenses + unmatched bank transactions
     const items: { date: string; amount: number }[] = [];
-    const matchedIds = new Set(transactions?.filter(t => t.matched_expense_id).map(t => t.matched_expense_id) || []);
 
     (expenses || []).forEach(e => {
       if (!e.deleted_at) items.push({ date: e.date, amount: Math.abs(Number(e.amount)) });
@@ -69,12 +66,12 @@ export function SpendingVelocityMonitor() {
     const prev7Total = prev7.reduce((s, i) => s + i.amount, 0);
     const dailyAvgPrev7 = prev7Total / 7;
 
-    // Acceleration: are you spending faster or slower?
+    // Acceleration
     const acceleration = dailyAvgPrev7 > 0
       ? ((dailyAvg7 - dailyAvgPrev7) / dailyAvgPrev7) * 100
       : 0;
 
-    // Burn rate: days until budget exhausted
+    // Burn rate
     const remaining = globalBudget > 0 ? globalBudget - monthTotal : 0;
     const daysUntilExhausted = dailyAvg7 > 0 ? remaining / dailyAvg7 : Infinity;
     const daysLeft = daysInMonth - dayOfMonth;
@@ -84,7 +81,7 @@ export function SpendingVelocityMonitor() {
     const idealToDate = idealDailySpend * dayOfMonth;
     const paceRatio = idealToDate > 0 ? (monthTotal / idealToDate) * 100 : 0;
 
-    // Today's spending
+    // Today
     const todayStr = now.toISOString().split('T')[0];
     const todayTotal = items.filter(i => i.date === todayStr).reduce((s, i) => s + i.amount, 0);
 
@@ -94,6 +91,15 @@ export function SpendingVelocityMonitor() {
       return d >= weekStart && d <= now;
     });
     const weekTotal = weekItems.reduce((s, i) => s + i.amount, 0);
+
+    // 14-day sparkline data
+    const sparkline: number[] = [];
+    for (let i = 13; i >= 0; i--) {
+      const day = subDays(now, i);
+      const dayStr = format(day, 'yyyy-MM-dd');
+      const dayTotal = items.filter(item => item.date === dayStr).reduce((s, item) => s + item.amount, 0);
+      sparkline.push(dayTotal);
+    }
 
     return {
       monthTotal,
@@ -107,6 +113,7 @@ export function SpendingVelocityMonitor() {
       weekTotal,
       remaining,
       idealDailySpend,
+      sparkline,
     };
   }, [expenses, transactions, globalBudget, now, monthStart, weekStart, dayOfMonth, daysInMonth]);
 
@@ -118,8 +125,8 @@ export function SpendingVelocityMonitor() {
   const isGood = velocity.paceRatio <= 90;
   const burnRisk = velocity.daysUntilExhausted < velocity.daysLeft && globalBudget > 0;
 
-  // Velocity gauge (0-100 where 50 is ideal)
   const gaugeValue = Math.min(100, Math.max(0, velocity.paceRatio));
+  const sparkMax = Math.max(...velocity.sparkline, 1);
 
   return (
     <Card className="relative overflow-hidden">
@@ -181,7 +188,6 @@ export function SpendingVelocityMonitor() {
                 gaugeValue <= 110 ? "bg-amber-500" : "bg-destructive"
               )}
             />
-            {/* Ideal marker at 100% of ideal = dayOfMonth/daysInMonth position */}
             <div
               className="absolute top-0 bottom-0 w-0.5 bg-foreground/50"
               style={{ left: '100%', transform: 'translateX(-100%)' }}
@@ -192,6 +198,37 @@ export function SpendingVelocityMonitor() {
             <span className="font-medium">← {l ? 'Ideal' : 'Ideal'} →</span>
             <span>150%+</span>
           </div>
+        </div>
+
+        {/* 14-day sparkline */}
+        <div className="space-y-1">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{l ? 'Últimos 14 días' : 'Last 14 days'}</p>
+          <div className="flex items-end gap-[3px] h-10">
+            {velocity.sparkline.map((val, i) => {
+              const pct = sparkMax > 0 ? (val / sparkMax) * 100 : 0;
+              const isToday = i === velocity.sparkline.length - 1;
+              const isHigh = val > velocity.idealDailySpend && velocity.idealDailySpend > 0;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ height: 0 }}
+                  animate={{ height: `${Math.max(pct, 3)}%` }}
+                  transition={{ duration: 0.4, delay: i * 0.02 }}
+                  className={cn(
+                    "flex-1 rounded-t-sm min-h-[2px]",
+                    isToday ? "bg-primary" : isHigh ? "bg-destructive/60" : val > 0 ? "bg-primary/30" : "bg-muted"
+                  )}
+                  title={`${fc(val)}`}
+                />
+              );
+            })}
+          </div>
+          {velocity.idealDailySpend > 0 && (
+            <div className="flex items-center gap-3 text-[9px] text-muted-foreground">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-destructive/60" />{l ? 'Sobre el límite' : 'Over limit'}</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-primary/30" />{l ? 'Normal' : 'Normal'}</span>
+            </div>
+          )}
         </div>
 
         {/* Key metrics grid */}
@@ -252,7 +289,7 @@ export function SpendingVelocityMonitor() {
             <Flame className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-destructive">
-                {l ? '🔥 Burn Rate Alert' : '🔥 Burn Rate Alert'}
+                🔥 Burn Rate Alert
               </p>
               <p className="text-xs text-muted-foreground">
                 {l
@@ -261,8 +298,8 @@ export function SpendingVelocityMonitor() {
               </p>
               <p className="text-xs font-medium mt-1">
                 {l
-                  ? `💡 Reduce a ${fc(velocity.remaining / velocity.daysLeft)}/día para llegar al final del mes.`
-                  : `💡 Reduce to ${fc(velocity.remaining / velocity.daysLeft)}/day to make it through the month.`}
+                  ? `💡 Reduce a ${fc(velocity.remaining / Math.max(velocity.daysLeft, 1))}/día para llegar al final del mes.`
+                  : `💡 Reduce to ${fc(velocity.remaining / Math.max(velocity.daysLeft, 1))}/day to make it through the month.`}
               </p>
             </div>
           </motion.div>
