@@ -38,6 +38,7 @@ import { useDashboardDeepLinks } from '@/hooks/utils/useDashboardDeepLinks';
 const WorkflowSummaryWidget = lazy(() => import('@/components/dashboard/WorkflowSummaryWidget').then(m => ({ default: m.WorkflowSummaryWidget })));
 const MonthlyBillsWidget = lazy(() => import('@/components/dashboard/MonthlyBillsWidget').then(m => ({ default: m.MonthlyBillsWidget })));
 const ProactiveAlertsWidget = lazy(() => import('@/components/dashboard/ProactiveAlertsWidget').then(m => ({ default: m.ProactiveAlertsWidget })));
+const FinancialAutopilot = lazy(() => import('@/components/dashboard/FinancialAutopilot').then(m => ({ default: m.FinancialAutopilot })));
 
 export default function Dashboard() {
   const { t, language } = useLanguage();
