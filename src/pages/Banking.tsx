@@ -55,6 +55,9 @@ export default function Banking() {
           </div>
         )}
         
+        {/* Smart Search Chat - prominent standalone */}
+        <SmartSearchChat />
+
         {/* Intelligence Cards */}
         <div className="grid gap-4 lg:grid-cols-2">
           <SpendingVelocityMonitor />
