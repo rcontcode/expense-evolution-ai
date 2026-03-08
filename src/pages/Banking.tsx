@@ -55,7 +55,16 @@ export default function Banking() {
           </div>
         )}
         
-        <BalanceDateLookup />
+        {/* Intelligence Cards */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          <SpendingVelocityMonitor />
+          <WeeklySpendingDigest />
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <BalanceDateLookup />
+          <MerchantIntelligence />
+        </div>
 
         <div data-highlight="bank-analysis-dashboard">
           <BankAnalysisDashboard onImportClick={() => setImportDialogOpen(true)} />
