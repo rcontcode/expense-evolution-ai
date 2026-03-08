@@ -6,6 +6,7 @@ import { PageContextGuide, PAGE_GUIDES } from '@/components/guidance/PageContext
 import { MiniWorkflow } from '@/components/guidance/WorkflowVisualizer';
 import { BankingIntegrationGuide } from '@/components/banking/BankingIntegrationGuide';
 import { BankImportDialog } from '@/components/dialogs/BankImportDialog';
+import { BalanceDateLookup } from '@/components/banking/BalanceDateLookup';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
