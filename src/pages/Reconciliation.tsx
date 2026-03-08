@@ -48,6 +48,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ReconciliationWizard } from '@/components/reconciliation/ReconciliationWizard';
+import { SmartReconciliationPanel } from '@/components/reconciliation/SmartReconciliationPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 
