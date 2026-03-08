@@ -442,6 +442,9 @@ export default function Reconciliation() {
           </Card>
         )}
 
+        {/* Smart AI Reconciliation Panel */}
+        <SmartReconciliationPanel />
+
         {/* Main Content */}
         {isLoading || isLoadingMatches ? (
           <Card>
