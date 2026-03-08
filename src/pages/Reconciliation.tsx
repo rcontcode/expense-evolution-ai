@@ -586,8 +586,28 @@ export default function Reconciliation() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           <span className="font-bold text-destructive">${Number(transaction.amount).toFixed(2)}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary"
+                            title={language === 'es' ? 'Reenviar a pendientes' : 'Return to pending'}
+                            onClick={async () => {
+                              const { error } = await (await import('@/integrations/supabase/client')).supabase
+                                .from('bank_transactions')
+                                .update({ status: 'pending', matched_expense_id: null })
+                                .eq('id', transaction.id);
+                              if (!error) {
+                                (await import('@tanstack/react-query')).QueryClient.prototype
+                                toast.success(language === 'es' ? 'Movida a pendientes' : 'Moved to pending');
+                                // Force refetch
+                                window.location.reload();
+                              }
+                            }}
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
