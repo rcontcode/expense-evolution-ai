@@ -43,7 +43,7 @@ export function InvestmentRiskProfiler() {
   const { language } = useLanguage();
   const l = language === 'es';
   const { data: assets } = useAssets();
-  const { data: income } = useIncome();
+  
   const [expanded, setExpanded] = useState(false);
 
   const profile = useMemo<RiskProfile>(() => {
