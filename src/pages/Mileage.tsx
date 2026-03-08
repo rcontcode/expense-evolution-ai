@@ -187,6 +187,9 @@ export default function Mileage() {
             <MileageMonthlyChart data={mileageRecords} year={selectedYear} />
           )}
 
+          {/* Deduction Maximizer */}
+          <MileageDeductionMaximizer />
+
           <Tabs defaultValue="records" className="space-y-4" data-highlight="mileage-table">
             <TabsList className="h-9">
               <TabsTrigger value="records" className="text-xs sm:text-sm">

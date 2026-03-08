@@ -210,6 +210,9 @@ export default function NetWorth() {
               />
             </div>
 
+            {/* Velocity Tracker */}
+            <NetWorthVelocityTracker snapshots={snapshots} currentNetWorth={netWorth} />
+
             {/* Asset Allocation + Lists */}
             <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
               <div className="lg:col-span-1">
