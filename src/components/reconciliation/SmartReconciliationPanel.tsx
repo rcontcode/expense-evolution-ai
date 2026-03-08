@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Sparkles, CheckCircle2, XCircle, ArrowRight, Loader2, Zap, Link2, Plus,
-  Brain, ChevronDown, ChevronUp, AlertTriangle, RotateCcw
+  Brain, ChevronDown, ChevronUp, AlertTriangle, RotateCcw, PlusCircle
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
@@ -18,7 +18,7 @@ import {
   useMarkAsDiscrepancy,
   TransactionWithMatches,
 } from '@/hooks/data/useBankTransactions';
-import { useExpenses } from '@/hooks/data/useExpenses';
+import { useExpenses, useCreateExpense } from '@/hooks/data/useExpenses';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
