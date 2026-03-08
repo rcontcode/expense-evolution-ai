@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,13 +7,15 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDataHealthCheck, ISSUE_LABELS } from '@/hooks/data/useDataHealthCheck';
 import { useAuditLog } from '@/hooks/data/useAuditLog';
 import { useNudgeSystem } from '@/hooks/utils/useNudgeSystem';
-import { ShieldCheck, AlertTriangle, AlertCircle, History, Plus, FileEdit, Trash2, RotateCcw, Receipt, Tag, HelpCircle, ArrowRight } from 'lucide-react';
-import { formatDistanceToNow, parseISO } from 'date-fns';
+import { ShieldCheck, AlertTriangle, AlertCircle, History, Plus, FileEdit, Trash2, RotateCcw, Receipt, Tag, HelpCircle, ArrowRight, Activity, TrendingUp, Clock } from 'lucide-react';
+import { formatDistanceToNow, parseISO, format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import { Progress } from '@/components/ui/progress';
 
 const ACTION_ICONS: Record<string, React.ReactNode> = {
   create: <Plus className="h-3.5 w-3.5 text-emerald-500" />,
