@@ -539,7 +539,20 @@ export default function Reconciliation() {
                             </div>
                           </div>
                         </div>
-                        <span className="font-bold">${Number(transaction.amount).toFixed(2)}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold">${Number(transaction.amount).toFixed(2)}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-warning"
+                            title={language === 'es' ? 'Desvincular' : 'Unlink'}
+                            onClick={() => {
+                              matchTransaction.mutate({ transactionId: transaction.id, expenseId: '' });
+                            }}
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))
                   )}
