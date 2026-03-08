@@ -21,7 +21,7 @@ interface MerchantProfile {
   avgAmount: number;
   lastDate: string;
   firstDate: string;
-  frequency: string; // 'weekly' | 'biweekly' | 'monthly' | 'irregular'
+  frequency: 'weekly' | 'biweekly' | 'monthly' | 'irregular';
   trend: 'increasing' | 'decreasing' | 'stable';
   recentAvg: number;
   olderAvg: number;
