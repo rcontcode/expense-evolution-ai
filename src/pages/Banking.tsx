@@ -11,6 +11,7 @@ import { SpendingVelocityMonitor } from '@/components/banking/SpendingVelocityMo
 import { WeeklySpendingDigest } from '@/components/banking/WeeklySpendingDigest';
 import { MerchantIntelligence } from '@/components/banking/MerchantIntelligence';
 import { SmartSearchChat } from '@/components/banking/SmartSearchChat';
+import { CashFlowRunwayCalculator } from '@/components/banking/CashFlowRunwayCalculator';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Upload, Search, AlertTriangle, TrendingDown } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
@@ -66,13 +67,15 @@ export default function Banking() {
         {/* Intelligence Cards */}
         <div className="grid gap-4 lg:grid-cols-2">
           <SpendingVelocityMonitor />
-          <WeeklySpendingDigest />
+          <CashFlowRunwayCalculator />
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <BalanceDateLookup />
+          <WeeklySpendingDigest />
           <MerchantIntelligence />
         </div>
+
+        <BalanceDateLookup />
 
         <div data-highlight="bank-analysis-dashboard">
           <BankAnalysisDashboard onImportClick={() => setImportDialogOpen(true)} />

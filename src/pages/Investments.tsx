@@ -3,6 +3,7 @@ import { Layout } from '@/components/Layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Briefcase } from 'lucide-react';
+import { InvestmentRiskProfiler } from '@/components/investments/InvestmentRiskProfiler';
 
 const FIRECalculatorCard = lazy(() => import('@/components/dashboard/FIRECalculatorCard').then(m => ({ default: m.FIRECalculatorCard })));
 const DebtManagerCard = lazy(() => import('@/components/dashboard/DebtManagerCard').then(m => ({ default: m.DebtManagerCard })));
@@ -31,6 +32,7 @@ export default function Investments() {
 
         <Suspense fallback={<Skeleton className="h-[300px]" />}>
           <div className="space-y-6">
+            <InvestmentRiskProfiler />
             <FIRECalculatorCard />
             <div className="grid gap-6 lg:grid-cols-2">
               <PortfolioTrackerCard />
