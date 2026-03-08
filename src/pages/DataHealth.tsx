@@ -84,6 +84,53 @@ export default function DataHealth() {
           description={l ? 'Detecta registros huérfanos, datos incompletos y revisa el historial completo de cambios.' : 'Detect orphaned records, incomplete data and review complete change history.'}
         />
 
+        {/* Health Score Overview */}
+        {healthScore !== null && (
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <Card className="relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-chart-2/5" />
+                <CardContent className="p-4 relative">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{l ? 'Puntuación' : 'Score'}</p>
+                  <div className="flex items-end gap-2">
+                    <span className={cn("text-3xl font-bold", scoreColor)}>{healthScore}</span>
+                    <span className="text-xs text-muted-foreground mb-1">/100</span>
+                  </div>
+                  <Progress value={healthScore} className="h-1.5 mt-2" />
+                  <p className={cn("text-[10px] mt-1 font-medium", scoreColor)}>{scoreLabel}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{l ? 'Problemas' : 'Issues'}</p>
+                  <p className={cn("text-3xl font-bold", totalIssues > 0 ? 'text-amber-600' : 'text-emerald-600')}>{totalIssues}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{l ? 'Requieren atención' : 'Need attention'}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{l ? 'Actividad 7d' : '7-day activity'}</p>
+                  <p className="text-3xl font-bold">{recentActivity?.week || 0}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{l ? 'Acciones registradas' : 'Actions logged'}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{l ? 'Total auditoría' : 'Total audit'}</p>
+                  <p className="text-3xl font-bold">{recentActivity?.total || 0}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{l ? 'Registros históricos' : 'Historical records'}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        )}
+
         <Tabs defaultValue="health" className="space-y-4">
           <TabsList>
             <TabsTrigger value="health" className="gap-2">
