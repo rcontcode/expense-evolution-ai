@@ -272,6 +272,11 @@ export default function Expenses() {
             <VendorIntelligenceAnalyzer />
           )}
 
+          {/* Spending Anomaly Detector */}
+          {allExpenses && allExpenses.length > 10 && (
+            <SpendingAnomalyDetector />
+          )}
+
           {/* Unified Review Center */}
           <ExpenseReviewCenter
             expenses={allExpenses || []}
