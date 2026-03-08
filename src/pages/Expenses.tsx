@@ -238,6 +238,11 @@ export default function Expenses() {
             </>
           )}
 
+          {/* Quick Insights Summary */}
+          {allExpenses && allExpenses.length > 0 && (
+            <ExpenseInsightsSummary expenses={allExpenses} />
+          )}
+
           <div data-highlight="expense-filters">
             <ExpenseFilters filters={filters} onChange={setFilters} />
           </div>
