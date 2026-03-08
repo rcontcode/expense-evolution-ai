@@ -75,7 +75,7 @@ export function MerchantIntelligence() {
           intervals.push(differenceInDays(parseISO(sortedDates[i]), parseISO(sortedDates[i - 1])));
         }
         const avgInterval = intervals.length > 0 ? intervals.reduce((s, a) => s + a, 0) / intervals.length : 0;
-        let frequency = 'irregular';
+        let frequency: MerchantProfile['frequency'] = 'irregular';
         if (avgInterval >= 5 && avgInterval <= 10) frequency = 'weekly';
         else if (avgInterval >= 12 && avgInterval <= 18) frequency = 'biweekly';
         else if (avgInterval >= 25 && avgInterval <= 35) frequency = 'monthly';
@@ -87,7 +87,7 @@ export function MerchantIntelligence() {
         const olderAvg = olderHalf.reduce((s, a) => s + a, 0) / (olderHalf.length || 1);
         const recentAvg = recentHalf.reduce((s, a) => s + a, 0) / (recentHalf.length || 1);
         const changePercent = olderAvg > 0 ? ((recentAvg - olderAvg) / olderAvg) * 100 : 0;
-        const trend = changePercent > 15 ? 'increasing' : changePercent < -15 ? 'decreasing' : 'stable';
+        const trend: MerchantProfile['trend'] = changePercent > 15 ? 'increasing' : changePercent < -15 ? 'decreasing' : 'stable';
 
         return {
           name: g.name,
