@@ -21,7 +21,6 @@ interface BugReport {
   admin_notes?: string | null;
   user_name?: string;
   created_at: string;
-  [key: string]: unknown;
 }
 
 interface BugStats {

@@ -26,7 +26,6 @@ interface FeedbackItem {
   allow_as_testimonial?: boolean;
   is_published_testimonial?: boolean;
   display_name_override?: string | null;
-  [key: string]: unknown;
 }
 
 interface Props {
