@@ -330,38 +330,35 @@ const AdminCRM = () => {
     <Layout>
       <TooltipProvider>
         <div className="container mx-auto p-4 md:p-6 space-y-6 max-w-7xl">
-          {/* Header */}
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/admin/beta-dashboard')}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-black tracking-tight">
-                  🍊 CRM & Centro de Apps
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  {isEs
-                    ? 'Gestiona usuarios, leads y suscripciones de todas tus apps'
-                    : 'Manage users, leads and subscriptions across all your apps'}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="outline" className="px-3 py-1.5">
-                <Activity className="h-3.5 w-3.5 mr-1 text-emerald-500" />
-                {apps.length} apps
-              </Badge>
-              <Button variant="outline" size="sm" onClick={() => setShowDocs(true)}>
-                <Code className="h-3.5 w-3.5 mr-1" />
-                API Docs
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => navigate('/admin/beta-dashboard')}>
-                <LayoutDashboard className="h-3.5 w-3.5 mr-1" />
+          {/* Header with PageHeader */}
+          <PageHeader 
+            title={isEs ? '🍊 CRM & Centro de Apps' : '🍊 CRM & App Center'}
+            description={isEs ? 'Gestiona usuarios, leads y suscripciones de todas tus apps' : 'Manage users, leads and subscriptions across all your apps'}
+          >
+            {/* Admin navigation buttons */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Button variant="outline" size="sm" onClick={() => navigate('/admin/beta-dashboard')} className="gap-1.5">
+                <LayoutDashboard className="h-3.5 w-3.5" />
                 Beta
               </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/admin/leads')} className="gap-1.5">
+                <Target className="h-3.5 w-3.5" />
+                Leads
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/admin/beta-codes')} className="gap-1.5">
+                <Zap className="h-3.5 w-3.5" />
+                {isEs ? 'Códigos' : 'Codes'}
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/admin/ecosystem-lab')} className="gap-1.5">
+                <Globe className="h-3.5 w-3.5" />
+                Lab
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowDocs(true)} className="gap-1.5">
+                <Code className="h-3.5 w-3.5" />
+                API
+              </Button>
             </div>
-          </motion.div>
+          </PageHeader>
 
           {/* Global Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
