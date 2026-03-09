@@ -49,6 +49,7 @@ interface QueueLead {
 
 export const AdminContactQueueTab = ({ language }: Props) => {
   const isEs = language === 'es';
+  const queryClient = useQueryClient();
   const [selectedLead, setSelectedLead] = useState<QueueLead | null>(null);
   const [aiMessage, setAiMessage] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
