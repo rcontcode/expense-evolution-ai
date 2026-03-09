@@ -666,42 +666,62 @@ const AdminCRM = () => {
           {/* CRM Tabs */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-6 p-1 bg-muted/50 rounded-xl h-12">
-                <TabsTrigger value="users" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold text-[11px] md:text-sm">
+              <TabsList className="grid w-full grid-cols-5 md:grid-cols-10 p-1 bg-muted/50 rounded-xl h-12">
+                <TabsTrigger value="users" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
                   <Users className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">{isEs ? 'Usuarios' : 'Users'}</span>
-                  <span className="sm:hidden">👥</span>
+                  <span className="hidden md:inline">{isEs ? 'Usuarios' : 'Users'}</span>
+                  <span className="md:hidden">👥</span>
                 </TabsTrigger>
-                <TabsTrigger value="leads" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold text-[11px] md:text-sm">
+                <TabsTrigger value="leads" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
                   <Target className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Leads</span>
-                  <span className="sm:hidden">🎯</span>
+                  <span className="hidden md:inline">Leads</span>
+                  <span className="md:hidden">🎯</span>
                 </TabsTrigger>
-                <TabsTrigger value="ranking" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-500 data-[state=active]:text-white rounded-lg font-semibold text-[11px] md:text-sm">
+                <TabsTrigger value="pipeline" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <span className="hidden md:inline">Pipeline</span>
+                  <span className="md:hidden">📊</span>
+                </TabsTrigger>
+                <TabsTrigger value="ranking" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-500 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
                   <TrendingUp className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Ranking</span>
-                  <span className="sm:hidden">🏆</span>
+                  <span className="hidden md:inline">Ranking</span>
+                  <span className="md:hidden">🏆</span>
                 </TabsTrigger>
-                <TabsTrigger value="queue" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold text-[11px] md:text-sm">
+                <TabsTrigger value="queue" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
                   <Phone className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">{isEs ? 'Contactar' : 'Queue'}</span>
-                  <span className="sm:hidden">📞</span>
+                  <span className="hidden md:inline">{isEs ? 'Contactar' : 'Queue'}</span>
+                  <span className="md:hidden">📞</span>
                 </TabsTrigger>
-                <TabsTrigger value="automation" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg font-semibold text-[11px] md:text-sm">
+                <TabsTrigger value="history" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-500 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <span className="hidden md:inline">{isEs ? 'Historial' : 'History'}</span>
+                  <span className="md:hidden">📜</span>
+                </TabsTrigger>
+                <TabsTrigger value="templates" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-500 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <span className="hidden md:inline">{isEs ? 'Plantillas' : 'Templates'}</span>
+                  <span className="md:hidden">📝</span>
+                </TabsTrigger>
+                <TabsTrigger value="metrics" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-violet-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <span className="hidden md:inline">{isEs ? 'Métricas' : 'Metrics'}</span>
+                  <span className="md:hidden">📈</span>
+                </TabsTrigger>
+                <TabsTrigger value="automation" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
                   <Zap className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">{isEs ? 'Auto' : 'Auto'}</span>
-                  <span className="sm:hidden">⚡</span>
+                  <span className="hidden md:inline">Auto</span>
+                  <span className="md:hidden">⚡</span>
                 </TabsTrigger>
-                <TabsTrigger value="subscriptions" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white rounded-lg font-semibold text-[11px] md:text-sm">
+                <TabsTrigger value="subscriptions" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
                   <CreditCard className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">{isEs ? 'Planes' : 'Plans'}</span>
-                  <span className="sm:hidden">💳</span>
+                  <span className="hidden md:inline">{isEs ? 'Planes' : 'Plans'}</span>
+                  <span className="md:hidden">💳</span>
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="users"><AdminUserOverview /></TabsContent>
               <TabsContent value="leads"><AdminLeadsTab language={language} sourceFilter={sourceFilter} onClearFilter={() => setSourceFilter(null)} /></TabsContent>
+              <TabsContent value="pipeline"><AdminKanbanPipeline language={language} /></TabsContent>
               <TabsContent value="ranking"><AdminCrossAppRanking language={language} /></TabsContent>
               <TabsContent value="queue"><AdminContactQueueTab language={language} /></TabsContent>
+              <TabsContent value="history"><AdminLeadHistory language={language} /></TabsContent>
+              <TabsContent value="templates"><AdminSavedTemplates language={language} /></TabsContent>
+              <TabsContent value="metrics"><AdminAdvancedMetrics language={language} /></TabsContent>
               <TabsContent value="automation"><AdminAutomationTab language={language} /></TabsContent>
               <TabsContent value="subscriptions"><AdminSubscriptionsTab language={language} /></TabsContent>
             </Tabs>
