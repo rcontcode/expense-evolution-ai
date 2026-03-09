@@ -58,6 +58,7 @@ const StatCard = ({ title, value, icon: Icon, trend, gradient, emoji }: {
 
 const BetaDashboard = () => {
   const { language } = useLanguage();
+  const isEs = language === 'es';
   const text = adminTranslations[language];
   const {
     allFeedback, bugReports, featureUsage, userStats,
