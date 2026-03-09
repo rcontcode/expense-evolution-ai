@@ -178,7 +178,7 @@ export default function BetaCodesAdmin() {
                 <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={() => createCodes.mutate()} disabled={createCodes.isPending || !newCodePrefix.trim()}>
+                <Button onClick={handleCreateCodes} disabled={createCodes.isPending || !newCodePrefix.trim()}>
                   {createCodes.isPending ? 'Creando...' : `Crear ${newCodeQuantity} Código${newCodeQuantity > 1 ? 's' : ''}`}
                 </Button>
               </DialogFooter>
