@@ -49,6 +49,12 @@ const ROUTE_CONFIG: Record<string, { labelEs: string; labelEn: string; parent?: 
   '/data-health': { labelEs: 'Salud de Datos', labelEn: 'Data Health', parent: '/dashboard' },
   '/beta-feedback': { labelEs: 'Feedback Beta', labelEn: 'Beta Feedback', parent: '/dashboard' },
   '/beta-guide': { labelEs: 'Guía Beta', labelEn: 'Beta Guide', parent: '/dashboard' },
+  // Admin routes
+  '/admin/crm': { labelEs: 'CRM & Apps', labelEn: 'CRM & Apps', parent: '/settings' },
+  '/admin/beta-dashboard': { labelEs: 'Beta Dashboard', labelEn: 'Beta Dashboard', parent: '/settings' },
+  '/admin/leads': { labelEs: 'Gestión de Leads', labelEn: 'Leads Management', parent: '/admin/crm' },
+  '/admin/beta-codes': { labelEs: 'Códigos Beta', labelEn: 'Beta Codes', parent: '/admin/beta-dashboard' },
+  '/admin/ecosystem-lab': { labelEs: 'Lab Ecosistema', labelEn: 'Ecosystem Lab', parent: '/settings' },
 };
 
 export function PageHeader({ title, description, showBack = true, children }: PageHeaderProps) {
