@@ -396,7 +396,15 @@ export default function Settings() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid sm:grid-cols-2 gap-2">
-                    <Button onClick={() => navigate('/admin/beta-codes')} className="gap-2 min-h-[44px]">
+                    <Button onClick={() => navigate('/admin/crm')} className="gap-2 min-h-[44px] bg-gradient-to-r from-primary to-violet-600 hover:opacity-90">
+                      <Users className="h-4 w-4" />
+                      {language === 'es' ? '🎯 CRM & Apps' : '🎯 CRM & Apps'}
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate('/admin/beta-dashboard')} className="gap-2 min-h-[44px]">
+                      <Shield className="h-4 w-4" />
+                      {language === 'es' ? 'Beta Dashboard' : 'Beta Dashboard'}
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate('/admin/beta-codes')} className="gap-2 min-h-[44px]">
                       <Ticket className="h-4 w-4" />
                       {language === 'es' ? 'Códigos Beta' : 'Beta Codes'}
                     </Button>
