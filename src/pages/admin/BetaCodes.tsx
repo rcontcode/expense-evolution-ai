@@ -107,7 +107,6 @@ export default function BetaCodesAdmin() {
           title="Administración de Códigos Beta"
           description="Gestiona los códigos de invitación para beta testers"
         >
-
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2">
@@ -163,12 +162,14 @@ export default function BetaCodesAdmin() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="expiry">Fecha de Expiración</Label>
+                  <Label htmlFor="expiry">Expiración (días, 0 = sin expiración)</Label>
                   <Input
                     id="expiry"
-                    type="date"
+                    type="number"
+                    min={0}
+                    max={365}
                     value={newCodeExpiry}
-                    onChange={(e) => setNewCodeExpiry(e.target.value)}
+                    onChange={(e) => setNewCodeExpiry(parseInt(e.target.value) || 0)}
                   />
                 </div>
               </div>
@@ -177,13 +178,13 @@ export default function BetaCodesAdmin() {
                 <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleCreateCodes} disabled={createCodes.isPending}>
-                  {createCodes.isPending ? 'Creando...' : `Crear ${newCodeQuantity} Códigos`}
+                <Button onClick={() => createCodes.mutate()} disabled={createCodes.isPending || !newCodePrefix.trim()}>
+                  {createCodes.isPending ? 'Creando...' : `Crear ${newCodeQuantity} Código${newCodeQuantity > 1 ? 's' : ''}`}
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
+        </PageHeader>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
