@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, MessageSquare, GripVertical, Mail, Phone, Globe, Target, AlertTriangle, User, ArrowRight } from 'lucide-react';
+import { Clock, MessageSquare, GripVertical, Mail, Phone, Globe, User, ArrowRight, Copy, ExternalLink, Send, MessageCircle, CalendarCheck, Star, Zap } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es as esLocale, enUS } from 'date-fns/locale';
 import { calculateLeadScore, getLeadPriority, getPriorityColors } from '@/hooks/admin/useLeadScoring';
