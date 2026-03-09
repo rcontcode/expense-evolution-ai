@@ -118,26 +118,15 @@ serve(async (req) => {
       logStep("Active subscription found", { subscriptionId: subscription.id, productId, endDate: subscriptionEnd });
 
       // Determine plan type, billing period, and bundle status from product ID
-      if (productId === PRODUCT_IDS.premium_monthly) {
+      const productConfig = PRODUCT_ID_MAP[productId];
+      if (productConfig) {
+        planType = productConfig.plan;
+        billingPeriod = productConfig.period;
+        hasBundle = productConfig.bundle || false;
+      } else {
+        logStep("WARNING: Unknown product ID, defaulting to premium", { productId });
         planType = "premium";
         billingPeriod = "monthly";
-      } else if (productId === PRODUCT_IDS.premium_annual) {
-        planType = "premium";
-        billingPeriod = "annual";
-      } else if (productId === PRODUCT_IDS.pro_monthly) {
-        planType = "pro";
-        billingPeriod = "monthly";
-      } else if (productId === PRODUCT_IDS.pro_annual) {
-        planType = "pro";
-        billingPeriod = "annual";
-      } else if (productId === PRODUCT_IDS.bundle_monthly) {
-        planType = "pro";
-        billingPeriod = "monthly";
-        hasBundle = true;
-      } else if (productId === PRODUCT_IDS.bundle_annual) {
-        planType = "pro";
-        billingPeriod = "annual";
-        hasBundle = true;
       }
 
       logStep("Determined plan", { planType, billingPeriod, hasBundle });
