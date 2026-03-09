@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AdminSystemMetrics } from '@/components/admin/AdminSystemMetrics';
+import { AdminQuickActions } from '@/components/admin/AdminQuickActions';
+import { AdminRecentActivity } from '@/components/admin/AdminRecentActivity';
 import { format } from 'date-fns';
 import { es as esLocale } from 'date-fns/locale';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
