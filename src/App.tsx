@@ -385,6 +385,7 @@ const App = () => (
                         <Route path="/admin/beta-dashboard" element={<AdminRoute><BetaDashboardAdmin /></AdminRoute>} />
                         <Route path="/admin/leads" element={<AdminRoute><LeadsManagementAdmin /></AdminRoute>} />
                         <Route path="/admin/ecosystem-lab" element={<AdminRoute><EcosystemLabAdmin /></AdminRoute>} />
+                        <Route path="/admin/crm" element={<AdminRoute><AdminCRM /></AdminRoute>} />
                         <Route path="/beta-feedback" element={<ProtectedRoute><BetaFeedback /></ProtectedRoute>} />
                         <Route path="/beta-guide" element={<ProtectedRoute><BetaGuide /></ProtectedRoute>} />
                         <Route path="/adventure" element={<ProtectedRoute><FinancialAdventure /></ProtectedRoute>} />
