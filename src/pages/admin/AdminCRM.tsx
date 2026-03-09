@@ -870,9 +870,7 @@ const AdminCRM = () => {
                       onClick={() => {
                         setSourceFilter(selectedApp.source_key);
                         setSelectedApp(null);
-                        // Switch to leads tab
-                        const leadsTab = document.querySelector('[data-state][value="leads"]') as HTMLElement;
-                        leadsTab?.click();
+                        setActiveTab('leads');
                       }}
                     >
                       <Target className="h-4 w-4 mr-2 text-primary" />
