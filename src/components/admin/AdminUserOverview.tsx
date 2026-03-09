@@ -50,12 +50,20 @@ export const AdminUserOverview = memo(() => {
   const { data: allUsers, isLoading } = useQuery({
     queryKey: ['admin-user-overview-all'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from('profiles')
         .select('id, email, full_name, is_beta_tester, beta_expires_at, beta_plan_level, created_at')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []) as UserRow[];
+      
+      // Fetch subscriptions to merge plan data
+      const { data: subs } = await supabase
+        .from('user_subscriptions')
+        .select('user_id, plan_type');
+      const subMap: Record<string, string> = {};
+      for (const s of subs || []) { subMap[s.user_id] = s.plan_type || 'free'; }
+      
+      return (profiles || []).map(p => ({ ...p, plan_type: subMap[p.id] || 'free' })) as UserRow[];
     },
     refetchInterval: 60000,
   });
