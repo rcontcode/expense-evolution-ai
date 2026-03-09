@@ -51,7 +51,7 @@ export default function LeadsManagement() {
           <LeadsExport leads={allLeads} />
         </PageHeader>
 
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      
         {/* Priority Stats - First Row */}
         <div className="grid gap-4 md:grid-cols-4">
           {/* HOT leads without contact - URGENT */}
