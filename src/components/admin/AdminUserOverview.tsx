@@ -177,6 +177,8 @@ export const AdminUserOverview = memo(() => {
               <SelectItem value="all">{isEs ? 'Todos' : 'All'}</SelectItem>
               <SelectItem value="beta">Beta</SelectItem>
               <SelectItem value="non-beta">{isEs ? 'No Beta' : 'Non-Beta'}</SelectItem>
+              <SelectItem value="paid">{isEs ? 'De Pago' : 'Paid'}</SelectItem>
+              <SelectItem value="free">Free</SelectItem>
             </SelectContent>
           </Select>
         </div>
