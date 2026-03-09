@@ -47,6 +47,7 @@ export const AdminUserOverview = memo(() => {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'beta' | 'non-beta' | 'paid' | 'free'>('all');
   const [page, setPage] = useState(0);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const { data: allUsers, isLoading } = useQuery({
     queryKey: ['admin-user-overview-all'],
