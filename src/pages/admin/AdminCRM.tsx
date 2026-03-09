@@ -26,6 +26,8 @@ import { AdminUserOverview } from '@/components/admin/AdminUserOverview';
 import { AdminSubscriptionsTab } from '@/components/admin/tabs/AdminSubscriptionsTab';
 import { AdminLeadsTab } from '@/components/admin/tabs/AdminLeadsTab';
 import { AdminActivityFeed } from '@/components/admin/tabs/AdminActivityFeed';
+import { AdminContactQueueTab } from '@/components/admin/tabs/AdminContactQueueTab';
+import { AdminAutomationTab } from '@/components/admin/tabs/AdminAutomationTab';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
