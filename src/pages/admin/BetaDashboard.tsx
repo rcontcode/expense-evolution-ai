@@ -500,9 +500,13 @@ const BetaDashboard = () => {
         {/* System Metrics + Quick Actions */}
         <AdminSystemMetrics />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <AdminQuickActions />
           <AdminRecentActivity />
+          <div className="space-y-4">
+            <AdminDataHealth />
+            <AdminUserOverview />
+          </div>
         </div>
 
         {/* Overview Stats */}
