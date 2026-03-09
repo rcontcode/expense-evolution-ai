@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Users, Star, Bug, Activity, MessageSquare, BarChart3,
   Crown, Sparkles, Heart, Zap, Target, Flame, Gift, Quote,
-  TrendingUp,
+  TrendingUp, CreditCard, Users2,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
