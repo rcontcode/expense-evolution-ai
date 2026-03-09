@@ -552,7 +552,10 @@ const AdminCRM = () => {
                       const stats = getAppStats(app.source_key);
                       return (
                         <motion.div key={app.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ delay: i * 0.03 }}>
-                          <Card className="overflow-hidden hover:shadow-lg transition-all group border-2 hover:border-primary/30 h-full">
+                          <Card 
+                            className="overflow-hidden hover:shadow-lg transition-all group border-2 hover:border-primary/30 h-full cursor-pointer"
+                            onClick={() => setSelectedApp(app)}
+                          >
                             <div className={`h-1.5 bg-gradient-to-r ${app.color}`} />
                             <CardContent className="p-3">
                               <div className="flex items-start justify-between gap-2">
