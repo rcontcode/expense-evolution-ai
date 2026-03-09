@@ -212,6 +212,11 @@ export const AdminUserOverview = memo(() => {
                     <p className="text-[9px] text-muted-foreground truncate">{user.email}</p>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
+                    {user.plan_type && user.plan_type !== 'free' && (
+                      <Badge variant="outline" className="text-[8px] px-1 py-0 h-4 border-primary/30 text-primary">
+                        {user.plan_type.toUpperCase()}
+                      </Badge>
+                    )}
                     {user.is_beta_tester && (
                       <Badge variant="outline" className="text-[8px] px-1 py-0 h-4">
                         {user.beta_plan_level || 'beta'}
