@@ -482,7 +482,6 @@ export const AdminContactQueueTab = ({ language }: Props) => {
                       ✅ {isEs ? 'Ya contactado' : 'Already contacted'}
                     </Badge>
                   )}
-                  </Button>
                 </div>
               </div>
             </ScrollArea>
