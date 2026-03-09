@@ -109,6 +109,7 @@ const BetaCodesAdmin = lazyWithRetry(() => import("./pages/admin/BetaCodes"));
 const BetaDashboardAdmin = lazyWithRetry(() => import("./pages/admin/BetaDashboard"));
 const LeadsManagementAdmin = lazyWithRetry(() => import("./pages/admin/LeadsManagement"));
 const EcosystemLabAdmin = lazyWithRetry(() => import("./pages/admin/EcosystemLab"));
+const AdminCRM = lazyWithRetry(() => import("./pages/admin/AdminCRM"));
 const FinancialQuiz = lazyWithRetry(() => import("./pages/FinancialQuiz"));
 const BetaFeedback = lazyWithRetry(() => import("./pages/BetaFeedback"));
 const BetaGuide = lazyWithRetry(() => import("./pages/BetaGuide"));
