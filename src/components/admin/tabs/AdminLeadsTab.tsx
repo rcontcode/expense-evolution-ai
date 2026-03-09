@@ -139,6 +139,7 @@ export const AdminLeadsTab = ({ language }: Props) => {
                 <TableHead className="text-center font-bold">Score</TableHead>
                 <TableHead className="font-bold">{isEs ? 'Estado' : 'Status'}</TableHead>
                 <TableHead className="font-bold">{isEs ? 'Fecha' : 'Date'}</TableHead>
+                <TableHead className="text-center font-bold">{isEs ? 'Acción' : 'Action'}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
