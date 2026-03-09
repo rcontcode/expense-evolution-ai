@@ -87,10 +87,14 @@ export function PageHeader({ title, description, showBack = true, children }: Pa
   const canGoBack = breadcrumbs.length > 1 || window.history.length > 1;
   
   const handleBack = () => {
-    if (currentRoute?.parent) {
+    // If there's real browser history (user navigated here from another page), go back
+    // window.history.state?.idx > 0 means there's a previous entry in this session
+    const hasRealHistory = window.history.state?.idx > 0;
+    if (hasRealHistory) {
+      window.history.back();
+    } else if (currentRoute?.parent) {
       navigate(currentRoute.parent);
     } else {
-      // Fallback: go to dashboard instead of history back to avoid stuck states
       navigate('/dashboard');
     }
   };
