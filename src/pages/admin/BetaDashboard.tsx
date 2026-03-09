@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AdminSystemMetrics } from '@/components/admin/AdminSystemMetrics';
+import { AdminQuickActions } from '@/components/admin/AdminQuickActions';
+import { AdminRecentActivity } from '@/components/admin/AdminRecentActivity';
 import { format } from 'date-fns';
 import { es as esLocale } from 'date-fns/locale';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -491,6 +494,14 @@ const BetaDashboard = () => {
             </Badge>
           </div>
         </motion.div>
+
+        {/* System Metrics + Quick Actions */}
+        <AdminSystemMetrics />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AdminQuickActions />
+          <AdminRecentActivity />
+        </div>
 
         {/* Overview Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
