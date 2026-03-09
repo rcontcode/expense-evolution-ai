@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +49,7 @@ interface QueueLead {
 
 export const AdminContactQueueTab = ({ language }: Props) => {
   const isEs = language === 'es';
+  const queryClient = useQueryClient();
   const [selectedLead, setSelectedLead] = useState<QueueLead | null>(null);
   const [aiMessage, setAiMessage] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
@@ -129,6 +130,20 @@ export const AdminContactQueueTab = ({ language }: Props) => {
     }
   };
 
+  const markAsContacted = useMutation({
+    mutationFn: async (leadId: string) => {
+      const { error } = await supabase
+        .from('quiz_leads')
+        .update({ contacted_at: new Date().toISOString() })
+        .eq('id', leadId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact-queue-leads'] });
+      toast.success(isEs ? '✅ Marcado como contactado' : '✅ Marked as contacted');
+    },
+  });
+
   const copyMessage = () => {
     navigator.clipboard.writeText(aiMessage);
     toast.success(isEs ? '📋 Mensaje copiado' : '📋 Message copied');
@@ -142,6 +157,8 @@ export const AdminContactQueueTab = ({ language }: Props) => {
     const phone = lead.phone.replace(/[^\d+]/g, '');
     const msg = encodeURIComponent(customMessage || aiMessage);
     window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+    // Auto-mark as contacted
+    if (!lead.contacted_at) markAsContacted.mutate(lead.id);
   };
 
   const handleEmail = (lead: QueueLead, customMessage?: string) => {
@@ -152,6 +169,8 @@ export const AdminContactQueueTab = ({ language }: Props) => {
         : `${lead.name.split(' ')[0]}, your personalized financial plan`
     );
     window.open(`mailto:${lead.email}?subject=${subject}&body=${body}`, '_blank');
+    // Auto-mark as contacted
+    if (!lead.contacted_at) markAsContacted.mutate(lead.id);
   };
 
   const LeadCard = ({ lead, index }: { lead: QueueLead; index: number }) => {
@@ -447,6 +466,22 @@ export const AdminContactQueueTab = ({ language }: Props) => {
                   >
                     <Copy className="h-3 w-3" /> {isEs ? 'Copiar email' : 'Copy email'}
                   </Button>
+                  {!selectedLead.contacted_at && (
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="text-xs gap-1"
+                      disabled={markAsContacted.isPending}
+                      onClick={() => markAsContacted.mutate(selectedLead.id)}
+                    >
+                      <UserCheck className="h-3 w-3" /> {isEs ? 'Marcar contactado' : 'Mark contacted'}
+                    </Button>
+                  )}
+                  {selectedLead.contacted_at && (
+                    <Badge variant="outline" className="text-[10px] text-emerald-600">
+                      ✅ {isEs ? 'Ya contactado' : 'Already contacted'}
+                    </Badge>
+                  )}
                 </div>
               </div>
             </ScrollArea>

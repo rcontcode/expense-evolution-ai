@@ -103,14 +103,19 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
 
 export const AdminAutomationTab = ({ language }: Props) => {
   const isEs = language === 'es';
-  const [rules, setRules] = useState<AutomationRule[]>(DEFAULT_RULES);
+  const [rules, setRules] = useState<AutomationRule[]>(() => {
+    const saved = localStorage.getItem('crm-automation-rules');
+    return saved ? JSON.parse(saved) : DEFAULT_RULES;
+  });
   const [ghlWebhook, setGhlWebhook] = useState('');
   const [showSetup, setShowSetup] = useState(false);
 
   const toggleRule = (ruleId: string) => {
-    setRules((prev) =>
-      prev.map((r) => (r.id === ruleId ? { ...r, enabled: !r.enabled } : r))
-    );
+    setRules((prev) => {
+      const updated = prev.map((r) => (r.id === ruleId ? { ...r, enabled: !r.enabled } : r));
+      localStorage.setItem('crm-automation-rules', JSON.stringify(updated));
+      return updated;
+    });
     toast.success(isEs ? 'Regla actualizada' : 'Rule updated');
   };
 
