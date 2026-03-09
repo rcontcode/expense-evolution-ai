@@ -199,7 +199,7 @@ export const AdminLeadsTab = ({ language }: Props) => {
               })}
               {hotLeads.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12">
+                  <TableCell colSpan={7} className="text-center py-12">
                     <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
                     <p className="text-muted-foreground">{isEs ? 'No hay leads aún' : 'No leads yet'}</p>
                   </TableCell>
