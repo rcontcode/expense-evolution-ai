@@ -1,10 +1,11 @@
-import { memo, useState } from 'react';
+import { memo, useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   DropdownMenu,
@@ -13,9 +14,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Users, Crown, Shield, Clock, MoreVertical, UserCheck, UserX, CalendarPlus, Mail } from 'lucide-react';
-import { formatDistanceToNow, parseISO } from 'date-fns';
-import { es as esLocale, enUS } from 'date-fns/locale';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Users, Crown, Shield, MoreVertical, UserCheck, UserX, CalendarPlus, Mail, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -29,24 +35,24 @@ interface UserRow {
   created_at: string;
 }
 
-/**
- * Admin widget showing users with management actions:
- * toggle beta, extend access, view details.
- */
+const PAGE_SIZE = 15;
+
 export const AdminUserOverview = memo(() => {
   const { language } = useLanguage();
   const isEs = language === 'es';
   const queryClient = useQueryClient();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<'all' | 'beta' | 'non-beta'>('all');
+  const [page, setPage] = useState(0);
 
-  const { data: users, isLoading } = useQuery({
-    queryKey: ['admin-user-overview'],
+  const { data: allUsers, isLoading } = useQuery({
+    queryKey: ['admin-user-overview-all'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, email, full_name, is_beta_tester, beta_expires_at, beta_plan_level, created_at')
-        .order('created_at', { ascending: false })
-        .limit(15);
+        .order('created_at', { ascending: false });
       if (error) throw error;
       return (data || []) as UserRow[];
     },
@@ -56,65 +62,68 @@ export const AdminUserOverview = memo(() => {
   const { data: adminIds } = useQuery({
     queryKey: ['admin-role-ids'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .eq('role', 'admin');
+      const { data, error } = await supabase.from('user_roles').select('user_id').eq('role', 'admin');
       if (error) return [];
       return (data || []).map(r => r.user_id);
     },
   });
 
+  // Filter and search
+  const filteredUsers = useMemo(() => {
+    let result = allUsers || [];
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(u =>
+        (u.full_name?.toLowerCase().includes(q)) ||
+        (u.email?.toLowerCase().includes(q))
+      );
+    }
+    if (filter === 'beta') result = result.filter(u => u.is_beta_tester);
+    if (filter === 'non-beta') result = result.filter(u => !u.is_beta_tester);
+    return result;
+  }, [allUsers, search, filter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const pagedUsers = filteredUsers.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+  // Reset page on filter/search change
+  const handleSearch = (v: string) => { setSearch(v); setPage(0); };
+  const handleFilter = (v: string) => { setFilter(v as any); setPage(0); };
+
   const handleActivateBeta = async (userId: string, days: number = 90) => {
     setActionLoading(userId);
     try {
-      const { error } = await supabase.rpc('activate_beta_tester', {
-        p_user_id: userId,
-        p_days: days,
-      });
+      const { error } = await supabase.rpc('activate_beta_tester', { p_user_id: userId, p_days: days });
       if (error) throw error;
       toast.success(isEs ? `✅ Beta activado (${days} días)` : `✅ Beta activated (${days} days)`);
-      queryClient.invalidateQueries({ queryKey: ['admin-user-overview'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-user-overview-all'] });
     } catch (err: any) {
       toast.error(err.message || 'Error');
-    } finally {
-      setActionLoading(null);
-    }
+    } finally { setActionLoading(null); }
   };
 
   const handleRevokeBeta = async (userId: string) => {
     setActionLoading(userId);
     try {
-      const { error } = await supabase.rpc('revoke_beta_access', {
-        p_user_id: userId,
-        p_reason: 'Revocado por admin',
-      });
+      const { error } = await supabase.rpc('revoke_beta_access', { p_user_id: userId, p_reason: 'Revocado por admin' });
       if (error) throw error;
       toast.success(isEs ? '❌ Beta revocado' : '❌ Beta revoked');
-      queryClient.invalidateQueries({ queryKey: ['admin-user-overview'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-user-overview-all'] });
     } catch (err: any) {
       toast.error(err.message || 'Error');
-    } finally {
-      setActionLoading(null);
-    }
+    } finally { setActionLoading(null); }
   };
 
   const handleExtendBeta = async (userId: string, days: number = 30) => {
     setActionLoading(userId);
     try {
-      const { error } = await supabase.rpc('extend_beta_access', {
-        p_user_id: userId,
-        p_days: days,
-        p_reason: `Extensión admin +${days}d`,
-      });
+      const { error } = await supabase.rpc('extend_beta_access', { p_user_id: userId, p_days: days, p_reason: `Extensión admin +${days}d` });
       if (error) throw error;
       toast.success(isEs ? `📅 +${days} días añadidos` : `📅 +${days} days added`);
-      queryClient.invalidateQueries({ queryKey: ['admin-user-overview'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-user-overview-all'] });
     } catch (err: any) {
       toast.error(err.message || 'Error');
-    } finally {
-      setActionLoading(null);
-    }
+    } finally { setActionLoading(null); }
   };
 
   if (isLoading) {
@@ -135,17 +144,39 @@ export const AdminUserOverview = memo(() => {
             {isEs ? '👥 Gestión de Usuarios' : '👥 User Management'}
           </CardTitle>
           <Badge variant="outline" className="text-[10px]">
-            {users?.length || 0} {isEs ? 'recientes' : 'recent'}
+            {filteredUsers.length} / {allUsers?.length || 0}
           </Badge>
+        </div>
+        {/* Search & Filter */}
+        <div className="flex gap-2 mt-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder={isEs ? 'Buscar nombre o email...' : 'Search name or email...'}
+              value={search}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-7 h-8 text-xs"
+            />
+          </div>
+          <Select value={filter} onValueChange={handleFilter}>
+            <SelectTrigger className="w-[100px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{isEs ? 'Todos' : 'All'}</SelectItem>
+              <SelectItem value="beta">Beta</SelectItem>
+              <SelectItem value="non-beta">{isEs ? 'No Beta' : 'Non-Beta'}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[340px]">
+        <ScrollArea className="h-[300px]">
           <div className="p-4 space-y-1">
-            {users?.map((user, index) => {
+            {pagedUsers.map((user, index) => {
               const isAdmin = adminIds?.includes(user.id);
               const displayName = user.full_name || user.email?.split('@')[0] || '—';
-              const isLoading = actionLoading === user.id;
+              const isItemLoading = actionLoading === user.id;
               return (
                 <motion.div
                   key={user.id}
@@ -165,11 +196,7 @@ export const AdminUserOverview = memo(() => {
                       {isAdmin && <Shield className="h-2.5 w-2.5 text-primary flex-shrink-0" />}
                       {user.is_beta_tester && <Crown className="h-2.5 w-2.5 text-amber-500 flex-shrink-0" />}
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-[9px] text-muted-foreground truncate">
-                        {user.email}
-                      </p>
-                    </div>
+                    <p className="text-[9px] text-muted-foreground truncate">{user.email}</p>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     {user.is_beta_tester && (
@@ -179,12 +206,7 @@ export const AdminUserOverview = memo(() => {
                     )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                          disabled={isLoading}
-                        >
+                        <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" disabled={isItemLoading}>
                           <MoreVertical className="h-3 w-3" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -192,43 +214,29 @@ export const AdminUserOverview = memo(() => {
                         {!user.is_beta_tester ? (
                           <>
                             <DropdownMenuItem onClick={() => handleActivateBeta(user.id, 90)}>
-                              <UserCheck className="h-3.5 w-3.5 mr-2" />
-                              {isEs ? 'Activar Beta (90d)' : 'Activate Beta (90d)'}
+                              <UserCheck className="h-3.5 w-3.5 mr-2" />{isEs ? 'Activar Beta (90d)' : 'Activate Beta (90d)'}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleActivateBeta(user.id, 30)}>
-                              <UserCheck className="h-3.5 w-3.5 mr-2" />
-                              {isEs ? 'Activar Beta (30d)' : 'Activate Beta (30d)'}
+                              <UserCheck className="h-3.5 w-3.5 mr-2" />{isEs ? 'Activar Beta (30d)' : 'Activate Beta (30d)'}
                             </DropdownMenuItem>
                           </>
                         ) : (
                           <>
                             <DropdownMenuItem onClick={() => handleExtendBeta(user.id, 30)}>
-                              <CalendarPlus className="h-3.5 w-3.5 mr-2" />
-                              {isEs ? 'Extender +30 días' : 'Extend +30 days'}
+                              <CalendarPlus className="h-3.5 w-3.5 mr-2" />{isEs ? 'Extender +30 días' : 'Extend +30 days'}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleExtendBeta(user.id, 90)}>
-                              <CalendarPlus className="h-3.5 w-3.5 mr-2" />
-                              {isEs ? 'Extender +90 días' : 'Extend +90 days'}
+                              <CalendarPlus className="h-3.5 w-3.5 mr-2" />{isEs ? 'Extender +90 días' : 'Extend +90 days'}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-destructive"
-                              onClick={() => handleRevokeBeta(user.id)}
-                            >
-                              <UserX className="h-3.5 w-3.5 mr-2" />
-                              {isEs ? 'Revocar Beta' : 'Revoke Beta'}
+                            <DropdownMenuItem className="text-destructive" onClick={() => handleRevokeBeta(user.id)}>
+                              <UserX className="h-3.5 w-3.5 mr-2" />{isEs ? 'Revocar Beta' : 'Revoke Beta'}
                             </DropdownMenuItem>
                           </>
                         )}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => {
-                            navigator.clipboard.writeText(user.email || '');
-                            toast.success(isEs ? 'Email copiado' : 'Email copied');
-                          }}
-                        >
-                          <Mail className="h-3.5 w-3.5 mr-2" />
-                          {isEs ? 'Copiar Email' : 'Copy Email'}
+                        <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(user.email || ''); toast.success(isEs ? 'Email copiado' : 'Email copied'); }}>
+                          <Mail className="h-3.5 w-3.5 mr-2" />{isEs ? 'Copiar Email' : 'Copy Email'}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -236,8 +244,25 @@ export const AdminUserOverview = memo(() => {
                 </motion.div>
               );
             })}
+            {pagedUsers.length === 0 && (
+              <p className="text-center text-sm text-muted-foreground py-8">
+                {isEs ? 'No se encontraron usuarios' : 'No users found'}
+              </p>
+            )}
           </div>
         </ScrollArea>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-2 border-t">
+            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>
+              <ChevronLeft className="h-3 w-3 mr-1" /> {isEs ? 'Anterior' : 'Prev'}
+            </Button>
+            <span className="text-[10px] text-muted-foreground">{page + 1} / {totalPages}</span>
+            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>
+              {isEs ? 'Siguiente' : 'Next'} <ChevronRight className="h-3 w-3 ml-1" />
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
