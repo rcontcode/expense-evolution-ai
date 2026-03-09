@@ -173,6 +173,6 @@ export default function EcosystemLabAdmin() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </Layout>
   );
 }
