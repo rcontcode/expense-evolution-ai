@@ -54,6 +54,16 @@ const MANAGED_APPS: ManagedApp[] = [
     icon: '🧘',
     color: 'from-violet-500 to-purple-600',
   },
+  {
+    id: 'trustlyconnect',
+    name: 'TrustlyConnect',
+    description: 'App de conexión y confianza financiera con quiz integrado',
+    url: 'https://trustlyconnect.lovable.app',
+    status: 'beta',
+    type: 'web',
+    icon: '🤝',
+    color: 'from-sky-500 to-blue-600',
+  },
 ];
 
 const statusColors: Record<string, string> = {
