@@ -527,6 +527,22 @@ export const AdminContactQueueTab = ({ language }: Props) => {
                       </Button>
                       <Button
                         size="sm"
+                        variant="outline"
+                        className="text-xs gap-1"
+                        onClick={async () => {
+                          const name = prompt(isEs ? 'Nombre para esta plantilla:' : 'Name for this template:');
+                          if (!name) return;
+                          await supabase.from('lead_message_templates').insert({
+                            name, content: aiMessage, message_type: messageType,
+                            template_type: templateType, target_app: targetApp, language,
+                          });
+                          toast.success(isEs ? '💾 Plantilla guardada' : '💾 Template saved');
+                        }}
+                      >
+                        💾 {isEs ? 'Guardar plantilla' : 'Save template'}
+                      </Button>
+                      <Button
+                        size="sm"
                         variant="ghost"
                         className="text-xs gap-1 ml-auto"
                         onClick={() => generateAIMessage(selectedLead, messageType)}
