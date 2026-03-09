@@ -21,6 +21,8 @@ interface Props {
 export const AdminLeadsTab = ({ language }: Props) => {
   const isEs = language === 'es';
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [contactingId, setContactingId] = useState<string | null>(null);
 
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ['admin-leads-summary'],
