@@ -9,18 +9,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import {
   LayoutDashboard, Users, CreditCard, Target, Plus, ExternalLink,
-  Globe, Smartphone, TrendingUp, Activity, Settings, ArrowLeft,
-  Flame, UserCheck, Phone, BarChart3,
+  Globe, Smartphone, TrendingUp, Activity, ArrowLeft,
 } from 'lucide-react';
 import { AdminUserOverview } from '@/components/admin/AdminUserOverview';
 import { AdminSubscriptionsTab } from '@/components/admin/tabs/AdminSubscriptionsTab';
 import { AdminLeadsTab } from '@/components/admin/tabs/AdminLeadsTab';
+import { AdminActivityFeed } from '@/components/admin/tabs/AdminActivityFeed';
 import { toast } from 'sonner';
 
 // ─── App Registry ────────────────────────────────────────────
