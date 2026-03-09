@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AdminSystemMetrics } from '@/components/admin/AdminSystemMetrics';
 import { AdminQuickActions } from '@/components/admin/AdminQuickActions';
 import { AdminRecentActivity } from '@/components/admin/AdminRecentActivity';
+import { AdminDataHealth } from '@/components/admin/AdminDataHealth';
+import { AdminUserOverview } from '@/components/admin/AdminUserOverview';
 import { format } from 'date-fns';
 import { es as esLocale } from 'date-fns/locale';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
