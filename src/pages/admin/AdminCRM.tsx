@@ -573,11 +573,11 @@ const AdminCRM = () => {
                                 </div>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0">
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                                       <MoreVertical className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
+                                  <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                     <DropdownMenuItem onClick={() => copyToClipboard(app.source_key, app.id)}>
                                       <Copy className="h-3.5 w-3.5 mr-2" />
                                       {isEs ? 'Copiar source key' : 'Copy source key'}
