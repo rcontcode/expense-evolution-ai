@@ -46,48 +46,29 @@ export const AdminSystemMetrics = memo(() => {
     queryKey: ['admin-system-metrics'],
     queryFn: async () => {
       const today = startOfDay(new Date());
-      const yesterday = subDays(today, 1);
       const weekAgo = subDays(today, 7);
 
-      // Parallel queries for efficiency
-      const [
-        { count: totalUsers },
-        { count: totalExpenses },
-        { count: totalIncome },
-        { count: totalDocuments },
-        { count: todayExpenses },
-        { count: weekActiveUsers },
-        { count: totalBills },
-        { count: totalClients },
-      ] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('expenses').select('*', { count: 'exact', head: true }).is('deleted_at', null),
-        supabase.from('income').select('*', { count: 'exact', head: true }).is('deleted_at', null),
-        supabase.from('documents').select('*', { count: 'exact', head: true }),
-        supabase
-          .from('expenses')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', today.toISOString()),
-        supabase
-          .from('feature_usage_logs')
-          .select('user_id', { count: 'exact', head: true })
-          .gte('created_at', weekAgo.toISOString()),
-        supabase.from('recurring_bills').select('*', { count: 'exact', head: true }).eq('is_active', true),
-        supabase.from('clients').select('*', { count: 'exact', head: true }).is('deleted_at', null),
-      ]);
+      const usersRes = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+      const expensesRes = await supabase.from('expenses').select('*', { count: 'exact', head: true }).is('deleted_at', null);
+      const incomeRes = await supabase.from('income').select('*', { count: 'exact', head: true }).is('deleted_at', null);
+      const docsRes = await supabase.from('documents').select('*', { count: 'exact', head: true });
+      const todayRes = await supabase.from('expenses').select('*', { count: 'exact', head: true }).gte('created_at', today.toISOString());
+      const activeRes = await supabase.from('feature_usage_logs').select('user_id', { count: 'exact', head: true }).gte('created_at', weekAgo.toISOString());
+      const billsRes = await supabase.from('recurring_bills').select('*', { count: 'exact', head: true }).eq('is_active', true);
+      const clientsRes = await supabase.from('clients').select('*', { count: 'exact', head: true }).is('deleted_at', null);
 
       return {
-        totalUsers: totalUsers || 0,
-        totalExpenses: totalExpenses || 0,
-        totalIncome: totalIncome || 0,
-        totalDocuments: totalDocuments || 0,
-        todayExpenses: todayExpenses || 0,
-        weekActiveUsers: weekActiveUsers || 0,
-        totalBills: totalBills || 0,
-        totalClients: totalClients || 0,
+        totalUsers: usersRes.count || 0,
+        totalExpenses: expensesRes.count || 0,
+        totalIncome: incomeRes.count || 0,
+        totalDocuments: docsRes.count || 0,
+        todayExpenses: todayRes.count || 0,
+        weekActiveUsers: activeRes.count || 0,
+        totalBills: billsRes.count || 0,
+        totalClients: clientsRes.count || 0,
       };
     },
-    refetchInterval: 60000, // Refresh every minute
+    refetchInterval: 60000,
   });
 
   const { data: storageInfo } = useQuery({
