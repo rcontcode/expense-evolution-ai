@@ -9,13 +9,15 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { ArrowLeft, Users, Phone, UserCheck, RefreshCw, Flame, ThermometerSun, MessageSquare, AlertTriangle } from 'lucide-react';
+import { Users, Phone, UserCheck, RefreshCw, Flame, ThermometerSun, MessageSquare, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLeadsManagement } from '@/hooks/admin/useLeadsManagement';
 import { LeadFilters } from '@/components/admin/LeadFilters';
 import { LeadsTable } from '@/components/admin/LeadsTable';
 import { LeadsExport } from '@/components/admin/LeadsExport';
 import { TableSkeleton } from '@/components/ui/table-skeleton';
+import { PageHeader } from '@/components/PageHeader';
+import { Layout } from '@/components/Layout';
 
 export default function LeadsManagement() {
   const navigate = useNavigate();
@@ -40,28 +42,16 @@ export default function LeadsManagement() {
   } = useLeadsManagement();
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Gestión de Leads</h1>
-                <p className="text-sm text-muted-foreground">
-                  CRM inteligente con scoring automático
-                </p>
-              </div>
-            </div>
-            <LeadsExport leads={allLeads} />
-          </div>
-        </div>
-      </div>
+    <Layout>
+      <div className="container mx-auto px-4 py-4 space-y-6">
+        <PageHeader
+          title="Gestión de Leads"
+          description="CRM inteligente con scoring automático"
+        >
+          <LeadsExport leads={allLeads} />
+        </PageHeader>
 
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      
         {/* Priority Stats - First Row */}
         <div className="grid gap-4 md:grid-cols-4">
           {/* HOT leads without contact - URGENT */}
@@ -291,6 +281,6 @@ export default function LeadsManagement() {
           </Pagination>
         )}
       </div>
-    </div>
+    </Layout>
   );
 }

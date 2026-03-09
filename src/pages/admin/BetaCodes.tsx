@@ -4,10 +4,12 @@ import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { 
-  ArrowLeft, Plus, Ticket, Users, CheckCircle2, XCircle,
+  Plus, Ticket, Users, CheckCircle2, XCircle,
   Copy, Trash2, ToggleLeft, ToggleRight, Calendar, Hash,
   TrendingUp, Shield, Clock
 } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
+import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -98,25 +100,13 @@ export default function BetaCodesAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <Layout>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <Shield className="h-6 w-6 text-primary" />
-                Administración de Códigos Beta
-              </h1>
-              <p className="text-muted-foreground">
-                Gestiona los códigos de invitación para beta testers
-              </p>
-            </div>
-          </div>
-
+        <PageHeader
+          title="Administración de Códigos Beta"
+          description="Gestiona los códigos de invitación para beta testers"
+        >
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2">
@@ -172,7 +162,7 @@ export default function BetaCodesAdmin() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="expiry">Fecha de Expiración</Label>
+                  <Label htmlFor="expiry">Expiración</Label>
                   <Input
                     id="expiry"
                     type="date"
@@ -186,13 +176,13 @@ export default function BetaCodesAdmin() {
                 <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleCreateCodes} disabled={createCodes.isPending}>
-                  {createCodes.isPending ? 'Creando...' : `Crear ${newCodeQuantity} Códigos`}
+                <Button onClick={handleCreateCodes} disabled={createCodes.isPending || !newCodePrefix.trim()}>
+                  {createCodes.isPending ? 'Creando...' : `Crear ${newCodeQuantity} Código${newCodeQuantity > 1 ? 's' : ''}`}
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
+        </PageHeader>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -469,6 +459,6 @@ export default function BetaCodesAdmin() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </Layout>
   );
 }
