@@ -7,11 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Search, Clock, MessageCircle, Phone, Mail, ArrowRight,
-  Plus, Star, UserCheck, ChevronRight, Sparkles, FileText,
+  Plus, Star, UserCheck, ChevronRight, FileText,
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es as esLocale, enUS } from 'date-fns/locale';

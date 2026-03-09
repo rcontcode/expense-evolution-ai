@@ -8,8 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  UserPlus, Phone, CheckCircle2, Star, ArrowRight,
-  GripVertical, Clock, MessageSquare, Sparkles,
+  ArrowRight, GripVertical, Clock, MessageSquare,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es as esLocale, enUS } from 'date-fns/locale';
