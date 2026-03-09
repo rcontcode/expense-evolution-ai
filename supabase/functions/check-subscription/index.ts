@@ -7,14 +7,23 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Product IDs for EvoFinz plans
-const PRODUCT_IDS = {
-  premium_monthly: "prod_U4OdR9JHiXuKho",
-  premium_annual: "prod_U4Ofsc9SskEad8",
-  pro_monthly: "prod_TuPUJPLiqh0kC7",
-  pro_annual: "prod_TuPVHHsOi7e4Au",
-  bundle_monthly: "prod_U4OgGM4CrkdVOP",
-  bundle_annual: "prod_U4Ohr9YUiCNX76",
+// Product IDs for EvoFinz plans (includes both old and new Stripe products)
+const PRODUCT_ID_MAP: Record<string, { plan: string; period: string; bundle?: boolean }> = {
+  // New products
+  "prod_U4OdR9JHiXuKho": { plan: "premium", period: "monthly" },
+  "prod_U4Ofsc9SskEad8": { plan: "premium", period: "annual" },
+  // Old products (still active on some subscriptions)
+  "prod_TuPUlFnv10u2OA": { plan: "premium", period: "monthly" },
+  "prod_TuPUaVFFZ9bBgf": { plan: "premium", period: "annual" },
+  // Pro
+  "prod_TuPUJPLiqh0kC7": { plan: "pro", period: "monthly" },
+  "prod_TuPVHHsOi7e4Au": { plan: "pro", period: "annual" },
+  // Bundle (new)
+  "prod_U4OgGM4CrkdVOP": { plan: "pro", period: "monthly", bundle: true },
+  "prod_U4Ohr9YUiCNX76": { plan: "pro", period: "annual", bundle: true },
+  // Bundle (old)
+  "prod_U2ZIfWwlezukmF": { plan: "pro", period: "monthly", bundle: true },
+  "prod_U2ZNNkNSSVCIp5": { plan: "pro", period: "annual", bundle: true },
 };
 
 const logStep = (step: string, details?: any) => {
@@ -109,26 +118,15 @@ serve(async (req) => {
       logStep("Active subscription found", { subscriptionId: subscription.id, productId, endDate: subscriptionEnd });
 
       // Determine plan type, billing period, and bundle status from product ID
-      if (productId === PRODUCT_IDS.premium_monthly) {
+      const productConfig = PRODUCT_ID_MAP[productId];
+      if (productConfig) {
+        planType = productConfig.plan;
+        billingPeriod = productConfig.period;
+        hasBundle = productConfig.bundle || false;
+      } else {
+        logStep("WARNING: Unknown product ID, defaulting to premium", { productId });
         planType = "premium";
         billingPeriod = "monthly";
-      } else if (productId === PRODUCT_IDS.premium_annual) {
-        planType = "premium";
-        billingPeriod = "annual";
-      } else if (productId === PRODUCT_IDS.pro_monthly) {
-        planType = "pro";
-        billingPeriod = "monthly";
-      } else if (productId === PRODUCT_IDS.pro_annual) {
-        planType = "pro";
-        billingPeriod = "annual";
-      } else if (productId === PRODUCT_IDS.bundle_monthly) {
-        planType = "pro";
-        billingPeriod = "monthly";
-        hasBundle = true;
-      } else if (productId === PRODUCT_IDS.bundle_annual) {
-        planType = "pro";
-        billingPeriod = "annual";
-        hasBundle = true;
       }
 
       logStep("Determined plan", { planType, billingPeriod, hasBundle });
