@@ -171,6 +171,29 @@ export const AdminLeadsTab = ({ language }: Props) => {
                     <TableCell className="text-xs text-muted-foreground">
                       {format(new Date(lead.created_at), 'dd MMM', { locale: isEs ? esLocale : undefined })}
                     </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5 justify-center">
+                        {!lead.contacted_at && !lead.converted_to_user && (
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-7 text-xs gap-1"
+                            onClick={() => handleMarkContacted(lead.id)}
+                            disabled={contactingId === lead.id}
+                          >
+                            <CheckCircle className="h-3 w-3" /> {isEs ? 'Contactar' : 'Contact'}
+                          </Button>
+                        )}
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-7 w-7 p-0"
+                          onClick={() => { navigator.clipboard.writeText(lead.email); toast.success(isEs ? 'Email copiado' : 'Email copied'); }}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </motion.tr>
                 );
               })}
