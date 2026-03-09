@@ -4,10 +4,12 @@ import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { 
-  ArrowLeft, Plus, Ticket, Users, CheckCircle2, XCircle,
+  Plus, Ticket, Users, CheckCircle2, XCircle,
   Copy, Trash2, ToggleLeft, ToggleRight, Calendar, Hash,
   TrendingUp, Shield, Clock
 } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
+import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
