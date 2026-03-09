@@ -259,6 +259,10 @@ export const AdminUserOverview = memo(() => {
                         <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(user.email || ''); toast.success(isEs ? 'Email copiado' : 'Email copied'); }}>
                           <Mail className="h-3.5 w-3.5 mr-2" />{isEs ? 'Copiar Email' : 'Copy Email'}
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setSelectedUserId(user.id); }}>
+                          <Eye className="h-3.5 w-3.5 mr-2" />{isEs ? 'Ver Detalle' : 'View Detail'}
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
