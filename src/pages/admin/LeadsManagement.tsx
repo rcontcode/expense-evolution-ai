@@ -42,26 +42,14 @@ export default function LeadsManagement() {
   } = useLeadsManagement();
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Gestión de Leads</h1>
-                <p className="text-sm text-muted-foreground">
-                  CRM inteligente con scoring automático
-                </p>
-              </div>
-            </div>
-            <LeadsExport leads={allLeads} />
-          </div>
-        </div>
-      </div>
+    <Layout>
+      <div className="container mx-auto px-4 py-4 space-y-6">
+        <PageHeader
+          title="Gestión de Leads"
+          description="CRM inteligente con scoring automático"
+        >
+          <LeadsExport leads={allLeads} />
+        </PageHeader>
 
       <div className="container mx-auto px-4 py-6 space-y-6">
         {/* Priority Stats - First Row */}
