@@ -130,6 +130,20 @@ export const AdminContactQueueTab = ({ language }: Props) => {
     }
   };
 
+  const markAsContacted = useMutation({
+    mutationFn: async (leadId: string) => {
+      const { error } = await supabase
+        .from('quiz_leads')
+        .update({ contacted_at: new Date().toISOString() })
+        .eq('id', leadId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact-queue-leads'] });
+      toast.success(isEs ? '✅ Marcado como contactado' : '✅ Marked as contacted');
+    },
+  });
+
   const copyMessage = () => {
     navigator.clipboard.writeText(aiMessage);
     toast.success(isEs ? '📋 Mensaje copiado' : '📋 Message copied');
