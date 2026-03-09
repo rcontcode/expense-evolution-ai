@@ -289,6 +289,13 @@ export const AdminUserOverview = memo(() => {
           </div>
         )}
       </CardContent>
+
+      {/* User Detail Sheet */}
+      <UserDetailSheet 
+        userId={selectedUserId} 
+        onClose={() => setSelectedUserId(null)} 
+        language={language}
+      />
     </Card>
   );
 });
