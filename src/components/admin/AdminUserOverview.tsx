@@ -33,6 +33,7 @@ interface UserRow {
   beta_expires_at: string | null;
   beta_plan_level: string | null;
   created_at: string;
+  plan_type?: string | null;
 }
 
 const PAGE_SIZE = 15;
