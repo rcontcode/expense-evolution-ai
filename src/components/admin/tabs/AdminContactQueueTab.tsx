@@ -205,7 +205,7 @@ export const AdminContactQueueTab = ({ language }: Props) => {
           'p-4 rounded-xl border cursor-pointer hover:shadow-md transition-all group',
           colors.border, colors.row
         )}
-        onClick={() => setSelectedLead(lead)}
+        onClick={() => { autoSelectTemplate(lead); setSelectedLead(lead); }}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
