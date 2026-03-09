@@ -92,6 +92,9 @@ const AdminCRM = () => {
   const [editingApp, setEditingApp] = useState<ManagedApp | null>(null);
   const [testingApp, setTestingApp] = useState<string | null>(null);
   const [showDocs, setShowDocs] = useState(false);
+  const [selectedApp, setSelectedApp] = useState<ManagedApp | null>(null);
+  const [sourceFilter, setSourceFilter] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('users');
 
   // Form state
   const [formName, setFormName] = useState('');
@@ -550,7 +553,10 @@ const AdminCRM = () => {
                       const stats = getAppStats(app.source_key);
                       return (
                         <motion.div key={app.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ delay: i * 0.03 }}>
-                          <Card className="overflow-hidden hover:shadow-lg transition-all group border-2 hover:border-primary/30 h-full">
+                          <Card 
+                            className="overflow-hidden hover:shadow-lg transition-all group border-2 hover:border-primary/30 h-full cursor-pointer"
+                            onClick={() => setSelectedApp(app)}
+                          >
                             <div className={`h-1.5 bg-gradient-to-r ${app.color}`} />
                             <CardContent className="p-3">
                               <div className="flex items-start justify-between gap-2">
@@ -568,11 +574,11 @@ const AdminCRM = () => {
                                 </div>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0">
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                                       <MoreVertical className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
+                                  <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                     <DropdownMenuItem onClick={() => copyToClipboard(app.source_key, app.id)}>
                                       <Copy className="h-3.5 w-3.5 mr-2" />
                                       {isEs ? 'Copiar source key' : 'Copy source key'}
@@ -652,7 +658,7 @@ const AdminCRM = () => {
 
           {/* CRM Tabs */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
-            <Tabs defaultValue="users" className="space-y-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
               <TabsList className="grid w-full grid-cols-3 p-1 bg-muted/50 rounded-xl h-12">
                 <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold text-xs md:text-sm">
                   <Users className="h-4 w-4" />
@@ -671,7 +677,7 @@ const AdminCRM = () => {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="users"><AdminUserOverview /></TabsContent>
-              <TabsContent value="leads"><AdminLeadsTab language={language} /></TabsContent>
+              <TabsContent value="leads"><AdminLeadsTab language={language} sourceFilter={sourceFilter} onClearFilter={() => setSourceFilter(null)} /></TabsContent>
               <TabsContent value="subscriptions"><AdminSubscriptionsTab language={language} /></TabsContent>
             </Tabs>
             <div className="sticky top-6"><AdminActivityFeed language={language} /></div>
@@ -817,6 +823,134 @@ const AdminCRM = () => {
                 </div>
               </div>
             </ScrollArea>
+          </DialogContent>
+        </Dialog>
+
+        {/* App Details Modal */}
+        <Dialog open={!!selectedApp} onOpenChange={(open) => !open && setSelectedApp(null)}>
+          <DialogContent className="max-w-lg">
+            {selectedApp && (
+              <>
+                <DialogHeader className="pb-2">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${selectedApp.color} flex items-center justify-center text-2xl shadow-lg`}>
+                      {selectedApp.icon}
+                    </div>
+                    <div>
+                      <DialogTitle className="flex items-center gap-2">
+                        {selectedApp.name}
+                        <Badge className={`text-[10px] ${STATUS_COLORS[selectedApp.status] || STATUS_COLORS.development} border`}>
+                          {(STATUS_LABELS[selectedApp.status] || STATUS_LABELS.development)[isEs ? 'es' : 'en']}
+                        </Badge>
+                      </DialogTitle>
+                      <DialogDescription className="text-xs mt-0.5">{selectedApp.description}</DialogDescription>
+                    </div>
+                  </div>
+                </DialogHeader>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-3 my-3">
+                  <div className="p-3 rounded-lg bg-muted/50 text-center">
+                    <p className="text-2xl font-bold text-primary">{getAppStats(selectedApp.source_key).count}</p>
+                    <p className="text-[11px] text-muted-foreground">{isEs ? 'Leads totales' : 'Total leads'}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-muted/50 text-center">
+                    <p className="text-sm font-medium">{formatRelativeTime(getAppStats(selectedApp.source_key).lastLead)}</p>
+                    <p className="text-[11px] text-muted-foreground">{isEs ? 'Último lead' : 'Last lead'}</p>
+                  </div>
+                </div>
+
+                {/* Quick actions */}
+                <div className="space-y-2">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{isEs ? 'Acciones rápidas' : 'Quick actions'}</h4>
+                  <div className="grid gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="justify-start h-11 text-left"
+                      onClick={() => {
+                        setSourceFilter(selectedApp.source_key);
+                        setSelectedApp(null);
+                        setActiveTab('leads');
+                      }}
+                    >
+                      <Target className="h-4 w-4 mr-2 text-primary" />
+                      <div>
+                        <p className="font-medium text-sm">{isEs ? 'Ver leads de esta app' : 'View leads from this app'}</p>
+                        <p className="text-[10px] text-muted-foreground">{isEs ? 'Filtra la tabla por esta fuente' : 'Filter table by this source'}</p>
+                      </div>
+                    </Button>
+
+                    {selectedApp.url && (
+                      <Button 
+                        variant="outline" 
+                        className="justify-start h-11 text-left"
+                        onClick={() => window.open(selectedApp.url, '_blank')}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2 text-sky-500" />
+                        <div>
+                          <p className="font-medium text-sm">{isEs ? 'Abrir app' : 'Open app'}</p>
+                          <p className="text-[10px] text-muted-foreground truncate max-w-[280px]">{selectedApp.url}</p>
+                        </div>
+                      </Button>
+                    )}
+
+                    <Button 
+                      variant="outline" 
+                      className="justify-start h-11 text-left"
+                      onClick={() => testWebhook.mutate(selectedApp.source_key)}
+                      disabled={testingApp === selectedApp.source_key}
+                    >
+                      {testingApp === selectedApp.source_key 
+                        ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        : <Send className="h-4 w-4 mr-2 text-emerald-500" />}
+                      <div>
+                        <p className="font-medium text-sm">{isEs ? 'Probar webhook' : 'Test webhook'}</p>
+                        <p className="text-[10px] text-muted-foreground">{isEs ? 'Envía un lead de prueba' : 'Send a test lead'}</p>
+                      </div>
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Webhook info */}
+                <div className="space-y-2 mt-3 p-3 rounded-lg bg-muted/30 border">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                    <Zap className="h-3 w-3" />
+                    {isEs ? 'Integración' : 'Integration'}
+                  </h4>
+                  <div className="space-y-2">
+                    <div>
+                      <Label className="text-[10px] text-muted-foreground">Source Key</Label>
+                      <div className="flex items-center gap-1">
+                        <code className="flex-1 text-xs p-2 rounded bg-background border font-mono">{selectedApp.source_key}</code>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard(selectedApp.source_key, 'detail-source')}>
+                          {copiedField === 'detail-source' ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-[10px] text-muted-foreground">Webhook URL</Label>
+                      <div className="flex items-center gap-1">
+                        <code className="flex-1 text-[10px] p-2 rounded bg-background border font-mono truncate">{WEBHOOK_BASE_URL}</code>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard(WEBHOOK_BASE_URL, 'detail-url')}>
+                          {copiedField === 'detail-url' ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <DialogFooter className="gap-2 mt-3">
+                  <Button variant="outline" onClick={() => { openEditDialog(selectedApp); setSelectedApp(null); }}>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    {isEs ? 'Editar' : 'Edit'}
+                  </Button>
+                  <Button variant="ghost" onClick={() => { setShowDocs(true); setSelectedApp(null); }}>
+                    <Code className="h-4 w-4 mr-2" />
+                    API Docs
+                  </Button>
+                </DialogFooter>
+              </>
+            )}
           </DialogContent>
         </Dialog>
       </TooltipProvider>

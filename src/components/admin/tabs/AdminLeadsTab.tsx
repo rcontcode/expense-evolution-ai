@@ -16,22 +16,30 @@ import { toast } from 'sonner';
 
 interface Props {
   language: 'es' | 'en';
+  sourceFilter?: string | null;
+  onClearFilter?: () => void;
 }
 
-export const AdminLeadsTab = ({ language }: Props) => {
+export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) => {
   const isEs = language === 'es';
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [contactingId, setContactingId] = useState<string | null>(null);
 
   const { data: leads = [], isLoading } = useQuery({
-    queryKey: ['admin-leads-summary'],
+    queryKey: ['admin-leads-summary', sourceFilter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('quiz_leads')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
+      
+      if (sourceFilter) {
+        query = query.eq('source', sourceFilter);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
@@ -82,6 +90,25 @@ export const AdminLeadsTab = ({ language }: Props) => {
 
   return (
     <div className="space-y-6">
+      {/* Active filter indicator */}
+      {sourceFilter && (
+        <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20">
+          <div className="flex items-center gap-2">
+            <Badge variant="default" className="bg-primary">
+              {isEs ? 'Filtrando por:' : 'Filtering by:'} {sourceFilter}
+            </Badge>
+            <span className="text-sm text-muted-foreground">
+              {leads.length} {isEs ? 'leads encontrados' : 'leads found'}
+            </span>
+          </div>
+          {onClearFilter && (
+            <Button variant="ghost" size="sm" onClick={onClearFilter}>
+              {isEs ? '✕ Quitar filtro' : '✕ Clear filter'}
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="text-center border-red-200 bg-red-50/50 dark:bg-red-950/20">
