@@ -7,14 +7,23 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 
-// Product IDs for EvoFinz plans
-const PRODUCT_IDS = {
-  premium_monthly: "prod_U4OdR9JHiXuKho",
-  premium_annual: "prod_U4Ofsc9SskEad8",
-  pro_monthly: "prod_TuPUJPLiqh0kC7",
-  pro_annual: "prod_TuPVHHsOi7e4Au",
-  bundle_monthly: "prod_U4OgGM4CrkdVOP",
-  bundle_annual: "prod_U4Ohr9YUiCNX76",
+// Unified Product ID map — must stay in sync with check-subscription
+const PRODUCT_ID_MAP: Record<string, { plan: string; period: string; bundle?: boolean }> = {
+  // New products
+  "prod_U4OdR9JHiXuKho": { plan: "premium", period: "monthly" },
+  "prod_U4Ofsc9SskEad8": { plan: "premium", period: "annual" },
+  // Old products (still active on some subscriptions)
+  "prod_TuPUlFnv10u2OA": { plan: "premium", period: "monthly" },
+  "prod_TuPUaVFFZ9bBgf": { plan: "premium", period: "annual" },
+  // Pro
+  "prod_TuPUJPLiqh0kC7": { plan: "pro", period: "monthly" },
+  "prod_TuPVHHsOi7e4Au": { plan: "pro", period: "annual" },
+  // Bundle (new)
+  "prod_U4OgGM4CrkdVOP": { plan: "pro", period: "monthly", bundle: true },
+  "prod_U4Ohr9YUiCNX76": { plan: "pro", period: "annual", bundle: true },
+  // Bundle (old)
+  "prod_U2ZIfWwlezukmF": { plan: "pro", period: "monthly", bundle: true },
+  "prod_U2ZNNkNSSVCIp5": { plan: "pro", period: "annual", bundle: true },
 };
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
@@ -22,64 +31,36 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
-// Safe date parser for Stripe timestamps - handles number, string, or ISO formats
 function parseStripeDate(value: unknown): string | null {
-  if (value === null || value === undefined) {
-    logStep("parseStripeDate: value is null/undefined");
-    return null;
-  }
-
+  if (value === null || value === undefined) return null;
   try {
     let date: Date;
-
     if (typeof value === "number") {
-      // Unix timestamp in seconds
       date = new Date(value * 1000);
     } else if (typeof value === "string") {
-      // Could be numeric string or ISO string
       const numericValue = Number(value);
       if (!isNaN(numericValue)) {
-        // Numeric string - treat as Unix timestamp
         date = new Date(numericValue * 1000);
       } else {
-        // Try parsing as ISO string
         date = new Date(value);
       }
     } else {
-      logStep("parseStripeDate: unexpected type", { type: typeof value, value });
       return null;
     }
-
-    // Validate the date is valid
-    if (isNaN(date.getTime())) {
-      logStep("parseStripeDate: invalid date result", { value, type: typeof value });
-      return null;
-    }
-
+    if (isNaN(date.getTime())) return null;
     return date.toISOString();
-  } catch (err) {
-    logStep("parseStripeDate: error parsing", { value, error: err instanceof Error ? err.message : String(err) });
+  } catch {
     return null;
   }
 }
 
 function getPlanFromProductId(productId: string): { planType: string; billingPeriod: string | null; isBundle: boolean } {
-  switch (productId) {
-    case PRODUCT_IDS.premium_monthly:
-      return { planType: "premium", billingPeriod: "monthly", isBundle: false };
-    case PRODUCT_IDS.premium_annual:
-      return { planType: "premium", billingPeriod: "annual", isBundle: false };
-    case PRODUCT_IDS.pro_monthly:
-      return { planType: "pro", billingPeriod: "monthly", isBundle: false };
-    case PRODUCT_IDS.pro_annual:
-      return { planType: "pro", billingPeriod: "annual", isBundle: false };
-    case PRODUCT_IDS.bundle_monthly:
-      return { planType: "pro", billingPeriod: "monthly", isBundle: true };
-    case PRODUCT_IDS.bundle_annual:
-      return { planType: "pro", billingPeriod: "annual", isBundle: true };
-    default:
-      return { planType: "free", billingPeriod: null, isBundle: false };
+  const config = PRODUCT_ID_MAP[productId];
+  if (config) {
+    return { planType: config.plan, billingPeriod: config.period, isBundle: config.bundle || false };
   }
+  logStep("WARNING: Unknown product ID in webhook", { productId });
+  return { planType: "free", billingPeriod: null, isBundle: false };
 }
 
 serve(async (req) => {
@@ -126,7 +107,6 @@ serve(async (req) => {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
         
-        // Get customer email
         const customer = await stripe.customers.retrieve(customerId);
         if (customer.deleted) {
           logStep("Customer deleted, skipping");
@@ -139,7 +119,6 @@ serve(async (req) => {
           break;
         }
 
-        // Find user by email
         const { data: profiles } = await supabaseClient
           .from("profiles")
           .select("id")
@@ -156,15 +135,12 @@ serve(async (req) => {
         const { planType, billingPeriod, isBundle } = getPlanFromProductId(productId);
         const isActive = subscription.status === "active" || subscription.status === "trialing";
         
-        // Log raw values for debugging
         logStep("Raw subscription data", { 
           status: subscription.status,
           current_period_end: subscription.current_period_end,
-          current_period_end_type: typeof subscription.current_period_end,
           productId 
         });
 
-        // Only parse date if subscription is active
         const expiresAt = isActive ? parseStripeDate(subscription.current_period_end) : null;
 
         logStep("Updating subscription", { userId, planType, billingPeriod, isActive, isBundle, expiresAt });
@@ -246,11 +222,7 @@ serve(async (req) => {
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
-
         logStep("Payment failed", { invoiceId: invoice.id, customerId });
-
-        // Optionally mark subscription as past_due in your system
-        // For now, Stripe will handle retries and eventual cancellation
         break;
       }
 
