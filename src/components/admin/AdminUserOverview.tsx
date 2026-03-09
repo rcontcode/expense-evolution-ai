@@ -169,8 +169,8 @@ export const AdminUserOverview = memo(() => {
               className="pl-7 h-8 text-xs"
             />
           </div>
-          <Select value={filter} onValueChange={handleFilter}>
-            <SelectTrigger className="w-[100px] h-8 text-xs">
+           <Select value={filter} onValueChange={handleFilter}>
+            <SelectTrigger className="w-[120px] h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
