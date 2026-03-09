@@ -20,6 +20,7 @@ import {
   useSensor,
   useSensors,
   useDroppable,
+  useDraggable,
   type DragStartEvent,
   type DragEndEvent,
 } from '@dnd-kit/core';
@@ -60,20 +61,26 @@ const STAGES: { key: PipelineStage; emoji: string; labelEs: string; labelEn: str
 
 /* ─── Draggable Lead Card ─── */
 function DraggableLeadCard({ lead, isEs, onClickMove }: { lead: PipelineLead; isEs: boolean; onClickMove: () => void }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: lead.id,
+  });
   const colors = getPriorityColors(lead.priority);
 
   return (
     <div
+      ref={setNodeRef}
+      style={{ opacity: isDragging ? 0.3 : 1 }}
       className={cn(
         'p-3 rounded-lg border hover:shadow-md transition-shadow group',
         colors.row, colors.border
       )}
     >
       <div className="flex items-start gap-2">
-        {/* Drag handle — only this part is draggable */}
+        {/* Drag handle */}
         <div
-          data-drag-handle={lead.id}
-          className="cursor-grab active:cursor-grabbing mt-0.5 flex-shrink-0 touch-none"
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing mt-0.5 flex-shrink-0 touch-none select-none"
         >
           <GripVertical className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />
         </div>
@@ -102,55 +109,53 @@ function DraggableLeadCard({ lead, isEs, onClickMove }: { lead: PipelineLead; is
 }
 
 /* ─── Droppable Column ─── */
-function DroppableColumn({ stage, leads, isEs, onCardClick, isOver }: {
+function DroppableColumn({ stageKey, stage, leads, isEs, onCardClick }: {
+  stageKey: string;
   stage: typeof STAGES[number];
   leads: PipelineLead[];
   isEs: boolean;
   onCardClick: (lead: PipelineLead) => void;
-  isOver: boolean;
 }) {
-  return (
-    <Card className={cn(
-      'border-t-4 transition-all duration-200',
-      stage.borderColor,
-      isOver && 'ring-2 ring-primary/50 bg-primary/5 scale-[1.02]'
-    )}>
-      <CardHeader className="pb-2 px-3 pt-3">
-        <CardTitle className="text-sm flex items-center justify-between">
-          <span>{stage.emoji} {isEs ? stage.labelEs : stage.labelEn}</span>
-          <Badge variant="secondary" className="text-xs">{leads.length}</Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-2 pb-2">
-        <ScrollArea className="h-[400px] pr-1">
-          <div className="space-y-2 min-h-[60px]">
-            {leads.map((lead) => (
-              <DraggableLeadCard
-                key={lead.id}
-                lead={lead}
-                isEs={isEs}
-                onClickMove={() => onCardClick(lead)}
-              />
-            ))}
-            {leads.length === 0 && (
-              <div className={cn(
-                'text-center py-8 border-2 border-dashed rounded-lg transition-colors',
-                isOver ? 'border-primary/50 bg-primary/10 text-primary' : 'text-muted-foreground/50'
-              )}>
-                <p className="text-xs">{isEs ? 'Arrastra leads aquí' : 'Drop leads here'}</p>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
-  );
-}
-
-/* ─── Wrapper to register droppable ─── */
-function DroppableStageWrapper({ stageKey, children }: { stageKey: string; children: (isOver: boolean) => React.ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id: stageKey });
-  return <div ref={setNodeRef}>{children(isOver)}</div>;
+
+  return (
+    <div ref={setNodeRef}>
+      <Card className={cn(
+        'border-t-4 transition-all duration-200',
+        stage.borderColor,
+        isOver && 'ring-2 ring-primary/50 bg-primary/5 scale-[1.01]'
+      )}>
+        <CardHeader className="pb-2 px-3 pt-3">
+          <CardTitle className="text-sm flex items-center justify-between">
+            <span>{stage.emoji} {isEs ? stage.labelEs : stage.labelEn}</span>
+            <Badge variant="secondary" className="text-xs">{leads.length}</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-2 pb-2">
+          <ScrollArea className="h-[400px] pr-1">
+            <div className="space-y-2 min-h-[80px]">
+              {leads.map((lead) => (
+                <DraggableLeadCard
+                  key={lead.id}
+                  lead={lead}
+                  isEs={isEs}
+                  onClickMove={() => onCardClick(lead)}
+                />
+              ))}
+              {leads.length === 0 && (
+                <div className={cn(
+                  'text-center py-10 border-2 border-dashed rounded-lg transition-colors',
+                  isOver ? 'border-primary bg-primary/10 text-primary' : 'text-muted-foreground/40'
+                )}>
+                  <p className="text-xs font-medium">{isEs ? '📥 Arrastra leads aquí' : '📥 Drop leads here'}</p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 
 /* ─── Main Component ─── */
@@ -195,32 +200,30 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
     return grouped;
   }, [rawLeads]);
 
-  const performMove = useCallback(async (leadId: string, stage: PipelineStage, note?: string) => {
-    const updates: Record<string, any> = { pipeline_stage: stage };
-    if (stage === 'contacted' || stage === 'qualified') {
-      updates.contacted_at = new Date().toISOString();
-    }
-    if (stage === 'converted') {
-      updates.converted_to_user = true;
-    }
-
-    const { error } = await supabase.from('quiz_leads').update(updates).eq('id', leadId);
-    if (error) throw error;
-
-    if (note) {
-      const currentLead = rawLeads.find(l => l.id === leadId);
-      supabase.from('lead_interactions').insert({
-        lead_id: leadId,
-        interaction_type: 'stage_change',
-        content: note,
-        metadata: { from_stage: currentLead?.pipeline_stage, to_stage: stage },
-      }).then(() => {}); // fire-and-forget
-    }
-  }, [rawLeads]);
-
   const moveToStage = useMutation({
-    mutationFn: ({ leadId, stage, note }: { leadId: string; stage: PipelineStage; note?: string }) =>
-      performMove(leadId, stage, note),
+    mutationFn: async ({ leadId, stage, note }: { leadId: string; stage: PipelineStage; note?: string }) => {
+      const updates: Record<string, any> = { pipeline_stage: stage };
+      if (stage === 'contacted' || stage === 'qualified') {
+        updates.contacted_at = new Date().toISOString();
+      }
+      if (stage === 'converted') {
+        updates.converted_to_user = true;
+      }
+
+      const { error } = await supabase.from('quiz_leads').update(updates).eq('id', leadId);
+      if (error) throw error;
+
+      // Log interaction (fire-and-forget)
+      if (note) {
+        const currentLead = rawLeads.find(l => l.id === leadId);
+        supabase.from('lead_interactions').insert({
+          lead_id: leadId,
+          interaction_type: 'stage_change',
+          content: note,
+          metadata: { from_stage: currentLead?.pipeline_stage, to_stage: stage },
+        }).then(() => {});
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pipeline-leads'] });
       queryClient.invalidateQueries({ queryKey: ['contact-queue-leads'] });
@@ -235,9 +238,8 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
     },
   });
 
-  /* ── Drag handlers ── */
   const handleDragStart = (event: DragStartEvent) => {
-    const lead = rawLeads.find(l => l.id === event.active.id);
+    const lead = rawLeads.find(l => l.id === String(event.active.id));
     if (lead) setActiveLead(lead);
   };
 
@@ -246,21 +248,14 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
     const { active, over } = event;
     if (!over) return;
 
-    const draggedLead = rawLeads.find(l => l.id === active.id);
+    const draggedLead = rawLeads.find(l => l.id === String(active.id));
     if (!draggedLead) return;
 
-    const targetStage = over.id as string;
-
-    // Only accept drops on stage columns
+    const targetStage = String(over.id);
     if (!STAGES.some(s => s.key === targetStage)) return;
     if (targetStage === draggedLead.pipeline_stage) return;
 
     moveToStage.mutate({ leadId: draggedLead.id, stage: targetStage as PipelineStage });
-  };
-
-  const handleCardClick = (lead: PipelineLead) => {
-    setMovingLead(lead);
-    setNoteText('');
   };
 
   const getNextStages = (current: PipelineStage): PipelineStage[] => {
@@ -286,7 +281,7 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
         })}
       </div>
 
-      {/* Kanban Board with DnD */}
+      {/* Kanban Board */}
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}
@@ -294,40 +289,43 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
           {STAGES.map((stage) => (
-            <DroppableStageWrapper key={stage.key} stageKey={stage.key}>
-              {(isOver) => (
-                <DroppableColumn
-                  stage={stage}
-                  leads={stageLeads[stage.key]}
-                  isEs={isEs}
-                  onCardClick={handleCardClick}
-                  isOver={isOver}
-                />
-              )}
-            </DroppableStageWrapper>
+            <DroppableColumn
+              key={stage.key}
+              stageKey={stage.key}
+              stage={stage}
+              leads={stageLeads[stage.key]}
+              isEs={isEs}
+              onCardClick={(lead) => {
+                setMovingLead(lead);
+                setNoteText('');
+              }}
+            />
           ))}
         </div>
 
-        <DragOverlay>
+        <DragOverlay dropAnimation={null}>
           {activeLead && (
-            <div className="p-3 rounded-lg border bg-background shadow-2xl rotate-2 w-[220px] opacity-90">
+            <div className="p-3 rounded-lg border-2 border-primary bg-background shadow-2xl rotate-1 w-[220px]">
               <span className="font-bold text-xs">{activeLead.name}</span>
-              <p className="text-[10px] text-muted-foreground">🌍 {activeLead.country}</p>
+              <p className="text-[10px] text-muted-foreground">🌍 {activeLead.country} • {activeLead.source}</p>
+              <p className="text-[10px] text-muted-foreground">🎯 {activeLead.goal?.slice(0, 30)}</p>
             </div>
           )}
         </DragOverlay>
       </DndContext>
 
-      {/* Move Lead Dialog (click alternative) */}
+      {/* Move Dialog */}
       <Dialog open={!!movingLead} onOpenChange={(open) => { if (!open) setMovingLead(null); }}>
         <DialogContent className="max-w-sm">
           {movingLead && (
             <>
               <DialogHeader>
                 <DialogTitle>{isEs ? 'Mover lead' : 'Move lead'}</DialogTitle>
-                <DialogDescription>
-                  {movingLead.name} — {isEs ? 'Etapa actual:' : 'Current stage:'}{' '}
-                  <Badge variant="outline">{movingLead.pipeline_stage}</Badge>
+                <DialogDescription asChild>
+                  <div>
+                    {movingLead.name} — {isEs ? 'Etapa actual:' : 'Current stage:'}{' '}
+                    <Badge variant="outline">{movingLead.pipeline_stage}</Badge>
+                  </div>
                 </DialogDescription>
               </DialogHeader>
 
@@ -347,15 +345,16 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
                         key={stageKey}
                         variant="outline"
                         className="justify-start h-11"
-                        onClick={() => {
-                          console.log('Moving lead', movingLead.id, 'to', stageKey);
-                          moveToStage.mutate({ leadId: movingLead.id, stage: stageKey, note: noteText || undefined });
-                        }}
+                        onClick={() => moveToStage.mutate({
+                          leadId: movingLead.id,
+                          stage: stageKey,
+                          note: noteText || undefined,
+                        })}
                         disabled={moveToStage.isPending}
                       >
                         <span className="mr-2">{stageInfo.emoji}</span>
                         <span className="font-medium">{isEs ? stageInfo.labelEs : stageInfo.labelEn}</span>
-                        {moveToStage.isPending && <span className="ml-auto text-xs animate-pulse">...</span>}
+                        {moveToStage.isPending && <span className="ml-auto text-xs animate-pulse">⏳</span>}
                       </Button>
                     );
                   })}
