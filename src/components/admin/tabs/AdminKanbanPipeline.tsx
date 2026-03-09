@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, MessageSquare, GripVertical, Mail, Phone, Globe, Target, AlertTriangle, User, ArrowRight } from 'lucide-react';
+import { Clock, MessageSquare, GripVertical, Mail, Phone, Globe, User, ArrowRight, Copy, ExternalLink, Send, MessageCircle, CalendarCheck, Star, Zap } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es as esLocale, enUS } from 'date-fns/locale';
 import { calculateLeadScore, getLeadPriority, getPriorityColors } from '@/hooks/admin/useLeadScoring';
@@ -171,6 +171,34 @@ function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending }: {
   const currentStage = lead.pipeline_stage as PipelineStage;
   const nextStages = (['new', 'contacted', 'qualified', 'converted'] as PipelineStage[]).filter(s => s !== currentStage);
 
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(isEs ? `${label} copiado` : `${label} copied`);
+  };
+
+  const whatsappUrl = lead.phone
+    ? `https://wa.me/${lead.phone.replace(/[^0-9+]/g, '')}?text=${encodeURIComponent(
+        isEs
+          ? `Hola ${lead.name}, soy del equipo de EvoFinz. Vi que completaste nuestro quiz y me gustaría ayudarte con tu objetivo: "${lead.goal?.slice(0, 60)}". ¿Tienes unos minutos para conversar?`
+          : `Hi ${lead.name}, I'm from the EvoFinz team. I saw you completed our quiz and I'd like to help you with your goal: "${lead.goal?.slice(0, 60)}". Do you have a few minutes to chat?`
+      )}`
+    : null;
+
+  const emailUrl = `mailto:${lead.email}?subject=${encodeURIComponent(
+    isEs ? `${lead.name}, sobre tu evaluación financiera` : `${lead.name}, about your financial assessment`
+  )}&body=${encodeURIComponent(
+    isEs
+      ? `Hola ${lead.name},\n\nGracias por completar nuestra evaluación financiera. Noté que tu objetivo es "${lead.goal}".\n\nMe gustaría agendar una llamada para explorar cómo podemos ayudarte.\n\n¿Cuándo te viene bien?\n\nSaludos`
+      : `Hi ${lead.name},\n\nThank you for completing our financial assessment. I noticed your goal is "${lead.goal}".\n\nI'd like to schedule a call to explore how we can help you.\n\nWhen works best for you?\n\nBest regards`
+  )}`;
+
+  const priorityLabel = {
+    hot: { es: '🔥 Caliente', en: '🔥 Hot' },
+    warm: { es: '🌤 Tibio', en: '🌤 Warm' },
+    cool: { es: '❄️ Frío', en: '❄️ Cool' },
+    cold: { es: '🧊 Muy frío', en: '🧊 Cold' },
+  };
+
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) { onClose(); setNoteText(''); setActiveTab('details'); } }}>
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
@@ -182,10 +210,13 @@ function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending }: {
           <DialogDescription asChild>
             <div className="flex items-center gap-2 flex-wrap">
               <Badge className={cn('text-xs', colors.badge)}>
-                {isEs ? 'Puntuación' : 'Score'}: {lead.score}
+                <Star className="h-3 w-3 mr-1" />
+                {lead.score} pts
               </Badge>
-              <Badge variant="outline">{lead.priority.toUpperCase()}</Badge>
-              <Badge variant="secondary">
+              <Badge variant="outline" className="text-xs">
+                {priorityLabel[lead.priority]?.[isEs ? 'es' : 'en']}
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
                 {STAGES.find(s => s.key === currentStage)?.emoji} {isEs ? STAGES.find(s => s.key === currentStage)?.labelEs : STAGES.find(s => s.key === currentStage)?.labelEn}
               </Badge>
             </div>
@@ -193,27 +224,37 @@ function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending }: {
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="details">{isEs ? '📋 Detalles' : '📋 Details'}</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="details">{isEs ? '📋 Info' : '📋 Info'}</TabsTrigger>
+            <TabsTrigger value="actions">{isEs ? '⚡ Acciones' : '⚡ Actions'}</TabsTrigger>
             <TabsTrigger value="move">{isEs ? '🚀 Mover' : '🚀 Move'}</TabsTrigger>
           </TabsList>
 
+          {/* ── Details Tab ── */}
           <TabsContent value="details" className="space-y-3 mt-3">
-            {/* Contact info */}
+            {/* Contact info with copy buttons */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
+              <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50 group">
                 <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-[10px] text-muted-foreground">{isEs ? 'Email' : 'Email'}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] text-muted-foreground">Email</p>
                   <p className="text-xs font-medium truncate">{lead.email}</p>
                 </div>
+                <button onClick={() => copyToClipboard(lead.email, 'Email')} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                </button>
               </div>
-              <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
+              <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50 group">
                 <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-[10px] text-muted-foreground">{isEs ? 'Teléfono' : 'Phone'}</p>
                   <p className="text-xs font-medium">{lead.phone || '—'}</p>
                 </div>
+                {lead.phone && (
+                  <button onClick={() => copyToClipboard(lead.phone!, isEs ? 'Teléfono' : 'Phone')} className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                  </button>
+                )}
               </div>
               <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
                 <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -226,7 +267,7 @@ function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending }: {
                 <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 <div className="min-w-0">
                   <p className="text-[10px] text-muted-foreground">{isEs ? 'Registrado' : 'Registered'}</p>
-                  <p className="text-xs font-medium">{format(new Date(lead.created_at), 'dd MMM yyyy', { locale: isEs ? esLocale : enUS })}</p>
+                  <p className="text-xs font-medium">{format(new Date(lead.created_at), 'dd MMM yyyy HH:mm', { locale: isEs ? esLocale : enUS })}</p>
                 </div>
               </div>
             </div>
@@ -247,25 +288,128 @@ function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending }: {
               </div>
             </div>
 
-            {/* Quiz score */}
-            <div className="flex gap-2">
+            {/* Quiz score & source */}
+            <div className="flex gap-2 flex-wrap">
               <Badge variant="outline" className="text-xs">
-                Quiz: {lead.quiz_score}/10 — {lead.quiz_level}
+                📊 Quiz: {lead.quiz_score}/10 — {lead.quiz_level}
               </Badge>
               <Badge variant="outline" className="text-xs">
-                {isEs ? 'Fuente' : 'Source'}: {lead.source}
+                📡 {isEs ? 'Fuente' : 'Source'}: {lead.source}
               </Badge>
+              {lead.contacted_at && (
+                <Badge variant="outline" className="text-xs">
+                  📞 {isEs ? 'Contactado' : 'Contacted'}: {format(new Date(lead.contacted_at), 'dd MMM', { locale: isEs ? esLocale : enUS })}
+                </Badge>
+              )}
             </div>
 
             {/* Comments */}
             {lead.comments && (
               <div className="p-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
-                <p className="text-[10px] text-amber-600 mb-1 font-medium">💬 {isEs ? 'Notas' : 'Notes'}</p>
+                <p className="text-[10px] text-amber-600 mb-1 font-medium">💬 {isEs ? 'Notas admin' : 'Admin notes'}</p>
                 <p className="text-xs text-amber-800 dark:text-amber-300">{lead.comments}</p>
               </div>
             )}
           </TabsContent>
 
+          {/* ── Actions Tab ── */}
+          <TabsContent value="actions" className="space-y-3 mt-3">
+            <p className="text-xs text-muted-foreground">{isEs ? 'Acciones rápidas para este lead:' : 'Quick actions for this lead:'}</p>
+
+            <div className="grid grid-cols-1 gap-2">
+              {/* Email */}
+              <a href={emailUrl} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="w-full justify-start h-11 gap-2">
+                  <Mail className="h-4 w-4 text-blue-500" />
+                  <span className="font-medium">{isEs ? 'Enviar email personalizado' : 'Send personalized email'}</span>
+                  <ExternalLink className="h-3 w-3 ml-auto text-muted-foreground" />
+                </Button>
+              </a>
+
+              {/* WhatsApp */}
+              {whatsappUrl ? (
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" className="w-full justify-start h-11 gap-2">
+                    <MessageCircle className="h-4 w-4 text-green-500" />
+                    <span className="font-medium">{isEs ? 'Contactar por WhatsApp' : 'Contact via WhatsApp'}</span>
+                    <ExternalLink className="h-3 w-3 ml-auto text-muted-foreground" />
+                  </Button>
+                </a>
+              ) : (
+                <Button variant="outline" className="w-full justify-start h-11 gap-2" disabled>
+                  <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium text-muted-foreground">{isEs ? 'WhatsApp (sin teléfono)' : 'WhatsApp (no phone)'}</span>
+                </Button>
+              )}
+
+              {/* Phone call */}
+              {lead.phone ? (
+                <a href={`tel:${lead.phone}`}>
+                  <Button variant="outline" className="w-full justify-start h-11 gap-2">
+                    <Phone className="h-4 w-4 text-violet-500" />
+                    <span className="font-medium">{isEs ? 'Llamar por teléfono' : 'Call by phone'}</span>
+                    <span className="ml-auto text-xs text-muted-foreground">{lead.phone}</span>
+                  </Button>
+                </a>
+              ) : (
+                <Button variant="outline" className="w-full justify-start h-11 gap-2" disabled>
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium text-muted-foreground">{isEs ? 'Llamar (sin teléfono)' : 'Call (no phone)'}</span>
+                </Button>
+              )}
+
+              {/* Copy all info */}
+              <Button
+                variant="outline"
+                className="w-full justify-start h-11 gap-2"
+                onClick={() => {
+                  const info = [
+                    `${isEs ? 'Nombre' : 'Name'}: ${lead.name}`,
+                    `Email: ${lead.email}`,
+                    `${isEs ? 'Teléfono' : 'Phone'}: ${lead.phone || '—'}`,
+                    `${isEs ? 'País' : 'Country'}: ${lead.country}`,
+                    `Quiz: ${lead.quiz_score}/10 (${lead.quiz_level})`,
+                    `Score: ${lead.score} (${lead.priority})`,
+                    `${isEs ? 'Objetivo' : 'Goal'}: ${lead.goal}`,
+                    `${isEs ? 'Situación' : 'Situation'}: ${lead.situation}`,
+                    `${isEs ? 'Obstáculo' : 'Obstacle'}: ${lead.obstacle}`,
+                    `${isEs ? 'Fuente' : 'Source'}: ${lead.source}`,
+                  ].join('\n');
+                  copyToClipboard(info, isEs ? 'Info completa' : 'Full info');
+                }}
+              >
+                <Copy className="h-4 w-4 text-orange-500" />
+                <span className="font-medium">{isEs ? 'Copiar toda la info' : 'Copy all info'}</span>
+              </Button>
+
+              {/* Quick move to contacted */}
+              {currentStage === 'new' && (
+                <Button
+                  className="w-full justify-start h-11 gap-2"
+                  onClick={() => { onMove('contacted'); setActiveTab('details'); }}
+                  disabled={isPending}
+                >
+                  <CalendarCheck className="h-4 w-4" />
+                  <span className="font-medium">{isEs ? 'Marcar como contactado' : 'Mark as contacted'}</span>
+                  <Zap className="h-3 w-3 ml-auto" />
+                </Button>
+              )}
+
+              {currentStage === 'contacted' && (
+                <Button
+                  className="w-full justify-start h-11 gap-2"
+                  onClick={() => { onMove('qualified'); setActiveTab('details'); }}
+                  disabled={isPending}
+                >
+                  <Star className="h-4 w-4" />
+                  <span className="font-medium">{isEs ? 'Calificar lead' : 'Qualify lead'}</span>
+                  <Zap className="h-3 w-3 ml-auto" />
+                </Button>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* ── Move Tab ── */}
           <TabsContent value="move" className="space-y-3 mt-3">
             <Textarea
               placeholder={isEs ? 'Nota opcional al mover...' : 'Optional note when moving...'}
