@@ -310,8 +310,8 @@ export const UserDetailSheet = ({ userId, onClose, language }: UserDetailSheetPr
                     <span>{user?.country || '—'}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">{isEs ? 'Idioma' : 'Language'}</span>
-                    <span>{user?.preferred_language?.toUpperCase() || '—'}</span>
+                    <span className="text-muted-foreground">{isEs ? 'Negocio' : 'Business'}</span>
+                    <span>{(user as any)?.business_name || '—'}</span>
                   </div>
                 </div>
               </CardContent>
