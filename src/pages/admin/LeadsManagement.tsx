@@ -9,13 +9,15 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { ArrowLeft, Users, Phone, UserCheck, RefreshCw, Flame, ThermometerSun, MessageSquare, AlertTriangle } from 'lucide-react';
+import { Users, Phone, UserCheck, RefreshCw, Flame, ThermometerSun, MessageSquare, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLeadsManagement } from '@/hooks/admin/useLeadsManagement';
 import { LeadFilters } from '@/components/admin/LeadFilters';
 import { LeadsTable } from '@/components/admin/LeadsTable';
 import { LeadsExport } from '@/components/admin/LeadsExport';
 import { TableSkeleton } from '@/components/ui/table-skeleton';
+import { PageHeader } from '@/components/PageHeader';
+import { Layout } from '@/components/Layout';
 
 export default function LeadsManagement() {
   const navigate = useNavigate();
