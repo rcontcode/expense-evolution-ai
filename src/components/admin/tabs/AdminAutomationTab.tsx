@@ -103,7 +103,10 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
 
 export const AdminAutomationTab = ({ language }: Props) => {
   const isEs = language === 'es';
-  const [rules, setRules] = useState<AutomationRule[]>(DEFAULT_RULES);
+  const [rules, setRules] = useState<AutomationRule[]>(() => {
+    const saved = localStorage.getItem('crm-automation-rules');
+    return saved ? JSON.parse(saved) : DEFAULT_RULES;
+  });
   const [ghlWebhook, setGhlWebhook] = useState('');
   const [showSetup, setShowSetup] = useState(false);
 
