@@ -169,6 +169,8 @@ export const AdminContactQueueTab = ({ language }: Props) => {
         : `${lead.name.split(' ')[0]}, your personalized financial plan`
     );
     window.open(`mailto:${lead.email}?subject=${subject}&body=${body}`, '_blank');
+    // Auto-mark as contacted
+    if (!lead.contacted_at) markAsContacted.mutate(lead.id);
   };
 
   const LeadCard = ({ lead, index }: { lead: QueueLead; index: number }) => {
