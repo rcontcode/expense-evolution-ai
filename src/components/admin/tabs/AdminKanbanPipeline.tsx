@@ -515,10 +515,11 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
         }
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['pipeline-leads'] });
       queryClient.invalidateQueries({ queryKey: ['contact-queue-leads'] });
       queryClient.invalidateQueries({ queryKey: ['admin-leads'] });
+      queryClient.invalidateQueries({ queryKey: ['lead-interactions', variables.leadId] });
       toast.success(isEs ? '✅ Lead movido exitosamente' : '✅ Lead moved successfully');
       setSelectedLead(null);
     },
