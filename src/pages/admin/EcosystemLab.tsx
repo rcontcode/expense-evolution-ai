@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Beaker, ArrowLeft, ShieldCheck, ShieldAlert, RotateCcw, PlayCircle } from 'lucide-react';
+import { Beaker, ShieldCheck, ShieldAlert, RotateCcw, PlayCircle } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
+import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
