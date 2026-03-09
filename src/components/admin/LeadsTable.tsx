@@ -147,10 +147,16 @@ export function LeadsTable({ leads, onMarkContacted, onMarkConverted }: LeadsTab
                         'text-xs',
                         lead.source === 'fokuspark' 
                           ? 'border-violet-300 text-violet-700 dark:border-violet-700 dark:text-violet-400'
-                          : 'border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-400'
+                          : lead.source?.toLowerCase().includes('trustly')
+                            ? 'border-sky-300 text-sky-700 dark:border-sky-700 dark:text-sky-400'
+                            : lead.source === 'evofinz' || !lead.source
+                              ? 'border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-400'
+                              : 'border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400'
                       )}
                     >
-                      {lead.source === 'fokuspark' ? 'Fokuspark' : 'EvoFinz'}
+                      {lead.source === 'fokuspark' ? 'Fokuspark' 
+                        : lead.source === 'evofinz' || !lead.source ? 'EvoFinz'
+                        : lead.source}
                     </Badge>
                   </TableCell>
 
