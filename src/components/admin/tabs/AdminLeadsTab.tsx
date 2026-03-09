@@ -90,6 +90,25 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
 
   return (
     <div className="space-y-6">
+      {/* Active filter indicator */}
+      {sourceFilter && (
+        <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20">
+          <div className="flex items-center gap-2">
+            <Badge variant="default" className="bg-primary">
+              {isEs ? 'Filtrando por:' : 'Filtering by:'} {sourceFilter}
+            </Badge>
+            <span className="text-sm text-muted-foreground">
+              {leads.length} {isEs ? 'leads encontrados' : 'leads found'}
+            </span>
+          </div>
+          {onClearFilter && (
+            <Button variant="ghost" size="sm" onClick={onClearFilter}>
+              {isEs ? '✕ Quitar filtro' : '✕ Clear filter'}
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="text-center border-red-200 bg-red-50/50 dark:bg-red-950/20">
