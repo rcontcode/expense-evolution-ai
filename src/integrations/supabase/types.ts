@@ -2352,6 +2352,63 @@ export type Database = {
           },
         ]
       }
+      managed_apps: {
+        Row: {
+          app_type: string
+          color: string
+          created_at: string
+          created_by: string | null
+          description: string
+          icon: string
+          id: string
+          is_active: boolean
+          lead_count: number
+          name: string
+          source_key: string
+          status: string
+          updated_at: string
+          url: string
+          webhook_secret: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          app_type?: string
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          lead_count?: number
+          name: string
+          source_key: string
+          status?: string
+          updated_at?: string
+          url?: string
+          webhook_secret?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          app_type?: string
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          lead_count?: number
+          name?: string
+          source_key?: string
+          status?: string
+          updated_at?: string
+          url?: string
+          webhook_secret?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
       mileage: {
         Row: {
           client_id: string | null
