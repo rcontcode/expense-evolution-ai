@@ -54,7 +54,7 @@ export const AdminSystemMetrics = memo(() => {
       const docsRes = await supabase.from('documents').select('*', { count: 'exact', head: true });
       const todayRes = await supabase.from('expenses').select('*', { count: 'exact', head: true }).gte('created_at', today.toISOString());
       const activeRes = await supabase.from('feature_usage_logs').select('user_id', { count: 'exact', head: true }).gte('created_at', weekAgo.toISOString());
-      const billsRes = await supabase.from('recurring_bills').select('*', { count: 'exact', head: true }).eq('is_active', true as any);
+      const billsRes = await (supabase as any).from('recurring_bills').select('*', { count: 'exact', head: true }).eq('is_active', true);
       const clientsRes = await supabase.from('clients').select('*', { count: 'exact', head: true }).is('deleted_at', null);
 
       return {
