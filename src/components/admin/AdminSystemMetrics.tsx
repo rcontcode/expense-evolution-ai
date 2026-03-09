@@ -1,7 +1,6 @@
 import { memo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { format, subDays, startOfDay } from 'date-fns';
-import { es as esLocale } from 'date-fns/locale';
+import { subDays, startOfDay } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
