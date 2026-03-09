@@ -111,9 +111,11 @@ export const AdminAutomationTab = ({ language }: Props) => {
   const [showSetup, setShowSetup] = useState(false);
 
   const toggleRule = (ruleId: string) => {
-    setRules((prev) =>
-      prev.map((r) => (r.id === ruleId ? { ...r, enabled: !r.enabled } : r))
-    );
+    setRules((prev) => {
+      const updated = prev.map((r) => (r.id === ruleId ? { ...r, enabled: !r.enabled } : r));
+      localStorage.setItem('crm-automation-rules', JSON.stringify(updated));
+      return updated;
+    });
     toast.success(isEs ? 'Regla actualizada' : 'Rule updated');
   };
 
