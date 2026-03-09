@@ -20,12 +20,14 @@ import {
   LayoutDashboard, Users, CreditCard, Target, Plus, ExternalLink,
   Globe, Smartphone, TrendingUp, Activity, ArrowLeft, Copy, Check, 
   Pencil, MoreVertical, Zap, Clock, Send, Code, FileJson, Trash2,
-  CheckCircle2, AlertCircle, Loader2,
+  CheckCircle2, AlertCircle, Loader2, Phone,
 } from 'lucide-react';
 import { AdminUserOverview } from '@/components/admin/AdminUserOverview';
 import { AdminSubscriptionsTab } from '@/components/admin/tabs/AdminSubscriptionsTab';
 import { AdminLeadsTab } from '@/components/admin/tabs/AdminLeadsTab';
 import { AdminActivityFeed } from '@/components/admin/tabs/AdminActivityFeed';
+import { AdminContactQueueTab } from '@/components/admin/tabs/AdminContactQueueTab';
+import { AdminAutomationTab } from '@/components/admin/tabs/AdminAutomationTab';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
@@ -659,25 +661,37 @@ const AdminCRM = () => {
           {/* CRM Tabs */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-3 p-1 bg-muted/50 rounded-xl h-12">
-                <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold text-xs md:text-sm">
-                  <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">{isEs ? '👥 Usuarios' : '👥 Users'}</span>
+              <TabsList className="grid w-full grid-cols-5 p-1 bg-muted/50 rounded-xl h-12">
+                <TabsTrigger value="users" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold text-[11px] md:text-sm">
+                  <Users className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{isEs ? 'Usuarios' : 'Users'}</span>
                   <span className="sm:hidden">👥</span>
                 </TabsTrigger>
-                <TabsTrigger value="leads" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold text-xs md:text-sm">
-                  <Target className="h-4 w-4" />
-                  <span className="hidden sm:inline">{isEs ? '🎯 Leads' : '🎯 Leads'}</span>
+                <TabsTrigger value="leads" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold text-[11px] md:text-sm">
+                  <Target className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Leads</span>
                   <span className="sm:hidden">🎯</span>
                 </TabsTrigger>
-                <TabsTrigger value="subscriptions" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white rounded-lg font-semibold text-xs md:text-sm">
-                  <CreditCard className="h-4 w-4" />
-                  <span className="hidden sm:inline">{isEs ? '💳 Planes' : '💳 Plans'}</span>
+                <TabsTrigger value="queue" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold text-[11px] md:text-sm">
+                  <Phone className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{isEs ? 'Contactar' : 'Queue'}</span>
+                  <span className="sm:hidden">📞</span>
+                </TabsTrigger>
+                <TabsTrigger value="automation" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg font-semibold text-[11px] md:text-sm">
+                  <Zap className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{isEs ? 'Auto' : 'Auto'}</span>
+                  <span className="sm:hidden">⚡</span>
+                </TabsTrigger>
+                <TabsTrigger value="subscriptions" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white rounded-lg font-semibold text-[11px] md:text-sm">
+                  <CreditCard className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{isEs ? 'Planes' : 'Plans'}</span>
                   <span className="sm:hidden">💳</span>
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="users"><AdminUserOverview /></TabsContent>
               <TabsContent value="leads"><AdminLeadsTab language={language} sourceFilter={sourceFilter} onClearFilter={() => setSourceFilter(null)} /></TabsContent>
+              <TabsContent value="queue"><AdminContactQueueTab language={language} /></TabsContent>
+              <TabsContent value="automation"><AdminAutomationTab language={language} /></TabsContent>
               <TabsContent value="subscriptions"><AdminSubscriptionsTab language={language} /></TabsContent>
             </Tabs>
             <div className="sticky top-6"><AdminActivityFeed language={language} /></div>
