@@ -100,24 +100,13 @@ export default function BetaCodesAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <Layout>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <Shield className="h-6 w-6 text-primary" />
-                Administración de Códigos Beta
-              </h1>
-              <p className="text-muted-foreground">
-                Gestiona los códigos de invitación para beta testers
-              </p>
-            </div>
-          </div>
+        <PageHeader
+          title="Administración de Códigos Beta"
+          description="Gestiona los códigos de invitación para beta testers"
+        >
 
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
