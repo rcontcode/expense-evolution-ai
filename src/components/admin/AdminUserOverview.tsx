@@ -89,6 +89,8 @@ export const AdminUserOverview = memo(() => {
     }
     if (filter === 'beta') result = result.filter(u => u.is_beta_tester);
     if (filter === 'non-beta') result = result.filter(u => !u.is_beta_tester);
+    if (filter === 'paid') result = result.filter(u => u.plan_type && u.plan_type !== 'free');
+    if (filter === 'free') result = result.filter(u => !u.plan_type || u.plan_type === 'free');
     return result;
   }, [allUsers, search, filter]);
 
