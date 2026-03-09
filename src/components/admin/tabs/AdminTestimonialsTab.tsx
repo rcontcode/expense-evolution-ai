@@ -18,14 +18,15 @@ const StarDisplay = ({ rating }: { rating: number }) => (
 interface FeedbackItem {
   id: string;
   rating: number;
-  comment: string | null;
-  suggestions: string | null;
-  user_name: string;
-  user_email: string;
+  comment?: string | null;
+  suggestions?: string | null;
+  user_name?: string;
+  user_email?: string;
   created_at: string;
   allow_as_testimonial?: boolean;
   is_published_testimonial?: boolean;
   display_name_override?: string | null;
+  [key: string]: unknown;
 }
 
 interface Props {

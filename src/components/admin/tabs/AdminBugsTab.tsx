@@ -15,12 +15,13 @@ interface BugReport {
   id: string;
   title: string;
   description: string;
-  severity: string | null;
+  severity?: string | null;
   status: string;
-  page_path: string | null;
-  admin_notes: string | null;
-  user_name: string;
+  page_path?: string | null;
+  admin_notes?: string | null;
+  user_name?: string;
   created_at: string;
+  [key: string]: unknown;
 }
 
 interface BugStats {
@@ -28,7 +29,7 @@ interface BugStats {
   new: number;
   inProgress: number;
   resolved: number;
-  bySeverity: { low: number; medium: number; high: number; critical: number };
+  bySeverity: Record<string, number>;
 }
 
 interface Props {

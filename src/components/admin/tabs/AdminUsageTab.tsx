@@ -7,7 +7,6 @@ import { adminTranslations } from '../adminTranslations';
 
 interface FeatureUsageItem {
   feature_name: string;
-  [key: string]: unknown;
 }
 
 interface Props {

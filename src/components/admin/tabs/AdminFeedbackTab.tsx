@@ -42,15 +42,16 @@ interface FeedbackItem {
   id: string;
   section: string;
   rating: number;
-  ease_of_use: number | null;
-  usefulness: number | null;
-  design_rating: number | null;
-  comment: string | null;
-  suggestions: string | null;
-  would_recommend: boolean | null;
-  user_name: string;
-  user_email: string;
+  ease_of_use?: number | null;
+  usefulness?: number | null;
+  design_rating?: number | null;
+  comment?: string | null;
+  suggestions?: string | null;
+  would_recommend?: boolean | null;
+  user_name?: string;
+  user_email?: string;
   created_at: string;
+  [key: string]: unknown;
 }
 
 interface Props {
