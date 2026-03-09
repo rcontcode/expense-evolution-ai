@@ -162,12 +162,10 @@ export default function BetaCodesAdmin() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="expiry">Expiración (días, 0 = sin expiración)</Label>
+                  <Label htmlFor="expiry">Expiración</Label>
                   <Input
                     id="expiry"
-                    type="number"
-                    min={0}
-                    max={365}
+                    type="date"
                     value={newCodeExpiry}
                     onChange={(e) => setNewCodeExpiry(e.target.value)}
                   />
