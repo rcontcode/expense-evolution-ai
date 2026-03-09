@@ -92,6 +92,8 @@ const AdminCRM = () => {
   const [editingApp, setEditingApp] = useState<ManagedApp | null>(null);
   const [testingApp, setTestingApp] = useState<string | null>(null);
   const [showDocs, setShowDocs] = useState(false);
+  const [selectedApp, setSelectedApp] = useState<ManagedApp | null>(null);
+  const [sourceFilter, setSourceFilter] = useState<string | null>(null);
 
   // Form state
   const [formName, setFormName] = useState('');
