@@ -7,14 +7,23 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Product IDs for EvoFinz plans
-const PRODUCT_IDS = {
-  premium_monthly: "prod_U4OdR9JHiXuKho",
-  premium_annual: "prod_U4Ofsc9SskEad8",
-  pro_monthly: "prod_TuPUJPLiqh0kC7",
-  pro_annual: "prod_TuPVHHsOi7e4Au",
-  bundle_monthly: "prod_U4OgGM4CrkdVOP",
-  bundle_annual: "prod_U4Ohr9YUiCNX76",
+// Product IDs for EvoFinz plans (includes both old and new Stripe products)
+const PRODUCT_ID_MAP: Record<string, { plan: string; period: string; bundle?: boolean }> = {
+  // New products
+  "prod_U4OdR9JHiXuKho": { plan: "premium", period: "monthly" },
+  "prod_U4Ofsc9SskEad8": { plan: "premium", period: "annual" },
+  // Old products (still active on some subscriptions)
+  "prod_TuPUlFnv10u2OA": { plan: "premium", period: "monthly" },
+  "prod_TuPUaVFFZ9bBgf": { plan: "premium", period: "annual" },
+  // Pro
+  "prod_TuPUJPLiqh0kC7": { plan: "pro", period: "monthly" },
+  "prod_TuPVHHsOi7e4Au": { plan: "pro", period: "annual" },
+  // Bundle (new)
+  "prod_U4OgGM4CrkdVOP": { plan: "pro", period: "monthly", bundle: true },
+  "prod_U4Ohr9YUiCNX76": { plan: "pro", period: "annual", bundle: true },
+  // Bundle (old)
+  "prod_U2ZIfWwlezukmF": { plan: "pro", period: "monthly", bundle: true },
+  "prod_U2ZNNkNSSVCIp5": { plan: "pro", period: "annual", bundle: true },
 };
 
 const logStep = (step: string, details?: any) => {
