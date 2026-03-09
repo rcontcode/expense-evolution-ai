@@ -157,6 +157,8 @@ export const AdminContactQueueTab = ({ language }: Props) => {
     const phone = lead.phone.replace(/[^\d+]/g, '');
     const msg = encodeURIComponent(customMessage || aiMessage);
     window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+    // Auto-mark as contacted
+    if (!lead.contacted_at) markAsContacted.mutate(lead.id);
   };
 
   const handleEmail = (lead: QueueLead, customMessage?: string) => {
