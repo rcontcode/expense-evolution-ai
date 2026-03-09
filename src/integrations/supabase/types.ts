@@ -2284,6 +2284,51 @@ export type Database = {
           },
         ]
       }
+      lead_message_templates: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          language: string
+          message_type: string
+          name: string
+          tags: string[] | null
+          target_app: string
+          template_type: string
+          updated_at: string
+          use_count: number | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          language?: string
+          message_type?: string
+          name: string
+          tags?: string[] | null
+          target_app?: string
+          template_type?: string
+          updated_at?: string
+          use_count?: number | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          language?: string
+          message_type?: string
+          name?: string
+          tags?: string[] | null
+          target_app?: string
+          template_type?: string
+          updated_at?: string
+          use_count?: number | null
+        }
+        Relationships: []
+      }
       liabilities: {
         Row: {
           category: string
@@ -2974,6 +3019,7 @@ export type Database = {
           name: string
           obstacle: string | null
           phone: string | null
+          pipeline_stage: string | null
           priority: string | null
           quiz_level: string | null
           quiz_score: number | null
@@ -2999,6 +3045,7 @@ export type Database = {
           name: string
           obstacle?: string | null
           phone?: string | null
+          pipeline_stage?: string | null
           priority?: string | null
           quiz_level?: string | null
           quiz_score?: number | null
@@ -3024,6 +3071,7 @@ export type Database = {
           name?: string
           obstacle?: string | null
           phone?: string | null
+          pipeline_stage?: string | null
           priority?: string | null
           quiz_level?: string | null
           quiz_score?: number | null
