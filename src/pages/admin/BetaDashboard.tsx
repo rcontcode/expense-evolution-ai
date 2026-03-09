@@ -172,29 +172,41 @@ const BetaDashboard = () => {
         {/* Tabs */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Tabs defaultValue="users" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6 p-1 bg-muted/50 rounded-xl h-14">
-              <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold">
-                <Users className="h-4 w-4" />{text.testersTab}
+            <TabsList className="grid w-full grid-cols-8 p-1 bg-muted/50 rounded-xl h-14">
+              <TabsTrigger value="users" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold text-xs">
+                <Users className="h-3.5 w-3.5" />{text.testersTab}
               </TabsTrigger>
-              <TabsTrigger value="feedback" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold">
-                <MessageSquare className="h-4 w-4" />{text.feedbackTab}
+              <TabsTrigger value="subscriptions" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg font-semibold text-xs">
+                <CreditCard className="h-3.5 w-3.5" />{isEs ? '💳 Planes' : '💳 Plans'}
               </TabsTrigger>
-              <TabsTrigger value="bugs" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-pink-500 data-[state=active]:text-white rounded-lg font-semibold">
-                <Bug className="h-4 w-4" />{text.bugsTab}
+              <TabsTrigger value="leads" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold text-xs">
+                <Users2 className="h-3.5 w-3.5" />{isEs ? '🎯 Leads' : '🎯 Leads'}
               </TabsTrigger>
-              <TabsTrigger value="rewards" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-amber-600 data-[state=active]:text-white rounded-lg font-semibold">
-                <Gift className="h-4 w-4" />{text.rewardsTab}
+              <TabsTrigger value="feedback" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold text-xs">
+                <MessageSquare className="h-3.5 w-3.5" />{text.feedbackTab}
               </TabsTrigger>
-              <TabsTrigger value="testimonials" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg font-semibold">
-                <Quote className="h-4 w-4" />{text.testimonialsTab}
+              <TabsTrigger value="bugs" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-pink-500 data-[state=active]:text-white rounded-lg font-semibold text-xs">
+                <Bug className="h-3.5 w-3.5" />{text.bugsTab}
               </TabsTrigger>
-              <TabsTrigger value="usage" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white rounded-lg font-semibold">
-                <BarChart3 className="h-4 w-4" />{text.usageTab}
+              <TabsTrigger value="rewards" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-amber-600 data-[state=active]:text-white rounded-lg font-semibold text-xs">
+                <Gift className="h-3.5 w-3.5" />{text.rewardsTab}
+              </TabsTrigger>
+              <TabsTrigger value="testimonials" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg font-semibold text-xs">
+                <Quote className="h-3.5 w-3.5" />{text.testimonialsTab}
+              </TabsTrigger>
+              <TabsTrigger value="usage" className="flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white rounded-lg font-semibold text-xs">
+                <BarChart3 className="h-3.5 w-3.5" />{text.usageTab}
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="users">
               <AdminTestersTab userStats={userStats} language={language} />
+            </TabsContent>
+            <TabsContent value="subscriptions">
+              <AdminSubscriptionsTab language={language} />
+            </TabsContent>
+            <TabsContent value="leads">
+              <AdminLeadsTab language={language} />
             </TabsContent>
             <TabsContent value="feedback">
               <AdminFeedbackTab allFeedback={allFeedback as any} language={language} />
