@@ -59,6 +59,23 @@ export const AdminLeadsTab = ({ language }: Props) => {
       .slice(0, 10);
   }, [leads]);
 
+  const handleMarkContacted = async (leadId: string) => {
+    setContactingId(leadId);
+    try {
+      const { error } = await supabase
+        .from('quiz_leads')
+        .update({ contacted_at: new Date().toISOString() })
+        .eq('id', leadId);
+      if (error) throw error;
+      toast.success(isEs ? '✅ Lead marcado como contactado' : '✅ Lead marked as contacted');
+      queryClient.invalidateQueries({ queryKey: ['admin-leads-summary'] });
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+    } finally {
+      setContactingId(null);
+    }
+  };
+
   if (isLoading) {
     return <Card className="animate-pulse"><CardContent className="p-6"><div className="h-40 bg-muted rounded" /></CardContent></Card>;
   }
