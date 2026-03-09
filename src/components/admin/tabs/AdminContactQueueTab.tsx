@@ -63,24 +63,10 @@ export const AdminContactQueueTab = ({ language }: Props) => {
       const { data, error } = await supabase
         .from('quiz_leads')
         .select('*')
-        .is('converted_to_user', null)
+        .or('converted_to_user.is.null,converted_to_user.eq.false')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      // Also include converted_to_user = false
-      const { data: data2, error: error2 } = await supabase
-        .from('quiz_leads')
-        .select('*')
-        .eq('converted_to_user', false)
-        .order('created_at', { ascending: false });
-      if (error2) throw error2;
-      // Merge and dedupe
-      const all = [...(data || []), ...(data2 || [])];
-      const seen = new Set<string>();
-      return all.filter((l: any) => {
-        if (seen.has(l.id)) return false;
-        seen.add(l.id);
-        return true;
-      });
+      return data || [];
     },
   });
 

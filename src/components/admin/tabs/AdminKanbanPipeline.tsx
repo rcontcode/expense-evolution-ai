@@ -502,12 +502,17 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
 
       if (note) {
         const currentLead = rawLeads.find(l => l.id === leadId);
-        supabase.from('lead_interactions').insert({
+        const { data: { user } } = await supabase.auth.getUser();
+        const { error: interactionError } = await supabase.from('lead_interactions').insert({
           lead_id: leadId,
           interaction_type: 'stage_change',
-          content: note,
-          metadata: { from_stage: currentLead?.pipeline_stage, to_stage: stage },
-        }).then(() => {});
+          direction: 'outbound' as const,
+          notes: `[${currentLead?.pipeline_stage} → ${stage}] ${note}`,
+          created_by: user?.id,
+        });
+        if (interactionError) {
+          console.error('Error logging interaction:', interactionError);
+        }
       }
     },
     onSuccess: () => {

@@ -36,7 +36,7 @@ interface InteractionTimelineProps {
   className?: string;
 }
 
-type InteractionType = 'call' | 'email' | 'whatsapp' | 'note' | 'meeting';
+type InteractionType = 'call' | 'email' | 'whatsapp' | 'note' | 'meeting' | 'stage_change';
 type InteractionDirection = 'inbound' | 'outbound';
 type InteractionOutcome = 'positive' | 'neutral' | 'negative' | 'no_answer' | null;
 
