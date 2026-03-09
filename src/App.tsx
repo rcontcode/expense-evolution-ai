@@ -109,6 +109,7 @@ const BetaCodesAdmin = lazyWithRetry(() => import("./pages/admin/BetaCodes"));
 const BetaDashboardAdmin = lazyWithRetry(() => import("./pages/admin/BetaDashboard"));
 const LeadsManagementAdmin = lazyWithRetry(() => import("./pages/admin/LeadsManagement"));
 const EcosystemLabAdmin = lazyWithRetry(() => import("./pages/admin/EcosystemLab"));
+const AdminCRM = lazyWithRetry(() => import("./pages/admin/AdminCRM"));
 const FinancialQuiz = lazyWithRetry(() => import("./pages/FinancialQuiz"));
 const BetaFeedback = lazyWithRetry(() => import("./pages/BetaFeedback"));
 const BetaGuide = lazyWithRetry(() => import("./pages/BetaGuide"));
@@ -384,6 +385,7 @@ const App = () => (
                         <Route path="/admin/beta-dashboard" element={<AdminRoute><BetaDashboardAdmin /></AdminRoute>} />
                         <Route path="/admin/leads" element={<AdminRoute><LeadsManagementAdmin /></AdminRoute>} />
                         <Route path="/admin/ecosystem-lab" element={<AdminRoute><EcosystemLabAdmin /></AdminRoute>} />
+                        <Route path="/admin/crm" element={<AdminRoute><AdminCRM /></AdminRoute>} />
                         <Route path="/beta-feedback" element={<ProtectedRoute><BetaFeedback /></ProtectedRoute>} />
                         <Route path="/beta-guide" element={<ProtectedRoute><BetaGuide /></ProtectedRoute>} />
                         <Route path="/adventure" element={<ProtectedRoute><FinancialAdventure /></ProtectedRoute>} />

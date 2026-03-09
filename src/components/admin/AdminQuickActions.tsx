@@ -84,6 +84,14 @@ export const AdminQuickActions = memo(() => {
       badge: 'PRO',
     },
     {
+      id: 'crm',
+      label: isEs ? 'CRM & Apps' : 'CRM & Apps',
+      icon: Users,
+      color: 'text-indigo-600 bg-indigo-100 hover:bg-indigo-200',
+      action: () => navigate('/admin/crm'),
+      badge: 'NEW',
+    },
+    {
       id: 'leads',
       label: isEs ? 'CRM Leads' : 'CRM Leads',
       icon: Users,
