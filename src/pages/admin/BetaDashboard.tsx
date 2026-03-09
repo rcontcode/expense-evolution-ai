@@ -195,19 +195,19 @@ const BetaDashboard = () => {
               <AdminTestersTab userStats={userStats} language={language} />
             </TabsContent>
             <TabsContent value="feedback">
-              <AdminFeedbackTab allFeedback={allFeedback} language={language} />
+              <AdminFeedbackTab allFeedback={allFeedback as any} language={language} />
             </TabsContent>
             <TabsContent value="bugs">
-              <AdminBugsTab bugReports={bugReports} bugStats={bugStats} updateBugReport={updateBugReport} language={language} />
+              <AdminBugsTab bugReports={bugReports as any} bugStats={bugStats as any} updateBugReport={updateBugReport} language={language} />
             </TabsContent>
             <TabsContent value="rewards">
               <AdminRewardsTab allRedemptions={allRedemptions} redemptionProfiles={redemptionProfiles} language={language} />
             </TabsContent>
             <TabsContent value="testimonials">
-              <AdminTestimonialsTab allFeedback={allFeedback} toggleTestimonialPublish={toggleTestimonialPublish} language={language} />
+              <AdminTestimonialsTab allFeedback={allFeedback as any} toggleTestimonialPublish={toggleTestimonialPublish} language={language} />
             </TabsContent>
             <TabsContent value="usage">
-              <AdminUsageTab featureUsage={featureUsage} language={language} />
+              <AdminUsageTab featureUsage={featureUsage as any} language={language} />
             </TabsContent>
           </Tabs>
         </motion.div>
