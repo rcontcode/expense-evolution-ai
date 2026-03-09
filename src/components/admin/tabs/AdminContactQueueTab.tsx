@@ -120,7 +120,7 @@ export const AdminContactQueueTab = ({ language }: Props) => {
     setAiMessage('');
     try {
       const { data, error } = await supabase.functions.invoke('generate-lead-message', {
-        body: { lead, messageType: type, language },
+        body: { lead, messageType: type, language, targetApp, templateType },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -129,6 +129,22 @@ export const AdminContactQueueTab = ({ language }: Props) => {
       toast.error(err.message || 'Error generating message');
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  // Auto-select template based on lead state
+  const autoSelectTemplate = (lead: QueueLead) => {
+    if (lead.contacted_at) {
+      const days = differenceInDays(new Date(), new Date(lead.contacted_at));
+      setTemplateType(days > 7 ? 'reactivation' : 'follow_up');
+    } else {
+      setTemplateType('first_contact');
+    }
+    // Auto-select app based on source
+    if (lead.source?.toLowerCase().includes('fokus')) {
+      setTargetApp('fokuspark');
+    } else {
+      setTargetApp('evofinz');
     }
   };
 
