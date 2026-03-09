@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.ecosystem-dashboard]
 verify_jwt = false
+
+[functions.generate-lead-message]
+verify_jwt = false
