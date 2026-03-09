@@ -461,6 +461,6 @@ export default function BetaCodesAdmin() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </Layout>
   );
 }
