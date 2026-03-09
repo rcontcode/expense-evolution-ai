@@ -260,11 +260,11 @@ export const AdminSystemMetrics = memo(() => {
           </p>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${storageInfo?.expenseDocsExists ? 'bg-emerald-500' : 'bg-red-500'}`} />
+              <div className={`w-2 h-2 rounded-full ${storageInfo?.expenseDocsExists ? 'bg-primary' : 'bg-destructive'}`} />
               <span className="text-xs">expense-documents</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${storageInfo?.contractsExists ? 'bg-emerald-500' : 'bg-red-500'}`} />
+              <div className={`w-2 h-2 rounded-full ${storageInfo?.contractsExists ? 'bg-primary' : 'bg-destructive'}`} />
               <span className="text-xs">contracts</span>
             </div>
           </div>
