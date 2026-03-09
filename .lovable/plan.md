@@ -1,63 +1,91 @@
 
 
-## Diagnóstico Completo: Admin, Planes, CRM, Beta
+## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
 
-### Problemas Encontrados
+### ✅ Completado en EvoFinz
 
-**1. Bug Critico: `stripe-webhook` desincronizado con `check-subscription`**
-El webhook (`stripe-webhook/index.ts`) todavia usa el mapa viejo `PRODUCT_IDS` sin los product IDs legacy (`prod_TuPUlFnv10u2OA`, `prod_TuPUaVFFZ9bBgf`, `prod_U2ZIfWwlezukmF`, `prod_U2ZNNkNSSVCIp5`). Ya corregiste `check-subscription` pero el webhook sigue sin reconocer esos productos. Resultado: cuando Stripe envia un evento de suscripcion con un producto legacy, el webhook no lo mapea correctamente.
+| # | Tarea | Estado |
+|---|-------|--------|
+| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
+| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
+| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
+| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
+| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
 
-**Fix**: Sincronizar el `PRODUCT_ID_MAP` del webhook con el de `check-subscription`.
+### ✅ Completado en Fokuspark
 
-**2. BetaDashboard.tsx tiene 1345 lineas — monolito fragil**
-Un solo archivo contiene: header, stat cards, 6 tabs (users, feedback, bugs, rewards, testimonials, usage), helpers de badges, traducciones inline. Cualquier cambio es riesgoso.
+| # | Tarea | Estado |
+|---|-------|--------|
+| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
+| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
+| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
+| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
 
-**Fix**: Extraer cada tab en su propio componente (`AdminTestersTab`, `AdminFeedbackTab`, `AdminBugsTab`, `AdminRewardsTab`, `AdminTestimonialsTab`, `AdminUsageTab`) y mover traducciones a un objeto separado.
-
-**3. AdminUserOverview limitado a 15 usuarios sin paginacion**
-Solo muestra los ultimos 15 registros. No hay busqueda ni filtro.
-
-**Fix**: Agregar campo de busqueda por nombre/email y paginacion simple.
+### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
 
 ---
 
-### Sobre crear una app CRM separada: NO lo hagas (todavia)
+## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
 
-**Razonamiento:**
+### ✅ Confirmado: Sistema funciona correctamente
 
-| Factor | App CRM separada | CRM dentro de EvoFinz |
-|--------|------------------|----------------------|
-| Tiempo de desarrollo | 3-6 meses | Ya tienes 80% hecho |
-| Datos | Misma DB — tendrias que duplicar o compartir schema | Acceso directo a `profiles`, `user_subscriptions`, `quiz_leads` |
-| Usuarios objetivo | Solo tu (1 admin) | Solo tu (1 admin) |
-| Mantenimiento | 2 apps que mantener | 1 sola |
-| Costo Lovable | Otro proyecto = mas tokens | Mismo proyecto |
+- Planes individuales (Free/Premium/Pro) son independientes por app
+- Bundle compartido usa mismos Stripe Price IDs en ambas apps
+- Ambos webhooks detectan Bundle y setean `has_bundle = true`
+- No hay acceso cruzado no autorizado entre apps
 
-**Veredicto**: Con 2 apps (EvoFinz + Fokuspark) y < 100 usuarios, un CRM dedicado es overengineering. Lo que necesitas es **reforzar el admin panel que ya tienes** para que funcione como tu CRM interno.
+### ✅ Gaps implementados en Fokuspark
 
-### Plan de Accion (paso a paso)
+| # | Gap | Estado |
+|---|-----|--------|
+| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
+| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
 
-**Fase 1: Corregir bugs criticos**
-1. Sincronizar `PRODUCT_ID_MAP` en `stripe-webhook/index.ts` (mismo mapa que `check-subscription`)
+### 📋 Gaps pendientes (baja prioridad)
 
-**Fase 2: Refactorizar BetaDashboard**
-2. Extraer las 6 tabs en componentes individuales dentro de `src/components/admin/tabs/`
-3. Mover traducciones a `src/components/admin/adminTranslations.ts`
-4. Reducir BetaDashboard a ~150 lineas (solo layout + tabs wrapper)
+| # | Gap | Prioridad |
+|---|-----|-----------|
+| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
+| S3 | Texto del Bundle podría ser más descriptivo | Baja |
 
-**Fase 3: Mejorar gestion de usuarios (tu "CRM ligero")**
-5. Agregar busqueda y filtros al `AdminUserOverview` (por nombre, email, estado beta, plan)
-6. Agregar vista de detalle de usuario: plan actual, historial beta, uso mensual, ultimo login
-7. Agregar tab "Suscripciones" al BetaDashboard con overview de planes activos vs free
+---
 
-**Fase 4: Consolidar CRM de leads**
-8. Integrar acceso directo a `/admin/leads` desde el BetaDashboard (tab o link directo) en vez de pagina separada
+## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
 
-### Resumen de archivos a modificar
+### ✅ Veredicto: No igualar precios — estructura actual es óptima
 
-- `supabase/functions/stripe-webhook/index.ts` — sincronizar product map
-- `src/pages/admin/BetaDashboard.tsx` — refactorizar en componentes
-- `src/components/admin/tabs/` — 6 nuevos archivos de tab
-- `src/components/admin/adminTranslations.ts` — nuevo
-- `src/components/admin/AdminUserOverview.tsx` — busqueda + filtros + detalle
+| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
+|------|---------|-----------|-----------|-------|
+| Free | $0 | $0 | ✅ Ya iguales | — |
+| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
+| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
 
+### 📋 Pendiente técnico
+
+| # | Tarea | App | Prioridad |
+|---|-------|-----|-----------|
+| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
+
+---
+
+## Quiz Multi-App — CRM Unificado
+
+### ✅ Completado en EvoFinz
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
+| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
+| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
+| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
+| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
+
+### 📋 Pendiente en Fokuspark
+
+| # | Tarea | Prioridad |
+|---|-------|-----------|
+| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
+| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
+| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
+| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
