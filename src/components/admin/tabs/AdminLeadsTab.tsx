@@ -1,17 +1,18 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users, ExternalLink, Flame, Phone, UserCheck, MessageSquare } from 'lucide-react';
+import { Users, ExternalLink, Flame, Phone, UserCheck, MessageSquare, Copy, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { es as esLocale } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import { calculateLeadScore, getLeadPriority, getPriorityColors } from '@/hooks/admin/useLeadScoring';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface Props {
   language: 'es' | 'en';
