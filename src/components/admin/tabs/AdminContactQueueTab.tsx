@@ -54,6 +54,8 @@ export const AdminContactQueueTab = ({ language }: Props) => {
   const [aiMessage, setAiMessage] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [messageType, setMessageType] = useState<'whatsapp' | 'email' | 'offer'>('whatsapp');
+  const [targetApp, setTargetApp] = useState<'evofinz' | 'fokuspark' | 'bundle'>('evofinz');
+  const [templateType, setTemplateType] = useState<'first_contact' | 'follow_up' | 'reactivation' | 'invitation' | 'offer'>('first_contact');
 
   const { data: rawLeads = [], isLoading } = useQuery({
     queryKey: ['contact-queue-leads'],
@@ -118,7 +120,7 @@ export const AdminContactQueueTab = ({ language }: Props) => {
     setAiMessage('');
     try {
       const { data, error } = await supabase.functions.invoke('generate-lead-message', {
-        body: { lead, messageType: type, language },
+        body: { lead, messageType: type, language, targetApp, templateType },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -127,6 +129,22 @@ export const AdminContactQueueTab = ({ language }: Props) => {
       toast.error(err.message || 'Error generating message');
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  // Auto-select template based on lead state
+  const autoSelectTemplate = (lead: QueueLead) => {
+    if (lead.contacted_at) {
+      const days = differenceInDays(new Date(), new Date(lead.contacted_at));
+      setTemplateType(days > 7 ? 'reactivation' : 'follow_up');
+    } else {
+      setTemplateType('first_contact');
+    }
+    // Auto-select app based on source
+    if (lead.source?.toLowerCase().includes('fokus')) {
+      setTargetApp('fokuspark');
+    } else {
+      setTargetApp('evofinz');
     }
   };
 
@@ -187,7 +205,7 @@ export const AdminContactQueueTab = ({ language }: Props) => {
           'p-4 rounded-xl border cursor-pointer hover:shadow-md transition-all group',
           colors.border, colors.row
         )}
-        onClick={() => setSelectedLead(lead)}
+        onClick={() => { autoSelectTemplate(lead); setSelectedLead(lead); }}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -362,49 +380,121 @@ export const AdminContactQueueTab = ({ language }: Props) => {
 
               <Separator className="my-4" />
 
-              {/* AI Message Generator */}
+              {/* AI Message Generator with Template Selector */}
               <div className="space-y-3">
                 <h3 className="font-bold text-sm flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-primary" />
-                  {isEs ? 'Generar mensaje con IA' : 'Generate AI message'}
+                  {isEs ? 'Generar borrador con IA' : 'Generate AI draft'}
                 </h3>
-                <div className="grid grid-cols-3 gap-2">
-                  <Button
-                    size="sm"
-                    variant={messageType === 'whatsapp' ? 'default' : 'outline'}
-                    className="text-xs"
-                    onClick={() => generateAIMessage(selectedLead, 'whatsapp')}
-                    disabled={aiLoading}
-                  >
-                    {aiLoading && messageType === 'whatsapp' ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <MessageCircle className="h-3 w-3 mr-1" />}
-                    WhatsApp
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={messageType === 'email' ? 'default' : 'outline'}
-                    className="text-xs"
-                    onClick={() => generateAIMessage(selectedLead, 'email')}
-                    disabled={aiLoading}
-                  >
-                    {aiLoading && messageType === 'email' ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Mail className="h-3 w-3 mr-1" />}
-                    Email
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={messageType === 'offer' ? 'default' : 'outline'}
-                    className="text-xs"
-                    onClick={() => generateAIMessage(selectedLead, 'offer')}
-                    disabled={aiLoading}
-                  >
-                    {aiLoading && messageType === 'offer' ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Sparkles className="h-3 w-3 mr-1" />}
-                    {isEs ? 'Oferta' : 'Offer'}
-                  </Button>
+
+                {/* Step 1: Target App */}
+                <div>
+                  <p className="text-[10px] text-muted-foreground font-bold mb-1.5 uppercase tracking-wider">
+                    {isEs ? '📱 App destino' : '📱 Target App'}
+                  </p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {([
+                      { key: 'evofinz' as const, label: '💰 EvoFinz', desc: isEs ? 'Finanzas' : 'Finance' },
+                      { key: 'fokuspark' as const, label: '🧘 FokusPark', desc: isEs ? 'Productividad' : 'Productivity' },
+                      { key: 'bundle' as const, label: '🔥 Bundle', desc: isEs ? 'Ambas' : 'Both' },
+                    ]).map((app) => (
+                      <Button
+                        key={app.key}
+                        size="sm"
+                        variant={targetApp === app.key ? 'default' : 'outline'}
+                        className="text-[11px] h-8 gap-1"
+                        onClick={() => setTargetApp(app.key)}
+                      >
+                        {app.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Step 2: Template Type */}
+                <div>
+                  <p className="text-[10px] text-muted-foreground font-bold mb-1.5 uppercase tracking-wider">
+                    {isEs ? '📋 Tipo de mensaje' : '📋 Message type'}
+                  </p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {([
+                      { key: 'first_contact' as const, label: isEs ? '👋 1er contacto' : '👋 First contact', color: 'text-emerald-600' },
+                      { key: 'follow_up' as const, label: isEs ? '📞 Follow-up' : '📞 Follow-up', color: 'text-amber-600' },
+                      { key: 'reactivation' as const, label: isEs ? '🔄 Reactivación' : '🔄 Reactivation', color: 'text-red-600' },
+                      { key: 'invitation' as const, label: isEs ? '🎯 Invitación' : '🎯 Invitation', color: 'text-blue-600' },
+                      { key: 'offer' as const, label: isEs ? '🎁 Oferta' : '🎁 Offer', color: 'text-purple-600' },
+                    ]).map((t) => (
+                      <Button
+                        key={t.key}
+                        size="sm"
+                        variant={templateType === t.key ? 'default' : 'outline'}
+                        className="text-[11px] h-8 gap-1"
+                        onClick={() => setTemplateType(t.key)}
+                      >
+                        {t.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Step 3: Channel + Generate */}
+                <div>
+                  <p className="text-[10px] text-muted-foreground font-bold mb-1.5 uppercase tracking-wider">
+                    {isEs ? '📤 Canal y generar' : '📤 Channel & generate'}
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      size="sm"
+                      variant={messageType === 'whatsapp' ? 'default' : 'outline'}
+                      className="text-xs"
+                      onClick={() => generateAIMessage(selectedLead, 'whatsapp')}
+                      disabled={aiLoading}
+                    >
+                      {aiLoading && messageType === 'whatsapp' ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <MessageCircle className="h-3 w-3 mr-1" />}
+                      WhatsApp
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={messageType === 'email' ? 'default' : 'outline'}
+                      className="text-xs"
+                      onClick={() => generateAIMessage(selectedLead, 'email')}
+                      disabled={aiLoading}
+                    >
+                      {aiLoading && messageType === 'email' ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Mail className="h-3 w-3 mr-1" />}
+                      Email
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={messageType === 'offer' ? 'default' : 'outline'}
+                      className="text-xs"
+                      onClick={() => generateAIMessage(selectedLead, 'offer')}
+                      disabled={aiLoading}
+                    >
+                      {aiLoading && messageType === 'offer' ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Sparkles className="h-3 w-3 mr-1" />}
+                      {isEs ? 'Oferta' : 'Offer'}
+                    </Button>
+                  </div>
+                  {/* Context badge */}
+                  <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                    <Badge variant="outline" className="text-[10px]">
+                      📱 {targetApp === 'bundle' ? 'EvoFinz + FokusPark' : targetApp === 'fokuspark' ? 'FokusPark' : 'EvoFinz'}
+                    </Badge>
+                    <Badge variant="outline" className="text-[10px]">
+                      📋 {templateType.replace('_', ' ')}
+                    </Badge>
+                    <Badge variant="outline" className="text-[10px]">
+                      🌍 {selectedLead.country}
+                    </Badge>
+                    <Badge variant="outline" className="text-[10px]">
+                      🎯 {selectedLead.priority.toUpperCase()}
+                    </Badge>
+                  </div>
                 </div>
 
                 {aiLoading && (
                   <div className="flex items-center justify-center py-8 text-muted-foreground">
                     <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                    {isEs ? 'Generando mensaje personalizado...' : 'Generating personalized message...'}
+                    {isEs ? 'Generando borrador personalizado...' : 'Generating personalized draft...'}
                   </div>
                 )}
 
@@ -415,7 +505,7 @@ export const AdminContactQueueTab = ({ language }: Props) => {
                       onChange={(e) => setAiMessage(e.target.value)}
                       className="min-h-[150px] text-sm"
                     />
-                    <div className="flex gap-2 mt-2">
+                    <div className="flex gap-2 mt-2 flex-wrap">
                       <Button size="sm" variant="outline" onClick={copyMessage} className="text-xs gap-1">
                         <Copy className="h-3 w-3" /> {isEs ? 'Copiar' : 'Copy'}
                       </Button>
@@ -434,6 +524,15 @@ export const AdminContactQueueTab = ({ language }: Props) => {
                         onClick={() => handleEmail(selectedLead, aiMessage)}
                       >
                         <Mail className="h-3 w-3" /> Email
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-xs gap-1 ml-auto"
+                        onClick={() => generateAIMessage(selectedLead, messageType)}
+                        disabled={aiLoading}
+                      >
+                        <Sparkles className="h-3 w-3" /> {isEs ? 'Regenerar' : 'Regenerate'}
                       </Button>
                     </div>
                   </motion.div>
