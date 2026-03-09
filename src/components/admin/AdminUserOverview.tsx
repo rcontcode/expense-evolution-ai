@@ -33,6 +33,7 @@ interface UserRow {
   beta_expires_at: string | null;
   beta_plan_level: string | null;
   created_at: string;
+  plan_type?: string | null;
 }
 
 const PAGE_SIZE = 15;
@@ -43,18 +44,26 @@ export const AdminUserOverview = memo(() => {
   const queryClient = useQueryClient();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'all' | 'beta' | 'non-beta'>('all');
+  const [filter, setFilter] = useState<'all' | 'beta' | 'non-beta' | 'paid' | 'free'>('all');
   const [page, setPage] = useState(0);
 
   const { data: allUsers, isLoading } = useQuery({
     queryKey: ['admin-user-overview-all'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from('profiles')
         .select('id, email, full_name, is_beta_tester, beta_expires_at, beta_plan_level, created_at')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []) as UserRow[];
+      
+      // Fetch subscriptions to merge plan data
+      const { data: subs } = await supabase
+        .from('user_subscriptions')
+        .select('user_id, plan_type');
+      const subMap: Record<string, string> = {};
+      for (const s of subs || []) { subMap[s.user_id] = s.plan_type || 'free'; }
+      
+      return (profiles || []).map(p => ({ ...p, plan_type: subMap[p.id] || 'free' })) as UserRow[];
     },
     refetchInterval: 60000,
   });
@@ -80,6 +89,8 @@ export const AdminUserOverview = memo(() => {
     }
     if (filter === 'beta') result = result.filter(u => u.is_beta_tester);
     if (filter === 'non-beta') result = result.filter(u => !u.is_beta_tester);
+    if (filter === 'paid') result = result.filter(u => u.plan_type && u.plan_type !== 'free');
+    if (filter === 'free') result = result.filter(u => !u.plan_type || u.plan_type === 'free');
     return result;
   }, [allUsers, search, filter]);
 
@@ -158,14 +169,16 @@ export const AdminUserOverview = memo(() => {
               className="pl-7 h-8 text-xs"
             />
           </div>
-          <Select value={filter} onValueChange={handleFilter}>
-            <SelectTrigger className="w-[100px] h-8 text-xs">
+           <Select value={filter} onValueChange={handleFilter}>
+            <SelectTrigger className="w-[120px] h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{isEs ? 'Todos' : 'All'}</SelectItem>
               <SelectItem value="beta">Beta</SelectItem>
               <SelectItem value="non-beta">{isEs ? 'No Beta' : 'Non-Beta'}</SelectItem>
+              <SelectItem value="paid">{isEs ? 'De Pago' : 'Paid'}</SelectItem>
+              <SelectItem value="free">Free</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -199,6 +212,11 @@ export const AdminUserOverview = memo(() => {
                     <p className="text-[9px] text-muted-foreground truncate">{user.email}</p>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
+                    {user.plan_type && user.plan_type !== 'free' && (
+                      <Badge variant="outline" className="text-[8px] px-1 py-0 h-4 border-primary/30 text-primary">
+                        {user.plan_type.toUpperCase()}
+                      </Badge>
+                    )}
                     {user.is_beta_tester && (
                       <Badge variant="outline" className="text-[8px] px-1 py-0 h-4">
                         {user.beta_plan_level || 'beta'}
