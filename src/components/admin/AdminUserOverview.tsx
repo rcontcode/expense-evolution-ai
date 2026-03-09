@@ -198,7 +198,8 @@ export const AdminUserOverview = memo(() => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.02 }}
-                  className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                  className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted/50 transition-colors group cursor-pointer"
+                  onClick={() => setSelectedUserId(user.id)}
                 >
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
                     isAdmin ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
