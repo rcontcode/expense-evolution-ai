@@ -21,9 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Users, Crown, Shield, MoreVertical, UserCheck, UserX, CalendarPlus, Mail, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Users, Crown, Shield, MoreVertical, UserCheck, UserX, CalendarPlus, Mail, Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { UserDetailSheet } from './UserDetailSheet';
 
 interface UserRow {
   id: string;
@@ -46,6 +47,7 @@ export const AdminUserOverview = memo(() => {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'beta' | 'non-beta' | 'paid' | 'free'>('all');
   const [page, setPage] = useState(0);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const { data: allUsers, isLoading } = useQuery({
     queryKey: ['admin-user-overview-all'],
@@ -196,7 +198,8 @@ export const AdminUserOverview = memo(() => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.02 }}
-                  className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                  className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted/50 transition-colors group cursor-pointer"
+                  onClick={() => setSelectedUserId(user.id)}
                 >
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
                     isAdmin ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
@@ -256,6 +259,10 @@ export const AdminUserOverview = memo(() => {
                         <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(user.email || ''); toast.success(isEs ? 'Email copiado' : 'Email copied'); }}>
                           <Mail className="h-3.5 w-3.5 mr-2" />{isEs ? 'Copiar Email' : 'Copy Email'}
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setSelectedUserId(user.id); }}>
+                          <Eye className="h-3.5 w-3.5 mr-2" />{isEs ? 'Ver Detalle' : 'View Detail'}
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -282,6 +289,13 @@ export const AdminUserOverview = memo(() => {
           </div>
         )}
       </CardContent>
+
+      {/* User Detail Sheet */}
+      <UserDetailSheet 
+        userId={selectedUserId} 
+        onClose={() => setSelectedUserId(null)} 
+        language={language}
+      />
     </Card>
   );
 });

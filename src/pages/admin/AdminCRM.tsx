@@ -9,18 +9,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import {
   LayoutDashboard, Users, CreditCard, Target, Plus, ExternalLink,
-  Globe, Smartphone, TrendingUp, Activity, Settings, ArrowLeft,
-  Flame, UserCheck, Phone, BarChart3,
+  Globe, Smartphone, TrendingUp, Activity, ArrowLeft,
 } from 'lucide-react';
 import { AdminUserOverview } from '@/components/admin/AdminUserOverview';
 import { AdminSubscriptionsTab } from '@/components/admin/tabs/AdminSubscriptionsTab';
 import { AdminLeadsTab } from '@/components/admin/tabs/AdminLeadsTab';
+import { AdminActivityFeed } from '@/components/admin/tabs/AdminActivityFeed';
 import { toast } from 'sonner';
 
 // ─── App Registry ────────────────────────────────────────────
@@ -286,21 +283,25 @@ const AdminCRM = () => {
           </Card>
         </motion.div>
 
-        {/* CRM Tabs */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Tabs defaultValue="users" className="space-y-6">
+        {/* CRM Main Layout: Tabs + Activity Feed sidebar */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
+          {/* Tabs Column */}
+          <Tabs defaultValue="users" className="space-y-4">
             <TabsList className="grid w-full grid-cols-3 p-1 bg-muted/50 rounded-xl h-12">
-              <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold">
+              <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold text-xs md:text-sm">
                 <Users className="h-4 w-4" />
-                {isEs ? '👥 Usuarios' : '👥 Users'}
+                <span className="hidden sm:inline">{isEs ? '👥 Usuarios' : '👥 Users'}</span>
+                <span className="sm:hidden">👥</span>
               </TabsTrigger>
-              <TabsTrigger value="leads" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold">
+              <TabsTrigger value="leads" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg font-semibold text-xs md:text-sm">
                 <Target className="h-4 w-4" />
-                {isEs ? '🎯 Leads' : '🎯 Leads'}
+                <span className="hidden sm:inline">{isEs ? '🎯 Leads' : '🎯 Leads'}</span>
+                <span className="sm:hidden">🎯</span>
               </TabsTrigger>
-              <TabsTrigger value="subscriptions" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white rounded-lg font-semibold">
+              <TabsTrigger value="subscriptions" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white rounded-lg font-semibold text-xs md:text-sm">
                 <CreditCard className="h-4 w-4" />
-                {isEs ? '💳 Suscripciones' : '💳 Subscriptions'}
+                <span className="hidden sm:inline">{isEs ? '💳 Planes' : '💳 Plans'}</span>
+                <span className="sm:hidden">💳</span>
               </TabsTrigger>
             </TabsList>
 
@@ -314,6 +315,11 @@ const AdminCRM = () => {
               <AdminSubscriptionsTab language={language} />
             </TabsContent>
           </Tabs>
+
+          {/* Activity Feed Sidebar */}
+          <div className="sticky top-6">
+            <AdminActivityFeed language={language} />
+          </div>
         </motion.div>
       </div>
     </Layout>

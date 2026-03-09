@@ -1,17 +1,18 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users, ExternalLink, Flame, Phone, UserCheck, MessageSquare } from 'lucide-react';
+import { Users, ExternalLink, Flame, Phone, UserCheck, MessageSquare, Copy, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { es as esLocale } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import { calculateLeadScore, getLeadPriority, getPriorityColors } from '@/hooks/admin/useLeadScoring';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface Props {
   language: 'es' | 'en';
@@ -20,6 +21,8 @@ interface Props {
 export const AdminLeadsTab = ({ language }: Props) => {
   const isEs = language === 'es';
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [contactingId, setContactingId] = useState<string | null>(null);
 
   const { data: leads = [], isLoading } = useQuery({
     queryKey: ['admin-leads-summary'],
@@ -55,6 +58,23 @@ export const AdminLeadsTab = ({ language }: Props) => {
       .sort((a: any, b: any) => b.score - a.score)
       .slice(0, 10);
   }, [leads]);
+
+  const handleMarkContacted = async (leadId: string) => {
+    setContactingId(leadId);
+    try {
+      const { error } = await supabase
+        .from('quiz_leads')
+        .update({ contacted_at: new Date().toISOString() })
+        .eq('id', leadId);
+      if (error) throw error;
+      toast.success(isEs ? '✅ Lead marcado como contactado' : '✅ Lead marked as contacted');
+      queryClient.invalidateQueries({ queryKey: ['admin-leads-summary'] });
+    } catch (err: any) {
+      toast.error(err.message || 'Error');
+    } finally {
+      setContactingId(null);
+    }
+  };
 
   if (isLoading) {
     return <Card className="animate-pulse"><CardContent className="p-6"><div className="h-40 bg-muted rounded" /></CardContent></Card>;
@@ -119,6 +139,7 @@ export const AdminLeadsTab = ({ language }: Props) => {
                 <TableHead className="text-center font-bold">Score</TableHead>
                 <TableHead className="font-bold">{isEs ? 'Estado' : 'Status'}</TableHead>
                 <TableHead className="font-bold">{isEs ? 'Fecha' : 'Date'}</TableHead>
+                <TableHead className="text-center font-bold">{isEs ? 'Acción' : 'Action'}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -150,12 +171,35 @@ export const AdminLeadsTab = ({ language }: Props) => {
                     <TableCell className="text-xs text-muted-foreground">
                       {format(new Date(lead.created_at), 'dd MMM', { locale: isEs ? esLocale : undefined })}
                     </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5 justify-center">
+                        {!lead.contacted_at && !lead.converted_to_user && (
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-7 text-xs gap-1"
+                            onClick={() => handleMarkContacted(lead.id)}
+                            disabled={contactingId === lead.id}
+                          >
+                            <CheckCircle className="h-3 w-3" /> {isEs ? 'Contactar' : 'Contact'}
+                          </Button>
+                        )}
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-7 w-7 p-0"
+                          onClick={() => { navigator.clipboard.writeText(lead.email); toast.success(isEs ? 'Email copiado' : 'Email copied'); }}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </motion.tr>
                 );
               })}
               {hotLeads.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-12">
+                  <TableCell colSpan={7} className="text-center py-12">
                     <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
                     <p className="text-muted-foreground">{isEs ? 'No hay leads aún' : 'No leads yet'}</p>
                   </TableCell>
