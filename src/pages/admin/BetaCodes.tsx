@@ -169,7 +169,7 @@ export default function BetaCodesAdmin() {
                     min={0}
                     max={365}
                     value={newCodeExpiry}
-                    onChange={(e) => setNewCodeExpiry(parseInt(e.target.value) || 0)}
+                    onChange={(e) => setNewCodeExpiry(e.target.value)}
                   />
                 </div>
               </div>
