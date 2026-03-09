@@ -16,22 +16,30 @@ import { toast } from 'sonner';
 
 interface Props {
   language: 'es' | 'en';
+  sourceFilter?: string | null;
+  onClearFilter?: () => void;
 }
 
-export const AdminLeadsTab = ({ language }: Props) => {
+export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) => {
   const isEs = language === 'es';
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [contactingId, setContactingId] = useState<string | null>(null);
 
   const { data: leads = [], isLoading } = useQuery({
-    queryKey: ['admin-leads-summary'],
+    queryKey: ['admin-leads-summary', sourceFilter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('quiz_leads')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
+      
+      if (sourceFilter) {
+        query = query.eq('source', sourceFilter);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
