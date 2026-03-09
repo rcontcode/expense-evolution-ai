@@ -657,7 +657,7 @@ const AdminCRM = () => {
 
           {/* CRM Tabs */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
-            <Tabs defaultValue="users" className="space-y-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
               <TabsList className="grid w-full grid-cols-3 p-1 bg-muted/50 rounded-xl h-12">
                 <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold text-xs md:text-sm">
                   <Users className="h-4 w-4" />
