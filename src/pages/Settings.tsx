@@ -12,7 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   RotateCcw, Globe, BookOpen,
-  Shield, Ticket, Settings2, Database, ChevronDown, ArrowLeft, FlaskConical
+  Shield, Ticket, Settings2, Database, ChevronDown, ArrowLeft, FlaskConical, Users
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { NotificationPreferences } from '@/components/settings/NotificationPreferences';
