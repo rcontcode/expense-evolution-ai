@@ -54,6 +54,8 @@ export const AdminContactQueueTab = ({ language }: Props) => {
   const [aiMessage, setAiMessage] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [messageType, setMessageType] = useState<'whatsapp' | 'email' | 'offer'>('whatsapp');
+  const [targetApp, setTargetApp] = useState<'evofinz' | 'fokuspark' | 'bundle'>('evofinz');
+  const [templateType, setTemplateType] = useState<'first_contact' | 'follow_up' | 'reactivation' | 'invitation' | 'offer'>('first_contact');
 
   const { data: rawLeads = [], isLoading } = useQuery({
     queryKey: ['contact-queue-leads'],
