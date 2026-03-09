@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,8 +7,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Clock, MessageSquare, GripVertical } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Clock, MessageSquare, GripVertical, Mail, Phone, Globe, Target, AlertTriangle, User, ArrowRight } from 'lucide-react';
+import { formatDistanceToNow, format } from 'date-fns';
 import { es as esLocale, enUS } from 'date-fns/locale';
 import { calculateLeadScore, getLeadPriority, getPriorityColors } from '@/hooks/admin/useLeadScoring';
 import { cn } from '@/lib/utils';
@@ -60,51 +61,41 @@ const STAGES: { key: PipelineStage; emoji: string; labelEs: string; labelEn: str
 ];
 
 /* ─── Draggable Lead Card ─── */
-function DraggableLeadCard({ lead, isEs, onClickMove }: { lead: PipelineLead; isEs: boolean; onClickMove: () => void }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: lead.id,
-  });
+function DraggableLeadCard({ lead, isEs, onClickCard }: { lead: PipelineLead; isEs: boolean; onClickCard: () => void }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: lead.id });
   const colors = getPriorityColors(lead.priority);
 
   return (
     <div
       ref={setNodeRef}
-      {...attributes}
-      {...listeners}
       style={{ opacity: isDragging ? 0.3 : 1 }}
       className={cn(
-        'p-3 rounded-lg border hover:shadow-md transition-shadow group cursor-grab active:cursor-grabbing touch-none',
+        'p-3 rounded-lg border hover:shadow-md transition-shadow group',
         colors.row, colors.border
       )}
     >
       <div className="flex items-start gap-2">
-        <GripVertical className="h-4 w-4 text-muted-foreground/30 mt-0.5 flex-shrink-0 group-hover:text-muted-foreground transition-colors" />
-        <div className="flex-1 min-w-0">
+        {/* Drag handle only */}
+        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none mt-0.5 flex-shrink-0">
+          <GripVertical className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />
+        </div>
+        {/* Clickable content */}
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={onClickCard}>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-bold text-xs truncate">{lead.name}</span>
-            <Badge className={cn('text-[9px] px-1 py-0', colors.badge)}>{lead.score}</Badge>
+            <span className="font-bold text-xs">{lead.name}</span>
+            <Badge className={cn('text-[9px] px-1 py-0 flex-shrink-0', colors.badge)}>{lead.score}</Badge>
           </div>
-          <p className="text-[10px] text-muted-foreground truncate mt-0.5">🌍 {lead.country} • {lead.source}</p>
-          <p className="text-[10px] text-muted-foreground truncate">🎯 {lead.goal?.slice(0, 40)}</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">🌍 {lead.country} • {lead.source}</p>
+          <p className="text-[10px] text-muted-foreground">🎯 {lead.goal?.slice(0, 50)}</p>
           {lead.comments && (
             <div className="flex items-center gap-1 mt-1">
-              <MessageSquare className="h-3 w-3 text-amber-500" />
-              <span className="text-[9px] text-amber-600 truncate">{lead.comments.slice(0, 30)}...</span>
+              <MessageSquare className="h-3 w-3 text-amber-500 flex-shrink-0" />
+              <span className="text-[9px] text-amber-600 truncate">{lead.comments.slice(0, 40)}</span>
             </div>
           )}
-          <div className="flex items-center justify-between mt-1.5">
-            <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
-              <Clock className="h-2.5 w-2.5" />
-              {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true, locale: isEs ? esLocale : enUS })}
-            </div>
-            <button
-              type="button"
-              className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-colors opacity-0 group-hover:opacity-100"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => { e.stopPropagation(); onClickMove(); }}
-            >
-              Mover →
-            </button>
+          <div className="flex items-center gap-1 text-[9px] text-muted-foreground mt-1.5">
+            <Clock className="h-2.5 w-2.5" />
+            {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true, locale: isEs ? esLocale : enUS })}
           </div>
         </div>
       </div>
@@ -123,9 +114,9 @@ function DroppableColumn({ stageKey, stage, leads, isEs, onCardClick }: {
   const { setNodeRef, isOver } = useDroppable({ id: stageKey });
 
   return (
-    <div ref={setNodeRef}>
+    <div ref={setNodeRef} className="min-w-[260px]">
       <Card className={cn(
-        'border-t-4 transition-all duration-200',
+        'border-t-4 transition-all duration-200 h-full',
         stage.borderColor,
         isOver && 'ring-2 ring-primary/50 bg-primary/5 scale-[1.01]'
       )}>
@@ -136,14 +127,14 @@ function DroppableColumn({ stageKey, stage, leads, isEs, onCardClick }: {
           </CardTitle>
         </CardHeader>
         <CardContent className="px-2 pb-2">
-          <ScrollArea className="h-[400px] pr-1">
+          <ScrollArea className="h-[450px] pr-1">
             <div className="space-y-2 min-h-[80px]">
               {leads.map((lead) => (
                 <DraggableLeadCard
                   key={lead.id}
                   lead={lead}
                   isEs={isEs}
-                  onClickMove={() => onCardClick(lead)}
+                  onClickCard={() => onCardClick(lead)}
                 />
               ))}
               {leads.length === 0 && (
@@ -162,16 +153,164 @@ function DroppableColumn({ stageKey, stage, leads, isEs, onCardClick }: {
   );
 }
 
+/* ─── Lead Detail Dialog ─── */
+function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending }: {
+  lead: PipelineLead | null;
+  isEs: boolean;
+  open: boolean;
+  onClose: () => void;
+  onMove: (stage: PipelineStage, note?: string) => void;
+  isPending: boolean;
+}) {
+  const [noteText, setNoteText] = useState('');
+  const [activeTab, setActiveTab] = useState('details');
+
+  if (!lead) return null;
+
+  const colors = getPriorityColors(lead.priority);
+  const currentStage = lead.pipeline_stage as PipelineStage;
+  const nextStages = (['new', 'contacted', 'qualified', 'converted'] as PipelineStage[]).filter(s => s !== currentStage);
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) { onClose(); setNoteText(''); setActiveTab('details'); } }}>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <User className="h-5 w-5" />
+            {lead.name}
+          </DialogTitle>
+          <DialogDescription asChild>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge className={cn('text-xs', colors.badge)}>
+                {isEs ? 'Puntuación' : 'Score'}: {lead.score}
+              </Badge>
+              <Badge variant="outline">{lead.priority.toUpperCase()}</Badge>
+              <Badge variant="secondary">
+                {STAGES.find(s => s.key === currentStage)?.emoji} {isEs ? STAGES.find(s => s.key === currentStage)?.labelEs : STAGES.find(s => s.key === currentStage)?.labelEn}
+              </Badge>
+            </div>
+          </DialogDescription>
+        </DialogHeader>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="details">{isEs ? '📋 Detalles' : '📋 Details'}</TabsTrigger>
+            <TabsTrigger value="move">{isEs ? '🚀 Mover' : '🚀 Move'}</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="details" className="space-y-3 mt-3">
+            {/* Contact info */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
+                <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[10px] text-muted-foreground">{isEs ? 'Email' : 'Email'}</p>
+                  <p className="text-xs font-medium truncate">{lead.email}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
+                <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[10px] text-muted-foreground">{isEs ? 'Teléfono' : 'Phone'}</p>
+                  <p className="text-xs font-medium">{lead.phone || '—'}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
+                <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[10px] text-muted-foreground">{isEs ? 'País' : 'Country'}</p>
+                  <p className="text-xs font-medium">{lead.country}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
+                <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[10px] text-muted-foreground">{isEs ? 'Registrado' : 'Registered'}</p>
+                  <p className="text-xs font-medium">{format(new Date(lead.created_at), 'dd MMM yyyy', { locale: isEs ? esLocale : enUS })}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quiz info */}
+            <div className="space-y-2">
+              <div className="p-2 rounded-md bg-muted/50">
+                <p className="text-[10px] text-muted-foreground mb-1">🎯 {isEs ? 'Objetivo' : 'Goal'}</p>
+                <p className="text-xs">{lead.goal || '—'}</p>
+              </div>
+              <div className="p-2 rounded-md bg-muted/50">
+                <p className="text-[10px] text-muted-foreground mb-1">📍 {isEs ? 'Situación actual' : 'Current situation'}</p>
+                <p className="text-xs">{lead.situation || '—'}</p>
+              </div>
+              <div className="p-2 rounded-md bg-muted/50">
+                <p className="text-[10px] text-muted-foreground mb-1">🚧 {isEs ? 'Obstáculo' : 'Obstacle'}</p>
+                <p className="text-xs">{lead.obstacle || '—'}</p>
+              </div>
+            </div>
+
+            {/* Quiz score */}
+            <div className="flex gap-2">
+              <Badge variant="outline" className="text-xs">
+                Quiz: {lead.quiz_score}/10 — {lead.quiz_level}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                {isEs ? 'Fuente' : 'Source'}: {lead.source}
+              </Badge>
+            </div>
+
+            {/* Comments */}
+            {lead.comments && (
+              <div className="p-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+                <p className="text-[10px] text-amber-600 mb-1 font-medium">💬 {isEs ? 'Notas' : 'Notes'}</p>
+                <p className="text-xs text-amber-800 dark:text-amber-300">{lead.comments}</p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="move" className="space-y-3 mt-3">
+            <Textarea
+              placeholder={isEs ? 'Nota opcional al mover...' : 'Optional note when moving...'}
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              rows={2}
+            />
+            <div className="grid grid-cols-1 gap-2">
+              {nextStages.map((stageKey) => {
+                const stageInfo = STAGES.find(s => s.key === stageKey)!;
+                return (
+                  <Button
+                    key={stageKey}
+                    variant="outline"
+                    className="justify-start h-11"
+                    onClick={() => {
+                      onMove(stageKey, noteText || undefined);
+                      setNoteText('');
+                    }}
+                    disabled={isPending}
+                  >
+                    <span className="mr-2">{stageInfo.emoji}</span>
+                    <span className="font-medium">{isEs ? stageInfo.labelEs : stageInfo.labelEn}</span>
+                    <ArrowRight className="h-3 w-3 ml-auto text-muted-foreground" />
+                    {isPending && <span className="ml-1 text-xs animate-pulse">⏳</span>}
+                  </Button>
+                );
+              })}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /* ─── Main Component ─── */
 export const AdminKanbanPipeline = ({ language }: Props) => {
   const isEs = language === 'es';
   const queryClient = useQueryClient();
-  const [movingLead, setMovingLead] = useState<PipelineLead | null>(null);
-  const [noteText, setNoteText] = useState('');
+  const [selectedLead, setSelectedLead] = useState<PipelineLead | null>(null);
   const [activeLead, setActiveLead] = useState<PipelineLead | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
 
   const { data: rawLeads = [], isLoading } = useQuery({
@@ -217,7 +356,6 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
       const { error } = await supabase.from('quiz_leads').update(updates).eq('id', leadId);
       if (error) throw error;
 
-      // Log interaction (fire-and-forget)
       if (note) {
         const currentLead = rawLeads.find(l => l.id === leadId);
         supabase.from('lead_interactions').insert({
@@ -233,8 +371,7 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
       queryClient.invalidateQueries({ queryKey: ['contact-queue-leads'] });
       queryClient.invalidateQueries({ queryKey: ['admin-leads'] });
       toast.success(isEs ? '✅ Lead movido exitosamente' : '✅ Lead moved successfully');
-      setMovingLead(null);
-      setNoteText('');
+      setSelectedLead(null);
     },
     onError: (err) => {
       console.error('Move error:', err);
@@ -262,10 +399,6 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
     moveToStage.mutate({ leadId: draggedLead.id, stage: targetStage as PipelineStage });
   };
 
-  const getNextStages = (current: PipelineStage): PipelineStage[] => {
-    return (['new', 'contacted', 'qualified', 'converted'] as PipelineStage[]).filter(s => s !== current);
-  };
-
   if (isLoading) {
     return <Card className="animate-pulse"><CardContent className="p-6"><div className="h-60 bg-muted rounded" /></CardContent></Card>;
   }
@@ -273,7 +406,7 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
   return (
     <div className="space-y-4">
       {/* Pipeline Stats */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {STAGES.map((stage) => {
           const count = stageLeads[stage.key].length;
           return (
@@ -285,89 +418,51 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
         })}
       </div>
 
-      {/* Kanban Board */}
+      {/* Kanban Board - horizontal scroll on smaller screens */}
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-          {STAGES.map((stage) => (
-            <DroppableColumn
-              key={stage.key}
-              stageKey={stage.key}
-              stage={stage}
-              leads={stageLeads[stage.key]}
-              isEs={isEs}
-              onCardClick={(lead) => {
-                setMovingLead(lead);
-                setNoteText('');
-              }}
-            />
-          ))}
+        <div className="overflow-x-auto pb-2">
+          <div className="grid grid-cols-4 gap-3" style={{ minWidth: '1080px' }}>
+            {STAGES.map((stage) => (
+              <DroppableColumn
+                key={stage.key}
+                stageKey={stage.key}
+                stage={stage}
+                leads={stageLeads[stage.key]}
+                isEs={isEs}
+                onCardClick={(lead) => setSelectedLead(lead)}
+              />
+            ))}
+          </div>
         </div>
 
         <DragOverlay dropAnimation={null}>
           {activeLead && (
-            <div className="p-3 rounded-lg border-2 border-primary bg-background shadow-2xl rotate-1 w-[220px]">
+            <div className="p-3 rounded-lg border-2 border-primary bg-background shadow-2xl rotate-1 w-[250px]">
               <span className="font-bold text-xs">{activeLead.name}</span>
               <p className="text-[10px] text-muted-foreground">🌍 {activeLead.country} • {activeLead.source}</p>
-              <p className="text-[10px] text-muted-foreground">🎯 {activeLead.goal?.slice(0, 30)}</p>
+              <p className="text-[10px] text-muted-foreground">🎯 {activeLead.goal?.slice(0, 40)}</p>
             </div>
           )}
         </DragOverlay>
       </DndContext>
 
-      {/* Move Dialog */}
-      <Dialog open={!!movingLead} onOpenChange={(open) => { if (!open) setMovingLead(null); }}>
-        <DialogContent className="max-w-sm">
-          {movingLead && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{isEs ? 'Mover lead' : 'Move lead'}</DialogTitle>
-                <DialogDescription asChild>
-                  <div>
-                    {movingLead.name} — {isEs ? 'Etapa actual:' : 'Current stage:'}{' '}
-                    <Badge variant="outline">{movingLead.pipeline_stage}</Badge>
-                  </div>
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-3">
-                <Textarea
-                  placeholder={isEs ? 'Nota opcional...' : 'Optional note...'}
-                  value={noteText}
-                  onChange={(e) => setNoteText(e.target.value)}
-                  rows={2}
-                />
-
-                <div className="grid grid-cols-1 gap-2">
-                  {getNextStages(movingLead.pipeline_stage as PipelineStage).map((stageKey) => {
-                    const stageInfo = STAGES.find(s => s.key === stageKey)!;
-                    return (
-                      <Button
-                        key={stageKey}
-                        variant="outline"
-                        className="justify-start h-11"
-                        onClick={() => moveToStage.mutate({
-                          leadId: movingLead.id,
-                          stage: stageKey,
-                          note: noteText || undefined,
-                        })}
-                        disabled={moveToStage.isPending}
-                      >
-                        <span className="mr-2">{stageInfo.emoji}</span>
-                        <span className="font-medium">{isEs ? stageInfo.labelEs : stageInfo.labelEn}</span>
-                        {moveToStage.isPending && <span className="ml-auto text-xs animate-pulse">⏳</span>}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Lead Detail + Move Dialog */}
+      <LeadDetailDialog
+        lead={selectedLead}
+        isEs={isEs}
+        open={!!selectedLead}
+        onClose={() => setSelectedLead(null)}
+        onMove={(stage, note) => {
+          if (selectedLead) {
+            moveToStage.mutate({ leadId: selectedLead.id, stage, note });
+          }
+        }}
+        isPending={moveToStage.isPending}
+      />
     </div>
   );
 };
