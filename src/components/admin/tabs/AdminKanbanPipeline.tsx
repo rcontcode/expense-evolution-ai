@@ -69,23 +69,17 @@ function DraggableLeadCard({ lead, isEs, onClickMove }: { lead: PipelineLead; is
   return (
     <div
       ref={setNodeRef}
+      {...attributes}
+      {...listeners}
       style={{ opacity: isDragging ? 0.3 : 1 }}
       className={cn(
-        'p-3 rounded-lg border hover:shadow-md transition-shadow group',
+        'p-3 rounded-lg border hover:shadow-md transition-shadow group cursor-grab active:cursor-grabbing touch-none',
         colors.row, colors.border
       )}
     >
       <div className="flex items-start gap-2">
-        {/* Drag handle */}
-        <div
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing mt-0.5 flex-shrink-0 touch-none select-none"
-        >
-          <GripVertical className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />
-        </div>
-        {/* Clickable content */}
-        <div className="flex-1 min-w-0 cursor-pointer" onClick={onClickMove}>
+        <GripVertical className="h-4 w-4 text-muted-foreground/30 mt-0.5 flex-shrink-0 group-hover:text-muted-foreground transition-colors" />
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-bold text-xs truncate">{lead.name}</span>
             <Badge className={cn('text-[9px] px-1 py-0', colors.badge)}>{lead.score}</Badge>
@@ -98,9 +92,19 @@ function DraggableLeadCard({ lead, isEs, onClickMove }: { lead: PipelineLead; is
               <span className="text-[9px] text-amber-600 truncate">{lead.comments.slice(0, 30)}...</span>
             </div>
           )}
-          <div className="flex items-center gap-1 mt-1.5 text-[9px] text-muted-foreground">
-            <Clock className="h-2.5 w-2.5" />
-            {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true, locale: isEs ? esLocale : enUS })}
+          <div className="flex items-center justify-between mt-1.5">
+            <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
+              <Clock className="h-2.5 w-2.5" />
+              {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true, locale: isEs ? esLocale : enUS })}
+            </div>
+            <button
+              type="button"
+              className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-colors opacity-0 group-hover:opacity-100"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); onClickMove(); }}
+            >
+              Mover →
+            </button>
           </div>
         </div>
       </div>
