@@ -281,6 +281,6 @@ export default function LeadsManagement() {
           </Pagination>
         )}
       </div>
-    </div>
+    </Layout>
   );
 }
