@@ -36,7 +36,7 @@ interface InteractionTimelineProps {
   className?: string;
 }
 
-type InteractionType = 'call' | 'email' | 'whatsapp' | 'note' | 'meeting';
+type InteractionType = 'call' | 'email' | 'whatsapp' | 'note' | 'meeting' | 'stage_change';
 type InteractionDirection = 'inbound' | 'outbound';
 type InteractionOutcome = 'positive' | 'neutral' | 'negative' | 'no_answer' | null;
 
@@ -57,6 +57,7 @@ const typeIcons: Record<InteractionType, React.ReactNode> = {
   whatsapp: <MessageCircle className="h-4 w-4" />,
   meeting: <Users className="h-4 w-4" />,
   note: <StickyNote className="h-4 w-4" />,
+  stage_change: <ArrowUpRight className="h-4 w-4" />,
 };
 
 const typeLabels: Record<InteractionType, string> = {
@@ -65,6 +66,7 @@ const typeLabels: Record<InteractionType, string> = {
   whatsapp: 'WhatsApp',
   meeting: 'Reunión',
   note: 'Nota',
+  stage_change: 'Cambio de etapa',
 };
 
 const outcomeConfig: Record<string, { icon: React.ReactNode; label: string; color: string }> = {

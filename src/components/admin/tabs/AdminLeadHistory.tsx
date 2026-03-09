@@ -85,11 +85,13 @@ export const AdminLeadHistory = ({ language }: Props) => {
   const addInteraction = useMutation({
     mutationFn: async () => {
       if (!selectedLeadId || !newInteractionContent.trim()) return;
+      const { data: { user } } = await supabase.auth.getUser();
       const { error } = await supabase.from('lead_interactions').insert({
         lead_id: selectedLeadId,
         interaction_type: newInteractionType,
-        content: newInteractionContent.trim(),
-        channel: ['whatsapp', 'email', 'call'].includes(newInteractionType) ? newInteractionType : null,
+        direction: 'outbound' as const,
+        notes: newInteractionContent.trim(),
+        created_by: user?.id,
       });
       if (error) throw error;
     },
