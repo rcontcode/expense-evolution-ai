@@ -263,5 +263,3 @@ export const AdminAdvancedMetrics = ({ language }: Props) => {
   );
 };
 
-// Missing import
-import { Phone } from 'lucide-react';
