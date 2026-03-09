@@ -29,6 +29,8 @@ import { AdminBugsTab } from '@/components/admin/tabs/AdminBugsTab';
 import { AdminRewardsTab } from '@/components/admin/tabs/AdminRewardsTab';
 import { AdminTestimonialsTab } from '@/components/admin/tabs/AdminTestimonialsTab';
 import { AdminUsageTab } from '@/components/admin/tabs/AdminUsageTab';
+import { AdminSubscriptionsTab } from '@/components/admin/tabs/AdminSubscriptionsTab';
+import { AdminLeadsTab } from '@/components/admin/tabs/AdminLeadsTab';
 
 const StatCard = ({ title, value, icon: Icon, trend, gradient, emoji }: {
   title: string; value: string | number; icon: React.ElementType; trend?: string; gradient: string; emoji?: string;
