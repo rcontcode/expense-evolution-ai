@@ -69,21 +69,16 @@ function DraggableLeadCard({ lead, isEs, onClickMove }: { lead: PipelineLead; is
   return (
     <div
       ref={setNodeRef}
+      {...attributes}
+      {...listeners}
       style={{ opacity: isDragging ? 0.3 : 1 }}
       className={cn(
-        'p-3 rounded-lg border hover:shadow-md transition-shadow group',
+        'p-3 rounded-lg border hover:shadow-md transition-shadow group cursor-grab active:cursor-grabbing touch-none',
         colors.row, colors.border
       )}
     >
       <div className="flex items-start gap-2">
-        {/* Drag handle */}
-        <div
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing mt-0.5 flex-shrink-0 touch-none select-none"
-        >
-          <GripVertical className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />
-        </div>
+        <GripVertical className="h-4 w-4 text-muted-foreground/30 mt-0.5 flex-shrink-0 group-hover:text-muted-foreground transition-colors" />
         {/* Clickable content */}
         <div className="flex-1 min-w-0 cursor-pointer" onClick={onClickMove}>
           <div className="flex items-center gap-1.5 flex-wrap">
