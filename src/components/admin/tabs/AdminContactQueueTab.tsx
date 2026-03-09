@@ -466,6 +466,23 @@ export const AdminContactQueueTab = ({ language }: Props) => {
                   >
                     <Copy className="h-3 w-3" /> {isEs ? 'Copiar email' : 'Copy email'}
                   </Button>
+                  {!selectedLead.contacted_at && (
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="text-xs gap-1"
+                      disabled={markAsContacted.isPending}
+                      onClick={() => markAsContacted.mutate(selectedLead.id)}
+                    >
+                      <UserCheck className="h-3 w-3" /> {isEs ? 'Marcar contactado' : 'Mark contacted'}
+                    </Button>
+                  )}
+                  {selectedLead.contacted_at && (
+                    <Badge variant="outline" className="text-[10px] text-emerald-600">
+                      ✅ {isEs ? 'Ya contactado' : 'Already contacted'}
+                    </Badge>
+                  )}
+                  </Button>
                 </div>
               </div>
             </ScrollArea>
