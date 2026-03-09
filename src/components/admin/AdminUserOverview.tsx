@@ -21,9 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Users, Crown, Shield, MoreVertical, UserCheck, UserX, CalendarPlus, Mail, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Users, Crown, Shield, MoreVertical, UserCheck, UserX, CalendarPlus, Mail, Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { UserDetailSheet } from './UserDetailSheet';
 
 interface UserRow {
   id: string;
