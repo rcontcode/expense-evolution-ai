@@ -196,7 +196,7 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
 
 
   const handleProcess = async () => {
-    const result = await processReceipt(imageBase64 || undefined, transcript || undefined);
+    const result = await processReceipt(imageBase64 || undefined, transcript || undefined, currentEntity?.country || 'CA');
     if (result?.expenses?.length) {
       setEditedExpenses(result.expenses);
       setCurrentIndex(0);
