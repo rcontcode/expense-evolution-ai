@@ -550,7 +550,7 @@ export default function Landing() {
           />
         </DecorativeLayer>
         
-        <ParallaxLayer speed={-0.25} className="absolute inset-0">
+        <DecorativeLayer className="absolute inset-0">
           <motion.div 
             className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full opacity-30 blur-[100px]"
             animate={{
@@ -562,7 +562,7 @@ export default function Landing() {
             }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 4 }}
           />
-        </ParallaxLayer>
+        </DecorativeLayer>
 
         {/* Additional parallax decorative elements */}
         <ParallaxLayer speed={-0.1} className="absolute inset-0">
