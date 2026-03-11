@@ -1,70 +1,107 @@
 
 
-## Plan: Automatización Real del CRM
+## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
 
-### Resumen
+### ✅ Completado en EvoFinz
 
-Conectar la UI de automatización (`AdminAutomationTab`) a la tabla `automation_rules` en BD (eliminando localStorage), y expandir la Edge Function `run-automations` para ejecutar acciones reales: generar mensajes IA, mover leads en el pipeline y crear follow-ups automáticos. Además, crear tabla `automation_logs` para visibilidad de ejecuciones.
+| # | Tarea | Estado |
+|---|-------|--------|
+| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
+| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
+| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
+| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
+| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
 
----
+### ✅ Completado en Fokuspark
 
-### 1. Migración BD — `automation_logs` + columnas extra
+| # | Tarea | Estado |
+|---|-------|--------|
+| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
+| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
+| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
+| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
 
-Nueva tabla `automation_logs` y columnas `last_executed_at`, `execution_count` en `automation_rules`:
-
-```sql
-CREATE TABLE automation_logs (
-  id UUID PK,
-  rule_id UUID FK → automation_rules,
-  lead_id UUID FK → quiz_leads,
-  action_type TEXT,
-  status TEXT, -- success/failed/skipped
-  result_data JSONB,
-  executed_at TIMESTAMPTZ DEFAULT now()
-);
--- RLS: solo admin
--- ADD COLUMN last_executed_at, execution_count en automation_rules
-```
-
-### 2. Reescribir `AdminAutomationTab.tsx` — CRUD Real
-
-- Eliminar `localStorage` y `DEFAULT_RULES`
-- `useQuery` → fetch `automation_rules` desde Supabase
-- `useMutation` para crear, editar, eliminar y toggle `is_enabled`
-- Diálogo de crear/editar regla con campos: nombre, trigger_type (hot/warm/cool/cold/new_lead), action_type (whatsapp/email/auto_tag/auto_stage/auto_followup), delay_minutes, action_config (JSON visual), descripción
-- Sección inferior "Ejecuciones recientes" mostrando últimas 20 entradas de `automation_logs` con estado, lead, regla y timestamp
-- Mantener las alertas inteligentes y scoring health existentes (no tocar esa lógica)
-
-### 3. Expandir `run-automations/index.ts` — Acciones Reales
-
-Tras match de regla, ejecutar según `action_type`:
-
-| action_type | Acción real |
-|---|---|
-| `whatsapp` / `email` | Llamar `generate-lead-message` con `LOVABLE_API_KEY`, guardar mensaje generado en `automation_logs.result_data` |
-| `auto_contact` | Marcar `contacted_at` + `contact_notes` en `quiz_leads` |
-| `auto_tag` | Agregar tags de `action_config.tags` al array `tags[]` del lead |
-| `auto_stage` | Actualizar `pipeline_stage` del lead según `action_config.stage` |
-| `auto_followup` | Insertar en `lead_follow_ups` con `scheduled_at = now() + action_config.followup_delay_hours` |
-
-Después de cada ejecución: insertar en `automation_logs` y actualizar `execution_count`/`last_executed_at` en la regla.
-
-### 4. Seed de reglas por defecto
-
-Al primer load, si tabla vacía, insertar 4 reglas predeterminadas (las mismas que estaban hardcodeadas) directamente desde el componente.
+### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
 
 ---
 
-### Archivos a Crear/Modificar
+## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
 
-| Archivo | Cambio |
-|---|---|
-| `supabase migration` | Tabla `automation_logs`, columnas en `automation_rules` |
-| `src/components/admin/tabs/AdminAutomationTab.tsx` | Reescribir: CRUD Supabase, diálogo crear/editar, feed de logs |
-| `supabase/functions/run-automations/index.ts` | Expandir con acciones reales (IA, tags, stage, follow-ups, logs) |
+### ✅ Confirmado: Sistema funciona correctamente
 
-### Archivos que NO se tocan
-- `webhook-leads/index.ts` (ya invoca `run-automations`)
-- `config.toml` (ya tiene `run-automations`)
-- `generate-lead-message/index.ts` (se consume tal cual)
+- Planes individuales (Free/Premium/Pro) son independientes por app
+- Bundle compartido usa mismos Stripe Price IDs en ambas apps
+- Ambos webhooks detectan Bundle y setean `has_bundle = true`
+- No hay acceso cruzado no autorizado entre apps
 
+### ✅ Gaps implementados en Fokuspark
+
+| # | Gap | Estado |
+|---|-----|--------|
+| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
+| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
+
+### 📋 Gaps pendientes (baja prioridad)
+
+| # | Gap | Prioridad |
+|---|-----|-----------|
+| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
+| S3 | Texto del Bundle podría ser más descriptivo | Baja |
+
+---
+
+## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
+
+### ✅ Veredicto: No igualar precios — estructura actual es óptima
+
+| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
+|------|---------|-----------|-----------|-------|
+| Free | $0 | $0 | ✅ Ya iguales | — |
+| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
+| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+
+### 📋 Pendiente técnico
+
+| # | Tarea | App | Prioridad |
+|---|-------|-----|-----------|
+| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
+
+---
+
+## Quiz Multi-App — CRM Unificado
+
+### ✅ Completado en EvoFinz
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
+| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
+| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
+| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
+| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
+
+### 📋 Pendiente en Fokuspark
+
+| # | Tarea | Prioridad |
+|---|-------|-----------|
+| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
+| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
+| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
+| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
+
+---
+
+## Metadata JSONB — Integración Multi-App
+
+### ✅ Completado
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| M1 | Columna `metadata` JSONB en `quiz_leads` | ✅ |
+| M2 | `webhook-leads` guarda metadata estructurada | ✅ |
+| M3 | `send-quiz-lead` acepta `metadata` opcional | ✅ |
+| M4 | Interface `QuizLead` incluye `metadata` | ✅ |
+| M5 | CRM muestra Datos de la App (producto, precio, conocimiento, best practices) | ✅ |
+| M6 | Scoring enriquecido con metadata | ✅ |
+| M7 | Talking points usan metadata | ✅ |

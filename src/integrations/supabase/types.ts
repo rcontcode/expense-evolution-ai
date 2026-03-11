@@ -157,6 +157,44 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_logs: {
+        Row: {
+          action_type: string
+          executed_at: string
+          id: string
+          lead_id: string
+          result_data: Json | null
+          rule_id: string | null
+          status: string
+        }
+        Insert: {
+          action_type: string
+          executed_at?: string
+          id?: string
+          lead_id: string
+          result_data?: Json | null
+          rule_id?: string | null
+          status?: string
+        }
+        Update: {
+          action_type?: string
+          executed_at?: string
+          id?: string
+          lead_id?: string
+          result_data?: Json | null
+          rule_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_logs_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_rules: {
         Row: {
           action_config: Json | null
@@ -165,8 +203,10 @@ export type Database = {
           created_by: string | null
           delay_minutes: number | null
           description: string | null
+          execution_count: number
           id: string
           is_enabled: boolean | null
+          last_executed_at: string | null
           name: string
           trigger_condition: Json | null
           trigger_type: string
@@ -179,8 +219,10 @@ export type Database = {
           created_by?: string | null
           delay_minutes?: number | null
           description?: string | null
+          execution_count?: number
           id?: string
           is_enabled?: boolean | null
+          last_executed_at?: string | null
           name: string
           trigger_condition?: Json | null
           trigger_type?: string
@@ -193,8 +235,10 @@ export type Database = {
           created_by?: string | null
           delay_minutes?: number | null
           description?: string | null
+          execution_count?: number
           id?: string
           is_enabled?: boolean | null
+          last_executed_at?: string | null
           name?: string
           trigger_condition?: Json | null
           trigger_type?: string
