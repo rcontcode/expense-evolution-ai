@@ -6,6 +6,7 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useTaxCalculations } from '@/hooks/data/useTaxCalculations';
 import { TaxSummaryCards } from '@/components/dashboard/TaxSummaryCards';
 import { TaxDeadlineCountdown } from '@/components/tax/TaxDeadlineCountdown';
+import { TaxDocumentChecklist } from '@/components/tax/TaxDocumentChecklist';
 import { Receipt } from 'lucide-react';
 
 const TaxOptimizerCard = lazy(() => import('@/components/dashboard/TaxOptimizerCard').then(m => ({ default: m.TaxOptimizerCard })));
