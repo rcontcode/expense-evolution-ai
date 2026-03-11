@@ -2,8 +2,105 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+interface ActionResult {
+  status: 'success' | 'failed' | 'skipped';
+  data: Record<string, unknown>;
+}
+
+async function dbPatch(url: string, headers: Record<string, string>, body: Record<string, unknown>) {
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: { ...headers, 'Prefer': 'return=minimal' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) console.error(`PATCH ${url} failed:`, await res.text());
+  return res;
+}
+
+async function dbPost(url: string, headers: Record<string, string>, body: Record<string, unknown>) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { ...headers, 'Prefer': 'return=minimal' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) console.error(`POST ${url} failed:`, await res.text());
+  return res;
+}
+
+async function executeAIMessage(
+  supabaseUrl: string, serviceKey: string, lead: any, rule: any, actionConfig: any, actionType: string, lovableApiKey: string | undefined
+): Promise<ActionResult> {
+  if (!lovableApiKey) {
+    return { status: 'skipped', data: { reason: 'LOVABLE_API_KEY not configured' } };
+  }
+
+  const msgRes = await fetch(`${supabaseUrl}/functions/v1/generate-lead-message`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      lead,
+      messageType: actionConfig.message_type || actionType,
+      language: actionConfig.language || 'es',
+      targetApp: actionConfig.target_app || 'evofinz',
+      templateType: actionConfig.template_type || 'first_contact',
+    }),
+  });
+
+  if (!msgRes.ok) {
+    const errText = await msgRes.text();
+    console.error(`AI message failed for rule ${rule.name}:`, errText);
+    return { status: 'failed', data: { error: errText } };
+  }
+
+  const msgData = await msgRes.json();
+  return {
+    status: 'success',
+    data: { message: msgData.message, messageType: actionType, templateType: actionConfig.template_type },
+  };
+}
+
+async function executeAutoContact(supabaseUrl: string, headers: Record<string, string>, lead: any, rule: any): Promise<ActionResult> {
+  await dbPatch(`${supabaseUrl}/rest/v1/quiz_leads?id=eq.${lead.id}`, headers, {
+    contacted_at: new Date().toISOString(),
+    contact_notes: `Auto-contacted by rule: ${rule.name}`,
+  });
+  return { status: 'success', data: { action: 'auto_contact' } };
+}
+
+async function executeAutoTag(supabaseUrl: string, headers: Record<string, string>, lead: any, actionConfig: any): Promise<ActionResult> {
+  const tagsToAdd = actionConfig.tags || [];
+  if (tagsToAdd.length === 0) {
+    return { status: 'skipped', data: { reason: 'No tags configured' } };
+  }
+  const existingTags = lead.tags || [];
+  const mergedTags = [...new Set([...existingTags, ...tagsToAdd])];
+  await dbPatch(`${supabaseUrl}/rest/v1/quiz_leads?id=eq.${lead.id}`, headers, { tags: mergedTags });
+  return { status: 'success', data: { tags_added: tagsToAdd, total_tags: mergedTags } };
+}
+
+async function executeAutoStage(supabaseUrl: string, headers: Record<string, string>, lead: any, actionConfig: any): Promise<ActionResult> {
+  const stage = actionConfig.stage || 'new';
+  await dbPatch(`${supabaseUrl}/rest/v1/quiz_leads?id=eq.${lead.id}`, headers, { pipeline_stage: stage });
+  return { status: 'success', data: { stage } };
+}
+
+async function executeAutoFollowup(supabaseUrl: string, headers: Record<string, string>, lead: any, rule: any, actionConfig: any): Promise<ActionResult> {
+  const delayHours = actionConfig.followup_delay_hours || 72;
+  const followupType = actionConfig.followup_type || 'call';
+  const scheduledAt = new Date(Date.now() + delayHours * 60 * 60 * 1000).toISOString();
+
+  await dbPost(`${supabaseUrl}/rest/v1/lead_follow_ups`, headers, {
+    lead_id: lead.id,
+    follow_up_type: followupType,
+    scheduled_at: scheduledAt,
+    notes: `[AUTO] Created by rule: ${rule.name}`,
+    status: 'pending',
+  });
+  return { status: 'success', data: { scheduled_at: scheduledAt, type: followupType } };
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,8 +109,11 @@ Deno.serve(async (req) => {
 
   try {
     const { lead } = await req.json();
-    if (!lead) {
-      return new Response(JSON.stringify({ error: 'No lead provided' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    if (!lead?.id) {
+      return new Response(JSON.stringify({ error: 'No lead provided' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -27,11 +127,16 @@ Deno.serve(async (req) => {
     };
 
     // Fetch active automation rules
-    const rulesRes = await fetch(`${supabaseUrl}/rest/v1/automation_rules?is_enabled=eq.true&order=created_at.asc`, { headers });
+    const rulesRes = await fetch(
+      `${supabaseUrl}/rest/v1/automation_rules?is_enabled=eq.true&order=created_at.asc`,
+      { headers }
+    );
 
     if (!rulesRes.ok) {
       console.error('Failed to fetch rules:', await rulesRes.text());
-      return new Response(JSON.stringify({ executed: 0 }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ executed: 0 }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const rules = await rulesRes.json();
@@ -40,167 +145,72 @@ Deno.serve(async (req) => {
 
     for (const rule of rules) {
       // Check trigger match
-      let matches = false;
-      if (rule.trigger_type === 'new_lead') matches = true;
-      else if (rule.trigger_type === leadPriority) matches = true;
+      const matches = rule.trigger_type === 'new_lead' || rule.trigger_type === leadPriority;
       if (!matches) continue;
 
-      // Skip delayed rules for now (no cron yet)
-      if (rule.delay_minutes > 0) continue;
+      // Skip delayed rules (no cron yet)
+      if ((rule.delay_minutes || 0) > 0) continue;
 
       const actionType = rule.action_type;
       const actionConfig = rule.action_config || {};
-      let status = 'success';
-      let resultData: any = {};
+      let result: ActionResult;
 
       try {
-        // ===== ACTION: Generate AI message (WhatsApp / Email) =====
-        if (actionType === 'whatsapp' || actionType === 'email') {
-          if (lovableApiKey) {
-            const msgRes = await fetch(`${supabaseUrl}/functions/v1/generate-lead-message`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${serviceKey}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                lead,
-                messageType: actionConfig.message_type || actionType,
-                language: actionConfig.language || 'es',
-                targetApp: actionConfig.target_app || 'evofinz',
-                templateType: actionConfig.template_type || 'first_contact',
-              }),
-            });
-
-            if (msgRes.ok) {
-              const msgData = await msgRes.json();
-              resultData = { message: msgData.message, messageType: actionType, templateType: actionConfig.template_type };
-            } else {
-              const errText = await msgRes.text();
-              console.error(`AI message generation failed for rule ${rule.name}:`, errText);
-              status = 'failed';
-              resultData = { error: errText };
-            }
-          } else {
-            status = 'skipped';
-            resultData = { reason: 'LOVABLE_API_KEY not configured' };
-          }
-
-          // Also mark as auto-contacted
-          if (status === 'success') {
-            await fetch(`${supabaseUrl}/rest/v1/quiz_leads?id=eq.${lead.id}`, {
-              method: 'PATCH',
-              headers: { ...headers, 'Prefer': 'return=minimal' },
-              body: JSON.stringify({
+        switch (actionType) {
+          case 'whatsapp':
+          case 'email':
+            result = await executeAIMessage(supabaseUrl, serviceKey, lead, rule, actionConfig, actionType, lovableApiKey);
+            // Mark as auto-contacted on success
+            if (result.status === 'success') {
+              await dbPatch(`${supabaseUrl}/rest/v1/quiz_leads?id=eq.${lead.id}`, headers, {
                 contacted_at: new Date().toISOString(),
                 contact_notes: `[AUTO] ${actionType} generated by rule: ${rule.name}`,
-              }),
-            });
-          }
-        }
-
-        // ===== ACTION: Auto-contact =====
-        else if (actionType === 'auto_contact') {
-          await fetch(`${supabaseUrl}/rest/v1/quiz_leads?id=eq.${lead.id}`, {
-            method: 'PATCH',
-            headers: { ...headers, 'Prefer': 'return=minimal' },
-            body: JSON.stringify({
-              contacted_at: new Date().toISOString(),
-              contact_notes: `Auto-contacted by rule: ${rule.name}`,
-            }),
-          });
-          resultData = { action: 'auto_contact' };
-        }
-
-        // ===== ACTION: Auto-tag =====
-        else if (actionType === 'auto_tag') {
-          const tagsToAdd = actionConfig.tags || [];
-          if (tagsToAdd.length > 0) {
-            const existingTags = lead.tags || [];
-            const mergedTags = [...new Set([...existingTags, ...tagsToAdd])];
-            await fetch(`${supabaseUrl}/rest/v1/quiz_leads?id=eq.${lead.id}`, {
-              method: 'PATCH',
-              headers: { ...headers, 'Prefer': 'return=minimal' },
-              body: JSON.stringify({ tags: mergedTags }),
-            });
-            resultData = { tags_added: tagsToAdd, total_tags: mergedTags };
-          } else {
-            status = 'skipped';
-            resultData = { reason: 'No tags configured' };
-          }
-        }
-
-        // ===== ACTION: Auto-stage (pipeline) =====
-        else if (actionType === 'auto_stage') {
-          const stage = actionConfig.stage || 'new';
-          await fetch(`${supabaseUrl}/rest/v1/quiz_leads?id=eq.${lead.id}`, {
-            method: 'PATCH',
-            headers: { ...headers, 'Prefer': 'return=minimal' },
-            body: JSON.stringify({ pipeline_stage: stage }),
-          });
-          resultData = { stage };
-        }
-
-        // ===== ACTION: Auto follow-up =====
-        else if (actionType === 'auto_followup') {
-          const delayHours = actionConfig.followup_delay_hours || 72;
-          const followupType = actionConfig.followup_type || 'call';
-          const scheduledAt = new Date(Date.now() + delayHours * 60 * 60 * 1000).toISOString();
-
-          await fetch(`${supabaseUrl}/rest/v1/lead_follow_ups`, {
-            method: 'POST',
-            headers: { ...headers, 'Prefer': 'return=minimal' },
-            body: JSON.stringify({
-              lead_id: lead.id,
-              follow_up_type: followupType,
-              scheduled_at: scheduledAt,
-              notes: `[AUTO] Created by rule: ${rule.name}`,
-              status: 'pending',
-            }),
-          });
-          resultData = { scheduled_at: scheduledAt, type: followupType };
+              });
+            }
+            break;
+          case 'auto_contact':
+            result = await executeAutoContact(supabaseUrl, headers, lead, rule);
+            break;
+          case 'auto_tag':
+            result = await executeAutoTag(supabaseUrl, headers, lead, actionConfig);
+            break;
+          case 'auto_stage':
+            result = await executeAutoStage(supabaseUrl, headers, lead, actionConfig);
+            break;
+          case 'auto_followup':
+            result = await executeAutoFollowup(supabaseUrl, headers, lead, rule, actionConfig);
+            break;
+          default:
+            result = { status: 'skipped', data: { reason: `Unknown action_type: ${actionType}` } };
         }
 
         // Log as interaction
-        await fetch(`${supabaseUrl}/rest/v1/lead_interactions`, {
-          method: 'POST',
-          headers: { ...headers, 'Prefer': 'return=minimal' },
-          body: JSON.stringify({
-            lead_id: lead.id,
-            interaction_type: 'automation',
-            direction: 'outbound',
-            notes: `[AUTO] Rule "${rule.name}" → ${actionType} (${status})`,
-          }),
+        await dbPost(`${supabaseUrl}/rest/v1/lead_interactions`, headers, {
+          lead_id: lead.id,
+          interaction_type: 'automation',
+          direction: 'outbound',
+          notes: `[AUTO] Rule "${rule.name}" → ${actionType} (${result.status})`,
         });
 
       } catch (actionErr) {
         console.error(`Action error for rule ${rule.name}:`, actionErr);
-        status = 'failed';
-        resultData = { error: String(actionErr) };
+        result = { status: 'failed', data: { error: String(actionErr) } };
       }
 
-      // ===== LOG to automation_logs =====
-      await fetch(`${supabaseUrl}/rest/v1/automation_logs`, {
-        method: 'POST',
-        headers: { ...headers, 'Prefer': 'return=minimal' },
-        body: JSON.stringify({
+      // Log to automation_logs + update rule stats in parallel
+      await Promise.all([
+        dbPost(`${supabaseUrl}/rest/v1/automation_logs`, headers, {
           rule_id: rule.id,
           lead_id: lead.id,
           action_type: actionType,
-          status,
-          result_data: resultData,
+          status: result.status,
+          result_data: result.data,
         }),
-      });
-
-      // ===== Update rule execution stats =====
-      await fetch(`${supabaseUrl}/rest/v1/automation_rules?id=eq.${rule.id}`, {
-        method: 'PATCH',
-        headers: { ...headers, 'Prefer': 'return=minimal' },
-        body: JSON.stringify({
+        dbPatch(`${supabaseUrl}/rest/v1/automation_rules?id=eq.${rule.id}`, headers, {
           execution_count: (rule.execution_count || 0) + 1,
           last_executed_at: new Date().toISOString(),
         }),
-      });
+      ]);
 
       executed.push(rule.name);
     }
