@@ -59,3 +59,6 @@ verify_jwt = false
 
 [functions.stripe-revenue]
 verify_jwt = true
+
+[functions.run-automations]
+verify_jwt = false

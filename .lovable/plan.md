@@ -1,81 +1,107 @@
 
 
-## CRM: Análisis de Gaps y Plan de Mejoras
+## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
 
-### Lo que YA tienes (completo)
-- App Center con registro dinámico y webhooks
-- Lead Scoring dinámico con decay, returning lead bonus
-- Kanban Pipeline (dnd-kit)
-- Cola de Contacto Priorizada
-- Generador de mensajes IA (WhatsApp/Email/Oferta)
-- Plantillas guardadas
-- Follow-ups programados + Timeline de interacciones
-- Fusión manual de duplicados
-- Notificaciones realtime para HOT leads
-- Cross-App Ranking + Métricas avanzadas
-- Revenue Dashboard (Stripe MRR/ARR)
-- Reglas de automatización (UI estática, no ejecutadas)
-- Documentación API completa
-- Export Excel
+### ✅ Completado en EvoFinz
 
-### Lo que FALTA para ser genial
+| # | Tarea | Estado |
+|---|-------|--------|
+| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
+| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
+| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
+| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
+| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
 
-**1. Dashboard de Follow-Ups Global (Agenda del Día)**
-Hoy los follow-ups solo se ven dentro de cada lead individual. No hay una vista "¿qué tengo que hacer HOY?" que muestre todos los follow-ups pendientes, vencidos y próximos en un solo lugar, tipo agenda de ventas.
+### ✅ Completado en Fokuspark
 
-- Nueva tab "📅 Agenda" en AdminCRM
-- Query a `lead_follow_ups` WHERE `completed_at IS NULL`, ordenados por `scheduled_at`
-- Secciones: Vencidos (rojo), Hoy (naranja), Próximos 7 días
-- Click → abre LeadDetail del lead asociado
-- Completar follow-up directo desde la agenda
+| # | Tarea | Estado |
+|---|-------|--------|
+| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
+| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
+| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
+| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
 
-**2. Notas Rápidas en el Pipeline (Kanban)**
-El Kanban muestra leads pero no permite agregar notas rápidas sin abrir el detalle completo. Agregar un campo de nota inline al mover un lead de etapa, que se registre como `lead_interaction`.
+### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
 
-**3. Automatizaciones Ejecutables (no solo UI)**
-Las reglas de automatización (`AdminAutomationTab`) son solo visuales/estáticas. Conectarlas realmente:
+---
 
-- Persistir reglas en una nueva tabla `automation_rules`
-- Edge Function `run-automations` que evalúa leads nuevos contra reglas activas
-- Acciones reales: invocar `generate-lead-message` y marcar `contacted_at`
-- Trigger: llamar desde `webhook-leads` tras insertar un lead
+## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
 
-**4. Tags/Etiquetas para Leads**
-No hay forma de categorizar leads más allá del pipeline stage. Tags personalizables (ej: "VIP", "Requiere demo", "Interés Bundle", "No molestar") permiten segmentar y filtrar mejor.
+### ✅ Confirmado: Sistema funciona correctamente
 
-- Nueva columna `tags TEXT[]` en `quiz_leads`
-- UI de chips editables en LeadDetail y filtro en LeadFilters
-- Colores predefinidos por tag
+- Planes individuales (Free/Premium/Pro) son independientes por app
+- Bundle compartido usa mismos Stripe Price IDs en ambas apps
+- Ambos webhooks detectan Bundle y setean `has_bundle = true`
+- No hay acceso cruzado no autorizado entre apps
 
-**5. Dashboard Resumen Ejecutivo (Home del CRM)**
-El CRM abre en la tab "Users" que es una tabla. Falta un dashboard resumen con los KPIs más importantes de un vistazo:
+### ✅ Gaps implementados en Fokuspark
 
-- Leads hoy / esta semana
-- Follow-ups vencidos (alerta)
-- Tasa de contacto y conversión del mes
-- Leads HOT sin contactar
-- Revenue MRR actual
-- Gráfico sparkline de leads últimos 30 días
+| # | Gap | Estado |
+|---|-----|--------|
+| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
+| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
 
-### Archivos a Crear/Modificar
+### 📋 Gaps pendientes (baja prioridad)
 
-| Archivo | Cambio |
-|---------|--------|
-| `src/components/admin/tabs/AdminFollowUpsAgenda.tsx` | **Nuevo** — Vista global de follow-ups pendientes |
-| `src/components/admin/tabs/AdminCRMHome.tsx` | **Nuevo** — Dashboard resumen ejecutivo |
-| `src/pages/admin/AdminCRM.tsx` | Agregar tabs "Home" y "Agenda", reordenar |
-| `src/components/admin/tabs/AdminKanbanPipeline.tsx` | Agregar nota al mover de etapa |
-| `supabase migration` | Agregar columna `tags TEXT[]` a `quiz_leads` + tabla `automation_rules` |
-| `supabase/functions/run-automations/index.ts` | **Nuevo** — Ejecutar reglas contra leads nuevos |
-| `supabase/functions/webhook-leads/index.ts` | Invocar `run-automations` tras insertar lead |
-| `src/components/admin/LeadDetail.tsx` | Agregar editor de tags |
-| `src/components/admin/LeadFilters.tsx` | Agregar filtro por tags |
-| `src/components/admin/tabs/AdminAutomationTab.tsx` | Conectar a tabla real `automation_rules` con CRUD |
+| # | Gap | Prioridad |
+|---|-----|-----------|
+| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
+| S3 | Texto del Bundle podría ser más descriptivo | Baja |
 
-### Prioridad de Implementación
-1. **CRM Home Dashboard** — primera impresión al abrir el CRM
-2. **Agenda de Follow-Ups** — productividad diaria inmediata
-3. **Tags para Leads** — segmentación flexible
-4. **Nota al mover en Kanban** — contexto en transiciones
-5. **Automatizaciones ejecutables** — el más complejo, mayor impacto a largo plazo
+---
 
+## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
+
+### ✅ Veredicto: No igualar precios — estructura actual es óptima
+
+| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
+|------|---------|-----------|-----------|-------|
+| Free | $0 | $0 | ✅ Ya iguales | — |
+| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
+| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+
+### 📋 Pendiente técnico
+
+| # | Tarea | App | Prioridad |
+|---|-------|-----|-----------|
+| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
+
+---
+
+## Quiz Multi-App — CRM Unificado
+
+### ✅ Completado en EvoFinz
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
+| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
+| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
+| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
+| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
+
+### 📋 Pendiente en Fokuspark
+
+| # | Tarea | Prioridad |
+|---|-------|-----------|
+| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
+| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
+| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
+| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
+
+---
+
+## Metadata JSONB — Integración Multi-App
+
+### ✅ Completado
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| M1 | Columna `metadata` JSONB en `quiz_leads` | ✅ |
+| M2 | `webhook-leads` guarda metadata estructurada | ✅ |
+| M3 | `send-quiz-lead` acepta `metadata` opcional | ✅ |
+| M4 | Interface `QuizLead` incluye `metadata` | ✅ |
+| M5 | CRM muestra Datos de la App (producto, precio, conocimiento, best practices) | ✅ |
+| M6 | Scoring enriquecido con metadata | ✅ |
+| M7 | Talking points usan metadata | ✅ |

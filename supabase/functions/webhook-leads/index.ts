@@ -371,6 +371,19 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Trigger automation rules asynchronously
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      fetch(`${supabaseUrl}/functions/v1/run-automations`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${serviceKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead: { ...savedLead, priority } }),
+      }).catch(e => console.error('[WEBHOOK-LEADS] Automation trigger error:', e));
+    } catch (e) {
+      console.error('[WEBHOOK-LEADS] Automation trigger error:', e);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

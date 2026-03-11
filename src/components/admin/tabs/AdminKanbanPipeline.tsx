@@ -446,12 +446,64 @@ function LeadDetailDialog({ lead, isEs, open, onClose, onMove, isPending }: {
   );
 }
 
+/* ─── Stage Change Note Dialog ─── */
+function StageChangeNoteDialog({ open, onClose, onConfirm, leadName, fromStage, toStage, isEs, isPending }: {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: (note: string) => void;
+  leadName: string;
+  fromStage: string;
+  toStage: string;
+  isEs: boolean;
+  isPending: boolean;
+}) {
+  const [note, setNote] = useState('');
+  const fromInfo = STAGES.find(s => s.key === fromStage);
+  const toInfo = STAGES.find(s => s.key === toStage);
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) { onClose(); setNote(''); } }}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-sm flex items-center gap-2">
+            <ArrowRight className="h-4 w-4" />
+            {isEs ? 'Mover lead' : 'Move lead'}: {leadName}
+          </DialogTitle>
+          <DialogDescription asChild>
+            <div className="flex items-center gap-2 text-xs mt-1">
+              <Badge variant="outline">{fromInfo?.emoji} {isEs ? fromInfo?.labelEs : fromInfo?.labelEn}</Badge>
+              <ArrowRight className="h-3 w-3" />
+              <Badge variant="outline">{toInfo?.emoji} {isEs ? toInfo?.labelEs : toInfo?.labelEn}</Badge>
+            </div>
+          </DialogDescription>
+        </DialogHeader>
+        <Textarea
+          placeholder={isEs ? 'Nota rápida (opcional)...' : 'Quick note (optional)...'}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          rows={2}
+          className="text-sm"
+        />
+        <div className="flex gap-2 justify-end">
+          <Button variant="ghost" size="sm" onClick={() => { onClose(); setNote(''); }}>
+            {isEs ? 'Cancelar' : 'Cancel'}
+          </Button>
+          <Button size="sm" onClick={() => { onConfirm(note); setNote(''); }} disabled={isPending}>
+            {isPending ? '⏳' : '✅'} {isEs ? 'Mover' : 'Move'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /* ─── Main Component ─── */
 export const AdminKanbanPipeline = ({ language }: Props) => {
   const isEs = language === 'es';
   const queryClient = useQueryClient();
   const [selectedLead, setSelectedLead] = useState<PipelineLead | null>(null);
   const [activeLead, setActiveLead] = useState<PipelineLead | null>(null);
+  const [pendingDrag, setPendingDrag] = useState<{ lead: PipelineLead; targetStage: PipelineStage } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -546,7 +598,8 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
     if (!STAGES.some(s => s.key === targetStage)) return;
     if (targetStage === draggedLead.pipeline_stage) return;
 
-    moveToStage.mutate({ leadId: draggedLead.id, stage: targetStage as PipelineStage });
+    // Show note dialog before moving
+    setPendingDrag({ lead: draggedLead, targetStage: targetStage as PipelineStage });
   };
 
   if (isLoading) {
@@ -611,6 +664,23 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
             moveToStage.mutate({ leadId: selectedLead.id, stage, note });
           }
         }}
+        isPending={moveToStage.isPending}
+      />
+
+      {/* Stage Change Note Dialog (on drag) */}
+      <StageChangeNoteDialog
+        open={!!pendingDrag}
+        onClose={() => setPendingDrag(null)}
+        onConfirm={(note) => {
+          if (pendingDrag) {
+            moveToStage.mutate({ leadId: pendingDrag.lead.id, stage: pendingDrag.targetStage, note: note || undefined });
+            setPendingDrag(null);
+          }
+        }}
+        leadName={pendingDrag?.lead.name || ''}
+        fromStage={pendingDrag?.lead.pipeline_stage || 'new'}
+        toStage={pendingDrag?.targetStage || 'new'}
+        isEs={isEs}
         isPending={moveToStage.isPending}
       />
     </div>

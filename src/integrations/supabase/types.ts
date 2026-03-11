@@ -157,6 +157,51 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_rules: {
+        Row: {
+          action_config: Json | null
+          action_type: string
+          created_at: string | null
+          created_by: string | null
+          delay_minutes: number | null
+          description: string | null
+          id: string
+          is_enabled: boolean | null
+          name: string
+          trigger_condition: Json | null
+          trigger_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          action_config?: Json | null
+          action_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          delay_minutes?: number | null
+          description?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          name: string
+          trigger_condition?: Json | null
+          trigger_type?: string
+          updated_at?: string | null
+        }
+        Update: {
+          action_config?: Json | null
+          action_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          delay_minutes?: number | null
+          description?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          name?: string
+          trigger_condition?: Json | null
+          trigger_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       bank_transactions: {
         Row: {
           amount: number
@@ -3026,6 +3071,7 @@ export type Database = {
           quiz_score: number | null
           situation: string | null
           source: string
+          tags: string[] | null
           time_spent: string | null
           updated_at: string
         }
@@ -3053,6 +3099,7 @@ export type Database = {
           quiz_score?: number | null
           situation?: string | null
           source?: string
+          tags?: string[] | null
           time_spent?: string | null
           updated_at?: string
         }
@@ -3080,6 +3127,7 @@ export type Database = {
           quiz_score?: number | null
           situation?: string | null
           source?: string
+          tags?: string[] | null
           time_spent?: string | null
           updated_at?: string
         }

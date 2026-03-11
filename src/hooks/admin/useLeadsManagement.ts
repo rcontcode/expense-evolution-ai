@@ -26,6 +26,7 @@ export interface QuizLead {
   priority: string | null;
   source: string;
   metadata: Record<string, unknown> | null;
+  tags: string[] | null;
   created_at: string;
 }
 
@@ -41,6 +42,7 @@ export interface LeadFilters {
   goal: string;
   obstacle: string;
   source: string;
+  tag: string;
   dateFrom: string;
   dateTo: string;
 }
@@ -57,6 +59,7 @@ const defaultFilters: LeadFilters = {
   goal: '',
   obstacle: '',
   source: '',
+  tag: '',
   dateFrom: '',
   dateTo: '',
 };
@@ -111,6 +114,13 @@ export const useLeadsManagement = () => {
     return unique.sort();
   }, [leads]);
 
+  // Get unique tags for filter dropdown
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    leads.forEach((l) => (l.tags || []).forEach((t) => tagSet.add(t)));
+    return [...tagSet].sort();
+  }, [leads]);
+
   // Apply filters
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
@@ -160,6 +170,9 @@ export const useLeadsManagement = () => {
 
       // Source filter
       if (filters.source && lead.source !== filters.source) return false;
+
+      // Tag filter
+      if (filters.tag && !(lead.tags || []).includes(filters.tag)) return false;
 
       // Date range filter
       if (filters.dateFrom) {
@@ -290,6 +303,7 @@ export const useLeadsManagement = () => {
     situations,
     goals,
     obstacles,
+    allTags,
     stats,
     markContacted,
     markConverted,

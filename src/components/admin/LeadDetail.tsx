@@ -34,6 +34,7 @@ import { InteractionTimeline } from './InteractionTimeline';
 import { FollowUpsList } from './FollowUpsList';
 import { FollowUpModal } from './FollowUpModal';
 import { LeadEnrichmentPanel } from './LeadEnrichmentPanel';
+import { LeadTagEditor } from './LeadTagEditor';
 
 interface LeadDetailProps {
   lead: QuizLead | null;
@@ -138,6 +139,9 @@ export function LeadDetail({
                 </p>
               </div>
             )}
+
+            {/* Tags */}
+            <LeadTagEditor leadId={lead.id} tags={lead.tags || []} />
 
             {/* Quick Contact Actions */}
             <div className="flex items-center gap-3">
