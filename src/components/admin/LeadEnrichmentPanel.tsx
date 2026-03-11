@@ -5,7 +5,8 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { 
   Brain, Target, AlertTriangle, Lightbulb, 
-  TrendingUp, Shield, MessageSquare, Star
+  TrendingUp, Shield, MessageSquare, Star,
+  RotateCcw, MapPin, Package
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { QuizLead } from '@/hooks/admin/useLeadsManagement';
