@@ -530,7 +530,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
       detailSheet.getCell(row, 7).value = Number(expense.amount);
       detailSheet.getCell(row, 7).numFmt = '"$"#,##0.00';
       detailSheet.getCell(row, 8).value = expense.currency || 'CAD';
-      detailSheet.getCell(row, 9).value = STATUS_LABELS[expense.status || 'pending'] || expense.status || '';
+      detailSheet.getCell(row, 9).value = STATUS_LABELS[expense.status || 'pending']?.[language === 'es' ? 'es' : 'en'] || expense.status || '';
       detailSheet.getCell(row, 10).value = expense.reimbursement_type || 'Sin clasificar';
       detailSheet.getCell(row, 11).value = expense.project_id || '';
       detailSheet.getCell(row, 12).value = expense.contract_id || '';
