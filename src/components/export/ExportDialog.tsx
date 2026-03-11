@@ -11,9 +11,13 @@ import { ExpenseWithRelations } from '@/types/expense.types';
 import { exportExpenses, ExportOptions } from '@/lib/export/expense-export';
 import { exportT2125Report } from '@/lib/export/t2125-export';
 import { exportT2125ToPDF, exportExpensesToPDF, PDFExportOptions } from '@/lib/export/pdf-export';
+import { exportTaxReport } from '@/lib/export/tax-report-export';
 import { useToast } from '@/hooks/use-toast';
 import { useProfile } from '@/hooks/data/useProfile';
-import { FileSpreadsheet, FileText, Download, Loader2, FileCheck, FileJson, FileType, FileWarning, Sparkles } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import { FileSpreadsheet, FileText, Download, Loader2, FileCheck, FileJson, FileType, FileWarning, Sparkles, Receipt } from 'lucide-react';
 
 interface ExportDialogProps {
   open: boolean;
