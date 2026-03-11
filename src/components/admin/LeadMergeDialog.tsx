@@ -63,12 +63,12 @@ export function LeadMergeDialog({ open, onOpenChange, allLeads }: Props) {
       const secondaryIds = secondaries.map(l => l.id);
 
       // Merge: update primary with best data from secondaries
-      const mergedMetadata: Record<string, unknown> = {
-        ...(primary.metadata as Record<string, unknown> || {}),
+      const mergedMetadata = {
+        ...(primary.metadata as Record<string, string | number | boolean | null> || {}),
         merged_from: secondaryIds,
         merged_at: new Date().toISOString(),
         merged_sources: secondaries.map(l => l.source),
-      };
+      } as unknown as Record<string, string>;
 
       // Keep the best phone, comments, etc.
       const bestPhone = primary.phone || secondaries.find(l => l.phone)?.phone || null;
