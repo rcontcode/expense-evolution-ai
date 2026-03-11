@@ -59,6 +59,13 @@ const TYPE_LABELS: Record<DocumentClassificationType, { es: string; en: string; 
   contract: { es: 'Contrato', en: 'Contract', icon: '📄' },
   tax_document: { es: 'Documento Fiscal', en: 'Tax Document', icon: '📋' },
   invoice: { es: 'Factura', en: 'Invoice', icon: '🧾' },
+  tax_slip: { es: 'Formulario Fiscal (T4/T5/AFP)', en: 'Tax Slip (T4/T5/AFP)', icon: '📑' },
+  medical_receipt: { es: 'Recibo Médico', en: 'Medical Receipt', icon: '🏥' },
+  donation_receipt: { es: 'Recibo de Donación', en: 'Donation Receipt', icon: '💝' },
+  insurance_policy: { es: 'Póliza de Seguro', en: 'Insurance Policy', icon: '🛡️' },
+  rental_receipt: { es: 'Recibo de Arriendo', en: 'Rental Receipt', icon: '🏢' },
+  investment_statement: { es: 'Estado de Inversiones', en: 'Investment Statement', icon: '📈' },
+  government_form: { es: 'Formulario Gubernamental', en: 'Government Form', icon: '🏛️' },
   unknown: { es: 'Sin clasificar', en: 'Unclassified', icon: '❓' },
 };
 

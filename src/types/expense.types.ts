@@ -27,6 +27,18 @@ export type ExpenseCategory =
   | 'family_outings'
   | 'gifts'
   | 'scheduled_purchases'
+  | 'medical'
+  | 'insurance_business'
+  | 'education_training'
+  | 'donations'
+  | 'rent'
+  | 'bank_fees'
+  | 'maintenance_repairs'
+  | 'moving'
+  | 'interest_loans'
+  | 'vehicle_maintenance'
+  | 'parking_tolls'
+  | 'telephone'
   | 'other';
 
 export type ReimbursementType = 
