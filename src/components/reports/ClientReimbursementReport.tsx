@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { getCategoryLabelByLanguage, getCategoryColor } from '@/lib/constants/expense-categories';
 import { 
+  Building2,
   DollarSign, 
   FileText, 
   Download,
