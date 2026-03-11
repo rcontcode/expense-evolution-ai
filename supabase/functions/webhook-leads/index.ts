@@ -19,6 +19,8 @@ interface ExternalLeadPayload {
   time_spent?: string;
   comments?: string;
   failed_questions?: number[];
+  // Fokuspark quiz answers
+  quiz_answers?: Array<{ question: string; answer_value: number; answer_label: string }>;
   // Nested metadata (Universmind format)
   metadata?: {
     situacion?: string;
@@ -93,12 +95,12 @@ function calculatePriority(lead: {
 
   // Nivel principiante = urgencia (max +15)
   const level = lead.level?.toLowerCase();
-  if (level === "principiante") score += 15;
-  else if (level === "emergente") score += 10;
-  else if (level === "evolucionando" || level === "intermedio") score += 5;
+  if (level === "principiante" || level === "novato") score += 15;
+  else if (level === "emergente" || level === "aprendiz") score += 10;
+  else if (level === "evolucionando" || level === "intermedio" || level === "enfocado") score += 5;
 
   // Obstáculos críticos (max +10)
-  const criticalObstacles = ["no sé por dónde empezar", "gastos descontrolados", "falta de conocimiento", "deudas abrumadoras", "falta de tiempo", "falta de información"];
+  const criticalObstacles = ["no sé por dónde empezar", "gastos descontrolados", "falta de conocimiento", "deudas abrumadoras", "falta de tiempo", "falta de información", "me distraigo", "procrastino"];
   if (lead.obstacle && criticalObstacles.some(obs => lead.obstacle.toLowerCase().includes(obs.toLowerCase()))) {
     score += 10;
   }
@@ -228,6 +230,10 @@ Deno.serve(async (req) => {
     if (payload.metadata?.conocimiento_previo) extraMetadata.conocimiento_previo = payload.metadata.conocimiento_previo;
     if (payload.metadata?.guide) extraMetadata.guide = payload.metadata.guide;
     if (payload.metadata?.respuestas_best_practices) extraMetadata.respuestas_detail = payload.metadata.respuestas_best_practices;
+    // Fokuspark quiz_answers — store directly in metadata
+    if (Array.isArray(payload.quiz_answers) && payload.quiz_answers.length > 0) {
+      extraMetadata.quiz_answers = payload.quiz_answers;
+    }
 
     // Calculate lead priority with ALL available data
     const { leadScore, priority } = calculatePriority({

@@ -1,59 +1,107 @@
 
 
-## Análisis: Qué dice Fokuspark y qué necesitamos hacer
+## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
 
-Fokuspark quiere enviar un campo nuevo `quiz_answers` con las 10 preguntas completas y sus respuestas. Actualmente solo envía `failed_questions`. La estructura propuesta:
+### ✅ Completado en EvoFinz
 
-```json
-{
-  "name": "...", "email": "...", "phone": "...",
-  "country": "...", "source": "fokuspark",
-  "situation": "Estudiante",
-  "goal": "Eliminar procrastinación",
-  "obstacle": "Me distraigo",
-  "comments": "texto libre",
-  "score": 45, "level": "Novato",
-  "failed_questions": [1, 4, 7],
-  "time_spent": "120",
-  "quiz_answers": [
-    { "question": "¿Con qué frecuencia completas tus tareas...?", "answer_value": 10, "answer_label": "Siempre" },
-    ...
-  ]
-}
-```
+| # | Tarea | Estado |
+|---|-------|--------|
+| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
+| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
+| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
+| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
+| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
 
-### Lo que necesitamos hacer en EvoFinz
+### ✅ Completado en Fokuspark
 
-**1. Actualizar `webhook-leads` para capturar `quiz_answers`**
-- Aceptar `quiz_answers` como campo directo del payload
-- Almacenarlo en la columna `metadata` JSONB (ya existe) bajo la llave `quiz_answers`
-- No requiere cambio de schema — `metadata` JSONB ya lo soporta
+| # | Tarea | Estado |
+|---|-------|--------|
+| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
+| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
+| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
+| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
 
-**2. Actualizar scoring para niveles de Fokuspark**
-- El `calculatePriority` en el webhook solo reconoce niveles de EvoFinz (`principiante`, `emergente`, `evolucionando`)
-- Agregar los niveles de Fokuspark: `novato` → +15, `aprendiz` → +10, `enfocado` → +5
-- Agregar obstáculos de Fokuspark: `me distraigo`, `procrastino` como obstáculos críticos
+### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
 
-**3. Actualizar scoring del frontend (`useLeadScoring.ts`)**
-- Mismos ajustes: reconocer niveles y obstáculos de Fokuspark
-- Leer `metadata.quiz_answers` para analytics más ricos
+---
 
-**4. Mostrar `quiz_answers` en el CRM**
-- En `LeadEnrichmentPanel.tsx`: si `metadata.quiz_answers` existe, renderizar tabla con pregunta, respuesta y score por pregunta
-- Diferente del bloque de "best practices" de Universmind — es una lista de preguntas con valores numéricos
+## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
 
-**5. Mensaje para Fokuspark**
-- Decirles el formato exacto que aceptamos y que envíen todo como campos de primer nivel + `quiz_answers` como array
+### ✅ Confirmado: Sistema funciona correctamente
 
-### Mensaje sugerido para enviarle a Fokuspark
+- Planes individuales (Free/Premium/Pro) son independientes por app
+- Bundle compartido usa mismos Stripe Price IDs en ambas apps
+- Ambos webhooks detectan Bundle y setean `has_bundle = true`
+- No hay acceso cruzado no autorizado entre apps
 
-> "El CRM acepta los campos de primer nivel tal cual los tienes (name, email, phone, country, situation, goal, obstacle, comments, score, level, failed_questions, time_spent, source). Agrega `quiz_answers` como array de objetos `{ question, answer_value, answer_label }` directamente en el payload (primer nivel, no dentro de metadata). Todo se almacena automáticamente. No necesitas anidar nada en metadata."
+### ✅ Gaps implementados en Fokuspark
 
-### Archivos a modificar
+| # | Gap | Estado |
+|---|-----|--------|
+| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
+| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
 
-| Archivo | Cambio |
-|---|---|
-| `supabase/functions/webhook-leads/index.ts` | Capturar `quiz_answers` → guardar en `metadata.quiz_answers` + agregar niveles/obstáculos Fokuspark al scoring |
-| `src/hooks/admin/useLeadScoring.ts` | Agregar niveles Fokuspark (`novato`, `aprendiz`, `enfocado`) y obstáculos (`me distraigo`, `procrastino`) |
-| `src/components/admin/LeadEnrichmentPanel.tsx` | Renderizar tabla de quiz_answers si existe en metadata |
+### 📋 Gaps pendientes (baja prioridad)
 
+| # | Gap | Prioridad |
+|---|-----|-----------|
+| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
+| S3 | Texto del Bundle podría ser más descriptivo | Baja |
+
+---
+
+## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
+
+### ✅ Veredicto: No igualar precios — estructura actual es óptima
+
+| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
+|------|---------|-----------|-----------|-------|
+| Free | $0 | $0 | ✅ Ya iguales | — |
+| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
+| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+
+### 📋 Pendiente técnico
+
+| # | Tarea | App | Prioridad |
+|---|-------|-----|-----------|
+| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
+
+---
+
+## Quiz Multi-App — CRM Unificado
+
+### ✅ Completado en EvoFinz
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
+| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
+| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
+| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
+| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
+
+### 📋 Pendiente en Fokuspark
+
+| # | Tarea | Prioridad |
+|---|-------|-----------|
+| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
+| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
+| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
+| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
+
+---
+
+## Metadata JSONB — Integración Multi-App
+
+### ✅ Completado
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| M1 | Columna `metadata` JSONB en `quiz_leads` | ✅ |
+| M2 | `webhook-leads` guarda metadata estructurada | ✅ |
+| M3 | `send-quiz-lead` acepta `metadata` opcional | ✅ |
+| M4 | Interface `QuizLead` incluye `metadata` | ✅ |
+| M5 | CRM muestra Datos de la App (producto, precio, conocimiento, best practices) | ✅ |
+| M6 | Scoring enriquecido con metadata | ✅ |
+| M7 | Talking points usan metadata | ✅ |

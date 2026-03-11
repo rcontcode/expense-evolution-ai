@@ -13,6 +13,8 @@ const CRITICAL_OBSTACLES = [
   'Gastos descontrolados',
   'Falta de conocimiento',
   'Deudas abrumadoras',
+  'Me distraigo',
+  'Procrastino',
 ];
 
 // Ambitious goals that indicate high potential
@@ -58,11 +60,11 @@ export function calculateLeadScore(lead: QuizLead): number {
 
   // 3. Nivel principiante = urgencia de solución (max +15)
   const level = lead.quiz_level?.toLowerCase();
-  if (level === 'principiante') {
+  if (level === 'principiante' || level === 'novato') {
     score += 15;
-  } else if (level === 'emergente') {
+  } else if (level === 'emergente' || level === 'aprendiz') {
     score += 10;
-  } else if (level === 'evolucionando') {
+  } else if (level === 'evolucionando' || level === 'enfocado') {
     score += 5;
   }
 

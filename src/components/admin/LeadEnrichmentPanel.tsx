@@ -168,6 +168,37 @@ export function LeadEnrichmentPanel({ lead, allLeads }: Props) {
         </Card>
       )}
 
+      {/* Fokuspark Quiz Answers */}
+      {lead.metadata && Array.isArray((lead.metadata as Record<string, unknown>).quiz_answers) && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-blue-500" />
+              Respuestas del Quiz ({((lead.metadata as Record<string, unknown>).quiz_answers as Array<{ question: string; answer_value: number; answer_label: string }>).length} preguntas)
+              <Badge variant="outline" className="text-[10px] ml-auto">Fokuspark</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1.5">
+            {((lead.metadata as Record<string, unknown>).quiz_answers as Array<{ question: string; answer_value: number; answer_label: string }>).map((qa, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.03 }}
+                className="flex items-center gap-2 text-xs"
+              >
+                <span className="text-muted-foreground flex-1 truncate" title={qa.question}>
+                  {i + 1}. {qa.question.length > 60 ? qa.question.substring(0, 57) + '...' : qa.question}
+                </span>
+                <Badge variant={qa.answer_value >= 8 ? 'default' : qa.answer_value >= 5 ? 'secondary' : 'destructive'} className="text-[10px] shrink-0">
+                  {qa.answer_label} ({qa.answer_value})
+                </Badge>
+              </motion.div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Auto-generated Talking Points */}
       <Card>
         <CardHeader className="pb-2">
