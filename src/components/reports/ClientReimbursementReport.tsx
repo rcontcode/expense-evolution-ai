@@ -154,7 +154,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
   const categoryChartData = useMemo(() => {
     return Object.entries(categoryTotals)
       .map(([category, total]) => ({
-        name: CATEGORY_LABELS[category] || category,
+        name: getCategoryLabelByLanguage(category, language === 'es' ? 'es' : 'en'),
         value: total,
         category,
       }))
