@@ -429,7 +429,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground font-medium">{language === 'es' ? '💰 Total a Facturar' : '💰 Total to Bill'}</p>
-                <p className="text-3xl font-bold mt-1 text-success">${totalReimbursable.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
+                <p className="text-3xl font-bold mt-1 text-success">{formatCurrency(totalReimbursable)}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <ArrowUpRight className="h-3 w-3 text-success" />
                   <p className="text-xs text-success">{language === 'es' ? '✅ Listo para cobrar' : '✅ Ready to collect'}</p>
