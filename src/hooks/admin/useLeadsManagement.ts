@@ -164,6 +164,9 @@ export const useLeadsManagement = () => {
       // Source filter
       if (filters.source && lead.source !== filters.source) return false;
 
+      // Tag filter
+      if (filters.tag && !(lead.tags || []).includes(filters.tag)) return false;
+
       // Date range filter
       if (filters.dateFrom) {
         const leadDate = new Date(lead.created_at);
