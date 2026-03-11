@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -9,12 +10,14 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { Users, Phone, UserCheck, RefreshCw, Flame, ThermometerSun, MessageSquare, AlertTriangle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Users, Phone, UserCheck, RefreshCw, Flame, ThermometerSun, MessageSquare, AlertTriangle, Brain, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLeadsManagement } from '@/hooks/admin/useLeadsManagement';
 import { LeadFilters } from '@/components/admin/LeadFilters';
 import { LeadsTable } from '@/components/admin/LeadsTable';
 import { LeadsExport } from '@/components/admin/LeadsExport';
+import { CRMIntelligenceDashboard } from '@/components/admin/CRMIntelligenceDashboard';
 import { TableSkeleton } from '@/components/ui/table-skeleton';
 import { PageHeader } from '@/components/PageHeader';
 import { Layout } from '@/components/Layout';
