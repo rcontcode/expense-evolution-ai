@@ -70,7 +70,10 @@ serve(async (req) => {
     const quota = await checkQuota(req, 'ocr_scans_count', 'ocr_scans_per_month', OCR_FALLBACK_LIMITS);
     if (quota.error) return quota.error;
     const body = await req.json();
-    const { imageBase64, voiceText, detectMultipleReceipts } = body;
+    const { imageBase64, voiceText, detectMultipleReceipts, country } = body;
+    const userCountry = country || 'CA';
+    const defaultCurrency = userCountry === 'CL' ? 'CLP' : 'CAD';
+    const taxAuthority = userCountry === 'CL' ? 'SII' : 'CRA';
 
     // Input validation: image size limit (~10MB base64)
     if (imageBase64 && typeof imageBase64 === "string" && imageBase64.length > 10_000_000) {
