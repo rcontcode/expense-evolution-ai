@@ -83,6 +83,8 @@ function calculatePriority(lead: {
   failed_questions: number[];
   conocimiento_previo?: string;
   precio_producto?: number;
+  returning_lead?: boolean;
+  previous_sources?: string[];
 }): { leadScore: number; priority: string } {
   let score = 0;
 
