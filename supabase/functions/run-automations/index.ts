@@ -307,6 +307,39 @@ Deno.serve(async (req) => {
 
     console.log(`Executed ${executed.length} rules, skipped ${skipped.length} for lead ${lead.id}`);
 
+    // ===== ADMIN NOTIFICATIONS =====
+    const failures = executed.length === 0 ? [] : [];
+    // Check for any failed results in this run
+    if (executed.length > 0 || skipped.some(s => s.includes('failed'))) {
+      try {
+        const adminRes = await fetch(
+          `${supabaseUrl}/rest/v1/user_roles?role=eq.admin&select=user_id`,
+          { headers }
+        );
+        if (adminRes.ok) {
+          const admins = await adminRes.json();
+          // Notify on executions (batch — not every single one)
+          if (executed.length > 0) {
+            for (const admin of admins) {
+              await dbPost(`${supabaseUrl}/rest/v1/ecosystem_notifications`, headers, {
+                user_id: admin.user_id,
+                notification_type: 'automation_executed',
+                source_app: 'evofinz',
+                title_es: `⚡ ${executed.length} regla(s) ejecutada(s)`,
+                title_en: `⚡ ${executed.length} rule(s) executed`,
+                message_es: `Lead: ${lead.name || lead.email} → ${executed.join(', ')}`,
+                message_en: `Lead: ${lead.name || lead.email} → ${executed.join(', ')}`,
+                emoji: '⚡',
+                action_url: '/admin?tab=automation',
+              });
+            }
+          }
+        }
+      } catch (notifErr) {
+        console.error('Admin notification error:', notifErr);
+      }
+    }
+
     return new Response(JSON.stringify({ executed: executed.length, rules: executed, skipped }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

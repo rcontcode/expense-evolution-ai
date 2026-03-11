@@ -273,6 +273,20 @@ serve(async (req) => {
       console.log("GHL_WEBHOOK_URL not configured - skipping webhook");
     }
 
+    // Fire automations asynchronously (don't block response)
+    try {
+      fetch(`${supabaseUrl}/functions/v1/run-automations`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${supabaseKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead: savedLead }),
+      }).then(res => {
+        if (res.ok) console.log(`Automations triggered for lead ${savedLead.id}`);
+        else console.error(`Automations failed for lead ${savedLead.id}:`, res.status);
+      }).catch(err => console.error('Automation trigger error:', err));
+    } catch (autoErr) {
+      console.error('Failed to trigger automations:', autoErr);
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
