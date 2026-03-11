@@ -249,9 +249,9 @@ export function LeadFilters({
         )}
       </div>
 
-      {/* Third row - Goals and Obstacles */}
-      {(goals.length > 0 || obstacles.length > 0) && (
-        <div className="grid gap-4 md:grid-cols-2">
+      {/* Third row - Goals, Obstacles, Tags */}
+      {(goals.length > 0 || obstacles.length > 0 || allTags.length > 0) && (
+        <div className="grid gap-4 md:grid-cols-3">
           {goals.length > 0 && (
             <Select
               value={filters.goal || 'all'}
@@ -284,6 +284,25 @@ export function LeadFilters({
                 {obstacles.map((obstacle) => (
                   <SelectItem key={obstacle} value={obstacle}>
                     {obstacle}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {allTags.length > 0 && (
+            <Select
+              value={filters.tag || 'all'}
+              onValueChange={(value) => updateFilter('tag', value === 'all' ? '' : value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="🏷️ Tag" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los tags</SelectItem>
+                {allTags.map((tag) => (
+                  <SelectItem key={tag} value={tag}>
+                    🏷️ {tag}
                   </SelectItem>
                 ))}
               </SelectContent>
