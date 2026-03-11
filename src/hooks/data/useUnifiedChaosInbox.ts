@@ -371,7 +371,7 @@ export function useUnifiedChaosInbox() {
 
         case 'utility_bill': {
           const { data: result, error } = await supabase.functions.invoke('process-receipt', {
-            body: { imageBase64: doc.base64 },
+            body: { imageBase64: doc.base64, country: userCountry },
           });
 
           if (error) throw error;
