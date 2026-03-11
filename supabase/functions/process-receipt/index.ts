@@ -254,7 +254,16 @@ CRITICAL FOR LINE ITEMS:
 
 PRODUCT SEARCH URLS - VERY IMPORTANT:
 Generate a product_search_url for each line item so reviewers can verify the purchase. Use these patterns:
-- Home Depot: https://www.homedepot.ca/search?q={product_name_encoded}
+${userCountry === 'CL' ? `- Falabella: https://www.falabella.com/falabella-cl/search?Ntt={product_name_encoded}
+- Ripley: https://simple.ripley.cl/search/{product_name_encoded}
+- Sodimac: https://www.sodimac.cl/sodimac-cl/search/?Ntt={product_name_encoded}
+- Líder/Walmart Chile: https://www.lider.cl/supermercado/search?Ntt={product_name_encoded}
+- Easy: https://www.easy.cl/search?Ntt={product_name_encoded}
+- Paris: https://www.paris.cl/search?q={product_name_encoded}
+- Mercado Libre: https://listado.mercadolibre.cl/{product_name_encoded}
+- Copec/ENAP (fuel): null (no product link for fuel)
+- Restaurants/Cafes: null (no product link for food)
+- For unknown vendors: try https://www.google.cl/search?q={vendor}+{product_name_encoded}` : `- Home Depot: https://www.homedepot.ca/search?q={product_name_encoded}
 - Home Depot (if SKU visible): https://www.homedepot.ca/product/{sku}
 - Costco: https://www.costco.ca/CatalogSearch?keyword={product_name_encoded}
 - Walmart: https://www.walmart.ca/search?q={product_name_encoded}
@@ -267,7 +276,7 @@ Generate a product_search_url for each line item so reviewers can verify the pur
 - IKEA: https://www.ikea.com/ca/en/search/?q={product_name_encoded}
 - Shell/Chevron/Petro-Canada/Esso (fuel): null (no product link for fuel)
 - Restaurants/Cafes: null (no product link for food)
-- For unknown vendors: try https://www.google.com/search?q={vendor}+{product_name_encoded}
+- For unknown vendors: try https://www.google.com/search?q={vendor}+{product_name_encoded}`}
 
 Replace {product_name_encoded} with URL-encoded product name. Include SKU in search if available.
 
