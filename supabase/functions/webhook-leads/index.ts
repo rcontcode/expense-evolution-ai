@@ -273,6 +273,8 @@ Deno.serve(async (req) => {
       failed_questions: failedQuestions,
       conocimiento_previo: payload.metadata?.conocimiento_previo as string | undefined,
       precio_producto: payload.metadata?.precio_producto as number | undefined,
+      returning_lead: payload.returning_lead,
+      previous_sources: payload.previous_sources,
     });
 
     console.log(`[WEBHOOK-LEADS] ${cleanEmail} | source: ${source} | quiz: ${quizScore} | fields: country=${!!country}, situation=${!!situation}, goal=${!!goal}, obstacle=${!!obstacle}, comments=${!!comments} | leadScore: ${leadScore}, priority: ${priority}`);
