@@ -114,6 +114,13 @@ export const useLeadsManagement = () => {
     return unique.sort();
   }, [leads]);
 
+  // Get unique tags for filter dropdown
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    leads.forEach((l) => (l.tags || []).forEach((t) => tagSet.add(t)));
+    return [...tagSet].sort();
+  }, [leads]);
+
   // Apply filters
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
