@@ -85,9 +85,10 @@ interface StrategyCardProps {
   isRecommended: boolean;
   language: string;
   totalDebt: number;
+  formatCurrency: (amount: number) => string;
 }
 
-function StrategyCard({ strategy, isRecommended, language, totalDebt }: StrategyCardProps) {
+function StrategyCard({ strategy, isRecommended, language, totalDebt, formatCurrency }: StrategyCardProps) {
   const isAvalanche = strategy.name === 'avalanche';
   const Icon = isAvalanche ? Mountain : Snowflake;
   
