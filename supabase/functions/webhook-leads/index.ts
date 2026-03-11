@@ -74,6 +74,8 @@ function calculatePriority(lead: {
   phone: string | null;
   time_spent: string;
   failed_questions: number[];
+  conocimiento_previo?: string;
+  precio_producto?: number;
 }): { leadScore: number; priority: string } {
   let score = 0;
 
