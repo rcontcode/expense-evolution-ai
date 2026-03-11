@@ -184,6 +184,8 @@ function StrategyCard({ strategy, isRecommended, language, totalDebt }: Strategy
 
 export function DebtManagerCard() {
   const { language } = useLanguage();
+  const { currentCurrency } = useEntity();
+  const formatCurrency = (amount: number) => formatCurrencyStatic(amount, currentCurrency);
   const [extraPayment, setExtraPayment] = useState(100);
   const [selectedStrategy, setSelectedStrategy] = useState<'avalanche' | 'snowball'>('avalanche');
   const [showDetails, setShowDetails] = useState(false);
