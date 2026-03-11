@@ -19,6 +19,8 @@ interface ExternalLeadPayload {
   time_spent?: string;
   comments?: string;
   failed_questions?: number[];
+  // Fokuspark quiz answers
+  quiz_answers?: Array<{ question: string; answer_value: number; answer_label: string }>;
   // Nested metadata (Universmind format)
   metadata?: {
     situacion?: string;
