@@ -1440,20 +1440,19 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-br from-orange-600 via-amber-600 to-yellow-500" />
         
         {/* Parallax pattern */}
-        <ParallaxLayer speed={0.2} className="absolute inset-0">
+        <DecorativeLayer className="absolute inset-0">
           <div 
             className="absolute inset-0 opacity-30"
             style={{
               backgroundImage: `url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjA1Ii8+PC9nPjwvc3ZnPg==')`
             }}
           />
-        </ParallaxLayer>
+        </DecorativeLayer>
         
-        {/* Floating parallax circles */}
-        <ParallaxLayer speed={0.3} className="absolute inset-0 pointer-events-none">
+        <DecorativeLayer className="absolute inset-0 pointer-events-none">
           <div className="absolute top-10 left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
           <div className="absolute bottom-10 right-10 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
-        </ParallaxLayer>
+        </DecorativeLayer>
         
         <div className="container mx-auto px-4 text-center relative z-10">
           <motion.div
