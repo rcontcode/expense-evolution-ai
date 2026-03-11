@@ -6,7 +6,10 @@ import { useQueryClient } from '@tanstack/react-query';
 
 export type DocumentClassificationType = 
   | 'receipt' | 'utility_bill' | 'bank_statement' | 'income_proof'
-  | 'contract' | 'tax_document' | 'invoice' | 'unknown';
+  | 'contract' | 'tax_document' | 'invoice'
+  | 'tax_slip' | 'medical_receipt' | 'donation_receipt' | 'insurance_policy'
+  | 'rental_receipt' | 'investment_statement' | 'government_form'
+  | 'unknown';
 
 export interface ClassifiedDocument {
   id: string;
