@@ -241,6 +241,13 @@ Deno.serve(async (req) => {
     if (Array.isArray(payload.quiz_answers) && payload.quiz_answers.length > 0) {
       extraMetadata.quiz_answers = payload.quiz_answers;
     }
+    // Universmind returning lead data
+    if (payload.returning_lead) {
+      extraMetadata.returning_lead = true;
+    }
+    if (Array.isArray(payload.previous_sources) && payload.previous_sources.length > 0) {
+      extraMetadata.previous_sources = payload.previous_sources;
+    }
 
     // Calculate lead priority with ALL available data
     const { leadScore, priority } = calculatePriority({
