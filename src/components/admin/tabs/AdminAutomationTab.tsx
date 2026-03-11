@@ -12,12 +12,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Progress } from '@/components/ui/progress';
 import {
   Zap, Flame, ThermometerSun, Snowflake, MessageCircle,
   Mail, Clock, ArrowRight, AlertTriangle,
   CheckCircle2, Bot, Bell, TrendingDown,
   Plus, Trash2, Pencil, Activity, Tag, GitBranch, CalendarPlus,
   Play, BarChart3, XCircle, SkipForward, Eye, RefreshCw,
+  Filter, Users, Rocket, Save, ChevronDown, ChevronUp, Shield,
 } from 'lucide-react';
 import { differenceInDays, formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -37,6 +39,13 @@ interface RuleFormData {
   delay_minutes: number;
   description: string;
   action_config: Record<string, any>;
+  trigger_condition: TriggerCondition[];
+}
+
+interface TriggerCondition {
+  field: string;
+  operator: string;
+  value: string | number | boolean;
 }
 
 const TRIGGER_OPTIONS = [
@@ -54,6 +63,24 @@ const ACTION_OPTIONS = [
   { value: 'auto_tag', label: 'Auto-etiquetar', icon: <Tag className="h-4 w-4 text-purple-600" /> },
   { value: 'auto_stage', label: 'Auto-pipeline', icon: <GitBranch className="h-4 w-4 text-indigo-600" /> },
   { value: 'auto_followup', label: 'Auto follow-up', icon: <CalendarPlus className="h-4 w-4 text-amber-600" /> },
+];
+
+const CONDITION_FIELDS = [
+  { value: 'source', label: 'Source (app)' },
+  { value: 'score', label: 'Quiz Score' },
+  { value: 'phone', label: 'Teléfono' },
+  { value: 'country', label: 'País' },
+  { value: 'level', label: 'Nivel' },
+  { value: 'email', label: 'Email' },
+];
+
+const CONDITION_OPERATORS = [
+  { value: 'eq', label: '=' },
+  { value: 'neq', label: '≠' },
+  { value: 'gte', label: '≥' },
+  { value: 'lte', label: '≤' },
+  { value: 'contains', label: 'contiene' },
+  { value: 'exists', label: 'existe' },
 ];
 
 const TRIGGER_ICONS: Record<string, React.ReactNode> = {
@@ -80,6 +107,13 @@ const DEFAULT_SEED_RULES = [
   { name: '🔥 HOT → Auto follow-up 3d', trigger_type: 'hot', action_type: 'auto_followup', delay_minutes: 0, description: 'Lead HOT: crea follow-up automático para 3 días', action_config: { followup_delay_hours: 72, followup_type: 'call' } },
 ];
 
+const BULK_FILTERS = [
+  { value: 'hot_uncontacted', label: '🔥 HOT sin contactar' },
+  { value: 'warm_stale', label: '🌡️ WARM >5 días sin contacto' },
+  { value: 'all_uncontacted', label: '📭 Todos sin contactar' },
+  { value: 'reactivation', label: '♻️ Reactivación (>14 días)' },
+];
+
 export const AdminAutomationTab = ({ language }: Props) => {
   const isEs = language === 'es';
   const queryClient = useQueryClient();
@@ -88,8 +122,12 @@ export const AdminAutomationTab = ({ language }: Props) => {
   const [testDialogOpen, setTestDialogOpen] = useState(false);
   const [selectedTestLead, setSelectedTestLead] = useState<string>('');
   const [logDetailDialog, setLogDetailDialog] = useState<any | null>(null);
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
+  const [bulkFilter, setBulkFilter] = useState('hot_uncontacted');
+  const [bulkProgress, setBulkProgress] = useState<{ total: number; done: number; running: boolean } | null>(null);
+  const [expandedRuleId, setExpandedRuleId] = useState<string | null>(null);
   const [formData, setFormData] = useState<RuleFormData>({
-    name: '', trigger_type: 'new_lead', action_type: 'whatsapp', delay_minutes: 0, description: '', action_config: {},
+    name: '', trigger_type: 'new_lead', action_type: 'whatsapp', delay_minutes: 0, description: '', action_config: {}, trigger_condition: [],
   });
 
   // ===== QUERIES =====
@@ -120,11 +158,11 @@ export const AdminAutomationTab = ({ language }: Props) => {
         .from('automation_logs')
         .select('*')
         .order('executed_at', { ascending: false })
-        .limit(50);
+        .limit(100);
       if (error) throw error;
       return data || [];
     },
-    refetchInterval: 30000, // Auto-refresh every 30s
+    refetchInterval: 30000,
   });
 
   const { data: leads = [] } = useQuery({
@@ -152,6 +190,27 @@ export const AdminAutomationTab = ({ language }: Props) => {
     return map;
   }, [rules]);
 
+  // ===== PER-RULE INSIGHTS =====
+  const ruleInsights = useMemo(() => {
+    const insights: Record<string, { total: number; success: number; failed: number; skipped: number; successRate: number; lastLead: string | null; lastDate: string | null; recentLogs: any[] }> = {};
+    rules.forEach((r: any) => {
+      const ruleLogs = logs.filter((l: any) => l.rule_id === r.id);
+      const success = ruleLogs.filter((l: any) => l.status === 'success').length;
+      const failed = ruleLogs.filter((l: any) => l.status === 'failed').length;
+      const skipped = ruleLogs.filter((l: any) => l.status === 'skipped').length;
+      const last = ruleLogs[0];
+      insights[r.id] = {
+        total: ruleLogs.length,
+        success, failed, skipped,
+        successRate: ruleLogs.length > 0 ? Math.round((success / ruleLogs.length) * 100) : 0,
+        lastLead: last ? (leadNameMap[last.lead_id] || last.lead_id?.slice(0, 8)) : null,
+        lastDate: last?.executed_at || null,
+        recentLogs: ruleLogs.slice(0, 5),
+      };
+    });
+    return insights;
+  }, [rules, logs, leadNameMap]);
+
   // ===== MUTATIONS =====
   const toggleMutation = useMutation({
     mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) => {
@@ -173,6 +232,7 @@ export const AdminAutomationTab = ({ language }: Props) => {
         delay_minutes: data.delay_minutes,
         description: data.description,
         action_config: data.action_config as Json,
+        trigger_condition: (data.trigger_condition.length > 0 ? data.trigger_condition : null) as unknown as Json,
       };
       if (data.id) {
         const { error } = await supabase.from('automation_rules').update(payload).eq('id', data.id);
@@ -206,9 +266,7 @@ export const AdminAutomationTab = ({ language }: Props) => {
     mutationFn: async (leadId: string) => {
       const lead = leads.find((l: any) => l.id === leadId);
       if (!lead) throw new Error('Lead not found');
-      const { data, error } = await supabase.functions.invoke('run-automations', {
-        body: { lead },
-      });
+      const { data, error } = await supabase.functions.invoke('run-automations', { body: { lead } });
       if (error) throw error;
       return data;
     },
@@ -216,14 +274,71 @@ export const AdminAutomationTab = ({ language }: Props) => {
       queryClient.invalidateQueries({ queryKey: ['automation-logs'] });
       queryClient.invalidateQueries({ queryKey: ['automation-leads'] });
       setTestDialogOpen(false);
+      const skippedCount = data?.skipped?.length || 0;
       toast.success(
         isEs
-          ? `✅ ${data?.executed || 0} reglas ejecutadas: ${(data?.rules || []).join(', ') || 'ninguna'}`
-          : `✅ ${data?.executed || 0} rules executed: ${(data?.rules || []).join(', ') || 'none'}`
+          ? `✅ ${data?.executed || 0} ejecutadas, ${skippedCount} saltadas`
+          : `✅ ${data?.executed || 0} executed, ${skippedCount} skipped`
       );
     },
     onError: (e: any) => toast.error(e.message),
   });
+
+  const saveTemplateMutation = useMutation({
+    mutationFn: async ({ content, actionType, templateType, targetApp }: { content: string; actionType: string; templateType: string; targetApp: string }) => {
+      const { error } = await supabase.from('lead_message_templates').insert({
+        name: `[Manual] ${actionType} — ${templateType}`,
+        content,
+        message_type: actionType,
+        template_type: templateType,
+        target_app: targetApp || 'evofinz',
+        language,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => toast.success(isEs ? '💾 Plantilla guardada' : '💾 Template saved'),
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  // ===== BULK EXECUTION =====
+  const getFilteredLeads = (filter: string) => {
+    return leads.filter((lead: any) => {
+      const score = calculateLeadScore(lead);
+      const priority = getLeadPriority(score);
+      const daysSinceContact = lead.contacted_at ? differenceInDays(new Date(), new Date(lead.contacted_at)) : null;
+
+      switch (filter) {
+        case 'hot_uncontacted': return priority === 'hot' && !lead.contacted_at && !lead.converted_to_user;
+        case 'warm_stale': return priority === 'warm' && (daysSinceContact === null || daysSinceContact > 5) && !lead.converted_to_user;
+        case 'all_uncontacted': return !lead.contacted_at && !lead.converted_to_user;
+        case 'reactivation': return daysSinceContact !== null && daysSinceContact > 14 && !lead.converted_to_user;
+        default: return false;
+      }
+    });
+  };
+
+  const runBulkAutomation = async () => {
+    const filtered = getFilteredLeads(bulkFilter);
+    if (filtered.length === 0) { toast.error(isEs ? 'No hay leads que coincidan' : 'No matching leads'); return; }
+    
+    setBulkProgress({ total: filtered.length, done: 0, running: true });
+    let successCount = 0;
+
+    for (let i = 0; i < filtered.length; i++) {
+      try {
+        await supabase.functions.invoke('run-automations', { body: { lead: filtered[i] } });
+        successCount++;
+      } catch (e) {
+        console.error(`Bulk error for lead ${filtered[i].id}:`, e);
+      }
+      setBulkProgress({ total: filtered.length, done: i + 1, running: i + 1 < filtered.length });
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['automation-logs'] });
+    queryClient.invalidateQueries({ queryKey: ['automation-leads'] });
+    toast.success(isEs ? `🚀 Lote completado: ${successCount}/${filtered.length} leads procesados` : `🚀 Batch done: ${successCount}/${filtered.length} leads processed`);
+    setBulkProgress(null);
+  };
 
   // ===== COMPUTED =====
   const dynamicAlerts = useMemo(() => {
@@ -265,7 +380,6 @@ export const AdminAutomationTab = ({ language }: Props) => {
     return { avgScore, priorities, contactedRate, convertedRate, total: leads.length };
   }, [leads]);
 
-  // Execution stats from logs
   const executionStats = useMemo(() => {
     if (!logs.length) return null;
     const total = logs.length;
@@ -280,14 +394,19 @@ export const AdminAutomationTab = ({ language }: Props) => {
 
   const activeRulesCount = rules.filter((r: any) => r.is_enabled).length;
 
+  // ===== DIALOG HANDLERS =====
   const openCreateDialog = () => {
     setEditingRule(null);
-    setFormData({ name: '', trigger_type: 'new_lead', action_type: 'whatsapp', delay_minutes: 0, description: '', action_config: {} });
+    setFormData({ name: '', trigger_type: 'new_lead', action_type: 'whatsapp', delay_minutes: 0, description: '', action_config: {}, trigger_condition: [] });
     setDialogOpen(true);
   };
 
   const openEditDialog = (rule: any) => {
     setEditingRule(rule);
+    const rawCond = rule.trigger_condition;
+    const parsedCond: TriggerCondition[] = rawCond
+      ? (Array.isArray(rawCond) ? rawCond : [rawCond]).map((c: any) => ({ field: c.field || '', operator: c.operator || 'eq', value: c.value ?? '' }))
+      : [];
     setFormData({
       name: rule.name,
       trigger_type: rule.trigger_type,
@@ -295,6 +414,7 @@ export const AdminAutomationTab = ({ language }: Props) => {
       delay_minutes: rule.delay_minutes || 0,
       description: rule.description || '',
       action_config: (rule.action_config as Record<string, any>) || {},
+      trigger_condition: parsedCond,
     });
     setDialogOpen(true);
   };
@@ -305,6 +425,21 @@ export const AdminAutomationTab = ({ language }: Props) => {
     if (formData.action_type === 'whatsapp') config = { ...config, message_type: 'whatsapp', template_type: config.template_type || 'first_contact', language: config.language || 'es' };
     if (formData.action_type === 'email') config = { ...config, message_type: 'email', template_type: config.template_type || 'first_contact', language: config.language || 'es' };
     saveMutation.mutate({ ...formData, action_config: config, id: editingRule?.id });
+  };
+
+  const addCondition = () => {
+    setFormData(p => ({ ...p, trigger_condition: [...p.trigger_condition, { field: 'source', operator: 'eq', value: '' }] }));
+  };
+
+  const removeCondition = (idx: number) => {
+    setFormData(p => ({ ...p, trigger_condition: p.trigger_condition.filter((_, i) => i !== idx) }));
+  };
+
+  const updateCondition = (idx: number, updates: Partial<TriggerCondition>) => {
+    setFormData(p => ({
+      ...p,
+      trigger_condition: p.trigger_condition.map((c, i) => i === idx ? { ...c, ...updates } : c),
+    }));
   };
 
   const renderActionConfig = () => {
@@ -467,7 +602,7 @@ export const AdminAutomationTab = ({ language }: Props) => {
               )}
               {executionStats.skipped > 0 && (
                 <Badge variant="outline" className="text-[10px] gap-1">
-                  <SkipForward className="h-3 w-3" /> {executionStats.skipped} {isEs ? 'saltadas' : 'skipped'}
+                  <Shield className="h-3 w-3" /> {executionStats.skipped} {isEs ? 'saltadas (dedup)' : 'skipped (dedup)'}
                 </Badge>
               )}
               {executionStats.topAction && (
@@ -493,13 +628,14 @@ export const AdminAutomationTab = ({ language }: Props) => {
               <div className="flex gap-2 mt-2">
                 <Badge variant="outline" className="text-[10px]">{isEs ? '3 días gracia' : '3 days grace'}</Badge>
                 <Badge variant="outline" className="text-[10px]">-2pts/{isEs ? 'día' : 'day'}</Badge>
+                <Badge variant="outline" className="text-[10px] gap-1"><Shield className="h-2.5 w-2.5" />{isEs ? 'Dedup activo' : 'Dedup active'}</Badge>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Automation Rules — Real CRUD */}
+      {/* Automation Rules */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -508,9 +644,20 @@ export const AdminAutomationTab = ({ language }: Props) => {
                 <Bot className="h-5 w-5 text-primary" />
                 {isEs ? '⚡ Reglas de automatización' : '⚡ Automation Rules'}
               </CardTitle>
-              <CardDescription>{isEs ? 'Conectadas a la base de datos — se ejecutan con cada lead nuevo' : 'Connected to database — executed on every new lead'}</CardDescription>
+              <CardDescription>{isEs ? 'Con dedup guard, condiciones avanzadas y tracking' : 'With dedup guard, advanced conditions & tracking'}</CardDescription>
             </div>
             <div className="flex gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button size="sm" variant="outline" onClick={() => setBulkDialogOpen(true)} className="gap-1">
+                      <Rocket className="h-4 w-4" />
+                      {isEs ? 'Lote' : 'Bulk'}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{isEs ? 'Ejecutar reglas en lote sobre leads filtrados' : 'Run rules in batch on filtered leads'}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -536,52 +683,92 @@ export const AdminAutomationTab = ({ language }: Props) => {
             <p className="text-xs text-muted-foreground text-center py-4">{isEs ? 'No hay reglas. Crea la primera.' : 'No rules. Create the first one.'}</p>
           ) : (
             <AnimatePresence>
-              {rules.map((rule: any, i: number) => (
-                <motion.div key={rule.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ delay: i * 0.03 }}
-                  className={`p-4 rounded-xl border transition-all ${rule.is_enabled ? 'bg-card shadow-sm' : 'bg-muted/30 opacity-60'}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className="flex items-center gap-2 mt-0.5">
-                        {TRIGGER_ICONS[rule.trigger_type] || <Zap className="h-4 w-4" />}
-                        <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                        {ACTION_ICONS[rule.action_type] || <Bot className="h-4 w-4" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-bold text-sm truncate">{rule.name}</p>
-                          <Badge variant="outline" className="text-[10px]">
-                            <Clock className="h-2.5 w-2.5 mr-0.5" />
-                            {rule.delay_minutes === 0 ? (isEs ? 'Inmediato' : 'Instant') : `${rule.delay_minutes}m`}
-                          </Badge>
-                          {(rule.execution_count ?? 0) > 0 && (
-                            <Badge variant="secondary" className="text-[10px]">
-                              <Activity className="h-2.5 w-2.5 mr-0.5" />
-                              {rule.execution_count}x
-                            </Badge>
-                          )}
-                          {rule.last_executed_at && (
-                            <span className="text-[10px] text-muted-foreground hidden md:inline">
-                              {isEs ? 'Última:' : 'Last:'} {formatDistanceToNow(new Date(rule.last_executed_at), { addSuffix: true, locale: isEs ? es : undefined })}
-                            </span>
-                          )}
+              {rules.map((rule: any, i: number) => {
+                const insight = ruleInsights[rule.id];
+                const isExpanded = expandedRuleId === rule.id;
+                const condCount = rule.trigger_condition ? (Array.isArray(rule.trigger_condition) ? rule.trigger_condition.length : 1) : 0;
+                return (
+                  <motion.div key={rule.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ delay: i * 0.03 }}
+                    className={`rounded-xl border transition-all ${rule.is_enabled ? 'bg-card shadow-sm' : 'bg-muted/30 opacity-60'}`}>
+                    <div className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {TRIGGER_ICONS[rule.trigger_type] || <Zap className="h-4 w-4" />}
+                            <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                            {ACTION_ICONS[rule.action_type] || <Bot className="h-4 w-4" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-bold text-sm truncate">{rule.name}</p>
+                              <Badge variant="outline" className="text-[10px]">
+                                <Clock className="h-2.5 w-2.5 mr-0.5" />
+                                {rule.delay_minutes === 0 ? (isEs ? 'Inmediato' : 'Instant') : `${rule.delay_minutes}m`}
+                              </Badge>
+                              {condCount > 0 && (
+                                <Badge variant="secondary" className="text-[10px] gap-0.5">
+                                  <Filter className="h-2.5 w-2.5" /> {condCount} {isEs ? 'cond' : 'cond'}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5 truncate">{rule.description}</p>
+                            {/* Mini Insights */}
+                            {insight && insight.total > 0 && (
+                              <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                  <Activity className="h-2.5 w-2.5" /> {insight.total}x
+                                </span>
+                                <span className={`text-[10px] font-semibold ${insight.successRate >= 80 ? 'text-emerald-600' : insight.successRate >= 50 ? 'text-amber-600' : 'text-red-600'}`}>
+                                  {insight.successRate}% {isEs ? 'éxito' : 'success'}
+                                </span>
+                                {insight.lastLead && (
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {isEs ? 'Último' : 'Last'}: {insight.lastLead}
+                                  </span>
+                                )}
+                                <Button variant="ghost" size="icon" className="h-5 w-5 ml-auto"
+                                  onClick={() => setExpandedRuleId(isExpanded ? null : rule.id)}>
+                                  {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                                </Button>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5 truncate">{rule.description}</p>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(rule)}><Pencil className="h-3 w-3" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { if (confirm(isEs ? '¿Eliminar regla?' : 'Delete rule?')) deleteMutation.mutate(rule.id); }}><Trash2 className="h-3 w-3" /></Button>
+                          <Switch checked={rule.is_enabled} onCheckedChange={(checked) => toggleMutation.mutate({ id: rule.id, enabled: checked })} />
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(rule)}><Pencil className="h-3 w-3" /></Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { if (confirm(isEs ? '¿Eliminar regla?' : 'Delete rule?')) deleteMutation.mutate(rule.id); }}><Trash2 className="h-3 w-3" /></Button>
-                      <Switch checked={rule.is_enabled} onCheckedChange={(checked) => toggleMutation.mutate({ id: rule.id, enabled: checked })} />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                    {/* Expanded: Recent logs for this rule */}
+                    <AnimatePresence>
+                      {isExpanded && insight && insight.recentLogs.length > 0 && (
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                          className="border-t px-4 pb-3 pt-2 space-y-1.5 overflow-hidden">
+                          <p className="text-[10px] font-bold text-muted-foreground">{isEs ? 'Últimas 5 ejecuciones:' : 'Last 5 executions:'}</p>
+                          {insight.recentLogs.map((log: any) => (
+                            <div key={log.id} className="flex items-center gap-2 text-[11px] cursor-pointer hover:bg-muted/50 rounded p-1 -mx-1"
+                              onClick={() => setLogDetailDialog(log)}>
+                              {getStatusIcon(log.status)}
+                              <span className="font-medium">{leadNameMap[log.lead_id] || log.lead_id?.slice(0, 8)}</span>
+                              <span className="text-muted-foreground ml-auto">
+                                {formatDistanceToNow(new Date(log.executed_at), { addSuffix: true, locale: isEs ? es : undefined })}
+                              </span>
+                            </div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
           )}
         </CardContent>
       </Card>
 
-      {/* Execution Logs — Enriched */}
+      {/* Execution Logs */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -607,6 +794,7 @@ export const AdminAutomationTab = ({ language }: Props) => {
                 {logs.map((log: any) => {
                   const resultData = log.result_data as Record<string, any> | null;
                   const hasMessage = resultData?.message;
+                  const isDedup = resultData?.reason === 'already_executed';
                   return (
                     <motion.div key={log.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
                       className={`p-3 rounded-lg border text-xs flex items-center gap-3 cursor-pointer hover:shadow-sm transition-shadow ${getStatusBg(log.status)}`}
@@ -627,6 +815,7 @@ export const AdminAutomationTab = ({ language }: Props) => {
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {hasMessage && <Badge variant="outline" className="text-[9px]">IA ✨</Badge>}
+                        {isDedup && <Badge variant="outline" className="text-[9px] gap-0.5"><Shield className="h-2 w-2" /> dedup</Badge>}
                         <span className="text-[10px] text-muted-foreground">
                           {formatDistanceToNow(new Date(log.executed_at), { addSuffix: true, locale: isEs ? es : undefined })}
                         </span>
@@ -643,49 +832,98 @@ export const AdminAutomationTab = ({ language }: Props) => {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{editingRule ? (isEs ? 'Editar regla' : 'Edit Rule') : (isEs ? 'Nueva regla' : 'New Rule')}</DialogTitle>
-            <DialogDescription>{isEs ? 'Configura cuándo y qué acción ejecutar automáticamente' : 'Configure when and what action to execute automatically'}</DialogDescription>
+            <DialogDescription>{isEs ? 'Configura trigger, condiciones avanzadas y acción' : 'Configure trigger, advanced conditions & action'}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>{isEs ? 'Nombre' : 'Name'}</Label>
-              <Input value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} placeholder="🔥 HOT Lead → WhatsApp IA" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+          <ScrollArea className="max-h-[65vh]">
+            <div className="space-y-4 pr-3">
               <div>
-                <Label>{isEs ? 'Trigger' : 'Trigger'}</Label>
-                <Select value={formData.trigger_type} onValueChange={(v) => setFormData(p => ({ ...p, trigger_type: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {TRIGGER_OPTIONS.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <Label>{isEs ? 'Nombre' : 'Name'}</Label>
+                <Input value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} placeholder="🔥 HOT Lead → WhatsApp IA" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>{isEs ? 'Trigger' : 'Trigger'}</Label>
+                  <Select value={formData.trigger_type} onValueChange={(v) => setFormData(p => ({ ...p, trigger_type: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {TRIGGER_OPTIONS.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>{isEs ? 'Acción' : 'Action'}</Label>
+                  <Select value={formData.action_type} onValueChange={(v) => setFormData(p => ({ ...p, action_type: v, action_config: {} }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {ACTION_OPTIONS.map(a => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div>
-                <Label>{isEs ? 'Acción' : 'Action'}</Label>
-                <Select value={formData.action_type} onValueChange={(v) => setFormData(p => ({ ...p, action_type: v, action_config: {} }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {ACTION_OPTIONS.map(a => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <Label>{isEs ? 'Delay (minutos, 0 = inmediato)' : 'Delay (minutes, 0 = instant)'}</Label>
+                <Input type="number" value={formData.delay_minutes} onChange={(e) => setFormData(p => ({ ...p, delay_minutes: parseInt(e.target.value) || 0 }))} />
+                {formData.delay_minutes > 0 && (
+                  <p className="text-[10px] text-amber-600 mt-1">{isEs ? '⚠️ Reglas con delay se saltan hasta que se implemente cron' : '⚠️ Delayed rules are skipped until cron is implemented'}</p>
+                )}
+              </div>
+
+              {/* ADVANCED CONDITIONS */}
+              <div className="border rounded-lg p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold flex items-center gap-1.5">
+                    <Filter className="h-3.5 w-3.5" />
+                    {isEs ? 'Condiciones avanzadas' : 'Advanced Conditions'}
+                  </Label>
+                  <Button variant="outline" size="sm" className="h-6 text-[10px] gap-1" onClick={addCondition}>
+                    <Plus className="h-3 w-3" /> {isEs ? 'Agregar' : 'Add'}
+                  </Button>
+                </div>
+                {formData.trigger_condition.length === 0 && (
+                  <p className="text-[10px] text-muted-foreground">{isEs ? 'Sin condiciones — se ejecuta para todos los leads del trigger' : 'No conditions — runs for all leads matching the trigger'}</p>
+                )}
+                {formData.trigger_condition.map((cond, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Select value={cond.field} onValueChange={(v) => updateCondition(idx, { field: v })}>
+                      <SelectTrigger className="h-8 text-xs w-[110px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {CONDITION_FIELDS.map(f => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Select value={cond.operator} onValueChange={(v) => updateCondition(idx, { operator: v })}>
+                      <SelectTrigger className="h-8 text-xs w-[80px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {CONDITION_OPERATORS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    {cond.operator === 'exists' ? (
+                      <Select value={String(cond.value)} onValueChange={(v) => updateCondition(idx, { value: v === 'true' })}>
+                        <SelectTrigger className="h-8 text-xs flex-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">{isEs ? 'Sí' : 'Yes'}</SelectItem>
+                          <SelectItem value="false">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input className="h-8 text-xs flex-1" value={String(cond.value)} onChange={(e) => updateCondition(idx, { value: e.target.value })} placeholder={isEs ? 'Valor...' : 'Value...'} />
+                    )}
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive flex-shrink-0" onClick={() => removeCondition(idx)}>
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              {renderActionConfig()}
+              <div>
+                <Label>{isEs ? 'Descripción' : 'Description'}</Label>
+                <Textarea value={formData.description} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} rows={2} />
               </div>
             </div>
-            <div>
-              <Label>{isEs ? 'Delay (minutos, 0 = inmediato)' : 'Delay (minutes, 0 = instant)'}</Label>
-              <Input type="number" value={formData.delay_minutes} onChange={(e) => setFormData(p => ({ ...p, delay_minutes: parseInt(e.target.value) || 0 }))} />
-              {formData.delay_minutes > 0 && (
-                <p className="text-[10px] text-amber-600 mt-1">{isEs ? '⚠️ Reglas con delay se saltan hasta que se implemente cron' : '⚠️ Delayed rules are skipped until cron is implemented'}</p>
-              )}
-            </div>
-            {renderActionConfig()}
-            <div>
-              <Label>{isEs ? 'Descripción' : 'Description'}</Label>
-              <Textarea value={formData.description} onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))} rows={2} />
-            </div>
-          </div>
+          </ScrollArea>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>{isEs ? 'Cancelar' : 'Cancel'}</Button>
             <Button onClick={handleSave} disabled={saveMutation.isPending}>{saveMutation.isPending ? '...' : (isEs ? 'Guardar' : 'Save')}</Button>
@@ -693,12 +931,12 @@ export const AdminAutomationTab = ({ language }: Props) => {
         </DialogContent>
       </Dialog>
 
-      {/* Test Dialog — Manual execution */}
+      {/* Test Dialog */}
       <Dialog open={testDialogOpen} onOpenChange={setTestDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{isEs ? '🧪 Test de automatización' : '🧪 Automation Test'}</DialogTitle>
-            <DialogDescription>{isEs ? 'Ejecuta todas las reglas activas en un lead seleccionado' : 'Run all active rules on a selected lead'}</DialogDescription>
+            <DialogDescription>{isEs ? 'Ejecuta todas las reglas activas en un lead (con dedup guard)' : 'Run all active rules on a lead (with dedup guard)'}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -740,7 +978,7 @@ export const AdminAutomationTab = ({ language }: Props) => {
                         <p key={r.id} className="ml-2">• {r.name}</p>
                       ))}
                       {matchingRules.length === 0 && (
-                        <p className="text-amber-600">{isEs ? 'Ninguna regla activa coincide con este lead' : 'No active rules match this lead'}</p>
+                        <p className="text-amber-600">{isEs ? 'Ninguna regla activa coincide' : 'No active rules match'}</p>
                       )}
                     </>
                   );
@@ -751,10 +989,62 @@ export const AdminAutomationTab = ({ language }: Props) => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setTestDialogOpen(false)}>{isEs ? 'Cancelar' : 'Cancel'}</Button>
             <Button onClick={() => selectedTestLead && testMutation.mutate(selectedTestLead)}
-              disabled={!selectedTestLead || testMutation.isPending}
-              className="gap-1">
+              disabled={!selectedTestLead || testMutation.isPending} className="gap-1">
               <Play className="h-4 w-4" />
-              {testMutation.isPending ? (isEs ? 'Ejecutando...' : 'Running...') : (isEs ? 'Ejecutar reglas' : 'Run Rules')}
+              {testMutation.isPending ? (isEs ? 'Ejecutando...' : 'Running...') : (isEs ? 'Ejecutar' : 'Run')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Automation Dialog */}
+      <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Rocket className="h-5 w-5" />
+              {isEs ? '🚀 Automatización en lote' : '🚀 Bulk Automation'}
+            </DialogTitle>
+            <DialogDescription>{isEs ? 'Ejecuta las reglas activas sobre todos los leads de un filtro' : 'Run active rules on all leads matching a filter'}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>{isEs ? 'Filtro de leads' : 'Lead filter'}</Label>
+              <Select value={bulkFilter} onValueChange={setBulkFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {BULK_FILTERS.map(f => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="p-3 rounded-lg border bg-muted/30 text-xs space-y-1">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span className="font-bold">
+                  {getFilteredLeads(bulkFilter).length} {isEs ? 'leads coinciden' : 'leads match'}
+                </span>
+              </div>
+              <p className="text-muted-foreground">
+                {isEs ? `Se ejecutarán ${activeRulesCount} reglas activas por cada lead (con dedup guard)` : `${activeRulesCount} active rules will run per lead (with dedup guard)`}
+              </p>
+            </div>
+            {bulkProgress && (
+              <div className="space-y-2">
+                <Progress value={(bulkProgress.done / bulkProgress.total) * 100} className="h-2" />
+                <p className="text-xs text-center font-medium">
+                  {bulkProgress.done}/{bulkProgress.total} {isEs ? 'procesados' : 'processed'}
+                  {bulkProgress.running && ' ⏳'}
+                </p>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkDialogOpen(false)} disabled={bulkProgress?.running}>
+              {isEs ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button onClick={runBulkAutomation} disabled={getFilteredLeads(bulkFilter).length === 0 || bulkProgress?.running} className="gap-1">
+              <Rocket className="h-4 w-4" />
+              {bulkProgress?.running ? (isEs ? 'Procesando...' : 'Processing...') : (isEs ? 'Ejecutar lote' : 'Run Batch')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -820,7 +1110,26 @@ export const AdminAutomationTab = ({ language }: Props) => {
                       }}>
                         {isEs ? '📋 Copiar' : '📋 Copy'}
                       </Button>
+                      <Button variant="outline" size="sm" className="text-xs h-7 gap-1" onClick={() => {
+                        saveTemplateMutation.mutate({
+                          content: resultData.message,
+                          actionType: logDetailDialog.action_type,
+                          templateType: resultData.templateType || 'first_contact',
+                          targetApp: resultData.targetApp || 'evofinz',
+                        });
+                      }} disabled={saveTemplateMutation.isPending}>
+                        <Save className="h-3 w-3" />
+                        {isEs ? 'Guardar plantilla' : 'Save Template'}
+                      </Button>
                     </div>
+                  </div>
+                )}
+
+                {/* Dedup info */}
+                {resultData?.reason === 'already_executed' && (
+                  <div className="p-3 rounded-lg border border-amber-200 bg-amber-50/50 dark:bg-amber-950/10 text-xs flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-amber-500" />
+                    <span>{isEs ? 'Saltada por dedup guard — esta regla ya se ejecutó exitosamente en este lead' : 'Skipped by dedup guard — this rule already ran successfully on this lead'}</span>
                   </div>
                 )}
 
@@ -833,7 +1142,7 @@ export const AdminAutomationTab = ({ language }: Props) => {
                 )}
 
                 {/* Other result data */}
-                {resultData && !resultData.message && !resultData.error && (
+                {resultData && !resultData.message && !resultData.error && resultData.reason !== 'already_executed' && (
                   <div>
                     <Label className="text-xs text-muted-foreground">{isEs ? 'Resultado' : 'Result'}</Label>
                     <pre className="mt-1 p-2 rounded border bg-muted/30 text-[11px] overflow-x-auto">

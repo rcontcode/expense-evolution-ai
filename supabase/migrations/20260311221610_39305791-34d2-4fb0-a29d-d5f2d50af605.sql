@@ -1,0 +1,1 @@
+ALTER TABLE public.lead_message_templates ADD COLUMN IF NOT EXISTS is_auto BOOLEAN DEFAULT false;
