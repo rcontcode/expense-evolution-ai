@@ -95,9 +95,9 @@ function calculatePriority(lead: {
 
   // Nivel principiante = urgencia (max +15)
   const level = lead.level?.toLowerCase();
-  if (level === "principiante") score += 15;
-  else if (level === "emergente") score += 10;
-  else if (level === "evolucionando" || level === "intermedio") score += 5;
+  if (level === "principiante" || level === "novato") score += 15;
+  else if (level === "emergente" || level === "aprendiz") score += 10;
+  else if (level === "evolucionando" || level === "intermedio" || level === "enfocado") score += 5;
 
   // Obstáculos críticos (max +10)
   const criticalObstacles = ["no sé por dónde empezar", "gastos descontrolados", "falta de conocimiento", "deudas abrumadoras", "falta de tiempo", "falta de información", "me distraigo", "procrastino"];
