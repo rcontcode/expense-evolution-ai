@@ -476,7 +476,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                     {categoryChartData.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={CATEGORY_COLORS[entry.category] || CHART_COLORS[index % CHART_COLORS.length]} 
+                        fill={getCategoryColor(entry.category) || CHART_COLORS[index % CHART_COLORS.length]} 
                       />
                     ))}
                   </Pie>
