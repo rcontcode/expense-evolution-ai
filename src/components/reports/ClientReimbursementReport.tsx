@@ -56,38 +56,6 @@ interface ClientGroup {
 
 const REIMBURSABLE_STATUSES = ['reimbursable', 'pending', 'under_review', 'client_reimbursable'];
 
-const CATEGORY_LABELS: Record<string, string> = {
-  meals: 'Comidas',
-  travel: 'Viajes',
-  equipment: 'Equipos',
-  software: 'Software',
-  mileage: 'Kilometraje',
-  home_office: 'Oficina en casa',
-  professional_services: 'Servicios profesionales',
-  office_supplies: 'Suministros de oficina',
-  utilities: 'Servicios públicos',
-  fuel: 'Combustible',
-  materials: 'Materiales',
-  tools: 'Herramientas',
-  other: 'Otros',
-};
-
-const CATEGORY_COLORS: Record<string, string> = {
-  meals: 'hsl(var(--chart-1))',
-  travel: 'hsl(var(--chart-2))',
-  equipment: 'hsl(var(--chart-3))',
-  software: 'hsl(var(--chart-4))',
-  mileage: 'hsl(var(--chart-5))',
-  home_office: 'hsl(280, 70%, 55%)',
-  professional_services: 'hsl(200, 75%, 50%)',
-  office_supplies: 'hsl(30, 85%, 55%)',
-  utilities: 'hsl(160, 60%, 45%)',
-  fuel: 'hsl(340, 70%, 50%)',
-  materials: 'hsl(50, 80%, 50%)',
-  tools: 'hsl(100, 60%, 45%)',
-  other: 'hsl(220, 15%, 50%)',
-};
-
 const CHART_COLORS = [
   'hsl(var(--chart-1))',
   'hsl(var(--chart-2))',
