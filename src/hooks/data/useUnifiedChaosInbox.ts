@@ -426,7 +426,7 @@ export function useUnifiedChaosInbox() {
               amount: preview.amount || result?.expenses?.[0]?.amount,
               date: preview.date || result?.expenses?.[0]?.date,
               source: preview.vendor || result?.expenses?.[0]?.vendor,
-              currency: preview.currency || 'CAD',
+              currency: preview.currency || userCurrency,
             },
           };
           break;
