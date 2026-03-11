@@ -525,7 +525,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
       detailSheet.getCell(row, 2).value = format(parseISO(expense.date), 'dd/MM/yyyy');
       detailSheet.getCell(row, 3).value = expense.client?.name || 'Sin asignar';
       detailSheet.getCell(row, 4).value = expense.vendor || '';
-      detailSheet.getCell(row, 5).value = CATEGORY_LABELS[expense.category || 'other'] || expense.category || 'Otro';
+      detailSheet.getCell(row, 5).value = getCatLabel(expense.category || 'other', language);
       detailSheet.getCell(row, 6).value = expense.description || '';
       detailSheet.getCell(row, 7).value = Number(expense.amount);
       detailSheet.getCell(row, 7).numFmt = '"$"#,##0.00';
