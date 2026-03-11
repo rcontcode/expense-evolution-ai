@@ -106,6 +106,23 @@ const AdminCRM = () => {
   const [selectedApp, setSelectedApp] = useState<ManagedApp | null>(null);
   const [sourceFilter, setSourceFilter] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('users');
+  const [showMerge, setShowMerge] = useState(false);
+
+  // Realtime notifications for HOT leads
+  useHotLeadRealtime();
+
+  // Fetch all leads for merge dialog
+  const { data: allLeadsForMerge = [] } = useQuery({
+    queryKey: ['admin-leads'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('quiz_leads')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
   // Form state
   const [formName, setFormName] = useState('');
