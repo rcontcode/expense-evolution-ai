@@ -666,6 +666,23 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
         }}
         isPending={moveToStage.isPending}
       />
+
+      {/* Stage Change Note Dialog (on drag) */}
+      <StageChangeNoteDialog
+        open={!!pendingDrag}
+        onClose={() => setPendingDrag(null)}
+        onConfirm={(note) => {
+          if (pendingDrag) {
+            moveToStage.mutate({ leadId: pendingDrag.lead.id, stage: pendingDrag.targetStage, note: note || undefined });
+            setPendingDrag(null);
+          }
+        }}
+        leadName={pendingDrag?.lead.name || ''}
+        fromStage={pendingDrag?.lead.pipeline_stage || 'new'}
+        toStage={pendingDrag?.targetStage || 'new'}
+        isEs={isEs}
+        isPending={moveToStage.isPending}
+      />
     </div>
   );
 };
