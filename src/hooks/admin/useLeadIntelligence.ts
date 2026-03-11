@@ -211,6 +211,17 @@ export function calculateConversionProbability(lead: QuizLead, allLeads: QuizLea
     talkingPoints.push(`Nivel de conocimiento: "${metaConocimiento}" — adaptar lenguaje de la conversación`);
   }
 
+  // Returning lead talking points
+  if (lead.metadata?.returning_lead === true) {
+    const prevSources = lead.metadata?.previous_sources as string[] | undefined;
+    const sourceLabels = prevSources?.map(s => s.replace('universmind_lead_magnet_', 'Guía: ').replace('universmind_', '')).join(', ');
+    talkingPoints.push(`🔁 Lead recurrente — ya interactuó antes${sourceLabels ? ` (${sourceLabels})` : ''}. Mencionar experiencia previa para generar confianza`);
+  }
+  const metaGuide = lead.metadata?.guide as string;
+  if (metaGuide) {
+    talkingPoints.push(`Ya descargó guía: "${metaGuide}" — referenciar contenido que ya conoce`);
+  }
+
   talkingPoints.push(`Plan recomendado: ${recommendedPlan} — destacar ROI específico para su situación`);
 
   return { probability, confidence, factors, recommendedPlan, talkingPoints };
