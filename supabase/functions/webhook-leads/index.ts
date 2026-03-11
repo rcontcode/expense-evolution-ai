@@ -238,13 +238,11 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Build comments with extra context if available
-    let enrichedComments = comments || null;
-    if (Object.keys(extraMetadata).length > 0 && enrichedComments) {
-      enrichedComments = `${enrichedComments}\n\n---\n📦 Metadata: ${JSON.stringify(extraMetadata)}`;
-    } else if (Object.keys(extraMetadata).length > 0) {
-      enrichedComments = `📦 Metadata: ${JSON.stringify(extraMetadata)}`;
-    }
+    // Comments stays clean — only user-written text
+    const cleanComments = comments || null;
+
+    // Store full metadata object in JSONB column
+    const metadataToStore = Object.keys(extraMetadata).length > 0 ? extraMetadata : {};
 
     const { data: savedLead, error: dbError } = await supabase
       .from("quiz_leads")
@@ -260,10 +258,11 @@ Deno.serve(async (req) => {
         quiz_score: quizScore,
         quiz_level: quizLevel,
         failed_questions: failedQuestions,
-        comments: enrichedComments,
+        comments: cleanComments,
         lead_score: leadScore,
         priority,
         source,
+        metadata: metadataToStore,
       })
       .select()
       .single();
