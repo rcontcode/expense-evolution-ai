@@ -314,7 +314,7 @@ export function useUnifiedChaosInbox() {
                   source: ep.to_entity || ep.bill_to || ep.vendor || doc.fileName,
                   amount: totalAmount,
                   date: ep.date || new Date().toISOString().split('T')[0],
-                  currency: ep.currency || 'CAD',
+                  currency: ep.currency || userCurrency,
                   description: `Factura ${ep.invoice_number || ''}: ${lineItems.map((i: any) => i.name).join('; ') || ep.description || ''}`.trim(),
                   income_type: 'freelance',
                   line_items: lineItems,
