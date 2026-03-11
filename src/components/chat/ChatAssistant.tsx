@@ -960,7 +960,7 @@ export const ChatAssistant: React.FC = () => {
             detail: {
               name: billData.name || (language === 'es' ? 'Sin especificar' : 'Unspecified'),
               amount: billData.amount,
-              currency: 'CAD',
+              currency: currentCurrency,
               category: billData.category || 'utilities',
               frequency: billData.frequency || 'monthly',
               auto_pay: false,

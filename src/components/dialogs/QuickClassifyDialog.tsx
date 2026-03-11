@@ -41,7 +41,7 @@ const REIMBURSEMENT_OPTIONS: { value: ReimbursementType; label: { es: string; en
   },
   { 
     value: 'cra_deductible', 
-    label: { es: 'Deducible CRA / Impuestos', en: 'CRA Tax Deductible' },
+    label: { es: 'Deducible Impuestos', en: 'Tax Deductible' },
     description: { es: 'Deducible de impuestos en tu declaración', en: 'Tax deductible on your return' },
     icon: Landmark, 
     gradient: 'from-emerald-500/15 to-emerald-600/5',

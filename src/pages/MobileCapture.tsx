@@ -196,7 +196,7 @@ export default function MobileCapture() {
     if (!imageBase64) return;
 
     try {
-      const result = await processReceipt(imageBase64, undefined);
+      const result = await processReceipt(imageBase64, undefined, currentEntity?.country || 'CA');
       
       if (result?.expenses?.length) {
         // Save extracted data to document record

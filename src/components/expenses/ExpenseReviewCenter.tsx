@@ -341,7 +341,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       const source = data.source || ed.source || ed.vendor || '';
       const description = data.description || ed.description || '';
       const date = data.date || ed.date || new Date().toISOString().split('T')[0];
-      const currency = ed.currency || 'CAD';
+      const currency = ed.currency || (currentEntity?.default_currency) || 'CAD';
 
       const { error: incomeError } = await supabase
         .from('income')
