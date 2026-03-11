@@ -253,6 +253,7 @@ export function LeadsTable({ leads, onMarkContacted, onMarkConverted }: LeadsTab
         onOpenChange={(open) => !open && setSelectedLead(null)}
         onMarkContacted={onMarkContacted}
         onMarkConverted={onMarkConverted}
+        allLeads={allLeads}
       />
 
       <FollowUpModal
