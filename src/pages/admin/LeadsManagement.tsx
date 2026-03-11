@@ -304,6 +304,8 @@ export default function LeadsManagement() {
             </PaginationContent>
           </Pagination>
         )}
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );
