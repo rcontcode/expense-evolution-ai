@@ -576,7 +576,7 @@ export default function Landing() {
         </DecorativeLayer>
         
         {/* Grid pattern - slower parallax */}
-        <ParallaxLayer speed={-0.05} className="absolute inset-0">
+        <DecorativeLayer className="absolute inset-0">
           <div 
             className="absolute inset-0 opacity-[0.03]"
             style={{
@@ -585,7 +585,7 @@ export default function Landing() {
               backgroundSize: '60px 60px'
             }}
           />
-        </ParallaxLayer>
+        </DecorativeLayer>
       </div>
 
       {/* Hero Section */}
