@@ -105,3 +105,20 @@
 | M5 | CRM muestra Datos de la App (producto, precio, conocimiento, best practices) | ✅ |
 | M6 | Scoring enriquecido con metadata | ✅ |
 | M7 | Talking points usan metadata | ✅ |
+
+---
+
+## Sincronización Fiscal Completa — CRA/SII
+
+### ✅ Completado
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| T1 | 29 categorías de gasto sincronizadas (types, schema, constants) | ✅ |
+| T2 | 15 tipos de documento en clasificador IA + Bandeja del Caos | ✅ |
+| T3 | TaxDocumentChecklist adaptado por país en TaxOptimizer | ✅ |
+| T4 | Reglas de deducción CRA (20+) y SII (20+) con fuentes legales | ✅ |
+| T5 | `process-receipt` actualizado con 29 categorías (OCR/voz/texto) | ✅ |
+| T6 | `MonthComparisonChart` usa todas las categorías dinámicamente | ✅ |
+| T7 | T2125 mapping expandido para 29 categorías | ✅ |
+| T8 | Reporte Fiscal para Contador (Excel 4 hojas) en ExportDialog | ✅ |
