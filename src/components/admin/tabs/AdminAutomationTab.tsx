@@ -232,7 +232,7 @@ export const AdminAutomationTab = ({ language }: Props) => {
         delay_minutes: data.delay_minutes,
         description: data.description,
         action_config: data.action_config as Json,
-        trigger_condition: (data.trigger_condition.length > 0 ? data.trigger_condition : null) as Json,
+        trigger_condition: (data.trigger_condition.length > 0 ? data.trigger_condition : null) as unknown as Json,
       };
       if (data.id) {
         const { error } = await supabase.from('automation_rules').update(payload).eq('id', data.id);
