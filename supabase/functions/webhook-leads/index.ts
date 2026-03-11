@@ -240,6 +240,8 @@ Deno.serve(async (req) => {
       phone: cleanPhone,
       time_spent: timeSpent,
       failed_questions: failedQuestions,
+      conocimiento_previo: payload.metadata?.conocimiento_previo as string | undefined,
+      precio_producto: payload.metadata?.precio_producto as number | undefined,
     });
 
     console.log(`[WEBHOOK-LEADS] ${cleanEmail} | source: ${source} | quiz: ${quizScore} | fields: country=${!!country}, situation=${!!situation}, goal=${!!goal}, obstacle=${!!obstacle}, comments=${!!comments} | leadScore: ${leadScore}, priority: ${priority}`);

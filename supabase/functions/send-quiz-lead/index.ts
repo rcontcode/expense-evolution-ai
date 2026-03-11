@@ -204,6 +204,7 @@ serve(async (req) => {
         lead_score: leadScore,
         priority: leadPriority,
         source: payload.source || 'evofinz',
+        metadata: payload.metadata || {},
       })
       .select()
       .single();
