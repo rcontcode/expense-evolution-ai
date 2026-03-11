@@ -356,6 +356,8 @@ Deno.serve(async (req) => {
           lead_priority: priority,
           lead_id: savedLead.id,
           comments: comments || "",
+          returning_lead: !!payload.returning_lead,
+          previous_sources: payload.previous_sources || [],
         };
         const ghlRes = await fetch(ghlWebhookUrl, {
           method: "POST",
