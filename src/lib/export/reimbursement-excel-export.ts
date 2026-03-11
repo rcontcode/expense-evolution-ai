@@ -453,7 +453,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
     }
     vendorStats[vendor].count += 1;
     vendorStats[vendor].total += Number(e.amount);
-    vendorStats[vendor].categories.add(CATEGORY_LABELS[e.category || 'other'] || e.category || 'Otro');
+    vendorStats[vendor].categories.add(getCatLabel(e.category || 'other', language));
     vendorStats[vendor].clients.add(e.client?.name || 'Desconocido');
   });
 
