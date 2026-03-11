@@ -690,7 +690,17 @@ const AdminCRM = () => {
           {/* CRM Tabs */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5 md:grid-cols-11 p-1 bg-muted/50 rounded-xl h-12">
+              <TabsList className="flex flex-wrap gap-1 p-1 bg-muted/50 rounded-xl min-h-[48px]">
+                <TabsTrigger value="home" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-pink-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <LayoutDashboard className="h-3.5 w-3.5" />
+                  <span className="hidden md:inline">Home</span>
+                  <span className="md:hidden">🏠</span>
+                </TabsTrigger>
+                <TabsTrigger value="agenda" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span className="hidden md:inline">{isEs ? 'Agenda' : 'Agenda'}</span>
+                  <span className="md:hidden">📅</span>
+                </TabsTrigger>
                 <TabsTrigger value="users" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
                   <Users className="h-3.5 w-3.5" />
                   <span className="hidden md:inline">{isEs ? 'Usuarios' : 'Users'}</span>
@@ -743,6 +753,8 @@ const AdminCRM = () => {
                   <span className="md:hidden">💵</span>
                 </TabsTrigger>
               </TabsList>
+              <TabsContent value="home"><AdminCRMHome language={language} onNavigateTab={setActiveTab} /></TabsContent>
+              <TabsContent value="agenda"><AdminFollowUpsAgenda language={language} /></TabsContent>
               <TabsContent value="users"><AdminUserOverview /></TabsContent>
               <TabsContent value="leads"><AdminLeadsTab language={language} sourceFilter={sourceFilter} onClearFilter={() => setSourceFilter(null)} /></TabsContent>
               <TabsContent value="pipeline"><AdminKanbanPipeline language={language} /></TabsContent>
