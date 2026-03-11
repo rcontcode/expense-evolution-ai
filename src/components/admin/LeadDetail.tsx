@@ -140,6 +140,9 @@ export function LeadDetail({
               </div>
             )}
 
+            {/* Tags */}
+            <LeadTagEditor leadId={lead.id} tags={lead.tags || []} />
+
             {/* Quick Contact Actions */}
             <div className="flex items-center gap-3">
               <QuickContact lead={lead} variant="dropdown" />

@@ -26,6 +26,7 @@ export interface QuizLead {
   priority: string | null;
   source: string;
   metadata: Record<string, unknown> | null;
+  tags: string[] | null;
   created_at: string;
 }
 
