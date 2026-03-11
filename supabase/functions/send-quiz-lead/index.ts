@@ -20,6 +20,7 @@ interface QuizLeadPayload {
   failed_questions: number[];
   comments?: string;
   source?: string;
+  metadata?: Record<string, unknown>;
 }
 
 // Lead Scoring Functions
@@ -203,6 +204,7 @@ serve(async (req) => {
         lead_score: leadScore,
         priority: leadPriority,
         source: payload.source || 'evofinz',
+        metadata: payload.metadata || {},
       })
       .select()
       .single();

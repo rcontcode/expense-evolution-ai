@@ -74,6 +74,8 @@ function calculatePriority(lead: {
   phone: string | null;
   time_spent: string;
   failed_questions: number[];
+  conocimiento_previo?: string;
+  precio_producto?: number;
 }): { leadScore: number; priority: string } {
   let score = 0;
 
@@ -126,6 +128,17 @@ function calculatePriority(lead: {
 
   // Muchas preguntas fallidas (max +5)
   if (lead.failed_questions && lead.failed_questions.length >= 5) {
+    score += 5;
+  }
+
+  // Conocimiento previo bajo = más necesidad (max +10)
+  const conocimiento = lead.conocimiento_previo?.toLowerCase();
+  if (conocimiento && (conocimiento.includes("no tengo") || conocimiento.includes("principiante") || conocimiento.includes("poco"))) {
+    score += 10;
+  }
+
+  // Producto recomendado de alto valor (max +5)
+  if (lead.precio_producto && lead.precio_producto >= 100) {
     score += 5;
   }
 
@@ -227,6 +240,8 @@ Deno.serve(async (req) => {
       phone: cleanPhone,
       time_spent: timeSpent,
       failed_questions: failedQuestions,
+      conocimiento_previo: payload.metadata?.conocimiento_previo as string | undefined,
+      precio_producto: payload.metadata?.precio_producto as number | undefined,
     });
 
     console.log(`[WEBHOOK-LEADS] ${cleanEmail} | source: ${source} | quiz: ${quizScore} | fields: country=${!!country}, situation=${!!situation}, goal=${!!goal}, obstacle=${!!obstacle}, comments=${!!comments} | leadScore: ${leadScore}, priority: ${priority}`);
@@ -238,13 +253,11 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Build comments with extra context if available
-    let enrichedComments = comments || null;
-    if (Object.keys(extraMetadata).length > 0 && enrichedComments) {
-      enrichedComments = `${enrichedComments}\n\n---\n📦 Metadata: ${JSON.stringify(extraMetadata)}`;
-    } else if (Object.keys(extraMetadata).length > 0) {
-      enrichedComments = `📦 Metadata: ${JSON.stringify(extraMetadata)}`;
-    }
+    // Comments stays clean — only user-written text
+    const cleanComments = comments || null;
+
+    // Store full metadata object in JSONB column
+    const metadataToStore = Object.keys(extraMetadata).length > 0 ? extraMetadata : {};
 
     const { data: savedLead, error: dbError } = await supabase
       .from("quiz_leads")
@@ -260,10 +273,11 @@ Deno.serve(async (req) => {
         quiz_score: quizScore,
         quiz_level: quizLevel,
         failed_questions: failedQuestions,
-        comments: enrichedComments,
+        comments: cleanComments,
         lead_score: leadScore,
         priority,
         source,
+        metadata: metadataToStore,
       })
       .select()
       .single();

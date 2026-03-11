@@ -104,6 +104,18 @@ export function calculateLeadScore(lead: QuizLead): number {
     score += 5;
   }
 
+  // 10. Metadata: conocimiento previo bajo = más necesidad (max +10)
+  const conocimiento = (lead.metadata?.conocimiento_previo as string)?.toLowerCase();
+  if (conocimiento && (conocimiento.includes('no tengo') || conocimiento.includes('principiante') || conocimiento.includes('poco'))) {
+    score += 10;
+  }
+
+  // 11. Metadata: producto recomendado de alto valor (max +5)
+  const precio = lead.metadata?.precio_producto as number;
+  if (precio && precio >= 100) {
+    score += 5;
+  }
+
   return Math.min(100, score);
 }
 

@@ -1,69 +1,107 @@
 
 
-## Análisis del Problema
+## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
 
-**Lo que Universmind envía:**
-```json
-{
-  "name": "...", "email": "...", "phone": "...", "source": "universmind_quiz",
-  "score": 72, "level": "Intermedio", "comments": "texto libre paso 16",
-  "metadata": {
-    "situacion": "3-6 meses",
-    "objetivo": "Estimular desarrollo cognitivo",
-    "obstaculo": "Falta de tiempo",
-    "tiempo_disponible": "Más de 1 hora",
-    "conocimiento_previo": "Soy experta",
-    "producto_recomendado": "Colección Completa",
-    "precio_producto": 247,
-    "respuestas_best_practices": { "habla_con_bebe": true, "contacto_visual": false, ... }
-  }
-}
-```
+### ✅ Completado en EvoFinz
 
-**Lo que pasa hoy:** El `webhook-leads` ya extrae los campos de `metadata` y los mapea correctamente a las columnas de la DB (`situation`, `goal`, `obstacle`, `time_spent`, `failed_questions`). Los campos extra (`producto_recomendado`, `precio_producto`, `conocimiento_previo`, `respuestas_best_practices`) se concatenan como texto plano en el campo `comments`, mezclados con el comentario libre del usuario.
+| # | Tarea | Estado |
+|---|-------|--------|
+| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
+| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
+| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
+| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
+| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
 
-**Problemas concretos:**
-1. **Metadata valiosa aplastada en `comments`** — producto recomendado, precio, conocimiento previo, y detalle de best practices se pierden como texto estructurado. Se vuelven un bloque JSON dentro de un string, inutilizable para filtros, analytics o scoring.
-2. **No hay columna `metadata` en `quiz_leads`** — la tabla no tiene donde almacenar datos app-específicos de forma estructurada.
-3. **El CRM no muestra la metadata** — `LeadEnrichmentPanel` y `LeadDetail` no renderizan producto recomendado, precio, conocimiento previo ni el detalle de best practices.
-4. **El scoring ignora datos valiosos** — `conocimiento_previo` y `producto_recomendado` no influyen en el lead score ni en la probabilidad de conversión.
+### ✅ Completado en Fokuspark
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
+| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
+| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
+| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
+
+### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
 
 ---
 
-## Plan de Implementación
+## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
 
-### 1. Agregar columna `metadata` (JSONB) a `quiz_leads`
-- Migración SQL: `ALTER TABLE quiz_leads ADD COLUMN metadata jsonb DEFAULT '{}'::jsonb;`
-- Almacena todo dato app-específico sin perder estructura.
+### ✅ Confirmado: Sistema funciona correctamente
 
-### 2. Actualizar `webhook-leads` Edge Function
-- Guardar el objeto `metadata` completo (o los campos extra construidos) en la nueva columna `metadata` en vez de aplastarlos en `comments`.
-- El campo `comments` queda limpio: solo el comentario libre del usuario.
-- Enriquecer el scoring con `conocimiento_previo` (principiante = más puntos) y `precio_producto` (mayor precio = mayor valor del lead).
+- Planes individuales (Free/Premium/Pro) son independientes por app
+- Bundle compartido usa mismos Stripe Price IDs en ambas apps
+- Ambos webhooks detectan Bundle y setean `has_bundle = true`
+- No hay acceso cruzado no autorizado entre apps
 
-### 3. Actualizar `send-quiz-lead` Edge Function
-- Agregar soporte para un campo `metadata` opcional para consistencia futura (cuando EvoFinz o Fokuspark envíen datos extra).
+### ✅ Gaps implementados en Fokuspark
 
-### 4. Actualizar el tipo `QuizLead` en el frontend
-- Agregar `metadata?: Record<string, unknown>` al interface `QuizLead` en `useLeadsManagement.ts`.
-- Incluir `metadata` en la query de Supabase.
+| # | Gap | Estado |
+|---|-----|--------|
+| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
+| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
 
-### 5. Mostrar metadata en el CRM
-- **`LeadEnrichmentPanel`**: Nuevo bloque "Datos de la App" que renderiza visualmente los campos de metadata (producto recomendado con badge, precio, nivel de conocimiento, detalle de best practices con checks/crosses).
-- **`LeadDetail`**: Mostrar producto recomendado y precio como badges destacados en el header si existen.
+### 📋 Gaps pendientes (baja prioridad)
 
-### 6. Mejorar scoring con metadata
-- En `useLeadIntelligence.ts` (`calculateConversionProbability`): usar `metadata.producto_recomendado` y `metadata.precio_producto` como factores de conversión (lead que ya tiene producto recomendado de alto valor = mayor probabilidad).
-- En `useLeadScoring.ts`: bonus si `conocimiento_previo` es bajo (más necesidad).
+| # | Gap | Prioridad |
+|---|-----|-----------|
+| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
+| S3 | Texto del Bundle podría ser más descriptivo | Baja |
 
 ---
 
-## Impacto por App
+## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
 
-| App | Hoy | Después |
-|---|---|---|
-| **EvoFinz** (`send-quiz-lead`) | Todos los campos directos, sin metadata | Sin cambio inmediato, preparado para futuro |
-| **Universmind** (`webhook-leads`) | Metadata aplastada en comments | Metadata estructurada en columna JSONB, comments limpio |
-| **Fokuspark** (futuro) | Pendiente de integración | Usará el mismo patrón de metadata |
-| **Lead Magnets** (`webhook-leads`) | Solo name/email/source + guide en metadata | `guide` se guarda en metadata JSONB |
+### ✅ Veredicto: No igualar precios — estructura actual es óptima
 
+| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
+|------|---------|-----------|-----------|-------|
+| Free | $0 | $0 | ✅ Ya iguales | — |
+| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
+| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+
+### 📋 Pendiente técnico
+
+| # | Tarea | App | Prioridad |
+|---|-------|-----|-----------|
+| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
+
+---
+
+## Quiz Multi-App — CRM Unificado
+
+### ✅ Completado en EvoFinz
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
+| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
+| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
+| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
+| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
+
+### 📋 Pendiente en Fokuspark
+
+| # | Tarea | Prioridad |
+|---|-------|-----------|
+| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
+| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
+| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
+| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
+
+---
+
+## Metadata JSONB — Integración Multi-App
+
+### ✅ Completado
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| M1 | Columna `metadata` JSONB en `quiz_leads` | ✅ |
+| M2 | `webhook-leads` guarda metadata estructurada | ✅ |
+| M3 | `send-quiz-lead` acepta `metadata` opcional | ✅ |
+| M4 | Interface `QuizLead` incluye `metadata` | ✅ |
+| M5 | CRM muestra Datos de la App (producto, precio, conocimiento, best practices) | ✅ |
+| M6 | Scoring enriquecido con metadata | ✅ |
+| M7 | Talking points usan metadata | ✅ |

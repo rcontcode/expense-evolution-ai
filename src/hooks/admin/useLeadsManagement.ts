@@ -25,6 +25,7 @@ export interface QuizLead {
   lead_score: number | null;
   priority: string | null;
   source: string;
+  metadata: Record<string, unknown> | null;
   created_at: string;
 }
 
