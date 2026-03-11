@@ -337,7 +337,7 @@ export function useUnifiedChaosInbox() {
               date: ep.date || new Date().toISOString().split('T')[0],
               category: 'professional_services',
               description: lineItems.map((i: any) => i.name).join('; ') || ep.description || '',
-              currency: ep.currency || 'CAD',
+              currency: ep.currency || userCurrency,
               confidence: classData.confidence > 0.8 ? 'high' : classData.confidence > 0.5 ? 'medium' : 'low',
               cra_deductible: true,
               cra_deduction_rate: 100,
