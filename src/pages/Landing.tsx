@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, lazy, Suspense, ComponentType } from 'react';
+import { useState, useEffect, lazy, Suspense, ComponentType } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -6,9 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { 
   Camera, Receipt, FileText, Calculator, Trophy, GraduationCap,
-  BarChart3, BookOpen, Building2, CreditCard, Mic, TrendingUp,
+  BarChart3, BookOpen, Mic, TrendingUp,
   ArrowRight, Check, Sparkles, Shield, Zap, Gift,
-  Star, Flame, Target, Crown, Heart, AlertTriangle, Clock, Lightbulb, ChevronRight, Quote, Globe, MessageSquare, Layers
+  Star, Flame, Target, Crown, Globe, MessageSquare, Layers
 } from 'lucide-react';
 import phoenixLogo from '@/assets/phoenix-clean-logo.png';
 import { FloatingStars } from '@/components/landing/FloatingStars';
