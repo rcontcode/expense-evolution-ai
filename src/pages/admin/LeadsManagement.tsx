@@ -266,6 +266,7 @@ export default function LeadsManagement() {
         ) : (
           <LeadsTable
             leads={leads}
+            allLeads={rawLeads}
             onMarkContacted={(id, notes) => markContacted.mutate({ id, notes })}
             onMarkConverted={(id) => markConverted.mutate(id)}
           />
