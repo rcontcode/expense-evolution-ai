@@ -131,12 +131,17 @@ CRITICAL: CONTEXTUAL DISAMBIGUATION OF AMBIGUOUS CODES
 Receipts often contain cryptic item codes that are hard to interpret. You MUST use the ENTIRE context of the receipt to decode them:
 
 1. **Vendor Context is KEY**: The store/company name tells you what type of products they sell:
-   - "Chevron", "Shell", "Petro-Canada", "Esso", "Husky" → Gas station → unclear codes likely mean fuel types (PREM, REG, DISL = Premium, Regular, Diesel)
-   - "Costco", "Walmart", "Superstore", "Loblaws", "Metro", "Sobeys" → Supermarket → codes likely mean groceries
-   - "Canadian Tire", "Home Depot", "Rona" → Hardware → codes likely mean tools/equipment
+${userCountry === 'CL' ? `   - "Copec", "Shell", "Petrobras", "ENAP", "Terpel" → Gas station → fuel types
+   - "Líder", "Jumbo", "Santa Isabel", "Unimarc", "Tottus" → Supermarket → groceries
+   - "Sodimac", "Easy", "Homecenter", "MTS" → Hardware/Construction → tools/materials
+   - "Falabella", "Ripley", "Paris", "La Polar" → Department store
+   - "Farmacias Ahumada", "Cruz Verde", "Salcobrand" → Pharmacy → medical
+   - "Starbucks", "Juan Valdez", "McDonald's" → Restaurant/Coffee` : `   - "Chevron", "Shell", "Petro-Canada", "Esso", "Husky" → Gas station → fuel types
+   - "Costco", "Walmart", "Superstore", "Loblaws", "Metro", "Sobeys" → Supermarket → groceries
+   - "Canadian Tire", "Home Depot", "Rona" → Hardware → tools/equipment
    - "Staples", "Bureau en Gros" → Office supplies
    - "Tim Hortons", "Starbucks", "McDonalds" → Restaurant/Coffee
-   - "Amazon", "Best Buy" → Electronics/General merchandise
+   - "Amazon", "Best Buy" → Electronics/General merchandise`}
 
 2. **Cross-Reference Strategy**: 
    - If vendor is "Chevron" and you see "CHV-PRE" or "CHVPREM" → This is Premium fuel, NOT meat (carne/beef)
