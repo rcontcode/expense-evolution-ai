@@ -528,7 +528,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                   />
                   <ChartTooltip 
                     content={<ChartTooltipContent />}
-                    formatter={(value) => [`$${Number(value).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, 'Total']}
+                    formatter={(value) => [formatCurrency(Number(value)), 'Total']}
                   />
                   <Bar 
                     dataKey="total" 
