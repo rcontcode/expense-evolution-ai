@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 
 interface LeadsTableProps {
   leads: QuizLead[];
+  allLeads?: QuizLead[];
   onMarkContacted: (id: string, notes?: string) => void;
   onMarkConverted: (id: string) => void;
 }
