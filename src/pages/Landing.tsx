@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, lazy, Suspense, ComponentType } from 'react';
+import { useState, useEffect, lazy, Suspense, ComponentType } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -6,9 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { 
   Camera, Receipt, FileText, Calculator, Trophy, GraduationCap,
-  BarChart3, BookOpen, Building2, CreditCard, Mic, TrendingUp,
+  BarChart3, BookOpen, Mic, TrendingUp,
   ArrowRight, Check, Sparkles, Shield, Zap, Gift,
-  Star, Flame, Target, Crown, Heart, AlertTriangle, Clock, Lightbulb, ChevronRight, Quote, Globe, MessageSquare, Layers
+  Star, Flame, Target, Crown, Globe, MessageSquare, Layers
 } from 'lucide-react';
 import phoenixLogo from '@/assets/phoenix-clean-logo.png';
 import { FloatingStars } from '@/components/landing/FloatingStars';
@@ -54,36 +54,9 @@ const TargetAudienceSection = lazyWithRetry(() => import('@/components/landing/T
 const FAQSection = lazyWithRetry(() => import('@/components/landing/FAQSection').then(m => ({ default: m.FAQSection })));
 const GuaranteesSection = lazyWithRetry(() => import('@/components/landing/GuaranteesSection').then(m => ({ default: m.GuaranteesSection })));
 
-// Simplified parallax - uses CSS transform for better performance
-function ParallaxSection({ 
-  children, 
-  className = "" 
-}: { 
-  children: React.ReactNode; 
-  speed?: number; 
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      {children}
-    </div>
-  );
-}
-
-// Static decorative layer - no scroll tracking for performance
-function ParallaxLayer({ 
-  className, 
-  children 
-}: { 
-  speed?: number; 
-  className?: string; 
-  children?: React.ReactNode;
-}) {
-  return (
-    <div className={className}>
-      {children}
-    </div>
-  );
+// Wrapper kept for semantic clarity
+function DecorativeLayer({ className, children }: { className?: string; children?: React.ReactNode }) {
+  return <div className={className}>{children}</div>;
 }
 
 const getFeatures = (language: string) => [
@@ -393,11 +366,29 @@ export default function Landing() {
   const pricingTiers = getPricingTiers(language);
   const stats = getStats(language);
   
+  // SEO meta tags
+  useEffect(() => {
+    document.title = language === 'es' 
+      ? 'EvoFinz — Gestión Financiera Inteligente para Freelancers' 
+      : 'EvoFinz — Smart Financial Management for Freelancers';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    const content = language === 'es'
+      ? 'Plataforma de gestión financiera con OCR, asistente de voz, gamificación y mentoría. Para profesionales en Canadá y Latinoamérica.'
+      : 'Financial management platform with OCR, voice assistant, gamification and mentorship. For professionals in Canada and Latin America.';
+    if (metaDesc) {
+      metaDesc.setAttribute('content', content);
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'description';
+      meta.content = content;
+      document.head.appendChild(meta);
+    }
+  }, [language]);
+
   // Calculate prices based on billing period - fixed prices matching Stripe
   const getPrice = (monthlyPrice: number, _isBundle?: boolean) => {
-    if (monthlyPrice === 0) return { display: '$0', period: language === 'es' ? '/mes' : '/mo', savings: '', strikethrough: '', annualTotal: '' };
+    if (monthlyPrice === 0) return { display: '$0', period: language === 'es' ? '/mes' : '/mo', savings: '', annualTotal: '' };
     if (isAnnual) {
-      // Fixed annual prices matching Stripe exactly
       const annualPrices: Record<string, { monthly: string; total: string; saved: string }> = {
         '7.99': { monthly: '6.49', total: '77.88', saved: '18' },
         '14.99': { monthly: '11.99', total: '143.88', saved: '20' },
@@ -410,12 +401,11 @@ export default function Landing() {
           display: `$${prices.monthly}`, 
           period: language === 'es' ? '/mes' : '/mo',
           savings: language === 'es' ? `Ahorras ${prices.saved}%` : `Save ${prices.saved}%`,
-          strikethrough: `$${monthlyPrice.toFixed(2)}`,
           annualTotal: language === 'es' ? `$${prices.total} USD/año` : `$${prices.total} USD/year`,
         };
       }
     }
-    return { display: `$${monthlyPrice.toFixed(2)}`, period: language === 'es' ? '/mes' : '/mo', savings: '', strikethrough: '', annualTotal: '' };
+    return { display: `$${monthlyPrice.toFixed(2)}`, period: language === 'es' ? '/mes' : '/mo', savings: '', annualTotal: '' };
   };
 
   const handleGetStarted = () => {
@@ -546,7 +536,7 @@ export default function Landing() {
       {/* Animated Background with parallax layers */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {/* Parallax gradient orbs - different speeds for depth */}
-        <ParallaxLayer speed={-0.15} className="absolute inset-0">
+        <DecorativeLayer className="absolute inset-0">
           <motion.div 
             className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-40 blur-[120px]"
             animate={{
@@ -558,9 +548,9 @@ export default function Landing() {
             }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
-        </ParallaxLayer>
+        </DecorativeLayer>
         
-        <ParallaxLayer speed={-0.25} className="absolute inset-0">
+        <DecorativeLayer className="absolute inset-0">
           <motion.div 
             className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full opacity-30 blur-[100px]"
             animate={{
@@ -572,21 +562,21 @@ export default function Landing() {
             }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 4 }}
           />
-        </ParallaxLayer>
+        </DecorativeLayer>
 
         {/* Additional parallax decorative elements */}
-        <ParallaxLayer speed={-0.1} className="absolute inset-0">
+        <DecorativeLayer className="absolute inset-0">
           <div className="absolute top-1/3 right-10 w-32 h-32 bg-cyan-400/10 rounded-full blur-2xl" />
           <div className="absolute top-2/3 left-20 w-48 h-48 bg-orange-400/10 rounded-full blur-2xl" />
-        </ParallaxLayer>
+        </DecorativeLayer>
         
-        <ParallaxLayer speed={-0.35} className="absolute inset-0">
+        <DecorativeLayer className="absolute inset-0">
           <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-violet-400/15 rounded-full blur-xl" />
           <div className="absolute bottom-1/4 right-1/3 w-40 h-40 bg-emerald-400/10 rounded-full blur-2xl" />
-        </ParallaxLayer>
+        </DecorativeLayer>
         
         {/* Grid pattern - slower parallax */}
-        <ParallaxLayer speed={-0.05} className="absolute inset-0">
+        <DecorativeLayer className="absolute inset-0">
           <div 
             className="absolute inset-0 opacity-[0.03]"
             style={{
@@ -595,7 +585,7 @@ export default function Landing() {
               backgroundSize: '60px 60px'
             }}
           />
-        </ParallaxLayer>
+        </DecorativeLayer>
       </div>
 
       {/* Hero Section */}
@@ -941,15 +931,11 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Animated Stats with parallax */}
-      <ParallaxSection speed={0.15}>
-        <AnimatedStats />
-      </ParallaxSection>
+      {/* Animated Stats */}
+      <AnimatedStats />
 
-      {/* Testimonials with subtle parallax */}
-      <ParallaxSection speed={0.1}>
-        <TestimonialsCarousel />
-      </ParallaxSection>
+      {/* Testimonials */}
+      <TestimonialsCarousel />
 
       {/* Target Audience - Who is it for? */}
       <TargetAudienceSection />
@@ -960,15 +946,15 @@ export default function Landing() {
       {/* 12 Modules Section with infinite carousel */}
       <section className="relative py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
         {/* Parallax decorative elements */}
-        <ParallaxLayer speed={0.2} className="absolute inset-0 pointer-events-none">
+        <DecorativeLayer className="absolute inset-0 pointer-events-none">
           <div className="absolute top-20 left-10 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl" />
           <div className="absolute bottom-20 right-10 w-80 h-80 bg-violet-500/10 rounded-full blur-3xl" />
-        </ParallaxLayer>
+        </DecorativeLayer>
         
-        <ParallaxLayer speed={0.35} className="absolute inset-0 pointer-events-none">
+        <DecorativeLayer className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl" />
           <div className="absolute top-1/3 right-1/4 w-40 h-40 bg-amber-500/10 rounded-full blur-2xl" />
-        </ParallaxLayer>
+        </DecorativeLayer>
 
         <div className="container mx-auto px-4 relative z-10">
           <motion.div 
@@ -1096,10 +1082,10 @@ export default function Landing() {
       {/* Pricing Section with parallax */}
       <section id="pricing-section" className="relative py-24 bg-slate-950 overflow-hidden">
         {/* Parallax background elements */}
-        <ParallaxLayer speed={0.15} className="absolute inset-0 pointer-events-none">
+        <DecorativeLayer className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-20 w-72 h-72 bg-violet-600/10 rounded-full blur-3xl" />
           <div className="absolute bottom-1/4 right-20 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
-        </ParallaxLayer>
+        </DecorativeLayer>
 
         <div className="container mx-auto px-4 relative z-10">
           <motion.div 
@@ -1213,9 +1199,6 @@ export default function Landing() {
                       <p className="text-[10px] text-slate-500 mb-1.5 font-medium uppercase tracking-wide">{tier.subtitle}</p>
                     )}
                     <div className="flex items-baseline justify-center gap-1">
-                      {priceInfo.strikethrough && (
-                        <span className="text-lg text-slate-500 line-through mr-1">{priceInfo.strikethrough}</span>
-                      )}
                       <span className={`text-4xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
                         {priceInfo.display}
                       </span>
@@ -1302,159 +1285,8 @@ export default function Landing() {
       {/* FAQ Section */}
       <FAQSection />
 
-      {/* Compact Pricing Reminder - Second appearance */}
-      <section className="relative py-16 bg-gradient-to-b from-slate-100 to-slate-200 overflow-hidden">
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-10"
-          >
-            <Badge className="mb-3 px-3 py-1 bg-violet-500/20 text-violet-600 border-violet-500/30 text-sm">
-              <TrendingUp className="w-3 h-3 mr-1 inline" />
-              {language === 'es' ? 'Tu Transformación' : 'Your Transformation'}
-            </Badge>
-            <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">
-              {language === 'es' ? 'Elige Tu Nivel de Evolución' : 'Choose Your Evolution Level'}
-            </h3>
-            <p className="text-slate-600 max-w-2xl mx-auto">
-              {language === 'es' 
-                ? 'Cada plan te acerca más a la libertad financiera. ¿Cuál es tu siguiente paso?'
-                : 'Each plan brings you closer to financial freedom. What\'s your next step?'}
-            </p>
-          </motion.div>
 
-          {/* Compact pricing cards */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
-            {pricingTiers.map((tier, index) => {
-              const priceInfo = getPrice(tier.monthlyPrice, 'isBundle' in tier && tier.isBundle);
-              return (
-                <motion.div
-                  key={`compact-${tier.name}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.03, y: -5 }}
-                  className={`relative rounded-xl p-5 cursor-pointer transition-all ${
-                    tier.popular
-                      ? 'bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-500 text-white shadow-xl shadow-orange-500/30'
-                      : 'featured' in tier && tier.featured
-                        ? 'bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 text-white shadow-xl shadow-violet-500/30'
-                        : 'isBundle' in tier && tier.isBundle
-                          ? 'bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-500 text-white shadow-xl shadow-teal-500/30'
-                          : 'isFree' in tier && tier.isFree
-                            ? 'bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 text-white shadow-xl shadow-emerald-500/30'
-                            : 'bg-white/80 backdrop-blur-sm border border-slate-200 hover:shadow-lg'
-                  }`}
-                  onClick={() => navigate('/auth')}
-                >
-                  {tier.popular && (
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-slate-900 text-white text-xs px-2 py-0.5 shadow-lg">
-                        <Star className="w-2 h-2 mr-1 inline" />
-                        {language === 'es' ? 'Popular' : 'Popular'}
-                      </Badge>
-                    </div>
-                  )}
-                  {'featured' in tier && tier.featured && (
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-white text-violet-600 text-xs px-2 py-0.5 shadow-lg font-bold">
-                        <Crown className="w-2 h-2 mr-1 inline" />
-                        {language === 'es' ? 'Más Completo' : 'Most Complete'}
-                      </Badge>
-                    </div>
-                  )}
-                  {'isFree' in tier && tier.isFree && (
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-white text-emerald-600 text-xs px-2 py-0.5 shadow-lg font-bold">
-                        <Gift className="w-2 h-2 mr-1 inline" />
-                        {language === 'es' ? '¡GRATIS!' : 'FREE!'}
-                      </Badge>
-                    </div>
-                  )}
-                  {'isBundle' in tier && tier.isBundle && (
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-white text-teal-600 text-xs px-2 py-0.5 shadow-lg font-bold">
-                        <Layers className="w-2 h-2 mr-1 inline" />
-                        {language === 'es' ? 'Mejor Valor' : 'Best Value'}
-                      </Badge>
-                    </div>
-                  )}
-                  
-                  <div className="text-center">
-                    <h4 className={`font-bold text-lg ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white' : 'text-slate-800'}`}>
-                      {tier.name}
-                    </h4>
-                    <div className="flex items-baseline justify-center gap-1 my-2">
-                      {priceInfo.strikethrough && (
-                        <span className={`text-sm line-through ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white/50' : 'text-slate-400'}`}>
-                          {priceInfo.strikethrough}
-                        </span>
-                      )}
-                      <span className={`text-3xl font-black ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white' : `bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}`}>
-                        {priceInfo.display}
-                      </span>
-                      <span className={`text-sm ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white/80' : 'text-slate-500'}`}>
-                        USD{priceInfo.period}
-                      </span>
-                    </div>
-                    {priceInfo.annualTotal && (
-                      <p className={`text-xs mt-0.5 ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white/60' : 'text-slate-400'}`}>{priceInfo.annualTotal}</p>
-                    )}
-                    {priceInfo.savings && (
-                      <p className={`text-xs font-semibold mt-0.5 ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-green-300' : 'text-green-500'}`}>{priceInfo.savings}</p>
-                    )}
-                    
-                    
-                    
-                    <Button
-                      size="sm"
-                      className={`w-full mt-3 ${
-                        tier.popular
-                          ? 'bg-slate-900 hover:bg-slate-800 text-white'
-                          : 'featured' in tier && tier.featured
-                            ? 'bg-white hover:bg-slate-100 text-violet-600 font-bold shadow-lg'
-                            : 'isBundle' in tier && tier.isBundle
-                              ? 'bg-white hover:bg-slate-100 text-teal-600 font-bold shadow-lg'
-                              : 'isFree' in tier && tier.isFree
-                                ? 'bg-white hover:bg-slate-100 text-emerald-600 font-bold'
-                                : 'bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white'
-                      }`}
-                    >
-                      {tier.cta}
-                      <ArrowRight className="ml-1 h-3 w-3" />
-                    </Button>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
 
-          {/* Annual toggle reminder */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mt-6 flex items-center justify-center gap-3"
-          >
-            <button
-              onClick={() => setIsAnnual(!isAnnual)}
-              className={`text-sm font-medium px-4 py-2 rounded-full transition-all ${
-                isAnnual 
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg' 
-                  : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
-              }`}
-            >
-              {isAnnual 
-                ? (language === 'es' ? '✨ Ahorrando 20% Anual' : '✨ Saving 20% Annual')
-                : (language === 'es' ? 'Cambiar a Anual (-20%)' : 'Switch to Annual (-20%)')
-              }
-            </button>
-          </motion.div>
-        </div>
-      </section>
 
       {/* Final CTA with parallax */}
       <section className="relative py-24 overflow-hidden">
@@ -1462,20 +1294,19 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-br from-orange-600 via-amber-600 to-yellow-500" />
         
         {/* Parallax pattern */}
-        <ParallaxLayer speed={0.2} className="absolute inset-0">
+        <DecorativeLayer className="absolute inset-0">
           <div 
             className="absolute inset-0 opacity-30"
             style={{
               backgroundImage: `url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjA1Ii8+PC9nPjwvc3ZnPg==')`
             }}
           />
-        </ParallaxLayer>
+        </DecorativeLayer>
         
-        {/* Floating parallax circles */}
-        <ParallaxLayer speed={0.3} className="absolute inset-0 pointer-events-none">
+        <DecorativeLayer className="absolute inset-0 pointer-events-none">
           <div className="absolute top-10 left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
           <div className="absolute bottom-10 right-10 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
-        </ParallaxLayer>
+        </DecorativeLayer>
         
         <div className="container mx-auto px-4 text-center relative z-10">
           <motion.div
