@@ -29,12 +29,27 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const { data: profile } = useProfile();
-  const [exportType, setExportType] = useState<'general' | 't2125'>('general');
+  const { user } = useAuth();
+  const [exportType, setExportType] = useState<'general' | 't2125' | 'tax_report'>('general');
   const [format, setFormat] = useState<'csv' | 'xlsx' | 'json' | 'pdf'>('xlsx');
   const [t2125Format, setT2125Format] = useState<'xlsx' | 'pdf'>('xlsx');
   const [yearFilter, setYearFilter] = useState<string>('all');
   const [isExporting, setIsExporting] = useState(false);
   const [isDraft, setIsDraft] = useState(false);
+
+  // Fetch documents for tax report checklist
+  const { data: userDocuments } = useQuery({
+    queryKey: ['documents-for-export', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase
+        .from('documents')
+        .select('file_name, extracted_data, created_at')
+        .eq('user_id', user.id);
+      return data || [];
+    },
+    enabled: !!user && open,
+  });
 
   // Get available years from expenses
   const years = [...new Set(expenses.map(e => new Date(e.date).getFullYear()))].sort((a, b) => b - a);
