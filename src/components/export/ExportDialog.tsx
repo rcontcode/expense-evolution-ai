@@ -31,6 +31,7 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
   const { toast } = useToast();
   const { data: profile } = useProfile();
   const { user } = useAuth();
+  const { currentCountry } = useCountryContext();
   const [exportType, setExportType] = useState<'general' | 't2125' | 'tax_report'>('general');
   const [format, setFormat] = useState<'csv' | 'xlsx' | 'json' | 'pdf'>('xlsx');
   const [t2125Format, setT2125Format] = useState<'xlsx' | 'pdf'>('xlsx');
