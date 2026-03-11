@@ -474,7 +474,25 @@ export function useUnifiedChaosInbox() {
         }
 
         case 'tax_document':
+        case 'tax_slip':
+        case 'medical_receipt':
+        case 'donation_receipt':
+        case 'insurance_policy':
+        case 'rental_receipt':
+        case 'investment_statement':
+        case 'government_form':
         default: {
+          const extractedMetadata: Record<string, any> = {
+            document_classification: type,
+            ...preview,
+          };
+
+          // For rental receipts, mark as recurring
+          if (type === 'rental_receipt') {
+            extractedMetadata.is_recurring = true;
+            extractedMetadata.suggested_recurring = true;
+          }
+
           await supabase
             .from('documents')
             .insert({
@@ -485,9 +503,10 @@ export function useUnifiedChaosInbox() {
               file_size: doc.fileSize,
               status: 'pending',
               review_status: 'pending_review',
+              extracted_data: extractedMetadata,
             });
 
-          processedResult = { type: 'manual_review' };
+          processedResult = { type: type === 'tax_document' || type === 'unknown' ? 'manual_review' : type };
           queryClient.invalidateQueries({ queryKey: ['documents-review'] });
           break;
         }

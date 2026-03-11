@@ -37,6 +37,7 @@ export default function TaxOptimizer() {
         <div className="space-y-6">
           <TaxDeadlineCountdown />
           <TaxSummaryCards taxSummary={taxSummary} />
+          <TaxDocumentChecklist />
           <Suspense fallback={<Skeleton className="h-[300px]" />}>
             <TaxOptimizerCard />
           </Suspense>
