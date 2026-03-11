@@ -82,7 +82,10 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, fileName, fileType } = await req.json();
+    const { imageBase64, fileName, fileType, country } = await req.json();
+    const userCountry = country || 'CA';
+    const defaultCurrency = userCountry === 'CL' ? 'CLP' : 'CAD';
+    const taxAuthority = userCountry === 'CL' ? 'SII (Servicio de Impuestos Internos)' : 'CRA (Canada Revenue Agency)';
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -93,9 +96,13 @@ serve(async (req) => {
       throw new Error('No image/document provided');
     }
 
-    console.log('Classifying document:', fileName, fileType);
+    console.log('Classifying document:', fileName, fileType, 'country:', userCountry);
 
-    const prompt = `You are an intelligent document classifier for a personal finance app used in Canada and Chile. Analyze this document and determine its type.
+    const countryContext = userCountry === 'CL' 
+      ? `USER COUNTRY: Chile. Tax authority: SII. Default currency: CLP. Prioritize Chilean document types: boletas, facturas electrónicas, certificados AFP/APV/Isapre/Fonasa, formularios F22/F29, liquidaciones de sueldo. Common Chilean vendors: Falabella, Ripley, Líder, Jumbo, Copec, ENAP, Sodimac, Easy, Homecenter.`
+      : `USER COUNTRY: Canada. Tax authority: CRA. Default currency: CAD. Prioritize Canadian document types: T4, T4A, T5, T2202, T3, T5007, RRSP receipts. Common Canadian vendors: Costco, Walmart, Canadian Tire, Home Depot, Loblaws, Sobeys.`;
+
+    const prompt = `You are an intelligent document classifier for a personal finance app. ${countryContext}
 
 DOCUMENT TYPES:
 1. "receipt" - Store purchase receipt, pharmacy, fuel, restaurant, grocery, materials, clothing, etc.
