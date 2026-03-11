@@ -15,7 +15,7 @@ interface ExportRow {
   Vendor: string;
   Description: string;
   Category: string;
-  'Category (CRA)': string;
+  'Tax Category': string;
   Amount: number;
   Currency: string;
   Status: string;
