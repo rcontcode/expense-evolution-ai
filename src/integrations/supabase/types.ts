@@ -2379,6 +2379,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          is_auto: boolean | null
           language: string
           message_type: string
           name: string
@@ -2393,6 +2394,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          is_auto?: boolean | null
           language?: string
           message_type?: string
           name: string
@@ -2407,6 +2409,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          is_auto?: boolean | null
           language?: string
           message_type?: string
           name?: string
