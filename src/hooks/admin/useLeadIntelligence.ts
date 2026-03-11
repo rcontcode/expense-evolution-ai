@@ -133,6 +133,12 @@ export function calculateConversionProbability(lead: QuizLead, allLeads: QuizLea
     factors.push({ label: 'Conocimiento previo bajo (alta necesidad)', impact: 'positive', weight: 6 });
   }
 
+  // Factor 5d: Returning lead — multiple touchpoints
+  if (lead.metadata?.returning_lead === true) {
+    probability += 15;
+    factors.push({ label: 'Lead recurrente (múltiples interacciones)', impact: 'positive', weight: 15 });
+  }
+
   // Factor 6: Time since creation (freshness)
   const daysSince = differenceInDays(new Date(), new Date(lead.created_at));
   if (daysSince <= 2) {
