@@ -731,6 +731,11 @@ const AdminCRM = () => {
                   <span className="hidden md:inline">{isEs ? 'Planes' : 'Plans'}</span>
                   <span className="md:hidden">💳</span>
                 </TabsTrigger>
+                <TabsTrigger value="revenue" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <DollarSign className="h-3.5 w-3.5" />
+                  <span className="hidden md:inline">Revenue</span>
+                  <span className="md:hidden">💵</span>
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="users"><AdminUserOverview /></TabsContent>
               <TabsContent value="leads"><AdminLeadsTab language={language} sourceFilter={sourceFilter} onClearFilter={() => setSourceFilter(null)} /></TabsContent>
@@ -742,6 +747,7 @@ const AdminCRM = () => {
               <TabsContent value="metrics"><AdminAdvancedMetrics language={language} /></TabsContent>
               <TabsContent value="automation"><AdminAutomationTab language={language} /></TabsContent>
               <TabsContent value="subscriptions"><AdminSubscriptionsTab language={language} /></TabsContent>
+              <TabsContent value="revenue"><AdminRevenueDashboard language={language} /></TabsContent>
             </Tabs>
             <div className="sticky top-6"><AdminActivityFeed language={language} /></div>
           </motion.div>
