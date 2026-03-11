@@ -24,6 +24,7 @@ import {
   MessageSquare,
   Calendar,
   History,
+  Brain,
 } from 'lucide-react';
 import type { QuizLead } from '@/hooks/admin/useLeadsManagement';
 import { calculateLeadScore, getLeadPriority } from '@/hooks/admin/useLeadScoring';
