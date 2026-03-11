@@ -131,6 +131,17 @@ function calculatePriority(lead: {
     score += 5;
   }
 
+  // Conocimiento previo bajo = más necesidad (max +10)
+  const conocimiento = lead.conocimiento_previo?.toLowerCase();
+  if (conocimiento && (conocimiento.includes("no tengo") || conocimiento.includes("principiante") || conocimiento.includes("poco"))) {
+    score += 10;
+  }
+
+  // Producto recomendado de alto valor (max +5)
+  if (lead.precio_producto && lead.precio_producto >= 100) {
+    score += 5;
+  }
+
   const capped = Math.min(100, score);
   let priority: string;
   if (capped >= 80) priority = "hot";
