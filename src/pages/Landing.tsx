@@ -1082,10 +1082,10 @@ export default function Landing() {
       {/* Pricing Section with parallax */}
       <section id="pricing-section" className="relative py-24 bg-slate-950 overflow-hidden">
         {/* Parallax background elements */}
-        <ParallaxLayer speed={0.15} className="absolute inset-0 pointer-events-none">
+        <DecorativeLayer className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-20 w-72 h-72 bg-violet-600/10 rounded-full blur-3xl" />
           <div className="absolute bottom-1/4 right-20 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
-        </ParallaxLayer>
+        </DecorativeLayer>
 
         <div className="container mx-auto px-4 relative z-10">
           <motion.div 
