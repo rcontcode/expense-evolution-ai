@@ -391,7 +391,14 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
                 {t('export.t2125Includes')}
               </p>
             )}
-            {format === 'pdf' && (
+            {exportType === 'tax_report' && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {language === 'es' 
+                  ? '✓ 4 hojas: Resumen • Detalle • Checklist Docs • Sin Comprobante' 
+                  : '✓ 4 sheets: Summary • Detail • Doc Checklist • Missing Receipts'}
+              </p>
+            )}
+            {format === 'pdf' && exportType === 'general' && (
               <p className="text-xs text-muted-foreground mt-1">
                 {language === 'es' ? '✓ Logo EvoFinz • Datos de empresa • Bilingüe' : '✓ EvoFinz logo • Business data • Bilingual'}
               </p>
