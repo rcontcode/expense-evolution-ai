@@ -807,9 +807,19 @@ const AdminCRM = () => {
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     {[
                       { field: 'phone', desc: isEs ? 'Teléfono' : 'Phone' },
-                      { field: 'score', desc: isEs ? 'Puntuación (0-100)' : 'Score (0-100)' },
-                      { field: 'level', desc: isEs ? 'Nivel del quiz' : 'Quiz level' },
+                      { field: 'score / quiz_score', desc: isEs ? 'Puntuación (0-100)' : 'Score (0-100)' },
+                      { field: 'level / quiz_level', desc: isEs ? 'Nivel del quiz' : 'Quiz level' },
                       { field: 'source', desc: isEs ? '⚠️ Tu source_key' : '⚠️ Your source_key' },
+                      { field: 'country', desc: isEs ? 'País del lead' : 'Lead country' },
+                      { field: 'situation', desc: isEs ? 'Situación laboral' : 'Work situation' },
+                      { field: 'goal', desc: isEs ? 'Meta financiera' : 'Financial goal' },
+                      { field: 'obstacle', desc: isEs ? 'Obstáculo principal' : 'Main obstacle' },
+                      { field: 'time_spent', desc: isEs ? 'Tiempo dedicado' : 'Time spent' },
+                      { field: 'comments', desc: isEs ? 'Comentario personal' : 'Personal comment' },
+                      { field: 'failed_questions', desc: isEs ? 'Array de preguntas fallidas [1,3,5]' : 'Failed questions array [1,3,5]' },
+                      { field: 'returning_lead', desc: isEs ? 'boolean — si el email ya existe' : 'boolean — if email already exists' },
+                      { field: 'previous_sources', desc: isEs ? 'Array de fuentes previas del lead' : 'Array of previous lead sources' },
+                      { field: 'quiz_answers', desc: isEs ? 'Array de respuestas [{question,answer_value,answer_label}]' : 'Answer array [{question,answer_value,answer_label}]' },
                     ].map(f => (
                       <div key={f.field} className="p-2 rounded bg-muted">
                         <code className="text-xs font-mono">{f.field}</code>
@@ -819,11 +829,34 @@ const AdminCRM = () => {
                   </div>
                 </div>
 
-                {/* Example request */}
+                {/* Metadata object */}
+                <div className="space-y-2">
+                  <h4 className="font-bold text-sm">{isEs ? 'Objeto metadata (opcional)' : 'Metadata object (optional)'}</h4>
+                  <p className="text-xs text-muted-foreground">{isEs ? 'Campos enriquecidos almacenados en JSONB. Cada app puede enviar datos específicos.' : 'Enriched fields stored in JSONB. Each app can send specific data.'}</p>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    {[
+                      { field: 'metadata.situacion', desc: isEs ? 'Situación (alias ES)' : 'Situation (ES alias)' },
+                      { field: 'metadata.objetivo', desc: isEs ? 'Objetivo (alias ES)' : 'Goal (ES alias)' },
+                      { field: 'metadata.obstaculo', desc: isEs ? 'Obstáculo (alias ES)' : 'Obstacle (ES alias)' },
+                      { field: 'metadata.conocimiento_previo', desc: isEs ? 'Conocimiento previo' : 'Prior knowledge' },
+                      { field: 'metadata.producto_recomendado', desc: isEs ? 'Producto sugerido' : 'Recommended product' },
+                      { field: 'metadata.precio_producto', desc: isEs ? 'Precio del producto (number)' : 'Product price (number)' },
+                      { field: 'metadata.guide', desc: isEs ? 'ID/nombre de guía descargada' : 'Downloaded guide ID/name' },
+                      { field: 'metadata.respuestas_best_practices', desc: isEs ? 'Mapa {pregunta: bool}' : 'Map {question: bool}' },
+                    ].map(f => (
+                      <div key={f.field} className="p-2 rounded bg-muted">
+                        <code className="text-[10px] font-mono">{f.field}</code>
+                        <p className="text-[10px] text-muted-foreground">{f.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Example request - full */}
                 <div className="space-y-2">
                   <h4 className="font-bold text-sm flex items-center gap-2">
                     <FileJson className="h-4 w-4" />
-                    {isEs ? 'Ejemplo de request' : 'Example request'}
+                    {isEs ? 'Ejemplo completo' : 'Full example'}
                   </h4>
                   <div className="relative">
                     <pre className="text-[11px] p-3 rounded bg-zinc-900 text-zinc-100 font-mono overflow-x-auto">
@@ -834,14 +867,26 @@ const AdminCRM = () => {
     name: "Juan Pérez",
     email: "juan@example.com",
     phone: "+56912345678",
-    score: 45,
-    level: "beginner",
-    source: "my-app-name"
+    quiz_score: 45,
+    quiz_level: "principiante",
+    source: "my-app-name",
+    country: "Chile",
+    situation: "Empleado",
+    goal: "Independencia financiera",
+    obstacle: "No sé por dónde empezar",
+    comments: "Me interesa mucho",
+    returning_lead: true,
+    previous_sources: ["my-app-lead-magnet"],
+    metadata: {
+      producto_recomendado: "Guía Completa",
+      precio_producto: 29,
+      guide: "finanzas-101"
+    }
   })
 })`}
                     </pre>
                     <Button variant="secondary" size="sm" className="absolute top-2 right-2 h-7 text-xs" 
-                      onClick={() => copyToClipboard(`fetch("${WEBHOOK_BASE_URL}", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  body: JSON.stringify({\n    name: "Juan Pérez",\n    email: "juan@example.com",\n    phone: "+56912345678",\n    score: 45,\n    level: "beginner",\n    source: "my-app-name"\n  })\n})`, 'docs-fetch')}>
+                      onClick={() => copyToClipboard(`fetch("${WEBHOOK_BASE_URL}", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  body: JSON.stringify({\n    name: "Juan Pérez",\n    email: "juan@example.com",\n    phone: "+56912345678",\n    quiz_score: 45,\n    quiz_level: "principiante",\n    source: "my-app-name",\n    country: "Chile",\n    returning_lead: true,\n    previous_sources: ["my-app-lead-magnet"],\n    metadata: { producto_recomendado: "Guía Completa", precio_producto: 29, guide: "finanzas-101" }\n  })\n})`, 'docs-fetch')}>
                       {copiedField === 'docs-fetch' ? <Check className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
                       Copy
                     </Button>
