@@ -483,7 +483,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                   </Pie>
                   <ChartTooltip 
                     content={<ChartTooltipContent />}
-                    formatter={(value) => [`$${Number(value).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, 'Monto']}
+                    formatter={(value) => [formatCurrency(Number(value)), language === 'es' ? 'Monto' : 'Amount']}
                   />
                 </PieChart>
               </ChartContainer>
