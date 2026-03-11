@@ -303,6 +303,7 @@ export const useLeadsManagement = () => {
     situations,
     goals,
     obstacles,
+    allTags,
     stats,
     markContacted,
     markConverted,
