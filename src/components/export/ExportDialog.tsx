@@ -85,7 +85,18 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
         country: profile?.country || 'CA',  // ExportDialog uses profile for business info context
       };
 
-      if (exportType === 't2125') {
+      if (exportType === 'tax_report') {
+        await exportTaxReport(filteredExpenses, {
+          year: selectedYear,
+          country: profile?.country || 'CA',
+          province: profile?.province || undefined,
+          language: language as 'es' | 'en',
+          userName: profile?.full_name || undefined,
+          businessName: profile?.business_name || undefined,
+          businessNumber: profile?.business_number || undefined,
+          documents: userDocuments || [],
+        });
+      } else if (exportType === 't2125') {
         if (t2125Format === 'pdf') {
           exportT2125ToPDF(filteredExpenses, selectedYear, pdfOptions);
         } else {
