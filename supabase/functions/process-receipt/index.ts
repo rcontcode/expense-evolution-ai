@@ -444,7 +444,7 @@ Extract expense information and return a JSON object with expenses array. If mul
           category: "other",
           description: aiResponse,
           confidence: "low",
-          currency: "CAD",
+          currency: defaultCurrency,
           cra_deductible: true,
           cra_deduction_rate: 100,
           typically_reimbursable: false,
