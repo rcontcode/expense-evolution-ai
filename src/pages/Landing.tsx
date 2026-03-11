@@ -946,15 +946,15 @@ export default function Landing() {
       {/* 12 Modules Section with infinite carousel */}
       <section className="relative py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
         {/* Parallax decorative elements */}
-        <ParallaxLayer speed={0.2} className="absolute inset-0 pointer-events-none">
+        <DecorativeLayer className="absolute inset-0 pointer-events-none">
           <div className="absolute top-20 left-10 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl" />
           <div className="absolute bottom-20 right-10 w-80 h-80 bg-violet-500/10 rounded-full blur-3xl" />
-        </ParallaxLayer>
+        </DecorativeLayer>
         
-        <ParallaxLayer speed={0.35} className="absolute inset-0 pointer-events-none">
+        <DecorativeLayer className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl" />
           <div className="absolute top-1/3 right-1/4 w-40 h-40 bg-amber-500/10 rounded-full blur-2xl" />
-        </ParallaxLayer>
+        </DecorativeLayer>
 
         <div className="container mx-auto px-4 relative z-10">
           <motion.div 
