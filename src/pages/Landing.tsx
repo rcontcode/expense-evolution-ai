@@ -931,15 +931,11 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Animated Stats with parallax */}
-      <ParallaxSection speed={0.15}>
-        <AnimatedStats />
-      </ParallaxSection>
+      {/* Animated Stats */}
+      <AnimatedStats />
 
-      {/* Testimonials with subtle parallax */}
-      <ParallaxSection speed={0.1}>
-        <TestimonialsCarousel />
-      </ParallaxSection>
+      {/* Testimonials */}
+      <TestimonialsCarousel />
 
       {/* Target Audience - Who is it for? */}
       <TargetAudienceSection />
