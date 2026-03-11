@@ -132,7 +132,7 @@ Respond with ONLY a valid JSON object:
     "amount": 123.45,
     "date": "2024-01-15",
     "description": "Brief description in Spanish",
-    "currency": "CAD or CLP or USD etc",
+    "currency": "${defaultCurrency} (or detected currency)",
     "is_recurring": false,
     "recurrence_frequency": "monthly or null",
     "parties": ["Party 1", "Party 2"],
