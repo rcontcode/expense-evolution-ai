@@ -201,8 +201,10 @@ Deno.serve(async (req) => {
     const cleanName = sanitize(payload.name);
     const cleanEmail = payload.email.trim().toLowerCase();
     const cleanPhone = payload.phone?.trim() || null;
-    const quizScore = typeof payload.score === "number" ? payload.score : 0;
-    const quizLevel = sanitize(payload.level) || "unknown";
+    const quizScore = typeof payload.score === "number" ? payload.score
+      : typeof payload.quiz_score === "number" ? payload.quiz_score
+      : 0;
+    const quizLevel = sanitize(payload.level) || sanitize(payload.quiz_level) || "unknown";
     const source = sanitize(payload.source) || "external-webhook";
 
     // Smart field extraction: direct fields → metadata aliases → empty
