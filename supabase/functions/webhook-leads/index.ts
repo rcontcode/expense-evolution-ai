@@ -100,7 +100,7 @@ function calculatePriority(lead: {
   else if (level === "evolucionando" || level === "intermedio") score += 5;
 
   // Obstáculos críticos (max +10)
-  const criticalObstacles = ["no sé por dónde empezar", "gastos descontrolados", "falta de conocimiento", "deudas abrumadoras", "falta de tiempo", "falta de información"];
+  const criticalObstacles = ["no sé por dónde empezar", "gastos descontrolados", "falta de conocimiento", "deudas abrumadoras", "falta de tiempo", "falta de información", "me distraigo", "procrastino"];
   if (lead.obstacle && criticalObstacles.some(obs => lead.obstacle.toLowerCase().includes(obs.toLowerCase()))) {
     score += 10;
   }
