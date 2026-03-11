@@ -44,16 +44,16 @@ function getCatLabel(cat: string, lang: string): string {
   return getCategoryLabelByLanguage(cat, lang === 'es' ? 'es' : 'en');
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: 'Pendiente',
-  classified: 'Clasificado',
-  deductible: 'Deducible Fiscal',
-  non_deductible: 'No Deducible',
-  reimbursable: 'Reembolsable',
-  rejected: 'Rechazado',
-  under_review: 'En Revisión',
-  finalized: 'Finalizado',
-  client_reimbursable: 'Reembolsable Cliente'
+const STATUS_LABELS: Record<string, { es: string; en: string }> = {
+  pending: { es: 'Pendiente', en: 'Pending' },
+  classified: { es: 'Clasificado', en: 'Classified' },
+  deductible: { es: 'Deducible Fiscal', en: 'Tax Deductible' },
+  non_deductible: { es: 'No Deducible', en: 'Non-Deductible' },
+  reimbursable: { es: 'Reembolsable', en: 'Reimbursable' },
+  rejected: { es: 'Rechazado', en: 'Rejected' },
+  under_review: { es: 'En Revisión', en: 'Under Review' },
+  finalized: { es: 'Finalizado', en: 'Finalized' },
+  client_reimbursable: { es: 'Reembolsable Cliente', en: 'Client Reimbursable' },
 };
 
 const CHART_COLORS = [
