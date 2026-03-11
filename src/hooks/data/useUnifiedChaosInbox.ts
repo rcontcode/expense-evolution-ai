@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { useEntity } from '@/contexts/EntityContext';
 
 export type DocumentClassificationType = 
   | 'receipt' | 'utility_bill' | 'bank_statement' | 'income_proof'
@@ -74,6 +75,9 @@ export { TYPE_LABELS };
 export function useUnifiedChaosInbox() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { currentEntity } = useEntity();
+  const userCountry = (currentEntity?.country as string) || 'CA';
+  const userCurrency = userCountry === 'CL' ? 'CLP' : 'CAD';
   const [documents, setDocuments] = useState<ClassifiedDocument[]>([]);
   const [isProcessingBatch, setIsProcessingBatch] = useState(false);
 
@@ -133,6 +137,7 @@ export function useUnifiedChaosInbox() {
             imageBase64: base64,
             fileName: doc.fileName,
             fileType: doc.fileType,
+            country: userCountry,
           },
         });
 
@@ -240,6 +245,7 @@ export function useUnifiedChaosInbox() {
             body: {
               imageBase64: doc.base64,
               detectMultipleReceipts: true,
+              country: userCountry,
             },
           });
 
@@ -308,7 +314,7 @@ export function useUnifiedChaosInbox() {
                   source: ep.to_entity || ep.bill_to || ep.vendor || doc.fileName,
                   amount: totalAmount,
                   date: ep.date || new Date().toISOString().split('T')[0],
-                  currency: ep.currency || 'CAD',
+                  currency: ep.currency || userCurrency,
                   description: `Factura ${ep.invoice_number || ''}: ${lineItems.map((i: any) => i.name).join('; ') || ep.description || ''}`.trim(),
                   income_type: 'freelance',
                   line_items: lineItems,
@@ -320,7 +326,7 @@ export function useUnifiedChaosInbox() {
               .select()
               .single();
 
-            processedResult = { type: 'invoice_income', amount: totalAmount, currency: ep.currency || 'CAD', docId: dbDoc?.id };
+            processedResult = { type: 'invoice_income', amount: totalAmount, currency: ep.currency || userCurrency, docId: dbDoc?.id };
             queryClient.invalidateQueries({ queryKey: ['documents-review'] });
             toast.success(`📋 Ingreso de $${totalAmount.toLocaleString()} enviado al Centro de Revisión`);
 
@@ -331,7 +337,7 @@ export function useUnifiedChaosInbox() {
               date: ep.date || new Date().toISOString().split('T')[0],
               category: 'professional_services',
               description: lineItems.map((i: any) => i.name).join('; ') || ep.description || '',
-              currency: ep.currency || 'CAD',
+              currency: ep.currency || userCurrency,
               confidence: classData.confidence > 0.8 ? 'high' : classData.confidence > 0.5 ? 'medium' : 'low',
               cra_deductible: true,
               cra_deduction_rate: 100,
@@ -365,7 +371,7 @@ export function useUnifiedChaosInbox() {
 
         case 'utility_bill': {
           const { data: result, error } = await supabase.functions.invoke('process-receipt', {
-            body: { imageBase64: doc.base64 },
+            body: { imageBase64: doc.base64, country: userCountry },
           });
 
           if (error) throw error;
@@ -408,7 +414,7 @@ export function useUnifiedChaosInbox() {
 
         case 'income_proof': {
           const { data: result, error } = await supabase.functions.invoke('process-receipt', {
-            body: { imageBase64: doc.base64 },
+            body: { imageBase64: doc.base64, country: userCountry },
           });
 
           if (error) throw error;
@@ -420,7 +426,7 @@ export function useUnifiedChaosInbox() {
               amount: preview.amount || result?.expenses?.[0]?.amount,
               date: preview.date || result?.expenses?.[0]?.date,
               source: preview.vendor || result?.expenses?.[0]?.vendor,
-              currency: preview.currency || 'CAD',
+              currency: preview.currency || userCurrency,
             },
           };
           break;
@@ -571,6 +577,7 @@ export function useUnifiedChaosInbox() {
           imageBase64: doc.base64,
           fileName: doc.fileName,
           fileType: doc.fileType,
+          country: userCountry,
         },
       });
 

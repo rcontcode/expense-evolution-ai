@@ -3,14 +3,22 @@ import { IncomeType } from '@/types/income.types';
 
 // Category mappings for voice expense creation
 export const CATEGORY_KEYWORDS: Record<string, { keywords: string[]; category: ExpenseCategory }> = {
-  meals: { keywords: ['restaurante', 'restaurant', 'comida', 'food', 'almuerzo', 'lunch', 'cena', 'dinner', 'desayuno', 'breakfast', 'cafe', 'café', 'coffee'], category: 'meals' },
-  travel: { keywords: ['viaje', 'travel', 'vuelo', 'flight', 'hotel', 'hospedaje', 'avión', 'airplane', 'tren', 'train', 'bus', 'taxi', 'uber', 'transporte', 'transport'], category: 'travel' },
-  equipment: { keywords: ['equipo', 'equipment', 'computadora', 'computer', 'laptop', 'teléfono', 'phone', 'tablet', 'monitor', 'teclado', 'keyboard', 'herramienta', 'tool'], category: 'equipment' },
+  meals: { keywords: ['restaurante', 'restaurant', 'comida', 'food', 'almuerzo', 'lunch', 'cena', 'dinner', 'desayuno', 'breakfast', 'cafe', 'café', 'coffee', 'colación', 'once', 'picada', 'menú', 'completo'], category: 'meals' },
+  travel: { keywords: ['viaje', 'travel', 'vuelo', 'flight', 'hotel', 'hospedaje', 'avión', 'airplane', 'tren', 'train', 'bus', 'taxi', 'uber', 'transporte', 'transport', 'cabify', 'didi', 'beat', 'pasaje', 'micro'], category: 'travel' },
+  equipment: { keywords: ['equipo', 'equipment', 'computadora', 'computer', 'laptop', 'teléfono', 'phone', 'tablet', 'monitor', 'teclado', 'keyboard', 'herramienta', 'tool', 'notebook', 'impresora', 'printer'], category: 'equipment' },
   software: { keywords: ['software', 'licencia', 'license', 'suscripción', 'subscription', 'app', 'aplicación', 'programa'], category: 'software' },
-  fuel: { keywords: ['gasolina', 'gas', 'fuel', 'combustible', 'diesel', 'nafta', 'bencina'], category: 'fuel' },
-  office_supplies: { keywords: ['oficina', 'office', 'papelería', 'stationery', 'papel', 'paper', 'tinta', 'ink', 'material'], category: 'office_supplies' },
-  utilities: { keywords: ['servicios', 'utilities', 'luz', 'electricity', 'agua', 'water', 'internet', 'teléfono fijo', 'landline'], category: 'utilities' },
-  professional_services: { keywords: ['servicio', 'service', 'consultoría', 'consulting', 'abogado', 'lawyer', 'contador', 'accountant', 'profesional'], category: 'professional_services' },
+  fuel: { keywords: ['gasolina', 'gas', 'fuel', 'combustible', 'diesel', 'nafta', 'bencina', 'copec', 'enap', 'petrobras', 'shell', 'terpel'], category: 'fuel' },
+  office_supplies: { keywords: ['oficina', 'office', 'papelería', 'stationery', 'papel', 'paper', 'tinta', 'ink', 'material', 'librería'], category: 'office_supplies' },
+  utilities: { keywords: ['servicios', 'utilities', 'luz', 'electricity', 'agua', 'water', 'internet', 'teléfono fijo', 'landline', 'enel', 'chilquinta', 'aguas andinas', 'entel', 'movistar', 'claro', 'vtr', 'wom'], category: 'utilities' },
+  professional_services: { keywords: ['servicio', 'service', 'consultoría', 'consulting', 'abogado', 'lawyer', 'contador', 'accountant', 'profesional', 'asesoría', 'notaría', 'notario'], category: 'professional_services' },
+  medical: { keywords: ['médico', 'doctor', 'medicina', 'farmacia', 'pharmacy', 'dental', 'dentista', 'receta', 'prescription', 'isapre', 'fonasa', 'consulta médica', 'examen', 'laboratorio', 'clínica', 'hospital', 'óptica', 'lentes', 'kinesiólogo', 'physiotherapy'], category: 'medical' },
+  donations: { keywords: ['donación', 'donation', 'caridad', 'charity', 'fundación', 'foundation', 'teletón', 'hogar de cristo', 'cruz roja'], category: 'donations' },
+  rent: { keywords: ['arriendo', 'rent', 'alquiler', 'arrendamiento', 'canon'], category: 'rent' },
+  insurance_business: { keywords: ['seguro', 'insurance', 'póliza', 'policy', 'prima'], category: 'insurance_business' },
+  education_training: { keywords: ['curso', 'course', 'capacitación', 'training', 'certificación', 'certification', 'taller', 'workshop', 'diplomado', 'postgrado', 'magíster'], category: 'education_training' },
+  parking_tolls: { keywords: ['estacionamiento', 'parking', 'peaje', 'toll', 'tag', 'autopista'], category: 'parking_tolls' },
+  bank_fees: { keywords: ['comisión bancaria', 'bank fee', 'mantención cuenta', 'transferencia', 'wire'], category: 'bank_fees' },
+  materials: { keywords: ['material', 'insumo', 'supply', 'sodimac', 'easy', 'homecenter', 'ferretería', 'hardware'], category: 'materials' },
 };
 
 // Income type mappings for voice income creation
@@ -19,12 +27,12 @@ export const INCOME_TYPE_KEYWORDS: Record<string, { keywords: string[]; incomeTy
   salary: { keywords: ['salario', 'salary', 'sueldo', 'nómina', 'payroll', 'wage'], incomeType: 'salary' },
   bonus: { keywords: ['bono', 'bonus', 'aguinaldo', 'prima'], incomeType: 'bonus' },
   freelance: { keywords: ['freelance', 'proyecto', 'project', 'trabajo independiente', 'independiente'], incomeType: 'freelance' },
-  investment_stocks: { keywords: ['dividendos', 'dividends', 'inversión', 'investment', 'acciones', 'stocks', 'bolsa'], incomeType: 'investment_stocks' },
+  investment_stocks: { keywords: ['dividendos', 'dividends', 'inversión', 'investment', 'acciones', 'stocks', 'bolsa', 'fondo mutuo'], incomeType: 'investment_stocks' },
   investment_crypto: { keywords: ['crypto', 'cripto', 'bitcoin', 'ethereum', 'criptomoneda'], incomeType: 'investment_crypto' },
-  passive_rental: { keywords: ['alquiler', 'renta', 'rental', 'arrendamiento', 'rent'], incomeType: 'passive_rental' },
+  passive_rental: { keywords: ['alquiler', 'renta', 'rental', 'arrendamiento', 'rent', 'arriendo', 'canon de arriendo'], incomeType: 'passive_rental' },
   passive_royalties: { keywords: ['regalías', 'royalties', 'derechos de autor', 'royalty'], incomeType: 'passive_royalties' },
   gift: { keywords: ['regalo', 'gift', 'donación', 'donation'], incomeType: 'gift' },
-  refund: { keywords: ['reembolso', 'refund', 'devolución', 'return'], incomeType: 'refund' },
+  refund: { keywords: ['reembolso', 'refund', 'devolución', 'return', 'nota de crédito'], incomeType: 'refund' },
   online_business: { keywords: ['online', 'ecommerce', 'tienda online', 'negocio online'], incomeType: 'online_business' },
 };
 

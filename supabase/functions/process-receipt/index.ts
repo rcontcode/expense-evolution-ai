@@ -70,7 +70,10 @@ serve(async (req) => {
     const quota = await checkQuota(req, 'ocr_scans_count', 'ocr_scans_per_month', OCR_FALLBACK_LIMITS);
     if (quota.error) return quota.error;
     const body = await req.json();
-    const { imageBase64, voiceText, detectMultipleReceipts } = body;
+    const { imageBase64, voiceText, detectMultipleReceipts, country } = body;
+    const userCountry = country || 'CA';
+    const defaultCurrency = userCountry === 'CL' ? 'CLP' : 'CAD';
+    const taxAuthority = userCountry === 'CL' ? 'SII' : 'CRA';
 
     // Input validation: image size limit (~10MB base64)
     if (imageBase64 && typeof imageBase64 === "string" && imageBase64.length > 10_000_000) {
@@ -128,12 +131,17 @@ CRITICAL: CONTEXTUAL DISAMBIGUATION OF AMBIGUOUS CODES
 Receipts often contain cryptic item codes that are hard to interpret. You MUST use the ENTIRE context of the receipt to decode them:
 
 1. **Vendor Context is KEY**: The store/company name tells you what type of products they sell:
-   - "Chevron", "Shell", "Petro-Canada", "Esso", "Husky" → Gas station → unclear codes likely mean fuel types (PREM, REG, DISL = Premium, Regular, Diesel)
-   - "Costco", "Walmart", "Superstore", "Loblaws", "Metro", "Sobeys" → Supermarket → codes likely mean groceries
-   - "Canadian Tire", "Home Depot", "Rona" → Hardware → codes likely mean tools/equipment
+${userCountry === 'CL' ? `   - "Copec", "Shell", "Petrobras", "ENAP", "Terpel" → Gas station → fuel types
+   - "Líder", "Jumbo", "Santa Isabel", "Unimarc", "Tottus" → Supermarket → groceries
+   - "Sodimac", "Easy", "Homecenter", "MTS" → Hardware/Construction → tools/materials
+   - "Falabella", "Ripley", "Paris", "La Polar" → Department store
+   - "Farmacias Ahumada", "Cruz Verde", "Salcobrand" → Pharmacy → medical
+   - "Starbucks", "Juan Valdez", "McDonald's" → Restaurant/Coffee` : `   - "Chevron", "Shell", "Petro-Canada", "Esso", "Husky" → Gas station → fuel types
+   - "Costco", "Walmart", "Superstore", "Loblaws", "Metro", "Sobeys" → Supermarket → groceries
+   - "Canadian Tire", "Home Depot", "Rona" → Hardware → tools/equipment
    - "Staples", "Bureau en Gros" → Office supplies
    - "Tim Hortons", "Starbucks", "McDonalds" → Restaurant/Coffee
-   - "Amazon", "Best Buy" → Electronics/General merchandise
+   - "Amazon", "Best Buy" → Electronics/General merchandise`}
 
 2. **Cross-Reference Strategy**: 
    - If vendor is "Chevron" and you see "CHV-PRE" or "CHVPREM" → This is Premium fuel, NOT meat (carne/beef)
@@ -187,7 +195,7 @@ IMPORTANT: Always respond with a valid JSON object with this exact structure:
       "category": "one of: meals, travel, equipment, software, office_supplies, professional_services, utilities, home_office, mileage, fuel, advertising, materials, hobbies, family_outings, gifts, scheduled_purchases, medical, insurance_business, education_training, donations, rent, bank_fees, maintenance_repairs, moving, interest_loans, vehicle_maintenance, parking_tolls, telephone, other",
       "description": "brief summary of all items purchased",
       "confidence": "high, medium, or low",
-      "currency": "CAD, USD, etc.",
+      "currency": "${defaultCurrency}, USD, etc.",
       "cra_deductible": true or false,
       "cra_deduction_rate": percentage (e.g., 50 for meals, 100 for equipment),
       "typically_reimbursable": true or false (based on common contractor agreements),
@@ -246,7 +254,16 @@ CRITICAL FOR LINE ITEMS:
 
 PRODUCT SEARCH URLS - VERY IMPORTANT:
 Generate a product_search_url for each line item so reviewers can verify the purchase. Use these patterns:
-- Home Depot: https://www.homedepot.ca/search?q={product_name_encoded}
+${userCountry === 'CL' ? `- Falabella: https://www.falabella.com/falabella-cl/search?Ntt={product_name_encoded}
+- Ripley: https://simple.ripley.cl/search/{product_name_encoded}
+- Sodimac: https://www.sodimac.cl/sodimac-cl/search/?Ntt={product_name_encoded}
+- Líder/Walmart Chile: https://www.lider.cl/supermercado/search?Ntt={product_name_encoded}
+- Easy: https://www.easy.cl/search?Ntt={product_name_encoded}
+- Paris: https://www.paris.cl/search?q={product_name_encoded}
+- Mercado Libre: https://listado.mercadolibre.cl/{product_name_encoded}
+- Copec/ENAP (fuel): null (no product link for fuel)
+- Restaurants/Cafes: null (no product link for food)
+- For unknown vendors: try https://www.google.cl/search?q={vendor}+{product_name_encoded}` : `- Home Depot: https://www.homedepot.ca/search?q={product_name_encoded}
 - Home Depot (if SKU visible): https://www.homedepot.ca/product/{sku}
 - Costco: https://www.costco.ca/CatalogSearch?keyword={product_name_encoded}
 - Walmart: https://www.walmart.ca/search?q={product_name_encoded}
@@ -259,11 +276,37 @@ Generate a product_search_url for each line item so reviewers can verify the pur
 - IKEA: https://www.ikea.com/ca/en/search/?q={product_name_encoded}
 - Shell/Chevron/Petro-Canada/Esso (fuel): null (no product link for fuel)
 - Restaurants/Cafes: null (no product link for food)
-- For unknown vendors: try https://www.google.com/search?q={vendor}+{product_name_encoded}
+- For unknown vendors: try https://www.google.com/search?q={vendor}+{product_name_encoded}`}
 
 Replace {product_name_encoded} with URL-encoded product name. Include SKU in search if available.
 
-Category guidelines for Canadian/Chilean tax deductions:
+${userCountry === 'CL' ? `Category guidelines for Chilean SII tax deductions:
+- meals: restaurant, food, coffee, catering (deductible if business-related with boleta/factura)
+- travel: flights, hotels, taxi, uber, public transit (deductible with documentation)
+- equipment: computers, phones, tools, furniture (depreciación acelerada available)
+- software: subscriptions, licenses, apps (100% deductible)
+- office_supplies: paper, pens, printer ink (100% deductible)
+- professional_services: legal, accounting, consulting (100% deductible with factura)
+- utilities: phone bill, internet, electricity (proportional for home office)
+- home_office: office furniture, supplies for home workspace
+- fuel: gas station, diesel (deductible if business use, needs boleta)
+- advertising: marketing, online ads (100% deductible)
+- materials: raw materials, supplies for projects (100% deductible)
+- medical: doctor visits, prescriptions, dental, hospital (deductible via salud)
+- insurance_business: business liability insurance (100% deductible)
+- education_training: courses, certifications (deductible if business-related)
+- donations: charitable donations to registered foundations (crédito tributario SII)
+- rent: commercial rent, office space (100% deductible with factura)
+- bank_fees: business account fees, comisiones bancarias (100% deductible)
+- maintenance_repairs: repairs to business property/equipment (100% deductible)
+- interest_loans: interest on business loans (deductible)
+- vehicle_maintenance: vehicle repairs for business use (proportional)
+- parking_tolls: TAG, peajes, estacionamiento (deductible if business)
+- telephone: mobile phone, landline for business (proportional)
+- other: anything that doesn't fit above
+
+For Chilean receipts, assume CLP unless otherwise specified. Look for "boleta" or "factura" indicators.
+IVA (19%) is the standard tax in Chile.` : `Category guidelines for Canadian/Chilean tax deductions:
 - meals: restaurant, food, coffee, catering, groceries for personal consumption (50% CRA deductible, typically NOT reimbursable)
 - travel: flights, hotels, taxi, uber, public transit (100% CRA deductible, often reimbursable)
 - equipment: computers, phones, tools, furniture (100% CRA deductible via CCA, often reimbursable)
@@ -294,13 +337,14 @@ Category guidelines for Canadian/Chilean tax deductions:
 - scheduled_purchases: planned recurring personal purchases (NOT deductible)
 - other: anything that doesn't fit above
 
+For Canadian receipts, assume CAD unless otherwise specified.`}
+
 For each expense, assess:
-1. Is it CRA deductible? (most business expenses are)
-2. What's the CRA deduction rate? (50% for meals, 100% for most others)
+1. Is it ${taxAuthority} deductible? (most business expenses are)
+2. What's the deduction rate? (50% for meals in CRA, 100% for most others)
 3. Is it typically reimbursable by clients? (project materials yes, personal meals no)
 
-If information is unclear or missing, make your best estimate and set confidence to "low" or "medium".
-For Canadian receipts, assume CAD unless otherwise specified.`;
+If information is unclear or missing, make your best estimate and set confidence to "low" or "medium".`;
 
 
     const userContent: any[] = [];
@@ -400,7 +444,7 @@ Extract expense information and return a JSON object with expenses array. If mul
           category: "other",
           description: aiResponse,
           confidence: "low",
-          currency: "CAD",
+          currency: defaultCurrency,
           cra_deductible: true,
           cra_deduction_rate: 100,
           typically_reimbursable: false,
@@ -423,7 +467,7 @@ Extract expense information and return a JSON object with expenses array. If mul
         category: "other",
         description: "",
         confidence: "low",
-        currency: "CAD",
+        currency: defaultCurrency,
         cra_deductible: true,
         cra_deduction_rate: 100,
         typically_reimbursable: false,
@@ -441,7 +485,7 @@ Extract expense information and return a JSON object with expenses array. If mul
         category: exp.category || "other",
         description: exp.description || "",
         confidence: exp.confidence || "medium",
-        currency: exp.currency || "CAD",
+        currency: exp.currency || defaultCurrency,
         cra_deductible: exp.cra_deductible !== false,
         cra_deduction_rate: exp.cra_deduction_rate || 100,
         typically_reimbursable: exp.typically_reimbursable || false,

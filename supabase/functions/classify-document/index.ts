@@ -82,7 +82,10 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, fileName, fileType } = await req.json();
+    const { imageBase64, fileName, fileType, country } = await req.json();
+    const userCountry = country || 'CA';
+    const defaultCurrency = userCountry === 'CL' ? 'CLP' : 'CAD';
+    const taxAuthority = userCountry === 'CL' ? 'SII (Servicio de Impuestos Internos)' : 'CRA (Canada Revenue Agency)';
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -93,9 +96,13 @@ serve(async (req) => {
       throw new Error('No image/document provided');
     }
 
-    console.log('Classifying document:', fileName, fileType);
+    console.log('Classifying document:', fileName, fileType, 'country:', userCountry);
 
-    const prompt = `You are an intelligent document classifier for a personal finance app used in Canada and Chile. Analyze this document and determine its type.
+    const countryContext = userCountry === 'CL' 
+      ? `USER COUNTRY: Chile. Tax authority: SII. Default currency: CLP. Prioritize Chilean document types: boletas, facturas electrónicas, certificados AFP/APV/Isapre/Fonasa, formularios F22/F29, liquidaciones de sueldo. Common Chilean vendors: Falabella, Ripley, Líder, Jumbo, Copec, ENAP, Sodimac, Easy, Homecenter.`
+      : `USER COUNTRY: Canada. Tax authority: CRA. Default currency: CAD. Prioritize Canadian document types: T4, T4A, T5, T2202, T3, T5007, RRSP receipts. Common Canadian vendors: Costco, Walmart, Canadian Tire, Home Depot, Loblaws, Sobeys.`;
+
+    const prompt = `You are an intelligent document classifier for a personal finance app. ${countryContext}
 
 DOCUMENT TYPES:
 1. "receipt" - Store purchase receipt, pharmacy, fuel, restaurant, grocery, materials, clothing, etc.
@@ -125,7 +132,7 @@ Respond with ONLY a valid JSON object:
     "amount": 123.45,
     "date": "2024-01-15",
     "description": "Brief description in Spanish",
-    "currency": "CAD or CLP or USD etc",
+    "currency": "${defaultCurrency} (or detected currency)",
     "is_recurring": false,
     "recurrence_frequency": "monthly or null",
     "parties": ["Party 1", "Party 2"],
@@ -159,17 +166,19 @@ Respond with ONLY a valid JSON object:
 
 IMPORTANT RULES:
 - For suggested_actions, use practical actions like: "Crear gasto", "Crear pago recurrente", "Importar transacciones", "Registrar ingreso", "Analizar contrato", "Vincular a cliente", "Agregar a deducciones médicas", "Registrar donación", "Vincular a declaración fiscal"
+- Default currency should be ${defaultCurrency} unless another currency is clearly visible
+- Tax authority context: ${taxAuthority}
 - For receipts: extract vendor, amount, date
 - For utility bills: mark is_recurring=true
 - For bank statements: suggest importing transactions
 - For income proofs: extract amount and source
 - For contracts: extract parties involved
-- For tax_slip: extract slip_type, tax_year, issuer, amounts. These are OFFICIAL government/employer tax forms.
+- For tax_slip: extract slip_type, tax_year, issuer, amounts. ${userCountry === 'CL' ? 'Chilean slips: Certificado AFP, APV, Isapre, Fonasa, intereses hipotecarios.' : 'Canadian slips: T4, T4A, T5, T2202, T3, T5007, RRSP receipts.'}
 - For medical_receipt: extract provider, patient, amount. These are for medical expense tax credits.
 - For donation_receipt: extract charity_name, registration_number, amount. Must be from registered charity.
 - For insurance_policy: extract policy_number, coverage_type, premium.
 - For rental_receipt: extract landlord (vendor), amount, date, mark is_recurring=true.
-- For investment_statement: extract institution, account_type, contributions, market_value.
+- For investment_statement: extract institution, account_type, contributions, market_value. ${userCountry === 'CL' ? 'Chilean types: AFP, APV, Fondos Mutuos.' : 'Canadian types: RRSP, TFSA, mutual funds.'}
 - For government_form: extract issuing body, form type, date.
 - For INVOICES: determine invoice_direction (income/expense), extract entities, line_items
 - confidence should be between 0 and 1
