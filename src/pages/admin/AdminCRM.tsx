@@ -21,7 +21,7 @@ import {
   LayoutDashboard, Users, CreditCard, Target, Plus, ExternalLink,
   Globe, Smartphone, TrendingUp, Activity, ArrowLeft, Copy, Check, 
   Pencil, MoreVertical, Zap, Clock, Send, Code, FileJson, Trash2,
-  CheckCircle2, AlertCircle, Loader2, Phone,
+  CheckCircle2, AlertCircle, Loader2, Phone, DollarSign, Merge,
 } from 'lucide-react';
 import { AdminUserOverview } from '@/components/admin/AdminUserOverview';
 import { AdminSubscriptionsTab } from '@/components/admin/tabs/AdminSubscriptionsTab';
@@ -34,6 +34,9 @@ import { AdminLeadHistory } from '@/components/admin/tabs/AdminLeadHistory';
 import { AdminSavedTemplates } from '@/components/admin/tabs/AdminSavedTemplates';
 import { AdminAdvancedMetrics } from '@/components/admin/tabs/AdminAdvancedMetrics';
 import { AdminCrossAppRanking } from '@/components/admin/tabs/AdminCrossAppRanking';
+import { AdminRevenueDashboard } from '@/components/admin/tabs/AdminRevenueDashboard';
+import { LeadMergeDialog } from '@/components/admin/LeadMergeDialog';
+import { useHotLeadRealtime } from '@/hooks/admin/useHotLeadRealtime';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
@@ -103,6 +106,23 @@ const AdminCRM = () => {
   const [selectedApp, setSelectedApp] = useState<ManagedApp | null>(null);
   const [sourceFilter, setSourceFilter] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('users');
+  const [showMerge, setShowMerge] = useState(false);
+
+  // Realtime notifications for HOT leads
+  useHotLeadRealtime();
+
+  // Fetch all leads for merge dialog
+  const { data: allLeadsForMerge = [] } = useQuery({
+    queryKey: ['admin-leads'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('quiz_leads')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
   // Form state
   const [formName, setFormName] = useState('');
@@ -356,6 +376,10 @@ const AdminCRM = () => {
               <Button variant="outline" size="sm" onClick={() => setShowDocs(true)} className="gap-1.5">
                 <Code className="h-3.5 w-3.5" />
                 API
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowMerge(true)} className="gap-1.5">
+                <Merge className="h-3.5 w-3.5" />
+                {isEs ? 'Fusionar' : 'Merge'}
               </Button>
             </div>
           </PageHeader>
@@ -664,7 +688,7 @@ const AdminCRM = () => {
           {/* CRM Tabs */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5 md:grid-cols-10 p-1 bg-muted/50 rounded-xl h-12">
+              <TabsList className="grid w-full grid-cols-5 md:grid-cols-11 p-1 bg-muted/50 rounded-xl h-12">
                 <TabsTrigger value="users" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
                   <Users className="h-3.5 w-3.5" />
                   <span className="hidden md:inline">{isEs ? 'Usuarios' : 'Users'}</span>
@@ -711,6 +735,11 @@ const AdminCRM = () => {
                   <span className="hidden md:inline">{isEs ? 'Planes' : 'Plans'}</span>
                   <span className="md:hidden">💳</span>
                 </TabsTrigger>
+                <TabsTrigger value="revenue" className="flex items-center gap-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white rounded-lg font-semibold text-[10px] md:text-xs">
+                  <DollarSign className="h-3.5 w-3.5" />
+                  <span className="hidden md:inline">Revenue</span>
+                  <span className="md:hidden">💵</span>
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="users"><AdminUserOverview /></TabsContent>
               <TabsContent value="leads"><AdminLeadsTab language={language} sourceFilter={sourceFilter} onClearFilter={() => setSourceFilter(null)} /></TabsContent>
@@ -722,6 +751,7 @@ const AdminCRM = () => {
               <TabsContent value="metrics"><AdminAdvancedMetrics language={language} /></TabsContent>
               <TabsContent value="automation"><AdminAutomationTab language={language} /></TabsContent>
               <TabsContent value="subscriptions"><AdminSubscriptionsTab language={language} /></TabsContent>
+              <TabsContent value="revenue"><AdminRevenueDashboard language={language} /></TabsContent>
             </Tabs>
             <div className="sticky top-6"><AdminActivityFeed language={language} /></div>
           </motion.div>
@@ -777,9 +807,19 @@ const AdminCRM = () => {
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     {[
                       { field: 'phone', desc: isEs ? 'Teléfono' : 'Phone' },
-                      { field: 'score', desc: isEs ? 'Puntuación (0-100)' : 'Score (0-100)' },
-                      { field: 'level', desc: isEs ? 'Nivel del quiz' : 'Quiz level' },
+                      { field: 'score / quiz_score', desc: isEs ? 'Puntuación (0-100)' : 'Score (0-100)' },
+                      { field: 'level / quiz_level', desc: isEs ? 'Nivel del quiz' : 'Quiz level' },
                       { field: 'source', desc: isEs ? '⚠️ Tu source_key' : '⚠️ Your source_key' },
+                      { field: 'country', desc: isEs ? 'País del lead' : 'Lead country' },
+                      { field: 'situation', desc: isEs ? 'Situación laboral' : 'Work situation' },
+                      { field: 'goal', desc: isEs ? 'Meta financiera' : 'Financial goal' },
+                      { field: 'obstacle', desc: isEs ? 'Obstáculo principal' : 'Main obstacle' },
+                      { field: 'time_spent', desc: isEs ? 'Tiempo dedicado' : 'Time spent' },
+                      { field: 'comments', desc: isEs ? 'Comentario personal' : 'Personal comment' },
+                      { field: 'failed_questions', desc: isEs ? 'Array de preguntas fallidas [1,3,5]' : 'Failed questions array [1,3,5]' },
+                      { field: 'returning_lead', desc: isEs ? 'boolean — si el email ya existe' : 'boolean — if email already exists' },
+                      { field: 'previous_sources', desc: isEs ? 'Array de fuentes previas del lead' : 'Array of previous lead sources' },
+                      { field: 'quiz_answers', desc: isEs ? 'Array de respuestas [{question,answer_value,answer_label}]' : 'Answer array [{question,answer_value,answer_label}]' },
                     ].map(f => (
                       <div key={f.field} className="p-2 rounded bg-muted">
                         <code className="text-xs font-mono">{f.field}</code>
@@ -789,11 +829,34 @@ const AdminCRM = () => {
                   </div>
                 </div>
 
-                {/* Example request */}
+                {/* Metadata object */}
+                <div className="space-y-2">
+                  <h4 className="font-bold text-sm">{isEs ? 'Objeto metadata (opcional)' : 'Metadata object (optional)'}</h4>
+                  <p className="text-xs text-muted-foreground">{isEs ? 'Campos enriquecidos almacenados en JSONB. Cada app puede enviar datos específicos.' : 'Enriched fields stored in JSONB. Each app can send specific data.'}</p>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    {[
+                      { field: 'metadata.situacion', desc: isEs ? 'Situación (alias ES)' : 'Situation (ES alias)' },
+                      { field: 'metadata.objetivo', desc: isEs ? 'Objetivo (alias ES)' : 'Goal (ES alias)' },
+                      { field: 'metadata.obstaculo', desc: isEs ? 'Obstáculo (alias ES)' : 'Obstacle (ES alias)' },
+                      { field: 'metadata.conocimiento_previo', desc: isEs ? 'Conocimiento previo' : 'Prior knowledge' },
+                      { field: 'metadata.producto_recomendado', desc: isEs ? 'Producto sugerido' : 'Recommended product' },
+                      { field: 'metadata.precio_producto', desc: isEs ? 'Precio del producto (number)' : 'Product price (number)' },
+                      { field: 'metadata.guide', desc: isEs ? 'ID/nombre de guía descargada' : 'Downloaded guide ID/name' },
+                      { field: 'metadata.respuestas_best_practices', desc: isEs ? 'Mapa {pregunta: bool}' : 'Map {question: bool}' },
+                    ].map(f => (
+                      <div key={f.field} className="p-2 rounded bg-muted">
+                        <code className="text-[10px] font-mono">{f.field}</code>
+                        <p className="text-[10px] text-muted-foreground">{f.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Example request - full */}
                 <div className="space-y-2">
                   <h4 className="font-bold text-sm flex items-center gap-2">
                     <FileJson className="h-4 w-4" />
-                    {isEs ? 'Ejemplo de request' : 'Example request'}
+                    {isEs ? 'Ejemplo completo' : 'Full example'}
                   </h4>
                   <div className="relative">
                     <pre className="text-[11px] p-3 rounded bg-zinc-900 text-zinc-100 font-mono overflow-x-auto">
@@ -804,14 +867,26 @@ const AdminCRM = () => {
     name: "Juan Pérez",
     email: "juan@example.com",
     phone: "+56912345678",
-    score: 45,
-    level: "beginner",
-    source: "my-app-name"
+    quiz_score: 45,
+    quiz_level: "principiante",
+    source: "my-app-name",
+    country: "Chile",
+    situation: "Empleado",
+    goal: "Independencia financiera",
+    obstacle: "No sé por dónde empezar",
+    comments: "Me interesa mucho",
+    returning_lead: true,
+    previous_sources: ["my-app-lead-magnet"],
+    metadata: {
+      producto_recomendado: "Guía Completa",
+      precio_producto: 29,
+      guide: "finanzas-101"
+    }
   })
 })`}
                     </pre>
                     <Button variant="secondary" size="sm" className="absolute top-2 right-2 h-7 text-xs" 
-                      onClick={() => copyToClipboard(`fetch("${WEBHOOK_BASE_URL}", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  body: JSON.stringify({\n    name: "Juan Pérez",\n    email: "juan@example.com",\n    phone: "+56912345678",\n    score: 45,\n    level: "beginner",\n    source: "my-app-name"\n  })\n})`, 'docs-fetch')}>
+                      onClick={() => copyToClipboard(`fetch("${WEBHOOK_BASE_URL}", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  body: JSON.stringify({\n    name: "Juan Pérez",\n    email: "juan@example.com",\n    phone: "+56912345678",\n    quiz_score: 45,\n    quiz_level: "principiante",\n    source: "my-app-name",\n    country: "Chile",\n    returning_lead: true,\n    previous_sources: ["my-app-lead-magnet"],\n    metadata: { producto_recomendado: "Guía Completa", precio_producto: 29, guide: "finanzas-101" }\n  })\n})`, 'docs-fetch')}>
                       {copiedField === 'docs-fetch' ? <Check className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
                       Copy
                     </Button>
@@ -996,6 +1071,13 @@ const AdminCRM = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Lead Merge Dialog */}
+        <LeadMergeDialog
+          open={showMerge}
+          onOpenChange={setShowMerge}
+          allLeads={allLeadsForMerge as any}
+        />
       </TooltipProvider>
     </Layout>
   );

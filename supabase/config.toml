@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.generate-lead-message]
 verify_jwt = false
+
+[functions.stripe-revenue]
+verify_jwt = true
