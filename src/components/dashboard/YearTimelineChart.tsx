@@ -188,13 +188,13 @@ export function YearTimelineChart({
     // Top expense categories
     const categoryMap: Record<string, number> = {};
     expenses?.forEach(exp => {
-      const cat = exp.category || (language === 'es' ? 'Sin categoría' : 'Uncategorized');
+      const cat = exp.category || 'other';
       categoryMap[cat] = (categoryMap[cat] || 0) + Number(exp.amount);
     });
     const topCategories = Object.entries(categoryMap)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 4)
-      .map(([name, amount]) => ({ name, amount, pct: totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0 }));
+      .map(([key, amount]) => ({ name: getCategoryLabelByLanguage(key, language), amount, pct: totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0 }));
     
     // Income sources diversity
     const sourceMap: Record<string, number> = {};
