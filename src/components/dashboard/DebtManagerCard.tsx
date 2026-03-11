@@ -53,17 +53,14 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   other: Receipt,
 };
 
-function useDebtFormatCurrency() {
-  const { currentCurrency } = useEntity();
-  return (amount: number): string => {
-    const locale = currentCurrency === 'CLP' ? 'es-CL' : 'en-CA';
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: currentCurrency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+function formatCurrencyStatic(amount: number, curr: string): string {
+  const locale = curr === 'CLP' ? 'es-CL' : 'en-CA';
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: curr,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
 function formatMonths(months: number, language: string): string {
