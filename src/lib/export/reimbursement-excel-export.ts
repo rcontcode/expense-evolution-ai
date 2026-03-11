@@ -334,7 +334,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
       const row = 4 + idx;
       const percentage = totalReimbursable > 0 ? (stats.total / totalReimbursable) * 100 : 0;
       
-      catSheet.getCell(row, 1).value = CATEGORY_LABELS[category] || category;
+      catSheet.getCell(row, 1).value = getCatLabel(category, language);
       catSheet.getCell(row, 2).value = stats.count;
       catSheet.getCell(row, 3).value = stats.total;
       catSheet.getCell(row, 3).numFmt = '"$"#,##0.00';
