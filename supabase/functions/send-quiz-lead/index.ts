@@ -20,6 +20,7 @@ interface QuizLeadPayload {
   failed_questions: number[];
   comments?: string;
   source?: string;
+  metadata?: Record<string, unknown>;
 }
 
 // Lead Scoring Functions
