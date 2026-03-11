@@ -13,6 +13,8 @@ const CRITICAL_OBSTACLES = [
   'Gastos descontrolados',
   'Falta de conocimiento',
   'Deudas abrumadoras',
+  'Me distraigo',
+  'Procrastino',
 ];
 
 // Ambitious goals that indicate high potential
