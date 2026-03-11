@@ -55,7 +55,8 @@ export function useReceiptProcessor() {
 
   const processReceipt = async (
     imageBase64?: string,
-    voiceText?: string
+    voiceText?: string,
+    country?: string
   ): Promise<ProcessReceiptResult | null> => {
     if (!imageBase64 && !voiceText) {
       toast.error(t('quickCapture.noInput'));
@@ -66,7 +67,7 @@ export function useReceiptProcessor() {
 
     try {
       const { data, error } = await supabase.functions.invoke('process-receipt', {
-        body: { imageBase64, voiceText },
+        body: { imageBase64, voiceText, country },
       });
 
       if (error) {

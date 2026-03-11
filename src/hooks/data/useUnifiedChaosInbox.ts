@@ -75,6 +75,9 @@ export { TYPE_LABELS };
 export function useUnifiedChaosInbox() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { currentEntity } = useEntity();
+  const userCountry = (currentEntity?.country as string) || 'CA';
+  const userCurrency = userCountry === 'CL' ? 'CLP' : 'CAD';
   const [documents, setDocuments] = useState<ClassifiedDocument[]>([]);
   const [isProcessingBatch, setIsProcessingBatch] = useState(false);
 
