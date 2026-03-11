@@ -24,6 +24,12 @@ export const expenseSchema = z.object({
     'office_supplies',
     'utilities',
     'fuel',
+    'advertising',
+    'materials',
+    'hobbies',
+    'family_outings',
+    'gifts',
+    'scheduled_purchases',
     'other'
   ]),
   description: z.string().max(500, 'Description too long').trim().optional(),
