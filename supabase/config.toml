@@ -62,3 +62,6 @@ verify_jwt = true
 
 [functions.run-automations]
 verify_jwt = false
+
+[functions.run-delayed-automations]
+verify_jwt = false
