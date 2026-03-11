@@ -38,38 +38,22 @@ interface ExportData {
   language: string;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  meals: 'Comidas',
-  meals_entertainment: 'Comidas y Entretenimiento',
-  travel: 'Viajes',
-  equipment: 'Equipos',
-  software: 'Software',
-  mileage: 'Kilometraje',
-  home_office: 'Oficina en casa',
-  professional_services: 'Servicios profesionales',
-  office_supplies: 'Suministros de oficina',
-  utilities: 'Servicios públicos',
-  fuel: 'Combustible',
-  materials: 'Materiales',
-  tools: 'Herramientas',
-  advertising: 'Publicidad',
-  insurance: 'Seguros',
-  communications: 'Comunicaciones',
-  bank_fees: 'Comisiones Bancarias',
-  subscriptions: 'Suscripciones',
-  other: 'Otros',
-};
+import { getCategoryLabelByLanguage, getCategoryIcon } from '@/lib/constants/expense-categories';
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: 'Pendiente',
-  classified: 'Clasificado',
-  deductible: 'Deducible Fiscal',
-  non_deductible: 'No Deducible',
-  reimbursable: 'Reembolsable',
-  rejected: 'Rechazado',
-  under_review: 'En Revisión',
-  finalized: 'Finalizado',
-  client_reimbursable: 'Reembolsable Cliente'
+function getCatLabel(cat: string, lang: string): string {
+  return getCategoryLabelByLanguage(cat, lang === 'es' ? 'es' : 'en');
+}
+
+const STATUS_LABELS: Record<string, { es: string; en: string }> = {
+  pending: { es: 'Pendiente', en: 'Pending' },
+  classified: { es: 'Clasificado', en: 'Classified' },
+  deductible: { es: 'Deducible Fiscal', en: 'Tax Deductible' },
+  non_deductible: { es: 'No Deducible', en: 'Non-Deductible' },
+  reimbursable: { es: 'Reembolsable', en: 'Reimbursable' },
+  rejected: { es: 'Rechazado', en: 'Rejected' },
+  under_review: { es: 'En Revisión', en: 'Under Review' },
+  finalized: { es: 'Finalizado', en: 'Finalized' },
+  client_reimbursable: { es: 'Reembolsable Cliente', en: 'Client Reimbursable' },
 };
 
 const CHART_COLORS = [
@@ -178,7 +162,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
     const percentage = totalReimbursable > 0 ? (total / totalReimbursable) * 100 : 0;
     const barLength = Math.round(percentage / 5); // Max 20 chars for 100%
     
-    summarySheet.getCell(row, 1).value = CATEGORY_LABELS[category] || category;
+    summarySheet.getCell(row, 1).value = getCatLabel(category, language);
     summarySheet.getCell(row, 2).value = total;
     summarySheet.getCell(row, 2).numFmt = '"$"#,##0.00';
     summarySheet.getCell(row, 3).value = percentage / 100;
@@ -274,7 +258,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
     clientSheet.getCell(row, 4).numFmt = '"$"#,##0.00';
     clientSheet.getCell(row, 5).value = percentage / 100;
     clientSheet.getCell(row, 5).numFmt = '0.0%';
-    clientSheet.getCell(row, 6).value = topCategory ? (CATEGORY_LABELS[topCategory[0]] || topCategory[0]) : 'N/A';
+    clientSheet.getCell(row, 6).value = topCategory ? getCatLabel(topCategory[0], language) : 'N/A';
     clientSheet.getCell(row, 7).value = topCategory ? topCategory[1].total : 0;
     clientSheet.getCell(row, 7).numFmt = '"$"#,##0.00';
     
@@ -350,7 +334,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
       const row = 4 + idx;
       const percentage = totalReimbursable > 0 ? (stats.total / totalReimbursable) * 100 : 0;
       
-      catSheet.getCell(row, 1).value = CATEGORY_LABELS[category] || category;
+      catSheet.getCell(row, 1).value = getCatLabel(category, language);
       catSheet.getCell(row, 2).value = stats.count;
       catSheet.getCell(row, 3).value = stats.total;
       catSheet.getCell(row, 3).numFmt = '"$"#,##0.00';
@@ -469,7 +453,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
     }
     vendorStats[vendor].count += 1;
     vendorStats[vendor].total += Number(e.amount);
-    vendorStats[vendor].categories.add(CATEGORY_LABELS[e.category || 'other'] || e.category || 'Otro');
+    vendorStats[vendor].categories.add(getCatLabel(e.category || 'other', language));
     vendorStats[vendor].clients.add(e.client?.name || 'Desconocido');
   });
 
@@ -541,12 +525,12 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
       detailSheet.getCell(row, 2).value = format(parseISO(expense.date), 'dd/MM/yyyy');
       detailSheet.getCell(row, 3).value = expense.client?.name || 'Sin asignar';
       detailSheet.getCell(row, 4).value = expense.vendor || '';
-      detailSheet.getCell(row, 5).value = CATEGORY_LABELS[expense.category || 'other'] || expense.category || 'Otro';
+      detailSheet.getCell(row, 5).value = getCatLabel(expense.category || 'other', language);
       detailSheet.getCell(row, 6).value = expense.description || '';
       detailSheet.getCell(row, 7).value = Number(expense.amount);
       detailSheet.getCell(row, 7).numFmt = '"$"#,##0.00';
       detailSheet.getCell(row, 8).value = expense.currency || 'CAD';
-      detailSheet.getCell(row, 9).value = STATUS_LABELS[expense.status || 'pending'] || expense.status || '';
+      detailSheet.getCell(row, 9).value = STATUS_LABELS[expense.status || 'pending']?.[language === 'es' ? 'es' : 'en'] || expense.status || '';
       detailSheet.getCell(row, 10).value = expense.reimbursement_type || 'Sin clasificar';
       detailSheet.getCell(row, 11).value = expense.project_id || '';
       detailSheet.getCell(row, 12).value = expense.contract_id || '';
@@ -671,7 +655,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
         const totalPct = totalReimbursable > 0 ? (catData.total / totalReimbursable) * 100 : 0;
         
         matrixSheet.getCell(mxRow, 1).value = group.clientName;
-        matrixSheet.getCell(mxRow, 2).value = CATEGORY_LABELS[category] || category;
+        matrixSheet.getCell(mxRow, 2).value = getCatLabel(category, language);
         matrixSheet.getCell(mxRow, 3).value = catData.count;
         matrixSheet.getCell(mxRow, 4).value = catData.total;
         matrixSheet.getCell(mxRow, 4).numFmt = '"$"#,##0.00';

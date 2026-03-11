@@ -12,8 +12,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
 import { cn } from '@/lib/utils';
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { getCategoryLabelByLanguage, getCategoryColor } from '@/lib/constants/expense-categories';
 import { 
-  Building2, 
+  Building2,
   DollarSign, 
   FileText, 
   Download,
@@ -55,38 +57,6 @@ interface ClientGroup {
 
 const REIMBURSABLE_STATUSES = ['reimbursable', 'pending', 'under_review', 'client_reimbursable'];
 
-const CATEGORY_LABELS: Record<string, string> = {
-  meals: 'Comidas',
-  travel: 'Viajes',
-  equipment: 'Equipos',
-  software: 'Software',
-  mileage: 'Kilometraje',
-  home_office: 'Oficina en casa',
-  professional_services: 'Servicios profesionales',
-  office_supplies: 'Suministros de oficina',
-  utilities: 'Servicios públicos',
-  fuel: 'Combustible',
-  materials: 'Materiales',
-  tools: 'Herramientas',
-  other: 'Otros',
-};
-
-const CATEGORY_COLORS: Record<string, string> = {
-  meals: 'hsl(var(--chart-1))',
-  travel: 'hsl(var(--chart-2))',
-  equipment: 'hsl(var(--chart-3))',
-  software: 'hsl(var(--chart-4))',
-  mileage: 'hsl(var(--chart-5))',
-  home_office: 'hsl(280, 70%, 55%)',
-  professional_services: 'hsl(200, 75%, 50%)',
-  office_supplies: 'hsl(30, 85%, 55%)',
-  utilities: 'hsl(160, 60%, 45%)',
-  fuel: 'hsl(340, 70%, 50%)',
-  materials: 'hsl(50, 80%, 50%)',
-  tools: 'hsl(100, 60%, 45%)',
-  other: 'hsl(220, 15%, 50%)',
-};
-
 const CHART_COLORS = [
   'hsl(var(--chart-1))',
   'hsl(var(--chart-2))',
@@ -101,6 +71,7 @@ const CHART_COLORS = [
 export function ClientReimbursementReport({ expenses }: ClientReimbursementReportProps) {
   const { t, language } = useLanguage();
   const dateLocale = language === 'es' ? es : enUS;
+  const { formatCurrency, formatCompact } = useFormatCurrency();
   
   const [dateRange, setDateRange] = useState<DateRange>({
     from: startOfMonth(new Date()),
@@ -184,7 +155,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
   const categoryChartData = useMemo(() => {
     return Object.entries(categoryTotals)
       .map(([category, total]) => ({
-        name: CATEGORY_LABELS[category] || category,
+        name: getCategoryLabelByLanguage(category, language === 'es' ? 'es' : 'en'),
         value: total,
         category,
       }))
@@ -303,7 +274,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
               </span>
             </div>
             <h2 className="text-2xl md:text-3xl font-bold">
-              ${totalReimbursable.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+              {formatCurrency(totalReimbursable)}
             </h2>
             <p className="text-sm opacity-80 mt-1">
               {language === 'es' 
@@ -443,7 +414,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground font-medium">{language === 'es' ? '📊 Promedio' : '📊 Average'}</p>
-                <p className="text-3xl font-bold mt-1">${averagePerExpense.toFixed(0)}</p>
+                <p className="text-3xl font-bold mt-1">{formatCompact(averagePerExpense)}</p>
                 <p className="text-xs text-muted-foreground mt-1">{language === 'es' ? 'por gasto' : 'per expense'}</p>
               </div>
               <div className="p-3 rounded-xl bg-chart-3/10 group-hover:bg-chart-3/20 transition-colors">
@@ -458,7 +429,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground font-medium">{language === 'es' ? '💰 Total a Facturar' : '💰 Total to Bill'}</p>
-                <p className="text-3xl font-bold mt-1 text-success">${totalReimbursable.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
+                <p className="text-3xl font-bold mt-1 text-success">{formatCurrency(totalReimbursable)}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <ArrowUpRight className="h-3 w-3 text-success" />
                   <p className="text-xs text-success">{language === 'es' ? '✅ Listo para cobrar' : '✅ Ready to collect'}</p>
@@ -506,13 +477,13 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                     {categoryChartData.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={CATEGORY_COLORS[entry.category] || CHART_COLORS[index % CHART_COLORS.length]} 
+                        fill={getCategoryColor(entry.category) || CHART_COLORS[index % CHART_COLORS.length]} 
                       />
                     ))}
                   </Pie>
                   <ChartTooltip 
                     content={<ChartTooltipContent />}
-                    formatter={(value) => [`$${Number(value).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, 'Monto']}
+                    formatter={(value) => [formatCurrency(Number(value)), language === 'es' ? 'Monto' : 'Amount']}
                   />
                 </PieChart>
               </ChartContainer>
@@ -557,7 +528,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                   />
                   <ChartTooltip 
                     content={<ChartTooltipContent />}
-                    formatter={(value) => [`$${Number(value).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`, 'Total']}
+                    formatter={(value) => [formatCurrency(Number(value)), 'Total']}
                   />
                   <Bar 
                     dataKey="total" 
@@ -625,7 +596,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                   </div>
                   <div className="text-right">
                     <p className="text-3xl font-bold" style={{ color: CHART_COLORS[groupIndex % CHART_COLORS.length] }}>
-                      ${group.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                      {formatCurrency(group.total)}
                     </p>
                     <p className="text-sm text-muted-foreground">{language === 'es' ? 'Total a reembolsar' : 'Total to reimburse'}</p>
                   </div>
@@ -647,14 +618,14 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                         return (
                           <div key={category} className="space-y-1">
                             <div className="flex justify-between text-sm">
-                              <span className="font-medium">{CATEGORY_LABELS[category] || category}</span>
-                              <span className="text-muted-foreground">{data.count} • ${data.total.toFixed(2)}</span>
+                              <span className="font-medium">{getCategoryLabelByLanguage(category, language === 'es' ? 'es' : 'en')}</span>
+                              <span className="text-muted-foreground">{data.count} • {formatCurrency(data.total)}</span>
                             </div>
                             <Progress 
                               value={percentage} 
                               className="h-2"
                               style={{ 
-                                '--progress-background': CATEGORY_COLORS[category] || 'hsl(var(--primary))'
+                                '--progress-background': getCategoryColor(category) || 'hsl(var(--primary))'
                               } as React.CSSProperties}
                             />
                           </div>
@@ -703,19 +674,19 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                                 variant="secondary" 
                                 className="text-xs"
                                 style={{ 
-                                  backgroundColor: `${CATEGORY_COLORS[expense.category || 'other']}20`,
-                                  color: CATEGORY_COLORS[expense.category || 'other'],
-                                  borderColor: CATEGORY_COLORS[expense.category || 'other']
+                                  backgroundColor: `${getCategoryColor(expense.category || 'other')}20`,
+                                  color: getCategoryColor(expense.category || 'other'),
+                                  borderColor: getCategoryColor(expense.category || 'other')
                                 }}
                               >
-                                {CATEGORY_LABELS[expense.category || 'other'] || expense.category}
+                                {getCategoryLabelByLanguage(expense.category || 'other', language === 'es' ? 'es' : 'en')}
                               </Badge>
                             </TableCell>
                             <TableCell className="hidden md:table-cell text-muted-foreground max-w-[200px] truncate">
                               {expense.description || '—'}
                             </TableCell>
                             <TableCell className="text-right font-semibold">
-                              ${Number(expense.amount).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                              {formatCurrency(Number(expense.amount))}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -745,7 +716,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
               <div>
                 <p className="font-medium">{language === 'es' ? '✅ Reporte listo para exportar' : '✅ Report ready to export'}</p>
                 <p className="text-sm text-muted-foreground">
-                  {clientGroups.length} {language === 'es' ? 'clientes' : 'clients'} • {totalExpenses} {language === 'es' ? 'gastos' : 'expenses'} • ${totalReimbursable.toLocaleString('es-MX', { minimumFractionDigits: 2 })} total
+                  {clientGroups.length} {language === 'es' ? 'clientes' : 'clients'} • {totalExpenses} {language === 'es' ? 'gastos' : 'expenses'} • {formatCurrency(totalReimbursable)} total
                 </p>
               </div>
             </div>

@@ -15,6 +15,7 @@ import { exportTaxReport } from '@/lib/export/tax-report-export';
 import { useToast } from '@/hooks/use-toast';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCountryContext } from '@/hooks/utils/useCountryContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { FileSpreadsheet, FileText, Download, Loader2, FileCheck, FileJson, FileType, FileWarning, Sparkles, Receipt } from 'lucide-react';
@@ -30,6 +31,7 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
   const { toast } = useToast();
   const { data: profile } = useProfile();
   const { user } = useAuth();
+  const { currentCountry } = useCountryContext();
   const [exportType, setExportType] = useState<'general' | 't2125' | 'tax_report'>('general');
   const [format, setFormat] = useState<'csv' | 'xlsx' | 'json' | 'pdf'>('xlsx');
   const [t2125Format, setT2125Format] = useState<'xlsx' | 'pdf'>('xlsx');
@@ -109,6 +111,10 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
           const options: ExportOptions = {
             format,
             year: selectedYear,
+            language: language as 'es' | 'en',
+            country: currentCountry,
+            userName: profile?.full_name || undefined,
+            businessName: profile?.business_name || undefined,
           };
           await exportExpenses(filteredExpenses, options);
         }
