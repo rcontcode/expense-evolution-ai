@@ -673,12 +673,12 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                                 variant="secondary" 
                                 className="text-xs"
                                 style={{ 
-                                  backgroundColor: `${CATEGORY_COLORS[expense.category || 'other']}20`,
-                                  color: CATEGORY_COLORS[expense.category || 'other'],
-                                  borderColor: CATEGORY_COLORS[expense.category || 'other']
+                                  backgroundColor: `${getCategoryColor(expense.category || 'other')}20`,
+                                  color: getCategoryColor(expense.category || 'other'),
+                                  borderColor: getCategoryColor(expense.category || 'other')
                                 }}
                               >
-                                {CATEGORY_LABELS[expense.category || 'other'] || expense.category}
+                                {getCategoryLabelByLanguage(expense.category || 'other', language === 'es' ? 'es' : 'en')}
                               </Badge>
                             </TableCell>
                             <TableCell className="hidden md:table-cell text-muted-foreground max-w-[200px] truncate">
