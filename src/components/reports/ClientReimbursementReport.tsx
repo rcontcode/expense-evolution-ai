@@ -716,7 +716,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
               <div>
                 <p className="font-medium">{language === 'es' ? '✅ Reporte listo para exportar' : '✅ Report ready to export'}</p>
                 <p className="text-sm text-muted-foreground">
-                  {clientGroups.length} {language === 'es' ? 'clientes' : 'clients'} • {totalExpenses} {language === 'es' ? 'gastos' : 'expenses'} • ${totalReimbursable.toLocaleString('es-MX', { minimumFractionDigits: 2 })} total
+                  {clientGroups.length} {language === 'es' ? 'clientes' : 'clients'} • {totalExpenses} {language === 'es' ? 'gastos' : 'expenses'} • {formatCurrency(totalReimbursable)} total
                 </p>
               </div>
             </div>
