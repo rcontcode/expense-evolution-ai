@@ -1,124 +1,63 @@
 
 
-## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
+## Diagnóstico: Discriminación Chile vs Canadá
 
-### ✅ Completado en EvoFinz
+### Estado Actual — NO hay discriminación por país
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
-| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
-| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
-| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
-| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
+Revisé todos los flujos end-to-end y encontré que **ninguno** envía el país del usuario a las funciones backend:
 
-### ✅ Completado en Fokuspark
+| Flujo | ¿Envía país? | Problema |
+|-------|:---:|---------|
+| `classify-document` (Bandeja del Caos) | ❌ | El prompt dice "Canada and Chile" genéricamente pero no sabe cuál es el usuario |
+| `process-receipt` (OCR/Captura) | ❌ | El prompt menciona CRA pero nunca SII. Hardcodea `currency: "CAD"` como default |
+| `useUnifiedChaosInbox` (procesamiento) | ❌ | Hardcodea `currency: 'CAD'` en líneas 312, 334, 424 |
+| `tax-report-export.ts` (Reporte) | ✅ | Recibe `country` como parámetro y discrimina correctamente |
+| `useTaxCalculations.ts` (Reglas) | ✅ | Tiene reglas separadas CA vs CL |
+| `TaxDocumentChecklist.tsx` | ✅ | Filtra por país correctamente |
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
-| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
-| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
-| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
+### Gaps Concretos
 
-### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
+**G1 — classify-document**: El prompt IA ya menciona ambos países, pero no adapta prioridades ni moneda según el usuario. Un chileno que suba un certificado AFP recibe `currency: "CAD"` por default.
 
----
+**G2 — process-receipt**: El prompt OCR está 100% sesgado a Canadá:
+- Solo menciona tiendas canadienses (Home Depot CA, Costco CA, Canadian Tire)
+- Solo menciona CRA como autoridad fiscal
+- No incluye tiendas/contexto chileno (Falabella, Ripley, Líder, Jumbo, Copec, etc.)
+- Product search URLs son todas `.ca`
 
-## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
+**G3 — useUnifiedChaosInbox**: Hardcodea `'CAD'` como moneda fallback en 3+ lugares.
 
-### ✅ Confirmado: Sistema funciona correctamente
+**G4 — VoiceParsers.ts**: Los keywords de categorías no incluyen términos chilenos (boleta, cotización, AFP, etc.)
 
-- Planes individuales (Free/Premium/Pro) son independientes por app
-- Bundle compartido usa mismos Stripe Price IDs en ambas apps
-- Ambos webhooks detectan Bundle y setean `has_bundle = true`
-- No hay acceso cruzado no autorizado entre apps
+### Plan de Cambios
 
-### ✅ Gaps implementados en Fokuspark
+**Cambio 1 — Pasar país al backend** (cliente → Edge Functions)
+- `useUnifiedChaosInbox.ts`: Obtener `currentCountry` de `useCountryContext()` o `EntityContext`, enviarlo como `country` en el body de `classify-document` y `process-receipt`
+- `useReceiptProcessor.ts`: Enviar `country` en el body
 
-| # | Gap | Estado |
-|---|-----|--------|
-| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
-| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
+**Cambio 2 — classify-document**: Recibir `country` en el request body, adaptar:
+- Moneda default (CAD vs CLP)
+- Priorizar tipos de documento relevantes al país
+- Adaptar `suggested_actions` al contexto fiscal
 
-### 📋 Gaps pendientes (baja prioridad)
+**Cambio 3 — process-receipt**: Recibir `country`, adaptar:
+- Agregar tiendas chilenas al contexto de vendor (Falabella, Líder, Jumbo, Copec, ENAP, Sodimac, etc.)
+- Agregar URLs de búsqueda de productos chilenos (.cl)
+- Mencionar SII + IVA cuando `country === 'CL'`
+- Cambiar moneda default de CAD a CLP cuando corresponda
+- Adaptar las reglas de deducción al contexto SII vs CRA
 
-| # | Gap | Prioridad |
-|---|-----|-----------|
-| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
-| S3 | Texto del Bundle podría ser más descriptivo | Baja |
+**Cambio 4 — useUnifiedChaosInbox**: Reemplazar todos los `'CAD'` hardcodeados con la moneda del contexto del usuario
 
----
+**Cambio 5 — VoiceParsers.ts**: Agregar keywords chilenos (boleta, cotización, patente, AFP, isapre, etc.)
 
-## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
+### Archivos a Modificar
 
-### ✅ Veredicto: No igualar precios — estructura actual es óptima
+| Archivo | Cambio |
+|---------|--------|
+| `src/hooks/data/useUnifiedChaosInbox.ts` | Inyectar country + currency dinámica |
+| `src/hooks/data/useReceiptProcessor.ts` | Enviar country al backend |
+| `supabase/functions/classify-document/index.ts` | Recibir country, adaptar prompt + defaults |
+| `supabase/functions/process-receipt/index.ts` | Recibir country, agregar contexto CL, adaptar vendor/URLs/reglas |
+| `src/components/chat/voice/VoiceParsers.ts` | Agregar keywords chilenos |
 
-| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
-|------|---------|-----------|-----------|-------|
-| Free | $0 | $0 | ✅ Ya iguales | — |
-| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
-| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
-| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
-
-### 📋 Pendiente técnico
-
-| # | Tarea | App | Prioridad |
-|---|-------|-----|-----------|
-| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
-
----
-
-## Quiz Multi-App — CRM Unificado
-
-### ✅ Completado en EvoFinz
-
-| # | Tarea | Estado |
-|---|-------|--------|
-| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
-| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
-| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
-| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
-| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
-
-### 📋 Pendiente en Fokuspark
-
-| # | Tarea | Prioridad |
-|---|-------|-----------|
-| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
-| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
-| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
-| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
-
----
-
-## Metadata JSONB — Integración Multi-App
-
-### ✅ Completado
-
-| # | Tarea | Estado |
-|---|-------|--------|
-| M1 | Columna `metadata` JSONB en `quiz_leads` | ✅ |
-| M2 | `webhook-leads` guarda metadata estructurada | ✅ |
-| M3 | `send-quiz-lead` acepta `metadata` opcional | ✅ |
-| M4 | Interface `QuizLead` incluye `metadata` | ✅ |
-| M5 | CRM muestra Datos de la App (producto, precio, conocimiento, best practices) | ✅ |
-| M6 | Scoring enriquecido con metadata | ✅ |
-| M7 | Talking points usan metadata | ✅ |
-
----
-
-## Sincronización Fiscal Completa — CRA/SII
-
-### ✅ Completado
-
-| # | Tarea | Estado |
-|---|-------|--------|
-| T1 | 29 categorías de gasto sincronizadas (types, schema, constants) | ✅ |
-| T2 | 15 tipos de documento en clasificador IA + Bandeja del Caos | ✅ |
-| T3 | TaxDocumentChecklist adaptado por país en TaxOptimizer | ✅ |
-| T4 | Reglas de deducción CRA (20+) y SII (20+) con fuentes legales | ✅ |
-| T5 | `process-receipt` actualizado con 29 categorías (OCR/voz/texto) | ✅ |
-| T6 | `MonthComparisonChart` usa todas las categorías dinámicamente | ✅ |
-| T7 | T2125 mapping expandido para 29 categorías | ✅ |
-| T8 | Reporte Fiscal para Contador (Excel 4 hojas) en ExportDialog | ✅ |
