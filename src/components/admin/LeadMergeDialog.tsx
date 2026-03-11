@@ -91,7 +91,7 @@ export function LeadMergeDialog({ open, onOpenChange, allLeads }: Props) {
           country: bestCountry,
           lead_score: bestScore,
           priority: getLeadPriority(bestScore),
-          metadata: mergedMetadata,
+          metadata: mergedMetadata as any,
           contacted_at: primary.contacted_at || secondaries.find(l => l.contacted_at)?.contacted_at || null,
           converted_to_user: primary.converted_to_user || secondaries.some(l => l.converted_to_user),
         })
