@@ -11,9 +11,13 @@ import { ExpenseWithRelations } from '@/types/expense.types';
 import { exportExpenses, ExportOptions } from '@/lib/export/expense-export';
 import { exportT2125Report } from '@/lib/export/t2125-export';
 import { exportT2125ToPDF, exportExpensesToPDF, PDFExportOptions } from '@/lib/export/pdf-export';
+import { exportTaxReport } from '@/lib/export/tax-report-export';
 import { useToast } from '@/hooks/use-toast';
 import { useProfile } from '@/hooks/data/useProfile';
-import { FileSpreadsheet, FileText, Download, Loader2, FileCheck, FileJson, FileType, FileWarning, Sparkles } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import { FileSpreadsheet, FileText, Download, Loader2, FileCheck, FileJson, FileType, FileWarning, Sparkles, Receipt } from 'lucide-react';
 
 interface ExportDialogProps {
   open: boolean;
@@ -25,12 +29,27 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const { data: profile } = useProfile();
-  const [exportType, setExportType] = useState<'general' | 't2125'>('general');
+  const { user } = useAuth();
+  const [exportType, setExportType] = useState<'general' | 't2125' | 'tax_report'>('general');
   const [format, setFormat] = useState<'csv' | 'xlsx' | 'json' | 'pdf'>('xlsx');
   const [t2125Format, setT2125Format] = useState<'xlsx' | 'pdf'>('xlsx');
   const [yearFilter, setYearFilter] = useState<string>('all');
   const [isExporting, setIsExporting] = useState(false);
   const [isDraft, setIsDraft] = useState(false);
+
+  // Fetch documents for tax report checklist
+  const { data: userDocuments } = useQuery({
+    queryKey: ['documents-for-export', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase
+        .from('documents')
+        .select('file_name, extracted_data, created_at')
+        .eq('user_id', user.id);
+      return data || [];
+    },
+    enabled: !!user && open,
+  });
 
   // Get available years from expenses
   const years = [...new Set(expenses.map(e => new Date(e.date).getFullYear()))].sort((a, b) => b - a);
@@ -66,7 +85,18 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
         country: profile?.country || 'CA',  // ExportDialog uses profile for business info context
       };
 
-      if (exportType === 't2125') {
+      if (exportType === 'tax_report') {
+        await exportTaxReport(filteredExpenses, {
+          year: selectedYear,
+          country: profile?.country || 'CA',
+          province: profile?.province || undefined,
+          language: language as 'es' | 'en',
+          userName: profile?.full_name || undefined,
+          businessName: profile?.business_name || undefined,
+          businessNumber: profile?.business_number || undefined,
+          documents: userDocuments || [],
+        });
+      } else if (exportType === 't2125') {
         if (t2125Format === 'pdf') {
           exportT2125ToPDF(filteredExpenses, selectedYear, pdfOptions);
         } else {
@@ -118,10 +148,14 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={exportType} onValueChange={(v) => setExportType(v as 'general' | 't2125')} className="py-4">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs value={exportType} onValueChange={(v) => setExportType(v as 'general' | 't2125' | 'tax_report')} className="py-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="general">{t('export.generalExport')}</TabsTrigger>
             <TabsTrigger value="t2125">{t('export.t2125Report')}</TabsTrigger>
+            <TabsTrigger value="tax_report" className="gap-1">
+              <Receipt className="h-3 w-3" />
+              {language === 'es' ? 'Contador' : 'Accountant'}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-4 mt-4">
@@ -219,7 +253,32 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
             </div>
           </TabsContent>
 
-          {/* Year Filter - Common for both tabs */}
+          <TabsContent value="tax_report" className="space-y-4 mt-4">
+            <div className="p-4 border rounded-lg bg-emerald-50 dark:bg-emerald-950/20">
+              <div className="flex items-start gap-3">
+                <Receipt className="h-6 w-6 text-emerald-600 mt-0.5" />
+                <div>
+                  <p className="font-medium text-emerald-900 dark:text-emerald-100">
+                    {language === 'es' ? 'Reporte Fiscal para Contador' : 'Tax Report for Accountant'}
+                  </p>
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300 mt-1">
+                    {language === 'es' 
+                      ? 'Excel completo con todo lo que tu contador necesita para la declaración de impuestos.'
+                      : 'Complete Excel with everything your accountant needs for tax filing.'}
+                  </p>
+                  <ul className="text-xs text-emerald-600 dark:text-emerald-400 mt-2 space-y-1">
+                    <li>• {language === 'es' ? 'Resumen por categoría con tasas de deducción' : 'Category summary with deduction rates'}</li>
+                    <li>• {language === 'es' ? 'Detalle completo de gastos con comprobantes' : 'Full expense detail with receipt status'}</li>
+                    <li>• {language === 'es' ? 'Checklist de documentos fiscales (CRA/SII)' : 'Tax document checklist (CRA/SII)'}</li>
+                    <li>• {language === 'es' ? 'Lista de gastos sin comprobante' : 'Missing receipt list'}</li>
+                    <li>• {language === 'es' ? 'Estimación de ahorro fiscal e ITC/IVA' : 'Tax savings estimate & ITC/IVA'}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Year Filter - Common for all tabs */}
           <div className="space-y-2 mt-4">
             <Label>{t('export.yearFilter')}</Label>
             <Select value={yearFilter} onValueChange={setYearFilter}>
@@ -332,7 +391,14 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
                 {t('export.t2125Includes')}
               </p>
             )}
-            {format === 'pdf' && (
+            {exportType === 'tax_report' && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {language === 'es' 
+                  ? '✓ 4 hojas: Resumen • Detalle • Checklist Docs • Sin Comprobante' 
+                  : '✓ 4 sheets: Summary • Detail • Doc Checklist • Missing Receipts'}
+              </p>
+            )}
+            {format === 'pdf' && exportType === 'general' && (
               <p className="text-xs text-muted-foreground mt-1">
                 {language === 'es' ? '✓ Logo EvoFinz • Datos de empresa • Bilingüe' : '✓ EvoFinz logo • Business data • Bilingual'}
               </p>

@@ -184,7 +184,7 @@ IMPORTANT: Always respond with a valid JSON object with this exact structure:
       "vendor": "store or company name",
       "amount": numeric value (no currency symbols) - THIS IS THE TOTAL,
       "date": "YYYY-MM-DD format",
-      "category": "one of: meals, travel, equipment, software, office_supplies, professional_services, utilities, home_office, mileage, fuel, other",
+      "category": "one of: meals, travel, equipment, software, office_supplies, professional_services, utilities, home_office, mileage, fuel, advertising, materials, hobbies, family_outings, gifts, scheduled_purchases, medical, insurance_business, education_training, donations, rent, bank_fees, maintenance_repairs, moving, interest_loans, vehicle_maintenance, parking_tolls, telephone, other",
       "description": "brief summary of all items purchased",
       "confidence": "high, medium, or low",
       "currency": "CAD, USD, etc.",
@@ -263,17 +263,35 @@ Generate a product_search_url for each line item so reviewers can verify the pur
 
 Replace {product_name_encoded} with URL-encoded product name. Include SKU in search if available.
 
-Category guidelines for Canadian tax deductions:
-- meals: restaurant, food, coffee, catering, groceries for personal consumption (50% CRA deductible, typically NOT reimbursable by clients)
-- travel: flights, hotels, taxi, uber, parking, public transit (100% CRA deductible, often reimbursable)
-- equipment: computers, phones, tools, furniture, materials (100% CRA deductible, often reimbursable if for project)
+Category guidelines for Canadian/Chilean tax deductions:
+- meals: restaurant, food, coffee, catering, groceries for personal consumption (50% CRA deductible, typically NOT reimbursable)
+- travel: flights, hotels, taxi, uber, public transit (100% CRA deductible, often reimbursable)
+- equipment: computers, phones, tools, furniture (100% CRA deductible via CCA, often reimbursable)
 - software: subscriptions, licenses, apps (100% CRA deductible, sometimes reimbursable)
-- office_supplies: paper, pens, printer ink (100% CRA deductible, rarely reimbursable)
-- professional_services: legal, accounting, consulting (100% CRA deductible, rarely reimbursable)
-- utilities: phone bill, internet, electricity (prorated for home office, rarely reimbursable)
-- home_office: office furniture, supplies for home workspace (100% CRA deductible, NOT reimbursable)
-- mileage: vehicle use based on kilometers (use CRA mileage rates, sometimes reimbursable)
-- fuel: gas station, diesel, charging, vehicle fuel ONLY (100% CRA deductible if business use, often reimbursable)
+- office_supplies: paper, pens, printer ink (100% CRA deductible)
+- professional_services: legal, accounting, consulting (100% CRA deductible)
+- utilities: phone bill, internet, electricity (prorated for home office)
+- home_office: office furniture, supplies for home workspace (100% CRA deductible)
+- mileage: vehicle use based on kilometers (CRA mileage rates)
+- fuel: gas station, diesel, charging, vehicle fuel ONLY (100% CRA deductible if business use)
+- advertising: marketing, online ads, print ads, promotional materials (100% CRA deductible)
+- materials: raw materials, supplies for projects, construction materials (100% CRA deductible)
+- medical: doctor visits, prescriptions, dental, vision, physiotherapy, hospital bills (CRA medical credit)
+- insurance_business: business liability, professional indemnity, E&O insurance (100% CRA deductible)
+- education_training: courses, certifications, workshops related to business (100% CRA deductible)
+- donations: charitable donations to registered charities (CRA/SII tax credit)
+- rent: commercial rent, office space rental (100% CRA deductible)
+- bank_fees: business account fees, wire transfer fees, merchant fees (100% CRA deductible)
+- maintenance_repairs: repairs to business property/equipment (100% CRA deductible)
+- moving: relocation expenses if >40km closer to work (CRA deductible)
+- interest_loans: interest on business loans, credit lines (100% CRA deductible)
+- vehicle_maintenance: oil change, tires, car repair for business vehicle (proportional to business use)
+- parking_tolls: parking fees, highway tolls for business trips (100% CRA deductible)
+- telephone: mobile phone, landline for business use (proportional to business %)
+- hobbies: personal hobby expenses (NOT deductible)
+- family_outings: family entertainment, outings (NOT deductible)
+- gifts: personal gifts, birthday presents (NOT deductible, except client gifts up to $25)
+- scheduled_purchases: planned recurring personal purchases (NOT deductible)
 - other: anything that doesn't fit above
 
 For each expense, assess:

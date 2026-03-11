@@ -23,7 +23,11 @@ interface MonthComparisonChartProps {
 const CATEGORIES: ExpenseCategory[] = [
   'meals', 'travel', 'fuel', 'equipment', 'software', 
   'professional_services', 'office_supplies', 'utilities', 
-  'advertising', 'materials', 'other'
+  'advertising', 'materials', 'medical', 'insurance_business',
+  'education_training', 'donations', 'rent', 'bank_fees',
+  'maintenance_repairs', 'moving', 'interest_loans',
+  'vehicle_maintenance', 'parking_tolls', 'telephone',
+  'hobbies', 'family_outings', 'gifts', 'scheduled_purchases', 'other'
 ];
 
 export const MonthComparisonChart = memo(({ expenses, isLoading }: MonthComparisonChartProps) => {
