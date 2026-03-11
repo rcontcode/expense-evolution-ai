@@ -148,10 +148,14 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={exportType} onValueChange={(v) => setExportType(v as 'general' | 't2125')} className="py-4">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs value={exportType} onValueChange={(v) => setExportType(v as 'general' | 't2125' | 'tax_report')} className="py-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="general">{t('export.generalExport')}</TabsTrigger>
             <TabsTrigger value="t2125">{t('export.t2125Report')}</TabsTrigger>
+            <TabsTrigger value="tax_report" className="gap-1">
+              <Receipt className="h-3 w-3" />
+              {language === 'es' ? 'Contador' : 'Accountant'}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-4 mt-4">
