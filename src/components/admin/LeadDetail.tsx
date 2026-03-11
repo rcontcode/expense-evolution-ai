@@ -34,6 +34,7 @@ import { InteractionTimeline } from './InteractionTimeline';
 import { FollowUpsList } from './FollowUpsList';
 import { FollowUpModal } from './FollowUpModal';
 import { LeadEnrichmentPanel } from './LeadEnrichmentPanel';
+import { LeadTagEditor } from './LeadTagEditor';
 
 interface LeadDetailProps {
   lead: QuizLead | null;
