@@ -188,6 +188,7 @@ function FlowStepIndicator({
 export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCenterProps) {
   const { language } = useLanguage();
   const { formatCurrency: fmtCurr } = useFormatCurrency();
+  const { currentEntity } = useEntity();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { data: documents = [] } = useDocumentsForReview();
