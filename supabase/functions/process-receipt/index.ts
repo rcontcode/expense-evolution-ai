@@ -280,7 +280,33 @@ ${userCountry === 'CL' ? `- Falabella: https://www.falabella.com/falabella-cl/se
 
 Replace {product_name_encoded} with URL-encoded product name. Include SKU in search if available.
 
-Category guidelines for Canadian/Chilean tax deductions:
+${userCountry === 'CL' ? `Category guidelines for Chilean SII tax deductions:
+- meals: restaurant, food, coffee, catering (deductible if business-related with boleta/factura)
+- travel: flights, hotels, taxi, uber, public transit (deductible with documentation)
+- equipment: computers, phones, tools, furniture (depreciación acelerada available)
+- software: subscriptions, licenses, apps (100% deductible)
+- office_supplies: paper, pens, printer ink (100% deductible)
+- professional_services: legal, accounting, consulting (100% deductible with factura)
+- utilities: phone bill, internet, electricity (proportional for home office)
+- home_office: office furniture, supplies for home workspace
+- fuel: gas station, diesel (deductible if business use, needs boleta)
+- advertising: marketing, online ads (100% deductible)
+- materials: raw materials, supplies for projects (100% deductible)
+- medical: doctor visits, prescriptions, dental, hospital (deductible via salud)
+- insurance_business: business liability insurance (100% deductible)
+- education_training: courses, certifications (deductible if business-related)
+- donations: charitable donations to registered foundations (crédito tributario SII)
+- rent: commercial rent, office space (100% deductible with factura)
+- bank_fees: business account fees, comisiones bancarias (100% deductible)
+- maintenance_repairs: repairs to business property/equipment (100% deductible)
+- interest_loans: interest on business loans (deductible)
+- vehicle_maintenance: vehicle repairs for business use (proportional)
+- parking_tolls: TAG, peajes, estacionamiento (deductible if business)
+- telephone: mobile phone, landline for business (proportional)
+- other: anything that doesn't fit above
+
+For Chilean receipts, assume CLP unless otherwise specified. Look for "boleta" or "factura" indicators.
+IVA (19%) is the standard tax in Chile.` : `Category guidelines for Canadian/Chilean tax deductions:
 - meals: restaurant, food, coffee, catering, groceries for personal consumption (50% CRA deductible, typically NOT reimbursable)
 - travel: flights, hotels, taxi, uber, public transit (100% CRA deductible, often reimbursable)
 - equipment: computers, phones, tools, furniture (100% CRA deductible via CCA, often reimbursable)
@@ -311,13 +337,14 @@ Category guidelines for Canadian/Chilean tax deductions:
 - scheduled_purchases: planned recurring personal purchases (NOT deductible)
 - other: anything that doesn't fit above
 
+For Canadian receipts, assume CAD unless otherwise specified.`}
+
 For each expense, assess:
-1. Is it CRA deductible? (most business expenses are)
-2. What's the CRA deduction rate? (50% for meals, 100% for most others)
+1. Is it ${taxAuthority} deductible? (most business expenses are)
+2. What's the deduction rate? (50% for meals in CRA, 100% for most others)
 3. Is it typically reimbursable by clients? (project materials yes, personal meals no)
 
-If information is unclear or missing, make your best estimate and set confidence to "low" or "medium".
-For Canadian receipts, assume CAD unless otherwise specified.`;
+If information is unclear or missing, make your best estimate and set confidence to "low" or "medium".`;
 
 
     const userContent: any[] = [];
