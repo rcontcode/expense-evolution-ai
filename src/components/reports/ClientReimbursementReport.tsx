@@ -274,7 +274,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
               </span>
             </div>
             <h2 className="text-2xl md:text-3xl font-bold">
-              ${totalReimbursable.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+              {formatCurrency(totalReimbursable)}
             </h2>
             <p className="text-sm opacity-80 mt-1">
               {language === 'es' 
