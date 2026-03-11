@@ -118,6 +118,16 @@ export function calculateLeadScore(lead: QuizLead): number {
     score += 5;
   }
 
+  // 12. Returning lead = multiple touchpoints = high interest (max +20)
+  if (lead.metadata?.returning_lead === true) {
+    score += 20;
+    // Extra bonus for multiple previous sources
+    const prevSources = lead.metadata?.previous_sources as string[] | undefined;
+    if (prevSources && prevSources.length > 1) {
+      score += 5;
+    }
+  }
+
   return Math.min(100, score);
 }
 

@@ -47,6 +47,18 @@ Deno.serve(async (req) => {
         : "Generate a personalized SPECIAL OFFER with discount, trial or exclusive benefit based on the lead's profile.",
     }[tType] || "";
 
+    // Returning lead context
+    const returningContext = lead.metadata?.returning_lead
+      ? (isEs
+          ? `\n- ⚡ LEAD RECURRENTE: Ya interactuó antes con ${lead.metadata?.previous_sources?.join(', ') || 'otra fuente'}`
+          : `\n- ⚡ RETURNING LEAD: Previously interacted via ${lead.metadata?.previous_sources?.join(', ') || 'another source'}`)
+      : '';
+    const guideContext = lead.metadata?.guide
+      ? (isEs
+          ? `\n- Guía consultada: ${lead.metadata.guide}`
+          : `\n- Guide viewed: ${lead.metadata.guide}`)
+      : '';
+
     const leadContext = isEs
       ? `Lead:
 - Nombre: ${lead.name}
@@ -58,7 +70,7 @@ Deno.serve(async (req) => {
 - Tiempo disponible: ${lead.time_spent || "no especificado"}
 - Comentario personal: ${lead.comments || "ninguno"}
 - Fuente original: ${lead.source || "evofinz"}
-- Prioridad: ${lead.priority || "warm"}`
+- Prioridad: ${lead.priority || "warm"}${returningContext}${guideContext}`
       : `Lead:
 - Name: ${lead.name}
 - Country: ${lead.country}
@@ -69,7 +81,7 @@ Deno.serve(async (req) => {
 - Available time: ${lead.time_spent || "not specified"}
 - Personal comment: ${lead.comments || "none"}
 - Original source: ${lead.source || "evofinz"}
-- Priority: ${lead.priority || "warm"}`;
+- Priority: ${lead.priority || "warm"}${returningContext}${guideContext}`;
 
     let systemPrompt = "";
     let userPrompt = "";

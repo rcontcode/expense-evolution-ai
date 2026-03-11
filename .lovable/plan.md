@@ -1,70 +1,107 @@
 
 
-## Integración Universmind → EvoFinz CRM: Leads Recurrentes y Unificación
+## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
 
-### Contexto
+### ✅ Completado en EvoFinz
 
-Universmind ahora envía dos campos nuevos en el payload:
-- `returning_lead: boolean` — si el email ya existe con otra fuente
-- `previous_sources: string[]` — las fuentes anteriores del mismo email (ej: `["universmind_lead_magnet_cuerpos"]`)
+| # | Tarea | Estado |
+|---|-------|--------|
+| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
+| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
+| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
+| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
+| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
 
-El webhook-leads de EvoFinz **no procesa** estos campos. Tampoco hace deduplicación por email — crea un registro nuevo cada vez.
+### ✅ Completado en Fokuspark
 
-### Cambios Necesarios
+| # | Tarea | Estado |
+|---|-------|--------|
+| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
+| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
+| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
+| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
 
-**1. Webhook (`webhook-leads/index.ts`)**
-- Aceptar `returning_lead` y `previous_sources` en la interface
-- Guardarlos en `metadata.returning_lead` y `metadata.previous_sources`
-- Agregar lógica de dedup: antes de INSERT, buscar si ya existe un lead con el mismo email. Si existe, guardar referencia cruzada en metadata (`related_lead_ids`)
-- Bonus de scoring: `returning_lead = true` → +20 puntos (demuestra interés múltiple)
-- Incluir `returning_lead` y `previous_sources` en el payload a GHL
+### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
 
-**2. Scoring (`useLeadScoring.ts`)**
-- Agregar bonus por `metadata.returning_lead === true` → +20 puntos
-- Agregar bonus por `metadata.previous_sources` con múltiples fuentes → +5 extra
-- Reconocer niveles y obstáculos de Universmind (ya están parcialmente por los aliases de metadata)
+---
 
-**3. UI — LeadEnrichmentPanel**
-- Nuevo bloque visual cuando `metadata.returning_lead === true`: badge "Lead Recurrente" + lista de fuentes anteriores
-- Mostrar el "journey" del lead (guía gratuita → quiz, o viceversa)
-- Mostrar `metadata.guide` si existe (qué guía descargó)
-- Mostrar `metadata.producto_recomendado` como "Producto sugerido por Universmind"
+## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
 
-**4. AI Message Generator (`generate-lead-message`)**
-- Agregar al contexto del lead si es recurrente y sus fuentes anteriores
-- Esto permite que el mensaje personalizado diga: "Vi que ya exploraste nuestra guía de [X], ahora con tus resultados del quiz..."
+### ✅ Confirmado: Sistema funciona correctamente
 
-### Archivos a Modificar
+- Planes individuales (Free/Premium/Pro) son independientes por app
+- Bundle compartido usa mismos Stripe Price IDs en ambas apps
+- Ambos webhooks detectan Bundle y setean `has_bundle = true`
+- No hay acceso cruzado no autorizado entre apps
 
-| Archivo | Cambio |
-|---------|--------|
-| `supabase/functions/webhook-leads/index.ts` | Aceptar `returning_lead`/`previous_sources`, dedup por email, bonus scoring +20, forward a GHL |
-| `src/hooks/admin/useLeadScoring.ts` | Bonus +20 para leads recurrentes |
-| `src/components/admin/LeadEnrichmentPanel.tsx` | Bloque visual "Lead Recurrente" con journey, guía descargada, producto recomendado |
-| `supabase/functions/generate-lead-message/index.ts` | Agregar contexto de returning_lead y previous_sources al prompt de IA |
+### ✅ Gaps implementados en Fokuspark
 
-### Detalle Técnico
+| # | Gap | Estado |
+|---|-----|--------|
+| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
+| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
 
-```text
-Payload de Universmind:
-{
-  "name": "...", "email": "...",
-  "source": "universmind_quiz",
-  "returning_lead": true,
-  "previous_sources": ["universmind_lead_magnet_cuerpos"],
-  "metadata": {
-    "situacion": "...",
-    "objetivo": "...",
-    "producto_recomendado": "Guía Completa",
-    "precio_producto": 29,
-    "guide": "cuerpos"
-  }
-}
+### 📋 Gaps pendientes (baja prioridad)
 
-Dedup flow en webhook:
-1. Buscar quiz_leads WHERE email = payload.email
-2. Si existe: guardar related_lead_ids en metadata del nuevo registro
-3. Siempre crear registro nuevo (no merge) para mantener historial por fuente
-4. El CRM unifica visualmente en el panel de detalle
-```
+| # | Gap | Prioridad |
+|---|-----|-----------|
+| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
+| S3 | Texto del Bundle podría ser más descriptivo | Baja |
 
+---
+
+## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
+
+### ✅ Veredicto: No igualar precios — estructura actual es óptima
+
+| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
+|------|---------|-----------|-----------|-------|
+| Free | $0 | $0 | ✅ Ya iguales | — |
+| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
+| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+
+### 📋 Pendiente técnico
+
+| # | Tarea | App | Prioridad |
+|---|-------|-----|-----------|
+| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
+
+---
+
+## Quiz Multi-App — CRM Unificado
+
+### ✅ Completado en EvoFinz
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
+| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
+| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
+| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
+| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
+
+### 📋 Pendiente en Fokuspark
+
+| # | Tarea | Prioridad |
+|---|-------|-----------|
+| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
+| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
+| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
+| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
+
+---
+
+## Metadata JSONB — Integración Multi-App
+
+### ✅ Completado
+
+| # | Tarea | Estado |
+|---|-------|--------|
+| M1 | Columna `metadata` JSONB en `quiz_leads` | ✅ |
+| M2 | `webhook-leads` guarda metadata estructurada | ✅ |
+| M3 | `send-quiz-lead` acepta `metadata` opcional | ✅ |
+| M4 | Interface `QuizLead` incluye `metadata` | ✅ |
+| M5 | CRM muestra Datos de la App (producto, precio, conocimiento, best practices) | ✅ |
+| M6 | Scoring enriquecido con metadata | ✅ |
+| M7 | Talking points usan metadata | ✅ |

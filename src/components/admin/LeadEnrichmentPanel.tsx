@@ -5,7 +5,8 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { 
   Brain, Target, AlertTriangle, Lightbulb, 
-  TrendingUp, Shield, MessageSquare, Star
+  TrendingUp, Shield, MessageSquare, Star,
+  RotateCcw, MapPin, Package
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { QuizLead } from '@/hooks/admin/useLeadsManagement';
@@ -59,9 +60,56 @@ export function LeadEnrichmentPanel({ lead, allLeads }: Props) {
       ? 'text-amber-600' 
       : 'text-red-600';
 
+  const isReturning = lead.metadata?.returning_lead === true;
+  const previousSources = lead.metadata?.previous_sources as string[] | undefined;
+  const metaGuide = lead.metadata?.guide as string | undefined;
+  const metaProducto = lead.metadata?.producto_recomendado as string | undefined;
+  const metaPrecio = lead.metadata?.precio_producto as number | undefined;
+
   return (
     <div className="space-y-4">
-      {/* Aging Alert */}
+      {/* Returning Lead Banner */}
+      {isReturning && (
+        <div className="flex items-center gap-3 p-3 rounded-lg border border-violet-300 bg-violet-50 dark:bg-violet-900/20">
+          <RotateCcw className="h-4 w-4 flex-shrink-0 text-violet-600 dark:text-violet-400" />
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <Badge className="bg-violet-600 text-white text-[10px]">Lead Recurrente</Badge>
+              <span className="text-xs text-muted-foreground">+20 pts scoring</span>
+            </div>
+            {previousSources && previousSources.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1.5">
+                {previousSources.map(src => (
+                  <Badge key={src} variant="outline" className="text-[10px] border-violet-300 text-violet-700 dark:text-violet-300">
+                    {src.replace('universmind_lead_magnet_', '📄 Guía: ').replace('universmind_', '🧠 ')}
+                  </Badge>
+                ))}
+                <span className="text-[10px] text-muted-foreground">→</span>
+                <Badge variant="outline" className="text-[10px] border-primary text-primary">
+                  {lead.source || 'quiz'}
+                </Badge>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Universmind Product & Guide Info */}
+      {(metaGuide || metaProducto) && (
+        <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/50">
+          <Package className="h-4 w-4 flex-shrink-0 text-primary" />
+          <div className="flex-1 flex flex-wrap gap-2">
+            {metaGuide && (
+              <Badge variant="outline" className="text-[10px]">📄 Guía: {metaGuide}</Badge>
+            )}
+            {metaProducto && (
+              <Badge variant="secondary" className="text-[10px]">
+                🎯 {metaProducto}{metaPrecio ? ` ($${metaPrecio})` : ''}
+              </Badge>
+            )}
+          </div>
+        </div>
+      )}
       <div className={`flex items-center gap-3 p-3 rounded-lg border ${agingColors.border} ${agingColors.bg}`}>
         <AlertTriangle className={`h-4 w-4 flex-shrink-0 ${agingColors.text}`} />
         <div className="flex-1">

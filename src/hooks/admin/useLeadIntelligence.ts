@@ -133,6 +133,12 @@ export function calculateConversionProbability(lead: QuizLead, allLeads: QuizLea
     factors.push({ label: 'Conocimiento previo bajo (alta necesidad)', impact: 'positive', weight: 6 });
   }
 
+  // Factor 5d: Returning lead — multiple touchpoints
+  if (lead.metadata?.returning_lead === true) {
+    probability += 15;
+    factors.push({ label: 'Lead recurrente (múltiples interacciones)', impact: 'positive', weight: 15 });
+  }
+
   // Factor 6: Time since creation (freshness)
   const daysSince = differenceInDays(new Date(), new Date(lead.created_at));
   if (daysSince <= 2) {
@@ -203,6 +209,17 @@ export function calculateConversionProbability(lead: QuizLead, allLeads: QuizLea
   const metaConocimiento = lead.metadata?.conocimiento_previo as string;
   if (metaConocimiento) {
     talkingPoints.push(`Nivel de conocimiento: "${metaConocimiento}" — adaptar lenguaje de la conversación`);
+  }
+
+  // Returning lead talking points
+  if (lead.metadata?.returning_lead === true) {
+    const prevSources = lead.metadata?.previous_sources as string[] | undefined;
+    const sourceLabels = prevSources?.map(s => s.replace('universmind_lead_magnet_', 'Guía: ').replace('universmind_', '')).join(', ');
+    talkingPoints.push(`🔁 Lead recurrente — ya interactuó antes${sourceLabels ? ` (${sourceLabels})` : ''}. Mencionar experiencia previa para generar confianza`);
+  }
+  const metaGuide = lead.metadata?.guide as string;
+  if (metaGuide) {
+    talkingPoints.push(`Ya descargó guía: "${metaGuide}" — referenciar contenido que ya conoce`);
   }
 
   talkingPoints.push(`Plan recomendado: ${recommendedPlan} — destacar ROI específico para su situación`);

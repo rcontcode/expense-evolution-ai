@@ -23,6 +23,9 @@ interface ExternalLeadPayload {
   failed_questions?: number[];
   // Fokuspark quiz answers
   quiz_answers?: Array<{ question: string; answer_value: number; answer_label: string }>;
+  // Universmind returning lead fields
+  returning_lead?: boolean;
+  previous_sources?: string[];
   // Nested metadata (Universmind format)
   metadata?: {
     situacion?: string;
@@ -80,6 +83,8 @@ function calculatePriority(lead: {
   failed_questions: number[];
   conocimiento_previo?: string;
   precio_producto?: number;
+  returning_lead?: boolean;
+  previous_sources?: string[];
 }): { leadScore: number; priority: string } {
   let score = 0;
 
@@ -144,6 +149,15 @@ function calculatePriority(lead: {
   // Producto recomendado de alto valor (max +5)
   if (lead.precio_producto && lead.precio_producto >= 100) {
     score += 5;
+  }
+
+  // Returning lead = multiple touchpoints = high interest (max +20)
+  if (lead.returning_lead) {
+    score += 20;
+    // Extra bonus for multiple previous sources
+    if (lead.previous_sources && lead.previous_sources.length > 1) {
+      score += 5;
+    }
   }
 
   const capped = Math.min(100, score);
@@ -238,6 +252,13 @@ Deno.serve(async (req) => {
     if (Array.isArray(payload.quiz_answers) && payload.quiz_answers.length > 0) {
       extraMetadata.quiz_answers = payload.quiz_answers;
     }
+    // Universmind returning lead data
+    if (payload.returning_lead) {
+      extraMetadata.returning_lead = true;
+    }
+    if (Array.isArray(payload.previous_sources) && payload.previous_sources.length > 0) {
+      extraMetadata.previous_sources = payload.previous_sources;
+    }
 
     // Calculate lead priority with ALL available data
     const { leadScore, priority } = calculatePriority({
@@ -252,6 +273,8 @@ Deno.serve(async (req) => {
       failed_questions: failedQuestions,
       conocimiento_previo: payload.metadata?.conocimiento_previo as string | undefined,
       precio_producto: payload.metadata?.precio_producto as number | undefined,
+      returning_lead: payload.returning_lead,
+      previous_sources: payload.previous_sources,
     });
 
     console.log(`[WEBHOOK-LEADS] ${cleanEmail} | source: ${source} | quiz: ${quizScore} | fields: country=${!!country}, situation=${!!situation}, goal=${!!goal}, obstacle=${!!obstacle}, comments=${!!comments} | leadScore: ${leadScore}, priority: ${priority}`);
@@ -265,6 +288,19 @@ Deno.serve(async (req) => {
 
     // Comments stays clean — only user-written text
     const cleanComments = comments || null;
+
+    // Dedup: find existing leads with same email for cross-referencing
+    const { data: existingLeads } = await supabase
+      .from("quiz_leads")
+      .select("id, source")
+      .eq("email", cleanEmail)
+      .limit(10);
+
+    if (existingLeads && existingLeads.length > 0) {
+      extraMetadata.related_lead_ids = existingLeads.map((l: { id: string }) => l.id);
+      extraMetadata.related_sources = existingLeads.map((l: { source: string }) => l.source);
+      console.log(`[WEBHOOK-LEADS] Dedup: ${cleanEmail} has ${existingLeads.length} existing lead(s)`);
+    }
 
     // Store full metadata object in JSONB column
     const metadataToStore = Object.keys(extraMetadata).length > 0 ? extraMetadata : {};
@@ -320,6 +356,8 @@ Deno.serve(async (req) => {
           lead_priority: priority,
           lead_id: savedLead.id,
           comments: comments || "",
+          returning_lead: !!payload.returning_lead,
+          previous_sources: payload.previous_sources || [],
         };
         const ghlRes = await fetch(ghlWebhookUrl, {
           method: "POST",
