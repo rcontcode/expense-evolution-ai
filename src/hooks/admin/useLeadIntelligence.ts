@@ -194,6 +194,17 @@ export function calculateConversionProbability(lead: QuizLead, allLeads: QuizLea
     talkingPoints.push(`Mencionó: "${lead.comments.substring(0, 80)}${lead.comments.length > 80 ? '...' : ''}" — personalizar respuesta`);
   }
 
+  // Metadata-based talking points
+  const metaProducto = lead.metadata?.producto_recomendado as string;
+  const metaPrecio = lead.metadata?.precio_producto as number;
+  if (metaProducto) {
+    talkingPoints.push(`Producto recomendado: "${metaProducto}"${metaPrecio ? ` ($${metaPrecio})` : ''} — usar como referencia de presupuesto`);
+  }
+  const metaConocimiento = lead.metadata?.conocimiento_previo as string;
+  if (metaConocimiento) {
+    talkingPoints.push(`Nivel de conocimiento: "${metaConocimiento}" — adaptar lenguaje de la conversación`);
+  }
+
   talkingPoints.push(`Plan recomendado: ${recommendedPlan} — destacar ROI específico para su situación`);
 
   return { probability, confidence, factors, recommendedPlan, talkingPoints };
