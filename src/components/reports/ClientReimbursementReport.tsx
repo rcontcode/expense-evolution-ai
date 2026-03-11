@@ -619,7 +619,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                           <div key={category} className="space-y-1">
                             <div className="flex justify-between text-sm">
                               <span className="font-medium">{getCategoryLabelByLanguage(category, language === 'es' ? 'es' : 'en')}</span>
-                              <span className="text-muted-foreground">{data.count} • ${data.total.toFixed(2)}</span>
+                              <span className="text-muted-foreground">{data.count} • {formatCurrency(data.total)}</span>
                             </div>
                             <Progress 
                               value={percentage} 
