@@ -81,7 +81,7 @@ function formatExpenseForExport(expense: ExpenseWithRelations): ExportRow {
     Vendor: expense.vendor || '',
     Description: expense.description || '',
     Category: CATEGORY_LABELS[expense.category || 'other'] || expense.category || '',
-    'Category (CRA)': rule?.description || 'N/A',
+    'Tax Category': rule?.description || 'N/A',
     Amount: amount,
     Currency: expense.currency || 'CAD',
     Status: STATUS_LABELS[expense.status || 'pending'] || expense.status || '',
