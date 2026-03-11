@@ -21,6 +21,12 @@ export type ExpenseCategory =
   | 'office_supplies'
   | 'utilities'
   | 'fuel'
+  | 'advertising'
+  | 'materials'
+  | 'hobbies'
+  | 'family_outings'
+  | 'gifts'
+  | 'scheduled_purchases'
   | 'other';
 
 export type ReimbursementType = 

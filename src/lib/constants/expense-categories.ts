@@ -57,8 +57,9 @@ export const EXPENSE_CATEGORIES: { value: ExpenseCategory; label: string }[] = [
   { value: 'other', label: 'Otros' },
 ];
 
-export const getCategoryLabel = (category: ExpenseCategory): string => {
-  return EXPENSE_CATEGORIES.find(c => c.value === category)?.label || category;
+export const getCategoryLabel = (category: ExpenseCategory, language?: 'es' | 'en'): string => {
+  const lang = language || (typeof window !== 'undefined' ? (localStorage.getItem('language') as 'es' | 'en') || 'es' : 'es');
+  return getCategoryLabelByLanguage(category, lang);
 };
 
 export const getCategoryLabelByLanguage = (category: ExpenseCategory | string, language: 'es' | 'en'): string => {
