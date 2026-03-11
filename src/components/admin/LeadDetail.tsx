@@ -69,6 +69,7 @@ export function LeadDetail({
   onOpenChange,
   onMarkContacted,
   onMarkConverted,
+  allLeads = [],
 }: LeadDetailProps) {
   const [contactNotes, setContactNotes] = useState('');
   const [showNotesInput, setShowNotesInput] = useState(false);
