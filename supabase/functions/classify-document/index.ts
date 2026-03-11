@@ -6,14 +6,21 @@ const corsHeaders = {
 };
 
 export type DocumentClassification = 
-  | 'receipt'           // Compra/recibo de tienda, farmacia, combustible, etc.
-  | 'utility_bill'      // Boleta de luz, agua, teléfono, internet, gas
-  | 'bank_statement'    // Extracto bancario PDF o screenshot
-  | 'income_proof'      // Screenshot de transferencia recibida, depósito, pago de cliente
-  | 'contract'          // Contrato laboral, de servicios, de arriendo
-  | 'tax_document'      // Formulario fiscal, declaración de impuestos
-  | 'invoice'           // Factura emitida o recibida
-  | 'unknown';          // No se pudo determinar
+  | 'receipt'
+  | 'utility_bill'
+  | 'bank_statement'
+  | 'income_proof'
+  | 'contract'
+  | 'tax_document'
+  | 'invoice'
+  | 'tax_slip'
+  | 'medical_receipt'
+  | 'donation_receipt'
+  | 'insurance_policy'
+  | 'rental_receipt'
+  | 'investment_statement'
+  | 'government_form'
+  | 'unknown';
 
 interface ClassificationResult {
   document_type: DocumentClassification;
@@ -29,7 +36,6 @@ interface ClassificationResult {
     is_recurring?: boolean;
     recurrence_frequency?: string;
     parties?: string[];
-    // Invoice-specific fields
     invoice_direction?: 'income' | 'expense' | 'unknown';
     invoice_direction_confidence?: number;
     from_entity?: string;
@@ -48,6 +54,25 @@ interface ClassificationResult {
     subtotal?: number;
     tax?: number;
     total?: number;
+    // Tax slip fields
+    slip_type?: string;
+    tax_year?: number;
+    issuer?: string;
+    // Medical fields
+    provider?: string;
+    patient?: string;
+    // Donation fields
+    charity_name?: string;
+    registration_number?: string;
+    // Insurance fields
+    policy_number?: string;
+    coverage_type?: string;
+    premium?: number;
+    // Investment fields
+    institution?: string;
+    account_type?: string;
+    contributions?: number;
+    market_value?: number;
   };
 }
 
@@ -70,17 +95,24 @@ serve(async (req) => {
 
     console.log('Classifying document:', fileName, fileType);
 
-    const prompt = `You are an intelligent document classifier for a personal finance app. Analyze this document and determine its type.
+    const prompt = `You are an intelligent document classifier for a personal finance app used in Canada and Chile. Analyze this document and determine its type.
 
 DOCUMENT TYPES:
-1. "receipt" - Store purchase receipt, pharmacy, fuel, restaurant, grocery, materials, clothing, etc. Has items, totals, store name.
-2. "utility_bill" - Utility bill: electricity, water, phone, internet, gas, cable. Shows account number, billing period, amount due.
-3. "bank_statement" - Bank statement or bank screenshot showing multiple transactions, balances, account summary.
-4. "income_proof" - Screenshot of received transfer, deposit confirmation, client payment, salary deposit. Shows money RECEIVED.
-5. "contract" - Employment contract, service agreement, rental/lease agreement, business contract. Has terms, parties, signatures.
-6. "tax_document" - Tax form, tax declaration, T4, T2125, SII form, tax assessment.
-7. "invoice" - Invoice (emitted or received) for services or products. Has invoice number, line items, payment terms.
-8. "unknown" - Cannot determine the type.
+1. "receipt" - Store purchase receipt, pharmacy, fuel, restaurant, grocery, materials, clothing, etc.
+2. "utility_bill" - Utility bill: electricity, water, phone, internet, gas, cable.
+3. "bank_statement" - Bank statement or screenshot showing multiple transactions, balances.
+4. "income_proof" - Screenshot of received transfer, deposit confirmation, salary deposit.
+5. "contract" - Employment contract, service agreement, rental/lease agreement.
+6. "tax_document" - General tax declaration, tax assessment, F22/F29 forms.
+7. "invoice" - Invoice (emitted or received) for services or products.
+8. "tax_slip" - Official tax slips/certificates: T4, T4A, T5, T2202, T3, T5007, RRSP receipts (Canada); Certificados AFP, APV, Isapre, Fonasa, intereses hipotecarios (Chile).
+9. "medical_receipt" - Medical expense receipts: doctor visits, prescriptions, dental, vision, physiotherapy, hospital bills.
+10. "donation_receipt" - Charitable donation receipts with tax receipt number, from registered charities or foundations.
+11. "insurance_policy" - Insurance documents: policy declarations, premium statements, coverage summaries (business or personal).
+12. "rental_receipt" - Rent payment receipts, lease payment confirmations, landlord statements.
+13. "investment_statement" - Investment account statements: RRSP, TFSA, mutual funds, brokerage, APV, fondos mutuos.
+14. "government_form" - Government forms: business licenses, permits, official certificates, social benefit statements.
+15. "unknown" - Cannot determine the type.
 
 Respond with ONLY a valid JSON object:
 {
@@ -107,23 +139,39 @@ Respond with ONLY a valid JSON object:
     "line_items": [{"description": "item name", "quantity": "1", "unit_price": "100", "total": "100"}],
     "subtotal": 100,
     "tax": 15,
-    "total": 115
+    "total": 115,
+    "slip_type": "T4 or T5 or AFP or APV etc if tax_slip",
+    "tax_year": 2024,
+    "issuer": "Issuing institution",
+    "provider": "Medical provider name if medical_receipt",
+    "patient": "Patient name if visible",
+    "charity_name": "Charity name if donation_receipt",
+    "registration_number": "Charity registration or tax receipt number",
+    "policy_number": "Insurance policy number if visible",
+    "coverage_type": "Type of insurance coverage",
+    "premium": 0,
+    "institution": "Financial institution if investment_statement",
+    "account_type": "RRSP, TFSA, APV, Fondo Mutuo etc",
+    "contributions": 0,
+    "market_value": 0
   }
 }
 
 IMPORTANT RULES:
-- For suggested_actions, use practical actions like: "Crear gasto", "Crear pago recurrente", "Importar transacciones", "Registrar ingreso", "Analizar contrato", "Vincular a cliente"
+- For suggested_actions, use practical actions like: "Crear gasto", "Crear pago recurrente", "Importar transacciones", "Registrar ingreso", "Analizar contrato", "Vincular a cliente", "Agregar a deducciones médicas", "Registrar donación", "Vincular a declaración fiscal"
 - For receipts: extract vendor, amount, date
-- For utility bills: mark is_recurring=true, extract provider and amount
+- For utility bills: mark is_recurring=true
 - For bank statements: suggest importing transactions
 - For income proofs: extract amount and source
 - For contracts: extract parties involved
-- For INVOICES: THIS IS CRITICAL - determine invoice_direction:
-  * "income" = The user ISSUED this invoice (they are the seller/provider billing a client). The "from" entity is the user's business.
-  * "expense" = The user RECEIVED this invoice (they owe money). The "from" entity is a vendor billing the user.
-  * "unknown" = Cannot determine direction.
-  * Extract from_entity (who sent it), to_entity (who receives it), bill_to, remit_to, invoice_number, line_items with quantities and prices
-  * Set invoice_direction_confidence (0-1) based on how clear the direction is
+- For tax_slip: extract slip_type, tax_year, issuer, amounts. These are OFFICIAL government/employer tax forms.
+- For medical_receipt: extract provider, patient, amount. These are for medical expense tax credits.
+- For donation_receipt: extract charity_name, registration_number, amount. Must be from registered charity.
+- For insurance_policy: extract policy_number, coverage_type, premium.
+- For rental_receipt: extract landlord (vendor), amount, date, mark is_recurring=true.
+- For investment_statement: extract institution, account_type, contributions, market_value.
+- For government_form: extract issuing body, form type, date.
+- For INVOICES: determine invoice_direction (income/expense), extract entities, line_items
 - confidence should be between 0 and 1
 - All text in Spanish`;
 
@@ -203,7 +251,10 @@ IMPORTANT RULES:
     // Validate document_type
     const validTypes: DocumentClassification[] = [
       'receipt', 'utility_bill', 'bank_statement', 'income_proof',
-      'contract', 'tax_document', 'invoice', 'unknown'
+      'contract', 'tax_document', 'invoice',
+      'tax_slip', 'medical_receipt', 'donation_receipt', 'insurance_policy',
+      'rental_receipt', 'investment_statement', 'government_form',
+      'unknown'
     ];
     if (!validTypes.includes(classification.document_type)) {
       classification.document_type = 'unknown';

@@ -6,7 +6,10 @@ import { useQueryClient } from '@tanstack/react-query';
 
 export type DocumentClassificationType = 
   | 'receipt' | 'utility_bill' | 'bank_statement' | 'income_proof'
-  | 'contract' | 'tax_document' | 'invoice' | 'unknown';
+  | 'contract' | 'tax_document' | 'invoice'
+  | 'tax_slip' | 'medical_receipt' | 'donation_receipt' | 'insurance_policy'
+  | 'rental_receipt' | 'investment_statement' | 'government_form'
+  | 'unknown';
 
 export interface ClassifiedDocument {
   id: string;
@@ -56,6 +59,13 @@ const TYPE_LABELS: Record<DocumentClassificationType, { es: string; en: string; 
   contract: { es: 'Contrato', en: 'Contract', icon: '📄' },
   tax_document: { es: 'Documento Fiscal', en: 'Tax Document', icon: '📋' },
   invoice: { es: 'Factura', en: 'Invoice', icon: '🧾' },
+  tax_slip: { es: 'Formulario Fiscal (T4/T5/AFP)', en: 'Tax Slip (T4/T5/AFP)', icon: '📑' },
+  medical_receipt: { es: 'Recibo Médico', en: 'Medical Receipt', icon: '🏥' },
+  donation_receipt: { es: 'Recibo de Donación', en: 'Donation Receipt', icon: '💝' },
+  insurance_policy: { es: 'Póliza de Seguro', en: 'Insurance Policy', icon: '🛡️' },
+  rental_receipt: { es: 'Recibo de Arriendo', en: 'Rental Receipt', icon: '🏢' },
+  investment_statement: { es: 'Estado de Inversiones', en: 'Investment Statement', icon: '📈' },
+  government_form: { es: 'Formulario Gubernamental', en: 'Government Form', icon: '🏛️' },
   unknown: { es: 'Sin clasificar', en: 'Unclassified', icon: '❓' },
 };
 
@@ -464,7 +474,25 @@ export function useUnifiedChaosInbox() {
         }
 
         case 'tax_document':
+        case 'tax_slip':
+        case 'medical_receipt':
+        case 'donation_receipt':
+        case 'insurance_policy':
+        case 'rental_receipt':
+        case 'investment_statement':
+        case 'government_form':
         default: {
+          const extractedMetadata: Record<string, any> = {
+            document_classification: type,
+            ...preview,
+          };
+
+          // For rental receipts, mark as recurring
+          if (type === 'rental_receipt') {
+            extractedMetadata.is_recurring = true;
+            extractedMetadata.suggested_recurring = true;
+          }
+
           await supabase
             .from('documents')
             .insert({
@@ -475,9 +503,10 @@ export function useUnifiedChaosInbox() {
               file_size: doc.fileSize,
               status: 'pending',
               review_status: 'pending_review',
+              extracted_data: extractedMetadata,
             });
 
-          processedResult = { type: 'manual_review' };
+          processedResult = { type: type === 'tax_document' || type === 'unknown' ? 'manual_review' : type };
           queryClient.invalidateQueries({ queryKey: ['documents-review'] });
           break;
         }
