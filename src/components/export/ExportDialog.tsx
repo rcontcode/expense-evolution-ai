@@ -111,6 +111,10 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
           const options: ExportOptions = {
             format,
             year: selectedYear,
+            language: language as 'es' | 'en',
+            country: currentCountry,
+            userName: profile?.full_name || undefined,
+            businessName: profile?.business_name || undefined,
           };
           await exportExpenses(filteredExpenses, options);
         }
