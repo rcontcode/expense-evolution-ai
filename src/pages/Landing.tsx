@@ -536,7 +536,7 @@ export default function Landing() {
       {/* Animated Background with parallax layers */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {/* Parallax gradient orbs - different speeds for depth */}
-        <ParallaxLayer speed={-0.15} className="absolute inset-0">
+        <DecorativeLayer className="absolute inset-0">
           <motion.div 
             className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full opacity-40 blur-[120px]"
             animate={{
@@ -548,7 +548,7 @@ export default function Landing() {
             }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
-        </ParallaxLayer>
+        </DecorativeLayer>
         
         <ParallaxLayer speed={-0.25} className="absolute inset-0">
           <motion.div 
