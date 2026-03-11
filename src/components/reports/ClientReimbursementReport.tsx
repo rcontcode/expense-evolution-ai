@@ -686,7 +686,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                               {expense.description || '—'}
                             </TableCell>
                             <TableCell className="text-right font-semibold">
-                              ${Number(expense.amount).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                              {formatCurrency(Number(expense.amount))}
                             </TableCell>
                           </TableRow>
                         ))}
