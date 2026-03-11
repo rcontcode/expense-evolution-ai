@@ -258,7 +258,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
     clientSheet.getCell(row, 4).numFmt = '"$"#,##0.00';
     clientSheet.getCell(row, 5).value = percentage / 100;
     clientSheet.getCell(row, 5).numFmt = '0.0%';
-    clientSheet.getCell(row, 6).value = topCategory ? (CATEGORY_LABELS[topCategory[0]] || topCategory[0]) : 'N/A';
+    clientSheet.getCell(row, 6).value = topCategory ? getCatLabel(topCategory[0], language) : 'N/A';
     clientSheet.getCell(row, 7).value = topCategory ? topCategory[1].total : 0;
     clientSheet.getCell(row, 7).numFmt = '"$"#,##0.00';
     
