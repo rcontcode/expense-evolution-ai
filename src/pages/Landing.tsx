@@ -54,36 +54,9 @@ const TargetAudienceSection = lazyWithRetry(() => import('@/components/landing/T
 const FAQSection = lazyWithRetry(() => import('@/components/landing/FAQSection').then(m => ({ default: m.FAQSection })));
 const GuaranteesSection = lazyWithRetry(() => import('@/components/landing/GuaranteesSection').then(m => ({ default: m.GuaranteesSection })));
 
-// Simplified parallax - uses CSS transform for better performance
-function ParallaxSection({ 
-  children, 
-  className = "" 
-}: { 
-  children: React.ReactNode; 
-  speed?: number; 
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      {children}
-    </div>
-  );
-}
-
-// Static decorative layer - no scroll tracking for performance
-function ParallaxLayer({ 
-  className, 
-  children 
-}: { 
-  speed?: number; 
-  className?: string; 
-  children?: React.ReactNode;
-}) {
-  return (
-    <div className={className}>
-      {children}
-    </div>
-  );
+// Wrapper kept for semantic clarity
+function DecorativeLayer({ className, children }: { className?: string; children?: React.ReactNode }) {
+  return <div className={className}>{children}</div>;
 }
 
 const getFeatures = (language: string) => [
