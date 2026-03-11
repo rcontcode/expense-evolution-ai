@@ -1,6 +1,6 @@
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 interface ExternalLeadPayload {
@@ -11,25 +11,125 @@ interface ExternalLeadPayload {
   level?: string;
   source?: string;
   timestamp?: string;
+  // Direct fields (EvoFinz-native format)
+  country?: string;
+  situation?: string;
+  goal?: string;
+  obstacle?: string;
+  time_spent?: string;
+  comments?: string;
+  failed_questions?: number[];
+  // Nested metadata (Universmind format)
+  metadata?: {
+    situacion?: string;
+    objetivo?: string;
+    obstaculo?: string;
+    tiempo_disponible?: string;
+    conocimiento_previo?: string;
+    producto_recomendado?: string;
+    precio_producto?: number;
+    respuestas_best_practices?: Record<string, boolean>;
+    guide?: string;
+    [key: string]: unknown;
+  };
   // Allow additional custom fields
   [key: string]: unknown;
 }
 
-function calculatePriority(score: number | undefined): { leadScore: number; priority: string } {
-  if (!score || score <= 0) return { leadScore: 15, priority: "cold" };
+function sanitize(s: string | undefined | null): string {
+  return s ? s.replace(/<[^>]*>/g, "").trim() : "";
+}
 
-  // Map external score (0-100) to internal lead scoring
-  let leadScore = 0;
+/**
+ * Extract a field by checking multiple possible locations/aliases.
+ * Priority: direct field → metadata field → fallback
+ */
+function extractField(payload: ExternalLeadPayload, directKey: string, metadataKeys: string[]): string {
+  // 1. Check direct top-level field
+  const directVal = (payload as Record<string, unknown>)[directKey];
+  if (directVal && typeof directVal === "string" && directVal.trim()) {
+    return sanitize(directVal);
+  }
 
-  if (score <= 25) leadScore += 30;
-  else if (score <= 40) leadScore += 25;
-  else if (score <= 50) leadScore += 20;
-  else if (score <= 60) leadScore += 10;
+  // 2. Check metadata aliases
+  if (payload.metadata) {
+    for (const key of metadataKeys) {
+      const val = (payload.metadata as Record<string, unknown>)[key];
+      if (val && typeof val === "string" && val.trim()) {
+        return sanitize(val);
+      }
+    }
+  }
 
-  // Bonus for having a score at all
-  leadScore += 10;
+  return "";
+}
 
-  const capped = Math.min(100, leadScore);
+function calculatePriority(lead: {
+  score: number;
+  comments: string;
+  level: string;
+  obstacle: string;
+  goal: string;
+  situation: string;
+  phone: string | null;
+  time_spent: string;
+  failed_questions: number[];
+}): { leadScore: number; priority: string } {
+  let score = 0;
+
+  // Quiz score bajo = más necesidad (max +30)
+  if (lead.score <= 25) score += 30;
+  else if (lead.score <= 40) score += 25;
+  else if (lead.score <= 50) score += 20;
+  else if (lead.score <= 60) score += 10;
+
+  // Comentario = interés alto (max +30)
+  if (lead.comments && lead.comments.trim().length > 0) {
+    score += 25;
+    if (lead.comments.length > 50) score += 5;
+  }
+
+  // Nivel principiante = urgencia (max +15)
+  const level = lead.level?.toLowerCase();
+  if (level === "principiante") score += 15;
+  else if (level === "emergente") score += 10;
+  else if (level === "evolucionando" || level === "intermedio") score += 5;
+
+  // Obstáculos críticos (max +10)
+  const criticalObstacles = ["no sé por dónde empezar", "gastos descontrolados", "falta de conocimiento", "deudas abrumadoras", "falta de tiempo", "falta de información"];
+  if (lead.obstacle && criticalObstacles.some(obs => lead.obstacle.toLowerCase().includes(obs.toLowerCase()))) {
+    score += 10;
+  }
+
+  // Metas ambiciosas (max +10)
+  const ambitiousGoals = ["jubilación anticipada", "fire", "crecer patrimonio", "independencia financiera", "libertad financiera", "estimular desarrollo", "colección completa"];
+  if (lead.goal && ambitiousGoals.some(g => lead.goal.toLowerCase().includes(g.toLowerCase()))) {
+    score += 10;
+  }
+
+  // Situación especial (max +5)
+  const businessSituations = ["dueño de negocio", "empresario", "emprendedor"];
+  if (lead.situation && businessSituations.some(sit => lead.situation.toLowerCase().includes(sit.toLowerCase()))) {
+    score += 5;
+  }
+
+  // Tiene teléfono (max +5)
+  if (lead.phone && lead.phone.trim().length > 0) {
+    score += 5;
+  }
+
+  // Tiempo invertido alto (max +5)
+  const highEngagement = ["1 - 3 horas", "más de 3 horas", "1-3 horas", "más de 1 hora"];
+  if (lead.time_spent && highEngagement.some(t => lead.time_spent.toLowerCase().includes(t.toLowerCase()))) {
+    score += 5;
+  }
+
+  // Muchas preguntas fallidas (max +5)
+  if (lead.failed_questions && lead.failed_questions.length >= 5) {
+    score += 5;
+  }
+
+  const capped = Math.min(100, score);
   let priority: string;
   if (capped >= 80) priority = "hot";
   else if (capped >= 50) priority = "warm";
@@ -54,6 +154,9 @@ Deno.serve(async (req) => {
   try {
     const payload: ExternalLeadPayload = await req.json();
 
+    // 🔍 Log raw payload for diagnostics
+    console.log(`[WEBHOOK-LEADS] RAW payload from ${payload.source || "unknown"}:`, JSON.stringify(payload).substring(0, 2000));
+
     // Validate required fields
     if (!payload.name || !payload.email) {
       return new Response(
@@ -77,10 +180,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Sanitize
-    const sanitize = (s: string | undefined): string =>
-      s ? s.replace(/<[^>]*>/g, "").trim() : "";
-
+    // Extract fields from direct OR metadata (with alias mapping per app)
     const cleanName = sanitize(payload.name);
     const cleanEmail = payload.email.trim().toLowerCase();
     const cleanPhone = payload.phone?.trim() || null;
@@ -88,10 +188,48 @@ Deno.serve(async (req) => {
     const quizLevel = sanitize(payload.level) || "unknown";
     const source = sanitize(payload.source) || "external-webhook";
 
-    // Calculate lead priority
-    const { leadScore, priority } = calculatePriority(quizScore);
+    // Smart field extraction: direct fields → metadata aliases → empty
+    const country = extractField(payload, "country", ["pais", "country"]);
+    const situation = extractField(payload, "situation", ["situacion", "situación"]);
+    const goal = extractField(payload, "goal", ["objetivo", "goal", "meta"]);
+    const obstacle = extractField(payload, "obstacle", ["obstaculo", "obstáculo", "obstacle"]);
+    const timeSpent = extractField(payload, "time_spent", ["tiempo_disponible", "time_spent", "tiempo"]);
+    const comments = extractField(payload, "comments", ["comments", "comentarios", "comentario"]);
 
-    console.log(`[WEBHOOK-LEADS] ${cleanEmail} | source: ${source} | score: ${quizScore} -> leadScore: ${leadScore}, priority: ${priority}`);
+    // Failed questions: direct or from metadata best practices
+    let failedQuestions: number[] = [];
+    if (Array.isArray(payload.failed_questions)) {
+      failedQuestions = payload.failed_questions;
+    } else if (payload.metadata?.respuestas_best_practices) {
+      // Convert boolean map to failed indices (false = failed)
+      const practices = payload.metadata.respuestas_best_practices;
+      failedQuestions = Object.entries(practices)
+        .map(([_, val], idx) => (!val ? idx + 1 : -1))
+        .filter(idx => idx > 0);
+    }
+
+    // Build enriched metadata to store extra app-specific fields
+    const extraMetadata: Record<string, unknown> = {};
+    if (payload.metadata?.producto_recomendado) extraMetadata.producto_recomendado = payload.metadata.producto_recomendado;
+    if (payload.metadata?.precio_producto) extraMetadata.precio_producto = payload.metadata.precio_producto;
+    if (payload.metadata?.conocimiento_previo) extraMetadata.conocimiento_previo = payload.metadata.conocimiento_previo;
+    if (payload.metadata?.guide) extraMetadata.guide = payload.metadata.guide;
+    if (payload.metadata?.respuestas_best_practices) extraMetadata.respuestas_detail = payload.metadata.respuestas_best_practices;
+
+    // Calculate lead priority with ALL available data
+    const { leadScore, priority } = calculatePriority({
+      score: quizScore,
+      comments,
+      level: quizLevel,
+      obstacle,
+      goal,
+      situation,
+      phone: cleanPhone,
+      time_spent: timeSpent,
+      failed_questions: failedQuestions,
+    });
+
+    console.log(`[WEBHOOK-LEADS] ${cleanEmail} | source: ${source} | quiz: ${quizScore} | fields: country=${!!country}, situation=${!!situation}, goal=${!!goal}, obstacle=${!!obstacle}, comments=${!!comments} | leadScore: ${leadScore}, priority: ${priority}`);
 
     // Save to quiz_leads
     const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
@@ -100,21 +238,29 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Build comments with extra context if available
+    let enrichedComments = comments || null;
+    if (Object.keys(extraMetadata).length > 0 && enrichedComments) {
+      enrichedComments = `${enrichedComments}\n\n---\n📦 Metadata: ${JSON.stringify(extraMetadata)}`;
+    } else if (Object.keys(extraMetadata).length > 0) {
+      enrichedComments = `📦 Metadata: ${JSON.stringify(extraMetadata)}`;
+    }
+
     const { data: savedLead, error: dbError } = await supabase
       .from("quiz_leads")
       .insert({
         name: cleanName,
         email: cleanEmail,
         phone: cleanPhone,
-        country: "",
-        situation: "",
-        goal: "",
-        obstacle: "",
-        time_spent: "",
+        country,
+        situation,
+        goal,
+        obstacle,
+        time_spent: timeSpent,
         quiz_score: quizScore,
         quiz_level: quizLevel,
-        failed_questions: [],
-        comments: null,
+        failed_questions: failedQuestions,
+        comments: enrichedComments,
         lead_score: leadScore,
         priority,
         source,
@@ -140,11 +286,16 @@ Deno.serve(async (req) => {
           email: cleanEmail,
           phone: cleanPhone || "",
           source,
+          country,
+          situation,
+          goal,
+          obstacle,
           quiz_score: quizScore,
           quiz_level: quizLevel,
           lead_score: leadScore,
           lead_priority: priority,
           lead_id: savedLead.id,
+          comments: comments || "",
         };
         const ghlRes = await fetch(ghlWebhookUrl, {
           method: "POST",
@@ -152,6 +303,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify(ghlPayload),
         });
         console.log(`[WEBHOOK-LEADS] GHL forward: ${ghlRes.ok ? "OK" : "FAILED"}`);
+        if (!ghlRes.ok) await ghlRes.text();
       } catch (e) {
         console.error("[WEBHOOK-LEADS] GHL error:", e);
       }
@@ -163,6 +315,15 @@ Deno.serve(async (req) => {
         lead_id: savedLead.id,
         lead_score: leadScore,
         priority,
+        fields_received: {
+          country: !!country,
+          situation: !!situation,
+          goal: !!goal,
+          obstacle: !!obstacle,
+          comments: !!comments,
+          failed_questions: failedQuestions.length,
+          extra_metadata: Object.keys(extraMetadata).length,
+        },
         message: "Lead received successfully",
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
