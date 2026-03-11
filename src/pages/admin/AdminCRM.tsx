@@ -107,7 +107,7 @@ const AdminCRM = () => {
   const [showDocs, setShowDocs] = useState(false);
   const [selectedApp, setSelectedApp] = useState<ManagedApp | null>(null);
   const [sourceFilter, setSourceFilter] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('home');
   const [showMerge, setShowMerge] = useState(false);
 
   // Realtime notifications for HOT leads
