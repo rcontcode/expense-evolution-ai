@@ -245,6 +245,7 @@ export function useUnifiedChaosInbox() {
             body: {
               imageBase64: doc.base64,
               detectMultipleReceipts: true,
+              country: userCountry,
             },
           });
 
