@@ -137,6 +137,7 @@ export function useUnifiedChaosInbox() {
             imageBase64: base64,
             fileName: doc.fileName,
             fileType: doc.fileType,
+            country: userCountry,
           },
         });
 
