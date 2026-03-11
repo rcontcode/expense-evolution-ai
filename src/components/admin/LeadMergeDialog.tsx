@@ -108,7 +108,7 @@ export function LeadMergeDialog({ open, onOpenChange, allLeads }: Props) {
               merged_into: primaryId,
               merged_at: new Date().toISOString(),
               _merged: true,
-            },
+            } as any,
           })
           .eq('id', secId);
       }
