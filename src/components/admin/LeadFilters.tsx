@@ -19,6 +19,7 @@ interface LeadFiltersProps {
   situations?: string[];
   goals?: string[];
   obstacles?: string[];
+  allTags?: string[];
 }
 
 export function LeadFilters({
