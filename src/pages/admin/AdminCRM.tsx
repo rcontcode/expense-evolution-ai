@@ -1026,6 +1026,13 @@ const AdminCRM = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Lead Merge Dialog */}
+        <LeadMergeDialog
+          open={showMerge}
+          onOpenChange={setShowMerge}
+          allLeads={allLeadsForMerge as any}
+        />
       </TooltipProvider>
     </Layout>
   );
