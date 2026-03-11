@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useEntity } from '@/contexts/EntityContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -52,10 +53,11 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   other: Receipt,
 };
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-CA', {
+function formatCurrencyStatic(amount: number, curr: string): string {
+  const locale = curr === 'CLP' ? 'es-CL' : 'en-CA';
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'CAD',
+    currency: curr,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
@@ -83,9 +85,10 @@ interface StrategyCardProps {
   isRecommended: boolean;
   language: string;
   totalDebt: number;
+  formatCurrency: (amount: number) => string;
 }
 
-function StrategyCard({ strategy, isRecommended, language, totalDebt }: StrategyCardProps) {
+function StrategyCard({ strategy, isRecommended, language, totalDebt, formatCurrency }: StrategyCardProps) {
   const isAvalanche = strategy.name === 'avalanche';
   const Icon = isAvalanche ? Mountain : Snowflake;
   
@@ -182,6 +185,8 @@ function StrategyCard({ strategy, isRecommended, language, totalDebt }: Strategy
 
 export function DebtManagerCard() {
   const { language } = useLanguage();
+  const { currentCurrency } = useEntity();
+  const formatCurrency = (amount: number) => formatCurrencyStatic(amount, currentCurrency);
   const [extraPayment, setExtraPayment] = useState(100);
   const [selectedStrategy, setSelectedStrategy] = useState<'avalanche' | 'snowball'>('avalanche');
   const [showDetails, setShowDetails] = useState(false);

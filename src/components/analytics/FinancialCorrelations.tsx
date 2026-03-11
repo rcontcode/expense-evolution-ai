@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useEntity } from '@/contexts/EntityContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
@@ -185,11 +186,13 @@ export function FinancialCorrelations() {
     };
   }, [expenses, income, language, locale]);
 
+  const { currentCurrency } = useEntity();
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(language === 'es' ? 'es-CA' : 'en-CA', {
+    const locale = currentCurrency === 'CLP' ? 'es-CL' : (language === 'es' ? 'es-CA' : 'en-CA');
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
-      currency: 'CAD',
-      minimumFractionDigits: 0,
+      currency: currentCurrency,
+      minimumFractionDigits: currentCurrency === 'CLP' ? 0 : 0,
       maximumFractionDigits: 0
     }).format(value);
   };

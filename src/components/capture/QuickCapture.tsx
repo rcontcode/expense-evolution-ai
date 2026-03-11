@@ -196,7 +196,7 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
 
 
   const handleProcess = async () => {
-    const result = await processReceipt(imageBase64 || undefined, transcript || undefined);
+    const result = await processReceipt(imageBase64 || undefined, transcript || undefined, currentEntity?.country || 'CA');
     if (result?.expenses?.length) {
       setEditedExpenses(result.expenses);
       setCurrentIndex(0);
@@ -488,11 +488,11 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
                   <InfoTooltip content={TOOLTIP_CONTENT.expenseCraDeductible} variant="wrapper" side="bottom">
                     {currentExpense.cra_deductible ? (
                       <Badge variant="default" className="bg-blue-600 cursor-help">
-                        <Landmark className="h-3 w-3 mr-1" />Deducible CRA {currentExpense.cra_deduction_rate}%
+                        <Landmark className="h-3 w-3 mr-1" />{t('common.deductible')} {currentEntity?.country === 'CL' ? 'SII' : 'CRA'} {currentExpense.cra_deduction_rate}%
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="cursor-help">
-                        <X className="h-3 w-3 mr-1" />No Deducible CRA
+                        <X className="h-3 w-3 mr-1" />{t('common.notDeductible')} {currentEntity?.country === 'CL' ? 'SII' : 'CRA'}
                       </Badge>
                     )}
                   </InfoTooltip>

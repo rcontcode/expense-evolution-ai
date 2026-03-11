@@ -56,7 +56,7 @@ const STATUS_CONFIG: Record<string, { icon: React.ElementType; color: string; bg
 const REIMBURSEMENT_CONFIG: Record<string, { icon: React.ElementType; color: string; bgColor: string; label: string; labelEn: string }> = {
   pending_classification: { icon: AlertTriangle, color: 'text-yellow-600', bgColor: 'bg-yellow-100 dark:bg-yellow-900/30', label: 'Sin clasificar', labelEn: 'Unclassified' },
   client_reimbursable: { icon: Building2, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30', label: 'Cliente', labelEn: 'Client' },
-  cra_deductible: { icon: Landmark, color: 'text-green-600', bgColor: 'bg-green-100 dark:bg-green-900/30', label: 'CRA', labelEn: 'CRA' },
+  cra_deductible: { icon: Landmark, color: 'text-green-600', bgColor: 'bg-green-100 dark:bg-green-900/30', label: 'Deducible', labelEn: 'Deductible' },
   personal: { icon: User, color: 'text-muted-foreground', bgColor: 'bg-muted', label: 'Personal', labelEn: 'Personal' },
 };
 

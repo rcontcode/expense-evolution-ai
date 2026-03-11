@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useEntity } from '@/contexts/EntityContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -187,6 +188,7 @@ function FlowStepIndicator({
 export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCenterProps) {
   const { language } = useLanguage();
   const { formatCurrency: fmtCurr } = useFormatCurrency();
+  const { currentEntity } = useEntity();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { data: documents = [] } = useDocumentsForReview();
@@ -340,7 +342,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       const source = data.source || ed.source || ed.vendor || '';
       const description = data.description || ed.description || '';
       const date = data.date || ed.date || new Date().toISOString().split('T')[0];
-      const currency = ed.currency || 'CAD';
+      const currency = ed.currency || (currentEntity?.default_currency) || 'CAD';
 
       const { error: incomeError } = await supabase
         .from('income')
