@@ -14,7 +14,7 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Respon
 import { cn } from '@/lib/utils';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
 import { getCategoryLabelByLanguage, getCategoryColor } from '@/lib/constants/expense-categories';
-  Building2, 
+import { 
   DollarSign, 
   FileText, 
   Download,
