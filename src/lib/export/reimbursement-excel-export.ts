@@ -162,7 +162,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
     const percentage = totalReimbursable > 0 ? (total / totalReimbursable) * 100 : 0;
     const barLength = Math.round(percentage / 5); // Max 20 chars for 100%
     
-    summarySheet.getCell(row, 1).value = CATEGORY_LABELS[category] || category;
+    summarySheet.getCell(row, 1).value = getCatLabel(category, language);
     summarySheet.getCell(row, 2).value = total;
     summarySheet.getCell(row, 2).numFmt = '"$"#,##0.00';
     summarySheet.getCell(row, 3).value = percentage / 100;
