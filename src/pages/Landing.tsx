@@ -366,11 +366,29 @@ export default function Landing() {
   const pricingTiers = getPricingTiers(language);
   const stats = getStats(language);
   
+  // SEO meta tags
+  useEffect(() => {
+    document.title = language === 'es' 
+      ? 'EvoFinz — Gestión Financiera Inteligente para Freelancers' 
+      : 'EvoFinz — Smart Financial Management for Freelancers';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    const content = language === 'es'
+      ? 'Plataforma de gestión financiera con OCR, asistente de voz, gamificación y mentoría. Para profesionales en Canadá y Latinoamérica.'
+      : 'Financial management platform with OCR, voice assistant, gamification and mentorship. For professionals in Canada and Latin America.';
+    if (metaDesc) {
+      metaDesc.setAttribute('content', content);
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'description';
+      meta.content = content;
+      document.head.appendChild(meta);
+    }
+  }, [language]);
+
   // Calculate prices based on billing period - fixed prices matching Stripe
   const getPrice = (monthlyPrice: number, _isBundle?: boolean) => {
-    if (monthlyPrice === 0) return { display: '$0', period: language === 'es' ? '/mes' : '/mo', savings: '', strikethrough: '', annualTotal: '' };
+    if (monthlyPrice === 0) return { display: '$0', period: language === 'es' ? '/mes' : '/mo', savings: '', annualTotal: '' };
     if (isAnnual) {
-      // Fixed annual prices matching Stripe exactly
       const annualPrices: Record<string, { monthly: string; total: string; saved: string }> = {
         '7.99': { monthly: '6.49', total: '77.88', saved: '18' },
         '14.99': { monthly: '11.99', total: '143.88', saved: '20' },
@@ -383,12 +401,11 @@ export default function Landing() {
           display: `$${prices.monthly}`, 
           period: language === 'es' ? '/mes' : '/mo',
           savings: language === 'es' ? `Ahorras ${prices.saved}%` : `Save ${prices.saved}%`,
-          strikethrough: `$${monthlyPrice.toFixed(2)}`,
           annualTotal: language === 'es' ? `$${prices.total} USD/año` : `$${prices.total} USD/year`,
         };
       }
     }
-    return { display: `$${monthlyPrice.toFixed(2)}`, period: language === 'es' ? '/mes' : '/mo', savings: '', strikethrough: '', annualTotal: '' };
+    return { display: `$${monthlyPrice.toFixed(2)}`, period: language === 'es' ? '/mes' : '/mo', savings: '', annualTotal: '' };
   };
 
   const handleGetStarted = () => {
