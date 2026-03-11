@@ -289,6 +289,19 @@ Deno.serve(async (req) => {
     // Comments stays clean — only user-written text
     const cleanComments = comments || null;
 
+    // Dedup: find existing leads with same email for cross-referencing
+    const { data: existingLeads } = await supabase
+      .from("quiz_leads")
+      .select("id, source")
+      .eq("email", cleanEmail)
+      .limit(10);
+
+    if (existingLeads && existingLeads.length > 0) {
+      extraMetadata.related_lead_ids = existingLeads.map((l: { id: string }) => l.id);
+      extraMetadata.related_sources = existingLeads.map((l: { source: string }) => l.source);
+      console.log(`[WEBHOOK-LEADS] Dedup: ${cleanEmail} has ${existingLeads.length} existing lead(s)`);
+    }
+
     // Store full metadata object in JSONB column
     const metadataToStore = Object.keys(extraMetadata).length > 0 ? extraMetadata : {};
 
