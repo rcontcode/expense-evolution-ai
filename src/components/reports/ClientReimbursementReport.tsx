@@ -71,6 +71,7 @@ const CHART_COLORS = [
 export function ClientReimbursementReport({ expenses }: ClientReimbursementReportProps) {
   const { t, language } = useLanguage();
   const dateLocale = language === 'es' ? es : enUS;
+  const { formatCurrency, formatCompact } = useFormatCurrency();
   
   const [dateRange, setDateRange] = useState<DateRange>({
     from: startOfMonth(new Date()),
