@@ -45,6 +45,7 @@ export function LeadFilters({
     filters.obstacle ||
     filters.contacted ||
     filters.source ||
+    filters.tag ||
     filters.dateFrom ||
     filters.dateTo;
 
