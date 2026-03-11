@@ -1,107 +1,72 @@
 
 
-## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
+## Plan: Potenciar Automatización CRM — Lo Que Falta
 
-### ✅ Completado en EvoFinz
+### Análisis de lo que ya existe
+- CRUD completo de reglas en BD (crear, editar, eliminar, toggle)
+- 6 tipos de acción (WhatsApp IA, Email IA, auto-contact, auto-tag, auto-stage, auto-followup)
+- Edge Function `run-automations` con acciones reales modulares
+- Logs de ejecución con detalle de resultado IA
+- Test manual de reglas contra leads específicos
+- Alertas inteligentes + scoring health + execution stats
+- RLS admin-only correcta
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
-| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
-| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
-| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
-| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
+### Lo Que Falta — 5 Mejoras Clave
 
-### ✅ Completado en Fokuspark
+**1. Condiciones Avanzadas de Trigger (usar `trigger_condition` JSONB que ya existe en BD)**
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
-| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
-| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
-| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
+La columna `trigger_condition` ya existe pero ni la UI ni `run-automations` la usan. Implementar:
+- **UI**: Agregar al diálogo de regla un constructor de condiciones: `source = X`, `quiz_score >= N`, `has_phone = true/false`, `country = X`
+- **Backend**: En `run-automations`, después del match por `trigger_type`, evaluar `trigger_condition` contra los campos del lead. Si alguna condición no se cumple, skip.
 
-### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
+Esto permite reglas como: "Solo leads HOT de Chile con teléfono → WhatsApp IA"
 
----
+**2. Duplicación Guard — No ejecutar la misma regla 2 veces en el mismo lead**
 
-## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
+Actualmente si haces Test manualmente o si un webhook se repite, las reglas se ejecutan de nuevo. Agregar:
+- **Backend**: Antes de ejecutar, verificar en `automation_logs` si ya existe un registro con ese `rule_id + lead_id + status=success`. Si sí, skip con `{ reason: 'already_executed' }`.
+- Esto previene spam de mensajes IA y follow-ups duplicados.
 
-### ✅ Confirmado: Sistema funciona correctamente
+**3. Bulk Automation — Ejecutar reglas en lote sobre leads filtrados**
 
-- Planes individuales (Free/Premium/Pro) son independientes por app
-- Bundle compartido usa mismos Stripe Price IDs en ambas apps
-- Ambos webhooks detectan Bundle y setean `has_bundle = true`
-- No hay acceso cruzado no autorizado entre apps
+El Test actual solo funciona con 1 lead. Agregar:
+- **UI**: Botón "Ejecutar en lote" que permite seleccionar filtro (todos HOT sin contactar, todos WARM > 5 días, etc.) y ejecutar `run-automations` para cada lead matching.
+- Muestra progreso y resumen al finalizar.
+- Útil para campañas de reactivación o primer contacto masivo.
 
-### ✅ Gaps implementados en Fokuspark
+**4. Automation Insights — Mini dashboard de rendimiento por regla**
 
-| # | Gap | Estado |
-|---|-----|--------|
-| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
-| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
+Agregar al card de cada regla:
+- Success rate (% de éxito vs total ejecuciones desde `automation_logs`)
+- Último lead procesado (nombre + fecha)
+- Expandir card para ver últimos 5 logs de esa regla específica
+- Esto convierte cada regla en un mini-reporte de performance.
 
-### 📋 Gaps pendientes (baja prioridad)
+**5. Auto-Save Templates — Guardar mensajes IA generados como plantillas reutilizables**
 
-| # | Gap | Prioridad |
-|---|-----|-----------|
-| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
-| S3 | Texto del Bundle podría ser más descriptivo | Baja |
-
----
-
-## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
-
-### ✅ Veredicto: No igualar precios — estructura actual es óptima
-
-| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
-|------|---------|-----------|-----------|-------|
-| Free | $0 | $0 | ✅ Ya iguales | — |
-| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
-| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
-| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
-
-### 📋 Pendiente técnico
-
-| # | Tarea | App | Prioridad |
-|---|-------|-----|-----------|
-| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
+Cuando una ejecución genera un mensaje IA exitoso:
+- **Backend**: Insertar automáticamente en `lead_message_templates` (tabla existente usada por `AdminSavedTemplates`) con `is_auto = true`
+- **UI**: En el log detail dialog, agregar botón "Guardar como plantilla" que inserta en `lead_message_templates`
+- Conecta automatización con el sistema de plantillas existente.
 
 ---
 
-## Quiz Multi-App — CRM Unificado
+### Cambios Técnicos
 
-### ✅ Completado en EvoFinz
+| Archivo | Cambio |
+|---------|--------|
+| `supabase/functions/run-automations/index.ts` | Agregar evaluación `trigger_condition`, dedup guard, auto-save template |
+| `src/components/admin/tabs/AdminAutomationTab.tsx` | Constructor condiciones UI, bulk execution, insights por regla, botón guardar plantilla |
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
-| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
-| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
-| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
-| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
+### Sin migración BD necesaria
+- `trigger_condition` JSONB ya existe en `automation_rules`
+- `automation_logs` ya tiene `rule_id + lead_id` para dedup
+- `lead_message_templates` ya existe para auto-save
 
-### 📋 Pendiente en Fokuspark
+### Orden de implementación
+1. Dedup guard (prevenir duplicados) — seguridad
+2. Condiciones avanzadas UI + backend — targeting real
+3. Insights por regla — visibilidad
+4. Bulk automation — operaciones masivas
+5. Auto-save templates — conectar con plantillas
 
-| # | Tarea | Prioridad |
-|---|-------|-----------|
-| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
-| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
-| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
-| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
-
----
-
-## Metadata JSONB — Integración Multi-App
-
-### ✅ Completado
-
-| # | Tarea | Estado |
-|---|-------|--------|
-| M1 | Columna `metadata` JSONB en `quiz_leads` | ✅ |
-| M2 | `webhook-leads` guarda metadata estructurada | ✅ |
-| M3 | `send-quiz-lead` acepta `metadata` opcional | ✅ |
-| M4 | Interface `QuizLead` incluye `metadata` | ✅ |
-| M5 | CRM muestra Datos de la App (producto, precio, conocimiento, best practices) | ✅ |
-| M6 | Scoring enriquecido con metadata | ✅ |
-| M7 | Talking points usan metadata | ✅ |
