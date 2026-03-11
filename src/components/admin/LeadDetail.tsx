@@ -101,6 +101,16 @@ export function LeadDetail({
                 >
                   {lead.quiz_level}
                 </Badge>
+                {lead.metadata?.producto_recomendado && (
+                  <Badge className="bg-violet-600 text-white text-[10px]">
+                    {lead.metadata.producto_recomendado as string}
+                  </Badge>
+                )}
+                {lead.metadata?.precio_producto && (
+                  <Badge variant="outline" className="text-[10px] border-emerald-400 text-emerald-700">
+                    ${lead.metadata.precio_producto as number}
+                  </Badge>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <LeadScoreBadge score={score} priority={priority} />

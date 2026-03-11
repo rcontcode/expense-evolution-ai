@@ -119,6 +119,20 @@ export function calculateConversionProbability(lead: QuizLead, allLeads: QuizLea
     factors.push({ label: 'Obstáculo crítico detectado', impact: 'positive', weight: 10 });
   }
 
+  // Factor 5b: Metadata — producto recomendado de alto valor
+  const precio = lead.metadata?.precio_producto as number;
+  if (precio && precio >= 100) {
+    probability += 8;
+    factors.push({ label: `Producto recomendado $${precio} (alto valor)`, impact: 'positive', weight: 8 });
+  }
+
+  // Factor 5c: Metadata — conocimiento previo bajo
+  const conocimiento = (lead.metadata?.conocimiento_previo as string)?.toLowerCase();
+  if (conocimiento && (conocimiento.includes('no tengo') || conocimiento.includes('principiante') || conocimiento.includes('poco'))) {
+    probability += 6;
+    factors.push({ label: 'Conocimiento previo bajo (alta necesidad)', impact: 'positive', weight: 6 });
+  }
+
   // Factor 6: Time since creation (freshness)
   const daysSince = differenceInDays(new Date(), new Date(lead.created_at));
   if (daysSince <= 2) {
