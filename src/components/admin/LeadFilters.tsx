@@ -31,6 +31,7 @@ export function LeadFilters({
   situations = [],
   goals = [],
   obstacles = [],
+  allTags = [],
 }: LeadFiltersProps) {
   const hasActiveFilters =
     filters.search ||
