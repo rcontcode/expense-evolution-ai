@@ -230,6 +230,10 @@ Deno.serve(async (req) => {
     if (payload.metadata?.conocimiento_previo) extraMetadata.conocimiento_previo = payload.metadata.conocimiento_previo;
     if (payload.metadata?.guide) extraMetadata.guide = payload.metadata.guide;
     if (payload.metadata?.respuestas_best_practices) extraMetadata.respuestas_detail = payload.metadata.respuestas_best_practices;
+    // Fokuspark quiz_answers — store directly in metadata
+    if (Array.isArray(payload.quiz_answers) && payload.quiz_answers.length > 0) {
+      extraMetadata.quiz_answers = payload.quiz_answers;
+    }
 
     // Calculate lead priority with ALL available data
     const { leadScore, priority } = calculatePriority({
