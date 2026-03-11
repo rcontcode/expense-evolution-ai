@@ -24,6 +24,7 @@ import {
   MessageSquare,
   Calendar,
   History,
+  Brain,
 } from 'lucide-react';
 import type { QuizLead } from '@/hooks/admin/useLeadsManagement';
 import { calculateLeadScore, getLeadPriority } from '@/hooks/admin/useLeadScoring';
@@ -32,6 +33,7 @@ import { QuickContact } from './QuickContact';
 import { InteractionTimeline } from './InteractionTimeline';
 import { FollowUpsList } from './FollowUpsList';
 import { FollowUpModal } from './FollowUpModal';
+import { LeadEnrichmentPanel } from './LeadEnrichmentPanel';
 
 interface LeadDetailProps {
   lead: QuizLead | null;
@@ -39,6 +41,7 @@ interface LeadDetailProps {
   onOpenChange: (open: boolean) => void;
   onMarkContacted: (id: string, notes?: string) => void;
   onMarkConverted: (id: string) => void;
+  allLeads?: QuizLead[];
 }
 
 const levelColors: Record<string, string> = {
@@ -67,6 +70,7 @@ export function LeadDetail({
   onOpenChange,
   onMarkContacted,
   onMarkConverted,
+  allLeads = [],
 }: LeadDetailProps) {
   const [contactNotes, setContactNotes] = useState('');
   const [showNotesInput, setShowNotesInput] = useState(false);
@@ -167,8 +171,12 @@ export function LeadDetail({
             <Separator />
 
             {/* Tabs for different sections */}
-            <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+            <Tabs defaultValue="intelligence" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="intelligence" className="flex items-center gap-1">
+                  <Brain className="h-3 w-3" />
+                  Intel
+                </TabsTrigger>
                 <TabsTrigger value="profile">Perfil</TabsTrigger>
                 <TabsTrigger value="followups" className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
@@ -179,6 +187,10 @@ export function LeadDetail({
                   Historial
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="intelligence" className="mt-4">
+                <LeadEnrichmentPanel lead={lead} allLeads={allLeads} />
+              </TabsContent>
 
               <TabsContent value="profile" className="space-y-6 mt-4">
                 {/* Quiz Results */}

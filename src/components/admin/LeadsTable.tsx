@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 
 interface LeadsTableProps {
   leads: QuizLead[];
+  allLeads?: QuizLead[];
   onMarkContacted: (id: string, notes?: string) => void;
   onMarkConverted: (id: string) => void;
 }
@@ -44,7 +45,7 @@ const levelColors: Record<string, string> = {
   maestro: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
 };
 
-export function LeadsTable({ leads, onMarkContacted, onMarkConverted }: LeadsTableProps) {
+export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }: LeadsTableProps) {
   const [selectedLead, setSelectedLead] = useState<QuizLead | null>(null);
   const [followUpLead, setFollowUpLead] = useState<QuizLead | null>(null);
 
@@ -252,6 +253,7 @@ export function LeadsTable({ leads, onMarkContacted, onMarkConverted }: LeadsTab
         onOpenChange={(open) => !open && setSelectedLead(null)}
         onMarkContacted={onMarkContacted}
         onMarkConverted={onMarkConverted}
+        allLeads={allLeads}
       />
 
       <FollowUpModal

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -9,21 +10,25 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { Users, Phone, UserCheck, RefreshCw, Flame, ThermometerSun, MessageSquare, AlertTriangle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Users, Phone, UserCheck, RefreshCw, Flame, ThermometerSun, MessageSquare, AlertTriangle, Brain, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLeadsManagement } from '@/hooks/admin/useLeadsManagement';
 import { LeadFilters } from '@/components/admin/LeadFilters';
 import { LeadsTable } from '@/components/admin/LeadsTable';
 import { LeadsExport } from '@/components/admin/LeadsExport';
+import { CRMIntelligenceDashboard } from '@/components/admin/CRMIntelligenceDashboard';
 import { TableSkeleton } from '@/components/ui/table-skeleton';
 import { PageHeader } from '@/components/PageHeader';
 import { Layout } from '@/components/Layout';
 
 export default function LeadsManagement() {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('leads');
   const {
     leads,
     allLeads,
+    rawLeads,
     isLoading,
     filters,
     setFilters,
@@ -46,10 +51,29 @@ export default function LeadsManagement() {
       <div className="container mx-auto px-4 py-4 space-y-6">
         <PageHeader
           title="Gestión de Leads"
-          description="CRM inteligente con scoring automático"
+          description="CRM inteligente con scoring automático e IA"
         >
           <LeadsExport leads={allLeads} />
         </PageHeader>
+
+        {/* Main Tabs: Intelligence vs Leads Table */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="intelligence" className="flex items-center gap-1.5">
+              <Brain className="h-4 w-4" />
+              Inteligencia IA
+            </TabsTrigger>
+            <TabsTrigger value="leads" className="flex items-center gap-1.5">
+              <BarChart3 className="h-4 w-4" />
+              Leads ({stats.total})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="intelligence" className="mt-4">
+            <CRMIntelligenceDashboard leads={rawLeads} />
+          </TabsContent>
+
+          <TabsContent value="leads" className="mt-4 space-y-6">
 
       
         {/* Priority Stats - First Row */}
@@ -242,6 +266,7 @@ export default function LeadsManagement() {
         ) : (
           <LeadsTable
             leads={leads}
+            allLeads={rawLeads}
             onMarkContacted={(id, notes) => markContacted.mutate({ id, notes })}
             onMarkConverted={(id) => markConverted.mutate(id)}
           />
@@ -280,6 +305,8 @@ export default function LeadsManagement() {
             </PaginationContent>
           </Pagination>
         )}
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );

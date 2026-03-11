@@ -271,6 +271,7 @@ export const useLeadsManagement = () => {
   return {
     leads: paginatedLeads,
     allLeads: filteredLeads,
+    rawLeads: leads,
     isLoading,
     error,
     filters,
