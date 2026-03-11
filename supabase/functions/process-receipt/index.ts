@@ -195,7 +195,7 @@ IMPORTANT: Always respond with a valid JSON object with this exact structure:
       "category": "one of: meals, travel, equipment, software, office_supplies, professional_services, utilities, home_office, mileage, fuel, advertising, materials, hobbies, family_outings, gifts, scheduled_purchases, medical, insurance_business, education_training, donations, rent, bank_fees, maintenance_repairs, moving, interest_loans, vehicle_maintenance, parking_tolls, telephone, other",
       "description": "brief summary of all items purchased",
       "confidence": "high, medium, or low",
-      "currency": "CAD, USD, etc.",
+      "currency": "${defaultCurrency}, USD, etc.",
       "cra_deductible": true or false,
       "cra_deduction_rate": percentage (e.g., 50 for meals, 100 for equipment),
       "typically_reimbursable": true or false (based on common contractor agreements),
