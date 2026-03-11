@@ -8,6 +8,7 @@ import { useEntity } from '@/contexts/EntityContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { cn } from '@/lib/utils';
+import { getCategoryLabelByLanguage } from '@/lib/constants/expense-categories';
 import { 
   TrendingUp, 
   TrendingDown, 
