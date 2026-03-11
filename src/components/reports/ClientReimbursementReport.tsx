@@ -12,7 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from 'recharts';
 import { cn } from '@/lib/utils';
-import { 
+import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { getCategoryLabelByLanguage, getCategoryColor } from '@/lib/constants/expense-categories';
   Building2, 
   DollarSign, 
   FileText, 
