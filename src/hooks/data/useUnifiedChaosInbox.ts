@@ -326,7 +326,7 @@ export function useUnifiedChaosInbox() {
               .select()
               .single();
 
-            processedResult = { type: 'invoice_income', amount: totalAmount, currency: ep.currency || 'CAD', docId: dbDoc?.id };
+            processedResult = { type: 'invoice_income', amount: totalAmount, currency: ep.currency || userCurrency, docId: dbDoc?.id };
             queryClient.invalidateQueries({ queryKey: ['documents-review'] });
             toast.success(`📋 Ingreso de $${totalAmount.toLocaleString()} enviado al Centro de Revisión`);
 
