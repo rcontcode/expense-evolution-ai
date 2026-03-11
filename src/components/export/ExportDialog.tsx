@@ -253,7 +253,32 @@ export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
             </div>
           </TabsContent>
 
-          {/* Year Filter - Common for both tabs */}
+          <TabsContent value="tax_report" className="space-y-4 mt-4">
+            <div className="p-4 border rounded-lg bg-emerald-50 dark:bg-emerald-950/20">
+              <div className="flex items-start gap-3">
+                <Receipt className="h-6 w-6 text-emerald-600 mt-0.5" />
+                <div>
+                  <p className="font-medium text-emerald-900 dark:text-emerald-100">
+                    {language === 'es' ? 'Reporte Fiscal para Contador' : 'Tax Report for Accountant'}
+                  </p>
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300 mt-1">
+                    {language === 'es' 
+                      ? 'Excel completo con todo lo que tu contador necesita para la declaración de impuestos.'
+                      : 'Complete Excel with everything your accountant needs for tax filing.'}
+                  </p>
+                  <ul className="text-xs text-emerald-600 dark:text-emerald-400 mt-2 space-y-1">
+                    <li>• {language === 'es' ? 'Resumen por categoría con tasas de deducción' : 'Category summary with deduction rates'}</li>
+                    <li>• {language === 'es' ? 'Detalle completo de gastos con comprobantes' : 'Full expense detail with receipt status'}</li>
+                    <li>• {language === 'es' ? 'Checklist de documentos fiscales (CRA/SII)' : 'Tax document checklist (CRA/SII)'}</li>
+                    <li>• {language === 'es' ? 'Lista de gastos sin comprobante' : 'Missing receipt list'}</li>
+                    <li>• {language === 'es' ? 'Estimación de ahorro fiscal e ITC/IVA' : 'Tax savings estimate & ITC/IVA'}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Year Filter - Common for all tabs */}
           <div className="space-y-2 mt-4">
             <Label>{t('export.yearFilter')}</Label>
             <Select value={yearFilter} onValueChange={setYearFilter}>
