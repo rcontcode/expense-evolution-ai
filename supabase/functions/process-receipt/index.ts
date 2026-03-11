@@ -184,7 +184,7 @@ IMPORTANT: Always respond with a valid JSON object with this exact structure:
       "vendor": "store or company name",
       "amount": numeric value (no currency symbols) - THIS IS THE TOTAL,
       "date": "YYYY-MM-DD format",
-      "category": "one of: meals, travel, equipment, software, office_supplies, professional_services, utilities, home_office, mileage, fuel, other",
+      "category": "one of: meals, travel, equipment, software, office_supplies, professional_services, utilities, home_office, mileage, fuel, advertising, materials, hobbies, family_outings, gifts, scheduled_purchases, medical, insurance_business, education_training, donations, rent, bank_fees, maintenance_repairs, moving, interest_loans, vehicle_maintenance, parking_tolls, telephone, other",
       "description": "brief summary of all items purchased",
       "confidence": "high, medium, or low",
       "currency": "CAD, USD, etc.",
