@@ -485,7 +485,7 @@ Extract expense information and return a JSON object with expenses array. If mul
         category: exp.category || "other",
         description: exp.description || "",
         confidence: exp.confidence || "medium",
-        currency: exp.currency || "CAD",
+        currency: exp.currency || defaultCurrency,
         cra_deductible: exp.cra_deductible !== false,
         cra_deduction_rate: exp.cra_deduction_rate || 100,
         typically_reimbursable: exp.typically_reimbursable || false,

@@ -27,12 +27,12 @@ export const INCOME_TYPE_KEYWORDS: Record<string, { keywords: string[]; incomeTy
   salary: { keywords: ['salario', 'salary', 'sueldo', 'nómina', 'payroll', 'wage'], incomeType: 'salary' },
   bonus: { keywords: ['bono', 'bonus', 'aguinaldo', 'prima'], incomeType: 'bonus' },
   freelance: { keywords: ['freelance', 'proyecto', 'project', 'trabajo independiente', 'independiente'], incomeType: 'freelance' },
-  investment_stocks: { keywords: ['dividendos', 'dividends', 'inversión', 'investment', 'acciones', 'stocks', 'bolsa'], incomeType: 'investment_stocks' },
+  investment_stocks: { keywords: ['dividendos', 'dividends', 'inversión', 'investment', 'acciones', 'stocks', 'bolsa', 'fondo mutuo'], incomeType: 'investment_stocks' },
   investment_crypto: { keywords: ['crypto', 'cripto', 'bitcoin', 'ethereum', 'criptomoneda'], incomeType: 'investment_crypto' },
-  passive_rental: { keywords: ['alquiler', 'renta', 'rental', 'arrendamiento', 'rent'], incomeType: 'passive_rental' },
+  passive_rental: { keywords: ['alquiler', 'renta', 'rental', 'arrendamiento', 'rent', 'arriendo', 'canon de arriendo'], incomeType: 'passive_rental' },
   passive_royalties: { keywords: ['regalías', 'royalties', 'derechos de autor', 'royalty'], incomeType: 'passive_royalties' },
   gift: { keywords: ['regalo', 'gift', 'donación', 'donation'], incomeType: 'gift' },
-  refund: { keywords: ['reembolso', 'refund', 'devolución', 'return'], incomeType: 'refund' },
+  refund: { keywords: ['reembolso', 'refund', 'devolución', 'return', 'nota de crédito'], incomeType: 'refund' },
   online_business: { keywords: ['online', 'ecommerce', 'tienda online', 'negocio online'], incomeType: 'online_business' },
 };
 
