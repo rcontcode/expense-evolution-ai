@@ -1371,11 +1371,6 @@ export default function Landing() {
                       {tier.name}
                     </h4>
                     <div className="flex items-baseline justify-center gap-1 my-2">
-                      {priceInfo.strikethrough && (
-                        <span className={`text-sm line-through ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white/50' : 'text-slate-400'}`}>
-                          {priceInfo.strikethrough}
-                        </span>
-                      )}
                       <span className={`text-3xl font-black ${tier.popular || ('isFree' in tier && tier.isFree) || ('featured' in tier && tier.featured) || ('isBundle' in tier && tier.isBundle) ? 'text-white' : `bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}`}>
                         {priceInfo.display}
                       </span>
