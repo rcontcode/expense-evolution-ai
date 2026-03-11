@@ -624,7 +624,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                               value={percentage} 
                               className="h-2"
                               style={{ 
-                                '--progress-background': CATEGORY_COLORS[category] || 'hsl(var(--primary))'
+                                '--progress-background': getCategoryColor(category) || 'hsl(var(--primary))'
                               } as React.CSSProperties}
                             />
                           </div>
