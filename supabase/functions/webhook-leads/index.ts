@@ -9,6 +9,8 @@ interface ExternalLeadPayload {
   phone?: string;
   score?: number;
   level?: string;
+  quiz_score?: number;
+  quiz_level?: string;
   source?: string;
   timestamp?: string;
   // Direct fields (EvoFinz-native format)
