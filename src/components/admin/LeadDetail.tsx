@@ -32,6 +32,7 @@ import { QuickContact } from './QuickContact';
 import { InteractionTimeline } from './InteractionTimeline';
 import { FollowUpsList } from './FollowUpsList';
 import { FollowUpModal } from './FollowUpModal';
+import { LeadEnrichmentPanel } from './LeadEnrichmentPanel';
 
 interface LeadDetailProps {
   lead: QuizLead | null;
@@ -39,6 +40,7 @@ interface LeadDetailProps {
   onOpenChange: (open: boolean) => void;
   onMarkContacted: (id: string, notes?: string) => void;
   onMarkConverted: (id: string) => void;
+  allLeads?: QuizLead[];
 }
 
 const levelColors: Record<string, string> = {
