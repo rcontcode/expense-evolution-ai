@@ -596,7 +596,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
                   </div>
                   <div className="text-right">
                     <p className="text-3xl font-bold" style={{ color: CHART_COLORS[groupIndex % CHART_COLORS.length] }}>
-                      ${group.total.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                      {formatCurrency(group.total)}
                     </p>
                     <p className="text-sm text-muted-foreground">{language === 'es' ? 'Total a reembolsar' : 'Total to reimburse'}</p>
                   </div>
