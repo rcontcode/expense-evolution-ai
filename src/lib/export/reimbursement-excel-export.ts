@@ -38,27 +38,11 @@ interface ExportData {
   language: string;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  meals: 'Comidas',
-  meals_entertainment: 'Comidas y Entretenimiento',
-  travel: 'Viajes',
-  equipment: 'Equipos',
-  software: 'Software',
-  mileage: 'Kilometraje',
-  home_office: 'Oficina en casa',
-  professional_services: 'Servicios profesionales',
-  office_supplies: 'Suministros de oficina',
-  utilities: 'Servicios públicos',
-  fuel: 'Combustible',
-  materials: 'Materiales',
-  tools: 'Herramientas',
-  advertising: 'Publicidad',
-  insurance: 'Seguros',
-  communications: 'Comunicaciones',
-  bank_fees: 'Comisiones Bancarias',
-  subscriptions: 'Suscripciones',
-  other: 'Otros',
-};
+import { getCategoryLabelByLanguage, getCategoryIcon } from '@/lib/constants/expense-categories';
+
+function getCatLabel(cat: string, lang: string): string {
+  return getCategoryLabelByLanguage(cat, lang === 'es' ? 'es' : 'en');
+}
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
