@@ -23,6 +23,9 @@ interface ExternalLeadPayload {
   failed_questions?: number[];
   // Fokuspark quiz answers
   quiz_answers?: Array<{ question: string; answer_value: number; answer_label: string }>;
+  // Universmind returning lead fields
+  returning_lead?: boolean;
+  previous_sources?: string[];
   // Nested metadata (Universmind format)
   metadata?: {
     situacion?: string;
