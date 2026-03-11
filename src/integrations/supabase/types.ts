@@ -3016,6 +3016,7 @@ export type Database = {
           goal: string | null
           id: string
           lead_score: number | null
+          metadata: Json | null
           name: string
           obstacle: string | null
           phone: string | null
@@ -3042,6 +3043,7 @@ export type Database = {
           goal?: string | null
           id?: string
           lead_score?: number | null
+          metadata?: Json | null
           name: string
           obstacle?: string | null
           phone?: string | null
@@ -3068,6 +3070,7 @@ export type Database = {
           goal?: string | null
           id?: string
           lead_score?: number | null
+          metadata?: Json | null
           name?: string
           obstacle?: string | null
           phone?: string | null
