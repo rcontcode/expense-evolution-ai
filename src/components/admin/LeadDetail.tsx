@@ -170,8 +170,12 @@ export function LeadDetail({
             <Separator />
 
             {/* Tabs for different sections */}
-            <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+            <Tabs defaultValue="intelligence" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="intelligence" className="flex items-center gap-1">
+                  <Brain className="h-3 w-3" />
+                  Intel
+                </TabsTrigger>
                 <TabsTrigger value="profile">Perfil</TabsTrigger>
                 <TabsTrigger value="followups" className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
@@ -182,6 +186,10 @@ export function LeadDetail({
                   Historial
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="intelligence" className="mt-4">
+                <LeadEnrichmentPanel lead={lead} allLeads={allLeads} />
+              </TabsContent>
 
               <TabsContent value="profile" className="space-y-6 mt-4">
                 {/* Quiz Results */}
