@@ -655,7 +655,7 @@ export async function exportReimbursementReportWithCharts(data: ExportData): Pro
         const totalPct = totalReimbursable > 0 ? (catData.total / totalReimbursable) * 100 : 0;
         
         matrixSheet.getCell(mxRow, 1).value = group.clientName;
-        matrixSheet.getCell(mxRow, 2).value = CATEGORY_LABELS[category] || category;
+        matrixSheet.getCell(mxRow, 2).value = getCatLabel(category, language);
         matrixSheet.getCell(mxRow, 3).value = catData.count;
         matrixSheet.getCell(mxRow, 4).value = catData.total;
         matrixSheet.getCell(mxRow, 4).numFmt = '"$"#,##0.00';
