@@ -598,7 +598,8 @@ export const AdminKanbanPipeline = ({ language }: Props) => {
     if (!STAGES.some(s => s.key === targetStage)) return;
     if (targetStage === draggedLead.pipeline_stage) return;
 
-    moveToStage.mutate({ leadId: draggedLead.id, stage: targetStage as PipelineStage });
+    // Show note dialog before moving
+    setPendingDrag({ lead: draggedLead, targetStage: targetStage as PipelineStage });
   };
 
   if (isLoading) {
