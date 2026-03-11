@@ -250,6 +250,7 @@ export default function LeadsManagement() {
           situations={situations}
           goals={goals}
           obstacles={obstacles}
+          allTags={allTags}
         />
 
         {/* Results count */}
