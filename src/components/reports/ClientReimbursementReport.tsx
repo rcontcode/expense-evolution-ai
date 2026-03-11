@@ -414,7 +414,7 @@ export function ClientReimbursementReport({ expenses }: ClientReimbursementRepor
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground font-medium">{language === 'es' ? '📊 Promedio' : '📊 Average'}</p>
-                <p className="text-3xl font-bold mt-1">${averagePerExpense.toFixed(0)}</p>
+                <p className="text-3xl font-bold mt-1">{formatCompact(averagePerExpense)}</p>
                 <p className="text-xs text-muted-foreground mt-1">{language === 'es' ? 'por gasto' : 'per expense'}</p>
               </div>
               <div className="p-3 rounded-xl bg-chart-3/10 group-hover:bg-chart-3/20 transition-colors">
