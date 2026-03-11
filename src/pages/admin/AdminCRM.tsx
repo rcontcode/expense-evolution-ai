@@ -377,6 +377,10 @@ const AdminCRM = () => {
                 <Code className="h-3.5 w-3.5" />
                 API
               </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowMerge(true)} className="gap-1.5">
+                <Merge className="h-3.5 w-3.5" />
+                {isEs ? 'Fusionar' : 'Merge'}
+              </Button>
             </div>
           </PageHeader>
 
