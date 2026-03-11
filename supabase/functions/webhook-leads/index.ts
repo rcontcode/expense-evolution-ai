@@ -151,6 +151,15 @@ function calculatePriority(lead: {
     score += 5;
   }
 
+  // Returning lead = multiple touchpoints = high interest (max +20)
+  if (lead.returning_lead) {
+    score += 20;
+    // Extra bonus for multiple previous sources
+    if (lead.previous_sources && lead.previous_sources.length > 1) {
+      score += 5;
+    }
+  }
+
   const capped = Math.min(100, score);
   let priority: string;
   if (capped >= 80) priority = "hot";
