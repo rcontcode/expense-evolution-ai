@@ -41,6 +41,7 @@ export default function LeadsManagement() {
     situations,
     goals,
     obstacles,
+    allTags,
     stats,
     markContacted,
     markConverted,
