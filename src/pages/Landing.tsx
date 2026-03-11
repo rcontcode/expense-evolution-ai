@@ -1199,9 +1199,6 @@ export default function Landing() {
                       <p className="text-[10px] text-slate-500 mb-1.5 font-medium uppercase tracking-wide">{tier.subtitle}</p>
                     )}
                     <div className="flex items-baseline justify-center gap-1">
-                      {priceInfo.strikethrough && (
-                        <span className="text-lg text-slate-500 line-through mr-1">{priceInfo.strikethrough}</span>
-                      )}
                       <span className={`text-4xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
                         {priceInfo.display}
                       </span>
