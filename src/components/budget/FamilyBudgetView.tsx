@@ -186,7 +186,9 @@ export function FamilyBudgetView({ budgetMode, onChangeMode }: FamilyBudgetViewP
   const { getHighlightProps, shouldHighlight } = useHighlightOnArrival();
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get('tab') || 'overview';
+    const tab = params.get('tab') || 'overview';
+    // Map legacy "savings" deep-link to the "goals" tab
+    return tab === 'savings' ? 'goals' : tab;
   });
 
   return (
