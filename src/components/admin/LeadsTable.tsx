@@ -72,19 +72,66 @@ const countryMap: { pattern: RegExp; code: string; label: string }[] = [
   { pattern: /puerto\s*rico/i, code: 'PR', label: 'Puerto Rico' },
 ];
 
-function getCountryInfo(country: string): { code: string | null; label: string } {
-  if (!country || !country.trim()) return { code: null, label: 'Sin país' };
-  // Remove ALL emoji types: flag sequences (regional indicators), pictographics, modifiers, etc.
+type CountryInfo = { code: string | null; label: string; inferred?: boolean };
+
+function hasText(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function getMetadataStringArray(metadata: QuizLead['metadata'], key: string): string[] {
+  const value = metadata?.[key];
+  return Array.isArray(value)
+    ? value.filter((item): item is string => hasText(item))
+    : [];
+}
+
+function getCountryInfo(country?: string | null): CountryInfo {
+  if (!hasText(country)) return { code: null, label: 'Sin país' };
+
   const clean = country
-    .replace(/[\u{1F1E0}-\u{1F1FF}]{2}/gu, '') // flag emoji (regional indicator pairs)
-    .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, '') // other emoji
+    .replace(/[\u{1F1E0}-\u{1F1FF}]{2}/gu, '')
+    .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, '')
     .replace(/[\/]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
+
   for (const entry of countryMap) {
-    if (entry.pattern.test(country) || entry.pattern.test(clean)) return { code: entry.code, label: entry.label };
+    if (entry.pattern.test(country) || entry.pattern.test(clean)) {
+      return { code: entry.code, label: entry.label };
+    }
   }
-  if (/otro|other/i.test(country)) return { code: null, label: 'Otro' };
+
+  if (/otro|other/i.test(country) || /otro|other/i.test(clean)) {
+    return { code: null, label: 'Otro' };
+  }
+
   return { code: null, label: clean || 'Sin país' };
+}
+
+function resolveLeadCountryInfo(lead: QuizLead, allLeads: QuizLead[] = []): CountryInfo {
+  if (hasText(lead.country)) {
+    return getCountryInfo(lead.country);
+  }
+
+  const relatedLeadIds = new Set(getMetadataStringArray(lead.metadata, 'related_lead_ids'));
+  const normalizedEmail = lead.email?.trim().toLowerCase();
+  const normalizedPhone = lead.phone?.trim();
+
+  const inferredLead = allLeads
+    .filter((candidate) => candidate.id !== lead.id && hasText(candidate.country))
+    .filter((candidate) => {
+      const sameEmail = normalizedEmail && candidate.email?.trim().toLowerCase() === normalizedEmail;
+      const samePhone = normalizedPhone && candidate.phone?.trim() === normalizedPhone;
+      const isRelated = relatedLeadIds.has(candidate.id);
+      return Boolean(sameEmail || samePhone || isRelated);
+    })
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+
+  if (inferredLead) {
+    return { ...getCountryInfo(inferredLead.country), inferred: true };
+  }
+
+  return { code: null, label: 'Sin país' };
 }
 
 type SortKey = 'created_at' | 'priority' | 'name' | 'source' | 'country' | 'quiz_level' | 'quiz_score' | 'status';
