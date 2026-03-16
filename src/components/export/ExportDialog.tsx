@@ -27,13 +27,20 @@ interface ExportDialogProps {
   initialTab?: 'general' | 't2125' | 'tax_report';
 }
 
-export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
+export function ExportDialog({ open, onClose, expenses, initialTab }: ExportDialogProps) {
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const { data: profile } = useProfile();
   const { user } = useAuth();
   const { currentCountry } = useCountryContext();
-  const [exportType, setExportType] = useState<'general' | 't2125' | 'tax_report'>('general');
+  const [exportType, setExportType] = useState<'general' | 't2125' | 'tax_report'>(initialTab || 'general');
+
+  // Sync with initialTab when dialog opens
+  useEffect(() => {
+    if (open && initialTab) {
+      setExportType(initialTab);
+    }
+  }, [open, initialTab]);
   const [format, setFormat] = useState<'csv' | 'xlsx' | 'json' | 'pdf'>('xlsx');
   const [t2125Format, setT2125Format] = useState<'xlsx' | 'pdf'>('xlsx');
   const [yearFilter, setYearFilter] = useState<string>('all');
