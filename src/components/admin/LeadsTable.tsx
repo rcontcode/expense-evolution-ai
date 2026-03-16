@@ -73,9 +73,13 @@ const countryMap: { pattern: RegExp; code: string; label: string }[] = [
 ];
 
 function getCountryInfo(country: string): { code: string | null; label: string } {
-  if (!country) return { code: null, label: 'Sin país' };
-  // Remove all emoji (flags, globe, etc.) and clean up
-  const clean = country.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').replace(/[\/]/g, ' ').trim();
+  if (!country || !country.trim()) return { code: null, label: 'Sin país' };
+  // Remove ALL emoji types: flag sequences (regional indicators), pictographics, modifiers, etc.
+  const clean = country
+    .replace(/[\u{1F1E0}-\u{1F1FF}]{2}/gu, '') // flag emoji (regional indicator pairs)
+    .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, '') // other emoji
+    .replace(/[\/]/g, ' ')
+    .trim();
   for (const entry of countryMap) {
     if (entry.pattern.test(country) || entry.pattern.test(clean)) return { code: entry.code, label: entry.label };
   }
