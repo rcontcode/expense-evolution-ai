@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PageHeader } from '@/components/PageHeader';
+import { CountryFlag } from '@/components/ui/country-flag';
 import { cn } from '@/lib/utils';
 import {
   Camera,
