@@ -46,6 +46,25 @@ const levelColors: Record<string, string> = {
   maestro: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
 };
 
+function getCountryCode(country: string): string {
+  if (!country) return 'UN';
+  const c = country.toLowerCase();
+  if (c.includes('canad')) return 'CA';
+  if (c.includes('chile')) return 'CL';
+  if (c.includes('méx') || c.includes('mex')) return 'MX';
+  if (c.includes('estados') || c.includes('united') || c.includes('usa')) return 'US';
+  if (c.includes('colomb')) return 'CO';
+  if (c.includes('argent')) return 'AR';
+  if (c.includes('perú') || c.includes('peru')) return 'PE';
+  if (c.includes('españa') || c.includes('spain')) return 'ES';
+  return 'UN';
+}
+
+function getCountryLabel(country: string): string {
+  if (!country) return '—';
+  return country.replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '').trim() || country;
+}
+
 type SortKey = 'created_at' | 'priority' | 'name' | 'source' | 'country' | 'quiz_level' | 'quiz_score' | 'status';
 type SortDir = 'asc' | 'desc';
 
