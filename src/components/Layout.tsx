@@ -264,6 +264,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
         children: [
           { label: language === 'es' ? '🛡️ Optimización Fiscal' : '🛡️ Tax Optimization', path: '/dashboard?area=impuestos&atab=optimization' },
           { label: language === 'es' ? '📋 Resumen Fiscal' : '📋 Tax Summary', path: '/dashboard?area=impuestos&atab=summary' },
+          { label: language === 'es' ? '📋 Reporte Contador' : '📋 Accountant Report', path: '/expenses?export=tax_report' },
         ],
       },
     ]

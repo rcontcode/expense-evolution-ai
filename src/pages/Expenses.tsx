@@ -51,6 +51,16 @@ export default function Expenses() {
   const [filters, setFilters] = useState<Filters>({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [exportInitialTab, setExportInitialTab] = useState<'general' | 't2125' | 'tax_report'>('general');
+
+  // Auto-open export dialog from URL params (e.g., /expenses?export=tax_report)
+  useEffect(() => {
+    const exportParam = searchParams.get('export');
+    if (exportParam === 'tax_report' || exportParam === 't2125' || exportParam === 'general') {
+      setExportInitialTab(exportParam);
+      setExportDialogOpen(true);
+    }
+  }, [searchParams]);
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
   const [reimbursementReportOpen, setReimbursementReportOpen] = useState(false);
   const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
