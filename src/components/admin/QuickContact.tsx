@@ -123,7 +123,12 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
 
   const handleWhatsApp = () => {
     if (!hasPhone) {
-      toast.error('Este lead no tiene teléfono registrado');
+      toast.error('Este lead no tiene teléfono registrado. Usa email para contactarlo.', {
+        action: {
+          label: 'Enviar Email',
+          onClick: handleEmail,
+        },
+      });
       return;
     }
     
@@ -139,7 +144,7 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
 
   const handleCall = () => {
     if (!hasPhone) {
-      toast.error('Este lead no tiene teléfono registrado');
+      toast.error('Este lead no tiene teléfono registrado. Usa email para contactarlo.');
       return;
     }
     window.open(`tel:${lead.phone}`, '_blank');
@@ -155,7 +160,7 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={handleWhatsApp} disabled={!hasPhone}>
+          <DropdownMenuItem onClick={handleWhatsApp}>
             <MessageCircle className="mr-2 h-4 w-4 text-green-600" />
             Enviar WhatsApp
             {!hasPhone && <span className="ml-2 text-xs text-muted-foreground">(sin teléfono)</span>}
@@ -165,7 +170,7 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
             Enviar Email
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleCall} disabled={!hasPhone}>
+          <DropdownMenuItem onClick={handleCall}>
             <Phone className="mr-2 h-4 w-4 text-purple-600" />
             Llamar
             {!hasPhone && <span className="ml-2 text-xs text-muted-foreground">(sin teléfono)</span>}
@@ -184,15 +189,14 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+              className={`h-8 w-8 ${hasPhone ? 'text-green-600 hover:text-green-700 hover:bg-green-50' : 'text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50'}`}
               onClick={handleWhatsApp}
-              disabled={!hasPhone}
             >
               <MessageCircle className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {hasPhone ? 'Enviar WhatsApp' : 'Sin teléfono'}
+            {hasPhone ? 'Enviar WhatsApp' : 'Sin teléfono (click para ver opciones)'}
           </TooltipContent>
         </Tooltip>
 
@@ -215,15 +219,14 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+              className={`h-8 w-8 ${hasPhone ? 'text-purple-600 hover:text-purple-700 hover:bg-purple-50' : 'text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50'}`}
               onClick={handleCall}
-              disabled={!hasPhone}
             >
               <Phone className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {hasPhone ? 'Llamar' : 'Sin teléfono'}
+            {hasPhone ? 'Llamar' : 'Sin teléfono (click para ver opciones)'}
           </TooltipContent>
         </Tooltip>
       </div>
