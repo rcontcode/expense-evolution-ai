@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PageHeader } from '@/components/PageHeader';
+import { CountryFlag } from '@/components/ui/country-flag';
 import { cn } from '@/lib/utils';
 import {
   Camera,
@@ -184,6 +185,12 @@ export default function TaxReportFlow() {
   const { formatCurrency } = useFormatCurrency();
 
   const taxAuthority = currentCountry === 'CL' ? 'SII' : 'CRA';
+  const taxAuthorityFull = currentCountry === 'CL'
+    ? 'Servicio de Impuestos Internos (SII)'
+    : 'Canada Revenue Agency (CRA)';
+  const countryName = currentCountry === 'CL'
+    ? (language === 'es' ? 'Chile' : 'Chile')
+    : (language === 'es' ? 'Canadá' : 'Canada');
   const currentYear = new Date().getFullYear();
   const fiscalYear = currentYear - 1;
   const FLOW_STEPS = getFlowSteps(taxAuthority);
@@ -209,16 +216,24 @@ export default function TaxReportFlow() {
     <Layout>
       <div className="max-w-4xl mx-auto space-y-6 pb-12">
         {/* Header */}
-        <PageHeader
-          title={language === 'es'
-            ? `Reporte Fiscal — Año ${fiscalYear}`
-            : `Tax Report — Year ${fiscalYear}`
-          }
-          description={language === 'es'
-            ? `Declaración a presentar en ${currentYear} ante ${taxAuthority} por el año fiscal ${fiscalYear}. Sigue cada paso para un reporte completo.`
-            : `Filing due in ${currentYear} to ${taxAuthority} for fiscal year ${fiscalYear}. Follow each step for a complete report.`
-          }
-        />
+        <div className="space-y-2">
+          <PageHeader
+            title={language === 'es'
+              ? `Reporte Fiscal — Año ${fiscalYear}`
+              : `Tax Report — Year ${fiscalYear}`
+            }
+            description={language === 'es'
+              ? `Declaración a presentar en ${currentYear} por el año fiscal ${fiscalYear}. Sigue cada paso para un reporte completo.`
+              : `Filing due in ${currentYear} for fiscal year ${fiscalYear}. Follow each step for a complete report.`
+            }
+          />
+          <div className="flex items-center gap-2 ml-1">
+            <CountryFlag code={currentCountry || 'CA'} size="sm" className="rounded-sm shadow-sm" />
+            <span className="text-sm text-muted-foreground font-medium">
+              {countryName} • {taxAuthorityFull}
+            </span>
+          </div>
+        </div>
 
         {/* Overall Progress */}
         <motion.div
@@ -237,12 +252,15 @@ export default function TaxReportFlow() {
                       {language === 'es' ? 'Tu Progreso' : 'Your Progress'}
                     </h3>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {language === 'es'
-                      ? `Año fiscal ${fiscalYear} → Declaración ${currentYear} • ${taxAuthority} • ${completedSteps}/5 pasos`
-                      : `Fiscal year ${fiscalYear} → Filing ${currentYear} • ${taxAuthority} • ${completedSteps}/5 steps`
-                    }
-                  </p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CountryFlag code={currentCountry || 'CA'} size="xs" className="rounded-sm" />
+                    <span>
+                      {language === 'es'
+                        ? `${countryName} • Año ${fiscalYear} → ${currentYear} • ${completedSteps}/5 pasos`
+                        : `${countryName} • Year ${fiscalYear} → ${currentYear} • ${completedSteps}/5 steps`
+                      }
+                    </span>
+                  </div>
                 </div>
                 <div className="text-right">
                   <span className={cn(
