@@ -184,7 +184,8 @@ export default function TaxReportFlow() {
   const { formatCurrency } = useFormatCurrency();
 
   const taxAuthority = currentCountry === 'CL' ? 'SII' : 'CRA';
-  const fiscalYear = new Date().getFullYear() - 1;
+  const currentYear = new Date().getFullYear();
+  const fiscalYear = currentYear - 1;
   const FLOW_STEPS = getFlowSteps(taxAuthority);
 
   const getStepStatus = (stepId: string) => {
@@ -209,10 +210,13 @@ export default function TaxReportFlow() {
       <div className="max-w-4xl mx-auto space-y-6 pb-12">
         {/* Header */}
         <PageHeader
-          title={language === 'es' ? `Reporte Fiscal ${fiscalYear}` : `Tax Report ${fiscalYear}`}
+          title={language === 'es'
+            ? `Reporte Fiscal — Año ${fiscalYear}`
+            : `Tax Report — Year ${fiscalYear}`
+          }
           description={language === 'es'
-            ? `Guía completa paso a paso para preparar tu reporte para ${taxAuthority}`
-            : `Complete step-by-step guide to prepare your report for ${taxAuthority}`
+            ? `Declaración a presentar en ${currentYear} ante ${taxAuthority} por el año fiscal ${fiscalYear}. Sigue cada paso para un reporte completo.`
+            : `Filing due in ${currentYear} to ${taxAuthority} for fiscal year ${fiscalYear}. Follow each step for a complete report.`
           }
         />
 
@@ -235,8 +239,8 @@ export default function TaxReportFlow() {
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {language === 'es'
-                      ? `Año fiscal ${fiscalYear} • ${taxAuthority} • ${completedSteps}/5 pasos`
-                      : `Fiscal year ${fiscalYear} • ${taxAuthority} • ${completedSteps}/5 steps`
+                      ? `Año fiscal ${fiscalYear} → Declaración ${currentYear} • ${taxAuthority} • ${completedSteps}/5 pasos`
+                      : `Fiscal year ${fiscalYear} → Filing ${currentYear} • ${taxAuthority} • ${completedSteps}/5 steps`
                     }
                   </p>
                 </div>
