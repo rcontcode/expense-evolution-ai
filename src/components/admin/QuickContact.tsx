@@ -123,6 +123,8 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
   const whatsappUrl = hasPhone
     ? `https://wa.me/${formatPhoneForWhatsApp(lead.phone!).replace(/^\+/, '')}?text=${generateWhatsAppMessage(lead)}`
     : null;
+  const isEmbeddedPreview = typeof window !== 'undefined' && window.self !== window.top;
+  const whatsappTarget = isEmbeddedPreview ? '_top' : '_blank';
 
   const handleWhatsApp = () => {
     if (whatsappUrl) return;
@@ -160,7 +162,7 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
         <DropdownMenuContent align="end">
           {whatsappUrl ? (
             <DropdownMenuItem asChild>
-              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+              <a href={whatsappUrl} target={whatsappTarget} rel="noopener noreferrer">
                 <MessageCircle className="mr-2 h-4 w-4 text-green-600" />
                 Enviar WhatsApp
               </a>
@@ -200,7 +202,7 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
                 size="icon"
                 className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
               >
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Enviar WhatsApp">
+                <a href={whatsappUrl} target={whatsappTarget} rel="noopener noreferrer" aria-label="Enviar WhatsApp">
                   <MessageCircle className="h-4 w-4" />
                 </a>
               </Button>
