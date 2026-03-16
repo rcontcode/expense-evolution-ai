@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, Phone, UserCheck, CheckCircle, MessageSquare, Calendar } from 'lucide-react';
+import { MoreHorizontal, Eye, Phone, UserCheck, CheckCircle, MessageSquare, Calendar, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import type { QuizLead } from '@/hooks/admin/useLeadsManagement';
 import { 
   calculateLeadScore, 
@@ -45,9 +45,98 @@ const levelColors: Record<string, string> = {
   maestro: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
 };
 
+type SortKey = 'created_at' | 'priority' | 'name' | 'source' | 'country' | 'quiz_level' | 'quiz_score' | 'status';
+type SortDir = 'asc' | 'desc';
+
+const priorityOrder: Record<string, number> = { hot: 4, warm: 3, cool: 2, cold: 1 };
+
+function SortableHeader({ label, sortKey, currentKey, currentDir, onSort }: {
+  label: string;
+  sortKey: SortKey;
+  currentKey: SortKey;
+  currentDir: SortDir;
+  onSort: (key: SortKey) => void;
+}) {
+  const isActive = currentKey === sortKey;
+  return (
+    <TableHead
+      className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
+      onClick={() => onSort(sortKey)}
+    >
+      <div className="flex items-center gap-1">
+        <span>{label}</span>
+        {isActive ? (
+          currentDir === 'desc' ? (
+            <ArrowDown className="h-3.5 w-3.5 text-primary" />
+          ) : (
+            <ArrowUp className="h-3.5 w-3.5 text-primary" />
+          )
+        ) : (
+          <ArrowUpDown className="h-3 w-3 text-muted-foreground/50" />
+        )}
+      </div>
+    </TableHead>
+  );
+}
+
 export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }: LeadsTableProps) {
   const [selectedLead, setSelectedLead] = useState<QuizLead | null>(null);
   const [followUpLead, setFollowUpLead] = useState<QuizLead | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>('created_at');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir(prev => prev === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+  };
+
+  // Enrich and sort leads
+  const enrichedLeads = useMemo(() => {
+    const enriched = leads.map(lead => {
+      const score = calculateLeadScore(lead);
+      const priority = getLeadPriority(score);
+      return { ...lead, calculatedScore: score, calculatedPriority: priority };
+    });
+
+    enriched.sort((a, b) => {
+      let cmp = 0;
+      switch (sortKey) {
+        case 'created_at':
+          cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+        case 'priority':
+          cmp = (priorityOrder[a.calculatedPriority] || 0) - (priorityOrder[b.calculatedPriority] || 0);
+          break;
+        case 'name':
+          cmp = (a.name || '').localeCompare(b.name || '');
+          break;
+        case 'source':
+          cmp = (a.source || '').localeCompare(b.source || '');
+          break;
+        case 'country':
+          cmp = (a.country || '').localeCompare(b.country || '');
+          break;
+        case 'quiz_level':
+          cmp = (a.quiz_level || '').localeCompare(b.quiz_level || '');
+          break;
+        case 'quiz_score':
+          cmp = (a.quiz_score || 0) - (b.quiz_score || 0);
+          break;
+        case 'status': {
+          const statusVal = (l: typeof a) => l.converted_to_user ? 2 : l.contacted_at ? 1 : 0;
+          cmp = statusVal(a) - statusVal(b);
+          break;
+        }
+      }
+      return sortDir === 'desc' ? -cmp : cmp;
+    });
+
+    return enriched;
+  }, [leads, sortKey, sortDir]);
 
   if (leads.length === 0) {
     return (
@@ -57,12 +146,7 @@ export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }
     );
   }
 
-  // Enrich leads with scores and sort by priority
-  const enrichedLeads = leads.map(lead => {
-    const score = calculateLeadScore(lead);
-    const priority = getLeadPriority(score);
-    return { ...lead, calculatedScore: score, calculatedPriority: priority };
-  }).sort((a, b) => b.calculatedScore - a.calculatedScore);
+  const sortProps = { currentKey: sortKey, currentDir: sortDir, onSort: handleSort };
 
   return (
     <>
@@ -71,14 +155,14 @@ export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }
           <TableHeader>
             <TableRow>
               <TableHead className="w-[40px]"></TableHead>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Prioridad</TableHead>
-              <TableHead>Fuente</TableHead>
-              <TableHead>País</TableHead>
-              <TableHead>Nivel</TableHead>
-              <TableHead>Score Quiz</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead>Fecha</TableHead>
+              <SortableHeader label="Nombre" sortKey="name" {...sortProps} />
+              <SortableHeader label="Prioridad" sortKey="priority" {...sortProps} />
+              <SortableHeader label="Fuente" sortKey="source" {...sortProps} />
+              <SortableHeader label="País" sortKey="country" {...sortProps} />
+              <SortableHeader label="Nivel" sortKey="quiz_level" {...sortProps} />
+              <SortableHeader label="Score Quiz" sortKey="quiz_score" {...sortProps} />
+              <SortableHeader label="Estado" sortKey="status" {...sortProps} />
+              <SortableHeader label="Fecha" sortKey="created_at" {...sortProps} />
               <TableHead>Contacto</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
