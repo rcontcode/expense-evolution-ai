@@ -246,7 +246,12 @@ export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }
                     </Badge>
                   </TableCell>
 
-                  <TableCell>{lead.country}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5">
+                      <CountryFlag code={getCountryCode(lead.country)} size="xs" />
+                      <span className="text-xs">{getCountryLabel(lead.country)}</span>
+                    </div>
+                  </TableCell>
                   
                   <TableCell>
                     <Badge
