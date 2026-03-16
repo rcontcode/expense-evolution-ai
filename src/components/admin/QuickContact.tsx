@@ -123,6 +123,8 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
   const whatsappUrl = hasPhone
     ? `https://wa.me/${formatPhoneForWhatsApp(lead.phone!).replace(/^\+/, '')}?text=${generateWhatsAppMessage(lead)}`
     : null;
+  const isEmbeddedPreview = typeof window !== 'undefined' && window.self !== window.top;
+  const whatsappTarget = isEmbeddedPreview ? '_top' : '_blank';
 
   const handleWhatsApp = () => {
     if (whatsappUrl) return;
