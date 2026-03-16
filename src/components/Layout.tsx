@@ -264,7 +264,10 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
         children: [
           { label: language === 'es' ? '🛡️ Optimización Fiscal' : '🛡️ Tax Optimization', path: '/dashboard?area=impuestos&atab=optimization' },
           { label: language === 'es' ? '📋 Resumen Fiscal' : '📋 Tax Summary', path: '/dashboard?area=impuestos&atab=summary' },
-          { label: language === 'es' ? '📋 Reporte Contador' : '📋 Accountant Report', path: '/expenses?export=tax_report' },
+          { label: language === 'es' ? '📸 1. Capturar Gastos' : '📸 1. Capture Expenses', path: '/capture' },
+          { label: language === 'es' ? '🏷️ 2. Categorizar' : '🏷️ 2. Categorize', path: '/expenses' },
+          { label: language === 'es' ? '👁️ 3. Revisar Docs' : '👁️ 3. Review Docs', path: '/chaos' },
+          { label: language === 'es' ? '📋 4. Reporte Contador' : '📋 4. Accountant Report', path: '/expenses?export=tax_report' },
         ],
       },
     ]

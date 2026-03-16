@@ -191,58 +191,58 @@ const WORKFLOWS: Workflow[] = [
   },
   {
     id: 'tax-preparation',
-    title: { es: '📊 Preparación CRA', en: '📊 CRA Preparation' },
+    title: { es: '📋 Reporte al Contador', en: '📋 Accountant Report' },
     subtitle: { 
-      es: 'Maximiza tus deducciones fiscales', 
-      en: 'Maximize your tax deductions' 
+      es: 'Paso a paso: del gasto al reporte fiscal listo para CRA o SII', 
+      en: 'Step by step: from expense to tax report ready for CRA or SII' 
     },
     icon: Calculator,
     accentColor: 'text-emerald-600 dark:text-emerald-400',
     bgGradient: 'from-emerald-500/10 via-emerald-500/5 to-transparent',
-    ctaPath: '/tax-calendar',
-    ctaLabel: { es: 'Ir a Impuestos', en: 'Go to Taxes' },
+    ctaPath: '/capture',
+    ctaLabel: { es: 'Comenzar Flujo', en: 'Start Flow' },
     steps: [
       {
-        id: 'categorize',
-        icon: Tag,
-        title: { es: 'Categorizar', en: 'Categorize' },
-        description: { es: 'Por tipo CRA', en: 'By CRA type' },
+        id: 'capture',
+        icon: Camera,
+        title: { es: '1. Capturar', en: '1. Capture' },
+        description: { es: 'Foto/voz → gastos', en: 'Photo/voice → expenses' },
         color: 'text-blue-600',
         bgColor: 'bg-blue-100 dark:bg-blue-900/40',
         borderColor: 'border-blue-300 dark:border-blue-700'
       },
       {
-        id: 'calculate',
-        icon: Calculator,
-        title: { es: 'Calcular', en: 'Calculate' },
-        description: { es: 'Deducciones', en: 'Deductions' },
+        id: 'categorize',
+        icon: Tag,
+        title: { es: '2. Categorizar', en: '2. Categorize' },
+        description: { es: 'CRA/SII deducible', en: 'CRA/SII deductible' },
         color: 'text-purple-600',
         bgColor: 'bg-purple-100 dark:bg-purple-900/40',
         borderColor: 'border-purple-300 dark:border-purple-700'
       },
       {
-        id: 'optimize',
-        icon: TrendingUp,
-        title: { es: 'Optimizar', en: 'Optimize' },
-        description: { es: 'IA sugiere', en: 'AI suggests' },
+        id: 'review',
+        icon: Eye,
+        title: { es: '3. Revisar', en: '3. Review' },
+        description: { es: 'Documentos listos', en: 'Documents ready' },
         color: 'text-amber-600',
         bgColor: 'bg-amber-100 dark:bg-amber-900/40',
         borderColor: 'border-amber-300 dark:border-amber-700'
       },
       {
-        id: 'export',
-        icon: Download,
-        title: { es: 'Exportar', en: 'Export' },
-        description: { es: 'Formato T2125', en: 'T2125 format' },
+        id: 'optimize',
+        icon: TrendingUp,
+        title: { es: '4. Optimizar', en: '4. Optimize' },
+        description: { es: 'IA sugiere más', en: 'AI suggests more' },
         color: 'text-emerald-600',
         bgColor: 'bg-emerald-100 dark:bg-emerald-900/40',
         borderColor: 'border-emerald-300 dark:border-emerald-700'
       },
       {
-        id: 'file',
-        icon: Landmark,
-        title: { es: 'Declarar', en: 'File' },
-        description: { es: 'Con tu contador', en: 'With accountant' },
+        id: 'export',
+        icon: Download,
+        title: { es: '5. Exportar', en: '5. Export' },
+        description: { es: 'Excel al contador', en: 'Excel to accountant' },
         color: 'text-green-600',
         bgColor: 'bg-green-100 dark:bg-green-900/40',
         borderColor: 'border-green-300 dark:border-green-700'
