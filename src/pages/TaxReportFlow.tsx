@@ -210,10 +210,13 @@ export default function TaxReportFlow() {
       <div className="max-w-4xl mx-auto space-y-6 pb-12">
         {/* Header */}
         <PageHeader
-          title={language === 'es' ? `Reporte Fiscal ${fiscalYear}` : `Tax Report ${fiscalYear}`}
+          title={language === 'es'
+            ? `Reporte Fiscal — Año ${fiscalYear}`
+            : `Tax Report — Year ${fiscalYear}`
+          }
           description={language === 'es'
-            ? `Guía completa paso a paso para preparar tu reporte para ${taxAuthority}`
-            : `Complete step-by-step guide to prepare your report for ${taxAuthority}`
+            ? `Declaración a presentar en ${currentYear} ante ${taxAuthority} por el año fiscal ${fiscalYear}. Sigue cada paso para un reporte completo.`
+            : `Filing due in ${currentYear} to ${taxAuthority} for fiscal year ${fiscalYear}. Follow each step for a complete report.`
           }
         />
 
