@@ -343,7 +343,7 @@ export default function TaxReportFlow() {
                           {isComplete ? (
                             <CheckCircle2 className="h-5 w-5 text-white" />
                           ) : (
-                            <span className="text-sm font-black text-white">{step.number}</span>
+                            <Icon className="h-5 w-5 text-white" />
                           )}
                         </div>
 
