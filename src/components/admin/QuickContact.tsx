@@ -158,11 +158,20 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={handleWhatsApp}>
-            <MessageCircle className="mr-2 h-4 w-4 text-green-600" />
-            Enviar WhatsApp
-            {!hasPhone && <span className="ml-2 text-xs text-muted-foreground">(sin teléfono)</span>}
-          </DropdownMenuItem>
+          {whatsappUrl ? (
+            <DropdownMenuItem asChild>
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="mr-2 h-4 w-4 text-green-600" />
+                Enviar WhatsApp
+              </a>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onClick={handleWhatsApp}>
+              <MessageCircle className="mr-2 h-4 w-4 text-green-600" />
+              Enviar WhatsApp
+              <span className="ml-2 text-xs text-muted-foreground">(sin teléfono)</span>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={handleEmail}>
             <Mail className="mr-2 h-4 w-4 text-blue-600" />
             Enviar Email
