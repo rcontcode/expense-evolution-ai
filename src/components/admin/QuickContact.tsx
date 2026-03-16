@@ -121,7 +121,24 @@ function formatPhoneForWhatsApp(phone: string): string {
 export function QuickContact({ lead, variant = 'buttons', size = 'default' }: QuickContactProps) {
   const hasPhone = lead.phone && lead.phone.trim().length > 0;
 
-  const handleWhatsApp = () => {
+  const openExternalUrl = async (url: string) => {
+    const popup = window.open('', '_blank', 'noopener,noreferrer');
+
+    if (popup) {
+      popup.opener = null;
+      popup.location.replace(url);
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('No se pudo abrir WhatsApp automáticamente. Copié el enlace para que lo pegues en una pestaña nueva.');
+    } catch {
+      toast.error('El navegador bloqueó la apertura de WhatsApp. Permite popups e inténtalo de nuevo.');
+    }
+  };
+
+  const handleWhatsApp = async () => {
     if (!hasPhone) {
       toast.error('Este lead no tiene teléfono registrado. Usa email para contactarlo.', {
         action: {
@@ -134,7 +151,7 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
     
     const phone = formatPhoneForWhatsApp(lead.phone!).replace(/^\+/, '');
     const message = generateWhatsAppMessage(lead);
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank', 'noopener,noreferrer');
+    await openExternalUrl(`https://wa.me/${phone}?text=${message}`);
   };
 
   const handleEmail = () => {
