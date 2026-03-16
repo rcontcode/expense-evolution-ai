@@ -120,43 +120,24 @@ function formatPhoneForWhatsApp(phone: string): string {
 
 export function QuickContact({ lead, variant = 'buttons', size = 'default' }: QuickContactProps) {
   const hasPhone = lead.phone && lead.phone.trim().length > 0;
+  const whatsappUrl = hasPhone
+    ? `https://wa.me/${formatPhoneForWhatsApp(lead.phone!).replace(/^\+/, '')}?text=${generateWhatsAppMessage(lead)}`
+    : null;
 
-  const openExternalUrl = async (url: string) => {
-    const popup = window.open('', '_blank', 'noopener,noreferrer');
+  const handleWhatsApp = () => {
+    if (whatsappUrl) return;
 
-    if (popup) {
-      popup.opener = null;
-      popup.location.replace(url);
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success('No se pudo abrir WhatsApp automáticamente. Copié el enlace para que lo pegues en una pestaña nueva.');
-    } catch {
-      toast.error('El navegador bloqueó la apertura de WhatsApp. Permite popups e inténtalo de nuevo.');
-    }
-  };
-
-  const handleWhatsApp = async () => {
-    if (!hasPhone) {
-      toast.error('Este lead no tiene teléfono registrado. Usa email para contactarlo.', {
-        action: {
-          label: 'Enviar Email',
-          onClick: handleEmail,
-        },
-      });
-      return;
-    }
-    
-    const phone = formatPhoneForWhatsApp(lead.phone!).replace(/^\+/, '');
-    const message = generateWhatsAppMessage(lead);
-    await openExternalUrl(`https://wa.me/${phone}?text=${message}`);
+    toast.error('Este lead no tiene teléfono registrado. Usa email para contactarlo.', {
+      action: {
+        label: 'Enviar Email',
+        onClick: handleEmail,
+      },
+    });
   };
 
   const handleEmail = () => {
     const { subject, body } = generateEmailContent(lead);
-    window.open(`mailto:${lead.email}?subject=${subject}&body=${body}`, '_blank');
+    window.open(`mailto:${lead.email}?subject=${subject}&body=${body}`, '_blank', 'noopener,noreferrer');
   };
 
   const handleCall = () => {
