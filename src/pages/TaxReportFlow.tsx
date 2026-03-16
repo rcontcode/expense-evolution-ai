@@ -216,16 +216,24 @@ export default function TaxReportFlow() {
     <Layout>
       <div className="max-w-4xl mx-auto space-y-6 pb-12">
         {/* Header */}
-        <PageHeader
-          title={language === 'es'
-            ? `Reporte Fiscal — Año ${fiscalYear}`
-            : `Tax Report — Year ${fiscalYear}`
-          }
-          description={language === 'es'
-            ? `Declaración a presentar en ${currentYear} ante ${taxAuthority} por el año fiscal ${fiscalYear}. Sigue cada paso para un reporte completo.`
-            : `Filing due in ${currentYear} to ${taxAuthority} for fiscal year ${fiscalYear}. Follow each step for a complete report.`
-          }
-        />
+        <div className="space-y-2">
+          <PageHeader
+            title={language === 'es'
+              ? `Reporte Fiscal — Año ${fiscalYear}`
+              : `Tax Report — Year ${fiscalYear}`
+            }
+            description={language === 'es'
+              ? `Declaración a presentar en ${currentYear} por el año fiscal ${fiscalYear}. Sigue cada paso para un reporte completo.`
+              : `Filing due in ${currentYear} for fiscal year ${fiscalYear}. Follow each step for a complete report.`
+            }
+          />
+          <div className="flex items-center gap-2 ml-1">
+            <CountryFlag code={currentCountry || 'CA'} size="sm" className="rounded-sm shadow-sm" />
+            <span className="text-sm text-muted-foreground font-medium">
+              {countryName} • {taxAuthorityFull}
+            </span>
+          </div>
+        </div>
 
         {/* Overall Progress */}
         <motion.div
