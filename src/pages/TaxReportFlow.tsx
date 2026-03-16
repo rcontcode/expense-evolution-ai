@@ -185,6 +185,12 @@ export default function TaxReportFlow() {
   const { formatCurrency } = useFormatCurrency();
 
   const taxAuthority = currentCountry === 'CL' ? 'SII' : 'CRA';
+  const taxAuthorityFull = currentCountry === 'CL'
+    ? 'Servicio de Impuestos Internos (SII)'
+    : 'Canada Revenue Agency (CRA)';
+  const countryName = currentCountry === 'CL'
+    ? (language === 'es' ? 'Chile' : 'Chile')
+    : (language === 'es' ? 'Canadá' : 'Canada');
   const currentYear = new Date().getFullYear();
   const fiscalYear = currentYear - 1;
   const FLOW_STEPS = getFlowSteps(taxAuthority);
