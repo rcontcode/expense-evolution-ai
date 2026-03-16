@@ -252,12 +252,15 @@ export default function TaxReportFlow() {
                       {language === 'es' ? 'Tu Progreso' : 'Your Progress'}
                     </h3>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {language === 'es'
-                      ? `Año fiscal ${fiscalYear} → Declaración ${currentYear} • ${taxAuthority} • ${completedSteps}/5 pasos`
-                      : `Fiscal year ${fiscalYear} → Filing ${currentYear} • ${taxAuthority} • ${completedSteps}/5 steps`
-                    }
-                  </p>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CountryFlag code={currentCountry || 'CA'} size="xs" className="rounded-sm" />
+                    <span>
+                      {language === 'es'
+                        ? `${countryName} • Año ${fiscalYear} → ${currentYear} • ${completedSteps}/5 pasos`
+                        : `${countryName} • Year ${fiscalYear} → ${currentYear} • ${completedSteps}/5 steps`
+                      }
+                    </span>
+                  </div>
                 </div>
                 <div className="text-right">
                   <span className={cn(
