@@ -162,7 +162,7 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
         <DropdownMenuContent align="end">
           {whatsappUrl ? (
             <DropdownMenuItem asChild>
-              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+              <a href={whatsappUrl} target={whatsappTarget} rel="noopener noreferrer">
                 <MessageCircle className="mr-2 h-4 w-4 text-green-600" />
                 Enviar WhatsApp
               </a>
