@@ -43,7 +43,7 @@ export function ExportDialog({ open, onClose, expenses, initialTab }: ExportDial
   }, [open, initialTab]);
   const [format, setFormat] = useState<'csv' | 'xlsx' | 'json' | 'pdf'>('xlsx');
   const [t2125Format, setT2125Format] = useState<'xlsx' | 'pdf'>('xlsx');
-  const [yearFilter, setYearFilter] = useState<string>('all');
+  const [yearFilter, setYearFilter] = useState<string>((new Date().getFullYear() - 1).toString());
   const [isExporting, setIsExporting] = useState(false);
   const [isDraft, setIsDraft] = useState(false);
 
