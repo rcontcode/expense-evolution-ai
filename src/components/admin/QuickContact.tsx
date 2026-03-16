@@ -202,7 +202,7 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
                 size="icon"
                 className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
               >
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Enviar WhatsApp">
+                <a href={whatsappUrl} target={whatsappTarget} rel="noopener noreferrer" aria-label="Enviar WhatsApp">
                   <MessageCircle className="h-4 w-4" />
                 </a>
               </Button>
