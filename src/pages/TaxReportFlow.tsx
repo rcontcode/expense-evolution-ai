@@ -239,8 +239,8 @@ export default function TaxReportFlow() {
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {language === 'es'
-                      ? `Año fiscal ${fiscalYear} • ${taxAuthority} • ${completedSteps}/5 pasos`
-                      : `Fiscal year ${fiscalYear} • ${taxAuthority} • ${completedSteps}/5 steps`
+                      ? `Año fiscal ${fiscalYear} → Declaración ${currentYear} • ${taxAuthority} • ${completedSteps}/5 pasos`
+                      : `Fiscal year ${fiscalYear} → Filing ${currentYear} • ${taxAuthority} • ${completedSteps}/5 steps`
                     }
                   </p>
                 </div>
