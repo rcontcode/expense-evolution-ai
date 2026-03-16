@@ -24,6 +24,7 @@ interface ExportDialogProps {
   open: boolean;
   onClose: () => void;
   expenses: ExpenseWithRelations[];
+  initialTab?: 'general' | 't2125' | 'tax_report';
 }
 
 export function ExportDialog({ open, onClose, expenses }: ExportDialogProps) {
