@@ -120,43 +120,24 @@ function formatPhoneForWhatsApp(phone: string): string {
 
 export function QuickContact({ lead, variant = 'buttons', size = 'default' }: QuickContactProps) {
   const hasPhone = lead.phone && lead.phone.trim().length > 0;
+  const whatsappUrl = hasPhone
+    ? `https://wa.me/${formatPhoneForWhatsApp(lead.phone!).replace(/^\+/, '')}?text=${generateWhatsAppMessage(lead)}`
+    : null;
 
-  const openExternalUrl = async (url: string) => {
-    const popup = window.open('', '_blank', 'noopener,noreferrer');
+  const handleWhatsApp = () => {
+    if (whatsappUrl) return;
 
-    if (popup) {
-      popup.opener = null;
-      popup.location.replace(url);
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success('No se pudo abrir WhatsApp automáticamente. Copié el enlace para que lo pegues en una pestaña nueva.');
-    } catch {
-      toast.error('El navegador bloqueó la apertura de WhatsApp. Permite popups e inténtalo de nuevo.');
-    }
-  };
-
-  const handleWhatsApp = async () => {
-    if (!hasPhone) {
-      toast.error('Este lead no tiene teléfono registrado. Usa email para contactarlo.', {
-        action: {
-          label: 'Enviar Email',
-          onClick: handleEmail,
-        },
-      });
-      return;
-    }
-    
-    const phone = formatPhoneForWhatsApp(lead.phone!).replace(/^\+/, '');
-    const message = generateWhatsAppMessage(lead);
-    await openExternalUrl(`https://wa.me/${phone}?text=${message}`);
+    toast.error('Este lead no tiene teléfono registrado. Usa email para contactarlo.', {
+      action: {
+        label: 'Enviar Email',
+        onClick: handleEmail,
+      },
+    });
   };
 
   const handleEmail = () => {
     const { subject, body } = generateEmailContent(lead);
-    window.open(`mailto:${lead.email}?subject=${subject}&body=${body}`, '_blank');
+    window.open(`mailto:${lead.email}?subject=${subject}&body=${body}`, '_blank', 'noopener,noreferrer');
   };
 
   const handleCall = () => {
@@ -177,11 +158,20 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={handleWhatsApp}>
-            <MessageCircle className="mr-2 h-4 w-4 text-green-600" />
-            Enviar WhatsApp
-            {!hasPhone && <span className="ml-2 text-xs text-muted-foreground">(sin teléfono)</span>}
-          </DropdownMenuItem>
+          {whatsappUrl ? (
+            <DropdownMenuItem asChild>
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="mr-2 h-4 w-4 text-green-600" />
+                Enviar WhatsApp
+              </a>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onClick={handleWhatsApp}>
+              <MessageCircle className="mr-2 h-4 w-4 text-green-600" />
+              Enviar WhatsApp
+              <span className="ml-2 text-xs text-muted-foreground">(sin teléfono)</span>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={handleEmail}>
             <Mail className="mr-2 h-4 w-4 text-blue-600" />
             Enviar Email
@@ -203,14 +193,27 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
       <div className="flex items-center gap-1">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`h-8 w-8 ${hasPhone ? 'text-green-600 hover:text-green-700 hover:bg-green-50' : 'text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50'}`}
-              onClick={handleWhatsApp}
-            >
-              <MessageCircle className="h-4 w-4" />
-            </Button>
+            {whatsappUrl ? (
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+              >
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Enviar WhatsApp">
+                  <MessageCircle className="h-4 w-4" />
+                </a>
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50"
+                onClick={handleWhatsApp}
+              >
+                <MessageCircle className="h-4 w-4" />
+              </Button>
+            )}
           </TooltipTrigger>
           <TooltipContent>
             {hasPhone ? 'Enviar WhatsApp' : 'Sin teléfono (click para ver opciones)'}
