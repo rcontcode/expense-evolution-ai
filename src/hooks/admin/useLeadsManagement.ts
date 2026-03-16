@@ -168,8 +168,8 @@ export const useLeadsManagement = () => {
       // Obstacle filter
       if (filters.obstacle && lead.obstacle !== filters.obstacle) return false;
 
-      // Source filter
-      if (filters.source && lead.source !== filters.source) return false;
+      // Source filter (partial match for compound sources like universmind_quiz)
+      if (filters.source && !lead.source?.toLowerCase().includes(filters.source.toLowerCase())) return false;
 
       // Tag filter
       if (filters.tag && !(lead.tags || []).includes(filters.tag)) return false;
