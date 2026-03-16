@@ -123,6 +123,7 @@ const SubscriptionsPage = lazyWithRetry(() => import("./pages/Subscriptions"));
 const DataHealth = lazyWithRetry(() => import("./pages/DataHealth"));
 const FilesPage = lazyWithRetry(() => import("./pages/Files"));
 const UserGuide = lazyWithRetry(() => import("./pages/UserGuide"));
+const TaxReportFlow = lazyWithRetry(() => import("./pages/TaxReportFlow"));
 const CookieConsent = lazyWithRetry(() =>
   import("./components/CookieConsent").then((m) => ({ default: m.CookieConsent }))
 );
@@ -399,6 +400,7 @@ const App = () => (
                         <Route path="/data-health" element={<ProtectedRoute><DataHealth /></ProtectedRoute>} />
                         <Route path="/files" element={<ProtectedRoute><FilesPage /></ProtectedRoute>} />
                         <Route path="/user-guide" element={<ProtectedRoute><UserGuide /></ProtectedRoute>} />
+                        <Route path="/tax-report-flow" element={<ProtectedRoute><TaxReportFlow /></ProtectedRoute>} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>

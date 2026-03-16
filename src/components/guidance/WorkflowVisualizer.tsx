@@ -199,8 +199,8 @@ const WORKFLOWS: Workflow[] = [
     icon: Calculator,
     accentColor: 'text-emerald-600 dark:text-emerald-400',
     bgGradient: 'from-emerald-500/10 via-emerald-500/5 to-transparent',
-    ctaPath: '/capture',
-    ctaLabel: { es: 'Comenzar Flujo', en: 'Start Flow' },
+    ctaPath: '/tax-report-flow',
+    ctaLabel: { es: 'Ver Flujo Completo', en: 'View Full Flow' },
     steps: [
       {
         id: 'capture',

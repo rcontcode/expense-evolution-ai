@@ -66,7 +66,7 @@ const WORKFLOW_CONFIGS: WorkflowConfig[] = [
     description: { es: 'Prepara tu reporte fiscal', en: 'Prepare your tax report' },
     hint: { es: 'Captura, categoriza y exporta para CRA/SII', en: 'Capture, categorize and export for CRA/SII' },
     icon: Calculator,
-    path: '/capture',
+    path: '/tax-report-flow',
     color: 'text-emerald-600',
     bgColor: 'bg-emerald-100 dark:bg-emerald-900/40',
     borderColor: 'border-emerald-300 dark:border-emerald-700'
