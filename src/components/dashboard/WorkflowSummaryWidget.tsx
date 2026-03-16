@@ -62,11 +62,11 @@ const WORKFLOW_CONFIGS: WorkflowConfig[] = [
   },
   {
     id: 'tax-preparation',
-    title: { es: 'Impuestos', en: 'Taxes' },
-    description: { es: 'Prepara tu declaración fiscal', en: 'Prepare your tax filing' },
-    hint: { es: 'Clasifica gastos como deducibles para CRA/SII', en: 'Classify expenses as deductible for tax' },
+    title: { es: 'Contador', en: 'Accountant' },
+    description: { es: 'Prepara tu reporte fiscal', en: 'Prepare your tax report' },
+    hint: { es: 'Captura, categoriza y exporta para CRA/SII', en: 'Capture, categorize and export for CRA/SII' },
     icon: Calculator,
-    path: '/tax-optimizer',
+    path: '/capture',
     color: 'text-emerald-600',
     bgColor: 'bg-emerald-100 dark:bg-emerald-900/40',
     borderColor: 'border-emerald-300 dark:border-emerald-700'
