@@ -184,7 +184,8 @@ export default function TaxReportFlow() {
   const { formatCurrency } = useFormatCurrency();
 
   const taxAuthority = currentCountry === 'CL' ? 'SII' : 'CRA';
-  const fiscalYear = new Date().getFullYear() - 1;
+  const currentYear = new Date().getFullYear();
+  const fiscalYear = currentYear - 1;
   const FLOW_STEPS = getFlowSteps(taxAuthority);
 
   const getStepStatus = (stepId: string) => {
