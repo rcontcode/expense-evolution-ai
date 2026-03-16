@@ -164,10 +164,14 @@ export function ExportDialog({ open, onClose, expenses, initialTab }: ExportDial
 
         <Tabs value={exportType} onValueChange={(v) => setExportType(v as 'general' | 't2125' | 'tax_report')} className="py-4">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="general">{t('export.generalExport')}</TabsTrigger>
-            <TabsTrigger value="t2125">{t('export.t2125Report')}</TabsTrigger>
-            <TabsTrigger value="tax_report" className="gap-1">
-              <Receipt className="h-3 w-3" />
+            <TabsTrigger value="general" className="text-xs sm:text-sm truncate px-2">
+              {language === 'es' ? 'General' : 'General'}
+            </TabsTrigger>
+            <TabsTrigger value="t2125" className="text-xs sm:text-sm truncate px-2">
+              T2125
+            </TabsTrigger>
+            <TabsTrigger value="tax_report" className="gap-1 text-xs sm:text-sm truncate px-2">
+              <Receipt className="h-3 w-3 shrink-0" />
               {language === 'es' ? 'Contador' : 'Accountant'}
             </TabsTrigger>
           </TabsList>
