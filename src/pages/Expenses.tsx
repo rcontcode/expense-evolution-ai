@@ -333,7 +333,8 @@ export default function Expenses() {
         <ExportDialog 
           open={exportDialogOpen} 
           onClose={() => setExportDialogOpen(false)} 
-          expenses={allExpenses || []} 
+          expenses={allExpenses || []}
+          initialTab={exportInitialTab}
         />
         <QuickCaptureDialog 
           open={quickCaptureOpen} 
