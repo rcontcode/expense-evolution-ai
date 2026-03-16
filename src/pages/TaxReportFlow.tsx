@@ -327,7 +327,7 @@ export default function TaxReportFlow() {
                       ) : isLoading ? (
                         <Loader2 className="h-4 w-4 text-white animate-spin" />
                       ) : (
-                        <span className="text-sm font-black text-white">{step.number}</span>
+                        <Icon className="h-5 w-5 text-white" />
                       )}
                     </div>
 
