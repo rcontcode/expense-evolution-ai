@@ -132,9 +132,9 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
       return;
     }
     
-    const phone = formatPhoneForWhatsApp(lead.phone!);
+    const phone = formatPhoneForWhatsApp(lead.phone!).replace(/^\+/, '');
     const message = generateWhatsAppMessage(lead);
-    window.open(`https://web.whatsapp.com/send?phone=${phone}&text=${message}`, '_blank');
+    window.open(`https://wa.me/${phone}?text=${message}`, '_blank', 'noopener,noreferrer');
   };
 
   const handleEmail = () => {
