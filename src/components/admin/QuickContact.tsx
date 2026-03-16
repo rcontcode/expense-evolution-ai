@@ -193,14 +193,27 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
       <div className="flex items-center gap-1">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`h-8 w-8 ${hasPhone ? 'text-green-600 hover:text-green-700 hover:bg-green-50' : 'text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50'}`}
-              onClick={handleWhatsApp}
-            >
-              <MessageCircle className="h-4 w-4" />
-            </Button>
+            {whatsappUrl ? (
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+              >
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Enviar WhatsApp">
+                  <MessageCircle className="h-4 w-4" />
+                </a>
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50"
+                onClick={handleWhatsApp}
+              >
+                <MessageCircle className="h-4 w-4" />
+              </Button>
+            )}
           </TooltipTrigger>
           <TooltipContent>
             {hasPhone ? 'Enviar WhatsApp' : 'Sin teléfono (click para ver opciones)'}
