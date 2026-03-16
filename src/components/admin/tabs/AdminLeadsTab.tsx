@@ -36,7 +36,7 @@ export const AdminLeadsTab = ({ language, sourceFilter, onClearFilter }: Props) 
         .limit(50);
       
       if (sourceFilter) {
-        query = query.eq('source', sourceFilter);
+        query = query.ilike('source', `%${sourceFilter}%`);
       }
       
       const { data, error } = await query;
