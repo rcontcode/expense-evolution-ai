@@ -188,7 +188,13 @@ export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }
     const enriched = leads.map(lead => {
       const score = calculateLeadScore(lead);
       const priority = getLeadPriority(score);
-      return { ...lead, calculatedScore: score, calculatedPriority: priority };
+      const resolvedCountry = resolveLeadCountryInfo(lead, allLeads);
+      return {
+        ...lead,
+        calculatedScore: score,
+        calculatedPriority: priority,
+        resolvedCountry,
+      };
     });
 
     enriched.sort((a, b) => {
@@ -207,7 +213,7 @@ export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }
           cmp = (a.source || '').localeCompare(b.source || '');
           break;
         case 'country':
-          cmp = (a.country || '').localeCompare(b.country || '');
+          cmp = (a.resolvedCountry.label || '').localeCompare(b.resolvedCountry.label || '');
           break;
         case 'quiz_level':
           cmp = (a.quiz_level || '').localeCompare(b.quiz_level || '');
@@ -225,7 +231,7 @@ export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }
     });
 
     return enriched;
-  }, [leads, sortKey, sortDir]);
+  }, [leads, allLeads, sortKey, sortDir]);
 
   if (leads.length === 0) {
     return (
