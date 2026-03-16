@@ -349,7 +349,9 @@ export default function TaxReportFlow() {
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <Icon className={cn("h-4 w-4 shrink-0 hidden sm:block", step.color)} />
+                            <span className={cn("text-xs font-bold shrink-0 px-1.5 py-0.5 rounded-md", step.bgColor, step.color)}>
+                              {step.number}
+                            </span>
                             <h3 className="font-bold text-base">
                               {step.title[language]}
                             </h3>
