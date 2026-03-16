@@ -149,36 +149,46 @@ async function getClientBillingProgress(userId: string): Promise<WorkflowProgres
 }
 
 async function getTaxPreparationProgress(userId: string): Promise<WorkflowProgress> {
-  // Get expenses by category and deductibility
-  const { data: expenses } = await supabase
-    .from('expenses')
-    .select('id, category, reimbursement_type, amount')
-    .eq('user_id', userId);
+  const [{ data: expenses }, { data: documents }] = await Promise.all([
+    supabase
+      .from('expenses')
+      .select('id, category, reimbursement_type, amount, document_id')
+      .eq('user_id', userId),
+    supabase
+      .from('documents')
+      .select('id, status, review_status')
+      .eq('user_id', userId),
+  ]);
 
+  const totalExpenses = expenses?.length || 0;
   const categorizedCount = expenses?.filter(e => e.category).length || 0;
+  const uncategorizedCount = expenses?.filter(e => !e.category).length || 0;
   const deductibleCount = expenses?.filter(e => e.reimbursement_type === 'cra_deductible').length || 0;
+  const withDocCount = expenses?.filter(e => e.document_id).length || 0;
+  const pendingReview = documents?.filter(d => d.review_status === 'pending' || d.status === 'classified').length || 0;
   const totalAmount = expenses?.filter(e => e.reimbursement_type === 'cra_deductible')
     .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
-  const uncategorizedCount = expenses?.filter(e => !e.category).length || 0;
 
   let currentStep = 0;
-  if (uncategorizedCount > 0) currentStep = 0;
-  else if (deductibleCount === 0) currentStep = 1;
-  else if (deductibleCount > 0) currentStep = 2;
-  else currentStep = 3;
+  if (totalExpenses === 0) currentStep = 0;
+  else if (uncategorizedCount > 0) currentStep = 1;
+  else if (pendingReview > 0) currentStep = 2;
+  else if (deductibleCount > 0) currentStep = 3;
+  else currentStep = 4;
 
   return {
     workflowId: 'tax-preparation',
     currentStep,
     totalSteps: 5,
     stepDetails: [
-      { stepId: 'categorize', status: uncategorizedCount === 0 ? 'completed' : 'current', count: uncategorizedCount },
-      { stepId: 'calculate', status: currentStep >= 1 ? (currentStep === 1 ? 'current' : 'completed') : 'pending', count: deductibleCount },
-      { stepId: 'optimize', status: currentStep >= 2 ? 'current' : 'pending' },
-      { stepId: 'export', status: currentStep >= 3 ? 'current' : 'pending' },
-      { stepId: 'file', status: currentStep >= 4 ? 'completed' : 'pending' },
+      { stepId: 'capture', status: totalExpenses > 0 ? 'completed' : 'current', count: totalExpenses },
+      { stepId: 'categorize', status: uncategorizedCount === 0 && totalExpenses > 0 ? 'completed' : (currentStep === 1 ? 'current' : 'pending'), count: uncategorizedCount },
+      { stepId: 'review', status: pendingReview === 0 && currentStep > 2 ? 'completed' : (currentStep === 2 ? 'current' : 'pending'), count: pendingReview },
+      { stepId: 'optimize', status: currentStep >= 3 ? (currentStep === 3 ? 'current' : 'completed') : 'pending' },
+      { stepId: 'export', status: currentStep >= 4 ? 'completed' : 'pending' },
     ],
     stats: [
+      { label: { es: 'Gastos', en: 'Expenses' }, value: totalExpenses, type: 'count' },
       { label: { es: 'Sin categoría', en: 'Uncategorized' }, value: uncategorizedCount, type: 'count' },
       { label: { es: 'Deducibles', en: 'Deductible' }, value: deductibleCount, type: 'count' },
       { label: { es: 'Total deducible', en: 'Total deductible' }, value: totalAmount, type: 'currency' },
