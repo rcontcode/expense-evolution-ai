@@ -327,7 +327,7 @@ export default function TaxReportFlow() {
                       ) : isLoading ? (
                         <Loader2 className="h-4 w-4 text-white animate-spin" />
                       ) : (
-                        <span className="text-sm font-black text-white">{step.number}</span>
+                        <Icon className="h-5 w-5 text-white" />
                       )}
                     </div>
 
@@ -343,13 +343,15 @@ export default function TaxReportFlow() {
                           {isComplete ? (
                             <CheckCircle2 className="h-5 w-5 text-white" />
                           ) : (
-                            <span className="text-sm font-black text-white">{step.number}</span>
+                            <Icon className="h-5 w-5 text-white" />
                           )}
                         </div>
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <Icon className={cn("h-4 w-4 shrink-0 hidden sm:block", step.color)} />
+                            <span className={cn("text-xs font-bold shrink-0 px-1.5 py-0.5 rounded-md", step.bgColor, step.color)}>
+                              {step.number}
+                            </span>
                             <h3 className="font-bold text-base">
                               {step.title[language]}
                             </h3>
