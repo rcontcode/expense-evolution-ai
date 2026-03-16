@@ -74,10 +74,12 @@ const countryMap: { pattern: RegExp; code: string; label: string }[] = [
 
 function getCountryInfo(country: string): { code: string | null; label: string } {
   if (!country) return { code: null, label: 'Sin país' };
-  const clean = country.replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '').trim();
+  // Remove all emoji (flags, globe, etc.) and clean up
+  const clean = country.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').replace(/[\/]/g, ' ').trim();
   for (const entry of countryMap) {
-    if (entry.pattern.test(clean)) return { code: entry.code, label: entry.label };
+    if (entry.pattern.test(country) || entry.pattern.test(clean)) return { code: entry.code, label: entry.label };
   }
+  if (/otro|other/i.test(country)) return { code: null, label: 'Otro' };
   return { code: null, label: clean || 'Sin país' };
 }
 
