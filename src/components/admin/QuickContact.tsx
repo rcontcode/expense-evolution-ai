@@ -129,7 +129,7 @@ export function QuickContact({ lead, variant = 'buttons', size = 'default' }: Qu
     
     const phone = formatPhoneForWhatsApp(lead.phone!);
     const message = generateWhatsAppMessage(lead);
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    window.open(`https://web.whatsapp.com/send?phone=${phone}&text=${message}`, '_blank');
   };
 
   const handleEmail = () => {
