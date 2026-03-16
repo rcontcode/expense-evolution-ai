@@ -400,6 +400,7 @@ const App = () => (
                         <Route path="/data-health" element={<ProtectedRoute><DataHealth /></ProtectedRoute>} />
                         <Route path="/files" element={<ProtectedRoute><FilesPage /></ProtectedRoute>} />
                         <Route path="/user-guide" element={<ProtectedRoute><UserGuide /></ProtectedRoute>} />
+                        <Route path="/tax-report-flow" element={<ProtectedRoute><TaxReportFlow /></ProtectedRoute>} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
