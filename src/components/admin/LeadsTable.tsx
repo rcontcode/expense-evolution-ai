@@ -341,19 +341,14 @@ export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }
                   </TableCell>
 
                   <TableCell>
-                    {(() => {
-                      const info = getCountryInfo(lead.country);
-                      return (
-                        <div className="flex items-center gap-1.5">
-                          {info.code ? (
-                            <CountryFlag code={info.code} size="sm" />
-                          ) : (
-                            <div className="h-4 w-6 rounded-sm bg-muted flex items-center justify-center text-[8px] text-muted-foreground">?</div>
-                          )}
-                          <span className="text-xs">{info.label}</span>
-                        </div>
-                      );
-                    })()}
+                    <div className="flex items-center gap-1.5">
+                      {lead.resolvedCountry.code ? (
+                        <CountryFlag code={lead.resolvedCountry.code} size="sm" />
+                      ) : (
+                        <div className="h-4 w-6 rounded-sm bg-muted flex items-center justify-center text-[8px] text-muted-foreground">?</div>
+                      )}
+                      <span className="text-xs">{lead.resolvedCountry.label}</span>
+                    </div>
                   </TableCell>
                   
                   <TableCell>
