@@ -46,23 +46,39 @@ const levelColors: Record<string, string> = {
   maestro: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
 };
 
-function getCountryCode(country: string): string {
-  if (!country) return 'UN';
-  const c = country.toLowerCase();
-  if (c.includes('canad')) return 'CA';
-  if (c.includes('chile')) return 'CL';
-  if (c.includes('méx') || c.includes('mex')) return 'MX';
-  if (c.includes('estados') || c.includes('united') || c.includes('usa')) return 'US';
-  if (c.includes('colomb')) return 'CO';
-  if (c.includes('argent')) return 'AR';
-  if (c.includes('perú') || c.includes('peru')) return 'PE';
-  if (c.includes('españa') || c.includes('spain')) return 'ES';
-  return 'UN';
-}
+const countryMap: { pattern: RegExp; code: string; label: string }[] = [
+  { pattern: /canad/i, code: 'CA', label: 'Canadá' },
+  { pattern: /chile/i, code: 'CL', label: 'Chile' },
+  { pattern: /m[eé]x/i, code: 'MX', label: 'México' },
+  { pattern: /estados|united|usa|\bus\b/i, code: 'US', label: 'EE.UU.' },
+  { pattern: /colomb/i, code: 'CO', label: 'Colombia' },
+  { pattern: /argent/i, code: 'AR', label: 'Argentina' },
+  { pattern: /per[uú]/i, code: 'PE', label: 'Perú' },
+  { pattern: /espa[ñn]a|spain/i, code: 'ES', label: 'España' },
+  { pattern: /brasil|brazil/i, code: 'BR', label: 'Brasil' },
+  { pattern: /ecuad/i, code: 'EC', label: 'Ecuador' },
+  { pattern: /venezu/i, code: 'VE', label: 'Venezuela' },
+  { pattern: /urugua/i, code: 'UY', label: 'Uruguay' },
+  { pattern: /paragu/i, code: 'PY', label: 'Paraguay' },
+  { pattern: /boliv/i, code: 'BO', label: 'Bolivia' },
+  { pattern: /panam/i, code: 'PA', label: 'Panamá' },
+  { pattern: /costa\s*rica/i, code: 'CR', label: 'Costa Rica' },
+  { pattern: /rep.*domin|dominican/i, code: 'DO', label: 'Rep. Dominicana' },
+  { pattern: /guatem/i, code: 'GT', label: 'Guatemala' },
+  { pattern: /hondur/i, code: 'HN', label: 'Honduras' },
+  { pattern: /salvador/i, code: 'SV', label: 'El Salvador' },
+  { pattern: /nicarag/i, code: 'NI', label: 'Nicaragua' },
+  { pattern: /cuba/i, code: 'CU', label: 'Cuba' },
+  { pattern: /puerto\s*rico/i, code: 'PR', label: 'Puerto Rico' },
+];
 
-function getCountryLabel(country: string): string {
-  if (!country) return '—';
-  return country.replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '').trim() || country;
+function getCountryInfo(country: string): { code: string | null; label: string } {
+  if (!country) return { code: null, label: 'Sin país' };
+  const clean = country.replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '').trim();
+  for (const entry of countryMap) {
+    if (entry.pattern.test(clean)) return { code: entry.code, label: entry.label };
+  }
+  return { code: null, label: clean || 'Sin país' };
 }
 
 type SortKey = 'created_at' | 'priority' | 'name' | 'source' | 'country' | 'quiz_level' | 'quiz_score' | 'status';
