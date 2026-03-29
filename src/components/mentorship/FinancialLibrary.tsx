@@ -118,7 +118,7 @@ const BOOKS: Resource[] = [
   { title: "Secrets of the Millionaire Mind", author: "T. Harv Eker", description: "Mastering the inner game of wealth by resetting your money blueprint.", link: "https://www.amazon.com/dp/0060763280", platform: "Amazon", language: 'en', category: 'mindset' },
   { title: "Unshakeable", author: "Tony Robbins", description: "Your financial freedom playbook — how to profit in times of crisis.", link: "https://www.amazon.com/dp/1501164589", platform: "Amazon", language: 'en', category: 'investing' },
   { title: "The Monk Who Sold His Ferrari", author: "Robin Sharma", description: "A fable about fulfilling your dreams and reaching your destiny.", link: "https://www.amazon.com/dp/0062515675", platform: "Amazon", language: 'en', category: 'mindset' },
-  { title: "MONEY Master the Game (paperback)", author: "Tony Robbins", description: "7 simple steps to financial freedom from the world's top investors.", link: "https://www.amazon.com/dp/1476757860", platform: "Amazon", language: 'en', category: 'investing' },
+  
   
   // English Books
   { title: "The Psychology of Money", author: "Morgan Housel", description: "Timeless lessons on wealth, greed, and happiness.", link: "https://www.amazon.com/dp/0857197681", platform: "Amazon", language: 'en', category: 'mindset' },
