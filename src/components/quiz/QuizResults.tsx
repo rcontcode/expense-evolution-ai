@@ -413,14 +413,14 @@ export const QuizResults = ({ result, onRetake, referralInfo, onNavigateToAuth }
       features: [
         { icon: Zap, text: "Captura gastos con foto, voz o texto" },
         { icon: TrendingUp, text: "Presupuestos inteligentes con alertas" },
-        { icon: Target, text: "Optimizador de impuestos Canadá/Chile" },
+        { icon: Target, text: isSupportedTaxCountry ? "Optimizador de impuestos Canadá/Chile" : "Control financiero para cualquier país" },
         { icon: Flame, text: "Calculadora de libertad financiera" },
       ],
       whyEvofinz: "¿Por qué EvoFinz para ti?",
       whyItems: [
         "🚀 Automatiza lo que ya haces bien",
         "📊 Dashboard con métricas que importan",
-        "🎯 Optimizador fiscal inteligente",
+        isSupportedTaxCountry ? "🎯 Optimizador fiscal inteligente" : "🎯 Control inteligente de gastos e ingresos",
         "⚡ Captura en 3 segundos",
       ],
     },
@@ -449,14 +449,14 @@ export const QuizResults = ({ result, onRetake, referralInfo, onNavigateToAuth }
       features: [
         { icon: Zap, text: "Capture expenses with photo, voice or text" },
         { icon: TrendingUp, text: "Smart budgets with alerts" },
-        { icon: Target, text: "Tax optimizer for Canada/Chile" },
+        { icon: Target, text: isSupportedTaxCountry ? "Tax optimizer for Canada/Chile" : "Financial tracking for any country" },
         { icon: Flame, text: "FIRE calculator for financial freedom" },
       ],
       whyEvofinz: "Why EvoFinz for you?",
       whyItems: [
         "🚀 Automate what you already do well",
         "📊 Dashboard with metrics that matter",
-        "🎯 Smart tax optimizer",
+        isSupportedTaxCountry ? "🎯 Smart tax optimizer" : "🎯 Smart expense and income tracking",
         "⚡ Capture in 3 seconds",
       ],
     },
