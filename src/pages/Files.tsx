@@ -234,7 +234,7 @@ export default function FilesPage() {
   }, [selectedFiles, handleDownload]);
 
   const handleBulkDelete = useCallback(async () => {
-    if (selectedFiles.length === 0) return;
+    if (selectedFiles.length === 0 || !user) return;
     const confirmed = window.confirm(
       language === 'es'
         ? `¿Eliminar ${selectedFiles.length} archivo(s)? Esta acción no se puede deshacer.`
@@ -247,19 +247,17 @@ export default function FilesPage() {
       try {
         await supabase.storage.from(f.bucket).remove([f.file_path]);
         const table = f.origin === 'receipt' ? 'documents' : 'contracts';
-        await supabase.from(table).delete().eq('id', f.id);
+        await supabase.from(table).delete().eq('id', f.id).eq('user_id', user.id);
         count++;
       } catch { /* continue */ }
     }
     toast.success(language === 'es' ? `${count} archivo(s) eliminado(s)` : `${count} file(s) deleted`);
     setSelected(new Set());
     setBulkDeleting(false);
-    // Invalidate
-    const { QueryClient } = await import('@tanstack/react-query');
-    // Use the existing queryClient through the hook's invalidation
-    deleteFile.reset();
-    window.location.reload(); // Simple refresh for bulk ops
-  }, [selectedFiles, language, deleteFile]);
+    queryClient.invalidateQueries({ queryKey: ['all-files'] });
+    queryClient.invalidateQueries({ queryKey: ['documents'] });
+    queryClient.invalidateQueries({ queryKey: ['contracts'] });
+  }, [selectedFiles, language, user, queryClient]);
 
   const title = language === 'es' ? 'Centro de Archivos' : 'File Center';
   const desc = language === 'es' ? 'Todos tus archivos subidos en un solo lugar' : 'All your uploaded files in one place';

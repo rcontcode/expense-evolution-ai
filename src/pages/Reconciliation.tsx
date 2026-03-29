@@ -51,6 +51,7 @@ import { ReconciliationWizard } from '@/components/reconciliation/Reconciliation
 import { SmartReconciliationPanel } from '@/components/reconciliation/SmartReconciliationPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
 
 function MatchScoreBadge({ score, matchType }: { score: number; matchType: string }) {
   const { language } = useLanguage();
@@ -600,10 +601,11 @@ export default function Reconciliation() {
                               const { error } = await supabase
                                 .from('bank_transactions')
                                 .update({ status: 'pending', matched_expense_id: null })
-                                .eq('id', transaction.id);
+                                .eq('id', transaction.id)
+                                .eq('user_id', user!.id);
                               if (!error) {
                                 toast.success(language === 'es' ? 'Movida a pendientes' : 'Moved to pending');
-                                window.location.reload();
+                                queryClient.invalidateQueries({ queryKey: ['bank-transactions'] });
                               }
                             }}
                           >

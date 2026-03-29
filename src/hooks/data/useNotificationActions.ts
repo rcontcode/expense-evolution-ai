@@ -8,17 +8,20 @@ import { useAuth } from '@/contexts/AuthContext';
 export function useSnoozeNotification() {
   const queryClient = useQueryClient();
   const { language } = useLanguage();
+  const { user } = useAuth();
   const isEs = language === 'es';
 
   return useMutation({
     mutationFn: async ({ id, snoozeUntil }: { id: string; snoozeUntil: Date }) => {
+      if (!user) throw new Error('Not authenticated');
       const { error } = await supabase
         .from('notifications')
         .update({ 
           snoozed_until: snoozeUntil.toISOString(),
           read: true,
         })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -33,17 +36,20 @@ export function useSnoozeNotification() {
 export function useCompleteNotification() {
   const queryClient = useQueryClient();
   const { language } = useLanguage();
+  const { user } = useAuth();
   const isEs = language === 'es';
 
   return useMutation({
     mutationFn: async (id: string) => {
+      if (!user) throw new Error('Not authenticated');
       const { error } = await supabase
         .from('notifications')
         .update({ 
           completed_at: new Date().toISOString(),
           read: true,
         })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -58,17 +64,20 @@ export function useCompleteNotification() {
 export function useMuteNotification() {
   const queryClient = useQueryClient();
   const { language } = useLanguage();
+  const { user } = useAuth();
   const isEs = language === 'es';
 
   return useMutation({
     mutationFn: async (id: string) => {
+      if (!user) throw new Error('Not authenticated');
       const { error } = await supabase
         .from('notifications')
         .update({ 
           muted: true,
           read: true,
         })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
       if (error) throw error;
     },
     onSuccess: () => {
