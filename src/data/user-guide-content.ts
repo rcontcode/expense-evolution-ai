@@ -35,8 +35,8 @@ export const heroContent = {
   whatIs: {
     title: { es: '¿Qué es EvoFinz?', en: 'What is EvoFinz?' },
     desc: {
-      es: 'EvoFinz es una plataforma integral de gestión financiera personal y profesional diseñada para freelancers, autónomos, pequeñas empresas y cualquier persona que quiera tomar el control total de sus finanzas. Combina en una sola herramienta lo que normalmente necesitarías 5-10 apps separadas: control de gastos, facturación, presupuestos, calendario fiscal, patrimonio neto, análisis bancario inteligente, asistente financiero con IA, gamificación, educación financiera y mucho más.',
-      en: 'EvoFinz is a comprehensive personal and professional financial management platform designed for freelancers, self-employed professionals, small businesses, and anyone who wants to take full control of their finances. It combines in one tool what would normally require 5-10 separate apps: expense tracking, invoicing, budgets, tax calendar, net worth, smart bank analysis, AI financial assistant, gamification, financial education, and much more.'
+      es: 'EvoFinz es una plataforma integral de gestión financiera personal y profesional disponible en 80+ países de habla hispana e inglesa. Diseñada para freelancers, autónomos, pequeñas empresas y cualquier persona que quiera tomar el control total de sus finanzas. Combina en una sola herramienta lo que normalmente necesitarías 5-10 apps separadas: control de gastos, facturación, presupuestos, calendario fiscal, patrimonio neto, análisis bancario inteligente, asistente financiero con IA, gamificación, educación financiera y mucho más. Los módulos fiscales especializados están disponibles para Canadá (CRA) y Chile (SII), con más países próximamente.',
+      en: 'EvoFinz is a comprehensive personal and professional financial management platform available in 80+ Spanish and English-speaking countries. Designed for freelancers, self-employed professionals, small businesses, and anyone who wants to take full control of their finances. It combines in one tool what would normally require 5-10 separate apps: expense tracking, invoicing, budgets, tax calendar, net worth, smart bank analysis, AI financial assistant, gamification, financial education, and much more. Specialized tax modules are available for Canada (CRA) and Chile (SII), with more countries coming soon.'
     }
   },
   forWhom: {
@@ -50,6 +50,7 @@ export const heroContent = {
       { emoji: '📱', es: 'Cualquiera que guarde recibos en el cajón y quiera orden', en: 'Anyone who keeps receipts in a drawer and wants order' },
       { emoji: '🧮', es: 'Contadores y asesores fiscales de clientes independientes', en: 'Accountants and tax advisors of independent clients' },
       { emoji: '🎓', es: 'Personas que quieren aprender a manejar mejor su dinero', en: 'People who want to learn to manage their money better' },
+      { emoji: '🌎', es: 'Usuarios en 20+ países hispanohablantes y 60+ angloparlantes (impuestos: 🇨🇦🇨🇱, más próximamente)', en: 'Users in 20+ Spanish-speaking and 60+ English-speaking countries (tax modules: 🇨🇦🇨🇱, more coming soon)' },
     ]
   },
   mission: {

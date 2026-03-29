@@ -67,8 +67,9 @@ const getGuarantees = (language: string) => [
 const getTrustIndicators = (language: string) => [
   {
     icon: Users,
-    value: '🇨🇦 🇨🇱',
-    label: language === 'es' ? 'Países Soportados' : 'Countries Supported'
+    value: '80+',
+    label: language === 'es' ? 'Países Disponibles' : 'Countries Available',
+    sublabel: language === 'es' ? 'Impuestos: 🇨🇦🇨🇱 · Más pronto' : 'Tax: 🇨🇦🇨🇱 · More soon'
   },
   {
     icon: FileText,
@@ -149,6 +150,9 @@ export function GuaranteesSection() {
                 <div>
                   <p className="text-2xl font-black text-slate-800">{indicator.value}</p>
                   <p className="text-xs text-slate-500">{indicator.label}</p>
+                  {'sublabel' in indicator && indicator.sublabel && (
+                    <p className="text-[10px] text-slate-400 mt-0.5">{indicator.sublabel}</p>
+                  )}
                 </div>
               </motion.div>
             );

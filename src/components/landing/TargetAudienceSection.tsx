@@ -93,6 +93,11 @@ export function TargetAudienceSection() {
               ? 'Una plataforma que evoluciona contigo. Descubre las herramientas perfectas para tu situación.'
               : 'A platform that evolves with you. Discover the perfect tools for your situation.'}
           </p>
+          <p className="text-slate-500 text-sm mt-3">
+            🌎 {language === 'es' 
+              ? 'Disponible en 20+ países hispanohablantes y 60+ angloparlantes. Módulos fiscales: 🇨🇦 🇨🇱 (más próximamente)'
+              : 'Available in 20+ Spanish-speaking and 60+ English-speaking countries. Tax modules: 🇨🇦 🇨🇱 (more coming soon)'}
+          </p>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
