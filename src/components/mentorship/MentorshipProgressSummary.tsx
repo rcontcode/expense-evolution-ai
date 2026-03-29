@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEducationStats } from '@/hooks/data/useFinancialEducation';
 import { useHabitStats } from '@/hooks/data/useFinancialHabits';
@@ -8,8 +8,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
-import { BookOpen, Flame, PenLine, Target, TrendingUp, Award } from 'lucide-react';
+import { BookOpen, Flame, PenLine, Target, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -78,6 +79,37 @@ export function MentorshipProgressSummary() {
     return Math.min(100, s);
   }, [booksCompleted, booksInProgress, habitStreak, totalHabits, journalThisMonth, journalStreak, activeGoals, completedGoals]);
 
+  // Score persistence & milestones
+  const prevScoreRef = useRef<number | null>(null);
+  useEffect(() => {
+    const STORAGE_KEY = 'mentorship-score-history';
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const history = stored ? JSON.parse(stored) : {};
+      const weekKey = new Date().toISOString().slice(0, 10);
+      
+      // Store previous score for delta
+      if (history.lastScore !== undefined) {
+        prevScoreRef.current = history.lastScore;
+      }
+      
+      // Check milestone crossings
+      const lastScore = history.lastScore || 0;
+      const milestones = [30, 50, 80, 100];
+      for (const m of milestones) {
+        if (score >= m && lastScore < m) {
+          toast.success(es ? `🏆 ¡Alcanzaste ${m} puntos de mentoría!` : `🏆 You reached ${m} mentorship points!`);
+        }
+      }
+      
+      history.lastScore = score;
+      history.lastUpdated = weekKey;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+    } catch {}
+  }, [score, es]);
+
+  const scoreDelta = prevScoreRef.current !== null ? score - prevScoreRef.current : null;
+
   const level = getScoreLevel(score, es);
 
   const stats = [
@@ -134,9 +166,16 @@ export function MentorshipProgressSummary() {
             className="h-2.5 flex-1"
             indicatorClassName={level.barColor}
           />
-          <span className={cn('text-sm font-bold tabular-nums min-w-[3ch]', level.color)}>
-            {score}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className={cn('text-sm font-bold tabular-nums min-w-[3ch]', level.color)}>
+              {score}
+            </span>
+            {scoreDelta !== null && scoreDelta !== 0 && (
+              <span className={cn('text-[10px] font-medium', scoreDelta > 0 ? 'text-emerald-500' : 'text-destructive')}>
+                {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">

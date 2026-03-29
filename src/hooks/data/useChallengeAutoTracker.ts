@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -7,7 +7,7 @@ import { getWeekKey } from '@/lib/constants/mentorship-challenges';
 function getWeekBounds(): { start: string; end: string } {
   const now = new Date();
   const day = now.getDay();
-  const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Monday
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1);
   const monday = new Date(now.getFullYear(), now.getMonth(), diff);
   monday.setHours(0, 0, 0, 0);
   const sunday = new Date(monday);
@@ -49,7 +49,7 @@ export function useChallengeAutoTracker() {
         .lte('created_at', end);
       results['create_habit'] = habitsCreated || 0;
 
-      // Habit logs this week (for streaks / daily habits)
+      // Habit logs this week
       const { count: habitLogs } = await supabase
         .from('financial_habit_logs')
         .select('*', { count: 'exact', head: true })
@@ -61,15 +61,18 @@ export function useChallengeAutoTracker() {
       results['habit_streak'] = habitLogs || 0;
       results['pay_yourself'] = habitLogs || 0;
       results['pay_first_log'] = habitLogs || 0;
+      results['prioritize_task'] = habitLogs || 0;
 
-      // Income entries this week
+      // Income entries this week (FIXED: was querying expenses)
       const { count: incomeCount } = await supabase
-        .from('expenses')
+        .from('income')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .gte('created_at', start)
         .lte('created_at', end);
       results['log_income'] = incomeCount || 0;
+      results['analyze_quadrant'] = incomeCount || 0;
+      results['freedom_plan'] = incomeCount || 0;
 
       // Assets registered this week
       const { count: assetsCount } = await supabase
@@ -80,7 +83,7 @@ export function useChallengeAutoTracker() {
         .lte('created_at', end);
       results['register_asset'] = assetsCount || 0;
 
-      // Education resources
+      // Education resources completed
       const { count: eduCount } = await supabase
         .from('financial_education')
         .select('*', { count: 'exact', head: true })
@@ -97,13 +100,14 @@ export function useChallengeAutoTracker() {
         .lte('log_date', end.split('T')[0]);
       results['read_session'] = readLogs || 0;
 
-      // Savings goals (SMART goals)
+      // Savings goals (FIXED: was querying financial_habits)
       const { count: goalsCount } = await supabase
-        .from('financial_habits')
+        .from('savings_goals')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
       results['create_smart_goal'] = goalsCount || 0;
       results['review_goals'] = goalsCount || 0;
+      results['complete_7steps'] = goalsCount || 0;
 
       // Focus sessions this week
       const { count: focusCount } = await supabase
@@ -113,19 +117,22 @@ export function useChallengeAutoTracker() {
         .eq('completed', true)
         .gte('created_at', start)
         .lte('created_at', end);
-      results['analyze_quadrant'] = focusCount || 0;
-      results['freedom_plan'] = focusCount || 0;
-      results['complete_7steps'] = focusCount || 0;
-
-      // Debts classified (use expenses with category)
-      results['classify_debt'] = assetsCount || 0;
-      results['prioritize_task'] = habitLogs || 0;
+      // Focus sessions count toward generic engagement
       results['stack_habits'] = Math.min(habitsCreated || 0, 2);
+
+      // Liabilities classified this week (FIXED: was using assetsCount)
+      const { count: liabilitiesCount } = await supabase
+        .from('liabilities')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', start)
+        .lte('created_at', end);
+      results['classify_debt'] = liabilitiesCount || 0;
 
       return results;
     },
     enabled: !!user?.id,
-    staleTime: 60_000, // refresh every minute
+    staleTime: 60_000,
     refetchInterval: 120_000,
   });
 
