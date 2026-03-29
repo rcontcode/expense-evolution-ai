@@ -1,83 +1,70 @@
 
+# Auditoría Profunda Ronda 5 — Limpieza Final de Datos
 
-# Auditoría Profunda Ronda 4 — Seguridad Crítica, Consistencia y Limpieza
-
-## Hallazgos Nuevos
-
----
-
-### 🔴 CRÍTICO — Escalamiento de Privilegios
-
-#### 1. `user_roles` — Sin política INSERT/UPDATE/DELETE en RLS
-La tabla `user_roles` solo tiene una política SELECT. No hay INSERT, UPDATE ni DELETE policies. Esto significa que **cualquier usuario autenticado podría insertarse el rol `admin`** directamente desde el cliente:
-```
-supabase.from('user_roles').insert({ user_id: myId, role: 'admin' })
-```
-Esto compromete TODAS las verificaciones de admin en el sistema (CRM, beta management, reward application, etc.).
-
-**Fix**: Agregar políticas RLS que bloqueen INSERT/UPDATE/DELETE para usuarios regulares. Solo la función `claim_first_admin` (SECURITY DEFINER) y `handle_new_user` (trigger) deben poder insertar.
+## Hallazgos Pendientes
 
 ---
 
-### 🔴 CRÍTICO — `referral_leads` INSERT público sin autenticación
-La política INSERT en `referral_leads` aplica al rol `public` (no autenticado). Cualquiera puede insertar leads desde internet sin estar logueado. El scan de seguridad lo flagueó.
+### 🟠 `as any` innecesarios — Tablas que EXISTEN en el schema
 
-**Fix**: Cambiar la política para requerir autenticación, o dejarla abierta si es intencional (form público de referidos) pero agregar rate limiting.
+#### 1. `useAutoReminders.ts` — 4 casts innecesarios
+- Línea 57: `from('notification_preferences' as any)` → tabla existe en schema
+- Línea 308: `from('budget_alert_rules' as any)` → tabla existe en schema
+- Línea 365: `from('budget_alert_rules' as any)` → tabla existe
+- Línea 126: `} as any)` en insert a `notifications` → tabla existe, campos coinciden
+
+#### 2. `useNotificationActions.ts` — 3 casts innecesarios
+- Líneas 19, 44, 69: `.update({...} as any)` en `notifications` → tabla existe en schema, los campos `snoozed_until`, `completed_at`, `muted` están en el Update type
+
+#### 3. `useDataHealthCheck.ts` — `from('data_health_check' as any)`
+- La vista `data_health_check` EXISTE en el schema generado (Views section). Se puede remover el cast.
+
+#### 4. `useMileage.ts` — `.update({ deleted_at: ... } as any)`
+- `deleted_at` es un campo válido en el Update type de mileage. Cast innecesario.
+
+#### 5. `useTrash.ts` — `.update({ deleted_at: null } as any)`
+- `deleted_at` es nullable en todos los tipos. Cast innecesario.
 
 ---
 
-### 🟠 Inconsistencia — Mileage hard delete en `useDeleteClientTestData`
-Línea 178: `supabase.from('mileage').delete()` — mileage tiene columna `deleted_at` pero se hace hard delete. Inconsistente con expenses/income/contracts que usan soft-delete en el mismo flujo.
-
-**Fix**: Cambiar a soft-delete (`update({ deleted_at: ... })`).
+### 🟠 `usePlanLimits.ts` — `voice_requests_count` lectura
+- Línea 278: `rawData.voice_requests_count as number ?? 0` — la columna fue creada en la migración anterior. Si el schema generado aún no la refleja, el `rawData` approach es correcto. Verificar que el schema se regeneró.
 
 ---
 
-### 🟠 `audit_log` — Todos los hooks usan `as any`
-La tabla `audit_log` existe en la DB pero el tipo no está en el schema TypeScript generado, forzando `as any` en ~14 archivos. Esto elimina type-safety y autocompletado.
-
-**Fix**: No se puede editar `types.ts` directamente (auto-generado), pero se puede crear un helper tipado para audit log inserts que encapsule el `as any` en un solo lugar en vez de repetirlo en 14 archivos.
+### 🟠 `usePermanentDelete` y `useEmptyTrash` — Sin audit log ni cascade
+- `usePermanentDelete`: hard delete sin registrar en audit_log ni limpiar dependencias (expense_tags, documents para expenses)
+- `useEmptyTrash`: hard delete masivo sin audit_log ni cascade cleanup
 
 ---
 
-### 🟡 Mejoras menores
-
-#### 2. `notification_preferences` y `budget_alert_rules` — `as any` innecesario
-Ambas tablas EXISTEN en la DB (confirmado en schema). Los hooks usan `as any` innecesariamente. Si los tipos están en el schema generado, se puede remover el cast.
-
-#### 3. `useDeleteClientTestData` — `project_clients` hard delete sin audit
-`project_clients` se borra sin registrar en audit log ni verificar user ownership.
+### 🟡 `useExpenses.ts` — `(expense as any).vendor` repetido
+- Las líneas 143, 149, 150, 190, 191 usan `(expense as any).vendor/amount/category` porque el tipo de entrada no incluye esas propiedades. Esto es un problema de tipado, no de datos.
 
 ---
 
 ## Plan de Implementación
 
-### Paso 1: Cerrar vulnerabilidad de `user_roles` (CRÍTICO)
-SQL migration para agregar políticas RLS:
-- INSERT: `WITH CHECK (false)` — solo triggers/SECURITY DEFINER functions pueden insertar
-- UPDATE: `USING (false)` — nadie puede cambiar roles desde el cliente
-- DELETE: `USING (false)` — nadie puede borrar roles desde el cliente
+### Paso 1: Limpiar `as any` innecesarios (6 archivos)
+- `useAutoReminders.ts` — remover 4 casts
+- `useNotificationActions.ts` — remover 3 casts
+- `useDataHealthCheck.ts` — remover 1 cast
+- `useMileage.ts` — remover 1 cast
+- `useTrash.ts` — remover 1 cast
 
-### Paso 2: Asegurar `referral_leads` INSERT
-Cambiar la política INSERT de `public` a `authenticated` para evitar spam anónimo.
+### Paso 2: Cascade safety en `usePermanentDelete` y `useEmptyTrash`
+- Agregar limpieza de `expense_tags` y `documents` antes de borrar expenses permanentemente
+- Agregar audit_log en permanent delete
 
-### Paso 3: Soft-delete mileage en `useDeleteClientTestData`
-Cambiar `.delete()` a `.update({ deleted_at: new Date().toISOString() })` para mileage.
-
-### Paso 4: Centralizar audit log helper
-Crear un helper `insertAuditLog()` que encapsule el `as any` en un solo lugar, para que los 14 archivos que lo usan tengan un solo punto de mantenimiento.
-
-### Paso 5: Limpiar `as any` donde sea posible
-Verificar si `notification_preferences` y `budget_alert_rules` están en los tipos generados y remover casts innecesarios.
+### Paso 3: Verificar `voice_requests_count` en schema
+- Confirmar que la columna existe post-migración
 
 ---
 
-## Detalle Técnico — Archivos a modificar
+## Archivos a modificar
 
-1. **Migración SQL**: Políticas RLS para `user_roles` (INSERT/UPDATE/DELETE deny) + `referral_leads` INSERT fix
-2. `src/hooks/data/useClients.ts` — mileage soft-delete
-3. `src/hooks/data/useAuditLog.ts` — agregar helper `insertAuditLog()` centralizado
-4. Múltiples hooks — reemplazar `supabase.from('audit_log' as any).insert(...)` con el helper centralizado
-5. `src/hooks/data/useNotificationPreferences.ts` — intentar remover `as any`
-6. `src/hooks/data/useBudgetAlertRules.ts` — intentar remover `as any`
-
+1. `src/hooks/data/useAutoReminders.ts`
+2. `src/hooks/data/useNotificationActions.ts`
+3. `src/hooks/data/useDataHealthCheck.ts`
+4. `src/hooks/data/useMileage.ts`
+5. `src/hooks/data/useTrash.ts`
