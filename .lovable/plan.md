@@ -1,69 +1,45 @@
 
 
-# Análisis Legal + Más Libros en el Tracker
+# Agregar Más Libros Top a la Biblioteca
 
-## Análisis Legal: ¿Estamos seguros mencionando a Kiyosaki, Rohn, Tracy?
+## Libros que YA tenemos (~98 recursos entre libros, docs, películas, series)
+Kiyosaki (10), Clear (2), Tracy (10), Rohn (10), Clason, Graham, Hill, Dalio, Macías, Robin, Stanley, Robbins, Housel, Lynch, Pabrai, Eker, Samsó, Melé, Hardy, Michalowicz, Sharma, Malkiel, Collins, Sethi, Ramsey, Bogle, Perkins, Larimore, Ferriss, DeMarco, Trench, Bach, Chilton, Pape, Fisker, Shen, Sabatier, Warren, Galán, Yeager
 
-### Lo que hacemos actualmente
-- **Nombres de autores** como labels de tabs y en 783+ menciones en 53 archivos
-- **Títulos de libros** en la biblioteca (Amazon links)
-- **Citas textuales** atribuidas en `mentor-quotes.ts` (~50 citas)
-- **Metodologías** nombradas: "Cuadrante de Kiyosaki", "7 pasos de Tracy", "método ABCDE de Tracy"
+## Libros TOP que FALTAN (25 nuevos)
 
-### Evaluación legal
+**Español:**
+1. "Padre Rico, Padre Pobre para Jóvenes" — Robert Kiyosaki (versión juvenil, basics)
+2. "El Cuadrante del Flujo de Dinero" ya está. Skip.
+3. "Aprendiendo de los Mejores" — Francisco Alcaide (mindset, bestseller hispano)
+4. "De Cero a Inversionista" — Omar Educación Financiera (investing, LatAm)
+5. "Empieza con el Porqué" — Simon Sinek (mindset)
+6. "El Club de las 5 de la Mañana" — Robin Sharma (habits)
+7. "Los 7 Hábitos de la Gente Altamente Efectiva" — Stephen Covey (habits)
+8. "La Semana Laboral de 4 Horas" — Tim Ferriss (entrepreneurship, versión ES)
+9. "El Efecto Compuesto" — Darren Hardy (habits, versión ES)
+10. "Despierta tu Héroe Interior" — Víctor Hugo Manzanilla (mindset, LatAm)
 
-**Lo que es SEGURO (sin riesgo):**
-- Mencionar nombres de autores como referencia/recomendación — esto es uso referencial, no comercial de su identidad
-- Títulos de libros individuales NO son protegibles por copyright (confirmado por USPTO y case law)
-- Links a Amazon para comprar libros — esto es recomendación, no piratería
-- Decir "inspirado en los principios de Kiyosaki" — uso descriptivo
+**English:**
+11. "Rich Dad Poor Dad for Teens" — Robert Kiyosaki (basics)
+12. "The Lean Startup" — Eric Ries (entrepreneurship)
+13. "Start with Why" — Simon Sinek (mindset)
+14. "The 7 Habits of Highly Effective People" — Stephen Covey (habits)
+15. "The Richest Man Who Ever Lived" — Steven K. Scott (wealth)
+16. "You Are a Badass at Making Money" — Jen Sincero (mindset)
+17. "The Dhandho Investor" ya está. Skip.
+18. "Rich AF" — Vivian Tu (basics, Gen Z)
+19. "The Algebra of Wealth" — Scott Galloway (wealth)
+20. "Same as Ever" — Morgan Housel (mindset)
+21. "Just Keep Buying" — Nick Maggiulli (investing)
+22. "The Subtle Art of Not Giving a F*ck" — Mark Manson (mindset)
+23. "Can't Hurt Me" — David Goggins (mindset)
+24. "Never Split the Difference" — Chris Voss (business)
+25. "Build the Life You Want" — Arthur C. Brooks (mindset)
 
-**Lo que tiene RIESGO BAJO pero debemos cuidar:**
-- **Citas textuales**: frases cortas (1-2 oraciones) con atribución generalmente caen bajo fair use, especialmente en contexto educativo. Pero citas largas o muchas citas del mismo libro podrían ser problemáticas
-- **Nombres como features**: "Tab Kiyosaki", "Tracy Goal Wizard" — usar nombres de personas vivas como nombres de features de tu producto puede implicar endorsement falso
+## Implementación
 
-**Lo que deberíamos CAMBIAR para estar 100% seguros:**
-
-1. **Renombrar tabs/features**: En vez de "Kiyosaki" como nombre del tab, usar "Cashflow & Assets" con subtítulo "Inspirado en Rich Dad Poor Dad". Igual con Tracy → "Goals & Productivity", Rohn → "Journal & Growth", Atomic → "Habits"
-2. **Disclaimer**: Agregar un disclaimer pequeño tipo "Esta app no está afiliada, respaldada ni asociada con los autores mencionados. Los nombres y títulos se usan únicamente con fines educativos y de referencia."
-3. **Citas**: Mantener atribución siempre. Las citas cortas con autor son fair use en contexto educativo
-
-### Recomendación
-El riesgo actual es **bajo** pero no cero. El cambio más importante es agregar un **disclaimer** y considerar renombrar los tabs para que no parezca que los autores son parte del producto.
-
----
-
-## Plan de implementación
-
-### Paso 1: Agregar disclaimer legal
-**Archivo**: `src/pages/Mentorship.tsx`
-- Agregar footer discreto: "Los nombres de autores y obras se mencionan con fines educativos. Esta aplicación no está afiliada ni respaldada por los autores citados."
-- También en `src/components/mentorship/FinancialLibrary.tsx`
-
-### Paso 2: Renombrar tabs por conceptos (no por personas)
-**Archivo**: `src/pages/Mentorship.tsx`
-- "Kiyosaki" → "Activos y Flujo" / "Assets & Cashflow" (subtitle: "Método Kiyosaki")
-- "Tracy" → "Metas SMART" / "SMART Goals" (subtitle: "Método Tracy")  
-- "Rohn" → "Journal y Lectura" / "Journal & Reading" (subtitle: "Filosofía Rohn")
-- "Atomic" → "Hábitos" / "Habits" (subtitle: "Atomic Habits")
-- Esto protege legalmente sin perder la referencia educativa
-
-### Paso 3: Agregar más libros al tracker/biblioteca
 **Archivo**: `src/components/mentorship/FinancialLibrary.tsx`
-- Agregar ~15 libros adicionales que faltan y son relevantes:
-  - ES: "El código del dinero" (Raimon Samsó), "Padre Rico Padre Pobre para Jóvenes", "Los Secretos de la Mente Millonaria" (T. Harv Eker), "El hombre más rico de Babilonia" versión ilustrada, "Piense y Hágase Rico" (Napoleon Hill) — ya está pero verificar, "Dinero y Conciencia" (Joan Antoni Melé)
-  - EN: "Rich Dad's CASHFLOW Quadrant", "The Barefoot Investor" (Scott Pape), "Unshakeable" (Tony Robbins), "The Richest Man in Babylon" — verificar si ya está, "The Compound Effect" (Darren Hardy), "Profit First" (Mike Michalowicz), "Financial Freedom" (Grant Sabatier)
-- Verificar que no haya duplicados antes de agregar
-
-### Paso 4: Sugerir libros del tracker en más lugares
-**Archivo**: `src/components/mentorship/LearningPathCard.tsx`
-- Cuando el usuario no tiene libros en progreso, sugerir uno aleatorio de la biblioteca como "Libro recomendado esta semana"
-
----
-
-## Archivos a modificar
-1. `src/pages/Mentorship.tsx` — Disclaimer + renombrar tabs por concepto
-2. `src/components/mentorship/FinancialLibrary.tsx` — Agregar ~15 libros + disclaimer en footer
-3. `src/components/mentorship/LearningPathCard.tsx` — Sugerencia de libro semanal
-4. `src/lib/constants/mentor-quotes.ts` — Asegurar que todas las citas tengan atribución correcta
+- Insertar 25 nuevos libros en el array `BOOKS` antes de la línea 150 (cierre del array)
+- Organizados en secciones con comentarios: `// ========== MODERN CLASSICS (ES) ==========` y `// ========== MODERN CLASSICS (EN) ==========`
+- Cada uno con: title, author, description, link (Amazon real), platform, language, category
 
