@@ -1,57 +1,48 @@
 
 
-# Clarificar Puntos de Entrada de Datos: Implementación a Fondo
+# Mejorar Visibilidad de Botones en PageContextGuide
 
-## Estado Actual
+## Problema
+Los badges de goals y los botones de acciones se ven como texto plano. Necesitan más volumen visual 3D candy para que sean evidentemente clickeables.
 
-**Ya implementado:**
-- `PageContextGuide` ya tiene `crossReferences` prop y UI funcional
-- 5 de 7 PAGE_GUIDES ya tienen cross-references (expenses, income, chaos-inbox, banking, reconciliation, bills)
-- `CaptureHub` ya tiene texto de destino en cada botón
-- El manual de usuario (`user-guide-content.ts`) tiene una sección "Interconexiones" con 11 flujos simples (from → to → to2)
+## Cambios en `src/components/guidance/PageContextGuide.tsx`
 
-**Falta:**
-- Los PAGE_GUIDES que NO tienen cross-references: `clients`, `mileage`, `net-worth`, `tags`, `contracts`
-- El manual no tiene una sección dedicada a "Puntos de Entrada de Datos" que explique las diferencias entre las 8 formas de ingresar info
-- No existe un diagrama visual (mermaid) del mapa completo de flujos
-- Las FAQ globales no incluyen "¿Cuál es la diferencia entre Bandeja del Caos y Captura Rápida?"
-- El `CaptureHub` tiene destinos pero no explica la DIFERENCIA entre cada opción
-- No hay diagrama visual interactivo en la página del manual
+### 1. Goal badges (línea 178)
+Agregar padding más generoso, fondo más sólido con gradiente, y efecto de botón 3D:
+```
+"text-xs cursor-pointer font-semibold px-3 py-1.5 
+ bg-gradient-to-b from-primary/20 to-primary/10 
+ border-2 border-primary/40 rounded-xl
+ shadow-[0_3px_0_0] shadow-primary/25
+ hover:bg-primary/25 hover:shadow-[0_4px_0_0] hover:shadow-primary/30 
+ hover:-translate-y-1 hover:border-primary/60 
+ active:translate-y-0.5 active:shadow-[0_1px_0_0] active:shadow-primary/20
+ transition-all duration-200"
+```
 
-## Plan
+### 2. Action buttons (línea 225)
+Agregar sombra 3D con offset vertical para efecto de "botón levantado":
+```
+"group p-3 rounded-xl border-2 border-primary/30 
+ bg-gradient-to-b from-card via-card to-muted/30
+ shadow-[0_4px_0_0] shadow-primary/20
+ hover:border-primary/50 hover:shadow-[0_6px_0_0] hover:shadow-primary/30 
+ hover:-translate-y-1.5 hover:bg-primary/5
+ active:translate-y-1 active:shadow-[0_1px_0_0] active:shadow-primary/15
+ transition-all duration-200 text-left"
+```
 
-### 1. Generar diagrama Mermaid de flujos de datos
-Crear un diagrama visual descargable y embebido en el manual que muestre:
-- Los 8 puntos de entrada (Bandeja del Caos, Captura Foto, Captura Texto, Centro de Captura, Importar Banco, Gasto Manual, Pagos Fijos, Phoenix)
-- A dónde va cada dato después de ingresar
-- Las vinculaciones entre secciones
+### 3. Icon containers (línea 228)
+Más vibrantes con sombra offset:
+```
+"w-9 h-9 rounded-xl bg-gradient-to-br from-primary/25 to-primary/10 
+ border-2 border-primary/30 
+ shadow-[0_2px_0_0] shadow-primary/20
+ flex items-center justify-center 
+ group-hover:from-primary/35 group-hover:to-primary/20 
+ group-hover:border-primary/50 transition-all duration-200"
+```
 
-### 2. Agregar sección "Puntos de Entrada" al manual (`user-guide-content.ts`)
-Nueva `GuideSection` dedicada con id `data-entry-points`:
-- Tabla comparativa de los 8 puntos de entrada con: nombre, qué hace, a dónde van los datos, cuándo usarlo
-- FAQ: "¿Cuál es la diferencia entre X y Y?" para las 4 confusiones más comunes
-- Tips de cuándo usar cada uno
-
-### 3. Agregar FAQ globales sobre diferencias
-3 nuevas FAQ globales:
-- "¿Cuál es la diferencia entre Bandeja del Caos y Captura Rápida?"
-- "¿Debo usar Captura de Texto o el Asistente Phoenix?"
-- "¿Los datos del banco se sincronizan con mis gastos?"
-
-### 4. Completar cross-references en PAGE_GUIDES faltantes
-Agregar `crossReferences` a: `clients`, `mileage`, `net-worth`, `tags`, `contracts`
-
-### 5. Mejorar `CaptureHub` con aclaraciones de diferencias
-Agregar un bloque colapsable "¿Cuál uso?" debajo de los 3 botones que explique la diferencia entre Foto vs Texto vs Banco con una mini-tabla comparativa
-
-### 6. Renderizar diagrama Mermaid en UserGuide.tsx
-En la sección "Interconexiones" del manual, mostrar el diagrama mermaid como imagen embebida además de los flujos de texto existentes
-
-## Archivos a modificar (4) + 1 diagrama
-
-1. **`src/data/user-guide-content.ts`** — Nueva sección `data-entry-points`, 3 FAQ globales nuevas, ampliar `connectionsDiagram`
-2. **`src/components/guidance/PageContextGuide.tsx`** — Agregar cross-references a `clients`, `mileage`, `net-worth`, `tags`, `contracts`
-3. **`src/components/budget/CaptureHub.tsx`** — Agregar bloque colapsable "¿Cuál uso?" con mini-tabla comparativa
-4. **`src/pages/UserGuide.tsx`** — Renderizar diagrama mermaid en sección interconexiones
-5. **Diagrama Mermaid** — Generar `.mmd` con mapa completo de puntos de entrada y flujos de datos
+## Archivo a modificar
+1. `src/components/guidance/PageContextGuide.tsx` — líneas 178, 225, 228
 
