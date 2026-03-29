@@ -175,7 +175,7 @@ export function PageContextGuide({
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {goals.map((goal, idx) => (
-                    <Badge key={idx} variant="outline" className="text-xs cursor-pointer font-semibold bg-primary/15 border-2 border-primary/40 shadow-md shadow-primary/15 hover:bg-primary/25 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-1 hover:border-primary/60 transition-all duration-200 active:translate-y-0.5 active:shadow-inner">
+                    <Badge key={idx} variant="outline" className="text-xs cursor-pointer font-semibold px-3 py-1.5 bg-gradient-to-b from-primary/20 to-primary/10 border-2 border-primary/40 rounded-xl shadow-[0_3px_0_0] shadow-primary/25 hover:bg-primary/25 hover:shadow-[0_4px_0_0] hover:shadow-primary/30 hover:-translate-y-1 hover:border-primary/60 active:translate-y-0.5 active:shadow-[0_1px_0_0] active:shadow-primary/20 transition-all duration-200">
                       {goal[language]}
                     </Badge>
                   ))}
@@ -222,10 +222,10 @@ export function PageContextGuide({
                   <button
                     key={idx}
                     onClick={() => handleActionClick(action, idx)}
-                    className="group p-3 rounded-xl border-2 border-primary/30 bg-gradient-to-b from-card to-card/80 shadow-lg shadow-primary/10 hover:border-primary/50 hover:bg-primary/10 hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1.5 active:translate-y-0.5 active:shadow-inner transition-all duration-200 text-left"
+                    className="group p-3 rounded-xl border-2 border-primary/30 bg-gradient-to-b from-card via-card to-muted/30 shadow-[0_4px_0_0] shadow-primary/20 hover:border-primary/50 hover:shadow-[0_6px_0_0] hover:shadow-primary/30 hover:-translate-y-1.5 hover:bg-primary/5 active:translate-y-1 active:shadow-[0_1px_0_0] active:shadow-primary/15 transition-all duration-200 text-left"
                   >
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/25 shadow-md shadow-primary/15 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/15 group-hover:shadow-lg group-hover:shadow-primary/25 group-hover:border-primary/40 transition-all duration-200">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/25 to-primary/10 border-2 border-primary/30 shadow-[0_2px_0_0] shadow-primary/20 flex items-center justify-center group-hover:from-primary/35 group-hover:to-primary/20 group-hover:border-primary/50 transition-all duration-200">
                         <Icon className="h-3.5 w-3.5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
