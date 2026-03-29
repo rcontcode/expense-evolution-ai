@@ -6,11 +6,13 @@ import { useMissionTracker } from './useMissions';
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
 import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
+import type { CountryCode } from '@/lib/constants/country-tax-config';
 
 export type Mileage = Database['public']['Tables']['mileage']['Row'];
 export type MileageInsert = Database['public']['Tables']['mileage']['Insert'];
 export type MileageUpdate = Database['public']['Tables']['mileage']['Update'];
 
+// === CRA (Canada) Rates ===
 export const CRA_MILEAGE_RATES_BY_YEAR: Record<number, { first5000: number; after5000: number; territoryBonus: number }> = {
   2024: { first5000: 0.70, after5000: 0.64, territoryBonus: 0.04 },
   2025: { first5000: 0.72, after5000: 0.66, territoryBonus: 0.04 },
@@ -19,6 +21,15 @@ export const CRA_MILEAGE_RATES_BY_YEAR: Record<number, { first5000: number; afte
 export const CRA_MILEAGE_RATES = CRA_MILEAGE_RATES_BY_YEAR[2026];
 export function getCRAMileageRates(year: number) { return CRA_MILEAGE_RATES_BY_YEAR[year] || CRA_MILEAGE_RATES; }
 
+// === SII (Chile) Rates — Estimated based on SII tabla de gastos presuntos ===
+export const SII_MILEAGE_RATES_BY_YEAR: Record<number, { perKm: number }> = {
+  2024: { perKm: 120 }, // CLP per km estimate
+  2025: { perKm: 125 },
+  2026: { perKm: 130 },
+};
+export const SII_MILEAGE_RATES = SII_MILEAGE_RATES_BY_YEAR[2026];
+export function getSIIMileageRates(year: number) { return SII_MILEAGE_RATES_BY_YEAR[year] || SII_MILEAGE_RATES; }
+
 export interface MileageWithClient extends Mileage {
   client?: { id: string; name: string } | null;
 }
@@ -26,8 +37,10 @@ export interface MileageWithClient extends Mileage {
 export interface MileageSummary {
   totalKilometers: number; totalDeductibleAmount: number; totalTrips: number;
   hstGstPaid: number; itcClaimable: number; yearToDateKm: number;
+  country?: CountryCode | null;
 }
 
+// === CRA Deduction (Canada) ===
 export function calculateMileageDeduction(kilometers: number, yearToDateKm: number = 0, year?: number): { deductible: number; rate: number } {
   let deductible = 0;
   const rates = year ? getCRAMileageRates(year) : CRA_MILEAGE_RATES;
@@ -43,7 +56,33 @@ export function calculateMileageDeduction(kilometers: number, yearToDateKm: numb
     const kmAtLowRate = kilometers - kmAtHighRate;
     deductible = (kmAtHighRate * first5000) + (kmAtLowRate * after5000);
   }
-  return { deductible, rate: deductible / kilometers };
+  return { deductible, rate: kilometers > 0 ? deductible / kilometers : 0 };
+}
+
+// === SII Deduction (Chile) — flat rate per km in CLP ===
+export function calculateChileMileageDeduction(kilometers: number, year?: number): { deductible: number; rate: number } {
+  const rates = year ? getSIIMileageRates(year) : SII_MILEAGE_RATES;
+  const deductible = kilometers * rates.perKm;
+  return { deductible, rate: rates.perKm };
+}
+
+// === Country-aware deduction ===
+export function calculateMileageDeductionByCountry(
+  kilometers: number, 
+  yearToDateKm: number, 
+  country: CountryCode | null | undefined, 
+  year?: number
+): { deductible: number; rate: number; currency: string } | null {
+  if (!country) return null;
+  if (country === 'CA') {
+    const result = calculateMileageDeduction(kilometers, yearToDateKm, year);
+    return { ...result, currency: 'CAD' };
+  }
+  if (country === 'CL') {
+    const result = calculateChileMileageDeduction(kilometers, year);
+    return { ...result, currency: 'CLP' };
+  }
+  return null;
 }
 
 export const useMileage = (year?: number) => {
@@ -65,11 +104,11 @@ export const useMileage = (year?: number) => {
   });
 };
 
-export const useMileageSummary = (year?: number) => {
+export const useMileageSummary = (year?: number, country?: CountryCode | null) => {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['mileage-summary', user?.id, year],
+    queryKey: ['mileage-summary', user?.id, year, country],
     queryFn: async () => {
       const currentYear = year || new Date().getFullYear();
       const { data, error } = await supabase.from('mileage').select('kilometers, date')
@@ -79,18 +118,39 @@ export const useMileageSummary = (year?: number) => {
       if (error) throw error;
 
       let totalKm = 0, totalDeductible = 0, runningKm = 0;
-      (data || []).forEach((record) => {
-        const km = parseFloat(record.kilometers.toString());
-        const { deductible } = calculateMileageDeduction(km, runningKm);
-        totalKm += km; totalDeductible += deductible; runningKm += km;
-      });
 
-      const estimatedFuelPortion = totalDeductible * 0.4;
-      const hstRate = 0.13;
-      const hstGstPaid = estimatedFuelPortion - (estimatedFuelPortion / (1 + hstRate));
+      if (country === 'CA') {
+        (data || []).forEach((record) => {
+          const km = parseFloat(record.kilometers.toString());
+          const { deductible } = calculateMileageDeduction(km, runningKm, currentYear);
+          totalKm += km; totalDeductible += deductible; runningKm += km;
+        });
+      } else if (country === 'CL') {
+        (data || []).forEach((record) => {
+          const km = parseFloat(record.kilometers.toString());
+          const { deductible } = calculateChileMileageDeduction(km, currentYear);
+          totalKm += km; totalDeductible += deductible; runningKm += km;
+        });
+      } else {
+        // No country — just totals, no deduction
+        (data || []).forEach((record) => {
+          const km = parseFloat(record.kilometers.toString());
+          totalKm += km; runningKm += km;
+        });
+      }
+
+      // HST/GST ITC only for Canada
+      let hstGstPaid = 0;
+      if (country === 'CA') {
+        const estimatedFuelPortion = totalDeductible * 0.4;
+        const hstRate = 0.13;
+        hstGstPaid = estimatedFuelPortion - (estimatedFuelPortion / (1 + hstRate));
+      }
+
       return {
         totalKilometers: totalKm, totalDeductibleAmount: totalDeductible,
         totalTrips: data?.length || 0, hstGstPaid, itcClaimable: hstGstPaid, yearToDateKm: totalKm,
+        country,
       } as MileageSummary;
     },
     enabled: !!user,
