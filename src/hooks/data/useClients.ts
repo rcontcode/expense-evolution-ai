@@ -118,10 +118,10 @@ export function useDeleteClient() {
 
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
-        await supabase.from('audit_log' as any).insert({
-          user_id: userData.user.id, action: 'delete', entity_type: 'client', entity_id: id,
+        await insertAuditLog(userData.user.id, {
+          action: 'delete', entity_type: 'client', entity_id: id,
           entity_name: existing?.name || null,
-        } as any);
+        });
       }
     },
     onSuccess: () => {
@@ -192,14 +192,13 @@ export function useDeleteClientTestData() {
       if (contractsError) throw contractsError;
 
       // Audit log
-      await supabase.from('audit_log' as any).insert({
-        user_id: user.id,
+      await insertAuditLog(user.id, {
         action: 'bulk_delete_test_data',
         entity_type: 'client',
         entity_id: clientId,
         entity_name: clientData?.name || null,
         new_values: { affected_tables: ['expenses', 'income', 'mileage', 'contracts', 'project_clients'] },
-      } as any);
+      });
     },
     onSuccess: () => {
       afterClientDelete();
