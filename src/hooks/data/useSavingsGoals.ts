@@ -93,7 +93,8 @@ export function useDeleteSavingsGoal() {
   return useMutation({
     mutationFn: async (id: string) => {
       const { data: existing } = await supabase.from('savings_goals').select('name, target_amount').eq('id', id).single();
-      const { error } = await supabase.from('savings_goals').delete().eq('id', id);
+      if (!user) throw new Error('Not authenticated');
+      const { error } = await supabase.from('savings_goals').delete().eq('id', id).eq('user_id', user.id);
       if (error) throw error;
 
       if (user) {
