@@ -349,7 +349,7 @@ export function TaxResources({ language, country = 'CA' }: TaxResourcesProps) {
           badge: isEs ? "Guía" : "Guide"
         },
         {
-          name: isEs ? "Kilometraje CRA 2024" : "CRA Mileage 2024",
+          name: isEs ? "Kilometraje CRA 2026" : "CRA Mileage 2026",
           description: isEs ? "Tasas de kilometraje deducible" : "Deductible mileage rates",
           url: "https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/payroll/benefits-allowances/automobile/automobile-motor-vehicle-allowances/automobile-allowance-rates.html",
           badge: "2024"

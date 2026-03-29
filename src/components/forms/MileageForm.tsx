@@ -961,7 +961,7 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
             </div>
             <div className="flex items-center gap-1.5 mt-2">
               <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-amber-500/10 border-amber-500/30 text-amber-600">
-                {t('mileage.rates2024') || '2024 Rates'}
+                {t('mileage.rates2026') || '2026 Rates'}
               </Badge>
               <p className="text-[10px] text-muted-foreground">
                 {t('mileage.craRateNote')}

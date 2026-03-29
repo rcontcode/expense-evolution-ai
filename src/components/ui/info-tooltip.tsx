@@ -265,12 +265,12 @@ export const TOOLTIP_CONTENT = {
   mileageTab: {
     es: {
       title: "Kilometraje Deducible",
-      description: "Seguimiento de viajes de negocio para deducciones por uso de vehículo según tasas CRA 2024.",
+      description: "Seguimiento de viajes de negocio para deducciones por uso de vehículo según tasas CRA 2026.",
       howToUse: "Registra cada viaje de trabajo para maximizar tus deducciones.",
     },
     en: {
       title: "Deductible Mileage",
-      description: "Business trip tracking for vehicle use deductions according to CRA 2024 rates.",
+      description: "Business trip tracking for vehicle use deductions according to CRA 2026 rates.",
       howToUse: "Record each work trip to maximize your deductions.",
     },
   },
@@ -565,12 +565,12 @@ export const TOOLTIP_CONTENT = {
   mileage: {
     es: {
       title: "Registro de Kilometraje",
-      description: "Registra viajes de negocio para deducciones por uso de vehículo con tasas CRA 2024.",
+      description: "Registra viajes de negocio para deducciones por uso de vehículo con tasas CRA 2026.",
       howToUse: "Ingresa ruta, kilómetros y propósito de cada viaje.",
     },
     en: {
       title: "Mileage Tracking",
-      description: "Record business trips for vehicle use deductions with CRA 2024 rates.",
+      description: "Record business trips for vehicle use deductions with CRA 2026 rates.",
       howToUse: "Enter route, kilometers and purpose of each trip.",
     },
   },
@@ -613,12 +613,12 @@ export const TOOLTIP_CONTENT = {
   mileageSummaryTab: {
     es: {
       title: "Resumen Anual",
-      description: "Totales de kilometraje, deducciones y créditos ITC calculados según tasas CRA 2024.",
+      description: "Totales de kilometraje, deducciones y créditos ITC calculados según tasas CRA 2026.",
       howToUse: "Usa estos datos para tu declaración T2125.",
     },
     en: {
       title: "Annual Summary",
-      description: "Mileage totals, deductions and ITC credits calculated according to CRA 2024 rates.",
+      description: "Mileage totals, deductions and ITC credits calculated according to CRA 2026 rates.",
       howToUse: "Use this data for your T2125 declaration.",
     },
   },

@@ -16,14 +16,14 @@ export interface TaxInfoVersion {
 
 export const TAX_INFO_VERSIONS: Record<CountryCode, TaxInfoVersion> = {
   CA: {
-    lastUpdated: '2025-01-08',
-    taxYear: 2024,
+    lastUpdated: '2026-03-29',
+    taxYear: 2026,
     verifiedBy: 'Evofinz System',
     sourceUrls: [
       'https://www.canada.ca/en/revenue-agency/services/tax/individuals/frequently-asked-questions-individuals/canadian-income-tax-rates-individuals-current-previous-years.html',
       'https://www.canada.ca/en/revenue-agency/services/forms-publications/publications/t4002.html',
     ],
-    notes: 'Federal brackets for 2024. Provincial rates may vary by territory.',
+    notes: 'Federal brackets for 2026. Provincial rates may vary by territory. Mileage rates: $0.73/$0.67 per km.',
   },
   CL: {
     lastUpdated: '2025-01-08',

@@ -852,8 +852,8 @@ export const translations = {
       totalDeduction: 'Total Deducible',
       itcEstimate: 'ITC Estimado',
       fuelHstEstimate: 'HST en combustible (estimado)',
-      craRates: 'Tasas CRA 2024',
-      craRatesTitle: 'Tasas de Kilometraje CRA 2024',
+      craRates: 'Tasas CRA 2026',
+      craRatesTitle: 'Tasas de Kilometraje CRA 2026',
       craRatesDescription: 'Tasas oficiales para deducciones de vehículo',
       first5000: 'Primeros 5,000 km',
       after5000: 'Después de 5,000 km',
@@ -864,7 +864,7 @@ export const translations = {
       estimatedDeduction: 'Deducción estimada',
       rateApplied: 'Tasa aplicada',
       yearToDateKm: 'KM acumulados este año',
-      craRateNote: 'Tasas CRA 2024: $0.70/km (primeros 5,000 km), $0.64/km (después)',
+      craRateNote: 'Tasas CRA 2026: $0.73/km (primeros 5,000 km), $0.67/km (después)',
       deleteConfirm: '¿Eliminar viaje?',
       deleteWarning: 'Esta acción no se puede deshacer.',
       // Address fields
@@ -1832,7 +1832,7 @@ export const translations = {
       estimatedDeduction: 'Estimated deduction',
       rateApplied: 'Rate applied',
       yearToDateKm: 'Year-to-date km',
-      craRateNote: 'CRA 2024 rates: $0.70/km (first 5,000 km), $0.64/km (after)',
+      craRateNote: 'CRA 2026 rates: $0.73/km (first 5,000 km), $0.67/km (after)',
       deleteConfirm: 'Delete trip?',
       deleteWarning: 'This action cannot be undone.',
       // Address fields
