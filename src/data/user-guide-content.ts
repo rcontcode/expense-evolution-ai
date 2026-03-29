@@ -1186,5 +1186,8 @@ export const connectionsDiagram = {
     { from: '🏢 Perfil', to: '📅 Calendario Fiscal', to2: '💱 Monedas', es: 'Tu perfil personaliza fechas fiscales, moneda y tasas de deducción', en: 'Your profile customizes tax dates, currency, and deduction rates' },
     { from: '🎮 Gamificación', to: '📊 Dashboard', to2: '🔔 Notificaciones', es: 'XP por cada acción → niveles, logros y celebraciones épicas', en: 'XP for every action → levels, achievements, and epic celebrations' },
     { from: '📚 Educación', to: '📝 Diario', to2: '🔄 Hábitos', es: 'Aprendizaje → práctica aplicada → hábitos financieros → transformación', en: 'Learning → applied practice → financial habits → transformation' },
+    { from: '🎤 Phoenix', to: '🧾 Gastos', to2: '💰 Ingresos', es: 'Voz/texto natural → crea gastos e ingresos automáticamente', en: 'Voice/natural text → creates expenses and income automatically' },
+    { from: '🧮 Tax Optimizer', to: '📊 Dashboard', to2: '📋 Tax Report', es: 'Análisis de deducciones → optimización → reporte para contador', en: 'Deduction analysis → optimization → report for accountant' },
+    { from: '🔍 Suscripciones', to: '📅 Pagos Fijos', to2: '🎯 Presupuesto', es: 'Detector de fantasmas → identifica gastos recurrentes innecesarios', en: 'Ghost detector → identifies unnecessary recurring expenses' },
   ]
 };
