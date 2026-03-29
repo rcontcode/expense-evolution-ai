@@ -1,112 +1,112 @@
 
 
-# Auditoría de Datos — Ronda 2: Correcciones Pendientes
+# Auditoría Profunda Ronda 3 — Base de Datos, Seguridad y Flujo de Datos
 
-## Hallazgos Nuevos
-
-Tras revisar todos los hooks post-correcciones anteriores, encontré estos problemas adicionales:
+## Nuevos Hallazgos (no cubiertos en rondas anteriores)
 
 ---
 
-### 🔴 Problemas Críticos (seguridad/integridad)
+### 🔴 CRÍTICO — Tablas Fantasma (código referencia tablas inexistentes)
 
-#### 1. `useRecurringBills` — No filtra por `user_id`
-La query principal (línea 63-66) no tiene `.eq('user_id', user.id)`. Depende 100% de RLS. Inconsistente con el resto del sistema que ya usa defensa en profundidad.
+#### 1. `savings_contributions` — NO EXISTE en la base de datos
+`useSavingsGoals.ts` referencia `savings_contributions` con `as any` (líneas 163, 186). Las operaciones INSERT y SELECT fallan silenciosamente. Los usuarios creen que están guardando contribuciones a sus metas pero los datos se pierden.
+**Fix**: Crear la tabla `savings_contributions` con migración + RLS policies.
 
-#### 2. `useBillPayments` — No filtra por `user_id`  
-Misma situación (línea 80). Cualquier usuario podría ver pagos de otros si RLS falla.
+#### 2. `budget_audit_log` — NO EXISTE en la base de datos
+`useBudgetAuditLog.ts` referencia `budget_audit_log` con `as any`. Todas las operaciones de auditoría de presupuesto fallan silenciosamente.
+**Fix**: Crear la tabla `budget_audit_log` con migración + RLS, o consolidar con `audit_log` existente (recomendado para evitar duplicación).
 
-#### 3. `useAssets` / `useLiabilities` / `useNetWorthSnapshots` — Sin filtro `user_id`
-Las tres queries (líneas 221, 239, 257) no filtran por `user_id`. Solo dependen de RLS.
-
-#### 4. `useSavingsGoals` — Sin filtro `user_id`
-La query principal (línea 29) no filtra por `user_id`.
-
-#### 5. `useCategoryBudgets` — Sin filtro `user_id`
-Query principal (línea 24) no filtra por user.
-
-#### 6. `useFiscalEntities` / `usePrimaryFiscalEntity` — Sin filtro `user_id`
-Líneas 19 y 38 sin filtro explícito.
-
-#### 7. `useInvestmentGoals` — Sin filtro `user_id`
-Línea 31 depende solo de RLS.
-
-#### 8. `useProjects` — Sin filtro `user_id`
-Línea 14 no filtra. Tiene `user` en `useAuth` pero no lo usa en la query.
+#### 3. `voice_requests_count` — Columna fantasma en `usage_tracking`
+La tabla `usage_tracking` NO tiene columna `voice_requests_count`, pero `usePlanLimits.ts` y la función DB `increment_usage` la referencian. El conteo de solicitudes de voz nunca se registra. Solo `voice_minutes_used` existe.
+**Fix**: Agregar columna `voice_requests_count` a `usage_tracking`, o eliminar las referencias si solo se quiere trackear minutos.
 
 ---
 
-### 🟠 Problemas de Consistencia
+### 🔴 CRÍTICO — Seguridad de Base de Datos
 
-#### 9. `useRecurringBills` — Hard delete inconsistente
-`useDeleteBill` usa `.delete()` (hard delete) mientras todo el resto del sistema usa soft-delete. No tiene audit log.
+#### 4. `data_health_check` — Vista sin RLS explícita (flag del security scan)
+El security scan la marcó como riesgo. Es una VIEW con `security_invoker=on`, así que hereda las políticas RLS de las tablas subyacentes. Técnicamente es seguro, pero conviene documentarlo o agregar un wrapper con filtro explícito.
+**Fix**: Agregar `.eq('user_id', user!.id)` en `useDataHealthCheck` como defensa en profundidad (la vista ya filtra vía RLS, pero el hook no lo hace explícitamente).
 
-#### 10. `useSavingsGoals` — Hard delete sin audit log
-`useDeleteSavingsGoal` hace `.delete()` sin registrar en audit_log.
+#### 5. `clients` — Sin política DELETE en RLS
+El security scan detectó que `clients` tiene INSERT, UPDATE, SELECT pero NO DELETE policy. Esto está bien dado que usamos soft-delete (`deleted_at`), pero el `useDeleteClientTestData` hace hard delete de expenses/income/mileage/contracts vinculados, bypassing soft-delete sin audit log.
+**Fix**: Documentar que es intencional (soft-delete), y refactorizar `useDeleteClientTestData` para usar soft-delete consistente.
 
-#### 11. `useCategoryBudgets` — Hard delete sin audit log
-`useDeleteCategoryBudget` hace `.delete()` sin audit log.
+---
 
-#### 12. `useInvestmentGoals` — No usa `useInvalidateRelated`
-Usa `queryClient.invalidateQueries` directamente en vez del sistema centralizado. Tampoco tiene audit log en delete.
+### 🟠 Problemas de Integridad de Datos
 
-#### 13. `useFiscalEntities` — Hard delete sin audit log
-`useDeleteFiscalEntity` hace `.delete()` sin audit log. Eliminar una entidad fiscal es crítico y debería registrarse.
+#### 6. `increment_usage` DB function — Caso 'voice' escribe a columna inexistente
+```sql
+ELSIF p_usage_type = 'voice' THEN
+  UPDATE public.usage_tracking 
+  SET voice_requests_count = voice_requests_count + 1 ...
+```
+Esta columna no existe. El UPDATE falla silenciosamente con service role.
+**Fix**: Agregar la columna o cambiar a `voice_minutes_used` según la lógica real.
 
-#### 14. `useDeleteClientTestData` — Bypass de soft-delete
-Hace `.delete()` directamente en expenses, income, mileage, contracts — bypassing el sistema de soft-delete y sin audit log. Esto puede dejar datos huérfanos (expense_tags, documents vinculados).
+#### 7. `useDeleteClientTestData` — Hard deletes sin cascade safety
+Hace `.delete()` directo en `expenses`, `income`, `mileage`, `contracts` sin:
+- Limpiar `expense_tags` vinculados (datos huérfanos)
+- Limpiar `documents` vinculados
+- Registrar en `audit_log`
+- Usar soft-delete
+**Fix**: Agregar limpieza de tablas dependientes y audit log.
+
+#### 8. `usePlanLimits` — Lee `voice_requests_count` de una columna inexistente
+Línea 278: `rawData.voice_requests_count as number ?? 0` — siempre será `undefined`, así que `canUseVoice()` siempre retorna `true` independientemente de uso real.
+**Fix**: Alinear con la columna real o crear la columna.
 
 ---
 
 ### 🟡 Mejoras de Robustez
 
-#### 15. `useDocumentsForReview` — No filtra `status` deleted
-La query (línea 18) trae TODOS los documentos incluyendo los que se borraron con `deleteDocument`. No hay soft-delete en documents — se hace hard delete.
+#### 9. Inconsistencia en `applies_to` de RLS policies
+Algunas políticas usan `{public}` (roles público, anon, authenticated) mientras otras usan `{authenticated}`. Las de `{public}` en tablas con datos sensibles como `savings_goals`, `category_budgets`, `assets` etc. son seguras porque verifican `auth.uid()`, pero serían más estrictas con `{authenticated}`.
+**Fix**: No bloqueante, pero recomendable migrar las políticas de tablas financieras a `{authenticated}` para mayor seguridad.
 
-#### 16. `useExpenses` — El hook para reportes sigue usando límite 500
-No se creó el hook `useAllExpensesForReport` sin límite que se planificó.
+#### 10. `exchange_rates` — Doble policy SELECT redundante
+Tiene dos policies SELECT: "Anyone can view exchange rates" (`true`) y "Authenticated users can view exchange rates" (`auth.uid() IS NOT NULL`). La primera ya cubre todo.
+**Fix**: Eliminar la policy redundante (la de authenticated).
 
-#### 17. `useFinancialJournal` — Sin límite default
-Si un usuario acumula miles de entradas, `useFinancialJournal()` sin parámetro las trae todas.
+#### 11. Edge Functions — Pattern consistente de auth
+Todas las edge functions críticas (process-receipt, analyze-contract, process-bank-statement, optimize-taxes) validan JWT correctamente con `getUser(token)`. Buena práctica confirmada.
+
+#### 12. `webhook-leads` — Endpoint público sin rate limiting
+El webhook acepta POSTs sin autenticación (diseño correcto para webhooks externos), pero no tiene rate limiting. Un atacante podría spammear leads.
+**Fix**: Agregar validación de webhook secret o rate limiting básico.
 
 ---
 
 ## Plan de Implementación
 
-### Paso 1: Agregar `user_id` filter a 8 hooks (seguridad)
-- `useRecurringBills`, `useBillPayments`
-- `useAssets`, `useLiabilities`, `useNetWorthSnapshots`
-- `useSavingsGoals`, `useCategoryBudgets`
-- `useFiscalEntities`, `usePrimaryFiscalEntity`
-- `useInvestmentGoals`
-- `useProjects`
+### Paso 1: Crear tablas faltantes (CRÍTICO — datos se pierden)
+- Crear tabla `savings_contributions` con columnas: `id`, `user_id`, `goal_id`, `amount`, `notes`, `created_at`
+- RLS: full CRUD para `auth.uid() = user_id`
+- Agregar columna `voice_requests_count` (integer, default 0) a `usage_tracking`
 
-### Paso 2: Audit log para deletes críticos
-- `useDeleteBill` → audit log
-- `useDeleteSavingsGoal` → audit log
-- `useDeleteFiscalEntity` → audit log
-- `useDeleteInvestmentGoal` → audit log
+### Paso 2: Consolidar `budget_audit_log`
+- Eliminar `useBudgetAuditLog.ts` y migrar sus usos al `audit_log` existente (usando `entity_type = 'budget'`)
+- O crear la tabla si se prefiere separación
 
-### Paso 3: Crear `useAllExpensesForReport`
-- Hook sin límite para exportación fiscal
-- Filtrado por año, sin paginación UI
+### Paso 3: Corregir `increment_usage` DB function
+- Actualizar la función para usar la columna correcta (`voice_requests_count` una vez creada)
 
-### Paso 4: `useInvestmentGoals` — migrar a `useInvalidateRelated`
+### Paso 4: Hardening menor
+- Agregar filtro `user_id` explícito en `useDataHealthCheck`
+- Limpiar policy redundante de `exchange_rates`
 
-### Paso 5: Default limit en `useFinancialJournal`
-- Agregar `.limit(500)` cuando no se pasa parámetro
+### Paso 5: `useDeleteClientTestData` — cascade safety
+- Agregar limpieza de `expense_tags` y `documents` antes de borrar expenses
+- Agregar audit log entry
 
 ---
 
-## Detalle Técnico — Archivos a modificar
+## Archivos a modificar
 
-1. `src/hooks/data/useRecurringBills.ts` — user_id filter + audit log en delete
-2. `src/hooks/data/useNetWorth.ts` — user_id filter en assets/liabilities/snapshots  
-3. `src/hooks/data/useSavingsGoals.ts` — user_id filter + audit log en delete
-4. `src/hooks/data/useCategoryBudgets.ts` — user_id filter
-5. `src/hooks/data/useFiscalEntities.ts` — user_id filter + audit log en delete
-6. `src/hooks/data/useInvestmentGoals.ts` — user_id filter + audit log + invalidación centralizada
-7. `src/hooks/data/useProjects.ts` — user_id filter
-8. `src/hooks/data/useExpenses.ts` — nuevo hook `useAllExpensesForReport`
-9. `src/hooks/data/useFinancialJournal.ts` — default limit
+1. **Migración SQL**: Crear `savings_contributions`, agregar `voice_requests_count` a `usage_tracking`, actualizar `increment_usage`
+2. `src/hooks/data/useBudgetAuditLog.ts` → migrar a `useAuditLog` o crear tabla
+3. `src/hooks/data/useDataHealthCheck.ts` → agregar user_id filter
+4. `src/hooks/data/useClients.ts` (`useDeleteClientTestData`) → cascade + audit
+5. `src/hooks/data/usePlanLimits.ts` → alinear con columna real
 
