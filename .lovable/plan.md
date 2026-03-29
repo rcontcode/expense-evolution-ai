@@ -12,10 +12,12 @@
 - Badge numérico animado en pestaña "Contactar" del CRM
 - Cache invalidation automática del contador con realtime
 
-## 🔲 Fase 3: Dashboard de ROI / Revenue por Lead
-- Cruzar `quiz_leads` con `user_subscriptions` por email
-- KPIs: Revenue por fuente, tasa conversión quiz→registro→pago
-- Gráficos: Revenue por fuente (bar chart), tendencia MRR
+## ✅ Fase 3: Dashboard de ROI / Revenue por Lead — COMPLETADA
+- Cross-reference `quiz_leads` ↔ `profiles` ↔ `user_subscriptions` por email
+- KPIs: MRR de leads, Conversión total, Leads pagando, Valor por lead
+- Embudo visual: Quiz → Registro → Suscripción con tasas de conversión
+- Gráfico de barras MRR por fuente + desglose de conversión por fuente
+- Tabla de top 20 leads convertidos a suscripción
 - Nueva pestaña "💰 ROI" en CRM
 
 ## 🔲 Fase 4: Secuencias de Nurturing
