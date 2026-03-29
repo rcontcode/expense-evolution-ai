@@ -103,7 +103,7 @@ export function useDeleteJournalEntry() {
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error('No user');
-      const { data: existing } = await supabase.from('financial_journal').select('entry_type, content').eq('id', id).eq('user_id', user.id).single();
+      const { data: existing } = await supabase.from('financial_journal').select('entry_type, content').eq('id', id).eq('user_id', user.id).maybeSingle();
       const { error } = await supabase.from('financial_journal').delete().eq('id', id).eq('user_id', user.id);
       if (error) throw error;
 

@@ -97,7 +97,7 @@ export function useDeleteClient() {
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error('Not authenticated');
-      const { data: existing } = await supabase.from('clients').select('name').eq('id', id).eq('user_id', user.id).single();
+      const { data: existing } = await supabase.from('clients').select('name').eq('id', id).eq('user_id', user.id).maybeSingle();
       const { error } = await supabase
         .from('clients').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id);
       if (error) throw error;
@@ -125,7 +125,7 @@ export function useDeleteClientTestData() {
   return useMutation({
     mutationFn: async (clientId: string) => {
       if (!user) throw new Error('Not authenticated');
-      const { data: clientData } = await supabase.from('clients').select('name').eq('id', clientId).single();
+      const { data: clientData } = await supabase.from('clients').select('name').eq('id', clientId).maybeSingle();
 
       const { data: clientExpenses } = await supabase.from('expenses').select('id').eq('client_id', clientId);
       if (clientExpenses && clientExpenses.length > 0) {

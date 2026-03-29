@@ -344,7 +344,7 @@ export function useDeleteAsset() {
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error('Not authenticated');
-      const { data: existing } = await supabase.from('assets').select('name').eq('id', id).eq('user_id', user.id).single();
+      const { data: existing } = await supabase.from('assets').select('name').eq('id', id).eq('user_id', user.id).maybeSingle();
       const { error } = await supabase.from('assets').delete().eq('id', id).eq('user_id', user.id);
       if (error) throw error;
 
@@ -439,7 +439,7 @@ export function useDeleteLiability() {
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error('Not authenticated');
-      const { data: existing } = await supabase.from('liabilities').select('name').eq('id', id).eq('user_id', user.id).single();
+      const { data: existing } = await supabase.from('liabilities').select('name').eq('id', id).eq('user_id', user.id).maybeSingle();
       const { error } = await supabase.from('liabilities').delete().eq('id', id).eq('user_id', user.id);
       if (error) throw error;
 

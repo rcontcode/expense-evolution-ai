@@ -129,7 +129,7 @@ export function useDocumentReviewActions() {
         .select('user_corrections')
         .eq('id', id)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       const existingCorrections = doc?.user_corrections || '';
       const newCorrections = existingCorrections 

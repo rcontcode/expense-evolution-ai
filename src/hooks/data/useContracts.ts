@@ -139,7 +139,7 @@ export const useDeleteContract = () => {
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error('Not authenticated');
-      const { data: contract } = await supabase.from('contracts').select('file_path, group_id').eq('id', id).eq('user_id', user.id).single();
+      const { data: contract } = await supabase.from('contracts').select('file_path, group_id').eq('id', id).eq('user_id', user.id).maybeSingle();
       
       if (contract?.group_id) {
         // Delete all pages in the group
