@@ -1,72 +1,57 @@
 
 
-# Kilometraje: De CRA-Only a Control Personal Multi-País
+# Clarificar Puntos de Entrada de Datos: Implementación a Fondo
 
-## Diagnóstico
+## Estado Actual
 
-El sistema de kilometraje está **100% hardcodeado para CRA (Canadá)**:
+**Ya implementado:**
+- `PageContextGuide` ya tiene `crossReferences` prop y UI funcional
+- 5 de 7 PAGE_GUIDES ya tienen cross-references (expenses, income, chaos-inbox, banking, reconciliation, bills)
+- `CaptureHub` ya tiene texto de destino en cada botón
+- El manual de usuario (`user-guide-content.ts`) tiene una sección "Interconexiones" con 11 flujos simples (from → to → to2)
 
-| Componente | Problema |
-|---|---|
-| `useMileage.ts` | Solo tasas CRA, cálculo 5000km, HST/GST hardcodeado al 13% |
-| `MileageSummaryCard.tsx` | Solo muestra CRA rates, link a canada.ca |
-| `MileageDeductionMaximizer.tsx` | Solo CRA rates, tips mencionan CRA, umbral 5000km |
-| `MileageForm.tsx` | Muestra deducción CRA inline |
-| `MileageTable.tsx` | Calcula deducción con tasas CRA |
+**Falta:**
+- Los PAGE_GUIDES que NO tienen cross-references: `clients`, `mileage`, `net-worth`, `tags`, `contracts`
+- El manual no tiene una sección dedicada a "Puntos de Entrada de Datos" que explique las diferencias entre las 8 formas de ingresar info
+- No existe un diagrama visual (mermaid) del mapa completo de flujos
+- Las FAQ globales no incluyen "¿Cuál es la diferencia entre Bandeja del Caos y Captura Rápida?"
+- El `CaptureHub` tiene destinos pero no explica la DIFERENCIA entre cada opción
+- No hay diagrama visual interactivo en la página del manual
 
-## Enfoque Propuesto
+## Plan
 
-El kilometraje debería funcionar en **2 capas**:
+### 1. Generar diagrama Mermaid de flujos de datos
+Crear un diagrama visual descargable y embebido en el manual que muestre:
+- Los 8 puntos de entrada (Bandeja del Caos, Captura Foto, Captura Texto, Centro de Captura, Importar Banco, Gasto Manual, Pagos Fijos, Phoenix)
+- A dónde va cada dato después de ingresar
+- Las vinculaciones entre secciones
 
-```text
-Capa 1: REGISTRO PERSONAL (siempre visible, todos los países)
-  → Fecha, ruta, km, propósito, cliente
-  → Resumen: total km, total viajes, promedio mensual
+### 2. Agregar sección "Puntos de Entrada" al manual (`user-guide-content.ts`)
+Nueva `GuideSection` dedicada con id `data-entry-points`:
+- Tabla comparativa de los 8 puntos de entrada con: nombre, qué hace, a dónde van los datos, cuándo usarlo
+- FAQ: "¿Cuál es la diferencia entre X y Y?" para las 4 confusiones más comunes
+- Tips de cuándo usar cada uno
 
-Capa 2: RENDICIÓN FISCAL (condicional según país del entity)
-  → CA → CRA rates, umbral 5000km, ITC, HST/GST
-  → CL → SII (km como gasto deducible a valor por km del mercado)
-  → Sin entity → Solo muestra "Registra tu jurisdicción para ver deducciones"
-```
+### 3. Agregar FAQ globales sobre diferencias
+3 nuevas FAQ globales:
+- "¿Cuál es la diferencia entre Bandeja del Caos y Captura Rápida?"
+- "¿Debo usar Captura de Texto o el Asistente Phoenix?"
+- "¿Los datos del banco se sincronizan con mis gastos?"
 
-## Cambios
+### 4. Completar cross-references en PAGE_GUIDES faltantes
+Agregar `crossReferences` a: `clients`, `mileage`, `net-worth`, `tags`, `contracts`
 
-### 1. `useMileage.ts` — Separar cálculo por país
-- Mantener `calculateMileageDeduction` para CRA
-- Agregar `calculateChileMileageDeduction(km)` con tarifa SII (estimación por km basada en tabla de gastos presuntos)
-- Hacer que `useMileageSummary` detecte el país del entity y aplique la fórmula correspondiente
-- Si no hay entity, devolver solo totales sin deducción fiscal
+### 5. Mejorar `CaptureHub` con aclaraciones de diferencias
+Agregar un bloque colapsable "¿Cuál uso?" debajo de los 3 botones que explique la diferencia entre Foto vs Texto vs Banco con una mini-tabla comparativa
 
-### 2. `MileageSummaryCard.tsx` — Adaptativo por país
-- Card 1 (Total km) y Card 2 (Total viajes): siempre visibles
-- Card 3 (Deducción fiscal): condicional
-  - CA → CRA rates + ITC + progreso 5000km + link canada.ca
-  - CL → Estimación deducible SII + nota sobre justificación
-  - Sin país → Card con CTA "Configura tu jurisdicción"
+### 6. Renderizar diagrama Mermaid en UserGuide.tsx
+En la sección "Interconexiones" del manual, mostrar el diagrama mermaid como imagen embebida además de los flujos de texto existentes
 
-### 3. `MileageDeductionMaximizer.tsx` — Condicional por país
-- Sección "Km de negocio" y "Meses activos": siempre
-- Sección "CRA rates" y umbral 5000km: solo CA
-- Para CL: mostrar tips de SII (mantener registro, bitácora)
-- Tips de "propósito faltante": universales
+## Archivos a modificar (4) + 1 diagrama
 
-### 4. `MileageTable.tsx` — Columna deducción condicional
-- Mostrar columna "Deducción" solo si el usuario tiene entity con país configurado
-- Sin país → mostrar solo km, sin columna de tasa
-
-### 5. `MileageForm.tsx` — Deducción preview condicional
-- El badge de "Deducción estimada" solo se muestra si hay entity con país
-- Agregar opción "Uso: personal / negocio / mixto" para que el usuario categorice sin forzar contexto fiscal
-
-### 6. Página `Mileage.tsx` — Descripción actualizada
-- Cambiar descripción de "CRA mileage tracking" a "Control de kilometraje personal y profesional"
-- Agregar badge indicando el país activo y qué régimen fiscal aplica (si hay)
-
-## Archivos a modificar (6)
-1. `src/hooks/data/useMileage.ts` — Agregar cálculo Chile, hacer summary country-aware
-2. `src/components/dashboard/MileageSummaryCard.tsx` — Renderizado condicional por país
-3. `src/components/mileage/MileageDeductionMaximizer.tsx` — Tips y métricas por país
-4. `src/components/tables/MileageTable.tsx` — Columna deducción condicional
-5. `src/components/forms/MileageForm.tsx` — Preview deducción condicional
-6. `src/pages/Mileage.tsx` — Descripción y badge de país
+1. **`src/data/user-guide-content.ts`** — Nueva sección `data-entry-points`, 3 FAQ globales nuevas, ampliar `connectionsDiagram`
+2. **`src/components/guidance/PageContextGuide.tsx`** — Agregar cross-references a `clients`, `mileage`, `net-worth`, `tags`, `contracts`
+3. **`src/components/budget/CaptureHub.tsx`** — Agregar bloque colapsable "¿Cuál uso?" con mini-tabla comparativa
+4. **`src/pages/UserGuide.tsx`** — Renderizar diagrama mermaid en sección interconexiones
+5. **Diagrama Mermaid** — Generar `.mmd` con mapa completo de puntos de entrada y flujos de datos
 
