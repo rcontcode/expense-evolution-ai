@@ -8,6 +8,7 @@ import { TaxSummaryCards } from '@/components/dashboard/TaxSummaryCards';
 import { TaxDeadlineCountdown } from '@/components/tax/TaxDeadlineCountdown';
 import { TaxDocumentChecklist } from '@/components/tax/TaxDocumentChecklist';
 import { Receipt } from 'lucide-react';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 const TaxOptimizerCard = lazy(() => import('@/components/dashboard/TaxOptimizerCard').then(m => ({ default: m.TaxOptimizerCard })));
 const SavingsOptimizerSection = lazy(() => import('@/components/tax/SavingsOptimizerSection').then(m => ({ default: m.SavingsOptimizerSection })));
@@ -44,6 +45,7 @@ export default function TaxOptimizer() {
           <Suspense fallback={<Skeleton className="h-[300px]" />}>
             <SavingsOptimizerSection />
           </Suspense>
+          <LegalDisclaimer variant="tax" size="compact" />
         </div>
       </div>
     </Layout>

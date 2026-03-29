@@ -16,6 +16,7 @@ import {
   ChevronDown, Scissors, PhoneCall, ArrowRight, Sparkles, Eye
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 interface Insight {
   id: string;
@@ -272,6 +273,7 @@ export function BillSmartInsights() {
               );
             })}
           </AnimatePresence>
+          <LegalDisclaimer variant="general" size="compact" showLearnMore={false} className="mt-3" />
         </div>
       </CollapsibleContent>
     </Collapsible>

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, TrendingUp, PiggyBank, Wallet, Info, RefreshCw } from 'lucide-react';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 import { useApvOptimizer } from '@/hooks/data/useApvOptimizer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Progress } from '@/components/ui/progress';
@@ -253,6 +254,7 @@ export function ApvOptimizerCard() {
             </>
           )}
         </Button>
+        <LegalDisclaimer variant="tax" size="compact" showLearnMore={false} className="mt-4" />
       </CardContent>
     </Card>
   );

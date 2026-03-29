@@ -19,12 +19,12 @@ const DISCLAIMER_CONTENT = {
     es: {
       title: 'Aviso Legal',
       text: 'La información proporcionada por EvoFinz es únicamente con fines educativos e informativos. NO constituye asesoría financiera, fiscal, legal ni de inversión.',
-      compact: 'Solo con fines educativos. No es asesoría profesional.',
+      compact: 'Solo con fines educativos. No es asesoría profesional. Consulte a un especialista calificado.',
     },
     en: {
       title: 'Legal Notice',
       text: 'The information provided by EvoFinz is for educational and informational purposes only. It does NOT constitute financial, tax, legal, or investment advice.',
-      compact: 'For educational purposes only. Not professional advice.',
+      compact: 'For educational purposes only. Not professional advice. Consult a qualified specialist.',
     },
   },
   tax: {
@@ -43,24 +43,24 @@ const DISCLAIMER_CONTENT = {
     es: {
       title: 'Aviso sobre Inversiones',
       text: 'Las proyecciones son hipotéticas basadas en rendimientos históricos promedio. Los rendimientos pasados no garantizan resultados futuros. Toda inversión conlleva riesgo de pérdida.',
-      compact: 'Proyecciones hipotéticas. Rendimientos pasados no garantizan resultados futuros.',
+      compact: 'Proyecciones hipotéticas. Rendimientos pasados no garantizan resultados futuros. Consulte a un asesor de inversiones certificado.',
     },
     en: {
       title: 'Investment Notice',
       text: 'Projections are hypothetical based on historical average returns. Past performance does not guarantee future results. All investments carry risk of loss.',
-      compact: 'Hypothetical projections. Past performance does not guarantee future results.',
+      compact: 'Hypothetical projections. Past performance does not guarantee future results. Consult a certified investment advisor.',
     },
   },
   education: {
     es: {
       title: 'Contenido Educativo',
       text: 'Contenido educativo inspirado en principios de finanzas personales. Las referencias a autores son con fines de atribución. No reemplaza asesoramiento profesional.',
-      compact: 'Inspirado en expertos. No afiliado. Solo fines educativos.',
+      compact: 'Inspirado en expertos. No afiliado. Solo fines educativos. Consulte a un profesional financiero.',
     },
     en: {
       title: 'Educational Content',
       text: 'Educational content inspired by personal finance principles. Author references are for attribution purposes. Does not replace professional advice.',
-      compact: 'Inspired by experts. Not affiliated. Educational purposes only.',
+      compact: 'Inspired by experts. Not affiliated. Educational purposes only. Consult a financial professional.',
     },
   },
 };

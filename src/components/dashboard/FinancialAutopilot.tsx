@@ -13,6 +13,7 @@ import { motion } from 'framer-motion';
 import { Brain, Sparkles, RefreshCw, TrendingUp, Shield, Lightbulb, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 
 interface AutopilotInsight {
   type: 'opportunity' | 'warning' | 'achievement' | 'tip';
@@ -181,6 +182,7 @@ export function FinancialAutopilot() {
                 {l ? 'Generado' : 'Generated'}: {lastGenerated.toLocaleTimeString()}
               </p>
             )}
+            <LegalDisclaimer variant="general" size="compact" showLearnMore={false} className="mt-3" />
           </div>
         )}
       </CardContent>
