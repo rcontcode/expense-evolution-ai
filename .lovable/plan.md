@@ -1,124 +1,132 @@
 
 
-## Auditoría Ecosistema EvoFinz ↔ Fokuspark — Progreso
+# Auditoría Profunda de Datos — Plan de Correcciones
 
-### ✅ Completado en EvoFinz
+## Hallazgos de la Revisión
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| F1 | Deep links corregidos — apuntan a rutas reales de Fokuspark (`/adult`, `/adult/journal`, `/adult/progress`) | ✅ |
-| F5 | Leaderboard seguro — función `get_ecosystem_leaderboard()` que no expone `user_id` | ✅ |
-| F6 | `EcosystemQuickActions` eliminado de `MobileDashboard` (redundante con AppSwitcher) | ✅ |
-| F4 | Edge function `ecosystem-notifications` creada + cron diario 9AM UTC | ✅ |
-| F10 | Estados de error/offline para todos los widgets del ecosistema con `EcosystemErrorFallback` | ✅ |
-
-### ✅ Completado en Fokuspark
-
-| # | Tarea | Estado |
-|---|-------|--------|
-| F2 | Fokuspark escribe a `financial_focus_sessions` y `financial_worry_entries` | ✅ |
-| F3 | `has_bundle` sincronizado — lee de `user_subscriptions` | ✅ |
-| F8 | Capturar UTM parameters en ambas apps — `useUtmCapture` + tabla `utm_visits` | ✅ |
-| F9 | Completar localización bilingüe en Fokuspark — `EcosystemOnboarding`, `EvoFinzPromoCard` | ✅ |
-
-### 🏁 Auditoría Ecosistema EvoFinz ↔ Fokuspark — 100% Completada (10/10 tareas)
+Revisé exhaustivamente todos los hooks de datos (`useExpenses`, `useIncome`, `useClients`, `useProjects`, `useContracts`, `useMileage`, `useTags`, `useSavingsGoals`, `useNetWorth`, `useRecurringBills`, `useBankTransactions`, `useCategoryBudgets`, `useFiscalEntities`, `useTrash`, `useDashboardStats`, `useInvalidateRelated`, `useDocumentReview`, `useDataHealthCheck`) y las relaciones entre ellos.
 
 ---
 
-## Revisión: Alineación de Suscripciones EvoFinz ↔ Fokuspark
+### ✅ Lo que funciona correctamente
 
-### ✅ Confirmado: Sistema funciona correctamente
-
-- Planes individuales (Free/Premium/Pro) son independientes por app
-- Bundle compartido usa mismos Stripe Price IDs en ambas apps
-- Ambos webhooks detectan Bundle y setean `has_bundle = true`
-- No hay acceso cruzado no autorizado entre apps
-
-### ✅ Gaps implementados en Fokuspark
-
-| # | Gap | Estado |
-|---|-----|--------|
-| S1 | `useSubscription` ahora consulta Stripe en tiempo real via `check-subscription` | ✅ |
-| S2 | Edge function `check-subscription` creada y desplegada en Fokuspark | ✅ |
-
-### 📋 Gaps pendientes (baja prioridad)
-
-| # | Gap | Prioridad |
-|---|-----|-----------|
-| S2 | Card de gestión de suscripción en Settings de Fokuspark | Media |
-| S3 | Texto del Bundle podría ser más descriptivo | Baja |
+1. **Soft-delete consistente**: Expenses, income, clients, projects, contracts y mileage usan `deleted_at` correctamente para soft-delete, y todas las queries de lectura filtran `.is('deleted_at', null)`.
+2. **Invalidación centralizada**: `useInvalidateRelated` cubre bien las dependencias cruzadas (expense→dashboard, income→monthly-plan, etc.).
+3. **Audit logging**: Create y delete de expenses, income, clients y projects registran en `audit_log`.
+4. **Duplicate detection**: Expenses tiene detección de duplicados por amount+date+vendor.
+5. **Entity filtering**: Expenses, income, bills, budgets soportan filtro por `entity_id`.
+6. **Tag filtering**: Soporte AND/OR funcional.
+7. **Realtime sync**: Expenses y documents tienen listeners de Postgres changes.
+8. **Trash system**: Restaurar y vaciar papelera funciona para 5 tipos de entidad.
+9. **Bills→payments**: Mark paid avanza `next_due_date` correctamente según frecuencia.
 
 ---
 
-## Análisis Comparativo de Precios EvoFinz ↔ Fokuspark
+### 🔴 Problemas Encontrados (a corregir)
 
-### ✅ Veredicto: No igualar precios — estructura actual es óptima
+#### 1. Dashboard Stats — `deleted_at` no se filtra en contadores
+**Archivo**: `useDashboardStats.ts` líneas 107-118
+- `billableExpenses` y `totalExpenses` usan `count` sin filtrar `deleted_at`. Cuentan gastos eliminados.
+- **Fix**: Agregar `.is('deleted_at', null)` a las queries de `billableCountResult` y `totalCountResult`.
 
-| Tier | EvoFinz | Fokuspark | ¿Igualar? | Razón |
-|------|---------|-----------|-----------|-------|
-| Free | $0 | $0 | ✅ Ya iguales | — |
-| Premium | $6.99/mo | $7.99/mo | ❌ NO | Diferencia de $1 justificada por costos de infra (OCR/Voice) vs engagement (ondas/Calendar) |
-| Pro | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
-| Bundle | $14.99/mo | $14.99/mo | ✅ Ya iguales | — |
+#### 2. Income Summary — Límite de 500 puede truncar datos fiscales
+**Archivo**: `useIncome.ts` línea 208
+- `useIncomeSummary` tiene `.limit(500)`. Si un usuario tiene >500 registros de ingreso en un año, los totales fiscales serán incorrectos.
+- **Fix**: Subir a 2000 o usar una RPC de agregación.
 
-### 📋 Pendiente técnico
+#### 3. Expense Query Limit — 500 puede perder datos
+**Archivo**: `useExpenses.ts` línea 11
+- `QUERY_LIMIT = 500`. Para reportes fiscales que necesitan TODOS los gastos del año, esto es insuficiente.
+- **Fix**: Crear un hook separado `useAllExpensesForReport` sin límite, o paginar. El hook normal puede mantener 500 para la UI.
 
-| # | Tarea | App | Prioridad |
-|---|-------|-----|-----------|
-| P1 | Crear productos Evo Bundle en cuenta Stripe de Fokuspark ($14.99/mo y $119.90/yr) | Fokuspark | Alta |
+#### 4. Recurring Bills — No filtra `deleted_at` (si existe la columna)
+**Archivo**: `useRecurringBills.ts` línea 66
+- No hay filtro de soft-delete. Si la tabla tiene `deleted_at`, los bills eliminados aparecerían. Actualmente se usa hard-delete (`useDeleteBill` hace `.delete()`), lo cual es inconsistente con el resto del sistema.
+- **Fix**: Considerar migrar a soft-delete como el resto de entidades, o dejar así si es intencional (el usuario confirma borrado).
+
+#### 5. Tags y Assets/Liabilities — Hard delete sin audit log
+**Archivos**: `useTags.ts`, `useNetWorth.ts`
+- Tags, assets y liabilities se eliminan con hard delete sin registrar en audit_log.
+- **Fix**: Agregar audit_log entries en las mutaciones de delete.
+
+#### 6. Document Approve — Crea gasto sin `entity_id`
+**Archivo**: `useDocumentReview.ts` línea 43-56
+- `approveDocument` crea un expense pero NO asigna `entity_id`. El gasto queda huérfano de entidad fiscal.
+- **Fix**: Obtener la entidad activa del contexto y asignarla al crear el expense.
+
+#### 7. Document Approve — No usa `useInvalidateRelated`
+**Archivo**: `useDocumentReview.ts` líneas 77-80
+- Invalida queries manualmente en vez de usar el sistema centralizado. Falta invalidar `dashboard-stats`, `monthly-plan`, `data-health`.
+- **Fix**: Usar `afterExpense()` y `afterDocument()`.
+
+#### 8. Savings Contributions — Usa `as any` sin tipo seguro
+**Archivo**: `useSavingsGoals.ts` líneas 152-153
+- `savings_contributions` se accede con `as any`, sugiriendo que la tabla podría no estar en el schema tipado. Funciona pero sin type safety.
+- **Fix**: Verificar que la tabla existe y regenerar tipos si es necesario.
+
+#### 9. Trash — No incluye mileage ni documents
+**Archivo**: `useTrash.ts`
+- Mileage usa soft-delete (`deleted_at`) pero no aparece en la papelera.
+- Documents eliminados tampoco se pueden restaurar.
+- **Fix**: Agregar queries de mileage y documents al trash system.
+
+#### 10. `useClients` — No filtra por `user_id`
+**Archivo**: `useClients.ts` línea 20
+- La query de clientes NO filtra por `user_id`. Depende 100% de RLS policies. Si RLS falla, se ven clientes de otros usuarios.
+- **Fix**: Agregar `.eq('user_id', user.id)` como defensa en profundidad (igual que expenses y income).
+
+#### 11. `useTags` — No filtra por `user_id` en query principal
+**Archivo**: `useTags.ts` línea 12
+- `useTags()` no filtra por `user_id`. Solo `useTagsWithExpenseCount` lo hace.
+- **Fix**: Agregar filtro de user_id a `useTags()`.
+
+#### 12. `useContracts` — No filtra por `user_id`
+**Archivo**: `useContracts.ts` línea 11
+- Misma situación que clients/tags.
+- **Fix**: Agregar filtro de user_id.
 
 ---
 
-## Quiz Multi-App — CRM Unificado
+### 🟡 Mejoras Recomendadas (no bloqueantes)
 
-### ✅ Completado en EvoFinz
-
-| # | Tarea | Estado |
-|---|-------|--------|
-| Q1 | Columna `source` TEXT DEFAULT 'evofinz' agregada a `quiz_leads` | ✅ |
-| Q2 | CRM admin actualizado: filtro por fuente (EvoFinz/Fokuspark) | ✅ |
-| Q3 | LeadsTable muestra badge de fuente con colores diferenciados | ✅ |
-| Q4 | LeadsExport incluye columna "Fuente" | ✅ |
-| Q5 | Edge function `send-quiz-lead` acepta campo `source` | ✅ |
-
-### 📋 Pendiente en Fokuspark
-
-| # | Tarea | Prioridad |
-|---|-------|-----------|
-| Q6 | Crear quiz de productividad (10 preguntas con scoring) | Alta |
-| Q7 | Formulario de captura de datos (nombre, email, etc.) | Alta |
-| Q8 | Página dedicada `/quiz` con hero + resultados | Alta |
-| Q9 | Edge function que guarda en `quiz_leads` con `source: 'fokuspark'` | Alta |
+1. **Dashboard date format inconsistency**: `useDashboardStats` usa `.toISOString()` para expenses pero `format(date, 'yyyy-MM-dd')` para income. Ambos funcionan pero son inconsistentes.
+2. **Expense bill matcher timeout**: `setTimeout(() => checkExpenseAgainstBills(...)`, 1500)` — delay arbitrario. Podría usar `queueMicrotask` o un efecto post-mutación.
+3. **Net Worth snapshots limit 12**: Limita historial. Para usuarios a largo plazo, considerar paginación.
 
 ---
 
-## Metadata JSONB — Integración Multi-App
+## Plan de Implementación
 
-### ✅ Completado
+### Paso 1: Correcciones críticas de queries (seguridad + integridad)
+- Agregar `user_id` filter a `useClients`, `useTags`, `useContracts`
+- Agregar `deleted_at` filter a dashboard stats counters
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| M1 | Columna `metadata` JSONB en `quiz_leads` | ✅ |
-| M2 | `webhook-leads` guarda metadata estructurada | ✅ |
-| M3 | `send-quiz-lead` acepta `metadata` opcional | ✅ |
-| M4 | Interface `QuizLead` incluye `metadata` | ✅ |
-| M5 | CRM muestra Datos de la App (producto, precio, conocimiento, best practices) | ✅ |
-| M6 | Scoring enriquecido con metadata | ✅ |
-| M7 | Talking points usan metadata | ✅ |
+### Paso 2: Document approval fix
+- Agregar `entity_id` al crear expense desde document review
+- Migrar a `useInvalidateRelated` para invalidación
+
+### Paso 3: Trash completeness
+- Agregar mileage al sistema de papelera
+
+### Paso 4: Audit log completeness
+- Agregar audit entries para delete de tags, assets, liabilities
+
+### Paso 5: Query limits para reportes
+- Crear variante sin límite para exportaciones fiscales
+- Subir límite de income summary a 2000
 
 ---
 
-## Sincronización Fiscal Completa — CRA/SII
+## Detalle Técnico
 
-### ✅ Completado
+### Archivos a modificar:
+1. `src/hooks/data/useClients.ts` — agregar user_id filter
+2. `src/hooks/data/useTags.ts` — agregar user_id filter  
+3. `src/hooks/data/useContracts.ts` — agregar user_id filter
+4. `src/hooks/data/useDashboardStats.ts` — agregar deleted_at filters
+5. `src/hooks/data/useDocumentReview.ts` — entity_id + invalidación centralizada
+6. `src/hooks/data/useTrash.ts` — agregar mileage
+7. `src/hooks/data/useNetWorth.ts` — agregar audit_log en deletes
+8. `src/hooks/data/useTags.ts` — agregar audit_log en delete
+9. `src/hooks/data/useIncome.ts` — subir límite en summary
 
-| # | Tarea | Estado |
-|---|-------|--------|
-| T1 | 29 categorías de gasto sincronizadas (types, schema, constants) | ✅ |
-| T2 | 15 tipos de documento en clasificador IA + Bandeja del Caos | ✅ |
-| T3 | TaxDocumentChecklist adaptado por país en TaxOptimizer | ✅ |
-| T4 | Reglas de deducción CRA (20+) y SII (20+) con fuentes legales | ✅ |
-| T5 | `process-receipt` actualizado con 29 categorías (OCR/voz/texto) | ✅ |
-| T6 | `MonthComparisonChart` usa todas las categorías dinámicamente | ✅ |
-| T7 | T2125 mapping expandido para 29 categorías | ✅ |
-| T8 | Reporte Fiscal para Contador (Excel 4 hojas) en ExportDialog | ✅ |
