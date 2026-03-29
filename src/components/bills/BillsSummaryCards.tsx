@@ -12,7 +12,11 @@ import { differenceInDays, parseISO, startOfMonth, endOfMonth, isWithinInterval,
 import { es } from 'date-fns/locale';
 import { Wallet, TrendingUp, AlertTriangle, CheckCircle, Zap, Clock, CalendarDays, DollarSign, ShieldCheck } from 'lucide-react';
 
-export function BillsSummaryCards() {
+interface BillsSummaryCardsProps {
+  selectedMonth: Date;
+}
+
+export function BillsSummaryCards({ selectedMonth }: BillsSummaryCardsProps) {
   const { language } = useLanguage();
   const l = language === 'es';
   const { formatCurrency } = useFormatCurrency();
@@ -20,7 +24,7 @@ export function BillsSummaryCards() {
   const { data: incomeSummary } = useIncomeSummary();
 
   const now = new Date();
-  const monthInterval = { start: startOfMonth(now), end: endOfMonth(now) };
+  const monthInterval = { start: startOfMonth(selectedMonth), end: endOfMonth(selectedMonth) };
 
   const stats = useMemo(() => {
     if (!bills || bills.length === 0)

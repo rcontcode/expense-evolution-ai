@@ -12,12 +12,18 @@ import { startOfMonth, endOfMonth, eachDayOfInterval, format, parseISO, isToday,
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
-export function PaymentCalendar() {
+interface PaymentCalendarProps {
+  selectedMonth: Date;
+  onMonthChange: (date: Date) => void;
+}
+
+export function PaymentCalendar({ selectedMonth, onMonthChange }: PaymentCalendarProps) {
   const { language } = useLanguage();
   const l = language === 'es';
   const { formatCurrency } = useFormatCurrency();
   const { data: bills } = useRecurringBills();
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const currentMonth = selectedMonth;
+  const setCurrentMonth = onMonthChange;
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -60,13 +66,13 @@ export function PaymentCalendar() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth(m => subMonths(m, 1))}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <CardTitle className="text-base flex items-center gap-2">
               📅 {format(currentMonth, 'MMMM yyyy', { locale: l ? es : undefined })}
             </CardTitle>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth(m => addMonths(m, 1))}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
               <ChevronRight className="h-4 w-4" />
             </Button>
             {!isCurrentMonth && (

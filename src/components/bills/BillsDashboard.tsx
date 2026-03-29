@@ -19,6 +19,7 @@ import { BillsQuickOnboarding } from './BillsQuickOnboarding';
 import { BillHealthScore } from './BillHealthScore';
 import { BillSmartInsights } from './BillSmartInsights';
 import { BillStreakTracker } from './BillStreakTracker';
+import { MonthNavigator } from './MonthNavigator';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { differenceInDays, parseISO } from 'date-fns';
@@ -29,6 +30,7 @@ export function BillsDashboard() {
   const [view, setView] = useState('overview');
   const { data: bills } = useRecurringBills();
   const { formatCurrency } = useFormatCurrency();
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
 
   const activeBills = bills?.filter(b => b.status === 'active') || [];
   const now = new Date();
@@ -39,7 +41,6 @@ export function BillsDashboard() {
   }).length;
   const hasBills = activeBills.length > 0;
 
-  // Auto-open onboarding when no bills exist
   const [onboardingOpen, setOnboardingOpen] = useState(!hasBills);
 
   const tabs = [
@@ -97,7 +98,7 @@ export function BillsDashboard() {
         </div>
       </div>
 
-      {/* ═══ HEALTH SCORE + STREAK (side by side on desktop) ═══ */}
+      {/* ═══ HEALTH SCORE + STREAK ═══ */}
       {hasBills && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <BillHealthScore />
@@ -138,7 +139,7 @@ export function BillsDashboard() {
         </CollapsibleContent>
       </Collapsible>
 
-      {/* ═══ VIEW TABS — 3D CANDY BUTTON STYLE ═══ */}
+      {/* ═══ VIEW TABS ═══ */}
       <Tabs value={view} onValueChange={setView} className="space-y-3">
         <Card className="overflow-hidden border-primary/10">
           <CardContent className="p-1.5">
@@ -173,7 +174,12 @@ export function BillsDashboard() {
           </CardContent>
         </Card>
 
-        {hasBills && view === 'overview' && <BillsSummaryCards />}
+        {/* ═══ MONTH NAVIGATOR (not shown for projection) ═══ */}
+        {view !== 'projection' && (
+          <MonthNavigator value={selectedMonth} onChange={setSelectedMonth} />
+        )}
+
+        {hasBills && view === 'overview' && <BillsSummaryCards selectedMonth={selectedMonth} />}
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -185,18 +191,18 @@ export function BillsDashboard() {
           >
             <TabsContent value="overview" className="mt-0">
               <div className="space-y-4">
-                <BillsManager />
-                {hasBills && <NetCashFlowCard />}
+                <BillsManager selectedMonth={selectedMonth} />
+                {hasBills && <NetCashFlowCard selectedMonth={selectedMonth} />}
               </div>
             </TabsContent>
             <TabsContent value="calendar" className="mt-0">
-              <PaymentCalendar />
+              <PaymentCalendar selectedMonth={selectedMonth} onMonthChange={setSelectedMonth} />
             </TabsContent>
             <TabsContent value="kanban" className="mt-0">
-              <BillsKanban />
+              <BillsKanban selectedMonth={selectedMonth} />
             </TabsContent>
             <TabsContent value="checklist" className="mt-0">
-              <PaymentChecklist />
+              <PaymentChecklist selectedMonth={selectedMonth} />
             </TabsContent>
             <TabsContent value="projection" className="mt-0">
               <CashFlowProjection />

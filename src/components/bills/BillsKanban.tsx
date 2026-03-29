@@ -118,7 +118,11 @@ function DragOverlayCard({ bill, l, formatCurrency }: { bill: RecurringBill; l: 
   );
 }
 
-export function BillsKanban() {
+interface BillsKanbanProps {
+  selectedMonth: Date;
+}
+
+export function BillsKanban({ selectedMonth }: BillsKanbanProps) {
   const { language } = useLanguage();
   const l = language === 'es';
   const { formatCurrency } = useFormatCurrency();
@@ -138,8 +142,8 @@ export function BillsKanban() {
     if (!bills) return cols;
 
     const now = new Date();
-    const thisMonth = now.getMonth();
-    const thisYear = now.getFullYear();
+    const thisMonth = selectedMonth.getMonth();
+    const thisYear = selectedMonth.getFullYear();
 
     bills.filter(b => b.status === 'active').forEach(bill => {
       const due = parseISO(bill.next_due_date);
