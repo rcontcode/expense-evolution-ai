@@ -122,6 +122,12 @@ export default function Mentorship() {
 
         {!isMobile && <MentorQuoteBanner context="dashboard" />}
 
+        {/* Progress Summary + Learning Path */}
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+          <MentorshipProgressSummary />
+          <LearningPathCard />
+        </div>
+
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4 sm:space-y-6" data-highlight="mentorship-tabs">
           {/* Mobile: Icon-only tabs with tooltips */}
           <TooltipProvider>
