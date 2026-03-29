@@ -132,12 +132,26 @@ export function usePermanentDelete() {
     mutationFn: async ({ id, type }: { id: string; type: TrashItemType }) => {
       const table = type === 'expense' ? 'expenses' : type === 'income' ? 'income' : type === 'client' ? 'clients' : type === 'project' ? 'projects' : type === 'mileage' ? 'mileage' : 'contracts';
       
+      // Cascade cleanup for expenses (expense_tags + documents)
+      if (type === 'expense') {
+        await supabase.from('expense_tags').delete().eq('expense_id', id);
+        await supabase.from('documents').update({ expense_id: null }).eq('expense_id', id);
+      }
+
       const { error } = await supabase
         .from(table)
         .delete()
         .eq('id', id);
       
       if (error) throw error;
+
+      // Audit log
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        await insertAuditLog(userData.user.id, {
+          action: 'permanent_delete', entity_type: type, entity_id: id,
+        });
+      }
     },
     onSuccess: () => {
       invalidate('trash-items');
@@ -154,6 +168,24 @@ export function useEmptyTrash() {
 
   return useMutation({
     mutationFn: async () => {
+      // First, get all soft-deleted expense IDs for cascade cleanup
+      const { data: deletedExpenses } = await supabase
+        .from('expenses')
+        .select('id')
+        .not('deleted_at', 'is', null);
+
+      if (deletedExpenses?.length) {
+        const expenseIds = deletedExpenses.map(e => e.id);
+        // Clean up expense_tags for all deleted expenses
+        for (const eid of expenseIds) {
+          await supabase.from('expense_tags').delete().eq('expense_id', eid);
+        }
+        // Unlink documents from deleted expenses
+        for (const eid of expenseIds) {
+          await supabase.from('documents').update({ expense_id: null }).eq('expense_id', eid);
+        }
+      }
+
       const tables = ['expenses', 'income', 'clients', 'projects', 'contracts', 'mileage'] as const;
       
       for (const table of tables) {
@@ -163,6 +195,14 @@ export function useEmptyTrash() {
           .not('deleted_at', 'is', null);
         
         if (error) throw error;
+      }
+
+      // Audit log
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        await insertAuditLog(userData.user.id, {
+          action: 'empty_trash', entity_type: 'trash', entity_name: 'all',
+        });
       }
     },
     onSuccess: () => {
