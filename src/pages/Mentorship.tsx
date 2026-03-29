@@ -37,6 +37,7 @@ import { FinancialFocusTimer } from '@/components/ecosystem/FinancialFocusTimer'
 import { FinancialWorryDump } from '@/components/ecosystem/FinancialWorryDump';
 import { UnifiedQuoteBanner } from '@/components/ecosystem/UnifiedQuoteBanner';
 import { EcosystemPromoCard } from '@/components/ecosystem/EcosystemPromoCard';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const MENTOR_THEMES = {
   library: {
