@@ -1,116 +1,112 @@
 
 
-# Auditoría Ronda 7 — Consistencia, Cache, Ownership en Mutaciones y Flujo de Datos
+# Auditoría Ronda 9 — Puntos de Entrada de Datos y Flujo Consistente
 
-## Hallazgos Nuevos
+## Resumen
 
----
-
-### 🔴 CRÍTICO — Mutaciones sin ownership check (pueden operar datos de otros usuarios)
-
-Varias mutaciones hacen `.delete().eq('id', id)` o `.update().eq('id', id)` **sin verificar `user_id`**. Si RLS falla, cualquier usuario autenticado podría borrar/modificar registros de otro usuario.
-
-| Hook | Función | Problema |
-|------|---------|----------|
-| `useRecurringBills.ts` | `useDeleteBill` | `.delete().eq('id', id)` sin `.eq('user_id')` |
-| `useRecurringBills.ts` | `useUpdateBill` | `.update().eq('id', id)` sin `.eq('user_id')` |
-| `useRecurringBills.ts` | `useMarkBillPaid` | `.select().eq('id', billId)` y `.update().eq('id', billId)` sin user_id |
-| `useNetWorth.ts` | `useDeleteAsset` | `.delete().eq('id', id)` sin user_id |
-| `useNetWorth.ts` | `useDeleteLiability` | `.delete().eq('id', id)` sin user_id |
-| `useNetWorth.ts` | `useUpdateAsset` | `.update().eq('id', id)` sin user_id |
-| `useNetWorth.ts` | `useUpdateLiability` | `.update().eq('id', id)` sin user_id |
-| `useCategoryBudgets.ts` | `useDeleteCategoryBudget` | `.delete().eq('id', id)` sin user_id |
-| `useBankTransactions.ts` | `useDeleteBankTransaction` | `.delete().eq('id', id)` sin user_id |
-| `useBankTransactions.ts` | `useMatchTransaction` | `.update().eq('id', transactionId)` sin user_id |
-| `useBankTransactions.ts` | `useMarkAsDiscrepancy` | `.update().eq('id', transactionId)` sin user_id |
-| `useExpenses.ts` | `useUpdateExpense` | `.update().eq('id', id)` sin user_id |
-| `useContracts.ts` | `useUpdateContract` | `.update().eq('id', id)` sin user_id |
-| `useDocumentReview.ts` | `rejectDocument`, `addComment` | `.update().eq('id', id)` sin user_id |
-
-**Fix**: Agregar `.eq('user_id', user.id)` a todas las mutaciones como segunda capa de protección.
+Revisión de todos los puntos de entrada de datos (formularios, captura inteligente, OCR, voz, conciliación, suscripciones, review center) para verificar que cada uno use los hooks centralizados y que los datos fluyan correctamente hacia dashboards, proyecciones y presupuestos.
 
 ---
 
-### 🔴 CRÍTICO — `useBankTransactionsWithMatches` obtiene TODOS los expenses sin límite ni `deleted_at` filter
+## Hallazgos
 
-Línea 77-81: Consulta todos los gastos del usuario sin `.is('deleted_at', null)` ni `.limit()`. En usuarios con miles de gastos, esto:
-- Carga datos innecesarios (gastos eliminados)
-- Genera matches falsos con gastos borrados
-- Puede causar timeout en la query
+### 🔴 CRÍTICO — Notificaciones rotas por CHECK constraint
 
-**Fix**: Agregar `.is('deleted_at', null).limit(500)`.
+**Problema activo en consola**: El constraint `notifications_type_check` solo permite `('reminder', 'alert', 'success', 'warning', 'info')`, pero el código usa tipos como `bill_reminder`, `contract_reminder`, `tax_reminder`, `budget_alert`, `achievement`, `goal_milestone`, `goal_deadline`, `gamification`. **TODOS los auto-reminders fallan silenciosamente** cada ~60 segundos llenando la consola de errores.
 
----
+Afecta: `useAutoReminders.ts`, `useGamificationNotifications.ts`, `useGoalNotifications.ts`, `TaxDeadlineCards.tsx`, `useFinancialEducation.ts`, `useGenerateSampleData.ts`.
 
-### 🟠 `useBankTransactions` — queryKey sin user_id + usa `getUser()` en vez de `useAuth()`
-
-El `queryKey` es `['bank-transactions']` sin user_id, causando posible leak de caché entre usuarios. Además, usa `supabase.auth.getUser()` (llamada de red) en cada fetch en lugar del user ya disponible via `useAuth()`. Mismo problema en `useBankTransactionsWithMatches`.
-
-**Fix**: Migrar a `useAuth()` pattern y agregar `user?.id` al queryKey, igual que todos los demás hooks.
+**Fix**: Migración SQL para eliminar el check constraint y reemplazarlo con uno que incluya todos los tipos usados en la app.
 
 ---
 
-### 🟠 `useContracts` — queryKey sin user_id
+### 🔴 CRÍTICO — `SmartTextInput` inserta ingresos con SQL directo (bypassa el hook centralizado)
 
-El queryKey es `['contracts']` sin user_id. Usa `getUser()` en la queryFn. Debería migrar al patrón `useAuth()` estándar.
+En `SmartTextInput.tsx` línea 163: `supabase.from('income').insert({...})` en lugar de usar `useCreateIncome()`. Esto salta:
+- Gamificación (`trackAction`, `triggers.income`)
+- Audit log (`insertAuditLog`)
+- Invalidación de caché (`afterIncome`) — el dashboard NO se actualiza
+- Incremento de usage (`incrementUsage`)
+- Detección de duplicados
 
----
-
-### 🟠 `useDeleteFile` — sin ownership check ni audit log
-
-`useDeleteFile` hace hard delete de documents y contracts sin verificar user_id y sin registrar en audit_log. Además, no usa `useInvalidateRelated`.
-
----
-
-### 🟡 `useFinancialJournal` — `useDeleteJournalEntry` sin audit_log
-
-El delete tiene ownership check (`.eq('user_id', user.id)`) pero no registra en audit_log.
+**Fix**: Reemplazar la inserción directa con `useCreateIncome().mutateAsync()`.
 
 ---
 
-### 🟡 `useDeleteCategoryBudget` — sin audit log
+### 🟠 — `SubscriptionTracker` inserta bills con SQL directo (bypassa `useCreateBill`)
 
-Borra sin registrar en audit_log.
+En `SubscriptionTracker.tsx` línea 302: `supabase.from('recurring_bills').insert({...})`. Usa `afterBill()` para invalidar caché (bien), pero salta:
+- Audit log
+- Toast del hook centralizado (usa toast propio — OK pero inconsistente)
+
+**Fix**: Migrar a `useCreateBill().mutateAsync()`.
+
+---
+
+### 🟠 — `RecurringBillConfirmDialog` inserta bills con SQL directo
+
+En `RecurringBillConfirmDialog.tsx` línea 85: `supabase.from('recurring_bills').insert({...})`. No usa `useCreateBill()` ni `afterBill()`. El caché de bills **NO se invalida** tras crear — el componente depende de `onCreated` callback del padre, que puede o no invalidar.
+
+**Fix**: Migrar a `useCreateBill().mutateAsync()` o al menos agregar `afterBill()`.
+
+---
+
+### 🟡 — `QuickCapture` no asigna `entity_id` a gastos creados vía OCR
+
+En `QuickCapture.tsx` línea 249-258: al guardar gastos extraídos del OCR, no incluye `entity_id` ni `currency`. Los gastos quedan sin entidad fiscal, causando que no aparezcan en vistas filtradas por entidad, y sin moneda explícita (usa el default de la tabla).
+
+**Fix**: Agregar `entity_id: currentEntity?.id || null` y `currency: currentEntity?.default_currency || 'CAD'` al objeto de gasto.
+
+---
+
+### 🟡 — `QuickCapture` no invalida `documents-review` tras update de documento
+
+En líneas 207-220 y 263-268: actualiza el documento con `extracted_data` y `status` pero no invalida `['documents-review']` ni `['documents']`, dejando el Review Center desactualizado.
+
+**Fix**: Agregar `queryClient.invalidateQueries({ queryKey: ['documents-review'] })` tras las actualizaciones.
 
 ---
 
 ## Plan de Implementación
 
-### Paso 1: Agregar ownership check a TODAS las mutaciones
+### Paso 1: Migración SQL — Expandir notifications type check
+Eliminar el constraint restrictivo y crear uno nuevo que incluya todos los tipos usados:
+```sql
+ALTER TABLE notifications DROP CONSTRAINT notifications_type_check;
+ALTER TABLE notifications ADD CONSTRAINT notifications_type_check 
+  CHECK (type = ANY(ARRAY[
+    'reminder','alert','success','warning','info',
+    'bill_reminder','contract_reminder','tax_reminder',
+    'budget_alert','achievement','gamification',
+    'goal_milestone','goal_deadline','savings_alert',
+    'income_alert','data_health','streak','level_up'
+  ]));
+```
 
-Agregar `.eq('user_id', user.id)` como segundo filtro a:
-- `useRecurringBills.ts` — delete, update, mark paid (3 funciones)
-- `useNetWorth.ts` — delete asset, delete liability, update asset, update liability (4 funciones)
-- `useCategoryBudgets.ts` — delete (1 función)
-- `useBankTransactions.ts` — delete, match, discrepancy (3 funciones)
-- `useExpenses.ts` — update (1 función)
-- `useContracts.ts` — update contract (1 función)
-- `useDocumentReview.ts` — reject, addComment (2 funciones)
-- `useDeleteFile.ts` — agregar user_id check (1 función)
+### Paso 2: SmartTextInput — Usar hook centralizado para income
+- Importar `useCreateIncome` 
+- Reemplazar `supabase.from('income').insert(...)` con `createIncome.mutateAsync(data)`
+- Eliminar `supabase.auth.getUser()` (ya disponible via `useAuth`)
 
-### Paso 2: Estandarizar queryKeys y auth pattern en bank transactions + contracts
+### Paso 3: SubscriptionTracker — Usar `useCreateBill`
+- Importar `useCreateBill` en lugar de `supabase.from('recurring_bills').insert`
+- Eliminar `supabase.auth.getUser()` y `afterBill()` manuales (el hook los maneja)
 
-- `useBankTransactions` → migrar a `useAuth()`, queryKey `['bank-transactions', user?.id]`
-- `useBankTransactionsWithMatches` → mismo + agregar `deleted_at` filter + limit a expenses
-- `useContracts` → migrar a `useAuth()`, queryKey `['contracts', user?.id]`
+### Paso 4: RecurringBillConfirmDialog — Agregar invalidación
+- Importar `useInvalidateRelated` y llamar `afterBill()` tras la inserción exitosa
+- O migrar completamente a `useCreateBill`
 
-### Paso 3: Agregar audit_log a deletes faltantes
-
-- `useDeleteJournalEntry` → agregar `insertAuditLog`
-- `useDeleteCategoryBudget` → agregar `insertAuditLog`
-- `useDeleteFile` → agregar `insertAuditLog`
+### Paso 5: QuickCapture — entity_id y currency en gastos OCR
+- Agregar `entity_id` y `currency` a `expenseData` en `handleSaveCurrentExpense` y `handleSaveAll`
+- Agregar invalidación de `documents-review` tras actualizar documentos
 
 ---
 
 ## Archivos a modificar
 
-1. `src/hooks/data/useRecurringBills.ts` — ownership en 3 mutations
-2. `src/hooks/data/useNetWorth.ts` — ownership en 4 mutations
-3. `src/hooks/data/useCategoryBudgets.ts` — ownership + audit log
-4. `src/hooks/data/useBankTransactions.ts` — useAuth migration + ownership en 3 mutations + deleted_at filter
-5. `src/hooks/data/useExpenses.ts` — ownership en update
-6. `src/hooks/data/useContracts.ts` — useAuth migration + ownership en update
-7. `src/hooks/data/useDocumentReview.ts` — ownership en reject + addComment
-8. `src/hooks/data/useDeleteFile.ts` — ownership + audit log
-9. `src/hooks/data/useFinancialJournal.ts` — audit log en delete
+1. **Migración SQL** — Expandir `notifications_type_check`
+2. `src/components/capture/SmartTextInput.tsx` — Usar `useCreateIncome`
+3. `src/components/subscriptions/SubscriptionTracker.tsx` — Usar `useCreateBill`
+4. `src/components/bills/RecurringBillConfirmDialog.tsx` — Agregar `afterBill()` invalidación
+5. `src/components/capture/QuickCapture.tsx` — Agregar `entity_id`, `currency`, invalidar docs
 
