@@ -9,7 +9,6 @@ import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { Fuel, TrendingDown, TrendingUp, AlertTriangle, Shield, Zap } from 'lucide-react';
 import { subMonths, isAfter, differenceInDays } from 'date-fns';
 import { ProjectionDisclaimer, type DataSource } from '@/components/projections/ProjectionDisclaimer';
-import { useMemo } from 'react';
 
 interface RunwayMetrics {
   avgDailyExpense: number;
