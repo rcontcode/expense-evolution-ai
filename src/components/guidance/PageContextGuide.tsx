@@ -252,6 +252,33 @@ export function PageContextGuide({
                 </p>
               </div>
             )}
+
+            {/* Cross References - Related Tools */}
+            {crossReferences && crossReferences.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Link2 className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-medium">
+                    {language === 'es' ? 'Herramientas relacionadas' : 'Related tools'}
+                  </span>
+                </div>
+                <div className="space-y-1.5">
+                  {crossReferences.map((ref, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => navigate(ref.path)}
+                      className="w-full flex items-start gap-2 p-2 rounded-lg border border-border/50 bg-muted/30 hover:bg-primary/10 hover:border-primary/30 transition-all duration-200 text-left group"
+                    >
+                      <ArrowRight className="h-3 w-3 text-primary mt-0.5 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs font-medium text-primary">{ref.title[language]}</span>
+                        <span className="text-[10px] text-muted-foreground block leading-tight">{ref.relationship[language]}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
