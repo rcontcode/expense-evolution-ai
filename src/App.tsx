@@ -127,9 +127,6 @@ const TaxReportFlow = lazyWithRetry(() => import("./pages/TaxReportFlow"));
 const CookieConsent = lazyWithRetry(() =>
   import("./components/CookieConsent").then((m) => ({ default: m.CookieConsent }))
 );
-const FeedbackButton = lazyWithRetry(() =>
-  import("./components/FeedbackButton").then((m) => ({ default: m.FeedbackButton }))
-);
 const SessionTimeoutWarning = lazyWithRetry(() =>
   import("./components/SessionTimeoutWarning").then((m) => ({ default: m.SessionTimeoutWarning }))
 );
@@ -408,9 +405,6 @@ const App = () => (
                   
                   <Suspense fallback={null}>
                     <CookieConsent />
-                  </Suspense>
-                  <Suspense fallback={null}>
-                    <FeedbackButton />
                   </Suspense>
                   <Suspense fallback={null}>
                     <SessionTimeoutWarning />
