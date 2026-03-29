@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { QuickCapture } from '@/components/capture/QuickCapture';
 import { SmartTextInput } from '@/components/capture/SmartTextInput';
 import { QuickCaptureTutorial } from '@/components/capture/QuickCaptureTutorial';
