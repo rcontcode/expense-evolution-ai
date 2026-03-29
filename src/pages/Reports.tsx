@@ -173,7 +173,7 @@ export default function Reports() {
     const key = `${reportId}-preview`;
     setExporting(key);
     try {
-      let blobUrl: string | null = null;
+      let pdfDataUri: string | null = null;
       const card = REPORT_CARDS.find(c => c.id === reportId);
 
       switch (reportId) {
@@ -213,7 +213,7 @@ export default function Reports() {
             theme: 'grid',
             headStyles: { fillColor: [16, 185, 129] },
           });
-          blobUrl = doc.output('bloburl') as unknown as string;
+          pdfDataUri = doc.output('datauristring');
           break;
         }
         case 'expenses': {
@@ -241,7 +241,7 @@ export default function Reports() {
             doc.setTextColor(100);
             doc.text(l ? `... y ${(expenses || []).length - 30} más. Descarga el PDF completo.` : `... and ${(expenses || []).length - 30} more. Download the full PDF.`, 14, finalY + 10);
           }
-          blobUrl = doc.output('bloburl') as unknown as string;
+          pdfDataUri = doc.output('datauristring');
           break;
         }
         case 'budget': {
@@ -270,7 +270,7 @@ export default function Reports() {
             theme: 'grid',
             headStyles: { fillColor: [16, 185, 129] },
           });
-          blobUrl = doc.output('bloburl') as unknown as string;
+          pdfDataUri = doc.output('datauristring');
           break;
         }
         case 'bills': {
@@ -290,7 +290,7 @@ export default function Reports() {
             headStyles: { fillColor: [59, 130, 246] },
             styles: { fontSize: 8 },
           });
-          blobUrl = doc.output('bloburl') as unknown as string;
+          pdfDataUri = doc.output('datauristring');
           break;
         }
         case 'tax': {
@@ -344,13 +344,44 @@ export default function Reports() {
             headStyles: { fillColor: [59, 130, 246] },
             styles: { fontSize: 8 },
           });
-          blobUrl = doc.output('bloburl') as unknown as string;
+          pdfDataUri = doc.output('datauristring');
+          break;
+        }
+        case 'mileage': {
+          const trips = mileageData || [];
+          if (trips.length === 0) { toast.info(l ? 'No hay viajes' : 'No trips'); setExporting(null); return; }
+          const { default: jsPDF } = await import('jspdf');
+          const { default: autoTable } = await import('jspdf-autotable');
+          const doc = new jsPDF('l');
+          doc.setFontSize(16);
+          doc.text(l ? 'Reporte de Kilometraje' : 'Mileage Report', 14, 20);
+          doc.setFontSize(10);
+          doc.setTextColor(100);
+          doc.text(`${selectedYear}`, 14, 27);
+          doc.setTextColor(0);
+          const sorted = [...trips].sort((a, b) => a.date.localeCompare(b.date));
+          let runKm = 0;
+          const body = sorted.slice(0, 25).map(t => {
+            const km = parseFloat(t.kilometers.toString());
+            const ded = calculateMileageDeductionByCountry(km, runKm, currentCountry, selectedYear);
+            runKm += km;
+            return [t.date, t.route.replace('[SAMPLE] ', ''), `${km.toFixed(1)} km`, t.client?.name?.replace('[SAMPLE] ', '') || '-', ded ? fc(ded.deductible) : '-'];
+          });
+          autoTable(doc, {
+            startY: 34,
+            head: [[l ? 'Fecha' : 'Date', l ? 'Ruta' : 'Route', 'Km', l ? 'Cliente' : 'Client', l ? 'Deducción' : 'Deduction']],
+            body,
+            theme: 'striped',
+            headStyles: { fillColor: [59, 130, 246] },
+            styles: { fontSize: 8 },
+          });
+          pdfDataUri = doc.output('datauristring');
           break;
         }
       }
 
-      if (blobUrl) {
-        setPreviewUrl(blobUrl);
+      if (pdfDataUri) {
+        setPreviewUrl(pdfDataUri);
         setPreviewTitle(l ? (card?.titleEs || 'Preview') : (card?.titleEn || 'Preview'));
       }
     } catch (err) {
@@ -548,7 +579,7 @@ export default function Reports() {
       </div>
 
       {/* PDF Preview Dialog */}
-      <Dialog open={!!previewUrl} onOpenChange={(open) => { if (!open) { if (previewUrl) URL.revokeObjectURL(previewUrl); setPreviewUrl(null); } }}>
+      <Dialog open={!!previewUrl} onOpenChange={(open) => { if (!open) { setPreviewUrl(null); } }}>
         <DialogContent className="max-w-4xl h-[85vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
