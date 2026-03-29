@@ -9,7 +9,8 @@ import {
   ChevronUp,
   X,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Link2
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,12 @@ interface PageWorkflow {
   completed?: boolean;
 }
 
+interface CrossReference {
+  path: string;
+  title: { es: string; en: string };
+  relationship: { es: string; en: string };
+}
+
 interface PageContextGuideProps {
   pageKey: string;
   pageTitle: { es: string; en: string };
@@ -42,6 +49,7 @@ interface PageContextGuideProps {
   workflows?: PageWorkflow[];
   tips?: { es: string; en: string }[];
   goals?: { es: string; en: string }[];
+  crossReferences?: CrossReference[];
   className?: string;
   onActionClick?: (actionIndex: number) => void;
 }
