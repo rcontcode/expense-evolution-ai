@@ -1,45 +1,128 @@
 
 
-# Revisión Legal Completa: Disclaimers en toda la app
+# Mejoras Integrales al CRM — Plan por Fases
 
-## Diagnóstico
+Dado que las 4 áreas son extensas, propongo implementarlas en **fases independientes** para poder probar cada una antes de continuar.
 
-Revisé toda la app. Ya hay buen uso de `LegalDisclaimer` y `ProjectionDisclaimer` en muchos componentes, pero hay **2 problemas**:
+---
 
-### Problema 1: Textos del disclaimer NO mencionan consultar un profesional específico
+## Fase 1: Acciones en Lote en Tabla de Leads
 
-Los textos `compact` (que son los más visibles) dicen cosas como "Solo fines educativos" pero **no dicen "consulte a un profesional"** — excepto el de `tax`. Hay que agregar la recomendación de consultar al especialista correspondiente en CADA variante.
+Agregar selección múltiple con checkboxes y barra de acciones masivas.
 
-| Variante | Texto compact actual | Texto compact mejorado |
-|----------|---------------------|----------------------|
-| `general` ES | "Solo con fines educativos. No es asesoría profesional." | "Solo con fines educativos. No es asesoría profesional. Consulte a un especialista calificado." |
-| `general` EN | "For educational purposes only. Not professional advice." | "For educational purposes only. Not professional advice. Consult a qualified specialist." |
-| `investment` ES | "Proyecciones hipotéticas. Rendimientos pasados no garantizan resultados futuros." | + "Consulte a un asesor de inversiones certificado." |
-| `investment` EN | "Hypothetical projections. Past performance does not guarantee future results." | + "Consult a certified investment advisor." |
-| `education` ES | "Inspirado en expertos. No afiliado. Solo fines educativos." | + "Consulte a un profesional financiero." |
-| `education` EN | "Inspired by experts. Not affiliated. Educational purposes only." | + "Consult a financial professional." |
-| `tax` | Ya dice "Consulte un CPA" | Sin cambio |
+### Cambios
 
-### Problema 2: Componentes/páginas sin disclaimer
+**`src/components/admin/LeadsTable.tsx`**
+- Agregar estado `selectedIds: Set<string>` y checkbox en cada fila + header (select all)
+- Mostrar barra flotante cuando `selectedIds.size > 0` con acciones:
+  - **Etiquetar** (selector de tags existentes)
+  - **Mover pipeline** (selector de stage: new/contacted/qualified/converted)
+  - **Marcar contactados** (batch update `contacted_at`)
+  - **Exportar seleccionados** (reutilizar `LeadsExport`)
+- Cada acción usa `Promise.all` con updates a Supabase e invalida cache
 
-| # | Archivo | Tipo contenido | Disclaimer a agregar |
-|---|---------|---------------|---------------------|
-| 1 | `ApvOptimizerCard.tsx` | Optimización fiscal APV Chile | `LegalDisclaimer variant="tax" size="compact"` |
-| 2 | `FinancialAutopilot.tsx` | Insights IA financieros | `LegalDisclaimer variant="general" size="compact"` |
-| 3 | `BillSmartInsights.tsx` | Tips de negociación/ahorro | `LegalDisclaimer variant="general" size="compact"` |
-| 4 | `InvestmentRiskProfiler.tsx` | Perfil de riesgo inversión | `LegalDisclaimer variant="investment" size="compact"` |
-| 5 | `NetWorth.tsx` (página) | Patrimonio neto | `LegalDisclaimer variant="investment" size="compact"` al final |
-| 6 | `Investments.tsx` (página) | Inversiones & FIRE | `LegalDisclaimer variant="investment" size="compact"` al final |
-| 7 | `TaxOptimizer.tsx` (página) | Optimizador fiscal | `LegalDisclaimer variant="tax" size="compact"` al final |
+**`src/pages/admin/LeadsManagement.tsx`**
+- Pasar las nuevas props de bulk actions al componente
 
-## Archivos a modificar (8)
+### Archivos: 2
 
-1. **`src/components/ui/legal-disclaimer.tsx`** — Mejorar textos compact de 3 variantes para incluir "consulte a un profesional"
-2. **`src/components/tax/ApvOptimizerCard.tsx`** — Agregar `LegalDisclaimer tax`
-3. **`src/components/dashboard/FinancialAutopilot.tsx`** — Agregar `LegalDisclaimer general`
-4. **`src/components/bills/BillSmartInsights.tsx`** — Agregar `LegalDisclaimer general`
-5. **`src/components/investments/InvestmentRiskProfiler.tsx`** — Agregar `LegalDisclaimer investment`
-6. **`src/pages/NetWorth.tsx`** — Agregar `LegalDisclaimer investment` al final
-7. **`src/pages/Investments.tsx`** — Agregar `LegalDisclaimer investment` al final
-8. **`src/pages/TaxOptimizer.tsx`** — Agregar `LegalDisclaimer tax` al final
+---
+
+## Fase 2: Notificaciones Push en Tiempo Real
+
+Alertas visibles desde cualquier página cuando llega un lead HOT.
+
+### Cambios
+
+**`src/hooks/admin/useHotLeadRealtime.ts`** — Ya existe y funciona con toasts
+- Agregar sonido de notificación (Audio API con un beep corto)
+- Agregar badge counter persistente
+
+**`src/components/layout/Sidebar.tsx`** (o navbar)
+- Agregar badge numérico en el ítem "CRM" del menú mostrando leads HOT sin contactar
+- Usar un hook `useUncontactedHotCount` que consulte leads HOT sin `contacted_at`
+
+**Nuevo: `src/hooks/admin/useUncontactedHotCount.ts`**
+- Query simple: `quiz_leads` donde `priority = 'hot'` y `contacted_at IS NULL`
+- Se invalida automáticamente por el realtime channel existente
+
+### Archivos: 3
+
+---
+
+## Fase 3: Dashboard de ROI / Revenue por Lead
+
+Vincular leads convertidos con ingresos reales de Stripe.
+
+### Cambios
+
+**Nuevo: `src/components/admin/tabs/AdminROIDashboard.tsx`**
+- Consulta `quiz_leads` + `user_subscriptions` cruzando por email (leads convertidos → profiles → subscriptions)
+- KPIs: Revenue total por fuente, Costo por lead (si se agrega), tasa de conversión quiz→registro→pago
+- Gráficos: Revenue por fuente (bar chart), tendencia MRR por cohorte de leads
+- Tabla de leads convertidos con plan actual y valor ($)
+
+**`src/pages/admin/CRMCommandCenter.tsx`** (o equivalente)
+- Agregar nueva pestaña "💰 ROI" al TabsList
+
+### Archivos: 2
+
+---
+
+## Fase 4: Secuencias de Nurturing
+
+Cadenas automáticas de mensajes día 1→3→7 basadas en temperatura.
+
+### Cambios
+
+**Nueva tabla: `lead_nurturing_sequences`**
+```sql
+CREATE TABLE lead_nurturing_sequences (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  trigger_priority TEXT NOT NULL, -- hot, warm, cool, cold
+  steps JSONB NOT NULL DEFAULT '[]', -- [{day: 1, channel: 'whatsapp', template_type: 'first_contact'}, ...]
+  is_enabled BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE lead_nurturing_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sequence_id UUID REFERENCES lead_nurturing_sequences(id),
+  lead_id UUID NOT NULL,
+  step_index INTEGER NOT NULL,
+  status TEXT DEFAULT 'pending', -- pending, sent, skipped
+  scheduled_for TIMESTAMPTZ NOT NULL,
+  executed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(sequence_id, lead_id, step_index)
+);
+```
+
+**Nuevo: `src/components/admin/tabs/AdminNurturingTab.tsx`**
+- UI para crear/editar secuencias con pasos arrastrables
+- Vista de leads en cola de nurturing activo
+- Log de mensajes enviados por secuencia
+
+**`supabase/functions/run-delayed-automations/index.ts`**
+- Extender para procesar `lead_nurturing_log` pendientes (scheduled_for ≤ now)
+- Generar mensaje IA y preparar para envío
+
+**CRM Command Center**
+- Agregar pestaña "🔄 Nurturing"
+
+### Archivos: 4 + 2 migraciones
+
+---
+
+## Orden de Implementación Sugerido
+
+| Fase | Complejidad | Impacto |
+|------|-------------|---------|
+| 1. Acciones en lote | Baja | Alto — ahorra tiempo diario |
+| 2. Notificaciones push | Baja | Alto — velocidad de respuesta |
+| 3. Dashboard ROI | Media | Alto — visibilidad de negocio |
+| 4. Nurturing sequences | Alta | Muy alto — automatización ventas |
+
+**Propongo empezar con Fase 1 + 2 juntas** (son independientes y de complejidad baja), luego Fase 3, y finalmente Fase 4.
 
