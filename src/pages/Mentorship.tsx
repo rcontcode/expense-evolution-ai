@@ -228,6 +228,11 @@ function TabBanner({ tab, isMobile }: { tab: string; isMobile: boolean }) {
           <h3 className="text-sm sm:text-lg font-bold flex items-center gap-2">
             {ICONS[tab]}
             <span className="truncate">{es ? title.es : title.en}</span>
+            {SUBTITLES[tab] && (
+              <span className="text-[10px] sm:text-xs font-normal text-muted-foreground">
+                — {es ? SUBTITLES[tab].es : SUBTITLES[tab].en}
+              </span>
+            )}
           </h3>
           <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
             {es ? desc.es : desc.en}
