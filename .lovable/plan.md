@@ -1,94 +1,49 @@
 
 
-# Propuestas de Mejora para Reportes — Nivel Mundial
+# Reportes: Agregar Kilometraje + Preview en Cards
 
-## Diagnóstico Actual
+## Problemas detectados
 
-**Lo que ya existe:**
-- PDFs con jsPDF + autoTable (gastos, T2125, reembolsos, ecosistema, presupuesto, pagos recurrentes)
-- Excel con ExcelJS (gastos, T2125, reporte fiscal, reembolsos, presupuesto, pagos, leads)
-- Formatos: CSV, JSON, XLSX, PDF
-- Filtros por año, país, categoría
-- Gráficos básicos en PDF (pie chart manual con arcos SVG)
+1. **Falta reporte de Kilometraje** — No existe en `REPORT_CARDS` ni existe función de exportación de mileage a PDF/Excel en ningún lugar del proyecto
+2. **No hay preview** — Las cards solo muestran descripción y botones, sin mostrar cuántos registros/montos tiene el usuario para ese reporte
 
-**Lo que falta para competir a nivel mundial:**
+## Cambios
 
----
+### 1. `src/pages/Reports.tsx` — Agregar preview con datos reales en cada card
 
-## Propuesta A — Reportes PDF con Gráficos Reales (Alta prioridad)
+Cada card mostrará un mini-resumen contextual debajo de la descripción:
+- **P&L**: "12 ingresos · 45 gastos · Margen: 32%"
+- **Gastos**: "45 gastos · $12,500 total"
+- **Presupuesto**: "Disponible: $1,200 · Ahorro: 18%"
+- **Pagos Fijos**: "8 activos · $2,100/mes"
+- **Fiscal**: "23 deducibles · $8,400"
+- **Ingresos**: "12 registros · $45,000"
+- **Kilometraje**: "34 viajes · 2,450 km · $1,200 deducción"
 
-**Problema:** Los PDFs actuales son tablas planas sin visualización. Apps como QuickBooks y Wave generan PDFs con gráficos de barras, líneas y donuts embebidos.
+Se agregará una función `getPreview(cardId)` que usa los datos ya cargados (expenses, incomes, bills, plan, mileageSummary) para generar estos strings.
 
-**Solución:** Usar `html2canvas` + `jsPDF` para capturar los charts de Recharts que ya existen en la app y embederlos en los PDFs.
+### 2. `src/pages/Reports.tsx` — Agregar card de Kilometraje
 
-**Implementación:**
-1. Crear `src/lib/export/chart-to-pdf.ts` — utilidad que renderiza un chart Recharts offscreen, lo captura con html2canvas, y retorna un base64 image
-2. Actualizar `pdf-export.ts` — incluir gráfico de barras mensual y donut de categorías en el reporte de gastos
-3. Actualizar reporte de presupuesto y ecosystem — embeber mini-charts
+Nueva entrada en `REPORT_CARDS`:
+- id: `mileage`
+- Título: "Reporte de Kilometraje" / "Mileage Report"  
+- Descripción: viajes de negocio, km, deducciones CRA/SII
+- Formatos: PDF + Excel
 
----
+### 3. `src/pages/Reports.tsx` — Importar `useMileage` y `useMileageSummary`
 
-## Propuesta B — Reporte P&L (Profit & Loss) Profesional (Alta prioridad)
+Para alimentar tanto el preview como la exportación de kilometraje.
 
-**Problema:** No existe un estado de resultados formal. Es el reporte #1 que cualquier freelancer/empresa necesita.
+### 4. `src/pages/Reports.tsx` — Funciones de exportación mileage
 
-**Solución:** Nuevo reporte P&L que cruza ingresos vs gastos con formato contable estándar.
+- `exportMileagePDF()` — tabla con fecha, ruta, km, cliente, propósito, deducción por viaje
+- `exportMileageExcel()` — hoja con todos los campos + hoja resumen con totales y tasa CRA/SII
 
-**Implementación:**
-1. Crear `src/lib/export/pnl-export.ts` — genera Excel con estructura: Ingresos → Costo de ventas → Margen bruto → Gastos operativos (por categoría) → Resultado neto
-2. Crear `exportPnLToPDF()` en pdf-export — versión visual con KPIs y trend chart
-3. Agregar tab "P&L" en `ExportDialog.tsx`
+### 5. `src/pages/Reports.tsx` — Agregar caso `mileage` en `handleExport`
 
----
+Switch case que llama a las nuevas funciones de exportación.
 
-## Propuesta C — Reportes Programados por Email (Media prioridad)
+## Archivos a modificar (1)
 
-**Problema:** El usuario debe entrar a la app y exportar manualmente cada mes.
-
-**Solución:** Edge function con cron que genera y envía reportes mensuales por email.
-
-**Implementación:**
-1. Tabla `scheduled_reports` (user_id, report_type, frequency, email, last_sent)
-2. Edge function `send-scheduled-report` con cron mensual
-3. UI: toggle "Enviar reporte mensual a mi email" en ExportDialog
-
----
-
-## Propuesta D — Dashboard de Reportes Centralizado (Media prioridad)
-
-**Problema:** Los reportes están dispersos (ExportDialog, BillsExport, BudgetExport, EcosystemReport). No hay un lugar único.
-
-**Solución:** Página `/reports` que centralice todos los reportes disponibles con preview y descarga.
-
-**Implementación:**
-1. Crear `src/pages/Reports.tsx` — grid de cards con cada reporte disponible (Gastos, T2125, Fiscal, P&L, Presupuesto, Pagos, Reembolsos)
-2. Cada card muestra: nombre, descripción, preview thumbnail, botones PDF/Excel
-3. Agregar a sidebar navigation
-
----
-
-## Propuesta E — Comparativo Multi-Periodo (Baja prioridad)
-
-**Problema:** No se puede comparar Q1 2025 vs Q1 2024 en un solo reporte.
-
-**Solución:** Reporte que muestre dos periodos lado a lado con variación %.
-
----
-
-## Propuesta F — Branding Personalizado en PDFs (Baja prioridad)
-
-**Problema:** Los PDFs dicen "EvoFinz" pero el usuario debería poder poner su logo y nombre de empresa.
-
-**Solución:** Usar datos del perfil (business_name, logo) para personalizar headers de PDF.
-
----
-
-## Recomendación de Implementación
-
-Empezaría con **B (P&L)** y **D (Reports Hub)** porque:
-- El P&L es el reporte más pedido mundialmente por freelancers y contadores
-- El hub centraliza todo y hace descubrible lo que ya existe
-- Son los que más impacto tienen con menos complejidad
-
-**¿Cuáles quieres que implemente?**
+1. **`src/pages/Reports.tsx`** — Agregar hook de mileage, card de kilometraje, preview en todas las cards, funciones de exportación mileage
 
