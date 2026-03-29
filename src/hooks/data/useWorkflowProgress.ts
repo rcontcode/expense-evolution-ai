@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface WorkflowProgress {
   workflowId: string;
@@ -18,10 +19,11 @@ export interface WorkflowProgress {
 }
 
 export function useWorkflowProgress(workflowId: string) {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['workflow-progress', workflowId],
+    queryKey: ['workflow-progress', workflowId, user?.id],
     queryFn: async (): Promise<WorkflowProgress> => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       switch (workflowId) {
@@ -41,8 +43,9 @@ export function useWorkflowProgress(workflowId: string) {
           return getDefaultProgress(workflowId);
       }
     },
-    staleTime: 30000, // Refresh every 30 seconds
-    refetchInterval: 60000, // Auto-refresh every minute
+    enabled: !!user,
+    staleTime: 30000,
+    refetchInterval: 60000,
   });
 }
 

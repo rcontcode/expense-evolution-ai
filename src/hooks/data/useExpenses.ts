@@ -140,8 +140,7 @@ export function useCreateExpense() {
 
   return useMutation({
     mutationFn: async (expense: Omit<ExpenseInsert, 'user_id'>) => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('Not authenticated');
+      if (!user) throw new Error('Not authenticated');
 
       // Validate vendor is not garbage
       const vendor = (expense as any).vendor?.trim();
@@ -156,7 +155,7 @@ export function useCreateExpense() {
         const { data: potentialDupes } = await supabase
           .from('expenses')
           .select('id, vendor, amount, date')
-          .eq('user_id', userData.user.id)
+          .eq('user_id', user.id)
           .eq('amount', amount)
           .eq('date', date)
           .is('deleted_at', null)
@@ -177,11 +176,11 @@ export function useCreateExpense() {
         }
       }
 
-      const currentCount = await getTableCount('expenses', userData.user.id);
+      const currentCount = await getTableCount('expenses', user.id);
 
       const { data, error } = await supabase
         .from('expenses')
-        .insert({ ...expense, user_id: userData.user.id })
+        .insert({ ...expense, user_id: user.id })
         .select()
         .single();
       
@@ -189,7 +188,7 @@ export function useCreateExpense() {
       
       await triggers.expense(currentCount);
       
-      await insertAuditLog(userData.user.id, {
+      await insertAuditLog(user.id, {
         action: 'create', entity_type: 'expense', entity_id: data.id,
         entity_name: (expense as any).vendor || null,
         new_values: { amount: (expense as any).amount, vendor: (expense as any).vendor, category: (expense as any).category },

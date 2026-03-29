@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 interface BetaCode {
@@ -31,6 +32,7 @@ interface CreateCodeParams {
 
 export const useBetaCodes = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   // Fetch all beta codes (admin only)
@@ -83,7 +85,6 @@ export const useBetaCodes = () => {
   // Create new codes
   const createCodes = useMutation({
     mutationFn: async ({ prefix, quantity, maxUses, expiresAt }: CreateCodeParams) => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
 
       const newCodes = [];

@@ -152,17 +152,17 @@ export function useDeleteSavingsGoal() {
 }
 
 export function useAddToSavingsGoal() {
+  const { user } = useAuth();
   const { afterSavings } = useInvalidateRelated();
   const { trackAction } = useMissionTracker();
 
   return useMutation({
     mutationFn: async ({ id, amount, notes }: { id: string; amount: number; notes?: string }) => {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) throw new Error('Not authenticated');
+      if (!user) throw new Error('Not authenticated');
 
       const { error } = await supabase
         .from('savings_contributions')
-        .insert({ goal_id: id, amount, notes, user_id: authUser.id });
+        .insert({ goal_id: id, amount, notes, user_id: user.id });
 
       if (error) throw error;
     },

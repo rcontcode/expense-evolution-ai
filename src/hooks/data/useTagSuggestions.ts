@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { useTags } from './useTags';
 
 interface TagSuggestion {
@@ -60,17 +61,16 @@ export function useTagSuggestions() {
 
 // Hook to get tag analytics data
 export function useTagAnalytics() {
-  return useQuery({
-    queryKey: ['tag-analytics'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+  const { user } = useAuth();
 
+  return useQuery({
+    queryKey: ['tag-analytics', user?.id],
+    queryFn: async () => {
       // Get all tags with expense counts
       const { data: tags } = await supabase
         .from('tags')
         .select('id, name, color')
-        .eq('user_id', user.id);
+        .eq('user_id', user!.id);
 
       const { data: expenseTags } = await supabase
         .from('expense_tags')

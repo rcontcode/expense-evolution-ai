@@ -382,11 +382,8 @@ export function useLogDailyProgress() {
       if (result) {
         // Add XP via gamification system
         const { addExperience } = await import('./useGamification');
-        if (result.xpEarned > 0) {
-          await addExperience(
-            (await supabase.auth.getUser()).data.user!.id, 
-            result.xpEarned
-          );
+        if (result.xpEarned > 0 && user) {
+          await addExperience(user.id, result.xpEarned);
         }
         
         if (result.completed) {
@@ -437,12 +434,9 @@ export function useLogPractice() {
       queryClient.invalidateQueries({ queryKey: ['education-practice-logs'] });
       queryClient.invalidateQueries({ queryKey: ['user-level'] });
       
-      if (result) {
+      if (result && user) {
         const { addExperience } = await import('./useGamification');
-        await addExperience(
-          (await supabase.auth.getUser()).data.user!.id, 
-          result.xpEarned
-        );
+        await addExperience(user.id, result.xpEarned);
         toast.success(`💡 ¡+${result.xpEarned} XP! El conocimiento aplicado es poder.`);
       }
     },
