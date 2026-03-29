@@ -254,7 +254,9 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
         description: currentExpense.description, 
         client_id: currentExpense.client_id || null,
         document_id: savedDocumentId,
-        status: 'pending' as const
+        status: 'pending' as const,
+        entity_id: currentEntity?.id || null,
+        currency: currentEntity?.default_currency || 'CAD',
       };
       
       const newExpense = await createExpense.mutateAsync(expenseData as any);
@@ -299,7 +301,9 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
           description: exp.description, 
           client_id: exp.client_id || null,
           document_id: docId,
-          status: 'pending' as const
+          status: 'pending' as const,
+          entity_id: currentEntity?.id || null,
+          currency: currentEntity?.default_currency || 'CAD',
         } as any);
 
         // Link document back to first expense only

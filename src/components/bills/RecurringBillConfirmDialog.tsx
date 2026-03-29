@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEntity } from '@/contexts/EntityContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useUpsertCategoryBudget } from '@/hooks/data/useCategoryBudgets';
+import { useInvalidateRelated } from '@/hooks/data/useInvalidateRelated';
 import { toast } from 'sonner';
 import { HistoricalInsightPanel } from './HistoricalInsightPanel';
 import { 
@@ -54,6 +55,7 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
   const [creating, setCreating] = useState(false);
   const [linkToBudget, setLinkToBudget] = useState(true);
   const upsertBudget = useUpsertCategoryBudget();
+  const { afterBill } = useInvalidateRelated();
 
   // Sync state when candidate changes
   const [lastCandidate, setLastCandidate] = useState<RecurringBillCandidate | null>(null);
@@ -95,6 +97,7 @@ export function RecurringBillConfirmDialog({ open, onClose, candidate, onCreated
         currency: currentEntity?.default_currency || 'CAD',
       } as any);
       if (error) throw error;
+      afterBill();
       toast.success(l ? '🔄 Pago fijo creado exitosamente' : '🔄 Recurring bill created');
       
       if (linkToBudget) {
