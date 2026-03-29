@@ -2,6 +2,8 @@ import { useState, useMemo, useCallback } from 'react';
 import { Layout } from '@/components/Layout';
 import { PageHeader } from '@/components/PageHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAllFiles, type UnifiedFile } from '@/hooks/data/useAllFiles';
 import { useDeleteFile } from '@/hooks/data/useDeleteFile';
 import { supabase } from '@/integrations/supabase/client';

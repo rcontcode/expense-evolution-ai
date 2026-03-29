@@ -103,7 +103,8 @@ export default function Notifications() {
 
   const markAsRead = useMutation({
     mutationFn: async (id: string) => {
-      await supabase.from('notifications').update({ read: true }).eq('id', id);
+      if (!user) return;
+      await supabase.from('notifications').update({ read: true }).eq('id', id).eq('user_id', user.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
@@ -124,7 +125,8 @@ export default function Notifications() {
 
   const deleteNotification = useMutation({
     mutationFn: async (id: string) => {
-      await supabase.from('notifications').delete().eq('id', id);
+      if (!user) return;
+      await supabase.from('notifications').delete().eq('id', id).eq('user_id', user.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });

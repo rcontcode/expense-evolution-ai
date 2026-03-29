@@ -140,7 +140,8 @@ export function DashboardNotificationHub() {
 
   const markRead = useMutation({
     mutationFn: async (id: string) => {
-      await supabase.from('notifications').update({ read: true } as any).eq('id', id);
+      if (!user) return;
+      await supabase.from('notifications').update({ read: true } as any).eq('id', id).eq('user_id', user.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard-notifications'] });

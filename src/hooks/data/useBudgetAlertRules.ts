@@ -49,13 +49,15 @@ export function useCreateAlertRule() {
 }
 
 export function useUpdateAlertRule() {
+  const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<BudgetAlertRule> & { id: string }) => {
       const { error } = await supabase
         .from('budget_alert_rules')
         .update(updates as any)
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user!.id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['budget-alert-rules'] }),
@@ -63,10 +65,11 @@ export function useUpdateAlertRule() {
 }
 
 export function useDeleteAlertRule() {
+  const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('budget_alert_rules').delete().eq('id', id);
+      const { error } = await supabase.from('budget_alert_rules').delete().eq('id', id).eq('user_id', user!.id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['budget-alert-rules'] }),
