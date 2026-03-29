@@ -194,7 +194,8 @@ serve(async (req) => {
           annualTaxableIncome: annualIncome,
           apvLimitUF: APV_ANNUAL_LIMIT_UF,
           apvLimitCLP: apvMaxCLP
-        }
+        },
+        disclaimer: 'Esta estimación es aproximada y tiene fines educativos. NO constituye asesoría financiera ni tributaria. Conforme a la Ley 18.045, esta herramienta no es asesoría regulada por la CMF. Consulte a un contador profesional (CPA) para su situación específica.'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

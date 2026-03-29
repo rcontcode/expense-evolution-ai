@@ -644,12 +644,23 @@ export function TaxSituationWizard({ onClose, onComplete }: TaxSituationWizardPr
               </div>
 
               {estimatedIncome && (
+                <>
+                <Alert className="bg-amber-500/10 border-amber-500/30 mb-3">
+                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  <AlertDescription className="text-xs">
+                    {isEs 
+                      ? '⚠️ Estas cifras son estimaciones aproximadas con fines educativos. NO reemplazan una declaración de impuestos real. Consulte un CPA para su situación específica.'
+                      : '⚠️ These figures are approximate estimates for educational purposes. They do NOT replace an actual tax return. Consult a CPA for your specific situation.'
+                    }
+                  </AlertDescription>
+                </Alert>
                 <TaxEstimatePreview 
                   income={parseFloat(estimatedIncome) || 0}
                   deductions={parseFloat(estimatedDeductions) || 0}
                   workTypes={workTypes}
                   language={language}
                 />
+                </>
               )}
             </div>
           </div>

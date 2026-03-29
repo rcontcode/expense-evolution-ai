@@ -223,6 +223,10 @@ Formatea la respuesta de forma clara con secciones y bullets.`;
     // Different marginal rates for savings estimate
     const marginalRate = isChile ? 0.27 : 0.30;
 
+    const disclaimerText = isChile
+      ? 'Esta estimación es aproximada y tiene fines educativos. NO constituye asesoría tributaria. Conforme a la Ley 18.045, esta herramienta no es asesoría regulada por la CMF. Consulte a un contador profesional para su situación específica.'
+      : 'This estimate is approximate and for educational purposes only. It does NOT constitute tax or financial advice. This tool does not provide securities advice as defined by provincial securities legislation. Consult a CPA for your specific situation.';
+
     return new Response(JSON.stringify({ 
       suggestions,
       quickInsights,
@@ -231,7 +235,8 @@ Formatea la respuesta de forma clara con secciones y bullets.`;
         totalDeductible,
         potentialSavings: totalDeductible * marginalRate,
         deductionRate: totalExpenses > 0 ? (totalDeductible / totalExpenses) * 100 : 0
-      }
+      },
+      disclaimer: disclaimerText
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

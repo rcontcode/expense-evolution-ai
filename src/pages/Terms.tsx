@@ -129,10 +129,15 @@ export default function Terms() {
             <h3 className="font-semibold mb-2">
               {es ? '9. Ley Aplicable' : '9. Governing Law'}
             </h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              {es
+                ? 'Para usuarios en Canadá: estos términos se rigen por las leyes de Canadá y la provincia de residencia del usuario. Cualquier disputa se resolverá ante los tribunales competentes de dicha jurisdicción.'
+                : 'For users in Canada: these terms are governed by the laws of Canada and the user\'s province of residence. Any dispute shall be resolved before the competent courts of said jurisdiction.'}
+            </p>
             <p className="text-sm text-muted-foreground">
               {es
-                ? 'Estos términos se rigen por las leyes de Canadá y la provincia de residencia del usuario. Cualquier disputa se resolverá ante los tribunales competentes de dicha jurisdicción.'
-                : 'These terms are governed by the laws of Canada and the user\'s province of residence. Any dispute shall be resolved before the competent courts of said jurisdiction.'}
+                ? 'Para usuarios en Chile: se aplicarán las leyes de la República de Chile. Cualquier disputa se resolverá ante los tribunales ordinarios competentes de Santiago de Chile.'
+                : 'For users in Chile: the laws of the Republic of Chile shall apply. Any dispute shall be resolved before the competent ordinary courts of Santiago, Chile.'}
             </p>
           </CardContent>
         </Card>

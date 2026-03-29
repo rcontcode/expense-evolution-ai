@@ -177,9 +177,19 @@ export function MileageDeductionMaximizer() {
         )}
 
         {/* Rate info */}
-        <div className="p-2 rounded-lg bg-muted/50 text-center">
+        <div className="p-2 rounded-lg bg-muted/50 text-center space-y-1">
+          <div className="flex items-center justify-center gap-1.5">
+            <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-amber-500/10 border-amber-500/30 text-amber-600">
+              {isEs ? 'Tasas 2024' : '2024 Rates'}
+            </Badge>
+          </div>
           <p className="text-[10px] text-muted-foreground">
             CRA 2024: $0.70/km ({isEs ? 'primeros' : 'first'} 5,000) · $0.64/km ({isEs ? 'después' : 'after'})
+          </p>
+          <p className="text-[9px] text-muted-foreground/70">
+            {isEs 
+              ? 'Verifique tasas vigentes en canada.ca antes de declarar'
+              : 'Verify current rates at canada.ca before filing'}
           </p>
         </div>
       </CardContent>

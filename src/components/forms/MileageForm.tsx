@@ -4,6 +4,7 @@ import { format, eachDayOfInterval, getDay, addMonths, isSameDay } from 'date-fn
 import { CalendarIcon, MapPin, Navigation, Sparkles, Building2, Loader2, Route, RotateCcw, Repeat, CheckCircle2, AlertCircle, Map, Calculator } from 'lucide-react';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
@@ -958,8 +959,16 @@ export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading
               <span className="text-muted-foreground">{t('mileage.yearToDateKm')}</span>
               <span>{yearToDateKm.toFixed(1)} km</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              {t('mileage.craRateNote')}
+            <div className="flex items-center gap-1.5 mt-2">
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-amber-500/10 border-amber-500/30 text-amber-600">
+                {t('mileage.rates2024') || '2024 Rates'}
+              </Badge>
+              <p className="text-[10px] text-muted-foreground">
+                {t('mileage.craRateNote')}
+              </p>
+            </div>
+            <p className="text-[9px] text-muted-foreground/70 mt-1">
+              {t('mileage.verifyRatesNote') || 'Verify current rates at canada.ca/sii.cl before filing'}
             </p>
           </div>
         )}
