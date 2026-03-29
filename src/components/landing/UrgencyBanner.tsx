@@ -100,7 +100,7 @@ export const UrgencyBanner = memo(function UrgencyBanner({
         className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-full px-3 py-1.5"
       >
         <Zap className="h-3.5 w-3.5 text-orange-500" />
-        <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
+        <span className="text-xs font-medium text-orange-400">
           {language === 'es' 
             ? `Solo ${spotsRemaining} lugares Beta` 
             : `Only ${spotsRemaining} Beta spots`}
