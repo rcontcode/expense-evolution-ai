@@ -1,132 +1,112 @@
 
 
-# Auditoría Profunda de Datos — Plan de Correcciones
+# Auditoría de Datos — Ronda 2: Correcciones Pendientes
 
-## Hallazgos de la Revisión
+## Hallazgos Nuevos
 
-Revisé exhaustivamente todos los hooks de datos (`useExpenses`, `useIncome`, `useClients`, `useProjects`, `useContracts`, `useMileage`, `useTags`, `useSavingsGoals`, `useNetWorth`, `useRecurringBills`, `useBankTransactions`, `useCategoryBudgets`, `useFiscalEntities`, `useTrash`, `useDashboardStats`, `useInvalidateRelated`, `useDocumentReview`, `useDataHealthCheck`) y las relaciones entre ellos.
-
----
-
-### ✅ Lo que funciona correctamente
-
-1. **Soft-delete consistente**: Expenses, income, clients, projects, contracts y mileage usan `deleted_at` correctamente para soft-delete, y todas las queries de lectura filtran `.is('deleted_at', null)`.
-2. **Invalidación centralizada**: `useInvalidateRelated` cubre bien las dependencias cruzadas (expense→dashboard, income→monthly-plan, etc.).
-3. **Audit logging**: Create y delete de expenses, income, clients y projects registran en `audit_log`.
-4. **Duplicate detection**: Expenses tiene detección de duplicados por amount+date+vendor.
-5. **Entity filtering**: Expenses, income, bills, budgets soportan filtro por `entity_id`.
-6. **Tag filtering**: Soporte AND/OR funcional.
-7. **Realtime sync**: Expenses y documents tienen listeners de Postgres changes.
-8. **Trash system**: Restaurar y vaciar papelera funciona para 5 tipos de entidad.
-9. **Bills→payments**: Mark paid avanza `next_due_date` correctamente según frecuencia.
+Tras revisar todos los hooks post-correcciones anteriores, encontré estos problemas adicionales:
 
 ---
 
-### 🔴 Problemas Encontrados (a corregir)
+### 🔴 Problemas Críticos (seguridad/integridad)
 
-#### 1. Dashboard Stats — `deleted_at` no se filtra en contadores
-**Archivo**: `useDashboardStats.ts` líneas 107-118
-- `billableExpenses` y `totalExpenses` usan `count` sin filtrar `deleted_at`. Cuentan gastos eliminados.
-- **Fix**: Agregar `.is('deleted_at', null)` a las queries de `billableCountResult` y `totalCountResult`.
+#### 1. `useRecurringBills` — No filtra por `user_id`
+La query principal (línea 63-66) no tiene `.eq('user_id', user.id)`. Depende 100% de RLS. Inconsistente con el resto del sistema que ya usa defensa en profundidad.
 
-#### 2. Income Summary — Límite de 500 puede truncar datos fiscales
-**Archivo**: `useIncome.ts` línea 208
-- `useIncomeSummary` tiene `.limit(500)`. Si un usuario tiene >500 registros de ingreso en un año, los totales fiscales serán incorrectos.
-- **Fix**: Subir a 2000 o usar una RPC de agregación.
+#### 2. `useBillPayments` — No filtra por `user_id`  
+Misma situación (línea 80). Cualquier usuario podría ver pagos de otros si RLS falla.
 
-#### 3. Expense Query Limit — 500 puede perder datos
-**Archivo**: `useExpenses.ts` línea 11
-- `QUERY_LIMIT = 500`. Para reportes fiscales que necesitan TODOS los gastos del año, esto es insuficiente.
-- **Fix**: Crear un hook separado `useAllExpensesForReport` sin límite, o paginar. El hook normal puede mantener 500 para la UI.
+#### 3. `useAssets` / `useLiabilities` / `useNetWorthSnapshots` — Sin filtro `user_id`
+Las tres queries (líneas 221, 239, 257) no filtran por `user_id`. Solo dependen de RLS.
 
-#### 4. Recurring Bills — No filtra `deleted_at` (si existe la columna)
-**Archivo**: `useRecurringBills.ts` línea 66
-- No hay filtro de soft-delete. Si la tabla tiene `deleted_at`, los bills eliminados aparecerían. Actualmente se usa hard-delete (`useDeleteBill` hace `.delete()`), lo cual es inconsistente con el resto del sistema.
-- **Fix**: Considerar migrar a soft-delete como el resto de entidades, o dejar así si es intencional (el usuario confirma borrado).
+#### 4. `useSavingsGoals` — Sin filtro `user_id`
+La query principal (línea 29) no filtra por `user_id`.
 
-#### 5. Tags y Assets/Liabilities — Hard delete sin audit log
-**Archivos**: `useTags.ts`, `useNetWorth.ts`
-- Tags, assets y liabilities se eliminan con hard delete sin registrar en audit_log.
-- **Fix**: Agregar audit_log entries en las mutaciones de delete.
+#### 5. `useCategoryBudgets` — Sin filtro `user_id`
+Query principal (línea 24) no filtra por user.
 
-#### 6. Document Approve — Crea gasto sin `entity_id`
-**Archivo**: `useDocumentReview.ts` línea 43-56
-- `approveDocument` crea un expense pero NO asigna `entity_id`. El gasto queda huérfano de entidad fiscal.
-- **Fix**: Obtener la entidad activa del contexto y asignarla al crear el expense.
+#### 6. `useFiscalEntities` / `usePrimaryFiscalEntity` — Sin filtro `user_id`
+Líneas 19 y 38 sin filtro explícito.
 
-#### 7. Document Approve — No usa `useInvalidateRelated`
-**Archivo**: `useDocumentReview.ts` líneas 77-80
-- Invalida queries manualmente en vez de usar el sistema centralizado. Falta invalidar `dashboard-stats`, `monthly-plan`, `data-health`.
-- **Fix**: Usar `afterExpense()` y `afterDocument()`.
+#### 7. `useInvestmentGoals` — Sin filtro `user_id`
+Línea 31 depende solo de RLS.
 
-#### 8. Savings Contributions — Usa `as any` sin tipo seguro
-**Archivo**: `useSavingsGoals.ts` líneas 152-153
-- `savings_contributions` se accede con `as any`, sugiriendo que la tabla podría no estar en el schema tipado. Funciona pero sin type safety.
-- **Fix**: Verificar que la tabla existe y regenerar tipos si es necesario.
-
-#### 9. Trash — No incluye mileage ni documents
-**Archivo**: `useTrash.ts`
-- Mileage usa soft-delete (`deleted_at`) pero no aparece en la papelera.
-- Documents eliminados tampoco se pueden restaurar.
-- **Fix**: Agregar queries de mileage y documents al trash system.
-
-#### 10. `useClients` — No filtra por `user_id`
-**Archivo**: `useClients.ts` línea 20
-- La query de clientes NO filtra por `user_id`. Depende 100% de RLS policies. Si RLS falla, se ven clientes de otros usuarios.
-- **Fix**: Agregar `.eq('user_id', user.id)` como defensa en profundidad (igual que expenses y income).
-
-#### 11. `useTags` — No filtra por `user_id` en query principal
-**Archivo**: `useTags.ts` línea 12
-- `useTags()` no filtra por `user_id`. Solo `useTagsWithExpenseCount` lo hace.
-- **Fix**: Agregar filtro de user_id a `useTags()`.
-
-#### 12. `useContracts` — No filtra por `user_id`
-**Archivo**: `useContracts.ts` línea 11
-- Misma situación que clients/tags.
-- **Fix**: Agregar filtro de user_id.
+#### 8. `useProjects` — Sin filtro `user_id`
+Línea 14 no filtra. Tiene `user` en `useAuth` pero no lo usa en la query.
 
 ---
 
-### 🟡 Mejoras Recomendadas (no bloqueantes)
+### 🟠 Problemas de Consistencia
 
-1. **Dashboard date format inconsistency**: `useDashboardStats` usa `.toISOString()` para expenses pero `format(date, 'yyyy-MM-dd')` para income. Ambos funcionan pero son inconsistentes.
-2. **Expense bill matcher timeout**: `setTimeout(() => checkExpenseAgainstBills(...)`, 1500)` — delay arbitrario. Podría usar `queueMicrotask` o un efecto post-mutación.
-3. **Net Worth snapshots limit 12**: Limita historial. Para usuarios a largo plazo, considerar paginación.
+#### 9. `useRecurringBills` — Hard delete inconsistente
+`useDeleteBill` usa `.delete()` (hard delete) mientras todo el resto del sistema usa soft-delete. No tiene audit log.
+
+#### 10. `useSavingsGoals` — Hard delete sin audit log
+`useDeleteSavingsGoal` hace `.delete()` sin registrar en audit_log.
+
+#### 11. `useCategoryBudgets` — Hard delete sin audit log
+`useDeleteCategoryBudget` hace `.delete()` sin audit log.
+
+#### 12. `useInvestmentGoals` — No usa `useInvalidateRelated`
+Usa `queryClient.invalidateQueries` directamente en vez del sistema centralizado. Tampoco tiene audit log en delete.
+
+#### 13. `useFiscalEntities` — Hard delete sin audit log
+`useDeleteFiscalEntity` hace `.delete()` sin audit log. Eliminar una entidad fiscal es crítico y debería registrarse.
+
+#### 14. `useDeleteClientTestData` — Bypass de soft-delete
+Hace `.delete()` directamente en expenses, income, mileage, contracts — bypassing el sistema de soft-delete y sin audit log. Esto puede dejar datos huérfanos (expense_tags, documents vinculados).
+
+---
+
+### 🟡 Mejoras de Robustez
+
+#### 15. `useDocumentsForReview` — No filtra `status` deleted
+La query (línea 18) trae TODOS los documentos incluyendo los que se borraron con `deleteDocument`. No hay soft-delete en documents — se hace hard delete.
+
+#### 16. `useExpenses` — El hook para reportes sigue usando límite 500
+No se creó el hook `useAllExpensesForReport` sin límite que se planificó.
+
+#### 17. `useFinancialJournal` — Sin límite default
+Si un usuario acumula miles de entradas, `useFinancialJournal()` sin parámetro las trae todas.
 
 ---
 
 ## Plan de Implementación
 
-### Paso 1: Correcciones críticas de queries (seguridad + integridad)
-- Agregar `user_id` filter a `useClients`, `useTags`, `useContracts`
-- Agregar `deleted_at` filter a dashboard stats counters
+### Paso 1: Agregar `user_id` filter a 8 hooks (seguridad)
+- `useRecurringBills`, `useBillPayments`
+- `useAssets`, `useLiabilities`, `useNetWorthSnapshots`
+- `useSavingsGoals`, `useCategoryBudgets`
+- `useFiscalEntities`, `usePrimaryFiscalEntity`
+- `useInvestmentGoals`
+- `useProjects`
 
-### Paso 2: Document approval fix
-- Agregar `entity_id` al crear expense desde document review
-- Migrar a `useInvalidateRelated` para invalidación
+### Paso 2: Audit log para deletes críticos
+- `useDeleteBill` → audit log
+- `useDeleteSavingsGoal` → audit log
+- `useDeleteFiscalEntity` → audit log
+- `useDeleteInvestmentGoal` → audit log
 
-### Paso 3: Trash completeness
-- Agregar mileage al sistema de papelera
+### Paso 3: Crear `useAllExpensesForReport`
+- Hook sin límite para exportación fiscal
+- Filtrado por año, sin paginación UI
 
-### Paso 4: Audit log completeness
-- Agregar audit entries para delete de tags, assets, liabilities
+### Paso 4: `useInvestmentGoals` — migrar a `useInvalidateRelated`
 
-### Paso 5: Query limits para reportes
-- Crear variante sin límite para exportaciones fiscales
-- Subir límite de income summary a 2000
+### Paso 5: Default limit en `useFinancialJournal`
+- Agregar `.limit(500)` cuando no se pasa parámetro
 
 ---
 
-## Detalle Técnico
+## Detalle Técnico — Archivos a modificar
 
-### Archivos a modificar:
-1. `src/hooks/data/useClients.ts` — agregar user_id filter
-2. `src/hooks/data/useTags.ts` — agregar user_id filter  
-3. `src/hooks/data/useContracts.ts` — agregar user_id filter
-4. `src/hooks/data/useDashboardStats.ts` — agregar deleted_at filters
-5. `src/hooks/data/useDocumentReview.ts` — entity_id + invalidación centralizada
-6. `src/hooks/data/useTrash.ts` — agregar mileage
-7. `src/hooks/data/useNetWorth.ts` — agregar audit_log en deletes
-8. `src/hooks/data/useTags.ts` — agregar audit_log en delete
-9. `src/hooks/data/useIncome.ts` — subir límite en summary
+1. `src/hooks/data/useRecurringBills.ts` — user_id filter + audit log en delete
+2. `src/hooks/data/useNetWorth.ts` — user_id filter en assets/liabilities/snapshots  
+3. `src/hooks/data/useSavingsGoals.ts` — user_id filter + audit log en delete
+4. `src/hooks/data/useCategoryBudgets.ts` — user_id filter
+5. `src/hooks/data/useFiscalEntities.ts` — user_id filter + audit log en delete
+6. `src/hooks/data/useInvestmentGoals.ts` — user_id filter + audit log + invalidación centralizada
+7. `src/hooks/data/useProjects.ts` — user_id filter
+8. `src/hooks/data/useExpenses.ts` — nuevo hook `useAllExpensesForReport`
+9. `src/hooks/data/useFinancialJournal.ts` — default limit
 
