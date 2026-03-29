@@ -232,6 +232,7 @@ function TransactionWithSuggestions({
 
 export default function Reconciliation() {
   const { t, language } = useLanguage();
+  const { user } = useAuth();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [wizardMode, setWizardMode] = useState(true);
   

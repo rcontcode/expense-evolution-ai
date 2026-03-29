@@ -87,6 +87,8 @@ function SortIcon({ field, sortField, sortDir }: { field: SortField; sortField: 
 
 export default function FilesPage() {
   const { language } = useLanguage();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { data: files, isLoading } = useAllFiles();
   const deleteFile = useDeleteFile();
   const navigate = useNavigate();
