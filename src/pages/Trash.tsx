@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/PageHeader';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTrashItems, useRestoreItem, usePermanentDelete, useEmptyTrash, TrashItemType } from '@/hooks/data/useTrash';
-import { Trash2, RotateCcw, AlertTriangle, Receipt, DollarSign, Users, FolderKanban, FileText } from 'lucide-react';
+import { Trash2, RotateCcw, AlertTriangle, Receipt, DollarSign, Users, FolderKanban, FileText, Car } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -26,7 +26,7 @@ const TYPE_CONFIG: Record<TrashItemType, { icon: React.ElementType; label: strin
   client: { icon: Users, label: 'Cliente', labelEn: 'Client', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
   project: { icon: FolderKanban, label: 'Proyecto', labelEn: 'Project', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' },
   contract: { icon: FileText, label: 'Contrato', labelEn: 'Contract', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
-  mileage: { icon: Receipt, label: 'Kilometraje', labelEn: 'Mileage', color: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300' },
+  mileage: { icon: Car, label: 'Kilometraje', labelEn: 'Mileage', color: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300' },
 };
 
 export default function Trash() {
