@@ -102,7 +102,7 @@ export function useRestoreItem() {
       
       const { error } = await supabase
         .from(table)
-        .update({ deleted_at: null } as any)
+        .update({ deleted_at: null })
         .eq('id', id);
       
       if (error) throw error;

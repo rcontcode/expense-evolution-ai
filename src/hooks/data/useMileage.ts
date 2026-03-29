@@ -205,7 +205,7 @@ export const useDeleteMileage = () => {
       // Soft delete
       const { error } = await supabase
         .from('mileage')
-        .update({ deleted_at: new Date().toISOString() } as any)
+        .update({ deleted_at: new Date().toISOString() })
         .eq('id', id);
       if (error) throw error;
 
