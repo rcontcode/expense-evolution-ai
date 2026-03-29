@@ -1,13 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ExpenseWithRelations, ExpenseInsert, ExpenseUpdate, ExpenseFilters } from '@/types/expense.types';
-import { toast } from 'sonner';
 import { useMissionTracker } from './useMissions';
 import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
 import { useExpenseBillMatcher } from './useExpenseBillMatcher';
+import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
 
 const QUERY_LIMIT = 500;
 
@@ -27,53 +27,38 @@ export function useExpenses(filters?: ExpenseFilters) {
         .eq('user_id', user!.id)
         .is('deleted_at', null);
       
-      // Apply filters
       if (filters?.dateRange) {
         query = query
           .gte('date', filters.dateRange.start.toISOString().split('T')[0])
           .lte('date', filters.dateRange.end.toISOString().split('T')[0]);
       }
-      
       if (filters?.clientIds?.length) {
         query = query.in('client_id', filters.clientIds);
       }
-      
       if (filters?.statuses?.length) {
         query = query.in('status', filters.statuses);
       }
-      
       if (filters?.category) {
         query = query.eq('category', filters.category);
       }
-      
       if (filters?.minAmount !== undefined) {
         query = query.gte('amount', filters.minAmount);
       }
-      
       if (filters?.maxAmount !== undefined) {
         query = query.lte('amount', filters.maxAmount);
       }
-      
       if (filters?.searchQuery) {
         query = query.or(`vendor.ilike.%${filters.searchQuery}%,description.ilike.%${filters.searchQuery}%,notes.ilike.%${filters.searchQuery}%`);
       }
-
       if (filters?.hasReceipt) {
         query = query.not('document_id', 'is', null);
       }
-
       if (filters?.reimbursementType) {
         query = query.eq('reimbursement_type', filters.reimbursementType);
       }
-
-      // Entity/Jurisdiction filtering
       if (filters?.entityId) {
         query = query.eq('entity_id', filters.entityId);
-      } else if (filters?.showAllEntities !== true && filters?.entityId === undefined) {
-        // By default, show expenses without entity_id (legacy data)
       }
-
-      // Filter for incomplete expenses (for reports)
       if (filters?.onlyIncomplete) {
         query = query.or(
           'reimbursement_type.eq.pending_classification,' +
@@ -82,7 +67,6 @@ export function useExpenses(filters?: ExpenseFilters) {
           'category.is.null'
         );
       }
-      
       if (filters?.tagIds?.length) {
         const { data: expenseTagData } = await supabase
           .from('expense_tags')
@@ -98,11 +82,9 @@ export function useExpenses(filters?: ExpenseFilters) {
             tags.add(et.tag_id);
             expenseTagCounts.set(et.expense_id, tags);
           });
-          
           const expenseIds = Array.from(expenseTagCounts.entries())
             .filter(([, tagSet]) => filters.tagIds!.every(tagId => tagSet.has(tagId)))
             .map(([expenseId]) => expenseId);
-          
           if (expenseIds.length > 0) {
             query = query.in('id', expenseIds);
           } else {
@@ -119,7 +101,6 @@ export function useExpenses(filters?: ExpenseFilters) {
       }
       
       const { data, error } = await query.order('date', { ascending: false }).limit(QUERY_LIMIT);
-      
       if (error) throw error;
       
       return (data || []).map(expense => ({
@@ -137,18 +118,17 @@ export function useCreateExpense() {
   const { triggers } = useGamificationTriggers();
   const { afterExpense, invalidate } = useInvalidateRelated();
   const { checkExpenseAgainstBills } = useExpenseBillMatcher();
+  const t = useLocalizedToast();
 
   return useMutation({
     mutationFn: async (expense: Omit<ExpenseInsert, 'user_id'>) => {
       if (!user) throw new Error('Not authenticated');
 
-      // Validate vendor is not garbage
       const vendor = (expense as any).vendor?.trim();
       if (vendor && (vendor === 'Unknown' || /^\d{4}$/.test(vendor) || /^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+de\s+\d{4}$/i.test(vendor))) {
         console.warn('Suspicious vendor name detected:', vendor);
       }
 
-      // Duplicate detection: same amount + same date + similar vendor
       const amount = (expense as any).amount;
       const date = (expense as any).date;
       if (amount && date && vendor) {
@@ -165,7 +145,6 @@ export function useCreateExpense() {
           const vendorLower = vendor.toLowerCase().replace(/[^a-z0-9]/g, '');
           const isDupe = potentialDupes.some(d => {
             const existingVendor = (d.vendor || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-            // Simple similarity: one contains the other or Levenshtein-like check
             return existingVendor === vendorLower || 
                    existingVendor.includes(vendorLower) || 
                    vendorLower.includes(existingVendor);
@@ -185,7 +164,6 @@ export function useCreateExpense() {
         .single();
       
       if (error) throw error;
-      
       await triggers.expense(currentCount);
       
       await insertAuditLog(user.id, {
@@ -200,10 +178,8 @@ export function useCreateExpense() {
       afterExpense();
       invalidate('user-level', 'user-achievements');
       trackAction('add_expense', 1);
-      trackAction('categorize_expense', 1);
-      toast.success('Gasto registrado');
+      t.success('Gasto registrado', 'Expense recorded');
       
-      // Cross-detect: check if this expense matches an existing recurring bill
       if (data) {
         setTimeout(() => {
           checkExpenseAgainstBills({ vendor: data.vendor, amount: data.amount, id: data.id });
@@ -212,10 +188,10 @@ export function useCreateExpense() {
     },
     onError: (error: Error) => {
       if (error.message === 'DUPLICATE_DETECTED') {
-        toast.error('⚠️ Este gasto parece duplicado (mismo monto, fecha y proveedor)');
+        t.error('⚠️ Este gasto parece duplicado (mismo monto, fecha y proveedor)', '⚠️ This expense looks like a duplicate (same amount, date and vendor)');
         return;
       }
-      toast.error(error.message || 'Error al registrar gasto');
+      t.error('Error al registrar gasto', 'Error recording expense');
     },
   });
 }
@@ -223,6 +199,7 @@ export function useCreateExpense() {
 export function useUpdateExpense() {
   const { user } = useAuth();
   const { afterExpense } = useInvalidateRelated();
+  const t = useLocalizedToast();
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: ExpenseUpdate }) => {
@@ -234,16 +211,15 @@ export function useUpdateExpense() {
         .eq('user_id', user.id)
         .select()
         .single();
-      
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       afterExpense();
-      toast.success('Gasto actualizado');
+      t.success('Gasto actualizado', 'Expense updated');
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Error al actualizar gasto');
+    onError: () => {
+      t.error('Error al actualizar gasto', 'Error updating expense');
     },
   });
 }
@@ -251,6 +227,7 @@ export function useUpdateExpense() {
 export function useDeleteExpense() {
   const { user } = useAuth();
   const { afterExpense } = useInvalidateRelated();
+  const t = useLocalizedToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -262,7 +239,6 @@ export function useDeleteExpense() {
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', id)
         .eq('user_id', user.id);
-      
       if (error) throw error;
 
       await insertAuditLog(user.id, {
@@ -273,10 +249,10 @@ export function useDeleteExpense() {
     },
     onSuccess: () => {
       afterExpense();
-      toast.success('Gasto movido a la papelera');
+      t.success('Gasto movido a la papelera', 'Expense moved to trash');
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Error al eliminar gasto');
+    onError: () => {
+      t.error('Error al eliminar gasto', 'Error deleting expense');
     },
   });
 }
@@ -329,7 +305,6 @@ export function useAddExpenseTags() {
         const { error } = await supabase
           .from('expense_tags')
           .insert(tagIds.map(tagId => ({ expense_id: expenseId, tag_id: tagId })));
-        
         if (error) throw error;
       }
     },
