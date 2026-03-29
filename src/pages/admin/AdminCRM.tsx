@@ -35,6 +35,7 @@ import { AdminSavedTemplates } from '@/components/admin/tabs/AdminSavedTemplates
 import { AdminAdvancedMetrics } from '@/components/admin/tabs/AdminAdvancedMetrics';
 import { AdminCrossAppRanking } from '@/components/admin/tabs/AdminCrossAppRanking';
 import { AdminRevenueDashboard } from '@/components/admin/tabs/AdminRevenueDashboard';
+import { AdminROIDashboard } from '@/components/admin/tabs/AdminROIDashboard';
 import { AdminCRMHome } from '@/components/admin/tabs/AdminCRMHome';
 import { AdminFollowUpsAgenda } from '@/components/admin/tabs/AdminFollowUpsAgenda';
 import { LeadMergeDialog } from '@/components/admin/LeadMergeDialog';
