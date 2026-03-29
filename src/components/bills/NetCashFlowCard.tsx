@@ -17,7 +17,11 @@ import {
   CalendarDays, Zap, ShieldCheck, Clock, Target, Flame, Coffee, DollarSign
 } from 'lucide-react';
 
-export function NetCashFlowCard() {
+interface NetCashFlowCardProps {
+  selectedMonth?: Date;
+}
+
+export function NetCashFlowCard({ selectedMonth }: NetCashFlowCardProps) {
   const { language } = useLanguage();
   const l = language === 'es';
   const { formatCurrency, formatCompact } = useFormatCurrency();

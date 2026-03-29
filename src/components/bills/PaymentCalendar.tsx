@@ -12,12 +12,18 @@ import { startOfMonth, endOfMonth, eachDayOfInterval, format, parseISO, isToday,
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
-export function PaymentCalendar() {
+interface PaymentCalendarProps {
+  selectedMonth: Date;
+  onMonthChange: (date: Date) => void;
+}
+
+export function PaymentCalendar({ selectedMonth, onMonthChange }: PaymentCalendarProps) {
   const { language } = useLanguage();
   const l = language === 'es';
   const { formatCurrency } = useFormatCurrency();
   const { data: bills } = useRecurringBills();
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const currentMonth = selectedMonth;
+  const setCurrentMonth = onMonthChange;
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);

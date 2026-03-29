@@ -50,7 +50,11 @@ function PaymentMethodBadge({ method, bankName }: { method: string; bankName?: s
   );
 }
 
-export function BillsManager() {
+interface BillsManagerProps {
+  selectedMonth?: Date;
+}
+
+export function BillsManager({ selectedMonth }: BillsManagerProps) {
   const { language } = useLanguage();
   const l = language === 'es';
   const { formatCurrency } = useFormatCurrency();
