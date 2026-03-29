@@ -231,19 +231,82 @@ export default function Tags() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/30 shrink-0">
                   <TagIcon className="h-5 w-5 text-white" />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <h3 className="font-semibold text-sm">
-                    {language === 'es' ? '¿Para qué sirven las etiquetas?' : 'What are tags for?'}
+                    {language === 'es' ? '¿Qué son y para qué sirven?' : 'What are tags and what are they for?'}
                   </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {language === 'es' 
-                      ? 'Las etiquetas te permiten clasificar gastos con criterios personalizados que van más allá de las categorías. Por ejemplo: marca gastos como "deducible", "reembolsable", "urgente" o "viaje de negocios". Después puedes filtrar y analizar por etiqueta para descubrir patrones, preparar declaraciones fiscales y tomar mejores decisiones financieras.'
-                      : 'Tags let you classify expenses with custom criteria beyond categories. For example: mark expenses as "deductible", "reimbursable", "urgent" or "business trip". Then filter and analyze by tag to discover patterns, prepare tax returns, and make better financial decisions.'}
+                      ? 'Las etiquetas son clasificaciones personalizadas que tú creas para organizar tus gastos más allá de las categorías fijas.'
+                      : 'Tags are custom labels you create to organize your expenses beyond the fixed categories.'}
                   </p>
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-foreground">
+                      📍 {language === 'es' ? '¿Dónde se asignan?' : 'Where are they assigned?'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {language === 'es' 
+                        ? 'Al crear o editar un gasto, encontrarás el campo "Etiquetas" al final del formulario. También la IA puede sugerirlas automáticamente.'
+                        : 'When creating or editing an expense, you\'ll find the "Tags" field at the bottom of the form. AI can also suggest them automatically.'}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-foreground">
+                      💡 {language === 'es' ? 'Ventajas concretas:' : 'Key benefits:'}
+                    </p>
+                    <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
+                      <li>{language === 'es' ? 'Filtra gastos deducibles para tu declaración fiscal' : 'Filter deductible expenses for your tax return'}</li>
+                      <li>{language === 'es' ? 'Agrupa gastos por viaje, proyecto o cliente' : 'Group expenses by trip, project, or client'}</li>
+                      <li>{language === 'es' ? 'Marca gastos pendientes de reembolso' : 'Mark expenses pending reimbursement'}</li>
+                      <li>{language === 'es' ? 'Analiza patrones por etiqueta en la pestaña Estadísticas' : 'Analyze patterns by tag in the Analytics tab'}</li>
+                    </ul>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-1 text-xs h-7"
+                    onClick={() => navigate('/expenses')}
+                  >
+                    <ExternalLink className="mr-1 h-3 w-3" />
+                    {language === 'es' ? 'Ir a Gastos para asignar etiquetas' : 'Go to Expenses to assign tags'}
+                  </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
+
+          {/* Advantages Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {TAG_ADVANTAGES.map((adv, idx) => {
+              const Icon = adv.icon;
+              return (
+                <Card key={idx} className="border-primary/10 hover:border-primary/30 transition-all hover:shadow-md">
+                  <CardContent className="p-3 flex flex-col items-center text-center gap-2">
+                    <div className={cn(
+                      "w-9 h-9 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-md",
+                      adv.color, adv.shadowColor
+                    )}>
+                      <Icon className="h-4 w-4 text-white" />
+                    </div>
+                    <p className="text-xs font-semibold">{adv.title[language]}</p>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">{adv.description[language]}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Duplicate Alert */}
+          {duplicatePairs.length > 0 && (
+            <Alert className="border-amber-500/30 bg-amber-500/5">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-xs">
+                {language === 'es' 
+                  ? `Posibles etiquetas duplicadas detectadas: ${duplicatePairs.map(([a, b]) => `"${a}" y "${b}"`).join(', ')}. Considera consolidarlas para mantener orden.`
+                  : `Possible duplicate tags detected: ${duplicatePairs.map(([a, b]) => `"${a}" and "${b}"`).join(', ')}. Consider consolidating them to stay organized.`}
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* Tabs for Tags and Analytics */}
           <Tabs defaultValue="tags" className="w-full">
