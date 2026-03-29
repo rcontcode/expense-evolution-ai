@@ -343,11 +343,15 @@ export const guideSections: GuideSection[] = [
     steps: [
       { es: 'Accede desde el menú → Mentoría o desde el banner en el Dashboard', en: 'Access from the menu → Mentorship or from the Dashboard banner' },
       { es: 'Revisa tu nivel actual y los tips del experto del momento', en: 'Review your current level and tips from the current expert' },
-      { es: 'Completa las metas de nivel para desbloquear nuevo contenido', en: 'Complete level goals to unlock new content' },
+      { es: 'Completa los Desafíos Semanales — retos automáticos que miden tu progreso real', en: 'Complete Weekly Challenges — automatic challenges that measure your real progress' },
+      { es: 'Usa el Acompañante de Lectura (tab Rohn → Educación) para trackear tu ritmo de lectura vs promedio global', en: 'Use the Reading Companion (Rohn tab → Education) to track your reading pace vs global average' },
+      { es: 'Sigue tu Ruta de Aprendizaje personalizada con sugerencias dinámicas', en: 'Follow your personalized Learning Path with dynamic suggestions' },
       { es: 'Los tips rotan cada 8 segundos con sabiduría práctica aplicable', en: 'Tips rotate every 8 seconds with practical applicable wisdom' },
     ],
     tips: [
       { es: 'Cada acción financiera te da XP — registrar gastos, crear clientes, importar datos', en: 'Every financial action gives you XP — recording expenses, creating clients, importing data' },
+      { es: 'Los Desafíos Semanales se completan automáticamente cuando realizas las acciones en la app', en: 'Weekly Challenges complete automatically when you perform the actions in the app' },
+      { es: 'El Acompañante de Lectura muestra gráficas de tu ritmo y predicción de finalización', en: 'The Reading Companion shows charts of your pace and completion prediction' },
       { es: 'Aplica los tips de los expertos a tu vida real — es la verdadera transformación', en: 'Apply expert tips to your real life — that\'s the real transformation' },
     ],
     faq: [
@@ -781,12 +785,15 @@ export const guideSections: GuideSection[] = [
     steps: [
       { es: 'Agrega recursos de aprendizaje: libros, cursos, podcasts, videos, artículos', en: 'Add learning resources: books, courses, podcasts, videos, articles' },
       { es: 'Establece metas diarias de lectura (páginas) o estudio (minutos)', en: 'Set daily reading (pages) or study (minutes) goals' },
+      { es: 'Activa el Acompañante de Lectura: ve a Mentoría → tab Rohn → Educación Financiera → selecciona un recurso "En progreso"', en: 'Activate the Reading Companion: go to Mentorship → Rohn tab → Financial Education → select an "In progress" resource' },
+      { es: 'El tracker muestra tu ritmo de lectura, predicción de finalización y comparación con promedio global', en: 'The tracker shows your reading pace, completion prediction, and comparison with global average' },
       { es: 'Registra tu progreso diario con notas y reflexiones', en: 'Log your daily progress with notes and reflections' },
       { es: 'Crea entradas en el Diario de Práctica para aplicar lo aprendido', en: 'Create Practice Diary entries to apply what you\'ve learned' },
       { es: 'Califica el impacto de cada recurso y lección aprendida', en: 'Rate the impact of each resource and lesson learned' },
     ],
     tips: [
       { es: '15 minutos diarios de educación financiera transforman tu relación con el dinero en meses', en: '15 daily minutes of financial education transforms your money relationship in months' },
+      { es: 'Usa el Acompañante de Lectura para visualizar tu ritmo vs promedio global — motiva mantener la constancia', en: 'Use the Reading Companion to visualize your pace vs global average — motivates consistency' },
       { es: 'El Diario de Práctica te obliga a aplicar — leer sin practicar es olvidar', en: 'The Practice Diary forces you to apply — reading without practicing is forgetting' },
       { es: 'Califica cada recurso para crear tu biblioteca personal de mejores materiales', en: 'Rate each resource to build your personal library of best materials' },
     ],
