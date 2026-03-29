@@ -788,3 +788,48 @@ export function FinancialEducationCard() {
     </Card>
   );
 }
+
+// Inline component for prompting total pages
+function TotalPagesPrompt({ resource, updateResource, language }: { 
+  resource: FinancialEducationResource; 
+  updateResource: ReturnType<typeof useUpdateEducationResource>;
+  language: string;
+}) {
+  const [totalPages, setTotalPages] = useState('');
+  
+  const handleSave = () => {
+    const pages = parseInt(totalPages);
+    if (pages > 0) {
+      updateResource.mutate({
+        id: resource.id,
+        resource_type: resource.resource_type,
+        title: resource.title,
+        total_pages: pages,
+        pages_read: resource.pages_read ?? undefined,
+      });
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
+      <BookOpen className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+      <Input
+        type="number"
+        min={1}
+        value={totalPages}
+        onChange={(e) => setTotalPages(e.target.value)}
+        placeholder={language === 'es' ? 'Total págs.' : 'Total pages'}
+        className="h-7 w-24 text-xs"
+        onClick={(e) => e.stopPropagation()}
+      />
+      <Button 
+        size="sm" 
+        className="h-7 text-xs px-2" 
+        onClick={(e) => { e.stopPropagation(); handleSave(); }}
+        disabled={!totalPages || parseInt(totalPages) <= 0}
+      >
+        {language === 'es' ? 'Guardar' : 'Save'}
+      </Button>
+    </div>
+  );
+}

@@ -283,24 +283,38 @@ export function ReadingProgressTracker({ resource, onClose }: ReadingProgressTra
 
         {/* Progress Bar */}
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">
-              {language === 'es' ? 'Progreso' : 'Progress'}
-            </span>
-            <span className="font-bold text-lg text-primary">{stats.progressPercent}%</span>
-          </div>
-          <Progress value={stats.progressPercent} className="h-3" />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>
-              {language === 'es' ? 'Faltan' : 'Remaining'}: {stats.pagesRemaining} {language === 'es' ? 'páginas' : 'pages'}
-            </span>
-            {stats.estimatedCompletionDate && (
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                {language === 'es' ? 'Terminarás el' : 'You\'ll finish on'} {format(stats.estimatedCompletionDate, 'dd MMM yyyy', { locale })}
-              </span>
-            )}
-          </div>
+          {(!resource.total_pages || resource.total_pages === 0) ? (
+            <div className="p-3 bg-primary/5 rounded-lg border border-primary/20 text-center">
+              <BookOpen className="h-5 w-5 text-primary mx-auto mb-1" />
+              <p className="text-sm font-medium">
+                {language === 'es' ? 'Configura el total de páginas para ver tu progreso' : 'Set total pages to track your progress'}
+              </p>
+              <Button variant="outline" size="sm" className="mt-2" onClick={() => setEditingTotal(true)}>
+                {language === 'es' ? 'Configurar ahora' : 'Set up now'}
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {language === 'es' ? 'Progreso' : 'Progress'}
+                </span>
+                <span className="font-bold text-lg text-primary">{Math.min(stats.progressPercent, 100)}%</span>
+              </div>
+              <Progress value={Math.min(stats.progressPercent, 100)} className="h-3" />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>
+                  {language === 'es' ? 'Faltan' : 'Remaining'}: {stats.pagesRemaining} {language === 'es' ? 'páginas' : 'pages'}
+                </span>
+                {stats.estimatedCompletionDate && (
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {language === 'es' ? 'Terminarás el' : 'You\'ll finish on'} {format(stats.estimatedCompletionDate, 'dd MMM yyyy', { locale })}
+                  </span>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
