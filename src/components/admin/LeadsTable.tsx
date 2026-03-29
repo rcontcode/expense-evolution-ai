@@ -177,7 +177,34 @@ export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }
   const [sortKey, setSortKey] = useState<SortKey>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
-  const handleSort = (key: SortKey) => {
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds(prev => {
+      if (prev.size === leads.length) return new Set();
+      return new Set(leads.map(l => l.id));
+    });
+  }, [leads]);
+
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
+
+  // Collect all tags for bulk actions
+  const allTags = useMemo(() => {
+    const tags = new Set<string>();
+    (allLeads || leads).forEach(l => {
+      const lt = l.tags as string[] | null;
+      lt?.forEach(t => tags.add(t));
+    });
+    return Array.from(tags).sort();
+  }, [allLeads, leads]);
+
+
     if (sortKey === key) {
       setSortDir(prev => prev === 'desc' ? 'asc' : 'desc');
     } else {
