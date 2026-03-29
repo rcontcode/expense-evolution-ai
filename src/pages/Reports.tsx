@@ -111,6 +111,8 @@ export default function Reports() {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [exporting, setExporting] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewTitle, setPreviewTitle] = useState('');
 
   const yearStart = startOfYear(new Date(selectedYear, 0));
   const yearEnd = endOfYear(new Date(selectedYear, 0));
