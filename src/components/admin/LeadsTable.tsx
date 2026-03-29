@@ -173,6 +173,7 @@ function SortableHeader({ label, sortKey, currentKey, currentDir, onSort }: {
 export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }: LeadsTableProps) {
   const [selectedLead, setSelectedLead] = useState<QuizLead | null>(null);
   const [followUpLead, setFollowUpLead] = useState<QuizLead | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey>('created_at');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
