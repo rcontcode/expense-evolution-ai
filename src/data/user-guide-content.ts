@@ -1159,7 +1159,10 @@ export const globalFAQ: GuideFAQ[] = [
     question: { es: '¿Cómo funciona la gamificación?', en: 'How does gamification work?' },
     answer: { es: 'Cada acción financiera (registrar gasto, crear cliente, importar extracto) te da XP. Subes de nivel, mantienes rachas diarias, desbloqueas logros y recibes celebraciones épicas. Es la motivación que necesitas para convertir la gestión financiera en un hábito diario.', en: 'Every financial action (recording expense, creating client, importing statement) gives you XP. You level up, maintain daily streaks, unlock achievements, and receive epic celebrations. It\'s the motivation you need to turn financial management into a daily habit.' }
   },
-  // Phoenix FAQ removed — feature disabled
+  {
+    question: { es: '¿Cómo funciona el Asistente Phoenix?', en: 'How does the Phoenix Assistant work?' },
+    answer: { es: 'Phoenix es un asistente con IA y voz integrado en toda la app. Puedes hablarle o escribirle en lenguaje natural para registrar transacciones, consultar tus datos, pedir análisis y más. Usa síntesis de voz premium (ElevenLabs) con 20 voces disponibles y funciona con Push-to-Talk.', en: 'Phoenix is an AI and voice assistant integrated throughout the app. You can talk to it or type in natural language to record transactions, query your data, request analyses, and more. Uses premium voice synthesis (ElevenLabs) with 20 available voices and works with Push-to-Talk.' }
+  },
   {
     question: { es: '¿Qué pasa si cometo un error?', en: 'What if I make a mistake?' },
     answer: { es: 'Todo es editable y los registros eliminados van a la Papelera (soft-delete) donde puedes restaurarlos. EvoFinz está diseñada para ser tolerante a errores — siempre hay forma de corregir.', en: 'Everything is editable and deleted records go to Trash (soft-delete) where you can restore them. EvoFinz is designed to be error-tolerant — there\'s always a way to correct.' }
