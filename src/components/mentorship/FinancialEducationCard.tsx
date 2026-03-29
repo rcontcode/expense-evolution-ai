@@ -162,6 +162,10 @@ export function FinancialEducationCard() {
       resource_type: resource.resource_type,
       title: resource.title,
       status: newStatus,
+      pages_read: resource.pages_read ?? undefined,
+      total_pages: resource.total_pages ?? undefined,
+      minutes_consumed: resource.minutes_consumed ?? undefined,
+      total_minutes: resource.total_minutes ?? undefined,
     });
   };
 
@@ -415,16 +419,22 @@ export function FinancialEducationCard() {
                     </div>
                   </div>
                   
-                  {/* Progress Bar */}
+                  {/* Progress Bar or Total Pages Prompt */}
                   {resource.status === 'in_progress' && (
                     <div className="mt-2">
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="text-muted-foreground">
-                          {resource.pages_read || 0}/{resource.total_pages || '?'} {language === 'es' ? 'páginas' : 'pages'}
-                        </span>
-                        <span className="font-medium">{progressPercent}%</span>
-                      </div>
-                      <Progress value={progressPercent} className="h-2" />
+                      {!resource.total_pages || resource.total_pages === 0 ? (
+                        <TotalPagesPrompt resource={resource} updateResource={updateResource} language={language} />
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between text-xs mb-1">
+                            <span className="text-muted-foreground">
+                              {resource.pages_read || 0}/{resource.total_pages} {language === 'es' ? 'páginas' : 'pages'}
+                            </span>
+                            <span className="font-medium">{progressPercent}%</span>
+                          </div>
+                          <Progress value={Math.min(progressPercent, 100)} className="h-2" />
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
@@ -776,5 +786,50 @@ export function FinancialEducationCard() {
         <LegalDisclaimer variant="education" size="compact" />
       </CardContent>
     </Card>
+  );
+}
+
+// Inline component for prompting total pages
+function TotalPagesPrompt({ resource, updateResource, language }: { 
+  resource: FinancialEducationResource; 
+  updateResource: ReturnType<typeof useUpdateEducationResource>;
+  language: string;
+}) {
+  const [totalPages, setTotalPages] = useState('');
+  
+  const handleSave = () => {
+    const pages = parseInt(totalPages);
+    if (pages > 0) {
+      updateResource.mutate({
+        id: resource.id,
+        resource_type: resource.resource_type,
+        title: resource.title,
+        total_pages: pages,
+        pages_read: resource.pages_read ?? undefined,
+      });
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
+      <BookOpen className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+      <Input
+        type="number"
+        min={1}
+        value={totalPages}
+        onChange={(e) => setTotalPages(e.target.value)}
+        placeholder={language === 'es' ? 'Total págs.' : 'Total pages'}
+        className="h-7 w-24 text-xs"
+        onClick={(e) => e.stopPropagation()}
+      />
+      <Button 
+        size="sm" 
+        className="h-7 text-xs px-2" 
+        onClick={(e) => { e.stopPropagation(); handleSave(); }}
+        disabled={!totalPages || parseInt(totalPages) <= 0}
+      >
+        {language === 'es' ? 'Guardar' : 'Save'}
+      </Button>
+    </div>
   );
 }
