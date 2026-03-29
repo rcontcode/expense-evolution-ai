@@ -54,7 +54,7 @@ interface MileageFormProps {
 }
 
 export const MileageForm = ({ initialData, yearToDateKm = 0, onSubmit, isLoading }: MileageFormProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { data: clients } = useClients();
   const { currentEntity } = useEntity();
   const [showClientAddressSuggestion, setShowClientAddressSuggestion] = useState(false);
