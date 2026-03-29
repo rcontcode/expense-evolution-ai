@@ -275,10 +275,22 @@ export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }
 
   return (
     <>
+      <LeadsBulkActions
+        selectedIds={selectedIds}
+        allLeads={allLeads || leads}
+        onClearSelection={clearSelection}
+        allTags={allTags}
+      />
       <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[40px] px-2">
+                <Checkbox
+                  checked={selectedIds.size === leads.length && leads.length > 0}
+                  onCheckedChange={toggleSelectAll}
+                />
+              </TableHead>
               <TableHead className="w-[40px]"></TableHead>
               <SortableHeader label="Nombre" sortKey="name" {...sortProps} />
               <SortableHeader label="Prioridad" sortKey="priority" {...sortProps} />
