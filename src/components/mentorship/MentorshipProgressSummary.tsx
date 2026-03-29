@@ -166,9 +166,16 @@ export function MentorshipProgressSummary() {
             className="h-2.5 flex-1"
             indicatorClassName={level.barColor}
           />
-          <span className={cn('text-sm font-bold tabular-nums min-w-[3ch]', level.color)}>
-            {score}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className={cn('text-sm font-bold tabular-nums min-w-[3ch]', level.color)}>
+              {score}
+            </span>
+            {scoreDelta !== null && scoreDelta !== 0 && (
+              <span className={cn('text-[10px] font-medium', scoreDelta > 0 ? 'text-emerald-500' : 'text-destructive')}>
+                {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
