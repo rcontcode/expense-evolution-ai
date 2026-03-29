@@ -55,7 +55,7 @@ const getStoryContent = (language: string) => language === 'es' ? {
     {
       icon: 'mentor',
       title: 'Educación que Transforma',
-      description: 'Aprende de los mejores: principios de Kiyosaki, hábitos de James Clear, metas de Brian Tracy. Una biblioteca financiera completa con seguimiento de progreso.',
+      description: 'Aprende de los mejores: principios de libertad financiera, hábitos inteligentes, metas SMART. Una biblioteca financiera completa con seguimiento de progreso.',
       stat: '50+ recursos educativos'
     }
   ],
@@ -147,7 +147,7 @@ const getStoryContent = (language: string) => language === 'es' ? {
     {
       icon: 'mentor',
       title: 'Transformative Education',
-      description: 'Learn from the best: Kiyosaki principles, James Clear habits, Brian Tracy goals. A complete financial library with progress tracking.',
+      description: 'Learn from the best: financial freedom principles, smart habits, SMART goals. A complete financial library with progress tracking.',
       stat: '50+ educational resources'
     }
   ],

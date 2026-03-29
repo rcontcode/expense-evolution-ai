@@ -25,16 +25,16 @@ import { Flame, Zap, Crown, Star, Trophy, Calendar, Target, TrendingUp, Sparkles
 // Motivational quotes for streaks
 const STREAK_QUOTES = {
   es: [
-    { quote: 'La consistencia es más importante que la perfección', author: 'Desconocido' },
-    { quote: 'Los pequeños pasos llevan a grandes cambios', author: 'Lao Tzu' },
-    { quote: 'La disciplina es el puente entre metas y logros', author: 'Jim Rohn' },
-    { quote: 'Cada día que avanzas es un día más cerca del éxito', author: 'Brian Tracy' },
+    { quote: 'La consistencia es más importante que la perfección' },
+    { quote: 'Los pequeños pasos llevan a grandes cambios' },
+    { quote: 'La disciplina es el puente entre metas y logros' },
+    { quote: 'Cada día que avanzas es un día más cerca del éxito' },
   ],
   en: [
-    { quote: 'Consistency is more important than perfection', author: 'Unknown' },
-    { quote: 'Small steps lead to big changes', author: 'Lao Tzu' },
-    { quote: 'Discipline is the bridge between goals and achievement', author: 'Jim Rohn' },
-    { quote: 'Every day you advance is one day closer to success', author: 'Brian Tracy' },
+    { quote: 'Consistency is more important than perfection' },
+    { quote: 'Small steps lead to big changes' },
+    { quote: 'Discipline is the bridge between goals and achievement' },
+    { quote: 'Every day you advance is one day closer to success' },
   ],
 };
 
@@ -303,7 +303,7 @@ const STREAK_QUOTES = {
         >
           <p className="text-[11px] text-white/70 italic flex items-start gap-1">
             <Sparkles className="h-3 w-3 shrink-0 mt-0.5" />
-            "{randomQuote.quote}" — {randomQuote.author}
+            "{randomQuote.quote}"
           </p>
         </motion.div>
       )}

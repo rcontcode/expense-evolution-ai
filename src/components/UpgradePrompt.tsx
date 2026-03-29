@@ -296,7 +296,7 @@ const friendlyMessages: Record<string, {
   mentorship: {
     celebration: '¡La SABIDURÍA FINANCIERA de los grandes te espera! 🧠📚',
     achievement: '🏆 Oportunidad de Crecimiento: "Financial Scholar"',
-    encouragement: 'Los principios de Kiyosaki, Tracy y los grandes han transformado millones de vidas. ¡La tuya puede ser la siguiente!',
+    encouragement: 'Los principios de finanzas personales han transformado millones de vidas. ¡La tuya puede ser la siguiente!',
     keepGoing: 'La educación financiera es la inversión con mayor ROI que existe.',
     whatYouDid: 'Buscas aprender de los mejores - ¡eso te distingue del 95%!',
     valueUnlocked: 'Pro incluye 8 componentes de mentoría con principios probados de éxito financiero.',
@@ -309,8 +309,8 @@ const friendlyMessages: Record<string, {
     quickWin: '💡 Tip Pro: El 89% de usuarios Pro reportan cambios positivos en su mentalidad financiera.',
     benefits: [
       { icon: Brain, title: '8 módulos de mentoría', description: 'Cuadrante de flujo, deuda buena/mala, SMART goals y más', value: 'Conocimiento completo' },
-      { icon: Award, title: 'Principios Kiyosaki', description: 'Padre Rico, Padre Pobre aplicado a tu vida real', value: 'Sabiduría probada' },
-      { icon: Target, title: 'Metas Tracy', description: 'Metodología de Brian Tracy para lograr cualquier objetivo', value: 'Sistema de éxito' },
+      { icon: Award, title: 'Principios de libertad financiera', description: 'Activos vs pasivos, flujo de caja aplicado a tu vida real', value: 'Sabiduría probada' },
+      { icon: Target, title: 'Metodología de metas SMART', description: 'Sistema probado para lograr cualquier objetivo financiero', value: 'Sistema de éxito' },
     ],
     fomo: '📚 Los usuarios Pro piensan diferente sobre el dinero. ¿Y tú?',
     urgency: '🧠 Tu mentalidad determina tu riqueza. Actualízala hoy.',
