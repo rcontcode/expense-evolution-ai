@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,9 @@ import {
 } from '@/lib/constants/mentorship-challenges';
 import { useChallengeAutoTracker } from '@/hooks/data/useChallengeAutoTracker';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { addExperience, useUnlockAchievement } from '@/hooks/data/useGamification';
+import confetti from 'canvas-confetti';
 
 const STORAGE_KEY = 'mentorship-weekly-challenges';
 
@@ -78,19 +81,24 @@ export function WeeklyChallengesCard() {
   const { language } = useLanguage();
   const es = language === 'es';
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const unlockAchievement = useUnlockAchievement();
   const [state, setState] = useState<ChallengeProgress>(loadProgress);
   const challenges = getChallengesForWeek(state.weekKey, state.difficulty);
   const { counts } = useChallengeAutoTracker();
+  const xpAwardedRef = useRef<Set<string>>(new Set());
+  const allDoneTriggeredRef = useRef(false);
 
   useEffect(() => { saveProgress(state); }, [state]);
 
-  // Auto-complete challenges based on real data
+  // Auto-complete challenges based on real data + award real XP
   useEffect(() => {
     if (!counts || Object.keys(counts).length === 0) return;
     
     setState(prev => {
       let updated = { ...prev };
       let changed = false;
+      const newlyCompleted: MentorshipChallenge[] = [];
 
       for (const challenge of challenges) {
         const realCount = counts[challenge.actionKeyword] || 0;
@@ -101,15 +109,33 @@ export function WeeklyChallengesCard() {
             xpEarned: updated.xpEarned + challenge.xpReward,
           };
           changed = true;
+          newlyCompleted.push(challenge);
           toast.success(
             es ? `🎉 ¡Reto completado! +${challenge.xpReward} XP` : `🎉 Challenge completed! +${challenge.xpReward} XP`
           );
         }
       }
 
+      // Award real XP for newly completed challenges
+      if (user && newlyCompleted.length > 0) {
+        for (const c of newlyCompleted) {
+          if (!xpAwardedRef.current.has(c.id)) {
+            xpAwardedRef.current.add(c.id);
+            addExperience(user.id, c.xpReward).catch(console.error);
+          }
+        }
+      }
+
+      // Check if ALL challenges completed for weekly master achievement
+      if (changed && updated.completed.length === challenges.length && challenges.length > 0 && !allDoneTriggeredRef.current) {
+        allDoneTriggeredRef.current = true;
+        unlockAchievement.mutate('mentorship_weekly_master');
+        confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+      }
+
       return changed ? updated : prev;
     });
-  }, [counts, challenges, es]);
+  }, [counts, challenges, es, user, unlockAchievement]);
 
   const setDifficulty = (d: ChallengeDifficulty) => {
     setState(prev => ({ ...prev, difficulty: d, completed: [], xpEarned: 0 }));

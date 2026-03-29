@@ -79,21 +79,22 @@ export function MentorshipProgressSummary() {
     return Math.min(100, s);
   }, [booksCompleted, booksInProgress, habitStreak, totalHabits, journalThisMonth, journalStreak, activeGoals, completedGoals]);
 
-  // Score persistence & milestones
+  // Score persistence, milestones & mentorship streak
   const prevScoreRef = useRef<number | null>(null);
+  const streakRef = useRef<number>(0);
+  
   useEffect(() => {
     const STORAGE_KEY = 'mentorship-score-history';
+    const STREAK_KEY = 'mentorship-visit-streak';
     try {
+      // Score history
       const stored = localStorage.getItem(STORAGE_KEY);
       const history = stored ? JSON.parse(stored) : {};
-      const weekKey = new Date().toISOString().slice(0, 10);
       
-      // Store previous score for delta
       if (history.lastScore !== undefined) {
         prevScoreRef.current = history.lastScore;
       }
       
-      // Check milestone crossings
       const lastScore = history.lastScore || 0;
       const milestones = [30, 50, 80, 100];
       for (const m of milestones) {
@@ -102,13 +103,29 @@ export function MentorshipProgressSummary() {
         }
       }
       
+      history.previousScore = history.lastScore ?? 0;
       history.lastScore = score;
-      history.lastUpdated = weekKey;
+      history.lastUpdated = new Date().toISOString().slice(0, 10);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+
+      // Mentorship visit streak
+      const streakStored = localStorage.getItem(STREAK_KEY);
+      const streakData = streakStored ? JSON.parse(streakStored) : { streak: 0, lastDate: '' };
+      const today = new Date().toISOString().slice(0, 10);
+      
+      if (streakData.lastDate === today) {
+        streakRef.current = streakData.streak;
+      } else {
+        const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+        const newStreak = streakData.lastDate === yesterday ? streakData.streak + 1 : 1;
+        streakRef.current = newStreak;
+        localStorage.setItem(STREAK_KEY, JSON.stringify({ streak: newStreak, lastDate: today }));
+      }
     } catch {}
   }, [score, es]);
 
   const scoreDelta = prevScoreRef.current !== null ? score - prevScoreRef.current : null;
+  const mentorshipStreak = streakRef.current;
 
   const level = getScoreLevel(score, es);
 
@@ -153,6 +170,11 @@ export function MentorshipProgressSummary() {
             <h3 className="text-sm font-semibold">
               {es ? 'Tu Progreso de Mentoría' : 'Your Mentorship Progress'}
             </h3>
+            {mentorshipStreak >= 2 && (
+              <Badge variant="secondary" className="text-[10px] h-5">
+                🔥 {mentorshipStreak} {es ? 'días' : 'days'}
+              </Badge>
+            )}
           </div>
           <Badge variant="outline" className={cn('text-xs font-semibold', level.color)}>
             {level.label}
