@@ -4,6 +4,7 @@ import { format, eachDayOfInterval, getDay, addMonths, isSameDay } from 'date-fn
 import { CalendarIcon, MapPin, Navigation, Sparkles, Building2, Loader2, Route, RotateCcw, Repeat, CheckCircle2, AlertCircle, Map, Calculator } from 'lucide-react';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
