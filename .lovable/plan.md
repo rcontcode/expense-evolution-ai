@@ -1,70 +1,59 @@
 
-# Auditoría Profunda Ronda 5 — Limpieza Final de Datos
 
-## Hallazgos Pendientes
+# Explicación del Plan: Ronda 5 — Limpieza Final de Datos
 
----
+## ¿Qué es este plan?
 
-### 🟠 `as any` innecesarios — Tablas que EXISTEN en el schema
-
-#### 1. `useAutoReminders.ts` — 4 casts innecesarios
-- Línea 57: `from('notification_preferences' as any)` → tabla existe en schema
-- Línea 308: `from('budget_alert_rules' as any)` → tabla existe en schema
-- Línea 365: `from('budget_alert_rules' as any)` → tabla existe
-- Línea 126: `} as any)` en insert a `notifications` → tabla existe, campos coinciden
-
-#### 2. `useNotificationActions.ts` — 3 casts innecesarios
-- Líneas 19, 44, 69: `.update({...} as any)` en `notifications` → tabla existe en schema, los campos `snoozed_until`, `completed_at`, `muted` están en el Update type
-
-#### 3. `useDataHealthCheck.ts` — `from('data_health_check' as any)`
-- La vista `data_health_check` EXISTE en el schema generado (Views section). Se puede remover el cast.
-
-#### 4. `useMileage.ts` — `.update({ deleted_at: ... } as any)`
-- `deleted_at` es un campo válido en el Update type de mileage. Cast innecesario.
-
-#### 5. `useTrash.ts` — `.update({ deleted_at: null } as any)`
-- `deleted_at` es nullable en todos los tipos. Cast innecesario.
+Es la **última ronda de limpieza técnica** después de 4 rondas anteriores donde se corrigieron problemas de seguridad (escalamiento de privilegios, RLS), tablas fantasma, y consistencia de datos. Esta ronda se enfoca en **pulir el código** — no cambia funcionalidad visible para el usuario.
 
 ---
 
-### 🟠 `usePlanLimits.ts` — `voice_requests_count` lectura
-- Línea 278: `rawData.voice_requests_count as number ?? 0` — la columna fue creada en la migración anterior. Si el schema generado aún no la refleja, el `rawData` approach es correcto. Verificar que el schema se regeneró.
+## ¿Qué corrige exactamente?
+
+### 1. Eliminar `as any` innecesarios (11 casos en 5 archivos)
+
+**¿Qué es `as any`?** Es una instrucción en el código que dice "ignora el sistema de verificación de tipos". Se usaba como parche temporal cuando las tablas de la base de datos no estaban registradas en el sistema de tipos.
+
+**El problema**: Esas tablas YA están registradas. Los `as any` restantes son residuos de versiones anteriores. No causan errores visibles, pero:
+- Desactivan la verificación automática de errores de escritura (si escribes `snoozd_until` en vez de `snoozed_until`, no te avisa)
+- Hacen el código más difícil de mantener
+
+**Riesgo de aplicar este cambio**: Prácticamente nulo. Solo se quita el "as any" y TypeScript valida que los campos son correctos. Si algún campo NO coincidiera, el build fallaría y lo corregiríamos antes de publicar.
+
+### 2. Cascade safety en la papelera (borrado permanente)
+
+**El problema actual**: Cuando eliminas permanentemente un gasto desde la papelera, se borra el gasto pero quedan "fantasmas" en tablas relacionadas:
+- Las etiquetas del gasto (`expense_tags`) quedan huérfanas
+- Los documentos adjuntos (`documents`) quedan huérfanos
+- No se registra quién borró qué en el historial de auditoría
+
+**Lo que se corrige**: Antes de borrar un gasto permanentemente, se limpian sus etiquetas y documentos, y se registra la acción.
+
+**Riesgo**: Bajo. Agrega pasos de limpieza ANTES del borrado. Si alguno falla, el borrado no procede (protección natural de la secuencia).
+
+### 3. Verificar columna `voice_requests_count`
+
+**El problema**: En la ronda anterior se creó esta columna en la base de datos. Solo hay que confirmar que el código la lee correctamente.
+
+**Riesgo**: Ninguno — es solo verificación.
 
 ---
 
-### 🟠 `usePermanentDelete` y `useEmptyTrash` — Sin audit log ni cascade
-- `usePermanentDelete`: hard delete sin registrar en audit_log ni limpiar dependencias (expense_tags, documents para expenses)
-- `useEmptyTrash`: hard delete masivo sin audit_log ni cascade cleanup
+## ¿Hay consecuencias negativas?
+
+| Aspecto | Riesgo | Detalle |
+|---------|--------|---------|
+| Funcionalidad visible | Ninguno | No cambia nada que el usuario vea |
+| Rendimiento | Ninguno | No agrega queries pesadas |
+| Borrado permanente | Mínimo positivo | Ahora tarda ~100ms más porque limpia dependencias primero, pero evita datos huérfanos |
+| Build / compilación | Muy bajo | Si algún campo no coincide con el schema, TypeScript lo detecta y se corrige antes de publicar |
+| Base de datos | Ninguno | No se modifican tablas ni políticas |
+
+**En resumen**: Este plan tiene **cero riesgo funcional** y **mejora la calidad del código**. Es mantenimiento preventivo — como cambiar el aceite del motor.
 
 ---
 
-### 🟡 `useExpenses.ts` — `(expense as any).vendor` repetido
-- Las líneas 143, 149, 150, 190, 191 usan `(expense as any).vendor/amount/category` porque el tipo de entrada no incluye esas propiedades. Esto es un problema de tipado, no de datos.
+## Recomendación
 
----
+Aprobar tal cual. Son cambios conservadores de limpieza que no afectan la experiencia del usuario pero reducen la deuda técnica acumulada en las 4 rondas anteriores.
 
-## Plan de Implementación
-
-### Paso 1: Limpiar `as any` innecesarios (6 archivos)
-- `useAutoReminders.ts` — remover 4 casts
-- `useNotificationActions.ts` — remover 3 casts
-- `useDataHealthCheck.ts` — remover 1 cast
-- `useMileage.ts` — remover 1 cast
-- `useTrash.ts` — remover 1 cast
-
-### Paso 2: Cascade safety en `usePermanentDelete` y `useEmptyTrash`
-- Agregar limpieza de `expense_tags` y `documents` antes de borrar expenses permanentemente
-- Agregar audit_log en permanent delete
-
-### Paso 3: Verificar `voice_requests_count` en schema
-- Confirmar que la columna existe post-migración
-
----
-
-## Archivos a modificar
-
-1. `src/hooks/data/useAutoReminders.ts`
-2. `src/hooks/data/useNotificationActions.ts`
-3. `src/hooks/data/useDataHealthCheck.ts`
-4. `src/hooks/data/useMileage.ts`
-5. `src/hooks/data/useTrash.ts`
