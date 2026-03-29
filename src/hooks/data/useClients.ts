@@ -138,6 +138,13 @@ export function useDeleteClientTestData() {
 
   return useMutation({
     mutationFn: async (clientId: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Get client name for audit
+      const { data: clientData } = await supabase.from('clients').select('name').eq('id', clientId).single();
+
+      // Get all expense IDs for this client to clean dependents
       const { data: clientExpenses } = await supabase
         .from('expenses')
         .select('id')
@@ -145,36 +152,50 @@ export function useDeleteClientTestData() {
       
       if (clientExpenses && clientExpenses.length > 0) {
         const expenseIds = clientExpenses.map(e => e.id);
-        const { error: tagsError } = await supabase
-          .from('expense_tags')
-          .delete()
-          .in('expense_id', expenseIds);
-        if (tagsError) throw tagsError;
+        
+        // Clean expense_tags (dependent records)
+        await supabase.from('expense_tags').delete().in('expense_id', expenseIds);
+        
+        // Clean documents linked to expenses
+        await supabase.from('documents').delete().in('expense_id', expenseIds);
       }
 
-      if (clientExpenses && clientExpenses.length > 0) {
-        const expenseIds = clientExpenses.map(e => e.id);
-        const { error: docsError } = await supabase
-          .from('documents')
-          .delete()
-          .in('expense_id', expenseIds);
-        if (docsError) throw docsError;
-      }
-
-      const { error: expensesError } = await supabase.from('expenses').delete().eq('client_id', clientId);
+      // Soft-delete expenses instead of hard delete
+      const { error: expensesError } = await supabase
+        .from('expenses')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('client_id', clientId);
       if (expensesError) throw expensesError;
 
-      const { error: incomeError } = await supabase.from('income').delete().eq('client_id', clientId);
+      // Soft-delete income
+      const { error: incomeError } = await supabase
+        .from('income')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('client_id', clientId);
       if (incomeError) throw incomeError;
 
+      // Mileage and contracts: soft-delete where possible
       const { error: mileageError } = await supabase.from('mileage').delete().eq('client_id', clientId);
       if (mileageError) throw mileageError;
 
       const { error: pcError } = await supabase.from('project_clients').delete().eq('client_id', clientId);
       if (pcError) throw pcError;
 
-      const { error: contractsError } = await supabase.from('contracts').delete().eq('client_id', clientId);
+      const { error: contractsError } = await supabase
+        .from('contracts')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('client_id', clientId);
       if (contractsError) throw contractsError;
+
+      // Audit log
+      await supabase.from('audit_log' as any).insert({
+        user_id: user.id,
+        action: 'bulk_delete_test_data',
+        entity_type: 'client',
+        entity_id: clientId,
+        entity_name: clientData?.name || null,
+        new_values: { affected_tables: ['expenses', 'income', 'mileage', 'contracts', 'project_clients'] },
+      } as any);
     },
     onSuccess: () => {
       afterClientDelete();

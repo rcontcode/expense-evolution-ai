@@ -28,7 +28,8 @@ export function useDataHealthCheck() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('data_health_check' as any)
-        .select('*');
+        .select('*')
+        .eq('user_id', user!.id);
 
       if (error) throw error;
       const issues = (data || []) as unknown as HealthIssue[];
