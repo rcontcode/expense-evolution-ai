@@ -11,23 +11,28 @@ import { BILL_CATEGORY_CONFIG, type BillCategory } from '@/lib/constants/bill-ca
 import { parseISO, format, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-export function PaymentChecklist() {
+interface PaymentChecklistProps {
+  selectedMonth: Date;
+}
+
+export function PaymentChecklist({ selectedMonth }: PaymentChecklistProps) {
   const { language } = useLanguage();
   const l = language === 'es';
   const { formatCurrency } = useFormatCurrency();
   const { data: bills } = useRecurringBills();
   const markPaid = useMarkBillPaid();
 
-  const now = new Date();
-  const monthInterval = { start: startOfMonth(now), end: endOfMonth(now) };
+  const monthInterval = useMemo(() => ({
+    start: startOfMonth(selectedMonth),
+    end: endOfMonth(selectedMonth),
+  }), [selectedMonth]);
 
-  // Bills due this month
   const thisMonthBills = useMemo(() => {
     if (!bills) return [];
     return bills
       .filter(b => b.status === 'active' && isWithinInterval(parseISO(b.next_due_date), monthInterval))
       .sort((a, b) => a.next_due_date.localeCompare(b.next_due_date));
-  }, [bills]);
+  }, [bills, monthInterval]);
 
   const paidCount = thisMonthBills.filter(b => {
     if (!b.last_paid_date) return false;
