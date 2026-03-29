@@ -154,22 +154,60 @@ export function CaptureHub() {
             ))}
           </div>
 
-          {/* Collapsible: What can I upload? */}
+          {/* Collapsible: Which one should I use? */}
           <Collapsible open={helpOpen} onOpenChange={setHelpOpen}>
             <CollapsibleTrigger asChild>
               <button className="flex items-center gap-1.5 text-xs text-primary hover:underline cursor-pointer">
                 <HelpCircle className="h-3.5 w-3.5" />
-                {l ? '¿Qué puedo subir?' : 'What can I upload?'}
+                {l ? '¿Cuál uso? + ¿Qué puedo subir?' : 'Which one? + What can I upload?'}
                 {helpOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {examples.map((ex) => (
-                  <Badge key={ex} variant="outline" className="text-xs font-normal">
-                    {ex}
-                  </Badge>
-                ))}
+              <div className="mt-3 space-y-3">
+                {/* Comparison table */}
+                <div className="rounded-lg border border-border/50 overflow-hidden">
+                  <table className="w-full text-[11px]">
+                    <thead>
+                      <tr className="bg-muted/50">
+                        <th className="text-left p-2 font-semibold">{l ? 'Método' : 'Method'}</th>
+                        <th className="text-left p-2 font-semibold">{l ? 'Resultado' : 'Result'}</th>
+                        <th className="text-left p-2 font-semibold">{l ? 'Mejor para' : 'Best for'}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-t border-border/30">
+                        <td className="p-2 font-medium">📸 {l ? 'Foto' : 'Photo'}</td>
+                        <td className="p-2 text-muted-foreground">{l ? 'Va a Bandeja del Caos → revisas → se crea gasto' : 'Goes to Chaos Inbox → you review → expense created'}</td>
+                        <td className="p-2 text-muted-foreground">{l ? 'Recibos, facturas, comprobantes' : 'Receipts, invoices, vouchers'}</td>
+                      </tr>
+                      <tr className="border-t border-border/30">
+                        <td className="p-2 font-medium">✍️ {l ? 'Texto' : 'Text'}</td>
+                        <td className="p-2 text-muted-foreground">{l ? 'Crea gasto/ingreso directamente (sin revisión)' : 'Creates expense/income directly (no review)'}</td>
+                        <td className="p-2 text-muted-foreground">{l ? 'Transacciones simples sin comprobante' : 'Simple transactions without receipt'}</td>
+                      </tr>
+                      <tr className="border-t border-border/30">
+                        <td className="p-2 font-medium">🏦 {l ? 'Banco' : 'Bank'}</td>
+                        <td className="p-2 text-muted-foreground">{l ? 'Importa al Análisis Bancario → concilia con gastos' : 'Imports to Banking Analysis → reconciles with expenses'}</td>
+                        <td className="p-2 text-muted-foreground">{l ? 'Extractos completos, detectar suscripciones' : 'Full statements, detect subscriptions'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* What can I upload */}
+                <div>
+                  <p className="text-[11px] font-medium text-muted-foreground mb-1.5">
+                    {l ? '📎 Tipos de documentos aceptados:' : '📎 Accepted document types:'}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {examples.map((ex) => (
+                      <Badge key={ex} variant="outline" className="text-xs font-normal">
+                        {ex}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               </div>
             </CollapsibleContent>
           </Collapsible>

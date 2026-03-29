@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { heroContent, guideSections, globalFAQ, connectionsDiagram } from '@/data/user-guide-content';
+import { heroContent, guideSections, globalFAQ, connectionsDiagram, dataEntryPoints, dataEntryFAQ } from '@/data/user-guide-content';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { PageHeader } from '@/components/PageHeader';
@@ -90,6 +90,9 @@ export default function UserGuide() {
                     {s.emoji} {t(s.title)}
                   </button>
                 ))}
+                <button onClick={() => scrollToSection('data-entry-points')} className="text-xs text-left w-full px-2 py-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                  🎯 {lang === 'es' ? 'Puntos de Entrada' : 'Entry Points'}
+                </button>
                 <button onClick={() => scrollToSection('connections')} className="text-xs text-left w-full px-2 py-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
                   🔗 {lang === 'es' ? 'Interconexiones' : 'Connections'}
                 </button>
@@ -299,6 +302,58 @@ export default function UserGuide() {
                   </Card>
                 </motion.div>
               ))}
+            </div>
+          )}
+
+          {/* ── BLOQUE 2.5: Data Entry Points ── */}
+          {!search.trim() && (
+            <div ref={el => { sectionRefs.current['data-entry-points'] = el; }}>
+              <motion.div variants={fadeIn} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+                <h2 className="text-xl font-bold flex items-center gap-2 mb-2">
+                  🎯 {lang === 'es' ? 'Puntos de Entrada de Datos' : 'Data Entry Points'}
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {lang === 'es' 
+                    ? 'EvoFinz tiene 8 formas de ingresar información financiera. Cada una tiene un propósito específico. Aquí te explicamos cuándo usar cada una.'
+                    : 'EvoFinz has 8 ways to enter financial information. Each has a specific purpose. Here we explain when to use each one.'}
+                </p>
+                <div className="space-y-3 mb-6">
+                  {dataEntryPoints.map((ep) => (
+                    <Card key={ep.id} className="p-4">
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl">{ep.emoji}</span>
+                        <div className="flex-1 space-y-1.5">
+                          <h4 className="text-sm font-bold">{t(ep.name)}</h4>
+                          <p className="text-xs text-muted-foreground">{t(ep.description)}</p>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px]">
+                            <span><span className="font-medium text-foreground">{lang === 'es' ? 'Destino:' : 'Destination:'}</span> <span className="text-muted-foreground">{t(ep.destination)}</span></span>
+                            <span><span className="font-medium text-foreground">{lang === 'es' ? 'Acceso:' : 'Access:'}</span> <span className="text-muted-foreground">{t(ep.access)}</span></span>
+                          </div>
+                          <p className="text-[11px] text-primary/80 italic">{t(ep.whenToUse)}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Data Entry FAQ */}
+                <Accordion type="single" collapsible className="space-y-1">
+                  <h4 className="text-sm font-semibold flex items-center gap-1.5 mb-2">
+                    <HelpCircle className="h-4 w-4 text-blue-500" />
+                    {lang === 'es' ? '¿Cuál es la diferencia?' : 'What\'s the difference?'}
+                  </h4>
+                  {dataEntryFAQ.map((faq, i) => (
+                    <AccordionItem key={i} value={`entry-faq-${i}`}>
+                      <AccordionTrigger className="text-sm">
+                        {t(faq.question)}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-sm text-muted-foreground">
+                        {t(faq.answer)}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </motion.div>
             </div>
           )}
 

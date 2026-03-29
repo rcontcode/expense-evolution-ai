@@ -367,19 +367,24 @@ export const PAGE_GUIDES = {
     tips: [
       { es: 'completar el perfil del cliente te permite generar reportes de reembolso profesionales.', en: 'completing the client profile allows you to generate professional reimbursement reports.' },
       { es: 'sube los contratos para que EvoFinz extraiga automáticamente los términos de reembolso.', en: 'upload contracts so EvoFinz automatically extracts reimbursement terms.' }
+    ],
+    crossReferences: [
+      { path: '/contracts', title: { es: 'Contratos', en: 'Contracts' }, relationship: { es: 'Los contratos subidos se vinculan a clientes y extraen términos de reembolso automáticamente', en: 'Uploaded contracts are linked to clients and automatically extract reimbursement terms' } },
+      { path: '/expenses', title: { es: 'Gastos', en: 'Expenses' }, relationship: { es: 'Los gastos asignados a clientes permiten generar reportes de reembolso y analizar rentabilidad', en: 'Expenses assigned to clients enable reimbursement reports and profitability analysis' } },
+      { path: '/income', title: { es: 'Ingresos', en: 'Income' }, relationship: { es: 'Los ingresos vinculados a clientes muestran la rentabilidad real de cada relación comercial', en: 'Income linked to clients shows the real profitability of each business relationship' } },
     ]
   },
   mileage: {
     pageKey: 'mileage',
-    pageTitle: { es: 'aquí registras tus viajes de negocios', en: 'here you log your business trips' },
+    pageTitle: { es: 'aquí registras tus viajes', en: 'here you log your trips' },
     pageDescription: { 
-      es: 'Cada kilómetro puede ser una deducción fiscal', 
-      en: 'Every kilometer can be a tax deduction' 
+      es: 'Control de kilometraje personal y profesional — con deducción fiscal si configuras tu jurisdicción', 
+      en: 'Personal and professional mileage tracking — with tax deduction if you configure your jurisdiction' 
     },
     goals: [
       { es: 'Registrar viaje reciente', en: 'Log recent trip' },
       { es: 'Ver deducciones acumuladas', en: 'View accumulated deductions' },
-      { es: 'Exportar para CRA', en: 'Export for CRA' }
+      { es: 'Exportar para declaración fiscal', en: 'Export for tax filing' }
     ],
     workflows: [
       { step: 1, title: { es: 'Registrar', en: 'Log' }, description: { es: 'Fecha y ruta', en: 'Date and route' } },
@@ -388,8 +393,12 @@ export const PAGE_GUIDES = {
       { step: 4, title: { es: 'Deducir', en: 'Deduct' }, description: { es: 'En impuestos', en: 'On taxes' } }
     ],
     tips: [
-      { es: 'cada país tiene tarifas oficiales por km que puedes deducir de impuestos.', en: 'each country has official per-km rates you can deduct from taxes.' },
-      { es: 'guarda un registro de cada viaje - las autoridades fiscales pueden solicitar comprobantes.', en: 'keep a record of each trip - tax authorities may request proof.' }
+      { es: 'el kilometraje funciona como registro personal para todos. Si configuras una entidad fiscal (CRA/SII), también calcula deducciones.', en: 'mileage works as personal tracking for everyone. If you configure a tax entity (CRA/SII), it also calculates deductions.' },
+      { es: 'guarda un registro de cada viaje — las autoridades fiscales pueden solicitar comprobantes.', en: 'keep a record of each trip — tax authorities may request proof.' }
+    ],
+    crossReferences: [
+      { path: '/clients', title: { es: 'Clientes', en: 'Clients' }, relationship: { es: 'Asigna viajes a clientes para reportes de reembolso de kilometraje', en: 'Assign trips to clients for mileage reimbursement reports' } },
+      { path: '/expenses', title: { es: 'Gastos', en: 'Expenses' }, relationship: { es: 'Las deducciones de kilometraje se reflejan en tu resumen fiscal de gastos', en: 'Mileage deductions are reflected in your tax expense summary' } },
     ]
   },
   'net-worth': {
@@ -407,6 +416,10 @@ export const PAGE_GUIDES = {
     ],
     tips: [
       { es: 'recuerda: un activo debe generar ingresos o apreciarse. Un auto que se deprecia NO es un activo.', en: 'remember: an asset must generate income or appreciate. A depreciating car is NOT an asset.' }
+    ],
+    crossReferences: [
+      { path: '/income', title: { es: 'Ingresos', en: 'Income' }, relationship: { es: 'Tus ingresos alimentan el crecimiento de tu patrimonio neto mes a mes', en: 'Your income feeds the growth of your net worth month by month' } },
+      { path: '/expenses', title: { es: 'Gastos', en: 'Expenses' }, relationship: { es: 'Los gastos reducen tu patrimonio — controlarlos es clave para crecer', en: 'Expenses reduce your net worth — controlling them is key to growth' } },
     ]
   },
   banking: {
@@ -488,6 +501,9 @@ export const PAGE_GUIDES = {
       { es: 'usa colores distintivos para identificar etiquetas de un vistazo.', en: 'use distinctive colors to identify tags at a glance.' },
       { es: 'puedes asignar múltiples etiquetas a un mismo gasto para mayor flexibilidad.', en: 'you can assign multiple tags to the same expense for more flexibility.' },
       { es: 'las etiquetas "Urgente" y "Pendiente" te ayudan a priorizar qué revisar primero.', en: '"Urgent" and "Pending" tags help you prioritize what to review first.' }
+    ],
+    crossReferences: [
+      { path: '/expenses', title: { es: 'Gastos', en: 'Expenses' }, relationship: { es: 'Las etiquetas se asignan a gastos para organización y filtrado avanzado', en: 'Tags are assigned to expenses for organization and advanced filtering' } },
     ]
   },
   'chaos-inbox': {
@@ -570,6 +586,11 @@ export const PAGE_GUIDES = {
     tips: [
       { es: 'tus notas en los contratos tienen prioridad sobre la extracción inteligente para clasificar gastos.', en: 'your notes on contracts take priority over smart extraction for classifying expenses.' },
       { es: 'los términos extraídos se usan automáticamente para sugerir reembolsos en gastos.', en: 'extracted terms are automatically used to suggest reimbursements on expenses.' }
+    ],
+    crossReferences: [
+      { path: '/clients', title: { es: 'Clientes', en: 'Clients' }, relationship: { es: 'Los contratos se vinculan a clientes para extraer términos de reembolso y facturación', en: 'Contracts are linked to clients to extract reimbursement and billing terms' } },
+      { path: '/chaos', title: { es: 'Bandeja del Caos', en: 'Chaos Inbox' }, relationship: { es: 'También puedes subir contratos desde la Bandeja del Caos — la IA los detecta y clasifica', en: 'You can also upload contracts from Chaos Inbox — AI detects and classifies them' } },
+      { path: '/expenses', title: { es: 'Gastos', en: 'Expenses' }, relationship: { es: 'Los gastos se clasifican automáticamente según los términos extraídos del contrato', en: 'Expenses are auto-classified based on terms extracted from the contract' } },
     ]
   }
 };
