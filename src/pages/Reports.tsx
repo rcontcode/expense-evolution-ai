@@ -90,6 +90,15 @@ const REPORT_CARDS: ReportCard[] = [
     descEn: 'All income for the year by type, source, and client.',
     formats: ['excel'],
   },
+  {
+    id: 'mileage',
+    icon: <Car className="h-6 w-6" />,
+    titleEs: 'Reporte de Kilometraje',
+    titleEn: 'Mileage Report',
+    descEs: 'Viajes de negocio con km recorridos, rutas, clientes y deducciones fiscales.',
+    descEn: 'Business trips with km driven, routes, clients, and tax deductions.',
+    formats: ['pdf', 'excel'],
+  },
 ];
 
 export default function Reports() {
