@@ -162,6 +162,10 @@ export function FinancialEducationCard() {
       resource_type: resource.resource_type,
       title: resource.title,
       status: newStatus,
+      pages_read: resource.pages_read ?? undefined,
+      total_pages: resource.total_pages ?? undefined,
+      minutes_consumed: resource.minutes_consumed ?? undefined,
+      total_minutes: resource.total_minutes ?? undefined,
     });
   };
 
@@ -415,16 +419,22 @@ export function FinancialEducationCard() {
                     </div>
                   </div>
                   
-                  {/* Progress Bar */}
+                  {/* Progress Bar or Total Pages Prompt */}
                   {resource.status === 'in_progress' && (
                     <div className="mt-2">
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="text-muted-foreground">
-                          {resource.pages_read || 0}/{resource.total_pages || '?'} {language === 'es' ? 'páginas' : 'pages'}
-                        </span>
-                        <span className="font-medium">{progressPercent}%</span>
-                      </div>
-                      <Progress value={progressPercent} className="h-2" />
+                      {!resource.total_pages || resource.total_pages === 0 ? (
+                        <TotalPagesPrompt resource={resource} updateResource={updateResource} language={language} />
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between text-xs mb-1">
+                            <span className="text-muted-foreground">
+                              {resource.pages_read || 0}/{resource.total_pages} {language === 'es' ? 'páginas' : 'pages'}
+                            </span>
+                            <span className="font-medium">{progressPercent}%</span>
+                          </div>
+                          <Progress value={Math.min(progressPercent, 100)} className="h-2" />
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

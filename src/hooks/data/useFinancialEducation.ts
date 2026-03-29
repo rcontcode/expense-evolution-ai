@@ -241,15 +241,45 @@ export function useUpdateEducationResource() {
         updateData.completed_date = new Date().toISOString().split('T')[0];
         updateData.progress_percentage = 100;
       }
-      if (data.status === 'in_progress' && !data.started_date) {
-        updateData.started_date = new Date().toISOString().split('T')[0];
+      
+      // When moving back to in_progress, recalculate real progress
+      if (data.status === 'in_progress') {
+        if (!data.started_date) {
+          updateData.started_date = new Date().toISOString().split('T')[0];
+        }
+        updateData.completed_date = null;
+        
+        // Fetch current resource data to recalculate progress
+        const { data: current } = await supabase
+          .from('financial_education')
+          .select('pages_read, total_pages, minutes_consumed, total_minutes')
+          .eq('id', id)
+          .eq('user_id', user.id)
+          .single();
+        
+        if (current) {
+          const pagesRead = data.pages_read ?? current.pages_read ?? 0;
+          const totalPages = data.total_pages ?? current.total_pages ?? 0;
+          const minutesConsumed = data.minutes_consumed ?? current.minutes_consumed ?? 0;
+          const totalMinutes = data.total_minutes ?? current.total_minutes ?? 0;
+          
+          if (totalPages > 0) {
+            updateData.progress_percentage = Math.min(100, Math.round((pagesRead / totalPages) * 100));
+          } else if (totalMinutes > 0) {
+            updateData.progress_percentage = Math.min(100, Math.round((minutesConsumed / totalMinutes) * 100));
+          } else {
+            updateData.progress_percentage = 0;
+          }
+        }
       }
 
-      // Calculate progress percentage if pages/minutes provided
-      if (data.pages_read && data.total_pages) {
-        updateData.progress_percentage = Math.min(100, Math.round((data.pages_read / data.total_pages) * 100));
-      } else if (data.minutes_consumed && data.total_minutes) {
-        updateData.progress_percentage = Math.min(100, Math.round((data.minutes_consumed / data.total_minutes) * 100));
+      // Calculate progress percentage if pages/minutes provided (for non-status updates)
+      if (data.status !== 'in_progress' && data.status !== 'completed') {
+        if (data.pages_read && data.total_pages) {
+          updateData.progress_percentage = Math.min(100, Math.round((data.pages_read / data.total_pages) * 100));
+        } else if (data.minutes_consumed && data.total_minutes) {
+          updateData.progress_percentage = Math.min(100, Math.round((data.minutes_consumed / data.total_minutes) * 100));
+        }
       }
 
       const { error } = await supabase
