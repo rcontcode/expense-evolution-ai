@@ -331,6 +331,7 @@ export function useUpdateAsset() {
 
 export function useDeleteAsset() {
   const { afterNetWorth } = useInvalidateRelated();
+  const { user } = useAuth();
   const { t } = useLanguage();
 
   return useMutation({

@@ -76,13 +76,13 @@ export function useTrashItems() {
 
       const { data: mileageData } = await supabase
         .from('mileage')
-        .select('id, purpose, distance_km, trip_date, deleted_at')
+        .select('id, purpose, kilometers, date, deleted_at')
         .not('deleted_at', 'is', null)
         .order('deleted_at', { ascending: false });
 
       mileageData?.forEach(m => items.push({
         id: m.id, type: 'mileage', name: m.purpose || 'Sin propósito',
-        details: `${m.distance_km} km — ${m.trip_date}`, deleted_at: m.deleted_at!,
+        details: `${m.kilometers} km — ${m.date}`, deleted_at: m.deleted_at!,
       }));
 
       items.sort((a, b) => new Date(b.deleted_at).getTime() - new Date(a.deleted_at).getTime());
