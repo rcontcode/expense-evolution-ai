@@ -151,10 +151,12 @@ export const useBetaCodes = () => {
   // Delete code
   const deleteCode = useMutation({
     mutationFn: async (codeId: string) => {
+      if (!user) throw new Error('Not authenticated');
       const { error } = await supabase
         .from('beta_invitation_codes')
         .delete()
-        .eq('id', codeId);
+        .eq('id', codeId)
+        .eq('created_by', user.id);
 
       if (error) throw error;
     },

@@ -159,12 +159,14 @@ export function useDocumentReviewActions() {
 
   const deleteDocument = useMutation({
     mutationFn: async (id: string) => {
+      if (!user) throw new Error('Not authenticated');
       // First get the document to find file path
       const { data: doc } = await supabase
         .from('documents')
         .select('file_path')
         .eq('id', id)
-        .single();
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       // Delete from storage if file exists
       if (doc?.file_path) {
@@ -177,7 +179,8 @@ export function useDocumentReviewActions() {
       const { error } = await supabase
         .from('documents')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) throw error;
     },
