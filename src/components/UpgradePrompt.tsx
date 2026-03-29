@@ -309,8 +309,8 @@ const friendlyMessages: Record<string, {
     quickWin: '💡 Tip Pro: El 89% de usuarios Pro reportan cambios positivos en su mentalidad financiera.',
     benefits: [
       { icon: Brain, title: '8 módulos de mentoría', description: 'Cuadrante de flujo, deuda buena/mala, SMART goals y más', value: 'Conocimiento completo' },
-      { icon: Award, title: 'Principios Kiyosaki', description: 'Padre Rico, Padre Pobre aplicado a tu vida real', value: 'Sabiduría probada' },
-      { icon: Target, title: 'Metas Tracy', description: 'Metodología de Brian Tracy para lograr cualquier objetivo', value: 'Sistema de éxito' },
+      { icon: Award, title: 'Principios de libertad financiera', description: 'Activos vs pasivos, flujo de caja aplicado a tu vida real', value: 'Sabiduría probada' },
+      { icon: Target, title: 'Metodología de metas SMART', description: 'Sistema probado para lograr cualquier objetivo financiero', value: 'Sistema de éxito' },
     ],
     fomo: '📚 Los usuarios Pro piensan diferente sobre el dinero. ¿Y tú?',
     urgency: '🧠 Tu mentalidad determina tu riqueza. Actualízala hoy.',
