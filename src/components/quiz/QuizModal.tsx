@@ -542,12 +542,12 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
     if (step === 16) {
       const consentContent = {
         es: {
-          consentLabel: "Acepto recibir consejos financieros y novedades de EvoFinz",
+          consentLabel: "Acepto recibir educación financiera y novedades de EvoFinz",
           consentDesc: "Puedes darte de baja en cualquier momento",
           vipReminder: `Tu amigo ${referralInfo?.referrerName} te espera en EvoFinz`,
         },
         en: {
-          consentLabel: "I agree to receive financial tips and updates from EvoFinz",
+          consentLabel: "I agree to receive financial education and updates from EvoFinz",
           consentDesc: "You can unsubscribe anytime",
           vipReminder: `Your friend ${referralInfo?.referrerName} is waiting for you on EvoFinz`,
         },

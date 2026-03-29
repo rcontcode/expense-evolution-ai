@@ -121,9 +121,9 @@ const NOTIFICATION_CATEGORIES: NotificationCategory[] = [
   {
     key: 'tips',
     icon: Lightbulb,
-    labelEs: 'Consejos Financieros',
+    labelEs: 'Tips Financieros',
     labelEn: 'Financial Tips',
-    descriptionEs: 'Consejos y oportunidades de ahorro',
+    descriptionEs: 'Tips y oportunidades de ahorro',
     descriptionEn: 'Tips and savings opportunities',
     color: 'text-yellow-500'
   },

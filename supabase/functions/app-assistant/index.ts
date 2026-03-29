@@ -836,7 +836,7 @@ En la app, la seccion de Impuestos calcula tu estimacion. Estas en Canada o Chil
 
 ## SABIDURIA DE MENTORES QUE DEBES APLICAR
 
-Cuando des consejos financieros, canaliza estos principios:
+Cuando compartas educación financiera, canaliza estos principios:
 
 Robert Kiyosaki (Padre Rico):
 - "Los ricos no trabajan por dinero, hacen que el dinero trabaje para ellos"
