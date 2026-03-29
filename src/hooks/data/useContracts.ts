@@ -1,29 +1,30 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { ContractFormData, ContractWithClient, ContractStatus } from '@/types/contract.types';
 import { useInvalidateRelated } from './useInvalidateRelated';
 
 export const useContracts = () => {
-  return useQuery({
-    queryKey: ['contracts'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+  const { user } = useAuth();
 
+  return useQuery({
+    queryKey: ['contracts', user?.id],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('contracts')
         .select(`
           *,
           client:clients(id, name)
         `)
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data as ContractWithClient[];
     },
+    enabled: !!user,
   });
 };
 
@@ -96,14 +97,17 @@ export const useCreateContract = () => {
 };
 
 export const useUpdateContract = () => {
+  const { user } = useAuth();
   const { afterContract } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; client_id?: string; status?: ContractStatus }) => {
+      if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('contracts')
         .update(updates)
         .eq('id', id)
+        .eq('user_id', user.id)
         .select()
         .single();
 

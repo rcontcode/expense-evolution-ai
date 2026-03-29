@@ -97,6 +97,7 @@ export function useDocumentReviewActions() {
 
   const rejectDocument = useMutation({
     mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
+      if (!user) throw new Error('Not authenticated');
       const { error } = await supabase
         .from('documents')
         .update({
@@ -104,7 +105,8 @@ export function useDocumentReviewActions() {
           user_corrections: reason,
           reviewed_at: new Date().toISOString(),
         })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) throw error;
     },
@@ -120,11 +122,13 @@ export function useDocumentReviewActions() {
 
   const addComment = useMutation({
     mutationFn: async ({ id, comment }: { id: string; comment: string }) => {
+      if (!user) throw new Error('Not authenticated');
       // Get existing corrections
       const { data: doc } = await supabase
         .from('documents')
         .select('user_corrections')
         .eq('id', id)
+        .eq('user_id', user.id)
         .single();
 
       const existingCorrections = doc?.user_corrections || '';
@@ -138,7 +142,8 @@ export function useDocumentReviewActions() {
           review_status: 'needs_correction',
           user_corrections: newCorrections,
         })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) throw error;
     },

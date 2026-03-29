@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -38,47 +39,48 @@ export interface TransactionWithMatches extends BankTransaction {
 }
 
 export function useBankTransactions() {
-  return useQuery({
-    queryKey: ['bank-transactions'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+  const { user } = useAuth();
 
+  return useQuery({
+    queryKey: ['bank-transactions', user?.id],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('bank_transactions')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
         .order('transaction_date', { ascending: false });
 
       if (error) throw error;
       return data as BankTransaction[];
     },
+    enabled: !!user,
   });
 }
 
 export function useBankTransactionsWithMatches() {
-  return useQuery({
-    queryKey: ['bank-transactions-with-matches'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+  const { user } = useAuth();
 
+  return useQuery({
+    queryKey: ['bank-transactions-with-matches', user?.id],
+    queryFn: async () => {
       // Fetch transactions
       const { data: transactions, error: txError } = await supabase
         .from('bank_transactions')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
         .eq('status', 'pending')
         .order('transaction_date', { ascending: false });
 
       if (txError) throw txError;
 
-      // Fetch expenses for matching
+      // Fetch expenses for matching (exclude deleted, limit for performance)
       const { data: expenses, error: expError } = await supabase
         .from('expenses')
         .select('id, date, amount, vendor, description, category')
-        .eq('user_id', user.id)
-        .order('date', { ascending: false });
+        .eq('user_id', user!.id)
+        .is('deleted_at', null)
+        .order('date', { ascending: false })
+        .limit(500);
 
       if (expError) throw expError;
 
@@ -93,6 +95,7 @@ export function useBankTransactionsWithMatches() {
 
       return transactionsWithMatches;
     },
+    enabled: !!user,
   });
 }
 
@@ -209,11 +212,13 @@ export function useCreateBankTransactions() {
 }
 
 export function useMatchTransaction() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const { language } = useLanguage();
 
   return useMutation({
     mutationFn: async ({ transactionId, expenseId }: { transactionId: string; expenseId: string }) => {
+      if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('bank_transactions')
         .update({ 
@@ -221,6 +226,7 @@ export function useMatchTransaction() {
           status: 'matched'
         })
         .eq('id', transactionId)
+        .eq('user_id', user.id)
         .select()
         .single();
 
@@ -241,15 +247,18 @@ export function useMatchTransaction() {
 }
 
 export function useMarkAsDiscrepancy() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const { language } = useLanguage();
 
   return useMutation({
     mutationFn: async (transactionId: string) => {
+      if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('bank_transactions')
         .update({ status: 'discrepancy' })
         .eq('id', transactionId)
+        .eq('user_id', user.id)
         .select()
         .single();
 
@@ -269,15 +278,18 @@ export function useMarkAsDiscrepancy() {
 }
 
 export function useDeleteBankTransaction() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const { language } = useLanguage();
 
   return useMutation({
     mutationFn: async (id: string) => {
+      if (!user) throw new Error('Not authenticated');
       const { error } = await supabase
         .from('bank_transactions')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) throw error;
     },

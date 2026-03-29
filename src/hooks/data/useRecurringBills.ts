@@ -115,15 +115,18 @@ export function useCreateBill() {
 }
 
 export function useUpdateBill() {
+  const { user } = useAuth();
   const { language } = useLanguage();
   const { afterBill } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: BillUpdate & { id: string }) => {
+      if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('recurring_bills')
         .update(updates as any)
         .eq('id', id)
+        .eq('user_id', user.id)
         .select()
         .single();
       if (error) throw error;
@@ -147,8 +150,9 @@ export function useDeleteBill() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: existing } = await supabase.from('recurring_bills').select('name, amount').eq('id', id).single();
-      const { error } = await supabase.from('recurring_bills').delete().eq('id', id);
+      if (!user) throw new Error('Not authenticated');
+      const { data: existing } = await supabase.from('recurring_bills').select('name, amount').eq('id', id).eq('user_id', user.id).single();
+      const { error } = await supabase.from('recurring_bills').delete().eq('id', id).eq('user_id', user.id);
       if (error) throw error;
 
       if (user) {
@@ -175,6 +179,7 @@ export function useMarkBillPaid() {
 
   return useMutation({
     mutationFn: async ({ billId, amount, paidDate, notes }: { billId: string; amount: number; paidDate?: string; notes?: string }) => {
+      if (!user) throw new Error('Not authenticated');
       const { error: payError } = await supabase.from('bill_payments').insert({
         user_id: user!.id,
         bill_id: billId,
@@ -188,6 +193,7 @@ export function useMarkBillPaid() {
         .from('recurring_bills')
         .select('*')
         .eq('id', billId)
+        .eq('user_id', user.id)
         .single();
       if (billError) throw billError;
 
@@ -201,7 +207,8 @@ export function useMarkBillPaid() {
           last_paid_date: paidDate || new Date().toISOString().split('T')[0],
           next_due_date: nextDue.toISOString().split('T')[0],
         })
-        .eq('id', billId);
+        .eq('id', billId)
+        .eq('user_id', user.id);
       if (updateError) throw updateError;
     },
     onSuccess: () => {

@@ -309,14 +309,17 @@ export function useCreateAsset() {
 
 export function useUpdateAsset() {
   const { afterNetWorth } = useInvalidateRelated();
+  const { user } = useAuth();
   const { t } = useLanguage();
 
   return useMutation({
     mutationFn: async ({ id, ...asset }: Partial<Asset> & { id: string }) => {
+      if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('assets')
         .update(asset)
         .eq('id', id)
+        .eq('user_id', user.id)
         .select()
         .single();
 
@@ -340,8 +343,9 @@ export function useDeleteAsset() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: existing } = await supabase.from('assets').select('name').eq('id', id).single();
-      const { error } = await supabase.from('assets').delete().eq('id', id);
+      if (!user) throw new Error('Not authenticated');
+      const { data: existing } = await supabase.from('assets').select('name').eq('id', id).eq('user_id', user.id).single();
+      const { error } = await supabase.from('assets').delete().eq('id', id).eq('user_id', user.id);
       if (error) throw error;
 
       if (user) {
@@ -400,14 +404,17 @@ export function useCreateLiability() {
 
 export function useUpdateLiability() {
   const { afterNetWorth } = useInvalidateRelated();
+  const { user } = useAuth();
   const { t } = useLanguage();
 
   return useMutation({
     mutationFn: async ({ id, ...liability }: Partial<Liability> & { id: string }) => {
+      if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('liabilities')
         .update(liability)
         .eq('id', id)
+        .eq('user_id', user.id)
         .select()
         .single();
 
@@ -431,8 +438,9 @@ export function useDeleteLiability() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: existing } = await supabase.from('liabilities').select('name').eq('id', id).single();
-      const { error } = await supabase.from('liabilities').delete().eq('id', id);
+      if (!user) throw new Error('Not authenticated');
+      const { data: existing } = await supabase.from('liabilities').select('name').eq('id', id).eq('user_id', user.id).single();
+      const { error } = await supabase.from('liabilities').delete().eq('id', id).eq('user_id', user.id);
       if (error) throw error;
 
       if (user) {

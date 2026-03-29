@@ -222,14 +222,17 @@ export function useCreateExpense() {
 }
 
 export function useUpdateExpense() {
+  const { user } = useAuth();
   const { afterExpense } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: ExpenseUpdate }) => {
+      if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('expenses')
         .update(updates)
         .eq('id', id)
+        .eq('user_id', user.id)
         .select()
         .single();
       

@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { insertAuditLog } from './useAuditLog';
 
 export interface FinancialJournalEntry {
   id: string;
@@ -143,6 +144,8 @@ export function useDeleteJournalEntry() {
     mutationFn: async (id: string) => {
       if (!user) throw new Error('No user');
 
+      const { data: existing } = await supabase.from('financial_journal').select('entry_type, content').eq('id', id).eq('user_id', user.id).single();
+
       const { error } = await supabase
         .from('financial_journal')
         .delete()
@@ -150,6 +153,12 @@ export function useDeleteJournalEntry() {
         .eq('user_id', user.id);
 
       if (error) throw error;
+
+      await insertAuditLog(user.id, {
+        action: 'delete', entity_type: 'journal_entry', entity_id: id,
+        entity_name: existing?.entry_type || null,
+        old_values: existing ? { entry_type: existing.entry_type, content: existing.content?.substring(0, 100) } : null,
+      });
     },
     onSuccess: () => {
       afterJournal();
