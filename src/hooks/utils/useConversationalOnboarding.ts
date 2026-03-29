@@ -602,7 +602,7 @@ export function useConversationalOnboarding() {
           .select('id')
           .eq('user_id', user.id)
           .eq('is_primary', true)
-          .single();
+          .maybeSingle();
         
         const entityData = {
           country: country,

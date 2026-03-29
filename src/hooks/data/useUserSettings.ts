@@ -24,7 +24,8 @@ export function useUserSettings() {
       const { data, error } = await supabase
         .from("settings")
         .select("*")
-        .single();
+        .eq("user_id", user!.id)
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -44,7 +45,8 @@ export function useUpdateUserPreferences() {
       const { data: current } = await supabase
         .from("settings")
         .select("preferences")
-        .single();
+        .eq("user_id", user.id)
+        .maybeSingle();
 
       const currentPrefs = (current?.preferences as UserPreferences) || {};
       const updatedPrefs = { ...currentPrefs, ...preferences };

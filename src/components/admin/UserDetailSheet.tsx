@@ -40,7 +40,7 @@ export const UserDetailSheet = ({ userId, onClose, language }: UserDetailSheetPr
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -55,7 +55,7 @@ export const UserDetailSheet = ({ userId, onClose, language }: UserDetailSheetPr
         .from('user_subscriptions')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
       return data;
     },
     enabled: !!userId,
@@ -71,7 +71,7 @@ export const UserDetailSheet = ({ userId, onClose, language }: UserDetailSheetPr
         .select('*')
         .eq('user_id', userId)
         .eq('period_start', currentMonth)
-        .single();
+        .maybeSingle();
       return data;
     },
     enabled: !!userId,
@@ -86,7 +86,7 @@ export const UserDetailSheet = ({ userId, onClose, language }: UserDetailSheetPr
         .select('role')
         .eq('user_id', userId)
         .eq('role', 'admin')
-        .single();
+        .maybeSingle();
       return !!data;
     },
     enabled: !!userId,
@@ -100,7 +100,7 @@ export const UserDetailSheet = ({ userId, onClose, language }: UserDetailSheetPr
         .from('beta_tester_points')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
       return data;
     },
     enabled: !!userId && user?.is_beta_tester,

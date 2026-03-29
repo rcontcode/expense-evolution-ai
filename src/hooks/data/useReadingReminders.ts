@@ -55,7 +55,7 @@ export const useReadingReminders = () => {
         .from('settings')
         .select('preferences')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching reading reminder settings:', error);
@@ -81,7 +81,7 @@ export const useReadingReminders = () => {
         .from('settings')
         .select('preferences')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       const currentPreferences = currentData?.preferences as Record<string, any> || {};
       
