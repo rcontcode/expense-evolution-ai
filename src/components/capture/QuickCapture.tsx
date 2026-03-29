@@ -218,6 +218,8 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
           console.error('Error saving extracted data:', error);
         } else {
           console.log('Extracted data saved to document:', savedDocumentId);
+          queryClient.invalidateQueries({ queryKey: ['documents-review'] });
+          queryClient.invalidateQueries({ queryKey: ['documents'] });
         }
       }
     }
