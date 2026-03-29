@@ -4,6 +4,7 @@ import { Client } from '@/types/expense.types';
 import { toast } from 'sonner';
 import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { insertAuditLog } from './useAuditLog';
 
 type ClientInsert = {
   name: string;
@@ -59,11 +60,11 @@ export function useCreateClient(defaultEntityId?: string) {
       
       await triggers.client(currentCount);
 
-      await supabase.from('audit_log' as any).insert({
-        user_id: user.id, action: 'create', entity_type: 'client', entity_id: data.id,
+      await insertAuditLog(user.id, {
+        action: 'create', entity_type: 'client', entity_id: data.id,
         entity_name: client.name, new_values: { name: client.name },
-      } as any);
-      
+      });
+
       return data as Client;
     },
     onSuccess: () => {
@@ -174,8 +175,11 @@ export function useDeleteClientTestData() {
         .eq('client_id', clientId);
       if (incomeError) throw incomeError;
 
-      // Mileage and contracts: soft-delete where possible
-      const { error: mileageError } = await supabase.from('mileage').delete().eq('client_id', clientId);
+      // Mileage: soft-delete
+      const { error: mileageError } = await supabase
+        .from('mileage')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('client_id', clientId);
       if (mileageError) throw mileageError;
 
       const { error: pcError } = await supabase.from('project_clients').delete().eq('client_id', clientId);
