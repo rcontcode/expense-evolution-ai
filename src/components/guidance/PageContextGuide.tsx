@@ -62,6 +62,7 @@ export function PageContextGuide({
   workflows,
   tips,
   goals,
+  crossReferences,
   className,
   onActionClick
 }: PageContextGuideProps) {
