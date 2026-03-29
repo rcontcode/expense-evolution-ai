@@ -175,6 +175,10 @@ export default function Mentorship() {
                 </div>
               </div>
             </motion.div>
+            
+            {/* Weekly Challenges */}
+            <WeeklyChallengesCard />
+            
             <div data-highlight="financial-library">
               <FinancialLibrary />
             </div>
