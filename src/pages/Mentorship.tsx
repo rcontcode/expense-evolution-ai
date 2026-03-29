@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,7 +22,7 @@ import {
   LearningPathCard,
 } from '@/components/mentorship';
 import { MentorshipLevelBanner } from '@/components/mentorship/MentorshipLevelBanner';
-import { Target, Sparkles, ListChecks, GraduationCap, BookOpen, TrendingUp, Brain, Coins, Atom } from 'lucide-react';
+import { Target, Sparkles, GraduationCap, Brain, Coins, Atom } from 'lucide-react';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { Layout } from '@/components/Layout';
 import { PageHeader } from '@/components/PageHeader';
@@ -83,6 +84,153 @@ const MENTOR_TABS = [
   { value: 'wellbeing', icon: '🧘', labelEs: 'Bienestar', labelEn: 'Wellbeing' },
 ];
 
+// Mentor micro-tips that rotate on each visit
+const MENTOR_TIPS: Record<string, { es: string[]; en: string[] }> = {
+  library: {
+    es: [
+      '💡 Leer 15 minutos diarios de finanzas cambia tu vida en 1 año',
+      '💡 Un libro puede ahorrarte años de errores financieros',
+      '💡 Los millonarios leen en promedio 2 libros al mes',
+    ],
+    en: [
+      '💡 Reading 15 min of finance daily changes your life in 1 year',
+      '💡 One book can save you years of financial mistakes',
+      '💡 Millionaires read an average of 2 books per month',
+    ],
+  },
+  atomic: {
+    es: [
+      '💡 "No subes al nivel de tus metas, caes al nivel de tus sistemas" — James Clear',
+      '💡 Mejora 1% cada día: en un año serás 37 veces mejor',
+      '💡 Vincula un hábito nuevo a uno que ya tienes (habit stacking)',
+    ],
+    en: [
+      '💡 "You don\'t rise to the level of your goals, you fall to the level of your systems" — Clear',
+      '💡 Improve 1% daily: in a year you\'ll be 37x better',
+      '💡 Link a new habit to one you already have (habit stacking)',
+    ],
+  },
+  kiyosaki: {
+    es: [
+      '💡 "¿Este gasto es un activo o un pasivo?" — Pregúntate siempre',
+      '💡 Los ricos compran activos, los pobres compran pasivos',
+      '💡 Tu casa no es un activo si no genera ingreso pasivo',
+    ],
+    en: [
+      '💡 "Is this expense an asset or a liability?" — Always ask yourself',
+      '💡 The rich buy assets, the poor buy liabilities',
+      '💡 Your home isn\'t an asset if it doesn\'t generate passive income',
+    ],
+  },
+  rohn: {
+    es: [
+      '💡 "La disciplina es el puente entre metas y logros" — Jim Rohn',
+      '💡 Eres el promedio de las 5 personas con las que más convives',
+      '💡 Cuida tu mente como cuidas tu cuenta bancaria',
+    ],
+    en: [
+      '💡 "Discipline is the bridge between goals and accomplishments" — Jim Rohn',
+      '💡 You\'re the average of the 5 people you spend the most time with',
+      '💡 Guard your mind like you guard your bank account',
+    ],
+  },
+  tracy: {
+    es: [
+      '💡 "El 3% más rico tiene metas escritas; el resto solo deseos" — Brian Tracy',
+      '💡 Usa el método ABCDE para priorizar tus tareas financieras',
+      '💡 Una meta sin plazo es solo un sueño',
+    ],
+    en: [
+      '💡 "The top 3% have written goals; the rest only have wishes" — Brian Tracy',
+      '💡 Use the ABCDE method to prioritize your financial tasks',
+      '💡 A goal without a deadline is just a dream',
+    ],
+  },
+  wellbeing: {
+    es: [
+      '💡 La ansiedad financiera reduce tu capacidad de tomar buenas decisiones',
+      '💡 5 minutos de respiración antes de decisiones financieras grandes',
+      '💡 Escribir tus preocupaciones financieras las hace más manejables',
+    ],
+    en: [
+      '💡 Financial anxiety reduces your ability to make good decisions',
+      '💡 5 minutes of breathing before big financial decisions',
+      '💡 Writing your financial worries makes them more manageable',
+    ],
+  },
+};
+
+function getRotatingTip(tab: string, lang: 'es' | 'en'): string {
+  const tips = MENTOR_TIPS[tab]?.[lang] || [];
+  if (tips.length === 0) return '';
+  // Rotate based on current date so it changes daily
+  const dayIndex = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+  return tips[dayIndex % tips.length];
+}
+
+function TabBanner({ tab, isMobile }: { tab: string; isMobile: boolean }) {
+  const { language } = useLanguage();
+  const theme = MENTOR_THEMES[tab as keyof typeof MENTOR_THEMES];
+  const tip = getRotatingTip(tab, language === 'es' ? 'es' : 'en');
+
+  const ICONS: Record<string, React.ReactNode> = {
+    library: <GraduationCap className={`h-4 w-4 sm:h-5 sm:w-5 ${theme.color}`} />,
+    atomic: <Atom className={`h-4 w-4 sm:h-5 sm:w-5 ${theme.color}`} />,
+    kiyosaki: <Coins className={`h-4 w-4 sm:h-5 sm:w-5 ${theme.color}`} />,
+    rohn: <Sparkles className={`h-4 w-4 sm:h-5 sm:w-5 ${theme.color}`} />,
+    tracy: <Target className={`h-4 w-4 sm:h-5 sm:w-5 ${theme.color}`} />,
+    wellbeing: <Brain className={`h-4 w-4 sm:h-5 sm:w-5 ${theme.color}`} />,
+  };
+
+  const TITLES: Record<string, { es: string; en: string }> = {
+    library: { es: 'Biblioteca Financiera', en: 'Financial Library' },
+    atomic: { es: 'Hábitos Atómicos', en: 'Atomic Habits' },
+    kiyosaki: { es: 'Kiyosaki', en: 'Kiyosaki' },
+    rohn: { es: 'Jim Rohn', en: 'Jim Rohn' },
+    tracy: { es: 'Brian Tracy', en: 'Brian Tracy' },
+    wellbeing: { es: 'Bienestar Financiero', en: 'Financial Wellbeing' },
+  };
+
+  const DESCS: Record<string, { es: string; en: string }> = {
+    library: { es: '100+ recursos curados para tu educación financiera 🎓', en: '100+ curated resources for your financial education 🎓' },
+    atomic: { es: 'Las 4 leyes del cambio de comportamiento aplicadas a tus finanzas 🧬', en: 'The 4 laws of behavior change applied to your finances 🧬' },
+    kiyosaki: { es: '"Padre Rico, Padre Pobre" - Cuadrante y libertad financiera 🏦', en: '"Rich Dad Poor Dad" - Cashflow quadrant and freedom 🏦' },
+    rohn: { es: 'Filosofía de desarrollo personal y disciplina financiera ✨', en: 'Personal development philosophy and financial discipline ✨' },
+    tracy: { es: 'Los 7 pasos para el éxito, método ABCDE y productividad financiera 🏆', en: 'The 7 steps to success, ABCDE method, and financial productivity 🏆' },
+    wellbeing: { es: 'Calma tu mente para tomar mejores decisiones financieras 🧠', en: 'Calm your mind to make better financial decisions 🧠' },
+  };
+
+  const es = language === 'es';
+  const title = TITLES[tab] || { es: '', en: '' };
+  const desc = DESCS[tab] || { es: '', en: '' };
+
+  return (
+    <motion.div
+      initial={isMobile ? false : { opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-gradient-to-r ${theme.gradient} border ${theme.border}`}
+    >
+      <div className="flex items-center gap-2 sm:gap-3">
+        <span className="text-2xl sm:text-3xl">{theme.icon}</span>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm sm:text-lg font-bold flex items-center gap-2">
+            {ICONS[tab]}
+            <span className="truncate">{es ? title.es : title.en}</span>
+          </h3>
+          <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
+            {es ? desc.es : desc.en}
+          </p>
+          {tip && (
+            <p className="text-xs text-muted-foreground/80 mt-1 italic hidden sm:block">
+              {tip}
+            </p>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function Mentorship() {
   const { language } = useLanguage();
   const isMobile = useIsMobile();
@@ -115,7 +263,7 @@ export default function Mentorship() {
             : 'Tools inspired by Kiyosaki, Jim Rohn, and Brian Tracy for your financial freedom 🚀') : undefined}
         />
 
-        {/* Level Banner - Gamification Incentive */}
+        {/* Level Banner */}
         <div data-highlight="mentorship-level">
           <MentorshipLevelBanner />
         </div>
@@ -128,8 +276,10 @@ export default function Mentorship() {
           <LearningPathCard />
         </div>
 
+        {/* Weekly Challenges - visible across all tabs */}
+        <WeeklyChallengesCard />
+
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4 sm:space-y-6" data-highlight="mentorship-tabs">
-          {/* Mobile: Icon-only tabs with tooltips */}
           <TooltipProvider>
             <TabsList className={`grid ${gridCols} w-full max-w-3xl mx-auto bg-muted/50 p-1 sm:p-1.5 rounded-xl`} data-highlight="mentor-selector">
               {visibleTabs.map((tab) => (
@@ -155,58 +305,15 @@ export default function Mentorship() {
 
           {/* Library Tab */}
           <TabsContent value="library" className="space-y-4 sm:space-y-6">
-            <motion.div
-              initial={isMobile ? false : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-gradient-to-r ${MENTOR_THEMES.library.gradient} border ${MENTOR_THEMES.library.border}`}
-            >
-              <div className="flex items-center gap-2 sm:gap-3">
-                <span className="text-2xl sm:text-3xl">📚</span>
-                <div className="min-w-0">
-                  <h3 className="text-sm sm:text-lg font-bold flex items-center gap-2">
-                    <GraduationCap className={`h-4 w-4 sm:h-5 sm:w-5 ${MENTOR_THEMES.library.color}`} />
-                    <span className="truncate">{language === 'es' ? 'Biblioteca Financiera' : 'Financial Library'}</span>
-                  </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-                    {language === 'es' 
-                      ? '100+ recursos curados para tu educación financiera 🎓'
-                      : '100+ curated resources for your financial education 🎓'}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-            
-            {/* Weekly Challenges */}
-            <WeeklyChallengesCard />
-            
+            <TabBanner tab="library" isMobile={isMobile} />
             <div data-highlight="financial-library">
               <FinancialLibrary />
             </div>
           </TabsContent>
 
-          {/* Atomic Habits Tab - James Clear */}
+          {/* Atomic Habits Tab */}
           <TabsContent value="atomic" className="space-y-4 sm:space-y-6">
-            <motion.div
-              initial={isMobile ? false : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-gradient-to-r ${MENTOR_THEMES.atomic.gradient} border ${MENTOR_THEMES.atomic.border}`}
-            >
-              <div className="flex items-center gap-2 sm:gap-3">
-                <span className="text-2xl sm:text-3xl">⚛️</span>
-                <div className="min-w-0">
-                  <h3 className="text-sm sm:text-lg font-bold flex items-center gap-2">
-                    <Atom className={`h-4 w-4 sm:h-5 sm:w-5 ${MENTOR_THEMES.atomic.color}`} />
-                    <span className="truncate">{language === 'es' ? 'Hábitos Atómicos' : 'Atomic Habits'}</span>
-                  </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-                    {language === 'es' 
-                      ? 'Las 4 leyes del cambio de comportamiento aplicadas a tus finanzas 🧬'
-                      : 'The 4 laws of behavior change applied to your finances 🧬'}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-            
+            <TabBanner tab="atomic" isMobile={isMobile} />
             <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
               <div className="lg:col-span-2">
                 <AtomicHabitsCard />
@@ -218,27 +325,7 @@ export default function Mentorship() {
 
           {/* Kiyosaki Tab */}
           <TabsContent value="kiyosaki" className="space-y-4 sm:space-y-6">
-            <motion.div
-              initial={isMobile ? false : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-gradient-to-r ${MENTOR_THEMES.kiyosaki.gradient} border ${MENTOR_THEMES.kiyosaki.border}`}
-            >
-              <div className="flex items-center gap-2 sm:gap-3">
-                <span className="text-2xl sm:text-3xl">💰</span>
-                <div className="min-w-0">
-                  <h3 className="text-sm sm:text-lg font-bold flex items-center gap-2">
-                    <Coins className={`h-4 w-4 sm:h-5 sm:w-5 ${MENTOR_THEMES.kiyosaki.color}`} />
-                    <span className="truncate">{language === 'es' ? 'Kiyosaki' : 'Kiyosaki'}</span>
-                  </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-                    {language === 'es' 
-                      ? '"Padre Rico, Padre Pobre" - Cuadrante y libertad financiera 🏦'
-                      : '"Rich Dad Poor Dad" - Cashflow quadrant and freedom 🏦'}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-            
+            <TabBanner tab="kiyosaki" isMobile={isMobile} />
             <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
               <CashflowQuadrantCard />
               <FinancialFreedomCard />
@@ -250,29 +337,8 @@ export default function Mentorship() {
 
           {/* Jim Rohn Tab */}
           <TabsContent value="rohn" className="space-y-4 sm:space-y-6">
-            <motion.div
-              initial={isMobile ? false : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-gradient-to-r ${MENTOR_THEMES.rohn.gradient} border ${MENTOR_THEMES.rohn.border}`}
-            >
-              <div className="flex items-center gap-2 sm:gap-3">
-                <span className="text-2xl sm:text-3xl">🌟</span>
-                <div className="min-w-0">
-                  <h3 className="text-sm sm:text-lg font-bold flex items-center gap-2">
-                    <Sparkles className={`h-4 w-4 sm:h-5 sm:w-5 ${MENTOR_THEMES.rohn.color}`} />
-                    <span className="truncate">{language === 'es' ? 'Jim Rohn' : 'Jim Rohn'}</span>
-                  </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-                    {language === 'es' 
-                      ? 'Filosofía de desarrollo personal y disciplina financiera ✨'
-                      : 'Personal development philosophy and financial discipline ✨'}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-            
+            <TabBanner tab="rohn" isMobile={isMobile} />
             <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
-              <PayYourselfFirstCard />
               <FinancialJournalCard />
               <FinancialEducationCard />
               <ReadingReminderSettings />
@@ -285,64 +351,19 @@ export default function Mentorship() {
 
           {/* Brian Tracy Tab */}
           <TabsContent value="tracy" className="space-y-4 sm:space-y-6">
-            <motion.div
-              initial={isMobile ? false : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-gradient-to-r ${MENTOR_THEMES.tracy.gradient} border ${MENTOR_THEMES.tracy.border}`}
-            >
-              <div className="flex items-center gap-2 sm:gap-3">
-                <span className="text-2xl sm:text-3xl">🎯</span>
-                <div className="min-w-0">
-                  <h3 className="text-sm sm:text-lg font-bold flex items-center gap-2">
-                    <Target className={`h-4 w-4 sm:h-5 sm:w-5 ${MENTOR_THEMES.tracy.color}`} />
-                    <span className="truncate">{language === 'es' ? 'Brian Tracy' : 'Brian Tracy'}</span>
-                  </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-                    {language === 'es' 
-                      ? 'Los 7 pasos para el éxito, método ABCDE y productividad financiera 🏆'
-                      : 'The 7 steps to success, ABCDE method, and financial productivity 🏆'}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-            
-            {/* Tracy Goal Wizard - Full Width */}
+            <TabBanner tab="tracy" isMobile={isMobile} />
             <TracyGoalWizard />
-            
             <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
               <SMARTGoalsCard />
-              <FinancialHabitsCard />
-              <FinancialEducationCard />
             </div>
           </TabsContent>
 
-          {/* Wellbeing Tab - Evo Ecosystem */}
+          {/* Wellbeing Tab */}
           {showWellbeing && (
             <TabsContent value="wellbeing" className="space-y-4 sm:space-y-6">
-              <motion.div
-                initial={isMobile ? false : { opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-gradient-to-r ${MENTOR_THEMES.wellbeing.gradient} border ${MENTOR_THEMES.wellbeing.border}`}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <span className="text-2xl sm:text-3xl">🧘</span>
-                  <div className="min-w-0">
-                    <h3 className="text-sm sm:text-lg font-bold flex items-center gap-2">
-                      <Brain className={`h-4 w-4 sm:h-5 sm:w-5 ${MENTOR_THEMES.wellbeing.color}`} />
-                      <span className="truncate">{language === 'es' ? 'Bienestar Financiero' : 'Financial Wellbeing'}</span>
-                    </h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-                      {language === 'es' 
-                        ? 'Calma tu mente para tomar mejores decisiones financieras 🧠'
-                        : 'Calm your mind to make better financial decisions 🧠'}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-
+              <TabBanner tab="wellbeing" isMobile={isMobile} />
               <UnifiedQuoteBanner />
               <EcosystemPromoCard />
-              
               <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {isEnabled('ecosystem_breathing') && <FinancialBreathingExercise />}
                 {isEnabled('ecosystem_focus_timer') && <FinancialFocusTimer />}
