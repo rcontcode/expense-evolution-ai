@@ -1010,7 +1010,9 @@ export type Database = {
           file_name: string
           file_path: string
           file_type: string | null
+          group_id: string | null
           id: string
+          page_order: number | null
           reimbursement_terms: Json | null
           renewal_notice_days: number | null
           start_date: string | null
@@ -1036,7 +1038,9 @@ export type Database = {
           file_name: string
           file_path: string
           file_type?: string | null
+          group_id?: string | null
           id?: string
+          page_order?: number | null
           reimbursement_terms?: Json | null
           renewal_notice_days?: number | null
           start_date?: string | null
@@ -1062,7 +1066,9 @@ export type Database = {
           file_name?: string
           file_path?: string
           file_type?: string | null
+          group_id?: string | null
           id?: string
+          page_order?: number | null
           reimbursement_terms?: Json | null
           renewal_notice_days?: number | null
           start_date?: string | null

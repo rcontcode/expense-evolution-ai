@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,13 +9,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ContractWithClient } from '@/types/contract.types';
-import { MoreVertical, Eye, Trash2, Download, FileText, CheckCircle2, AlertTriangle, XCircle, Calendar, Sparkles, User } from 'lucide-react';
+import { MoreVertical, Eye, Trash2, Download, FileText, CheckCircle2, AlertTriangle, XCircle, Calendar, Sparkles, User, Files } from 'lucide-react';
 import { format, differenceInDays, isPast } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 interface ContractCardProps {
   contract: ContractWithClient;
+  pageCount?: number;
   onView: (contract: ContractWithClient) => void;
   onDownload: (filePath: string, fileName: string) => void;
   onDelete: (id: string) => void;
@@ -61,8 +61,9 @@ const VALIDITY_CONFIG: Record<ValidityStatus, {
   not_set: { icon: Calendar, color: 'text-muted-foreground', bgColor: 'bg-muted' },
 };
 
-export function ContractCard({ contract, onView, onDownload, onDelete }: ContractCardProps) {
-  const { t, language } = useLanguage();
+export function ContractCard({ contract, pageCount = 1, onView, onDownload, onDelete }: ContractCardProps) {
+  const { language } = useLanguage();
+  const { t } = useLanguage();
   const locale = language === 'es' ? es : enUS;
   
   const validity = calculateValidity(
@@ -82,9 +83,17 @@ export function ContractCard({ contract, onView, onDownload, onDelete }: Contrac
               <FileText className="h-5 w-5 text-primary" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-sm truncate">
-                {contract.title || contract.file_name}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="font-medium text-sm truncate">
+                  {contract.title || contract.file_name}
+                </p>
+                {pageCount > 1 && (
+                  <Badge variant="secondary" className="text-[10px] h-5 px-1.5 gap-0.5 shrink-0">
+                    <Files className="h-3 w-3" />
+                    {pageCount}
+                  </Badge>
+                )}
+              </div>
               {contract.client?.name && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                   <User className="h-3 w-3" />

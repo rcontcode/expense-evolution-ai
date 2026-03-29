@@ -26,15 +26,15 @@ import {
 } from '@/components/ui/tooltip';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDeleteContract, useContracts } from '@/hooks/data/useContracts';
-import { ContractWithClient } from '@/types/contract.types';
+import { ContractWithClient, ContractGroup } from '@/types/contract.types';
 import { ContractDetailDialog } from '@/components/contracts/ContractDetailDialog';
 import { supabase } from '@/integrations/supabase/client';
-import { MoreVertical, Eye, Trash2, Download, FileText, CheckCircle2, AlertTriangle, XCircle, Calendar, Clock, Sparkles } from 'lucide-react';
+import { MoreVertical, Eye, Trash2, Download, FileText, CheckCircle2, AlertTriangle, XCircle, Calendar, Clock, Sparkles, Files } from 'lucide-react';
 import { format, differenceInDays, isPast } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 
 interface ContractsTableProps {
-  contracts: ContractWithClient[];
+  contractGroups: ContractGroup[];
 }
 
 const statusVariants = {
@@ -113,7 +113,7 @@ function calculateValidity(startDate: string | null, endDate: string | null, not
   };
 }
 
-export function ContractsTable({ contracts }: ContractsTableProps) {
+export function ContractsTable({ contractGroups }: ContractsTableProps) {
   const { t, language } = useLanguage();
   const deleteContract = useDeleteContract();
   const { refetch } = useContracts();
@@ -146,7 +146,7 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
 
   const locale = language === 'es' ? es : enUS;
 
-  if (contracts.length === 0) {
+  if (contractGroups.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <FileText className="h-12 w-12 text-muted-foreground mb-4" />
@@ -173,7 +173,8 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {contracts.map((contract) => {
+            {contractGroups.map((group) => {
+              const contract = group.primary;
               const validity = calculateValidity(
                 contract.start_date, 
                 contract.end_date, 
@@ -186,7 +187,15 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
                 <TableRow key={contract.id}>
                   <TableCell>
                     <div>
-                      <div className="font-medium">{contract.title || contract.file_name}</div>
+                      <div className="font-medium flex items-center gap-2">
+                        {contract.title || contract.file_name}
+                        {group.pageCount > 1 && (
+                          <Badge variant="secondary" className="text-[10px] h-5 px-1.5 gap-1">
+                            <Files className="h-3 w-3" />
+                            {group.pageCount} {language === 'es' ? 'págs' : 'pages'}
+                          </Badge>
+                        )}
+                      </div>
                       {contract.title && (
                         <div className="text-xs text-muted-foreground">{contract.file_name}</div>
                       )}
