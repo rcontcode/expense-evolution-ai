@@ -39,6 +39,7 @@ import { AdminCRMHome } from '@/components/admin/tabs/AdminCRMHome';
 import { AdminFollowUpsAgenda } from '@/components/admin/tabs/AdminFollowUpsAgenda';
 import { LeadMergeDialog } from '@/components/admin/LeadMergeDialog';
 import { useHotLeadRealtime } from '@/hooks/admin/useHotLeadRealtime';
+import { useUncontactedHotCount } from '@/hooks/admin/useUncontactedHotCount';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
@@ -112,6 +113,7 @@ const AdminCRM = () => {
 
   // Realtime notifications for HOT leads
   useHotLeadRealtime();
+  const { data: hotCount = 0 } = useUncontactedHotCount();
 
   // Fetch all leads for merge dialog
   const { data: allLeadsForMerge = [] } = useQuery({
