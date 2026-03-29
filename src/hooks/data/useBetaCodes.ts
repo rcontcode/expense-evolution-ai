@@ -32,6 +32,7 @@ interface CreateCodeParams {
 
 export const useBetaCodes = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   // Fetch all beta codes (admin only)
