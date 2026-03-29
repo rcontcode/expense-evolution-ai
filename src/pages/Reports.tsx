@@ -543,8 +543,7 @@ async function exportMileagePDF(
 
   const body = sorted.map(t => {
     const km = parseFloat(t.kilometers.toString());
-    const { calculateMileageDeductionByCountry: calcDed } = require('@/hooks/data/useMileage');
-    const ded = calcDed(km, runningKm, country, year);
+    const ded = calculateMileageDeductionByCountry(km, runningKm, country, year);
     runningKm += km;
     return [
       format(new Date(t.date), 'dd/MM/yyyy'),
