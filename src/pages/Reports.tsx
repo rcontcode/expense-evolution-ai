@@ -7,11 +7,13 @@ import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useRecurringBills, useBillPayments } from '@/hooks/data/useRecurringBills';
 import { useMonthlyPlanData } from '@/hooks/data/useMonthlyPlanData';
+import { useMileage, useMileageSummary, MileageWithClient, calculateMileageDeductionByCountry } from '@/hooks/data/useMileage';
+import { useEntity } from '@/contexts/EntityContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileDown, FileSpreadsheet, FileText, TrendingUp, PiggyBank, CalendarCheck, Receipt, Loader2, DollarSign, BarChart3 } from 'lucide-react';
+import { FileDown, FileSpreadsheet, FileText, TrendingUp, PiggyBank, CalendarCheck, Receipt, Loader2, DollarSign, BarChart3, Car } from 'lucide-react';
 import { toast } from 'sonner';
 import { startOfYear, endOfYear, format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
@@ -88,6 +90,15 @@ const REPORT_CARDS: ReportCard[] = [
     descEn: 'All income for the year by type, source, and client.',
     formats: ['excel'],
   },
+  {
+    id: 'mileage',
+    icon: <Car className="h-6 w-6" />,
+    titleEs: 'Reporte de Kilometraje',
+    titleEn: 'Mileage Report',
+    descEs: 'Viajes de negocio con km recorridos, rutas, clientes y deducciones fiscales.',
+    descEn: 'Business trips with km driven, routes, clients, and tax deductions.',
+    formats: ['pdf', 'excel'],
+  },
 ];
 
 export default function Reports() {
@@ -102,14 +113,58 @@ export default function Reports() {
 
   const yearStart = startOfYear(new Date(selectedYear, 0));
   const yearEnd = endOfYear(new Date(selectedYear, 0));
+  const { currentCountry } = useEntity();
 
   const { data: expenses } = useExpenses({ dateRange: { start: yearStart, end: yearEnd } });
   const { data: incomes } = useIncome();
   const { data: bills } = useRecurringBills();
   const { data: payments } = useBillPayments();
   const plan = useMonthlyPlanData();
+  const { data: mileageData } = useMileage(selectedYear);
+  const { data: mileageSummary } = useMileageSummary(selectedYear, currentCountry);
 
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
+
+  const yearIncomes = (incomes || []).filter(i => new Date(i.date).getFullYear() === selectedYear);
+  const activeBills = bills?.filter(b => b.status === 'active') || [];
+
+  const getPreview = (cardId: string): string | null => {
+    switch (cardId) {
+      case 'pnl': {
+        const totalInc = yearIncomes.reduce((s, i) => s + i.amount, 0);
+        const totalExp = (expenses || []).reduce((s, e) => s + Number(e.amount), 0);
+        const margin = totalInc > 0 ? ((totalInc - totalExp) / totalInc * 100).toFixed(0) : '0';
+        return `${yearIncomes.length} ${l ? 'ingresos' : 'incomes'} · ${(expenses || []).length} ${l ? 'gastos' : 'expenses'} · ${l ? 'Margen' : 'Margin'}: ${margin}%`;
+      }
+      case 'expenses': {
+        const total = (expenses || []).reduce((s, e) => s + Number(e.amount), 0);
+        return `${(expenses || []).length} ${l ? 'gastos' : 'expenses'} · ${fc(total)}`;
+      }
+      case 'budget':
+        return plan.totalIncome > 0
+          ? `${l ? 'Disponible' : 'Available'}: ${fc(plan.freeMoney - plan.totalSpent)} · ${l ? 'Ahorro' : 'Savings'}: ${plan.savingsRate.toFixed(0)}%`
+          : null;
+      case 'bills':
+        return activeBills.length > 0
+          ? `${activeBills.length} ${l ? 'activos' : 'active'} · ${fc(activeBills.reduce((s, b) => s + b.amount, 0))}/${l ? 'mes' : 'mo'}`
+          : null;
+      case 'tax': {
+        const deductible = (expenses || []).filter(e => e.status === 'deductible');
+        const totalDed = deductible.reduce((s, e) => s + Number(e.amount), 0);
+        return deductible.length > 0 ? `${deductible.length} ${l ? 'deducibles' : 'deductible'} · ${fc(totalDed)}` : null;
+      }
+      case 'income_summary':
+        return yearIncomes.length > 0
+          ? `${yearIncomes.length} ${l ? 'registros' : 'records'} · ${fc(yearIncomes.reduce((s, i) => s + i.amount, 0))}`
+          : null;
+      case 'mileage':
+        return mileageSummary
+          ? `${mileageSummary.totalTrips} ${l ? 'viajes' : 'trips'} · ${mileageSummary.totalKilometers.toFixed(0)} km${mileageSummary.totalDeductibleAmount > 0 ? ` · ${fc(mileageSummary.totalDeductibleAmount)}` : ''}`
+          : null;
+      default:
+        return null;
+    }
+  };
 
   const handleExport = async (reportId: string, format: 'pdf' | 'excel') => {
     const key = `${reportId}-${format}`;
@@ -178,6 +233,16 @@ export default function Reports() {
           await exportIncomeSummaryExcel(l, incomes || [], selectedYear);
           break;
         }
+        case 'mileage': {
+          const trips = mileageData || [];
+          if (trips.length === 0) { toast.info(l ? 'No hay viajes para exportar' : 'No trips to export'); setExporting(null); return; }
+          if (format === 'pdf') {
+            await exportMileagePDF(l, trips, selectedYear, currentCountry, fc, profile?.full_name, profile?.business_name);
+          } else {
+            await exportMileageExcel(l, trips, selectedYear, currentCountry, mileageSummary);
+          }
+          break;
+        }
       }
       toast.success(l ? `${format.toUpperCase()} exportado` : `${format.toUpperCase()} exported`);
     } catch (err) {
@@ -238,6 +303,11 @@ export default function Reports() {
               <CardDescription className="text-xs mt-1.5">
                 {l ? card.descEs : card.descEn}
               </CardDescription>
+              {getPreview(card.id) && (
+                <p className="text-xs font-medium text-primary/80 mt-1.5 bg-primary/5 rounded px-2 py-1">
+                  {getPreview(card.id)}
+                </p>
+              )}
             </CardHeader>
             <CardContent className="pt-0">
               <div className="flex gap-2">
@@ -447,6 +517,122 @@ async function exportIncomeSummaryExcel(l: boolean, incomes: any[], year: number
   const a = document.createElement('a');
   a.href = url;
   a.download = `income-${year}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function exportMileagePDF(
+  l: boolean, trips: MileageWithClient[], year: number,
+  country: any, fc: (n: number) => string, userName?: string | null, businessName?: string | null
+) {
+  const { default: jsPDF } = await import('jspdf');
+  const { default: autoTable } = await import('jspdf-autotable');
+  const doc = new jsPDF('landscape');
+  const now = new Date();
+
+  doc.setFontSize(18);
+  doc.text(l ? 'Reporte de Kilometraje' : 'Mileage Report', 14, 20);
+  doc.setFontSize(10);
+  doc.setTextColor(100);
+  const subtitle = [businessName, userName].filter(Boolean).join(' — ');
+  doc.text(`${subtitle ? subtitle + ' · ' : ''}${year}`, 14, 27);
+  doc.setTextColor(0);
+
+  const sorted = [...trips].sort((a, b) => a.date.localeCompare(b.date));
+  let runningKm = 0;
+
+  const body = sorted.map(t => {
+    const km = parseFloat(t.kilometers.toString());
+    const ded = calculateMileageDeductionByCountry(km, runningKm, country, year);
+    runningKm += km;
+    return [
+      format(new Date(t.date), 'dd/MM/yyyy'),
+      t.route.replace('[SAMPLE] ', ''),
+      `${km.toFixed(1)} km`,
+      t.client?.name?.replace('[SAMPLE] ', '') || '-',
+      t.purpose || '-',
+      ded ? fc(ded.deductible) : '-',
+    ];
+  });
+
+  const totalKm = sorted.reduce((s, t) => s + parseFloat(t.kilometers.toString()), 0);
+
+  autoTable(doc, {
+    startY: 34,
+    head: [[
+      l ? 'Fecha' : 'Date', l ? 'Ruta' : 'Route', 'Km',
+      l ? 'Cliente' : 'Client', l ? 'Propósito' : 'Purpose',
+      l ? 'Deducción' : 'Deduction',
+    ]],
+    body,
+    foot: [[l ? 'Total' : 'Total', '', `${totalKm.toFixed(1)} km`, '', '', '']],
+    theme: 'striped',
+    headStyles: { fillColor: [59, 130, 246] },
+    styles: { fontSize: 7, cellPadding: 2 },
+    columnStyles: { 1: { cellWidth: 60 }, 4: { cellWidth: 40 } },
+  });
+
+  const ph = doc.internal.pageSize.height;
+  doc.setFontSize(8);
+  doc.setTextColor(150);
+  doc.text(`EvoFinz — ${format(now, 'PPp', { locale: l ? es : enUS })}`, 14, ph - 10);
+  doc.save(`mileage-${year}.pdf`);
+}
+
+async function exportMileageExcel(
+  l: boolean, trips: MileageWithClient[], year: number, country: any, summary: any
+) {
+  const ExcelJS = await import('exceljs');
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet(l ? 'Viajes' : 'Trips');
+
+  ws.columns = [
+    { header: l ? 'Fecha' : 'Date', width: 12 },
+    { header: l ? 'Ruta' : 'Route', width: 35 },
+    { header: 'Km', width: 10 },
+    { header: l ? 'Cliente' : 'Client', width: 20 },
+    { header: l ? 'Propósito' : 'Purpose', width: 25 },
+    { header: l ? 'Deducción' : 'Deduction', width: 14 },
+  ];
+  ws.getRow(1).font = { bold: true };
+
+  const sorted = [...trips].sort((a, b) => a.date.localeCompare(b.date));
+  let runningKm = 0;
+
+  sorted.forEach(t => {
+    const km = parseFloat(t.kilometers.toString());
+    const ded = calculateMileageDeductionByCountry(km, runningKm, country, year);
+    runningKm += km;
+    ws.addRow([
+      t.date, t.route.replace('[SAMPLE] ', ''), km,
+      t.client?.name?.replace('[SAMPLE] ', '') || '', t.purpose || '',
+      ded?.deductible || 0,
+    ]);
+  });
+
+  ws.addRow([]);
+  ws.addRow([l ? 'Total' : 'Total', '', runningKm, '', '', summary?.totalDeductibleAmount || 0]).font = { bold: true };
+
+  // Summary sheet
+  if (summary) {
+    const ws2 = wb.addWorksheet(l ? 'Resumen' : 'Summary');
+    ws2.columns = [{ width: 25 }, { width: 18 }];
+    ws2.addRow([l ? 'Resumen de Kilometraje' : 'Mileage Summary', year]).font = { bold: true, size: 14 };
+    ws2.addRow([]);
+    ws2.addRow([l ? 'Total Viajes' : 'Total Trips', summary.totalTrips]);
+    ws2.addRow([l ? 'Total Km' : 'Total Km', summary.totalKilometers]);
+    ws2.addRow([l ? 'Deducción Total' : 'Total Deduction', summary.totalDeductibleAmount]);
+    if (summary.country === 'CA') {
+      ws2.addRow([l ? 'ITC Reclamable' : 'ITC Claimable', summary.itcClaimable]);
+    }
+  }
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mileage-${year}.xlsx`;
   a.click();
   URL.revokeObjectURL(url);
 }
