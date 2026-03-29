@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { startOfYear, endOfYear, format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { getBillCategoryLabel, getBillFrequencyLabel, getPaymentMethodLabel } from '@/lib/constants/bill-categories';
+import { PageHeader } from '@/components/PageHeader';
 
 interface ReportCard {
   id: string;
