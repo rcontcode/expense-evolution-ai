@@ -208,7 +208,7 @@ export function AddressAutocomplete({
         .select('id, use_count')
         .eq('user_id', user.id)
         .eq('address', addressData.address)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         await supabase
