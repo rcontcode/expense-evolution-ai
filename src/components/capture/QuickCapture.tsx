@@ -75,6 +75,7 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
   const createExpense = useCreateExpense();
   const { data: clients = [] } = useClients();
   const { currentEntity } = useEntity();
+  const queryClient = useQueryClient();
 
   const { isListening, transcript, isSupported: voiceSupported, toggleListening, setTranscript } = useVoiceInput({ onResult: () => {} });
   const { isListening: isCategoryListening, isSupported: categoryVoiceSupported, toggleListening: toggleCategoryListening, setTranscript: setCategoryTranscript } = useVoiceInput({
