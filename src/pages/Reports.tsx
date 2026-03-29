@@ -113,14 +113,58 @@ export default function Reports() {
 
   const yearStart = startOfYear(new Date(selectedYear, 0));
   const yearEnd = endOfYear(new Date(selectedYear, 0));
+  const { currentCountry } = useEntity();
 
   const { data: expenses } = useExpenses({ dateRange: { start: yearStart, end: yearEnd } });
   const { data: incomes } = useIncome();
   const { data: bills } = useRecurringBills();
   const { data: payments } = useBillPayments();
   const plan = useMonthlyPlanData();
+  const { data: mileageData } = useMileage(selectedYear);
+  const { data: mileageSummary } = useMileageSummary(selectedYear, currentCountry);
 
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
+
+  const yearIncomes = (incomes || []).filter(i => new Date(i.date).getFullYear() === selectedYear);
+  const activeBills = bills?.filter(b => b.status === 'active') || [];
+
+  const getPreview = (cardId: string): string | null => {
+    switch (cardId) {
+      case 'pnl': {
+        const totalInc = yearIncomes.reduce((s, i) => s + i.amount, 0);
+        const totalExp = (expenses || []).reduce((s, e) => s + Number(e.amount), 0);
+        const margin = totalInc > 0 ? ((totalInc - totalExp) / totalInc * 100).toFixed(0) : '0';
+        return `${yearIncomes.length} ${l ? 'ingresos' : 'incomes'} · ${(expenses || []).length} ${l ? 'gastos' : 'expenses'} · ${l ? 'Margen' : 'Margin'}: ${margin}%`;
+      }
+      case 'expenses': {
+        const total = (expenses || []).reduce((s, e) => s + Number(e.amount), 0);
+        return `${(expenses || []).length} ${l ? 'gastos' : 'expenses'} · ${fc(total)}`;
+      }
+      case 'budget':
+        return plan.totalIncome > 0
+          ? `${l ? 'Disponible' : 'Available'}: ${fc(plan.freeMoney - plan.totalSpent)} · ${l ? 'Ahorro' : 'Savings'}: ${plan.savingsRate.toFixed(0)}%`
+          : null;
+      case 'bills':
+        return activeBills.length > 0
+          ? `${activeBills.length} ${l ? 'activos' : 'active'} · ${fc(activeBills.reduce((s, b) => s + b.amount, 0))}/${l ? 'mes' : 'mo'}`
+          : null;
+      case 'tax': {
+        const deductible = (expenses || []).filter(e => e.status === 'deductible');
+        const totalDed = deductible.reduce((s, e) => s + Number(e.amount), 0);
+        return deductible.length > 0 ? `${deductible.length} ${l ? 'deducibles' : 'deductible'} · ${fc(totalDed)}` : null;
+      }
+      case 'income_summary':
+        return yearIncomes.length > 0
+          ? `${yearIncomes.length} ${l ? 'registros' : 'records'} · ${fc(yearIncomes.reduce((s, i) => s + i.amount, 0))}`
+          : null;
+      case 'mileage':
+        return mileageSummary
+          ? `${mileageSummary.totalTrips} ${l ? 'viajes' : 'trips'} · ${mileageSummary.totalKilometers.toFixed(0)} km${mileageSummary.totalDeductibleAmount > 0 ? ` · ${fc(mileageSummary.totalDeductibleAmount)}` : ''}`
+          : null;
+      default:
+        return null;
+    }
+  };
 
   const handleExport = async (reportId: string, format: 'pdf' | 'excel') => {
     const key = `${reportId}-${format}`;
