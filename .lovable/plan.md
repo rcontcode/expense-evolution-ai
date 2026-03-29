@@ -1,18 +1,31 @@
 
 
-# Fix: Textos Invisibles en Resultados del Quiz
+# Proyección Flexible con Navegación Temporal + Disclaimer de Datos
 
-## Problema
-La variante `compact` de `UrgencyBanner` usa `text-orange-600 dark:text-orange-400`. En el quiz (fondo siempre oscuro), si `dark` no está en `<html>`, se renderiza `text-orange-600` (oscuro sobre oscuro = invisible).
+## Problema actual
+1. La pestaña Proyección siempre empieza desde "ahora" y muestra 6 meses fijos — no se puede navegar
+2. El `MonthNavigator` se oculta explícitamente para la vista de proyección (`view !== 'projection'`)
+3. No hay ningún disclaimer sobre calidad/completitud de datos
 
-## Cambio
+## Solución
 
-**`src/components/landing/UrgencyBanner.tsx` (línea 103)**
-- Cambiar `text-orange-600 dark:text-orange-400` → `text-orange-400`
+### 1. Hacer la Proyección navegable
+- Mostrar el `MonthNavigator` también en la vista de proyección
+- Pasar `selectedMonth` a `CashFlowProjection` como punto de inicio
+- La proyección mostrará 6 meses **a partir del mes seleccionado** (no desde "ahora")
+- Agregar selector de rango: 3, 6, 12 meses
 
-## Revisión de QuizResults.tsx
-Revisé las 852 líneas de `QuizResults.tsx` — todos los textos ya usan colores explícitos claros (`text-white`, `text-white/90`, `text-amber-400`, `text-emerald-400`, etc.). No hay otros casos del patrón `dark:` problemático. Solo el `UrgencyBanner` necesita fix.
+### 2. Agregar disclaimer de calidad de datos
+- Banner informativo debajo del gráfico:
+  - ES: "📊 Esta proyección se basa en tus pagos fijos activos. Su precisión depende de la completitud y actualización de tus datos."
+  - EN: "📊 This projection is based on your active recurring bills. Its accuracy depends on the completeness and freshness of your data."
+- Si hay pocos bills (< 3), mostrar variante más visible: "Agrega más pagos fijos para una proyección más precisa"
 
-## Archivo a modificar
-1. `src/components/landing/UrgencyBanner.tsx` — 1 línea
+### 3. Cambios en BillsDashboard
+- Remover la condición `view !== 'projection'` del MonthNavigator — mostrarlo siempre
+- Pasar `selectedMonth` a `<CashFlowProjection selectedMonth={selectedMonth} />`
+
+## Archivos a modificar
+1. `src/components/bills/CashFlowProjection.tsx` — Aceptar `selectedMonth` prop, selector de rango (3/6/12), disclaimer de datos
+2. `src/components/bills/BillsDashboard.tsx` — Mostrar MonthNavigator en todas las vistas, pasar prop a CashFlowProjection
 
