@@ -116,21 +116,20 @@ export function useUpdateProject() {
 }
 
 export function useDeleteProject() {
+  const { user } = useAuth();
   const { afterProjectDelete } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: existing } = await supabase.from('projects').select('name').eq('id', id).single();
-      const { error } = await supabase.from('projects').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+      if (!user) throw new Error('Not authenticated');
+      const { data: existing } = await supabase.from('projects').select('name').eq('id', id).eq('user_id', user.id).single();
+      const { error } = await supabase.from('projects').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id);
       if (error) throw error;
 
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData.user) {
-        await insertAuditLog(userData.user.id, {
-          action: 'delete', entity_type: 'project', entity_id: id,
-          entity_name: existing?.name || null,
-        });
-      }
+      await insertAuditLog(user.id, {
+        action: 'delete', entity_type: 'project', entity_id: id,
+        entity_name: existing?.name || null,
+      });
     },
     onSuccess: () => {
       afterProjectDelete();

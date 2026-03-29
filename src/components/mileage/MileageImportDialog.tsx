@@ -10,6 +10,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInvalidateRelated } from '@/hooks/data/useInvalidateRelated';
+import { useMissionTracker } from '@/hooks/data/useMissions';
+import { useEntity } from '@/contexts/EntityContext';
 import { Upload, FileSpreadsheet, MapPin, Zap, Download, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { format, parse, isValid } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
@@ -40,6 +42,8 @@ export const MileageImportDialog = ({ open, onClose }: MileageImportDialogProps)
   const { language } = useLanguage();
   const { user } = useAuth();
   const { afterMileage } = useInvalidateRelated();
+  const { trackAction } = useMissionTracker();
+  const { currentEntity } = useEntity();
   
   const [activeTab, setActiveTab] = useState('csv');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -364,7 +368,8 @@ export const MileageImportDialog = ({ open, onClose }: MileageImportDialogProps)
           start_lat: trip.start_lat,
           start_lng: trip.start_lng,
           end_lat: trip.end_lat,
-          end_lng: trip.end_lng
+          end_lng: trip.end_lng,
+          entity_id: currentEntity?.id || null,
         }))
       );
 
@@ -375,6 +380,7 @@ export const MileageImportDialog = ({ open, onClose }: MileageImportDialogProps)
       });
 
       afterMileage();
+      trackAction('add_mileage', tripsToImport.length);
       
       setImportStep('complete');
       setTimeout(() => {

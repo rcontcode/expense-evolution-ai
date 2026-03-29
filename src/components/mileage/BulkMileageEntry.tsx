@@ -7,6 +7,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInvalidateRelated } from '@/hooks/data/useInvalidateRelated';
+import { useMissionTracker } from '@/hooks/data/useMissions';
+import { useEntity } from '@/contexts/EntityContext';
 import { Plus, Trash2, Save, Loader2, Calendar } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -40,6 +42,8 @@ export const BulkMileageEntry = ({ onComplete }: BulkMileageEntryProps) => {
   const { language } = useLanguage();
   const { user } = useAuth();
   const { afterMileage } = useInvalidateRelated();
+  const { trackAction } = useMissionTracker();
+  const { currentEntity } = useEntity();
   
   const [entries, setEntries] = useState<TripEntry[]>([
     createEmptyEntry(),
@@ -139,7 +143,8 @@ export const BulkMileageEntry = ({ onComplete }: BulkMileageEntryProps) => {
           kilometers: parseFloat(entry.kilometers),
           purpose: entry.purpose || null,
           start_address: entry.origin,
-          end_address: entry.destination
+          end_address: entry.destination,
+          entity_id: currentEntity?.id || null,
         }))
       );
 
@@ -150,6 +155,7 @@ export const BulkMileageEntry = ({ onComplete }: BulkMileageEntryProps) => {
       });
 
       afterMileage();
+      trackAction('add_mileage', validEntries.length);
       
       onComplete();
 

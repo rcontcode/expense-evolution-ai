@@ -250,27 +250,27 @@ export function useUpdateExpense() {
 }
 
 export function useDeleteExpense() {
+  const { user } = useAuth();
   const { afterExpense } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: existing } = await supabase.from('expenses').select('vendor, amount').eq('id', id).single();
+      if (!user) throw new Error('Not authenticated');
+      const { data: existing } = await supabase.from('expenses').select('vendor, amount').eq('id', id).eq('user_id', user.id).single();
       
       const { error } = await supabase
         .from('expenses')
         .update({ deleted_at: new Date().toISOString() })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
       
       if (error) throw error;
 
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData.user) {
-        await insertAuditLog(userData.user.id, {
-          action: 'delete', entity_type: 'expense', entity_id: id,
-          entity_name: existing?.vendor || null,
-          old_values: existing ? { vendor: existing.vendor, amount: existing.amount } : null,
-        });
-      }
+      await insertAuditLog(user.id, {
+        action: 'delete', entity_type: 'expense', entity_id: id,
+        entity_name: existing?.vendor || null,
+        old_values: existing ? { vendor: existing.vendor, amount: existing.amount } : null,
+      });
     },
     onSuccess: () => {
       afterExpense();

@@ -29,11 +29,11 @@ export const useContracts = () => {
 };
 
 export const useCreateContract = () => {
+  const { user } = useAuth();
   const { afterContract } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (data: ContractFormData) => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       const uploadedFiles: { fileName: string; filePath: string; fileType: string }[] = [];
@@ -139,7 +139,10 @@ export const useDeleteContract = () => {
         await supabase.storage.from('contracts').remove([contract.file_path]);
       }
 
-      const { error } = await supabase.from('contracts').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { error } = await supabase.from('contracts').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id);
       if (error) throw error;
     },
     onSuccess: () => {

@@ -94,25 +94,25 @@ export function useTrashItems() {
 }
 
 export function useRestoreItem() {
+  const { user } = useAuth();
   const { afterTrash, invalidate } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, type }: { id: string; type: TrashItemType }) => {
+      if (!user) throw new Error('Not authenticated');
       const table = type === 'expense' ? 'expenses' : type === 'income' ? 'income' : type === 'client' ? 'clients' : type === 'project' ? 'projects' : type === 'mileage' ? 'mileage' : 'contracts';
       
       const { error } = await supabase
         .from(table)
         .update({ deleted_at: null })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
       
       if (error) throw error;
 
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData.user) {
-        await insertAuditLog(userData.user.id, {
-          action: 'restore', entity_type: type, entity_id: id,
-        });
-      }
+      await insertAuditLog(user.id, {
+        action: 'restore', entity_type: type, entity_id: id,
+      });
     },
     onSuccess: () => {
       afterTrash();
@@ -126,13 +126,14 @@ export function useRestoreItem() {
 }
 
 export function usePermanentDelete() {
+  const { user } = useAuth();
   const { invalidate } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, type }: { id: string; type: TrashItemType }) => {
+      if (!user) throw new Error('Not authenticated');
       const table = type === 'expense' ? 'expenses' : type === 'income' ? 'income' : type === 'client' ? 'clients' : type === 'project' ? 'projects' : type === 'mileage' ? 'mileage' : 'contracts';
       
-      // Cascade cleanup for expenses (expense_tags + documents)
       if (type === 'expense') {
         await supabase.from('expense_tags').delete().eq('expense_id', id);
         await supabase.from('documents').update({ expense_id: null }).eq('expense_id', id);
@@ -141,17 +142,14 @@ export function usePermanentDelete() {
       const { error } = await supabase
         .from(table)
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
       
       if (error) throw error;
 
-      // Audit log
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData.user) {
-        await insertAuditLog(userData.user.id, {
-          action: 'permanent_delete', entity_type: type, entity_id: id,
-        });
-      }
+      await insertAuditLog(user.id, {
+        action: 'permanent_delete', entity_type: type, entity_id: id,
+      });
     },
     onSuccess: () => {
       invalidate('trash-items');
@@ -164,23 +162,24 @@ export function usePermanentDelete() {
 }
 
 export function useEmptyTrash() {
+  const { user } = useAuth();
   const { invalidate } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async () => {
-      // First, get all soft-deleted expense IDs for cascade cleanup
+      if (!user) throw new Error('Not authenticated');
+
       const { data: deletedExpenses } = await supabase
         .from('expenses')
         .select('id')
+        .eq('user_id', user.id)
         .not('deleted_at', 'is', null);
 
       if (deletedExpenses?.length) {
         const expenseIds = deletedExpenses.map(e => e.id);
-        // Clean up expense_tags for all deleted expenses
         for (const eid of expenseIds) {
           await supabase.from('expense_tags').delete().eq('expense_id', eid);
         }
-        // Unlink documents from deleted expenses
         for (const eid of expenseIds) {
           await supabase.from('documents').update({ expense_id: null }).eq('expense_id', eid);
         }
@@ -192,18 +191,15 @@ export function useEmptyTrash() {
         const { error } = await supabase
           .from(table)
           .delete()
+          .eq('user_id', user.id)
           .not('deleted_at', 'is', null);
         
         if (error) throw error;
       }
 
-      // Audit log
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData.user) {
-        await insertAuditLog(userData.user.id, {
-          action: 'empty_trash', entity_type: 'trash', entity_name: 'all',
-        });
-      }
+      await insertAuditLog(user.id, {
+        action: 'empty_trash', entity_type: 'trash', entity_name: 'all',
+      });
     },
     onSuccess: () => {
       invalidate('trash-items');

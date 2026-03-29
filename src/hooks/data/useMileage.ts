@@ -172,14 +172,17 @@ export const useCreateMileage = (defaultEntityId?: string) => {
 };
 
 export const useUpdateMileage = () => {
+  const { user } = useAuth();
   const { afterMileage } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, ...data }: MileageUpdate & { id: string }) => {
+      if (!user) throw new Error('Not authenticated');
       const { data: result, error } = await supabase
         .from('mileage')
         .update(data)
         .eq('id', id)
+        .eq('user_id', user.id)
         .select()
         .single();
 
@@ -197,25 +200,24 @@ export const useUpdateMileage = () => {
 };
 
 export const useDeleteMileage = () => {
+  const { user } = useAuth();
   const { afterMileage } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: existing } = await supabase.from('mileage').select('purpose, kilometers').eq('id', id).single();
-      // Soft delete
+      if (!user) throw new Error('Not authenticated');
+      const { data: existing } = await supabase.from('mileage').select('purpose, kilometers').eq('id', id).eq('user_id', user.id).single();
       const { error } = await supabase
         .from('mileage')
         .update({ deleted_at: new Date().toISOString() })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
       if (error) throw error;
 
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData.user) {
-        await insertAuditLog(userData.user.id, {
-          action: 'delete', entity_type: 'mileage', entity_id: id,
-          entity_name: existing?.purpose || null, old_values: existing ? { purpose: existing.purpose, kilometers: existing.kilometers } : null,
-        });
-      }
+      await insertAuditLog(user.id, {
+        action: 'delete', entity_type: 'mileage', entity_id: id,
+        entity_name: existing?.purpose || null, old_values: existing ? { purpose: existing.purpose, kilometers: existing.kilometers } : null,
+      });
     },
     onSuccess: () => {
       afterMileage();
