@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Plus, Tag as TagIcon, Edit, Trash2, Sparkles, Filter, Receipt, Search, BarChart3, Lightbulb, ArrowRight, AlertCircle, Plane, RefreshCw, Star, Briefcase, User, ChartPie } from 'lucide-react';
+import { Plus, Tag as TagIcon, Edit, Trash2, Sparkles, Filter, Receipt, Search, BarChart3, Lightbulb, ArrowRight, AlertCircle, Plane, RefreshCw, Star, Briefcase, User, ChartPie, Bot, ExternalLink, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTagsWithExpenseCount, useDeleteTag, useSeedDefaultTags } from '@/hooks/data/useTags';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,10 +13,10 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { InfoTooltip, TOOLTIP_CONTENT } from '@/components/ui/info-tooltip';
 import { TAG_COLOR_PALETTE, DEFAULT_TAGS } from '@/lib/constants/default-tags';
 import { PageHeader } from '@/components/PageHeader';
-// PageContextGuide and MiniWorkflow removed — title must be first for consistency
 import { TagAnalytics } from '@/components/analytics/TagAnalytics';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,7 +72,7 @@ const HOW_TO_STEPS = [
     step: 1,
     icon: Plus,
     title: { es: 'Crea Etiquetas', en: 'Create Tags' },
-    description: { es: 'Define nombre y color según tus necesidades', en: 'Define name and color based on your needs' },
+    description: { es: 'Aquí en esta página: elige nombre y color con el botón "Crear Etiqueta"', en: 'Right here: choose name and color with the "Create Tag" button' },
     color: 'text-pink-600',
     bgColor: 'bg-pink-100 dark:bg-pink-900/40',
   },
@@ -79,27 +80,84 @@ const HOW_TO_STEPS = [
     step: 2,
     icon: Receipt,
     title: { es: 'Asigna a Gastos', en: 'Assign to Expenses' },
-    description: { es: 'Desde el formulario de gastos, selecciona etiquetas', en: 'From the expense form, select tags' },
+    description: { es: 'Al crear/editar un gasto → campo "Etiquetas" al final del formulario', en: 'When creating/editing an expense → "Tags" field at the bottom of the form' },
     color: 'text-purple-600',
     bgColor: 'bg-purple-100 dark:bg-purple-900/40',
   },
   {
     step: 3,
     icon: Filter,
-    title: { es: 'Filtra en Tablas', en: 'Filter in Tables' },
-    description: { es: 'Usa etiquetas para encontrar gastos rápidamente', en: 'Use tags to find expenses quickly' },
+    title: { es: 'Filtra por Etiqueta', en: 'Filter by Tag' },
+    description: { es: 'En la tabla de gastos → filtro de etiquetas para encontrar rápido', en: 'In expenses table → tag filter to find quickly' },
     color: 'text-blue-600',
     bgColor: 'bg-blue-100 dark:bg-blue-900/40',
   },
   {
     step: 4,
     icon: BarChart3,
-    title: { es: 'Analiza Patrones', en: 'Analyze Patterns' },
-    description: { es: 'Ve estadísticas por etiqueta en el dashboard', en: 'See tag statistics in the dashboard' },
+    title: { es: 'Ve Estadísticas', en: 'View Statistics' },
+    description: { es: 'Pestaña "Estadísticas" aquí arriba → distribución y tendencias', en: '"Analytics" tab above → distribution and trends' },
     color: 'text-amber-600',
     bgColor: 'bg-amber-100 dark:bg-amber-900/40',
   },
 ];
+
+const TAG_ADVANTAGES = [
+  {
+    icon: TagIcon,
+    title: { es: 'Clasificación personalizada', en: 'Custom classification' },
+    description: { es: 'Las categorías son fijas, las etiquetas son tuyas. Crea las que necesites.', en: 'Categories are fixed, tags are yours. Create what you need.' },
+    color: 'from-violet-500 to-purple-600',
+    shadowColor: 'shadow-violet-500/20',
+  },
+  {
+    icon: Search,
+    title: { es: 'Filtrado rápido', en: 'Quick filtering' },
+    description: { es: 'Encuentra gastos de un viaje o proyecto en segundos desde la tabla.', en: 'Find expenses from a trip or project in seconds from the table.' },
+    color: 'from-blue-500 to-cyan-600',
+    shadowColor: 'shadow-blue-500/20',
+  },
+  {
+    icon: BarChart3,
+    title: { es: 'Análisis por etiqueta', en: 'Analysis by tag' },
+    description: { es: 'Descubre cuánto gastas en cada contexto con gráficos dedicados.', en: 'Discover how much you spend in each context with dedicated charts.' },
+    color: 'from-amber-500 to-orange-600',
+    shadowColor: 'shadow-amber-500/20',
+  },
+  {
+    icon: Bot,
+    title: { es: 'Sugerencias IA', en: 'AI suggestions' },
+    description: { es: 'La IA sugiere etiquetas automáticamente según el tipo de gasto.', en: 'AI suggests tags automatically based on expense type.' },
+    color: 'from-emerald-500 to-teal-600',
+    shadowColor: 'shadow-emerald-500/20',
+  },
+];
+
+// Simple duplicate detection based on common translation pairs
+const KNOWN_PAIRS: Record<string, string> = {
+  'urgent': 'urgente', 'urgente': 'urgent',
+  'recurring': 'recurrente', 'recurrente': 'recurring',
+  'pending': 'pendiente', 'pendiente': 'pending',
+  'reimbursed': 'reembolsado', 'reembolsado': 'reimbursed',
+  'personal': 'personal',
+  'marketing': 'marketing',
+  'premium client': 'cliente premium', 'cliente premium': 'premium client',
+  'business trip': 'viaje de negocios', 'viaje de negocios': 'business trip',
+};
+
+function findDuplicatePairs(tags: { name: string }[]): [string, string][] {
+  const pairs: [string, string][] = [];
+  const names = tags.map(t => t.name.toLowerCase());
+  const seen = new Set<string>();
+  for (let i = 0; i < names.length; i++) {
+    const pair = KNOWN_PAIRS[names[i]];
+    if (pair && names.includes(pair) && !seen.has(`${names[i]}-${pair}`) && !seen.has(`${pair}-${names[i]}`)) {
+      seen.add(`${names[i]}-${pair}`);
+      pairs.push([tags[i].name, tags[names.indexOf(pair)].name]);
+    }
+  }
+  return pairs;
+}
 
 export default function Tags() {
   const { t, language } = useLanguage();
@@ -109,6 +167,12 @@ export default function Tags() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const deleteMutation = useDeleteTag();
   const seedDefaultTags = useSeedDefaultTags();
+  const navigate = useNavigate();
+
+  const duplicatePairs = useMemo(() => {
+    if (!tags || tags.length === 0) return [];
+    return findDuplicatePairs(tags);
+  }, [tags]);
 
   const handleEdit = (tag: Tag) => {
     setSelectedTag(tag);
@@ -167,19 +231,82 @@ export default function Tags() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/30 shrink-0">
                   <TagIcon className="h-5 w-5 text-white" />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <h3 className="font-semibold text-sm">
-                    {language === 'es' ? '¿Para qué sirven las etiquetas?' : 'What are tags for?'}
+                    {language === 'es' ? '¿Qué son y para qué sirven?' : 'What are tags and what are they for?'}
                   </h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {language === 'es' 
-                      ? 'Las etiquetas te permiten clasificar gastos con criterios personalizados que van más allá de las categorías. Por ejemplo: marca gastos como "deducible", "reembolsable", "urgente" o "viaje de negocios". Después puedes filtrar y analizar por etiqueta para descubrir patrones, preparar declaraciones fiscales y tomar mejores decisiones financieras.'
-                      : 'Tags let you classify expenses with custom criteria beyond categories. For example: mark expenses as "deductible", "reimbursable", "urgent" or "business trip". Then filter and analyze by tag to discover patterns, prepare tax returns, and make better financial decisions.'}
+                      ? 'Las etiquetas son clasificaciones personalizadas que tú creas para organizar tus gastos más allá de las categorías fijas.'
+                      : 'Tags are custom labels you create to organize your expenses beyond the fixed categories.'}
                   </p>
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-foreground">
+                      📍 {language === 'es' ? '¿Dónde se asignan?' : 'Where are they assigned?'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {language === 'es' 
+                        ? 'Al crear o editar un gasto, encontrarás el campo "Etiquetas" al final del formulario. También la IA puede sugerirlas automáticamente.'
+                        : 'When creating or editing an expense, you\'ll find the "Tags" field at the bottom of the form. AI can also suggest them automatically.'}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-foreground">
+                      💡 {language === 'es' ? 'Ventajas concretas:' : 'Key benefits:'}
+                    </p>
+                    <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
+                      <li>{language === 'es' ? 'Filtra gastos deducibles para tu declaración fiscal' : 'Filter deductible expenses for your tax return'}</li>
+                      <li>{language === 'es' ? 'Agrupa gastos por viaje, proyecto o cliente' : 'Group expenses by trip, project, or client'}</li>
+                      <li>{language === 'es' ? 'Marca gastos pendientes de reembolso' : 'Mark expenses pending reimbursement'}</li>
+                      <li>{language === 'es' ? 'Analiza patrones por etiqueta en la pestaña Estadísticas' : 'Analyze patterns by tag in the Analytics tab'}</li>
+                    </ul>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-1 text-xs h-7"
+                    onClick={() => navigate('/expenses')}
+                  >
+                    <ExternalLink className="mr-1 h-3 w-3" />
+                    {language === 'es' ? 'Ir a Gastos para asignar etiquetas' : 'Go to Expenses to assign tags'}
+                  </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
+
+          {/* Advantages Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {TAG_ADVANTAGES.map((adv, idx) => {
+              const Icon = adv.icon;
+              return (
+                <Card key={idx} className="border-primary/10 hover:border-primary/30 transition-all hover:shadow-md">
+                  <CardContent className="p-3 flex flex-col items-center text-center gap-2">
+                    <div className={cn(
+                      "w-9 h-9 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-md",
+                      adv.color, adv.shadowColor
+                    )}>
+                      <Icon className="h-4 w-4 text-white" />
+                    </div>
+                    <p className="text-xs font-semibold">{adv.title[language]}</p>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">{adv.description[language]}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Duplicate Alert */}
+          {duplicatePairs.length > 0 && (
+            <Alert className="border-amber-500/30 bg-amber-500/5">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-xs">
+                {language === 'es' 
+                  ? `Posibles etiquetas duplicadas detectadas: ${duplicatePairs.map(([a, b]) => `"${a}" y "${b}"`).join(', ')}. Considera consolidarlas para mantener orden.`
+                  : `Possible duplicate tags detected: ${duplicatePairs.map(([a, b]) => `"${a}" and "${b}"`).join(', ')}. Consider consolidating them to stay organized.`}
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* Tabs for Tags and Analytics */}
           <Tabs defaultValue="tags" className="w-full">
