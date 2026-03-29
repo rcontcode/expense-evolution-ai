@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useContractUrl } from '@/hooks/data/useContracts';
+import { useContractUrl, useContractGroup } from '@/hooks/data/useContracts';
 import { ContractWithClient } from '@/types/contract.types';
 import { ContractTermsViewer } from './ContractTermsViewer';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
-import { FileText, Calendar, Building2, DollarSign, Loader2 } from 'lucide-react';
+import { FileText, Calendar, Building2, DollarSign, Loader2, ChevronLeft, ChevronRight, Files } from 'lucide-react';
 import { FullScreenDialog } from '@/components/mobile/FullScreenDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -24,15 +26,24 @@ export function ContractDetailDialog({
   onContractUpdate 
 }: ContractDetailDialogProps) {
   const { t, language } = useLanguage();
-  const { data: previewUrl, isLoading: loadingUrl } = useContractUrl(contract.file_path);
   const locale = language === 'es' ? es : enUS;
+  const isMobile = useIsMobile();
+  
+  // Multi-page support
+  const { data: groupPages } = useContractGroup(contract.group_id);
+  const pages = groupPages && groupPages.length > 1 ? groupPages : [contract];
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const currentPage = pages[currentPageIndex] || contract;
+  
+  const { data: previewUrl, isLoading: loadingUrl } = useContractUrl(currentPage.file_path);
 
   // Parse extracted_terms safely
   const extractedTerms = typeof contract.extracted_terms === 'object' 
     ? contract.extracted_terms 
     : null;
 
-  const isMobile = useIsMobile();
+  const totalPages = pages.length;
+  const isMultiPage = totalPages > 1;
 
   return (
     <FullScreenDialog
@@ -48,20 +59,75 @@ export function ContractDetailDialog({
             <span className="text-sm font-medium text-muted-foreground">
               {language === 'es' ? 'Documento' : 'Document'}
             </span>
-            <Badge variant="outline" className="text-xs">{contract.file_name}</Badge>
+            <div className="flex items-center gap-2">
+              {isMultiPage && (
+                <Badge variant="secondary" className="text-xs gap-1">
+                  <Files className="h-3 w-3" />
+                  {totalPages} {language === 'es' ? 'páginas' : 'pages'}
+                </Badge>
+              )}
+              <Badge variant="outline" className="text-xs">{currentPage.file_name}</Badge>
+            </div>
           </div>
+
+          {/* Multi-page navigation */}
+          {isMultiPage && (
+            <div className="flex items-center justify-between mb-2 p-2 bg-muted/50 rounded-lg">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentPageIndex(i => Math.max(0, i - 1))}
+                disabled={currentPageIndex === 0}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                {language === 'es' ? 'Anterior' : 'Previous'}
+              </Button>
+              <span className="text-sm font-medium">
+                {language === 'es' ? 'Página' : 'Page'} {currentPageIndex + 1} / {totalPages}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentPageIndex(i => Math.min(totalPages - 1, i + 1))}
+                disabled={currentPageIndex === totalPages - 1}
+              >
+                {language === 'es' ? 'Siguiente' : 'Next'}
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          )}
+
+          {/* Page thumbnails strip */}
+          {isMultiPage && (
+            <div className="flex gap-1.5 mb-2 overflow-x-auto pb-1">
+              {pages.map((page, index) => (
+                <button
+                  key={page.id}
+                  onClick={() => setCurrentPageIndex(index)}
+                  className={`shrink-0 w-12 h-12 rounded-md border-2 flex items-center justify-center text-xs font-medium transition-all ${
+                    index === currentPageIndex
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/50'
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="flex-1 bg-muted rounded-lg overflow-hidden">
             {loadingUrl ? (
               <div className="flex items-center justify-center h-full min-h-[200px]">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : previewUrl ? (
-              contract.file_type?.includes('pdf') ? (
+              currentPage.file_type?.includes('pdf') ? (
                 <iframe src={previewUrl} className="w-full h-full min-h-[300px]" />
               ) : (
                 <img 
                   src={previewUrl} 
-                  alt={contract.file_name}
+                  alt={currentPage.file_name}
                   className="w-full h-full object-contain"
                 />
               )

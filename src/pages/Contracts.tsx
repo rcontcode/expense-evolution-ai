@@ -15,7 +15,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ContractRenewalCountdown } from '@/components/contracts/ContractRenewalCountdown';
 import { supabase } from '@/integrations/supabase/client';
-import { ContractWithClient } from '@/types/contract.types';
+import { ContractWithClient, ContractGroup, groupContracts } from '@/types/contract.types';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +35,8 @@ export default function Contracts() {
   const [selectedContract, setSelectedContract] = useState<ContractWithClient | null>(null);
   const { data: contracts, isLoading, refetch } = useContracts();
   const deleteContract = useDeleteContract();
+
+  const contractGroups = contracts ? groupContracts(contracts) : [];
 
   const handleDownload = async (filePath: string, fileName: string) => {
     const { data } = await supabase.storage
@@ -95,14 +97,15 @@ export default function Contracts() {
           <div className="text-center py-12">
             <p className="text-muted-foreground">{t('common.loading')}</p>
           </div>
-        ) : contracts && contracts.length > 0 ? (
+        ) : contractGroups.length > 0 ? (
           <div data-highlight="contracts-table">
             {isMobile ? (
               <div className="space-y-3">
-                {contracts.map((contract) => (
+                {contractGroups.map((group) => (
                   <ContractCard
-                    key={contract.id}
-                    contract={contract}
+                    key={group.primary.id}
+                    contract={group.primary}
+                    pageCount={group.pageCount}
                     onView={setSelectedContract}
                     onDownload={handleDownload}
                     onDelete={setDeleteId}
@@ -110,7 +113,7 @@ export default function Contracts() {
                 ))}
               </div>
             ) : (
-              <ContractsTable contracts={contracts} />
+              <ContractsTable contractGroups={contractGroups} />
             )}
           </div>
         ) : (
