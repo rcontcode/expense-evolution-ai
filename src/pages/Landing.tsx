@@ -1477,23 +1477,23 @@ export default function Landing() {
             {/* Security Certifications */}
             <div className="flex flex-wrap items-center justify-center gap-4 py-4 border-t border-slate-800">
               <span className="text-xs text-slate-500">
-                {language === 'es' ? 'Certificaciones de seguridad:' : 'Security certifications:'}
+                {language === 'es' ? 'Seguridad de infraestructura:' : 'Infrastructure security:'}
               </span>
               <span className="text-xs text-slate-400 flex items-center gap-1">
                 <Shield className="h-3 w-3" />
-                SOC 2 Type II
+                {language === 'es' ? 'Infraestructura SOC 2 Type II' : 'SOC 2 Type II Infrastructure'}
               </span>
               <span className="text-xs text-slate-400 flex items-center gap-1">
                 <Shield className="h-3 w-3" />
-                {language === 'es' ? 'Infraestructura Certificada' : 'Certified Infrastructure'}
-              </span>
-              <span className="text-xs text-slate-400 flex items-center gap-1">
-                <Shield className="h-3 w-3" />
-                {language === 'es' ? 'Protección GDPR' : 'GDPR Compliant'}
+                {language === 'es' ? 'Infraestructura GDPR-Ready' : 'GDPR-Ready Infrastructure'}
               </span>
               <span className="text-xs text-slate-400 flex items-center gap-1">
                 <Shield className="h-3 w-3" />
                 {language === 'es' ? 'Encriptación AES-256' : 'AES-256 Encryption'}
+              </span>
+              <span className="text-xs text-slate-400 flex items-center gap-1">
+                <Shield className="h-3 w-3" />
+                SSL/TLS
               </span>
             </div>
             
@@ -1504,7 +1504,7 @@ export default function Landing() {
                   : 'EvoFinz is an educational tool. The information provided does not constitute financial, tax, or investment advice. Always consult with certified professionals before making financial decisions.'}
               </p>
               <p className="text-xs text-slate-600 mt-2">
-                © 2026 EvoFinz. {language === 'es' ? 'Todos los derechos reservados.' : 'All rights reserved.'} | v1.0.0
+                © 2026 EvoFinz. {language === 'es' ? 'Todos los derechos reservados.' : 'All rights reserved.'} | v2.5.0
               </p>
             </div>
           </div>

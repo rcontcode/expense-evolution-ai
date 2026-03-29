@@ -77,13 +77,13 @@ const getSecurityFeatures = (language: string) => [
 const getCertificationBadges = (language: string) => [
   { 
     label: 'SOC 2 Type II',
-    sublabel: language === 'es' ? 'Certificado' : 'Certified',
+    sublabel: language === 'es' ? 'Infraestructura' : 'Infrastructure',
     icon: Award,
     color: 'from-blue-500 to-indigo-600'
   },
   { 
     label: 'GDPR',
-    sublabel: language === 'es' ? 'Cumplimiento' : 'Compliant',
+    sublabel: language === 'es' ? 'Infraestructura Ready' : 'Ready Infrastructure',
     icon: Shield,
     color: 'from-emerald-500 to-teal-600'
   },

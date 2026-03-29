@@ -405,7 +405,7 @@ const App = () => (
                     </Routes>
                   </Suspense>
                 </LazyErrorBoundary>
-                  {/* Assistant and onboarding overlays intentionally disabled in stability-first mode */}
+                  
                   <Suspense fallback={null}>
                     <CookieConsent />
                   </Suspense>
