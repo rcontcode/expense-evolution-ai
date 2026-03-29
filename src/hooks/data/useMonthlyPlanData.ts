@@ -340,5 +340,5 @@ export function useMonthlyPlanData(): MonthlyPlanData {
       topCategory,
       cumulativeData,
     };
-  }, [incomeData, bills, expenses, categoryBudgets, globalBudget, budgetEntityId, monthStart, monthEnd, daysInMonth, daysPassed, daysRemaining, l, now]);
+  }, [incomeData, bills, expenses, categoryBudgets, globalBudget, budgetEntityId, monthStart, monthEnd, daysInMonth, daysPassed, daysRemaining, l]);
 }

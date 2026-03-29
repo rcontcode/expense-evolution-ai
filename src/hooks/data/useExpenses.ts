@@ -12,8 +12,10 @@ import { useExpenseBillMatcher } from './useExpenseBillMatcher';
 const QUERY_LIMIT = 500;
 
 export function useExpenses(filters?: ExpenseFilters) {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['expenses', filters],
+    queryKey: ['expenses', user?.id, filters],
     queryFn: async () => {
       let query = supabase
         .from('expenses')
@@ -22,6 +24,7 @@ export function useExpenses(filters?: ExpenseFilters) {
           client:clients(*),
           expense_tags(tag:tags(*))
         `)
+        .eq('user_id', user!.id)
         .is('deleted_at', null);
       
       // Apply filters
@@ -124,6 +127,7 @@ export function useExpenses(filters?: ExpenseFilters) {
         tags: expense.expense_tags?.map((et: any) => et.tag).filter(Boolean) || [],
       })) as ExpenseWithRelations[];
     },
+    enabled: !!user,
   });
 }
 
@@ -276,8 +280,10 @@ export function useDeleteExpense() {
 }
 
 export function useAllExpensesForReport(year: number, entityId?: string | null) {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['expenses-report', year, entityId],
+    queryKey: ['expenses-report', user?.id, year, entityId],
     queryFn: async () => {
       const startDate = `${year}-01-01`;
       const endDate = `${year}-12-31`;
@@ -285,6 +291,7 @@ export function useAllExpensesForReport(year: number, entityId?: string | null) 
       let query = supabase
         .from('expenses')
         .select(`*, client:clients(*), expense_tags(tag:tags(*))`)
+        .eq('user_id', user!.id)
         .is('deleted_at', null)
         .gte('date', startDate)
         .lte('date', endDate)
@@ -302,7 +309,7 @@ export function useAllExpensesForReport(year: number, entityId?: string | null) 
         tags: expense.expense_tags?.map((et: any) => et.tag).filter(Boolean) || [],
       })) as ExpenseWithRelations[];
     },
-    enabled: !!year,
+    enabled: !!user && !!year,
   });
 }
 

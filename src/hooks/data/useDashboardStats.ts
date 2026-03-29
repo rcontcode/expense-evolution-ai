@@ -89,13 +89,17 @@ export const useDashboardStats = (filters?: DashboardFilters) => {
         })(),
 
         // Monthly income query
-        supabase
-          .from('income')
-          .select('amount')
-          .eq('user_id', user.id)
-          .is('deleted_at', null)
-          .gte('date', format(firstDayThisMonth, 'yyyy-MM-dd'))
-          .lte('date', format(lastDayThisMonth, 'yyyy-MM-dd')),
+        (() => {
+          let query = supabase
+            .from('income')
+            .select('amount')
+            .eq('user_id', user.id)
+            .is('deleted_at', null)
+            .gte('date', format(firstDayThisMonth, 'yyyy-MM-dd'))
+            .lte('date', format(lastDayThisMonth, 'yyyy-MM-dd'));
+          if (entityFilter) query = query.eq('entity_id', entityFilter);
+          return query;
+        })(),
         
         // Pending documents count
         supabase

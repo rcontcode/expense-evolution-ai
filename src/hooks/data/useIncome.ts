@@ -30,6 +30,7 @@ export function useIncome(filters?: IncomeFilters) {
           project:projects(id, name, color),
           document:documents(id, file_path, file_name)
         `)
+        .eq('user_id', user!.id)
         .is('deleted_at', null)
         .order('date', { ascending: false })
         .limit(500);
@@ -187,24 +188,30 @@ export function useDeleteIncome() {
   });
 }
 
-export function useIncomeSummary(year?: number) {
+export function useIncomeSummary(year?: number, entityId?: string | null) {
   const { user } = useAuth();
   const currentYear = year || new Date().getFullYear();
 
   return useQuery({
-    queryKey: ['income-summary', user?.id, currentYear],
+    queryKey: ['income-summary', user?.id, currentYear, entityId],
     queryFn: async () => {
       const startDate = `${currentYear}-01-01`;
       const endDate = `${currentYear}-12-31`;
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('income')
         .select('amount, income_type, date, is_taxable')
+        .eq('user_id', user!.id)
         .is('deleted_at', null)
         .gte('date', startDate)
         .lte('date', endDate)
         .limit(2000);
 
+      if (entityId) {
+        query = query.eq('entity_id', entityId);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
 
       const totalIncome = data.reduce((sum, i) => sum + Number(i.amount), 0);
