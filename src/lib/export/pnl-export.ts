@@ -306,8 +306,8 @@ export function exportPnLToPDF(data: PnLData) {
     startY: netY,
     body: [[
       { content: l ? '💰 RESULTADO NETO' : '💰 NET INCOME', styles: { fontStyle: 'bold' as const } },
-      ...pnl.monthlyNet.map(v => ({ content: fc(v), styles: { fontStyle: 'bold' as const, textColor: v >= 0 ? [16, 130, 90] : [200, 50, 50] } })),
-      { content: fc(pnl.netIncome), styles: { fontStyle: 'bold' as const, textColor: pnl.netIncome >= 0 ? [16, 130, 90] : [200, 50, 50] } },
+      ...pnl.monthlyNet.map(v => ({ content: fc(v), styles: { fontStyle: 'bold' as const, textColor: (v >= 0 ? [16, 130, 90] : [200, 50, 50]) as [number, number, number] } })),
+      { content: fc(pnl.netIncome), styles: { fontStyle: 'bold' as const, textColor: (pnl.netIncome >= 0 ? [16, 130, 90] : [200, 50, 50]) as [number, number, number] } },
     ]],
     theme: 'grid',
     styles: { fontSize: 8, cellPadding: 2, fillColor: pnl.netIncome >= 0 ? [220, 252, 231] : [254, 226, 226] },
