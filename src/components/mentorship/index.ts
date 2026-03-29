@@ -14,3 +14,6 @@ export { ReadingPaceComparison } from './ReadingPaceComparison';
 export { SMARTGoalsCard } from './SMARTGoalsCard';
 export { SMARTGoalWizard } from './SMARTGoalWizard';
 export { TracyGoalWizard } from './TracyGoalWizard';
+export { WeeklyChallengesCard } from './WeeklyChallengesCard';
+export { MentorshipProgressSummary } from './MentorshipProgressSummary';
+export { LearningPathCard } from './LearningPathCard';
