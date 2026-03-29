@@ -233,6 +233,16 @@ export default function Reports() {
           await exportIncomeSummaryExcel(l, incomes || [], selectedYear);
           break;
         }
+        case 'mileage': {
+          const trips = mileageData || [];
+          if (trips.length === 0) { toast.info(l ? 'No hay viajes para exportar' : 'No trips to export'); setExporting(null); return; }
+          if (format === 'pdf') {
+            await exportMileagePDF(l, trips, selectedYear, currentCountry, fc, profile?.full_name, profile?.business_name);
+          } else {
+            await exportMileageExcel(l, trips, selectedYear, currentCountry, mileageSummary);
+          }
+          break;
+        }
       }
       toast.success(l ? `${format.toUpperCase()} exportado` : `${format.toUpperCase()} exported`);
     } catch (err) {
