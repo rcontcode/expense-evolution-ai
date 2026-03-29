@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ExtractedData, ReceiptDocument } from '@/components/capture/ReceiptReviewCard';
+import { useInvalidateRelated } from './useInvalidateRelated';
 
 export function useDocumentsForReview() {
   const { user } = useAuth();
@@ -34,11 +35,19 @@ export function useDocumentsForReview() {
 
 export function useDocumentReviewActions() {
   const { language } = useLanguage();
-  const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { afterExpense, afterDocument } = useInvalidateRelated();
 
   const approveDocument = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: ExtractedData }) => {
+      // Get user's primary fiscal entity
+      const { data: primaryEntity } = await supabase
+        .from('fiscal_entities')
+        .select('id')
+        .eq('user_id', user!.id)
+        .eq('is_primary', true)
+        .single();
+
       // First create the expense
       const { data: expense, error: expenseError } = await supabase
         .from('expenses')
@@ -52,6 +61,7 @@ export function useDocumentReviewActions() {
           status: 'pending',
           currency: data.currency || 'CAD',
           client_id: data.client_id || null,
+          entity_id: primaryEntity?.id || null,
         })
         .select()
         .single();
@@ -75,8 +85,8 @@ export function useDocumentReviewActions() {
       return expense;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents-review'] });
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      afterExpense();
+      afterDocument();
       toast.success(language === 'es' ? '¡Gasto aprobado y guardado!' : 'Expense approved and saved!');
     },
     onError: (error) => {
@@ -99,7 +109,7 @@ export function useDocumentReviewActions() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents-review'] });
+      afterDocument();
       toast.success(language === 'es' ? 'Documento rechazado' : 'Document rejected');
     },
     onError: (error) => {
@@ -133,7 +143,7 @@ export function useDocumentReviewActions() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents-review'] });
+      afterDocument();
       toast.success(language === 'es' ? 'Comentario guardado' : 'Comment saved');
     },
     onError: (error) => {
@@ -167,7 +177,7 @@ export function useDocumentReviewActions() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents-review'] });
+      afterDocument();
       toast.success(language === 'es' ? 'Documento eliminado' : 'Document deleted');
     },
     onError: (error) => {

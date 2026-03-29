@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useInvalidateRelated } from './useInvalidateRelated';
 
-export type TrashItemType = 'expense' | 'income' | 'client' | 'project' | 'contract';
+export type TrashItemType = 'expense' | 'income' | 'client' | 'project' | 'contract' | 'mileage';
 
 export interface TrashItem {
   id: string;
@@ -74,6 +74,17 @@ export function useTrashItems() {
         id: c.id, type: 'contract', name: c.title || c.file_name, details: '', deleted_at: c.deleted_at!,
       }));
 
+      const { data: mileageData } = await supabase
+        .from('mileage')
+        .select('id, purpose, kilometers, date, deleted_at')
+        .not('deleted_at', 'is', null)
+        .order('deleted_at', { ascending: false });
+
+      mileageData?.forEach(m => items.push({
+        id: m.id, type: 'mileage', name: m.purpose || 'Sin propósito',
+        details: `${m.kilometers} km — ${m.date}`, deleted_at: m.deleted_at!,
+      }));
+
       items.sort((a, b) => new Date(b.deleted_at).getTime() - new Date(a.deleted_at).getTime());
       return items;
     },
@@ -86,7 +97,7 @@ export function useRestoreItem() {
 
   return useMutation({
     mutationFn: async ({ id, type }: { id: string; type: TrashItemType }) => {
-      const table = type === 'expense' ? 'expenses' : type === 'income' ? 'income' : type === 'client' ? 'clients' : type === 'project' ? 'projects' : 'contracts';
+      const table = type === 'expense' ? 'expenses' : type === 'income' ? 'income' : type === 'client' ? 'clients' : type === 'project' ? 'projects' : type === 'mileage' ? 'mileage' : 'contracts';
       
       const { error } = await supabase
         .from(table)
@@ -121,7 +132,7 @@ export function usePermanentDelete() {
 
   return useMutation({
     mutationFn: async ({ id, type }: { id: string; type: TrashItemType }) => {
-      const table = type === 'expense' ? 'expenses' : type === 'income' ? 'income' : type === 'client' ? 'clients' : type === 'project' ? 'projects' : 'contracts';
+      const table = type === 'expense' ? 'expenses' : type === 'income' ? 'income' : type === 'client' ? 'clients' : type === 'project' ? 'projects' : type === 'mileage' ? 'mileage' : 'contracts';
       
       const { error } = await supabase
         .from(table)
@@ -145,7 +156,7 @@ export function useEmptyTrash() {
 
   return useMutation({
     mutationFn: async () => {
-      const tables = ['expenses', 'income', 'clients', 'projects', 'contracts'] as const;
+      const tables = ['expenses', 'income', 'clients', 'projects', 'contracts', 'mileage'] as const;
       
       for (const table of tables) {
         const { error } = await supabase

@@ -17,9 +17,13 @@ export function useClients() {
   return useQuery({
     queryKey: ['clients'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('clients')
         .select('*')
+        .eq('user_id', user.id)
         .is('deleted_at', null)
         .order('name', { ascending: true })
         .limit(500);

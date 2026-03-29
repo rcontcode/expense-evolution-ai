@@ -8,12 +8,16 @@ export const useContracts = () => {
   return useQuery({
     queryKey: ['contracts'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('contracts')
         .select(`
           *,
           client:clients(id, name)
         `)
+        .eq('user_id', user.id)
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
