@@ -183,7 +183,183 @@ export const guideSections: GuideSection[] = [
     ],
     color: 'border-yellow-500/30',
   },
-  // Phoenix Assistant and Smart Capture sections removed — these features are disabled in stability-first mode
+  {
+    id: 'voice-assistant',
+    emoji: '🎤',
+    title: { es: 'Asistente Phoenix', en: 'Phoenix Assistant' },
+    shortDesc: { es: 'Tu asistente financiero con voz e IA', en: 'Your AI-powered voice financial assistant' },
+    purpose: {
+      es: 'Phoenix es tu asistente financiero personal. Puedes hablarle por voz o escribirle en lenguaje natural para registrar gastos, consultar tus datos, pedir análisis y más. Usa síntesis de voz de alta calidad (ElevenLabs) con fallback automático, y entiende contexto financiero completo.',
+      en: 'Phoenix is your personal financial assistant. Talk to it by voice or type in natural language to record expenses, query your data, request analyses, and more. Uses high-quality voice synthesis (ElevenLabs) with automatic fallback, and understands full financial context.'
+    },
+    steps: [
+      { es: 'Abre el asistente desde el botón flotante en cualquier pantalla', en: 'Open the assistant from the floating button on any screen' },
+      { es: 'Escribe o mantén presionado el micrófono para hablar', en: 'Type or hold the microphone button to speak' },
+      { es: 'Pide cosas como "registra un gasto de $50 en comida" o "¿cuánto gasté este mes?"', en: 'Ask things like "record a $50 food expense" or "how much did I spend this month?"' },
+      { es: 'Configura tu voz preferida en el selector de voces (20 opciones premium)', en: 'Configure your preferred voice in the voice selector (20 premium options)' },
+      { es: 'El asistente recuerda el contexto de la conversación para respuestas más inteligentes', en: 'The assistant remembers conversation context for smarter responses' },
+    ],
+    tips: [
+      { es: 'Usa Push-to-Talk para mejor precisión — mantén presionado mientras hablas', en: 'Use Push-to-Talk for better accuracy — hold while speaking' },
+      { es: 'Puedes dictar gastos e ingresos completos por voz, Phoenix los crea automáticamente', en: 'You can dictate complete expenses and income by voice, Phoenix creates them automatically' },
+      { es: 'Pregúntale análisis como "¿cuál es mi cliente más rentable?" o "¿estoy dentro del presupuesto?"', en: 'Ask for analyses like "which is my most profitable client?" or "am I within budget?"' },
+    ],
+    faq: [
+      { question: { es: '¿El asistente de voz funciona en todos los navegadores?', en: 'Does the voice assistant work in all browsers?' }, answer: { es: 'Sí, usa Web Speech API con fallback automático. Para la mejor experiencia de voz, usa Chrome. La síntesis premium (ElevenLabs) funciona en todos los navegadores.', en: 'Yes, it uses Web Speech API with automatic fallback. For the best voice experience, use Chrome. Premium synthesis (ElevenLabs) works in all browsers.' } },
+    ],
+    connections: [
+      { es: 'Crea gastos e ingresos directamente por voz', en: 'Creates expenses and income directly by voice' },
+      { es: 'Consulta datos del Dashboard, presupuesto y patrimonio', en: 'Queries Dashboard, budget, and net worth data' },
+      { es: 'Disponible en toda la aplicación como botón flotante', en: 'Available throughout the app as a floating button' },
+    ],
+    color: 'border-violet-500/30',
+  },
+  {
+    id: 'tax-optimizer',
+    emoji: '🧮',
+    title: { es: 'Optimizador Fiscal', en: 'Tax Optimizer' },
+    shortDesc: { es: 'Maximiza tus deducciones y ahorro fiscal', en: 'Maximize your deductions and tax savings' },
+    purpose: {
+      es: 'Analiza todos tus gastos deducibles, identifica oportunidades de ahorro fiscal que podrías estar perdiendo, y proyecta cuánto puedes ahorrar con estrategias como RRSP, TFSA (Canadá) o APV (Chile). Incluye countdown para fechas límite y checklist de documentos.',
+      en: 'Analyzes all your deductible expenses, identifies tax-saving opportunities you might be missing, and projects how much you can save with strategies like RRSP, TFSA (Canada) or APV (Chile). Includes deadline countdown and document checklist.'
+    },
+    steps: [
+      { es: 'Accede desde el menú Impuestos → Optimizador Fiscal', en: 'Access from the Taxes menu → Tax Optimizer' },
+      { es: 'Revisa el resumen de deducciones identificadas automáticamente', en: 'Review the summary of automatically identified deductions' },
+      { es: 'Explora las proyecciones de ahorro por categoría (RRSP, home office, kilometraje)', en: 'Explore savings projections by category (RRSP, home office, mileage)' },
+      { es: 'Verifica el countdown para tu próxima fecha límite fiscal', en: 'Check the countdown for your next tax deadline' },
+      { es: 'Completa el checklist de documentos necesarios para tu declaración', en: 'Complete the checklist of documents needed for your tax return' },
+    ],
+    tips: [
+      { es: 'Revisa el optimizador mensualmente para no perder deducciones al cierre del año', en: 'Review the optimizer monthly so you don\'t miss deductions at year-end' },
+      { es: 'Las proyecciones se basan en tus datos reales — mientras más registres, más preciso es', en: 'Projections are based on your real data — the more you record, the more accurate it gets' },
+    ],
+    faq: [
+      { question: { es: '¿Esto reemplaza a mi contador?', en: 'Does this replace my accountant?' }, answer: { es: 'No, complementa su trabajo. El optimizador identifica oportunidades y organiza documentos para que tu contador trabaje más eficientemente.', en: 'No, it complements their work. The optimizer identifies opportunities and organizes documents so your accountant works more efficiently.' } },
+    ],
+    connections: [
+      { es: 'Lee gastos deducibles de Gastos e Ingresos', en: 'Reads deductible items from Expenses and Income' },
+      { es: 'Se conecta con el Flujo de Reporte Fiscal para exportar', en: 'Connects with Tax Report Flow for export' },
+      { es: 'Usa las fechas del Calendario Fiscal para el countdown', en: 'Uses Tax Calendar dates for the countdown' },
+    ],
+    color: 'border-amber-500/30',
+  },
+  {
+    id: 'tax-report-flow',
+    emoji: '📋',
+    title: { es: 'Flujo de Reporte al Contador', en: 'Accountant Report Flow' },
+    shortDesc: { es: 'Preparación fiscal guiada en 5 pasos', en: 'Guided tax preparation in 5 steps' },
+    purpose: {
+      es: 'Un centro de mando guiado que te lleva paso a paso desde la captura de datos hasta la generación del reporte final para tu contador. Soporta CRA (Canadá) y SII (Chile). Incluye seguimiento de progreso en tiempo real, detección de cuellos de botella y cuenta regresiva para la fecha límite.',
+      en: 'A guided command center that takes you step by step from data capture to generating the final report for your accountant. Supports CRA (Canada) and SII (Chile). Includes real-time progress tracking, bottleneck detection, and deadline countdown.'
+    },
+    steps: [
+      { es: 'Paso 1 — Capturar: Asegura que todos tus gastos e ingresos estén registrados', en: 'Step 1 — Capture: Ensure all your expenses and income are recorded' },
+      { es: 'Paso 2 — Categorizar: Clasifica los items pendientes en la categoría correcta', en: 'Step 2 — Categorize: Classify pending items into the correct category' },
+      { es: 'Paso 3 — Revisar: Verifica que no haya inconsistencias ni registros duplicados', en: 'Step 3 — Review: Verify there are no inconsistencies or duplicate records' },
+      { es: 'Paso 4 — Optimizar: Maximiza tus deducciones antes de declarar', en: 'Step 4 — Optimize: Maximize your deductions before filing' },
+      { es: 'Paso 5 — Exportar: Genera el reporte Excel/PDF listo para tu contador', en: 'Step 5 — Export: Generate the Excel/PDF report ready for your accountant' },
+    ],
+    tips: [
+      { es: 'Comienza este flujo al menos 2 semanas antes de la fecha límite', en: 'Start this flow at least 2 weeks before the deadline' },
+      { es: 'El sistema detecta automáticamente qué pasos tienen items pendientes', en: 'The system automatically detects which steps have pending items' },
+    ],
+    faq: [
+      { question: { es: '¿Qué formatos de reporte genera?', en: 'What report formats does it generate?' }, answer: { es: 'Genera reportes en Excel (.xlsx) con hojas separadas por categoría, periodo y tipo. También puede exportar en PDF con gráficos incluidos.', en: 'It generates Excel (.xlsx) reports with separate sheets by category, period, and type. It can also export in PDF with charts included.' } },
+    ],
+    connections: [
+      { es: 'Agrega datos de Gastos, Ingresos y Bandeja del Caos', en: 'Aggregates data from Expenses, Income, and Chaos Inbox' },
+      { es: 'Usa el Optimizador Fiscal para el paso de optimización', en: 'Uses Tax Optimizer for the optimization step' },
+      { es: 'Exporta a Configuración → Exportar', en: 'Exports to Settings → Export' },
+    ],
+    color: 'border-orange-500/30',
+  },
+  {
+    id: 'subscriptions',
+    emoji: '🔍',
+    title: { es: 'Suscripciones y Detector de Fantasmas', en: 'Subscriptions & Ghost Detector' },
+    shortDesc: { es: 'Encuentra y elimina suscripciones que ya no usas', en: 'Find and eliminate subscriptions you no longer use' },
+    purpose: {
+      es: 'Analiza tus gastos recurrentes para detectar suscripciones "fantasma" — servicios que sigues pagando pero no usas. Muestra patrones de pago, agrupa por proveedor y te ayuda a decidir qué cancelar para ahorrar dinero.',
+      en: 'Analyzes your recurring expenses to detect "ghost" subscriptions — services you keep paying for but don\'t use. Shows payment patterns, groups by vendor, and helps you decide what to cancel to save money.'
+    },
+    steps: [
+      { es: 'Accede desde el menú lateral → Suscripciones', en: 'Access from the sidebar → Subscriptions' },
+      { es: 'Revisa la lista de suscripciones detectadas automáticamente', en: 'Review the list of automatically detected subscriptions' },
+      { es: 'Identifica las marcadas como "fantasma" (pagos sin uso detectado)', en: 'Identify those marked as "ghost" (payments with no detected usage)' },
+      { es: 'Convierte suscripciones a pagos fijos recurrentes si las quieres mantener', en: 'Convert subscriptions to recurring fixed payments if you want to keep them' },
+    ],
+    tips: [
+      { es: 'Revisa las suscripciones fantasma mensualmente — puedes ahorrar $50-200/mes', en: 'Review ghost subscriptions monthly — you can save $50-200/month' },
+      { es: 'El detector mejora con más datos — registra todos tus gastos para mejor detección', en: 'The detector improves with more data — record all expenses for better detection' },
+    ],
+    faq: [
+      { question: { es: '¿Cómo detecta suscripciones fantasma?', en: 'How does it detect ghost subscriptions?' }, answer: { es: 'Analiza patrones de gasto recurrente por proveedor y monto. Si detecta un patrón mensual/anual consistente, lo marca como suscripción y evalúa si hay indicadores de uso activo.', en: 'It analyzes recurring spending patterns by vendor and amount. If it detects a consistent monthly/annual pattern, it marks it as a subscription and evaluates whether there are active usage indicators.' } },
+    ],
+    connections: [
+      { es: 'Lee datos de Gastos para detectar patrones recurrentes', en: 'Reads Expenses data to detect recurring patterns' },
+      { es: 'Se conecta con Pagos Fijos para convertir suscripciones activas', en: 'Connects with Recurring Bills to convert active subscriptions' },
+      { es: 'Alimenta el Presupuesto con gastos fijos identificados', en: 'Feeds Budget with identified fixed expenses' },
+    ],
+    color: 'border-red-500/30',
+  },
+  {
+    id: 'data-health',
+    emoji: '🩺',
+    title: { es: 'Salud de Datos', en: 'Data Health' },
+    shortDesc: { es: 'Auditoría de calidad y consistencia de tus registros', en: 'Quality and consistency audit of your records' },
+    purpose: {
+      es: 'Herramienta de diagnóstico que revisa todos tus datos financieros buscando problemas: gastos sin categoría, registros con clientes o proyectos eliminados, ingresos sin entidad fiscal, y más. Te da un score de salud y te guía para corregir cada problema.',
+      en: 'Diagnostic tool that reviews all your financial data looking for issues: uncategorized expenses, records with deleted clients or projects, income without fiscal entity, and more. Gives you a health score and guides you to fix each issue.'
+    },
+    steps: [
+      { es: 'Accede desde Herramientas Avanzadas → Salud de Datos', en: 'Access from Advanced Tools → Data Health' },
+      { es: 'Revisa el score general de salud de tus datos', en: 'Review the overall health score of your data' },
+      { es: 'Explora los problemas agrupados por tipo (sin categoría, referencias rotas, etc.)', en: 'Explore issues grouped by type (uncategorized, broken references, etc.)' },
+      { es: 'Haz clic en cada problema para ir directamente al registro y corregirlo', en: 'Click each issue to go directly to the record and fix it' },
+    ],
+    tips: [
+      { es: 'Ejecuta la auditoría de salud mensualmente para mantener datos limpios', en: 'Run the health audit monthly to keep data clean' },
+      { es: 'Los datos limpios generan reportes fiscales más precisos y mejores análisis IA', en: 'Clean data generates more accurate tax reports and better AI analyses' },
+    ],
+    faq: [
+      { question: { es: '¿Qué tipos de problemas detecta?', en: 'What types of issues does it detect?' }, answer: { es: 'Detecta gastos sin categoría, referencias rotas (cliente/proyecto eliminado), ingresos sin entidad fiscal, registros duplicados potenciales y más.', en: 'It detects uncategorized expenses, broken references (deleted client/project), income without fiscal entity, potential duplicate records, and more.' } },
+    ],
+    connections: [
+      { es: 'Analiza datos de Gastos, Ingresos, Clientes y Proyectos', en: 'Analyzes data from Expenses, Income, Clients, and Projects' },
+      { es: 'Complementa el Flujo de Reporte Fiscal (paso de Revisión)', en: 'Complements Tax Report Flow (Review step)' },
+    ],
+    color: 'border-teal-500/30',
+  },
+  {
+    id: 'mentorship',
+    emoji: '🧙',
+    title: { es: 'Mentoría Financiera', en: 'Financial Mentorship' },
+    shortDesc: { es: 'Sistema de niveles con sabiduría de expertos', en: 'Level system with expert wisdom' },
+    purpose: {
+      es: 'Un sistema de mentoría progresivo donde subes de nivel según tu actividad financiera. En cada nivel recibes tips rotativos de expertos financieros reconocidos (Robert Kiyosaki, Dave Ramsey, Jim Rohn, Brian Tracy). Incluye logros desbloqueables, metas de progreso y celebraciones épicas.',
+      en: 'A progressive mentorship system where you level up based on your financial activity. At each level you receive rotating tips from recognized financial experts (Robert Kiyosaki, Dave Ramsey, Jim Rohn, Brian Tracy). Includes unlockable achievements, progress goals, and epic celebrations.'
+    },
+    steps: [
+      { es: 'Accede desde el menú → Mentoría o desde el banner en el Dashboard', en: 'Access from the menu → Mentorship or from the Dashboard banner' },
+      { es: 'Revisa tu nivel actual y los tips del experto del momento', en: 'Review your current level and tips from the current expert' },
+      { es: 'Completa las metas de nivel para desbloquear nuevo contenido', en: 'Complete level goals to unlock new content' },
+      { es: 'Los tips rotan cada 8 segundos con sabiduría práctica aplicable', en: 'Tips rotate every 8 seconds with practical applicable wisdom' },
+    ],
+    tips: [
+      { es: 'Cada acción financiera te da XP — registrar gastos, crear clientes, importar datos', en: 'Every financial action gives you XP — recording expenses, creating clients, importing data' },
+      { es: 'Aplica los tips de los expertos a tu vida real — es la verdadera transformación', en: 'Apply expert tips to your real life — that\'s the real transformation' },
+    ],
+    faq: [
+      { question: { es: '¿Cómo subo de nivel?', en: 'How do I level up?' }, answer: { es: 'Ganas XP con cada acción financiera: registrar gastos/ingresos, categorizar, importar datos bancarios, mantener rachas diarias, completar hábitos financieros, etc. Al acumular suficiente XP, subes de nivel automáticamente.', en: 'You earn XP with every financial action: recording expenses/income, categorizing, importing bank data, maintaining daily streaks, completing financial habits, etc. When you accumulate enough XP, you level up automatically.' } },
+    ],
+    connections: [
+      { es: 'Lee tu progreso de Gamificación y XP acumulado', en: 'Reads your Gamification progress and accumulated XP' },
+      { es: 'Conectado con Hábitos Financieros y Educación', en: 'Connected with Financial Habits and Education' },
+      { es: 'Las celebraciones aparecen en cualquier pantalla al desbloquear logros', en: 'Celebrations appear on any screen when unlocking achievements' },
+    ],
+    color: 'border-purple-500/30',
+  },
   {
     id: 'expenses',
     emoji: '🧾',
