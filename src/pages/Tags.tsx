@@ -165,6 +165,8 @@ export default function Tags() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedTag, setSelectedTag] = useState<Tag | undefined>();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const deleteMutation = useDeleteTag();
+  const seedDefaultTags = useSeedDefaultTags();
   const navigate = useNavigate();
 
   const duplicatePairs = useMemo(() => {
