@@ -1,98 +1,116 @@
 
 
-# Auditoría Ronda 6 — Flujo de Datos, Consistencia de Cálculos y Sincronización
+# Auditoría Ronda 7 — Consistencia, Cache, Ownership en Mutaciones y Flujo de Datos
 
-## Hallazgos Críticos
-
----
-
-### 🔴 CRÍTICO — `useExpenses` y `useAllExpensesForReport` sin `user_id` filter
-
-**`useExpenses`** (línea 14-25): La query principal NO tiene `.eq('user_id', user.id)`. Depende 100% de RLS. Esto viola el estándar de "defensa en profundidad" que ya aplicamos en todas las demás entidades (income, clients, bills, mileage, etc.).
-
-**`useAllExpensesForReport`** (línea 278-306): Mismo problema — sin `user_id` filter.
-
-**Impacto**: Es la tabla MÁS consultada del sistema (~83 archivos la usan). Si RLS falla o se reconfigura, se exponen TODOS los gastos de todos los usuarios.
-
-**Fix**: Agregar `.eq('user_id', user.id)` a ambos hooks, igual que se hizo con income, clients, etc.
+## Hallazgos Nuevos
 
 ---
 
-### 🔴 CRÍTICO — `useIncome` sin `user_id` filter
+### 🔴 CRÍTICO — Mutaciones sin ownership check (pueden operar datos de otros usuarios)
 
-**`useIncome`** (línea 19-63): La query principal tampoco tiene `.eq('user_id', user.id)`. Ya se identificó `useIncomeSummary` con el mismo problema (línea 200-206).
+Varias mutaciones hacen `.delete().eq('id', id)` o `.update().eq('id', id)` **sin verificar `user_id`**. Si RLS falla, cualquier usuario autenticado podría borrar/modificar registros de otro usuario.
 
-**Fix**: Agregar `.eq('user_id', user.id)` a `useIncome` y confirmar que `useIncomeSummary` lo tiene (actualmente NO lo tiene).
+| Hook | Función | Problema |
+|------|---------|----------|
+| `useRecurringBills.ts` | `useDeleteBill` | `.delete().eq('id', id)` sin `.eq('user_id')` |
+| `useRecurringBills.ts` | `useUpdateBill` | `.update().eq('id', id)` sin `.eq('user_id')` |
+| `useRecurringBills.ts` | `useMarkBillPaid` | `.select().eq('id', billId)` y `.update().eq('id', billId)` sin user_id |
+| `useNetWorth.ts` | `useDeleteAsset` | `.delete().eq('id', id)` sin user_id |
+| `useNetWorth.ts` | `useDeleteLiability` | `.delete().eq('id', id)` sin user_id |
+| `useNetWorth.ts` | `useUpdateAsset` | `.update().eq('id', id)` sin user_id |
+| `useNetWorth.ts` | `useUpdateLiability` | `.update().eq('id', id)` sin user_id |
+| `useCategoryBudgets.ts` | `useDeleteCategoryBudget` | `.delete().eq('id', id)` sin user_id |
+| `useBankTransactions.ts` | `useDeleteBankTransaction` | `.delete().eq('id', id)` sin user_id |
+| `useBankTransactions.ts` | `useMatchTransaction` | `.update().eq('id', transactionId)` sin user_id |
+| `useBankTransactions.ts` | `useMarkAsDiscrepancy` | `.update().eq('id', transactionId)` sin user_id |
+| `useExpenses.ts` | `useUpdateExpense` | `.update().eq('id', id)` sin user_id |
+| `useContracts.ts` | `useUpdateContract` | `.update().eq('id', id)` sin user_id |
+| `useDocumentReview.ts` | `rejectDocument`, `addComment` | `.update().eq('id', id)` sin user_id |
 
----
-
-### 🟠 Dashboard Income NO filtra por entidad fiscal
-
-**`useDashboardStats`** (línea 91-98): La query de ingreso mensual aplica `user_id` y `deleted_at`, pero **NO aplica `entityFilter`**. Todas las queries de gastos SÍ filtran por entidad. Esto genera:
-- En modo multi-entidad, el dashboard muestra ingresos de TODAS las entidades pero gastos de UNA sola
-- La tasa de ahorro (`savingsRate`) se calcula con datos incompatibles (ingresos globales vs gastos filtrados)
-- Todas las métricas derivadas (savings rate, monthly trends) quedan desalineadas
-
-**Fix**: Aplicar `entityFilter` a la query de income en `useDashboardStats`, igual que se hace con expenses.
-
----
-
-### 🟠 `useIncomeSummary` sin filtro de entidad
-
-`useIncomeSummary` es usado por `NetCashFlowCard`, `BillsSummaryCards`, y `BillSmartInsights` para calcular ratios de ingreso vs compromisos fijos. Pero no acepta `entityId` como parámetro. En modo multi-entidad, estos componentes mezclan ingresos globales con bills de una entidad específica.
-
-**Fix**: Agregar parámetro `entityId` opcional a `useIncomeSummary`.
+**Fix**: Agregar `.eq('user_id', user.id)` a todas las mutaciones como segunda capa de protección.
 
 ---
 
-### 🟡 `useExpenses` no incluye `user_id` en el `queryKey`
+### 🔴 CRÍTICO — `useBankTransactionsWithMatches` obtiene TODOS los expenses sin límite ni `deleted_at` filter
 
-El `queryKey` es `['expenses', filters]` — sin `user_id`. Si dos usuarios usaran el mismo navegador (improbable pero posible), React Query devolvería datos cacheados del usuario anterior.
+Línea 77-81: Consulta todos los gastos del usuario sin `.is('deleted_at', null)` ni `.limit()`. En usuarios con miles de gastos, esto:
+- Carga datos innecesarios (gastos eliminados)
+- Genera matches falsos con gastos borrados
+- Puede causar timeout en la query
 
-**Fix**: Agregar `user_id` al queryKey: `['expenses', user?.id, filters]`.
-
----
-
-### 🟡 Bills CashFlowProjection no incluye ingresos
-
-`CashFlowProjection` en `/bills` solo muestra costos fijos proyectados pero NO incluye ingresos en la proyección. El usuario ve cuánto va a gastar pero no cuánto va a ingresar, perdiendo contexto del balance. `NetCashFlowCard` SÍ cruza ambos datos correctamente.
-
-**Impacto bajo**: No es un error de datos sino de completitud visual. No corregir ahora.
+**Fix**: Agregar `.is('deleted_at', null).limit(500)`.
 
 ---
 
-### 🟡 `useMonthlyPlanData` — `now` en el array de dependencias de `useMemo`
+### 🟠 `useBankTransactions` — queryKey sin user_id + usa `getUser()` en vez de `useAuth()`
 
-Línea 343: `now` es una referencia a `new Date()` que cambia en cada render, causando que el `useMemo` se recalcule en cada render (anula completamente la memoización).
+El `queryKey` es `['bank-transactions']` sin user_id, causando posible leak de caché entre usuarios. Además, usa `supabase.auth.getUser()` (llamada de red) en cada fetch en lugar del user ya disponible via `useAuth()`. Mismo problema en `useBankTransactionsWithMatches`.
 
-**Fix**: Reemplazar `now` en las dependencias con valores estables (`daysPassed`, `daysRemaining`, ya presentes).
+**Fix**: Migrar a `useAuth()` pattern y agregar `user?.id` al queryKey, igual que todos los demás hooks.
+
+---
+
+### 🟠 `useContracts` — queryKey sin user_id
+
+El queryKey es `['contracts']` sin user_id. Usa `getUser()` en la queryFn. Debería migrar al patrón `useAuth()` estándar.
+
+---
+
+### 🟠 `useDeleteFile` — sin ownership check ni audit log
+
+`useDeleteFile` hace hard delete de documents y contracts sin verificar user_id y sin registrar en audit_log. Además, no usa `useInvalidateRelated`.
+
+---
+
+### 🟡 `useFinancialJournal` — `useDeleteJournalEntry` sin audit_log
+
+El delete tiene ownership check (`.eq('user_id', user.id)`) pero no registra en audit_log.
+
+---
+
+### 🟡 `useDeleteCategoryBudget` — sin audit log
+
+Borra sin registrar en audit_log.
 
 ---
 
 ## Plan de Implementación
 
-### Paso 1: Agregar `user_id` filter a `useExpenses` y `useAllExpensesForReport`
-- Obtener `user` de `useAuth()` en ambos hooks
-- Agregar `.eq('user_id', user!.id)` a las queries
-- Agregar `user?.id` al `queryKey`
-- Agregar `enabled: !!user` a `useExpenses` (ya presente en `useAllExpensesForReport` implícitamente)
+### Paso 1: Agregar ownership check a TODAS las mutaciones
 
-### Paso 2: Agregar `user_id` filter a `useIncome` y `useIncomeSummary`
-- `useIncome` ya tiene `user` de `useAuth()` pero NO lo usa en la query — agregar `.eq('user_id', user!.id)`
-- `useIncomeSummary` ya tiene `user` — agregar `.eq('user_id', user!.id)`
+Agregar `.eq('user_id', user.id)` como segundo filtro a:
+- `useRecurringBills.ts` — delete, update, mark paid (3 funciones)
+- `useNetWorth.ts` — delete asset, delete liability, update asset, update liability (4 funciones)
+- `useCategoryBudgets.ts` — delete (1 función)
+- `useBankTransactions.ts` — delete, match, discrepancy (3 funciones)
+- `useExpenses.ts` — update (1 función)
+- `useContracts.ts` — update contract (1 función)
+- `useDocumentReview.ts` — reject, addComment (2 funciones)
+- `useDeleteFile.ts` — agregar user_id check (1 función)
 
-### Paso 3: Alinear dashboard income con entity filter
-- En `useDashboardStats`, aplicar `entityFilter` a la query de income (línea 91-98)
+### Paso 2: Estandarizar queryKeys y auth pattern en bank transactions + contracts
 
-### Paso 4: Fix `useMonthlyPlanData` useMemo dependencies
-- Remover `now` del array de dependencias (ya cubierto por `daysPassed`, `daysRemaining`, `monthStart`, `monthEnd`)
+- `useBankTransactions` → migrar a `useAuth()`, queryKey `['bank-transactions', user?.id]`
+- `useBankTransactionsWithMatches` → mismo + agregar `deleted_at` filter + limit a expenses
+- `useContracts` → migrar a `useAuth()`, queryKey `['contracts', user?.id]`
+
+### Paso 3: Agregar audit_log a deletes faltantes
+
+- `useDeleteJournalEntry` → agregar `insertAuditLog`
+- `useDeleteCategoryBudget` → agregar `insertAuditLog`
+- `useDeleteFile` → agregar `insertAuditLog`
 
 ---
 
 ## Archivos a modificar
 
-1. `src/hooks/data/useExpenses.ts` — user_id filter + queryKey fix
-2. `src/hooks/data/useIncome.ts` — user_id filter en `useIncome` y `useIncomeSummary`
-3. `src/hooks/data/useDashboardStats.ts` — entity filter en income query
-4. `src/hooks/data/useMonthlyPlanData.ts` — fix useMemo dependencies
+1. `src/hooks/data/useRecurringBills.ts` — ownership en 3 mutations
+2. `src/hooks/data/useNetWorth.ts` — ownership en 4 mutations
+3. `src/hooks/data/useCategoryBudgets.ts` — ownership + audit log
+4. `src/hooks/data/useBankTransactions.ts` — useAuth migration + ownership en 3 mutations + deleted_at filter
+5. `src/hooks/data/useExpenses.ts` — ownership en update
+6. `src/hooks/data/useContracts.ts` — useAuth migration + ownership en update
+7. `src/hooks/data/useDocumentReview.ts` — ownership en reject + addComment
+8. `src/hooks/data/useDeleteFile.ts` — ownership + audit log
+9. `src/hooks/data/useFinancialJournal.ts` — audit log en delete
 
