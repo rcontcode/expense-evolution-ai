@@ -254,8 +254,8 @@ export function VipReferralLanding({ referralCode, onContinueToSignup, onSkip }:
                     />
                     <Label htmlFor="consent" className="text-white/60 text-xs leading-relaxed cursor-pointer">
                       {language === 'es'
-                        ? 'Acepto recibir consejos financieros, tips y novedades de EvoFinz. Puedo cancelar cuando quiera.'
-                        : 'I agree to receive financial tips, advice and updates from EvoFinz. I can unsubscribe anytime.'}
+                        ? 'Acepto recibir educación financiera, tips y novedades de EvoFinz. Puedo cancelar cuando quiera.'
+                        : 'I agree to receive financial education and updates from EvoFinz. I can unsubscribe anytime.'}
                     </Label>
                   </div>
 

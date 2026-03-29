@@ -358,8 +358,8 @@ export function ProfileExtenderDialog({
   const speakAcknowledgment = useCallback((field: string, value: string) => {
     const acks: Record<string, { es: string; en: string }> = {
       job_title: { 
-        es: `¡${value}! ¡Qué interesante! Eso me ayuda mucho a personalizar tus consejos financieros. ¡Vamos con la siguiente!`, 
-        en: `${value}! How interesting! That helps me personalize your financial advice. Let's move on!` 
+        es: `¡${value}! ¡Qué interesante! Eso me ayuda mucho a personalizar tu experiencia financiera. ¡Vamos con la siguiente!`, 
+        en: `${value}! How interesting! That helps me personalize your financial experience. Let's move on!`
       },
       side_hustle: {
         es: '¡Perfecto! Tener claro esto me ayuda a guiarte mejor.',
