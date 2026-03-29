@@ -1,116 +1,112 @@
 
 
-# Auditoría Ronda 12 — Ownership Faltante, Cache Roto y Manipulación Directa Residual
-
-## Resumen
-
-Quedan **6 problemas** de manipulación de datos: deletes/updates sin ownership check, `window.location.reload()` en vez de invalidación de caché, y operaciones de notificaciones sin filtro de usuario.
-
----
+# Mejora de Experiencia de Usuario — Ronda UX
 
 ## Hallazgos
 
-### 🔴 `useBudgetAlertRules` — Update y Delete sin ownership check
+### 🔴 CRÍTICO — Toasts hardcodeados en español (15+ hooks)
 
-- **`useUpdateAlertRule`** (línea 54): `.update(updates).eq('id', id)` — sin `.eq('user_id', user.id)`
-- **`useDeleteAlertRule`** (línea 69): `.delete().eq('id', id)` — sin `.eq('user_id', user.id)`
-- Tampoco usa `useAuth()` en esas mutaciones (solo en la query y create)
+Los hooks de datos (`useExpenses`, `useIncome`, `useProjects`, `useClients`, `useContracts`, `useMileage`, `useTags`, `useTrash`, `useDeleteFile`, `useFinancialHabits`, `useFinancialJournal`, `usePayYourselfFirst`, `useSavingsGoals`, `useWorkflowProgress`, `useBudgetAlertRules`) muestran mensajes como `'Gasto registrado'`, `'Ingreso actualizado'`, `'Proyecto creado'` **sin respetar el idioma del usuario**. Un usuario con idioma inglés ve toasts en español.
 
-**Fix**: Agregar `useAuth()` y `.eq('user_id', user!.id)` a ambas.
+Solo 5 hooks (`useFiscalEntities`, `useDocumentReview`, `useRecurringBills`, `useRewards`, `useGenerateSampleData`) ya tienen el patrón `language === 'es' ? ... : ...`.
 
----
-
-### 🔴 `Files.tsx` — Bulk delete sin ownership check + `window.location.reload()`
-
-- **Línea 248**: `.delete().eq('id', f.id)` sin `.eq('user_id', user.id)`. Cualquier archivo podría borrarse si RLS falla.
-- **Línea 259**: Usa `window.location.reload()` — destruye todo el estado de React, pierde contexto, y es un antipatrón. Debe usar `queryClient.invalidateQueries()`.
-
-**Fix**: Agregar ownership check y reemplazar reload con invalidación.
+**Fix**: Crear un helper `useLocalizedToast()` que retorne funciones `success(es, en)` y `error(es, en)` para centralizar. Luego migrar los ~15 hooks.
 
 ---
 
-### 🔴 `Notifications.tsx` — `deleteNotification` sin ownership
+### 🔴 `window.confirm()` — Diálogos nativos del navegador (2 lugares)
 
-- **Línea 127**: `.delete().eq('id', id)` — sin `.eq('user_id', user.id)`.
-- `markAsRead` (línea 106): `.update({ read: true }).eq('id', id)` — sin ownership.
-- `DashboardNotificationHub` (línea 143): mismo problema en `markRead`.
+- `Files.tsx` línea 240: `window.confirm(...)` para bulk delete
+- `ReceiptReviewCard.tsx` línea 177: `window.confirm(...)` para delete
 
-**Fix**: Agregar `.eq('user_id', user!.id)` a las 3 operaciones.
+Estos rompen la experiencia visual y no respetan el tema dark/light. Deben usar `AlertDialog` de ShadCN.
 
----
-
-### 🟠 `Reconciliation.tsx` — Direct SQL update + `window.location.reload()`
-
-- **Línea 600-603**: Update directo de `bank_transactions` inline en JSX (no usa hook) sin ownership.
-- **Línea 606**: `window.location.reload()` — debe usar `queryClient.invalidateQueries()`.
-
-**Fix**: Agregar ownership y reemplazar reload con invalidación de `['bank-transactions']`.
+**Fix**: Reemplazar con `AlertDialog` modal.
 
 ---
 
-### 🟡 `FinancialWorryDump` — Updates sin ownership check
+### 🟠 Sin feedback de loading en botones de formularios
 
-- **Línea 83**: `.update({ released: true }).eq('id', id)` — sin user_id.
-- **Línea 96**: `.update({ converted_to_journal: true }).eq('id', entry.id)` — sin user_id.
+Los botones de submit en formularios muestran `isLoading` pero **no deshabilitan la interacción duplicada** consistentemente. Algunos formularios no muestran spinner visual.
 
-**Fix**: Agregar `.eq('user_id', user!.id)` a ambas.
-
----
-
-### 🟡 `EcosystemNotifications` — `markReadMutation` sin ownership check
-
-- **Línea 30**: `.update({ is_read: true }).eq('id', id)` — sin user_id.
-
-**Fix**: Agregar `.eq('user_id', user!.id)`.
+**Fix**: Auditar los principales formularios y asegurar que todos muestren spinner + disabled durante submit.
 
 ---
 
-## Consecuencias si no se arregla
+### 🟠 Notificaciones: dismiss en mobile requiere hover
 
-- Sin ownership en deletes/updates: si RLS falla, operaciones cruzadas entre usuarios
-- `window.location.reload()`: experiencia degradada (parpadeo, pérdida de estado, scroll reset)
-- Inconsistencia: algunos hooks tienen ownership, otros no — riesgo de regresión
+En `DashboardNotificationHub`, el botón de dismiss (X) tiene `opacity-0 group-hover:opacity-100`. En mobile no hay hover, así que el usuario **no puede descartar notificaciones individuales**.
 
-## Consecuencias del fix
+**Fix**: Hacer visible siempre en mobile, o usar swipe-to-dismiss.
 
-- **Ninguna negativa**. Solo se agregan filtros defensivos y se mejora la experiencia de usuario eliminando reloads.
+---
+
+### 🟡 Falta de optimistic updates
+
+Ninguna mutación usa optimistic updates. Cuando el usuario borra o edita, hay un delay visible mientras se re-fetcha. Especialmente notable en:
+- Marcar notificación como leída
+- Confirmar gastos al día
+- Borrar items de la tabla
+
+**Fix**: Agregar optimistic update para `markRead` en notificaciones y `deleteExpense` como mejora inicial.
 
 ---
 
 ## Plan de Implementación
 
-### Paso 1: `useBudgetAlertRules` — Ownership en update y delete
-- Agregar `useAuth()` a `useUpdateAlertRule` y `useDeleteAlertRule`
-- Agregar `.eq('user_id', user!.id)` a ambas mutaciones
+### Paso 1: Crear helper `useLocalizedToast`
+- Crear `src/hooks/utils/useLocalizedToast.ts`
+- Funciones: `success(es: string, en: string)`, `error(es: string, en: string)`, `info(es, en)`
+- Usa `useLanguage()` internamente
 
-### Paso 2: `Files.tsx` — Ownership en bulk delete + eliminar reload
-- Agregar `.eq('user_id', user!.id)` al delete
-- Reemplazar `window.location.reload()` con invalidación de `['all-files']` y `['documents']`
+### Paso 2: Migrar toasts de 15 hooks a bilingüe
+- `useExpenses.ts` — 6 toasts
+- `useIncome.ts` — 6 toasts
+- `useProjects.ts` — 8 toasts
+- `useClients.ts` — 8 toasts
+- `useContracts.ts` — 6 toasts
+- `useMileage.ts` — 6 toasts
+- `useTags.ts` — 4 toasts
+- `useTrash.ts` — 6 toasts
+- `useDeleteFile.ts` — 2 toasts
+- `useFinancialHabits.ts` — 2 toasts
+- `useFinancialJournal.ts` — 2 toasts
+- `usePayYourselfFirst.ts` — 1 toast
+- `useSavingsGoals.ts` — toasts
+- `useWorkflowProgress.ts` — toasts
+- `useBudgetAlertRules.ts` — toasts
 
-### Paso 3: `Notifications.tsx` + `DashboardNotificationHub` — Ownership
-- `deleteNotification`: agregar `.eq('user_id', user!.id)`
-- `markAsRead`: agregar `.eq('user_id', user!.id)` 
-- `DashboardNotificationHub.markRead`: agregar `.eq('user_id', user!.id)`
+### Paso 3: Reemplazar `window.confirm` con AlertDialog
+- `Files.tsx` — crear estado `deleteConfirmOpen` + `AlertDialog`
+- `ReceiptReviewCard.tsx` — crear estado + `AlertDialog`
 
-### Paso 4: `Reconciliation.tsx` — Ownership + eliminar reload
-- Agregar `.eq('user_id', user!.id)` al update inline
-- Reemplazar `window.location.reload()` con `queryClient.invalidateQueries({ queryKey: ['bank-transactions'] })`
+### Paso 4: Fix dismiss buttons en mobile
+- `DashboardNotificationHub.tsx` — cambiar `opacity-0 group-hover:opacity-100` por `sm:opacity-0 sm:group-hover:opacity-100` (siempre visible en mobile)
 
-### Paso 5: `FinancialWorryDump` — Ownership en updates
-- Agregar `.eq('user_id', user!.id)` a `release` y `convertToJournal`
-
-### Paso 6: `EcosystemNotifications` — Ownership en markRead
-- Agregar `.eq('user_id', user!.id)` al update
+### Paso 5: Optimistic update para markRead en notificaciones
+- En `DashboardNotificationHub` — usar `queryClient.setQueryData` para remover la notificación inmediatamente del UI antes de la mutación
 
 ---
 
-## Archivos a modificar
+## Archivos a crear/modificar
 
-1. `src/hooks/data/useBudgetAlertRules.ts` — ownership en update/delete
-2. `src/pages/Files.tsx` — ownership + eliminar reload
-3. `src/pages/Notifications.tsx` — ownership en delete/markRead
-4. `src/components/dashboard/DashboardNotificationHub.tsx` — ownership en markRead
-5. `src/pages/Reconciliation.tsx` — ownership + eliminar reload
-6. `src/components/ecosystem/FinancialWorryDump.tsx` — ownership en updates
-7. `src/components/ecosystem/EcosystemNotifications.tsx` — ownership en markRead
+1. **CREAR** `src/hooks/utils/useLocalizedToast.ts`
+2. `src/hooks/data/useExpenses.ts`
+3. `src/hooks/data/useIncome.ts`
+4. `src/hooks/data/useProjects.ts`
+5. `src/hooks/data/useClients.ts`
+6. `src/hooks/data/useContracts.ts`
+7. `src/hooks/data/useMileage.ts`
+8. `src/hooks/data/useTags.ts`
+9. `src/hooks/data/useTrash.ts`
+10. `src/hooks/data/useDeleteFile.ts`
+11. `src/hooks/data/useFinancialHabits.ts`
+12. `src/hooks/data/useFinancialJournal.ts`
+13. `src/hooks/data/usePayYourselfFirst.ts`
+14. `src/hooks/data/useSavingsGoals.ts`
+15. `src/hooks/data/useWorkflowProgress.ts`
+16. `src/hooks/data/useBudgetAlertRules.ts`
+17. `src/pages/Files.tsx` — AlertDialog
+18. `src/components/capture/ReceiptReviewCard.tsx` — AlertDialog
+19. `src/components/dashboard/DashboardNotificationHub.tsx` — mobile dismiss + optimistic update
 
