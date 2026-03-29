@@ -269,6 +269,7 @@ const getNavSections = (language: string, isBetaTester: boolean = false) => {
           { label: language === 'es' ? '📋 Resumen Fiscal' : '📋 Tax Summary', path: '/dashboard?area=impuestos&atab=summary' },
         ],
       },
+      { icon: FileText, label: language === 'es' ? 'Reportes' : 'Reports', path: '/reports', badge: null, tooltipKey: 'analytics' as const },
     ]
   },
   {
