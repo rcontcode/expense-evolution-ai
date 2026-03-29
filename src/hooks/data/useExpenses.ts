@@ -280,6 +280,37 @@ export function useDeleteExpense() {
   });
 }
 
+export function useAllExpensesForReport(year: number, entityId?: string | null) {
+  return useQuery({
+    queryKey: ['expenses-report', year, entityId],
+    queryFn: async () => {
+      const startDate = `${year}-01-01`;
+      const endDate = `${year}-12-31`;
+
+      let query = supabase
+        .from('expenses')
+        .select(`*, client:clients(*), expense_tags(tag:tags(*))`)
+        .is('deleted_at', null)
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date', { ascending: false });
+
+      if (entityId) {
+        query = query.eq('entity_id', entityId);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      return (data || []).map(expense => ({
+        ...expense,
+        tags: expense.expense_tags?.map((et: any) => et.tag).filter(Boolean) || [],
+      })) as ExpenseWithRelations[];
+    },
+    enabled: !!year,
+  });
+}
+
 export function useAddExpenseTags() {
   const { invalidate } = useInvalidateRelated();
 

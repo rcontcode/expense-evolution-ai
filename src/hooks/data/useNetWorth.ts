@@ -221,6 +221,7 @@ export function useAssets() {
       const { data, error } = await supabase
         .from('assets')
         .select('*')
+        .eq('user_id', user!.id)
         .order('current_value', { ascending: false });
 
       if (error) throw error;
@@ -239,6 +240,7 @@ export function useLiabilities() {
       const { data, error } = await supabase
         .from('liabilities')
         .select('*')
+        .eq('user_id', user!.id)
         .order('current_balance', { ascending: false });
 
       if (error) throw error;
@@ -257,6 +259,7 @@ export function useNetWorthSnapshots() {
       const { data, error } = await supabase
         .from('net_worth_snapshots')
         .select('*')
+        .eq('user_id', user!.id)
         .order('snapshot_date', { ascending: true })
         .limit(12);
 

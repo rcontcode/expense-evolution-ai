@@ -24,6 +24,7 @@ export function useCategoryBudgets(entityId?: string | null) {
       let query = supabase
         .from("category_budgets")
         .select("*")
+        .eq("user_id", user!.id)
         .order("category");
 
       if (entityId === null) {

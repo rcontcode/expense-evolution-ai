@@ -42,9 +42,7 @@ export function useFinancialJournal(limit?: number) {
         .order('entry_date', { ascending: false })
         .order('created_at', { ascending: false });
 
-      if (limit) {
-        query = query.limit(limit);
-      }
+      query = query.limit(limit || 500);
 
       const { data, error } = await query;
       if (error) throw error;
