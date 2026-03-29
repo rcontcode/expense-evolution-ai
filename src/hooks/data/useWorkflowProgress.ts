@@ -243,8 +243,8 @@ async function getWealthBuildingProgress(userId: string): Promise<WorkflowProgre
     { data: liabilities },
     { data: goals }
   ] = await Promise.all([
-    supabase.from('income').select('id, amount').eq('user_id', userId),
-    supabase.from('expenses').select('id, amount').eq('user_id', userId),
+    supabase.from('income').select('id, amount').eq('user_id', userId).is('deleted_at', null),
+    supabase.from('expenses').select('id, amount').eq('user_id', userId).is('deleted_at', null),
     supabase.from('assets').select('id, current_value').eq('user_id', userId),
     supabase.from('liabilities').select('id, current_balance').eq('user_id', userId),
     supabase.from('investment_goals').select('id, status').eq('user_id', userId),
@@ -292,8 +292,8 @@ async function getTagManagementProgress(userId: string): Promise<WorkflowProgres
     { data: expenses }
   ] = await Promise.all([
     supabase.from('tags').select('id').eq('user_id', userId),
-    supabase.from('expense_tags').select('id, tag_id, expense_id'),
-    supabase.from('expenses').select('id').eq('user_id', userId),
+    supabase.from('expense_tags').select('id, tag_id, expense_id').eq('user_id', userId),
+    supabase.from('expenses').select('id').eq('user_id', userId).is('deleted_at', null),
   ]);
 
   const tagCount = tags?.length || 0;

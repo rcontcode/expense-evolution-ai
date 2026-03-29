@@ -220,6 +220,7 @@ export function useCreateEducationResource() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['financial-education'] });
       queryClient.invalidateQueries({ queryKey: ['financial-education-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['education-daily-logs'] });
       toast.success('Recurso educativo agregado');
     },
   });

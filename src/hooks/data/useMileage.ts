@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
@@ -56,8 +57,10 @@ export function calculateMileageDeduction(
 }
 
 export const useMileage = (year?: number) => {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['mileage', year],
+    queryKey: ['mileage', user?.id, year],
     queryFn: async () => {
       let query = supabase
         .from('mileage')
@@ -65,6 +68,7 @@ export const useMileage = (year?: number) => {
           *,
           client:clients(id, name)
         `)
+        .eq('user_id', user!.id)
         .is('deleted_at', null)
         .order('date', { ascending: false });
 
@@ -78,18 +82,22 @@ export const useMileage = (year?: number) => {
       if (error) throw error;
       return data as MileageWithClient[];
     },
+    enabled: !!user,
   });
 };
 
 export const useMileageSummary = (year?: number) => {
+  const { user } = useAuth();
+
   return useQuery({
-    queryKey: ['mileage-summary', year],
+    queryKey: ['mileage-summary', user?.id, year],
     queryFn: async () => {
       const currentYear = year || new Date().getFullYear();
       
       const { data, error } = await supabase
         .from('mileage')
         .select('kilometers, date')
+        .eq('user_id', user!.id)
         .is('deleted_at', null)
         .gte('date', `${currentYear}-01-01`)
         .lte('date', `${currentYear}-12-31`)
@@ -123,6 +131,7 @@ export const useMileageSummary = (year?: number) => {
         yearToDateKm: totalKm,
       } as MileageSummary;
     },
+    enabled: !!user,
   });
 };
 
@@ -191,12 +200,21 @@ export const useDeleteMileage = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      const { data: existing } = await supabase.from('mileage').select('purpose, kilometers').eq('id', id).single();
       // Soft delete
       const { error } = await supabase
         .from('mileage')
         .update({ deleted_at: new Date().toISOString() } as any)
         .eq('id', id);
       if (error) throw error;
+
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        await supabase.from('audit_log' as any).insert({
+          user_id: userData.user.id, action: 'delete', entity_type: 'mileage', entity_id: id,
+          entity_name: existing?.purpose || null, old_values: existing ? { purpose: existing.purpose, kilometers: existing.kilometers } : null,
+        } as any);
+      }
     },
     onSuccess: () => {
       afterMileage();
