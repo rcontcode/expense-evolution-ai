@@ -160,22 +160,21 @@ export function useUpdateIncome() {
 }
 
 export function useDeleteIncome() {
+  const { user } = useAuth();
   const { afterIncome } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: existing } = await supabase.from('income').select('source, amount').eq('id', id).single();
-      const { error } = await supabase.from('income').update({ deleted_at: new Date().toISOString() }).eq('id', id);
+      if (!user) throw new Error('Not authenticated');
+      const { data: existing } = await supabase.from('income').select('source, amount').eq('id', id).eq('user_id', user.id).single();
+      const { error } = await supabase.from('income').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id);
       if (error) throw error;
 
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData.user) {
-        await insertAuditLog(userData.user.id, {
-          action: 'delete', entity_type: 'income', entity_id: id,
-          entity_name: existing?.source || null,
-          old_values: existing ? { source: existing.source, amount: existing.amount } : null,
-        });
-      }
+      await insertAuditLog(user.id, {
+        action: 'delete', entity_type: 'income', entity_id: id,
+        entity_name: existing?.source || null,
+        old_values: existing ? { source: existing.source, amount: existing.amount } : null,
+      });
     },
     onSuccess: () => {
       afterIncome();
