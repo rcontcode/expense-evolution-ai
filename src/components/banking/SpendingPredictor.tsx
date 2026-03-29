@@ -19,6 +19,9 @@ import { useBankInsights } from '@/hooks/data/useBankAnalysis';
 import { useUserSettings, UserPreferences } from '@/hooks/data/useUserSettings';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { useRecurringBills } from '@/hooks/data/useRecurringBills';
+import { getMonthlyEquivalent } from '@/lib/constants/bill-categories';
+import { ProjectionDisclaimer, type DataSource } from '@/components/projections/ProjectionDisclaimer';
 import { motion } from 'framer-motion';
 import { format, startOfMonth, endOfMonth, getDaysInMonth, subMonths, parseISO, getDay, eachDayOfInterval, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -31,6 +34,7 @@ export function SpendingPredictor() {
   const { data: settings } = useUserSettings();
   const { formatCurrency: fc } = useFormatCurrency();
   const insights = useBankInsights();
+  const { data: bills } = useRecurringBills();
   
   const preferences = (settings?.preferences as UserPreferences) || {};
   const globalBudget = preferences.global_monthly_budget || 0;
@@ -71,7 +75,15 @@ export function SpendingPredictor() {
     
     const currentSpent = currentMonthItems.reduce((sum, item) => sum + item.amount, 0);
     const dailyAvg = dayOfMonth > 0 ? currentSpent / dayOfMonth : 0;
-    const monthEndPrediction = dailyAvg * daysInMonth;
+    
+    // Add pending recurring bills for remaining days
+    const activeBills = (bills || []).filter(b => b.status === 'active');
+    const monthlyBillsTotal = activeBills.reduce((s, b) => 
+      s + getMonthlyEquivalent(Number(b.amount), b.frequency, b.frequency_months || undefined), 0);
+    const dailyBillsAvg = monthlyBillsTotal / daysInMonth;
+    const remainingBillsCost = dailyBillsAvg * daysRemaining;
+    
+    const monthEndPrediction = currentSpent + (dailyAvg * daysRemaining) + remainingBillsCost;
     
     const lastMonthItems = unifiedData.filter(item => {
       const date = parseISO(item.date);
@@ -121,7 +133,14 @@ export function SpendingPredictor() {
       weekdayAvg, weekendAvg, weekendPremium,
       weeklyPace, idealDaily
     };
-  }, [unifiedData, globalBudget, dayOfMonth, daysInMonth, now, daysRemaining]);
+  }, [unifiedData, globalBudget, dayOfMonth, daysInMonth, now, daysRemaining, bills]);
+
+  const disclaimerSources: DataSource[] = useMemo(() => [
+    { name: { es: 'Gastos manuales', en: 'Manual expenses' }, available: (expenses?.length || 0) > 0, count: expenses?.length, tip: { es: 'Registra tus gastos diarios', en: 'Log your daily expenses' } },
+    { name: { es: 'Transacciones bancarias', en: 'Bank transactions' }, available: (transactions?.length || 0) > 0, count: transactions?.length, tip: { es: 'Importa tu estado de cuenta', en: 'Import your bank statement' } },
+    { name: { es: 'Pagos fijos recurrentes', en: 'Recurring bills' }, available: (bills?.filter(b => b.status === 'active').length || 0) > 0, count: bills?.filter(b => b.status === 'active').length, tip: { es: 'Agrega tus pagos fijos (renta, servicios, suscripciones)', en: 'Add your fixed payments (rent, utilities, subscriptions)' } },
+    { name: { es: 'Presupuesto global', en: 'Global budget' }, available: globalBudget > 0, tip: { es: 'Configura tu presupuesto mensual en ajustes', en: 'Set your monthly budget in settings' } },
+  ], [expenses, transactions, bills, globalBudget]);
   
   if (!predictions || unifiedData.length === 0) return null;
   
@@ -300,6 +319,18 @@ export function SpendingPredictor() {
             <AlertTriangle className="h-5 w-5 text-destructive" />
           )}
         </div>
+
+        <ProjectionDisclaimer
+          dataSources={disclaimerSources}
+          methodology={{ 
+            es: 'Proyecta el gasto de fin de mes usando tu promedio diario actual + pagos fijos pendientes proporcionalmente al tiempo restante.', 
+            en: 'Projects end-of-month spending using your current daily average + pending fixed payments proportional to remaining time.' 
+          }}
+          assumptions={[
+            { es: 'El ritmo de gasto se mantiene constante el resto del mes', en: 'Spending pace remains constant for the rest of the month' },
+            { es: 'Los pagos fijos se distribuyen proporcionalmente', en: 'Fixed payments are distributed proportionally' },
+          ]}
+        />
       </CardContent>
     </Card>
   );

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
+import { ProjectionDisclaimer } from '@/components/projections/ProjectionDisclaimer';
 
 interface Expense {
   id: string;
@@ -445,6 +446,20 @@ export function ExpensePredictions({ expenses, isLoading }: ExpensePredictionsPr
             </p>
           </div>
         )}
+
+        <ProjectionDisclaimer
+          dataSources={[
+            { name: { es: 'Gastos manuales (6 meses)', en: 'Manual expenses (6 months)' }, available: historicalData.filter(m => m.total > 0).length >= 3, count: historicalData.filter(m => m.total > 0).length, tip: { es: 'Necesitas al menos 3 meses de gastos registrados', en: 'You need at least 3 months of logged expenses' } },
+          ]}
+          methodology={{
+            es: 'Envía tus datos históricos de gastos por categoría a un modelo de IA que detecta patrones, estacionalidad y anomalías para proyectar los próximos 3 meses.',
+            en: 'Sends your historical expense data by category to an AI model that detects patterns, seasonality, and anomalies to project the next 3 months.'
+          }}
+          assumptions={[
+            { es: 'Solo usa gastos registrados manualmente (no transacciones bancarias)', en: 'Only uses manually logged expenses (not bank transactions)' },
+            { es: 'La precisión mejora con más meses de datos históricos', en: 'Accuracy improves with more months of historical data' },
+          ]}
+        />
       </CardContent>
     </Card>
   );

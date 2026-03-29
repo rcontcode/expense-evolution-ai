@@ -15,6 +15,7 @@ import { CalendarIcon, TrendingUp, TrendingDown, Target, Shield, Zap } from 'luc
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts';
+import { ProjectionDisclaimer, type DataSource } from '@/components/projections/ProjectionDisclaimer';
 
 type ScenarioMode = 'realistic' | 'optimistic' | 'pessimistic';
 
@@ -130,10 +131,10 @@ export function BalanceDateLookup() {
             </motion.div>
             <div>
               <CardTitle className="text-base">
-                {l ? '🔮 Balance en Fecha' : '🔮 Balance on Date'}
+                {l ? '🔮 Cambio Neto Proyectado' : '🔮 Projected Net Change'}
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                {l ? 'Proyección con escenarios' : 'Projection with scenarios'}
+                {l ? 'Variación proyectada (no balance absoluto)' : 'Projected change (not absolute balance)'}
               </p>
             </div>
           </div>
@@ -292,6 +293,22 @@ export function BalanceDateLookup() {
           {scenario === 'realistic' && (l ? '📊 Basado en promedios reales' : '📊 Based on actual averages')}
           {scenario === 'pessimistic' && (l ? '📉 -10% ingreso, +20% gasto variable' : '📉 -10% income, +20% variable spending')}
         </p>
+
+        <ProjectionDisclaimer
+          dataSources={[
+            { name: { es: 'Ingresos del mes', en: 'Monthly income' }, available: (allIncome || []).length > 0, count: (allIncome || []).length, tip: { es: 'Registra tus ingresos de este mes', en: 'Log your income for this month' } },
+            { name: { es: 'Gastos del mes', en: 'Monthly expenses' }, available: (allExpenses || []).length > 0, count: (allExpenses || []).length, tip: { es: 'Registra tus gastos recientes', en: 'Log your recent expenses' } },
+            { name: { es: 'Pagos fijos', en: 'Recurring bills' }, available: (bills || []).filter(b => b.status === 'active').length > 0, count: (bills || []).filter(b => b.status === 'active').length, tip: { es: 'Agrega tus pagos recurrentes', en: 'Add your recurring payments' } },
+          ]}
+          methodology={{
+            es: 'Calcula el cambio neto diario (ingreso promedio - gastos variables - gastos fijos) y lo acumula día a día. No es un balance absoluto — muestra cuánto ganarías o perderías desde hoy.',
+            en: 'Calculates daily net change (avg income - variable expenses - fixed costs) and accumulates it day by day. Not an absolute balance — shows how much you\'d gain or lose from today.'
+          }}
+          assumptions={[
+            { es: 'Los ingresos y gastos se mantienen al ritmo del mes actual', en: 'Income and expenses maintain current month pace' },
+            { es: 'No incluye saldo bancario actual — solo muestra el cambio neto', en: 'Does not include current bank balance — only shows net change' },
+          ]}
+        />
       </CardContent>
     </Card>
   );

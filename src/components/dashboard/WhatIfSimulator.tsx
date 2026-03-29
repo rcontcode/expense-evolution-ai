@@ -13,7 +13,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useExpenses } from '@/hooks/data/useExpenses';
 import { useIncome } from '@/hooks/data/useIncome';
 import { useBankInsights } from '@/hooks/data/useBankAnalysis';
+import { useRecurringBills } from '@/hooks/data/useRecurringBills';
 import { useFormatCurrency } from '@/hooks/utils/useFormatCurrency';
+import { ProjectionDisclaimer, type DataSource } from '@/components/projections/ProjectionDisclaimer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -39,6 +41,7 @@ export function WhatIfSimulator() {
   const { data: expenses } = useExpenses({ dateRange: { start: m3Start, end: mEnd } });
   const { data: income } = useIncome();
   const bankInsights = useBankInsights();
+  const { data: recurringBills } = useRecurringBills();
 
   const [investReturnPct, setInvestReturnPct] = useState(7);
   const [projectionYears, setProjectionYears] = useState(5);
@@ -91,8 +94,28 @@ export function WhatIfSimulator() {
       });
     }
 
+    // From system recurring bills (not detected by bank)
+    const activeBills = (recurringBills || []).filter(b => b.status === 'active');
+    const bankDescriptions = new Set(bankInsights.recurringPayments.map(rp => rp.description.toLowerCase()));
+    activeBills.forEach((bill, i) => {
+      if (!bankDescriptions.has(bill.name.toLowerCase()) && scenarios.length < 12) {
+        const monthlyAmt = Number(bill.amount);
+        if (monthlyAmt > 10) {
+          scenarios.push({
+            id: `bill-${i}`,
+            label: bill.name,
+            type: 'cancel',
+            monthlyAmount: monthlyAmt,
+            enabled: false,
+            reductionPct: 100,
+            source: l ? 'Pago fijo registrado' : 'Registered fixed payment',
+          });
+        }
+      }
+    });
+
     return scenarios;
-  }, [bankInsights.recurringPayments, expenses, l]);
+  }, [bankInsights.recurringPayments, expenses, recurringBills, l]);
 
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
 
@@ -350,8 +373,25 @@ export function WhatIfSimulator() {
                 </p>
               )}
             </motion.div>
-          )}
+            )}
         </AnimatePresence>
+
+        <ProjectionDisclaimer
+          dataSources={[
+            { name: { es: 'Gastos (3 meses)', en: 'Expenses (3 months)' }, available: (expenses?.length || 0) > 0, count: expenses?.length, tip: { es: 'Registra gastos para generar escenarios de reducción', en: 'Log expenses to generate reduction scenarios' } },
+            { name: { es: 'Pagos recurrentes (banco)', en: 'Recurring payments (bank)' }, available: bankInsights.recurringPayments.length > 0, count: bankInsights.recurringPayments.length, tip: { es: 'Importa tu estado de cuenta bancario', en: 'Import your bank statement' } },
+            { name: { es: 'Pagos fijos registrados', en: 'Registered fixed payments' }, available: (recurringBills || []).filter(b => b.status === 'active').length > 0, count: (recurringBills || []).filter(b => b.status === 'active').length, tip: { es: 'Agrega tus pagos fijos en la sección de Bills', en: 'Add your fixed payments in the Bills section' } },
+            { name: { es: 'Ingresos', en: 'Income' }, available: (income?.length || 0) > 0, count: income?.length, tip: { es: 'Registra tus ingresos para ver el impacto como % del ingreso', en: 'Log your income to see impact as % of income' } },
+          ]}
+          methodology={{
+            es: 'Simula el efecto de cancelar o reducir gastos y pagos recurrentes. El cálculo de inversión usa interés compuesto mensual sobre el ahorro proyectado.',
+            en: 'Simulates the effect of canceling or reducing expenses and recurring payments. Investment calculation uses monthly compound interest on projected savings.'
+          }}
+          assumptions={[
+            { es: 'El retorno de inversión es constante (sin volatilidad)', en: 'Investment return is constant (no volatility)' },
+            { es: 'Los ahorros se invierten inmediatamente cada mes', en: 'Savings are invested immediately each month' },
+          ]}
+        />
       </CardContent>
     </Card>
   );
