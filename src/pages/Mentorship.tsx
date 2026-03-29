@@ -26,6 +26,7 @@ import { TracyQuickStats } from '@/components/mentorship/TracyQuickStats';
 import { KiyosakiQuickStats } from '@/components/mentorship/KiyosakiQuickStats';
 import { MentorshipLevelBanner } from '@/components/mentorship/MentorshipLevelBanner';
 import { Target, Sparkles, GraduationCap, Brain, Coins, Atom, BookOpen, ChevronDown } from 'lucide-react';
+import { LegalDisclaimer } from '@/components/ui/legal-disclaimer';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
 import { Layout } from '@/components/Layout';
 import { PageHeader } from '@/components/PageHeader';
@@ -81,10 +82,10 @@ const MENTOR_THEMES = {
 
 const MENTOR_TABS = [
   { value: 'library', icon: '📚', labelEs: 'Biblioteca', labelEn: 'Library' },
-  { value: 'atomic', icon: '⚛️', labelEs: 'Atómicos', labelEn: 'Atomic' },
-  { value: 'kiyosaki', icon: '💰', labelEs: 'Kiyosaki', labelEn: 'Kiyosaki' },
-  { value: 'rohn', icon: '🌟', labelEs: 'Jim Rohn', labelEn: 'Jim Rohn' },
-  { value: 'tracy', icon: '🎯', labelEs: 'Tracy', labelEn: 'Tracy' },
+  { value: 'atomic', icon: '⚛️', labelEs: 'Hábitos', labelEn: 'Habits' },
+  { value: 'kiyosaki', icon: '💰', labelEs: 'Activos', labelEn: 'Assets' },
+  { value: 'rohn', icon: '🌟', labelEs: 'Journal', labelEn: 'Journal' },
+  { value: 'tracy', icon: '🎯', labelEs: 'Metas', labelEn: 'Goals' },
   { value: 'wellbeing', icon: '🧘', labelEs: 'Bienestar', labelEn: 'Wellbeing' },
 ];
 
@@ -188,11 +189,18 @@ function TabBanner({ tab, isMobile }: { tab: string; isMobile: boolean }) {
 
   const TITLES: Record<string, { es: string; en: string }> = {
     library: { es: 'Biblioteca Financiera', en: 'Financial Library' },
-    atomic: { es: 'Hábitos Atómicos', en: 'Atomic Habits' },
-    kiyosaki: { es: 'Kiyosaki', en: 'Kiyosaki' },
-    rohn: { es: 'Jim Rohn', en: 'Jim Rohn' },
-    tracy: { es: 'Brian Tracy', en: 'Brian Tracy' },
+    atomic: { es: 'Hábitos Financieros', en: 'Financial Habits' },
+    kiyosaki: { es: 'Activos y Flujo de Caja', en: 'Assets & Cashflow' },
+    rohn: { es: 'Journal y Lectura', en: 'Journal & Reading' },
+    tracy: { es: 'Metas SMART', en: 'SMART Goals' },
     wellbeing: { es: 'Bienestar Financiero', en: 'Financial Wellbeing' },
+  };
+
+  const SUBTITLES: Record<string, { es: string; en: string }> = {
+    atomic: { es: 'Método Atomic Habits', en: 'Atomic Habits Method' },
+    kiyosaki: { es: 'Método Rich Dad', en: 'Rich Dad Method' },
+    rohn: { es: 'Filosofía Jim Rohn', en: 'Jim Rohn Philosophy' },
+    tracy: { es: 'Método Brian Tracy', en: 'Brian Tracy Method' },
   };
 
   const DESCS: Record<string, { es: string; en: string }> = {
@@ -263,8 +271,8 @@ export default function Mentorship() {
         <PageHeader
           title={language === 'es' ? '🧠 Mentoría Financiera' : '🧠 Financial Mentorship'}
           description={!isMobile ? (language === 'es' 
-            ? 'Herramientas inspiradas en Kiyosaki, Jim Rohn y Brian Tracy para tu libertad financiera 🚀'
-            : 'Tools inspired by Kiyosaki, Jim Rohn, and Brian Tracy for your financial freedom 🚀') : undefined}
+            ? 'Herramientas para hábitos, metas, activos y crecimiento financiero 🚀'
+            : 'Tools for habits, goals, assets, and financial growth 🚀') : undefined}
         />
 
         {/* Level Banner */}
@@ -414,6 +422,9 @@ export default function Mentorship() {
             </TabsContent>
           )}
         </Tabs>
+
+        {/* Legal disclaimer */}
+        <LegalDisclaimer variant="education" size="compact" className="mt-4" />
       </div>
     </Layout>
   );
