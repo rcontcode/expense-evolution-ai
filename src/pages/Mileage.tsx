@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Car, Plus, Download, MapPin, DollarSign, Upload, BarChart3, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { useMileage, useMileageSummary, MileageWithClient, useDeleteMileage } from '@/hooks/data/useMileage';
+import { useEntity } from '@/contexts/EntityContext';
 import { MileageDialog } from '@/components/dialogs/MileageDialog';
 import { MileageTable } from '@/components/tables/MileageTable';
 import { MileageCard } from '@/components/mileage/MileageCard';
@@ -46,6 +47,8 @@ import {
 
 export default function Mileage() {
   const { t, language } = useLanguage();
+  const { currentCountry } = useEntity();
+  const isEs = language === 'es';
   const isMobile = useIsMobile();
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
@@ -56,7 +59,7 @@ export default function Mileage() {
   const deleteMileage = useDeleteMileage();
 
   const { data: mileageRecords, isLoading } = useMileage(selectedYear);
-  const { data: summary, isLoading: summaryLoading } = useMileageSummary(selectedYear);
+  const { data: summary, isLoading: summaryLoading } = useMileageSummary(selectedYear, currentCountry);
 
   const handleEdit = (mileage: MileageWithClient) => {
     setSelectedMileage(mileage);
@@ -176,7 +179,7 @@ export default function Mileage() {
               actions={[
                 { icon: Plus, title: { es: 'Nuevo Viaje', en: 'New Trip' }, description: { es: 'Registrar', en: 'Log trip' }, action: handleCreate },
                 { icon: Car, title: { es: 'Ver Resumen', en: 'View Summary' }, description: { es: 'Deducciones', en: 'Deductions' }, action: () => {} },
-                { icon: DollarSign, title: { es: 'Cálculo CRA', en: 'CRA Calculation' }, description: { es: 'Tarifas 2026', en: '2026 rates' }, path: '/dashboard' },
+                { icon: DollarSign, title: { es: currentCountry === 'CL' ? 'Cálculo SII' : 'Cálculo CRA', en: currentCountry === 'CL' ? 'SII Calculation' : 'CRA Calculation' }, description: { es: 'Tarifas ' + new Date().getFullYear(), en: new Date().getFullYear() + ' rates' }, path: '/dashboard' },
                 { icon: Download, title: { es: 'Exportar', en: 'Export' }, description: { es: 'Para impuestos', en: 'For taxes' }, path: '/dashboard' }
               ]}
             />

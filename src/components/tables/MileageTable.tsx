@@ -26,8 +26,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MileageWithClient, useDeleteMileage, calculateMileageDeduction } from '@/hooks/data/useMileage';
+import { MileageWithClient, useDeleteMileage, calculateMileageDeductionByCountry } from '@/hooks/data/useMileage';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useEntity } from '@/contexts/EntityContext';
 import { useState } from 'react';
 import { MileageRoutePreview } from '@/components/mileage/MileageRoutePreview';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -39,12 +40,14 @@ interface MileageTableProps {
 
 export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
   const { t } = useLanguage();
+  const { currentCountry } = useEntity();
   const deleteMileage = useDeleteMileage();
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  const showDeduction = !!currentCountry;
+
   // Calculate running YTD for deduction display
-  const dataWithDeductions = data.map((record, index) => {
-    // Get all records before this one in chronological order
+  const dataWithDeductions = data.map((record) => {
     const sortedData = [...data].sort((a, b) => 
       new Date(a.date).getTime() - new Date(b.date).getTime()
     );
@@ -54,9 +57,9 @@ export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
       .reduce((sum, r) => sum + parseFloat(r.kilometers.toString()), 0);
     
     const km = parseFloat(record.kilometers.toString());
-    const { deductible, rate } = calculateMileageDeduction(km, ytdKm);
+    const result = calculateMileageDeductionByCountry(km, ytdKm, currentCountry);
     
-    return { ...record, deductible, rate };
+    return { ...record, deductible: result?.deductible || 0, rate: result?.rate || 0, deductionCurrency: result?.currency || '' };
   });
 
   const handleDelete = async () => {
@@ -78,7 +81,7 @@ export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
               <TableHead>{t('mileage.date')}</TableHead>
               <TableHead>{t('mileage.route')}</TableHead>
               <TableHead className="text-right">{t('mileage.kilometers')}</TableHead>
-              <TableHead className="text-right">{t('mileage.deduction')}</TableHead>
+              {showDeduction && <TableHead className="text-right">{t('mileage.deduction')}</TableHead>}
               <TableHead>{t('mileage.client')}</TableHead>
               <TableHead>{t('mileage.purpose')}</TableHead>
               <TableHead className="w-[50px]"></TableHead>
@@ -118,16 +121,22 @@ export const MileageTable = ({ data, onEdit }: MileageTableProps) => {
                 <TableCell className="text-right">
                   {parseFloat(record.kilometers.toString()).toFixed(1)} km
                 </TableCell>
-                <TableCell className="text-right">
-                  <div className="space-y-1">
-                    <div className="font-medium text-chart-1">
-                      ${record.deductible.toFixed(2)}
+                {showDeduction && (
+                  <TableCell className="text-right">
+                    <div className="space-y-1">
+                      <div className="font-medium text-chart-1">
+                        {record.deductionCurrency === 'CLP' 
+                          ? `$${record.deductible.toLocaleString()} CLP`
+                          : `$${record.deductible.toFixed(2)}`}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {record.deductionCurrency === 'CLP'
+                          ? `$${record.rate} CLP/km`
+                          : `$${record.rate.toFixed(2)}/km`}
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      ${record.rate.toFixed(2)}/km
-                    </div>
-                  </div>
-                </TableCell>
+                  </TableCell>
+                )}
                 <TableCell>
                   {record.client?.name ? (
                     <Badge variant="outline">{record.client.name.replace('[SAMPLE] ', '')}</Badge>
