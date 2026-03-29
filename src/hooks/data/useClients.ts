@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Client } from '@/types/expense.types';
 import { toast } from 'sonner';
 import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
@@ -15,16 +16,15 @@ type ClientInsert = {
 };
 
 export function useClients() {
-  return useQuery({
-    queryKey: ['clients'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+  const { user } = useAuth();
 
+  return useQuery({
+    queryKey: ['clients', user?.id],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('clients')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
         .is('deleted_at', null)
         .order('name', { ascending: true })
         .limit(500);
@@ -32,16 +32,17 @@ export function useClients() {
       if (error) throw error;
       return data as Client[];
     },
+    enabled: !!user,
   });
 }
 
 export function useCreateClient(defaultEntityId?: string) {
+  const { user } = useAuth();
   const { triggers } = useGamificationTriggers();
   const { afterClient, invalidate } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (client: ClientInsert) => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const currentCount = await getTableCount('clients', user.id);
@@ -79,14 +80,17 @@ export function useCreateClient(defaultEntityId?: string) {
 }
 
 export function useUpdateClient() {
+  const { user } = useAuth();
   const { afterClient } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<ClientInsert> }) => {
+      if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('clients')
         .update(updates)
         .eq('id', id)
+        .eq('user_id', user.id)
         .select()
         .single();
       
@@ -104,25 +108,25 @@ export function useUpdateClient() {
 }
 
 export function useDeleteClient() {
+  const { user } = useAuth();
   const { afterClientDelete } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: existing } = await supabase.from('clients').select('name').eq('id', id).single();
+      if (!user) throw new Error('Not authenticated');
+      const { data: existing } = await supabase.from('clients').select('name').eq('id', id).eq('user_id', user.id).single();
       const { error } = await supabase
         .from('clients')
         .update({ deleted_at: new Date().toISOString() })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
       
       if (error) throw error;
 
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData.user) {
-        await insertAuditLog(userData.user.id, {
-          action: 'delete', entity_type: 'client', entity_id: id,
-          entity_name: existing?.name || null,
-        });
-      }
+      await insertAuditLog(user.id, {
+        action: 'delete', entity_type: 'client', entity_id: id,
+        entity_name: existing?.name || null,
+      });
     },
     onSuccess: () => {
       afterClientDelete();
@@ -135,11 +139,11 @@ export function useDeleteClient() {
 }
 
 export function useDeleteClientTestData() {
+  const { user } = useAuth();
   const { afterClientDelete, invalidate } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (clientId: string) => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       // Get client name for audit

@@ -137,17 +137,17 @@ export const useMileageSummary = (year?: number) => {
 };
 
 export const useCreateMileage = (defaultEntityId?: string) => {
+  const { user } = useAuth();
   const { afterMileage } = useInvalidateRelated();
   const { trackAction } = useMissionTracker();
 
   return useMutation({
     mutationFn: async (data: Omit<MileageInsert, 'user_id'>) => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('Not authenticated');
+      if (!user) throw new Error('Not authenticated');
 
       const insertData = {
         ...data,
-        user_id: userData.user.id,
+        user_id: user.id,
         entity_id: data.entity_id || defaultEntityId || null,
       };
 
