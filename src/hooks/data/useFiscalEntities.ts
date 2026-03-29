@@ -108,6 +108,7 @@ export function useUpdateFiscalEntity() {
 }
 
 export function useDeleteFiscalEntity() {
+  const { user } = useAuth();
   const { language } = useLanguage();
   const { afterEntity } = useInvalidateRelated();
 
