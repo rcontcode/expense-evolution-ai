@@ -306,7 +306,7 @@ export default function Mentorship() {
           {/* Library Tab */}
           <TabsContent value="library" className="space-y-4 sm:space-y-6">
             <TabBanner tab="library" isMobile={isMobile} />
-            <div data-highlight="financial-library">
+            <div id="mentorship-library" data-highlight="financial-library">
               <FinancialLibrary />
             </div>
           </TabsContent>
@@ -315,11 +315,13 @@ export default function Mentorship() {
           <TabsContent value="atomic" className="space-y-4 sm:space-y-6">
             <TabBanner tab="atomic" isMobile={isMobile} />
             <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-              <div className="lg:col-span-2">
+              <div id="mentorship-habits" className="lg:col-span-2">
                 <AtomicHabitsCard />
               </div>
               <FinancialHabitsCard />
-              <PayYourselfFirstCard />
+              <div id="mentorship-pay-yourself">
+                <PayYourselfFirstCard />
+              </div>
             </div>
           </TabsContent>
 
@@ -327,9 +329,13 @@ export default function Mentorship() {
           <TabsContent value="kiyosaki" className="space-y-4 sm:space-y-6">
             <TabBanner tab="kiyosaki" isMobile={isMobile} />
             <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
-              <CashflowQuadrantCard />
-              <FinancialFreedomCard />
-              <div className="md:col-span-2">
+              <div id="mentorship-cashflow">
+                <CashflowQuadrantCard />
+              </div>
+              <div id="mentorship-freedom">
+                <FinancialFreedomCard />
+              </div>
+              <div id="mentorship-debt" className="md:col-span-2">
                 <DebtClassificationCard />
               </div>
             </div>
@@ -339,10 +345,18 @@ export default function Mentorship() {
           <TabsContent value="rohn" className="space-y-4 sm:space-y-6">
             <TabBanner tab="rohn" isMobile={isMobile} />
             <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
-              <FinancialJournalCard />
-              <FinancialEducationCard />
-              <ReadingReminderSettings />
-              <ReadingPaceComparison />
+              <div id="mentorship-journal">
+                <FinancialJournalCard />
+              </div>
+              <div id="mentorship-education">
+                <FinancialEducationCard />
+              </div>
+              <div id="mentorship-reading-reminder">
+                <ReadingReminderSettings />
+              </div>
+              <div id="mentorship-reading-pace">
+                <ReadingPaceComparison />
+              </div>
               <div className="md:col-span-2">
                 <GlobalLearningChart />
               </div>
@@ -352,9 +366,13 @@ export default function Mentorship() {
           {/* Brian Tracy Tab */}
           <TabsContent value="tracy" className="space-y-4 sm:space-y-6">
             <TabBanner tab="tracy" isMobile={isMobile} />
-            <TracyGoalWizard />
+            <div id="mentorship-goal-wizard">
+              <TracyGoalWizard />
+            </div>
             <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
-              <SMARTGoalsCard />
+              <div id="mentorship-smart-goals">
+                <SMARTGoalsCard />
+              </div>
             </div>
           </TabsContent>
 
