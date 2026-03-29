@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { Database } from '@/integrations/supabase/types';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { insertAuditLog } from './useAuditLog';
 
 export type FiscalEntity = Database['public']['Tables']['fiscal_entities']['Row'];
 export type FiscalEntityInsert = Database['public']['Tables']['fiscal_entities']['Insert'];
@@ -122,10 +123,10 @@ export function useDeleteFiscalEntity() {
 
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
-        await supabase.from('audit_log' as any).insert({
-          user_id: userData.user.id, action: 'delete', entity_type: 'fiscal_entity', entity_id: id,
+        await insertAuditLog(userData.user.id, {
+          action: 'delete', entity_type: 'fiscal_entity', entity_id: id,
           entity_name: existing?.name || null, old_values: existing ? { name: existing.name, entity_type: existing.entity_type } : null,
-        } as any);
+        });
       }
     },
     onSuccess: () => {

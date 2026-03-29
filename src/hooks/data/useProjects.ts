@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Project, ProjectWithRelations, ProjectFormData } from '@/types/income.types';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { insertAuditLog } from './useAuditLog';
 
 export function useProjects(status?: string) {
   const { user } = useAuth();
@@ -59,10 +60,10 @@ export function useCreateProject(defaultEntityId?: string) {
 
       if (error) throw error;
 
-      await supabase.from('audit_log' as any).insert({
-        user_id: user!.id, action: 'create', entity_type: 'project', entity_id: newProject.id,
+      await insertAuditLog(user!.id, {
+        action: 'create', entity_type: 'project', entity_id: newProject.id,
         entity_name: data.name, new_values: { name: data.name, status: data.status },
-      } as any);
+      });
 
       return newProject;
     },
@@ -125,10 +126,10 @@ export function useDeleteProject() {
 
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
-        await supabase.from('audit_log' as any).insert({
-          user_id: userData.user.id, action: 'delete', entity_type: 'project', entity_id: id,
+        await insertAuditLog(userData.user.id, {
+          action: 'delete', entity_type: 'project', entity_id: id,
           entity_name: existing?.name || null,
-        } as any);
+        });
       }
     },
     onSuccess: () => {

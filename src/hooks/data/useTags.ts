@@ -4,6 +4,7 @@ import { Tag, TagInsert } from '@/types/expense.types';
 import { toast } from 'sonner';
 import { DEFAULT_TAGS } from '@/lib/constants/default-tags';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { insertAuditLog } from './useAuditLog';
 
 export function useTags() {
   return useQuery({
@@ -91,10 +92,10 @@ export function useDeleteTag() {
 
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase.from('audit_log' as any).insert({
-          user_id: user.id, action: 'delete', entity_type: 'tag', entity_id: id,
+        await insertAuditLog(user.id, {
+          action: 'delete', entity_type: 'tag', entity_id: id,
           entity_name: existing?.name || null,
-        } as any);
+        });
       }
     },
     onSuccess: () => {

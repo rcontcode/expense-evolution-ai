@@ -2,6 +2,29 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
+/** Centralized audit log insert — encapsulates type cast in one place */
+export async function insertAuditLog(userId: string, entry: {
+  action: string;
+  entity_type: string;
+  entity_id?: string | null;
+  entity_name?: string | null;
+  old_values?: Record<string, any> | null;
+  new_values?: Record<string, any> | null;
+}) {
+  const { error } = await supabase
+    .from('audit_log')
+    .insert({
+      user_id: userId,
+      action: entry.action,
+      entity_type: entry.entity_type,
+      entity_id: entry.entity_id || null,
+      entity_name: entry.entity_name || null,
+      old_values: entry.old_values || null,
+      new_values: entry.new_values || null,
+    });
+  if (error) console.error('Audit log error:', error);
+}
+
 export interface AuditLogEntry {
   id: string;
   user_id: string;
@@ -20,7 +43,7 @@ export function useAuditLog(limit = 100, entityType?: string) {
     queryKey: ['audit-log', user?.id, limit, entityType],
     queryFn: async () => {
       let query = supabase
-        .from('audit_log' as any)
+        .from('audit_log')
         .select('*')
         .eq('user_id', user!.id)
         .order('created_at', { ascending: false })
@@ -32,7 +55,7 @@ export function useAuditLog(limit = 100, entityType?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data || []) as unknown as AuditLogEntry[];
+      return (data || []) as AuditLogEntry[];
     },
     enabled: !!user,
   });
@@ -52,18 +75,7 @@ export function useLogAction() {
       new_values?: any;
     }) => {
       if (!user) return;
-      const { error } = await supabase
-        .from('audit_log' as any)
-        .insert({
-          user_id: user.id,
-          action: entry.action,
-          entity_type: entry.entity_type,
-          entity_id: entry.entity_id || null,
-          entity_name: entry.entity_name || null,
-          old_values: entry.old_values || null,
-          new_values: entry.new_values || null,
-        } as any);
-      if (error) throw error;
+      await insertAuditLog(user.id, entry);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['audit-log'] });

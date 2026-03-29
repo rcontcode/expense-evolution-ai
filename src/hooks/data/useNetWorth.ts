@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { insertAuditLog } from './useAuditLog';
 
 export interface Asset {
   id: string;
@@ -344,10 +345,10 @@ export function useDeleteAsset() {
       if (error) throw error;
 
       if (user) {
-        await supabase.from('audit_log' as any).insert({
-          user_id: user.id, action: 'delete', entity_type: 'asset', entity_id: id,
+        await insertAuditLog(user.id, {
+          action: 'delete', entity_type: 'asset', entity_id: id,
           entity_name: existing?.name || null,
-        } as any);
+        });
       }
     },
     onSuccess: () => {
@@ -435,10 +436,10 @@ export function useDeleteLiability() {
       if (error) throw error;
 
       if (user) {
-        await supabase.from('audit_log' as any).insert({
-          user_id: user.id, action: 'delete', entity_type: 'liability', entity_id: id,
+        await insertAuditLog(user.id, {
+          action: 'delete', entity_type: 'liability', entity_id: id,
           entity_name: existing?.name || null,
-        } as any);
+        });
       }
     },
     onSuccess: () => {

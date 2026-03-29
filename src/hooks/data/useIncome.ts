@@ -6,6 +6,7 @@ import { Income, IncomeWithRelations, IncomeFormData } from '@/types/income.type
 import { useMissionTracker } from './useMissions';
 import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { insertAuditLog } from './useAuditLog';
 
 export interface IncomeFilters {
   year?: number;
@@ -99,14 +100,11 @@ export function useCreateIncome() {
       
       await triggers.income(currentCount);
 
-      await supabase.from('audit_log' as any).insert({
-        user_id: user.id,
-        action: 'create',
-        entity_type: 'income',
-        entity_id: newIncome.id,
+      await insertAuditLog(user.id, {
+        action: 'create', entity_type: 'income', entity_id: newIncome.id,
         entity_name: data.source || data.description || null,
         new_values: { amount: data.amount, source: data.source, income_type: data.income_type },
-      } as any);
+      });
       
       return newIncome;
     },
@@ -171,11 +169,11 @@ export function useDeleteIncome() {
 
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
-        await supabase.from('audit_log' as any).insert({
-          user_id: userData.user.id, action: 'delete', entity_type: 'income', entity_id: id,
+        await insertAuditLog(userData.user.id, {
+          action: 'delete', entity_type: 'income', entity_id: id,
           entity_name: existing?.source || null,
           old_values: existing ? { source: existing.source, amount: existing.amount } : null,
-        } as any);
+        });
       }
     },
     onSuccess: () => {

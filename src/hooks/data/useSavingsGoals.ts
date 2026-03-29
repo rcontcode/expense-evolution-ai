@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
 import { useMissionTracker } from './useMissions';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { insertAuditLog } from './useAuditLog';
 
 type SavingsGoal = Database['public']['Tables']['savings_goals']['Row'];
 type SavingsGoalInsert = Database['public']['Tables']['savings_goals']['Insert'];
@@ -133,10 +134,10 @@ export function useDeleteSavingsGoal() {
       if (error) throw error;
 
       if (user) {
-        await supabase.from('audit_log' as any).insert({
-          user_id: user.id, action: 'delete', entity_type: 'savings_goal', entity_id: id,
+        await insertAuditLog(user.id, {
+          action: 'delete', entity_type: 'savings_goal', entity_id: id,
           entity_name: existing?.name || null, old_values: existing ? { name: existing.name, target_amount: existing.target_amount } : null,
-        } as any);
+        });
       }
     },
     onSuccess: () => {

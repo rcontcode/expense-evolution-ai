@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Database } from '@/integrations/supabase/types';
 import { useMissionTracker } from './useMissions';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { insertAuditLog } from './useAuditLog';
 
 export type Mileage = Database['public']['Tables']['mileage']['Row'];
 export type MileageInsert = Database['public']['Tables']['mileage']['Insert'];
@@ -210,10 +211,10 @@ export const useDeleteMileage = () => {
 
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
-        await supabase.from('audit_log' as any).insert({
-          user_id: userData.user.id, action: 'delete', entity_type: 'mileage', entity_id: id,
+        await insertAuditLog(userData.user.id, {
+          action: 'delete', entity_type: 'mileage', entity_id: id,
           entity_name: existing?.purpose || null, old_values: existing ? { purpose: existing.purpose, kilometers: existing.kilometers } : null,
-        } as any);
+        });
       }
     },
     onSuccess: () => {
