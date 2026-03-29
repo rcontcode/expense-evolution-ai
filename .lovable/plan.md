@@ -1,48 +1,53 @@
 
 
-# Mejorar Visibilidad de Botones en PageContextGuide
+# Mejorar Página de Etiquetas: Claridad de Uso y Ventajas
 
-## Problema
-Los badges de goals y los botones de acciones se ven como texto plano. Necesitan más volumen visual 3D candy para que sean evidentemente clickeables.
+## Diagnóstico
 
-## Cambios en `src/components/guidance/PageContextGuide.tsx`
+**Dónde se usan las etiquetas actualmente:**
+- Solo en `ExpenseForm.tsx` — al crear/editar un gasto hay un campo `TagSelect`
+- La IA también sugiere etiquetas via `suggest-tags` edge function
+- NO se usan en ingresos, contratos, ni otros formularios
 
-### 1. Goal badges (línea 178)
-Agregar padding más generoso, fondo más sólido con gradiente, y efecto de botón 3D:
-```
-"text-xs cursor-pointer font-semibold px-3 py-1.5 
- bg-gradient-to-b from-primary/20 to-primary/10 
- border-2 border-primary/40 rounded-xl
- shadow-[0_3px_0_0] shadow-primary/25
- hover:bg-primary/25 hover:shadow-[0_4px_0_0] hover:shadow-primary/30 
- hover:-translate-y-1 hover:border-primary/60 
- active:translate-y-0.5 active:shadow-[0_1px_0_0] active:shadow-primary/20
- transition-all duration-200"
-```
+**Problemas detectados:**
+1. La explicación actual es un párrafo genérico — no dice DÓNDE se asignan las etiquetas
+2. Los "HOW_TO_STEPS" existen pero no mencionan la ruta exacta (ej: "al crear un gasto, busca el campo Etiquetas abajo del formulario")
+3. No hay link directo desde la página de Tags hacia la creación de gastos
+4. No se explican ventajas concretas con ejemplos de impacto real (ej: "filtra todos los gastos deducibles para tu declaración")
+5. Tags duplicados visibles en la captura (Urgent + Urgente, Recurring + Recurrente) — falta dedup o guía
 
-### 2. Action buttons (línea 225)
-Agregar sombra 3D con offset vertical para efecto de "botón levantado":
-```
-"group p-3 rounded-xl border-2 border-primary/30 
- bg-gradient-to-b from-card via-card to-muted/30
- shadow-[0_4px_0_0] shadow-primary/20
- hover:border-primary/50 hover:shadow-[0_6px_0_0] hover:shadow-primary/30 
- hover:-translate-y-1.5 hover:bg-primary/5
- active:translate-y-1 active:shadow-[0_1px_0_0] active:shadow-primary/15
- transition-all duration-200 text-left"
-```
+## Cambios
 
-### 3. Icon containers (línea 228)
-Más vibrantes con sombra offset:
-```
-"w-9 h-9 rounded-xl bg-gradient-to-br from-primary/25 to-primary/10 
- border-2 border-primary/30 
- shadow-[0_2px_0_0] shadow-primary/20
- flex items-center justify-center 
- group-hover:from-primary/35 group-hover:to-primary/20 
- group-hover:border-primary/50 transition-all duration-200"
-```
+### 1. `src/pages/Tags.tsx` — Mejorar card explicativa y pasos
 
-## Archivo a modificar
-1. `src/components/guidance/PageContextGuide.tsx` — líneas 178, 225, 228
+**Card explicativa (línea 164-182):** Reescribir con estructura clara:
+- **¿Qué son?** Una línea
+- **¿Dónde se asignan?** "Al crear o editar un gasto, encontrarás el campo 'Etiquetas' en el formulario. También la IA puede sugerirlas automáticamente."
+- **¿Para qué sirven? (ventajas concretas):**
+  - Filtrar gastos deducibles para declaración fiscal
+  - Agrupar gastos por viaje/proyecto/cliente
+  - Marcar gastos pendientes de reembolso
+  - Analizar patrones por etiqueta en Estadísticas
+- **Acceso rápido:** Botón "Ir a crear gasto" que lleve a `/expenses` con dialog abierto
+
+**HOW_TO_STEPS (líneas 69-101):** Mejorar descripciones con rutas exactas:
+- Paso 1: "Crea etiquetas aquí con nombre y color"
+- Paso 2: "Al crear/editar un gasto → campo 'Etiquetas' al final del formulario"
+- Paso 3: "En la tabla de gastos usa el filtro de etiquetas para encontrar rápido"
+- Paso 4: "Pestaña 'Estadísticas' aquí arriba → ve distribución y tendencias"
+
+### 2. `src/pages/Tags.tsx` — Agregar sección "Ventajas Clave"
+
+Nueva sección con 4 cards de ventajas concretas después de la explicación:
+- 🏷️ **Clasificación personalizada** — "Las categorías son fijas, las etiquetas son tuyas"
+- 🔍 **Filtrado rápido** — "Encuentra gastos de un viaje o proyecto en segundos"
+- 📊 **Análisis por etiqueta** — "Descubre cuánto gastas en cada contexto"
+- 🤖 **Sugerencias IA** — "La IA sugiere etiquetas automáticamente según el gasto"
+
+### 3. `src/pages/Tags.tsx` — Alerta de duplicados
+
+Detectar etiquetas que parecen duplicados (ej: "Urgent" y "Urgente", "Recurring" y "Recurrente") y mostrar un aviso sutil sugiriendo consolidarlas.
+
+## Archivos a modificar (1)
+1. **`src/pages/Tags.tsx`** — Reescribir card explicativa con ventajas, mejorar HOW_TO_STEPS con rutas exactas, agregar sección de ventajas clave, agregar detección de duplicados
 
