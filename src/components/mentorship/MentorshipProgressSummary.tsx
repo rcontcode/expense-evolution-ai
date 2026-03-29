@@ -1,9 +1,12 @@
+import { useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEducationStats } from '@/hooks/data/useFinancialEducation';
 import { useHabitStats } from '@/hooks/data/useFinancialHabits';
 import { useJournalStats } from '@/hooks/data/useFinancialJournal';
 import { useSavingsGoals } from '@/hooks/data/useSavingsGoals';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 import { BookOpen, Flame, PenLine, Target, TrendingUp, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -36,6 +39,13 @@ function StatCard({ icon, label, value, sub, color, delay }: StatCardProps) {
   );
 }
 
+function getScoreLevel(score: number, es: boolean) {
+  if (score >= 80) return { label: es ? '🏆 Maestro' : '🏆 Master', color: 'text-yellow-500', bg: 'bg-yellow-500', barColor: 'bg-yellow-500' };
+  if (score >= 60) return { label: es ? '🚀 Avanzado' : '🚀 Advanced', color: 'text-emerald-500', bg: 'bg-emerald-500', barColor: 'bg-emerald-500' };
+  if (score >= 30) return { label: es ? '📈 En camino' : '📈 On track', color: 'text-blue-500', bg: 'bg-blue-500', barColor: 'bg-blue-500' };
+  return { label: es ? '🌱 Comenzando' : '🌱 Starting', color: 'text-orange-500', bg: 'bg-orange-500', barColor: 'bg-orange-500' };
+}
+
 export function MentorshipProgressSummary() {
   const { language } = useLanguage();
   const es = language === 'es';
@@ -53,6 +63,22 @@ export function MentorshipProgressSummary() {
   const journalStreak = journalStats?.streak || 0;
   const activeGoals = goals?.filter(g => g.status === 'active').length || 0;
   const completedGoals = goals?.filter(g => g.status === 'completed').length || 0;
+
+  // Calculate unified mentorship score (0-100)
+  const score = useMemo(() => {
+    let s = 0;
+    // Books: up to 25 pts (5 per completed, 2 per in-progress, max 25)
+    s += Math.min(25, booksCompleted * 5 + booksInProgress * 2);
+    // Habits: up to 25 pts (streak days * 2 + totalHabits * 3, max 25)
+    s += Math.min(25, habitStreak * 2 + totalHabits * 3);
+    // Journal: up to 25 pts (entries this month * 3 + streak * 2, max 25)
+    s += Math.min(25, journalThisMonth * 3 + journalStreak * 2);
+    // Goals: up to 25 pts (active * 5 + completed * 5, max 25)
+    s += Math.min(25, activeGoals * 5 + completedGoals * 5);
+    return Math.min(100, s);
+  }, [booksCompleted, booksInProgress, habitStreak, totalHabits, journalThisMonth, journalStreak, activeGoals, completedGoals]);
+
+  const level = getScoreLevel(score, es);
 
   const stats = [
     {
@@ -88,12 +114,31 @@ export function MentorshipProgressSummary() {
   return (
     <Card className="border-primary/10">
       <CardContent className="p-3 sm:p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <TrendingUp className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold">
-            {es ? 'Tu Progreso de Mentoría' : 'Your Mentorship Progress'}
-          </h3>
+        {/* Score header */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold">
+              {es ? 'Tu Progreso de Mentoría' : 'Your Mentorship Progress'}
+            </h3>
+          </div>
+          <Badge variant="outline" className={cn('text-xs font-semibold', level.color)}>
+            {level.label}
+          </Badge>
         </div>
+
+        {/* Score bar */}
+        <div className="flex items-center gap-3 mb-4">
+          <Progress
+            value={score}
+            className="h-2.5 flex-1"
+            indicatorClassName={level.barColor}
+          />
+          <span className={cn('text-sm font-bold tabular-nums min-w-[3ch]', level.color)}>
+            {score}
+          </span>
+        </div>
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           {stats.map((s, i) => (
             <StatCard key={i} {...s} delay={i} />
