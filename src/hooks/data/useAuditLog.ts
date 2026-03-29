@@ -2,6 +2,29 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
+/** Centralized audit log insert — encapsulates type cast in one place */
+export async function insertAuditLog(userId: string, entry: {
+  action: string;
+  entity_type: string;
+  entity_id?: string | null;
+  entity_name?: string | null;
+  old_values?: Record<string, any> | null;
+  new_values?: Record<string, any> | null;
+}) {
+  const { error } = await supabase
+    .from('audit_log')
+    .insert({
+      user_id: userId,
+      action: entry.action,
+      entity_type: entry.entity_type,
+      entity_id: entry.entity_id || null,
+      entity_name: entry.entity_name || null,
+      old_values: entry.old_values || null,
+      new_values: entry.new_values || null,
+    });
+  if (error) console.error('Audit log error:', error);
+}
+
 export interface AuditLogEntry {
   id: string;
   user_id: string;
