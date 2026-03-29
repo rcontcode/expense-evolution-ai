@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { heroContent, guideSections, globalFAQ, connectionsDiagram } from '@/data/user-guide-content';
+import { heroContent, guideSections, globalFAQ, connectionsDiagram, dataEntryPoints, dataEntryFAQ } from '@/data/user-guide-content';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { PageHeader } from '@/components/PageHeader';

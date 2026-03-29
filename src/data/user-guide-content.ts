@@ -1181,6 +1181,124 @@ export const globalFAQ: GuideFAQ[] = [
   },
 ];
 
+// ─── BLOQUE 2.5: PUNTOS DE ENTRADA DE DATOS ────────────────
+
+export interface DataEntryPoint {
+  id: string;
+  emoji: string;
+  name: { es: string; en: string };
+  description: { es: string; en: string };
+  destination: { es: string; en: string };
+  whenToUse: { es: string; en: string };
+  access: { es: string; en: string };
+}
+
+export const dataEntryPoints: DataEntryPoint[] = [
+  {
+    id: 'chaos-inbox',
+    emoji: '📥',
+    name: { es: 'Bandeja del Caos', en: 'Chaos Inbox' },
+    description: { es: 'Sube cualquier archivo financiero (fotos, PDFs, Excel). La IA clasifica en 8 categorías y extrae datos automáticamente.', en: 'Upload any financial file (photos, PDFs, Excel). AI classifies into 8 categories and extracts data automatically.' },
+    destination: { es: 'Centro de Revisión → Gastos / Ingresos / Contratos', en: 'Review Center → Expenses / Income / Contracts' },
+    whenToUse: { es: 'Cuando tienes documentos acumulados (recibos, facturas, extractos) y quieres procesarlos en lote con revisión antes de crear registros.', en: 'When you have accumulated documents (receipts, invoices, statements) and want to batch process them with review before creating records.' },
+    access: { es: 'Menú lateral → Bandeja del Caos', en: 'Sidebar → Chaos Inbox' },
+  },
+  {
+    id: 'quick-capture-photo',
+    emoji: '📸',
+    name: { es: 'Captura Rápida (Foto)', en: 'Quick Capture (Photo)' },
+    description: { es: 'Toma una foto de un recibo o documento financiero. La IA extrae datos y lo envía a la Bandeja del Caos para revisión.', en: 'Take a photo of a receipt or financial document. AI extracts data and sends it to Chaos Inbox for review.' },
+    destination: { es: 'Bandeja del Caos → Revisión → Gasto/Ingreso', en: 'Chaos Inbox → Review → Expense/Income' },
+    whenToUse: { es: 'Cuando acabas de recibir un recibo y quieres capturarlo al instante antes de perderlo. Es más rápido que ir a la Bandeja del Caos.', en: 'When you just received a receipt and want to capture it instantly before losing it. Faster than going to Chaos Inbox.' },
+    access: { es: 'Botón flotante (FAB) o Centro de Captura en Presupuesto', en: 'Floating button (FAB) or Capture Hub in Budget' },
+  },
+  {
+    id: 'quick-capture-text',
+    emoji: '✍️',
+    name: { es: 'Captura Rápida (Texto)', en: 'Quick Capture (Text)' },
+    description: { es: 'Escribe en lenguaje natural "pagué $50 de luz" y la IA crea el gasto/ingreso directamente, sin revisión intermedia.', en: 'Write in natural language "paid $50 for electricity" and AI creates the expense/income directly, no intermediate review.' },
+    destination: { es: 'Gasto o Ingreso creado directamente', en: 'Expense or Income created directly' },
+    whenToUse: { es: 'Cuando quieres registrar algo rápido que no tiene comprobante físico, o transacciones simples que no necesitan foto.', en: 'When you want to quickly record something without a physical receipt, or simple transactions that don\'t need a photo.' },
+    access: { es: 'Botón flotante (FAB) o Centro de Captura en Presupuesto', en: 'Floating button (FAB) or Capture Hub in Budget' },
+  },
+  {
+    id: 'capture-hub',
+    emoji: '🎯',
+    name: { es: 'Centro de Captura', en: 'Capture Hub' },
+    description: { es: 'Hub visual que agrupa los 3 métodos de captura (Foto, Texto, Banco) en un solo lugar con guías de uso.', en: 'Visual hub grouping the 3 capture methods (Photo, Text, Bank) in one place with usage guides.' },
+    destination: { es: 'Depende del método elegido (ver arriba)', en: 'Depends on chosen method (see above)' },
+    whenToUse: { es: 'Cuando estás en la página de Presupuesto y quieres elegir el mejor método de captura para tu situación.', en: 'When you\'re on the Budget page and want to choose the best capture method for your situation.' },
+    access: { es: 'Página de Presupuesto → Centro de Captura', en: 'Budget page → Capture Hub' },
+  },
+  {
+    id: 'bank-import',
+    emoji: '🏦',
+    name: { es: 'Importar Banco', en: 'Bank Import' },
+    description: { es: 'Importa CSV, PDF o foto de extracto bancario. Las transacciones se analizan con IA para detectar patrones y anomalías.', en: 'Import CSV, PDF or bank statement photo. Transactions are analyzed with AI to detect patterns and anomalies.' },
+    destination: { es: 'Análisis Bancario → Conciliación con Gastos', en: 'Banking Analysis → Reconciliation with Expenses' },
+    whenToUse: { es: 'Cuando quieres analizar tu estado de cuenta completo, detectar suscripciones fantasma o conciliar con tus gastos registrados.', en: 'When you want to analyze your full bank statement, detect ghost subscriptions, or reconcile with your recorded expenses.' },
+    access: { es: 'Menú Banco → Análisis Bancario, o Centro de Captura', en: 'Bank menu → Banking Analysis, or Capture Hub' },
+  },
+  {
+    id: 'manual-expense',
+    emoji: '📝',
+    name: { es: 'Gasto Manual', en: 'Manual Expense' },
+    description: { es: 'Formulario completo campo por campo para registrar un gasto con todos los detalles: monto, categoría, cliente, proyecto, notas.', en: 'Full form field by field to record an expense with all details: amount, category, client, project, notes.' },
+    destination: { es: 'Gasto creado directamente en la lista de Gastos', en: 'Expense created directly in the Expenses list' },
+    whenToUse: { es: 'Cuando necesitas control total sobre cada campo, o para gastos complejos que requieren asignación precisa de cliente/proyecto/categoría.', en: 'When you need full control over each field, or for complex expenses requiring precise client/project/category assignment.' },
+    access: { es: 'Gastos → Botón "Nuevo Gasto"', en: 'Expenses → "New Expense" button' },
+  },
+  {
+    id: 'recurring-bills',
+    emoji: '📅',
+    name: { es: 'Pagos Fijos', en: 'Recurring Bills' },
+    description: { es: 'Crea obligaciones recurrentes (alquiler, servicios, suscripciones). Se rastrean automáticamente cada mes.', en: 'Create recurring obligations (rent, utilities, subscriptions). Automatically tracked each month.' },
+    destination: { es: 'Calendario de pagos + Gastos al registrar pago', en: 'Payment calendar + Expenses when recording payment' },
+    whenToUse: { es: 'Para gastos que se repiten mensualmente y quieres asegurarte de no olvidar pagarlos. También se detectan automáticamente desde el banco.', en: 'For expenses that repeat monthly and you want to make sure not to forget paying them. Also auto-detected from bank imports.' },
+    access: { es: 'Menú lateral → Pagos Fijos', en: 'Sidebar → Recurring Bills' },
+  },
+  {
+    id: 'phoenix-assistant',
+    emoji: '🎤',
+    name: { es: 'Asistente Phoenix', en: 'Phoenix Assistant' },
+    description: { es: 'Habla o escribe en lenguaje natural para crear gastos, ingresos, consultar datos y pedir análisis financieros con IA.', en: 'Speak or type in natural language to create expenses, income, query data and request financial analysis with AI.' },
+    destination: { es: 'Gasto/Ingreso directo + respuestas inteligentes', en: 'Direct Expense/Income + smart responses' },
+    whenToUse: { es: 'Cuando prefieres hablar o quieres hacer consultas complejas sobre tus datos ("¿cuánto gasté en comida este mes?"). Es el más versátil.', en: 'When you prefer speaking or want complex queries about your data ("how much did I spend on food this month?"). Most versatile.' },
+    access: { es: 'Botón flotante en cualquier pantalla', en: 'Floating button on any screen' },
+  },
+];
+
+export const dataEntryFAQ: GuideFAQ[] = [
+  {
+    question: { es: '¿Cuál es la diferencia entre la Bandeja del Caos y la Captura Rápida?', en: 'What\'s the difference between Chaos Inbox and Quick Capture?' },
+    answer: { es: 'La Captura Rápida (foto) es para capturar un recibo al instante — la foto se envía a la Bandeja del Caos para revisión. La Bandeja del Caos es donde revisas y apruebas TODO lo capturado antes de crear el gasto. Piensa en Captura Rápida como "la cámara" y la Bandeja como "la mesa de revisión".', en: 'Quick Capture (photo) is for capturing a receipt instantly — the photo is sent to Chaos Inbox for review. Chaos Inbox is where you review and approve EVERYTHING captured before creating the expense. Think of Quick Capture as "the camera" and the Inbox as "the review desk".' }
+  },
+  {
+    question: { es: '¿Debo usar Captura de Texto o el Asistente Phoenix?', en: 'Should I use Text Capture or the Phoenix Assistant?' },
+    answer: { es: 'Ambos crean registros por texto natural. Captura de Texto es más rápida para registrar un gasto simple ("pagué $50 de internet"). Phoenix es más versátil: además de crear registros, puede consultar tus datos, hacer análisis y responder preguntas. Usa Texto para registrar rápido, Phoenix para conversar sobre tus finanzas.', en: 'Both create records from natural text. Text Capture is faster for simple expense registration ("paid $50 for internet"). Phoenix is more versatile: besides creating records, it can query your data, run analyses, and answer questions. Use Text for quick recording, Phoenix for conversing about your finances.' }
+  },
+  {
+    question: { es: '¿Los datos del banco se sincronizan con mis gastos?', en: 'Does bank data sync with my expenses?' },
+    answer: { es: 'No automáticamente. Las transacciones bancarias importadas se analizan por separado en Análisis Bancario. Luego, en Conciliación, puedes emparejar transacciones bancarias con gastos registrados para verificar que todo cuadre. Las transacciones no emparejadas pueden convertirse en gastos con un clic.', en: 'Not automatically. Imported bank transactions are analyzed separately in Banking Analysis. Then, in Reconciliation, you can match bank transactions with recorded expenses to verify everything adds up. Unmatched transactions can become expenses with one click.' }
+  },
+  {
+    question: { es: '¿Cuándo usar el formulario manual vs captura con IA?', en: 'When to use manual form vs AI capture?' },
+    answer: { es: 'El formulario manual es ideal cuando necesitas control preciso: asignar cliente específico, proyecto, tipo de reembolso, notas detalladas. La captura con IA (foto/texto/voz) es para registrar rápido cuando la velocidad importa más que el detalle. Siempre puedes editar después.', en: 'Manual form is ideal when you need precise control: assign specific client, project, reimbursement type, detailed notes. AI capture (photo/text/voice) is for quick recording when speed matters more than detail. You can always edit later.' }
+  },
+  {
+    question: { es: '¿Cuál es la diferencia entre la Bandeja del Caos y la Captura Rápida?', en: 'What\'s the difference between Chaos Inbox and Quick Capture?' },
+    answer: { es: 'La Captura Rápida (foto) es para capturar un recibo al instante — la foto se envía a la Bandeja del Caos para revisión. La Bandeja del Caos es donde revisas y apruebas TODO lo capturado. Piensa en Captura Rápida como "la cámara" y la Bandeja como "la mesa de revisión".', en: 'Quick Capture (photo) is for capturing a receipt instantly — the photo is sent to Chaos Inbox for review. Chaos Inbox is where you review and approve EVERYTHING captured. Think of Quick Capture as "the camera" and the Inbox as "the review desk".' }
+  },
+  {
+    question: { es: '¿Debo usar Captura de Texto o el Asistente Phoenix?', en: 'Should I use Text Capture or the Phoenix Assistant?' },
+    answer: { es: 'Ambos crean registros por texto natural. Captura de Texto es rápida para un gasto simple. Phoenix es más versátil: consulta datos, analiza y responde preguntas. Usa Texto para registrar rápido, Phoenix para conversar sobre tus finanzas.', en: 'Both create records from natural text. Text Capture is fast for simple expenses. Phoenix is more versatile: queries data, analyzes, and answers questions. Use Text for quick recording, Phoenix for conversing about your finances.' }
+  },
+  {
+    question: { es: '¿Los datos del banco se sincronizan con mis gastos?', en: 'Does bank data sync with my expenses?' },
+    answer: { es: 'No automáticamente. Las transacciones bancarias se analizan en Análisis Bancario. En Conciliación, las emparejas con gastos registrados. Las no emparejadas pueden convertirse en gastos con un clic.', en: 'Not automatically. Bank transactions are analyzed in Banking Analysis. In Reconciliation, you match them with recorded expenses. Unmatched ones can become expenses with one click.' }
+  },
+];
+
 // ─── DIAGRAMA DE INTERCONEXIONES ────────────────────────────
 
 export const connectionsDiagram = {
