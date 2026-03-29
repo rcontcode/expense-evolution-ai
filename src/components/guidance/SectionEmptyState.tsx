@@ -80,13 +80,13 @@ export const EMPTY_STATE_CONFIGS: Record<string, EmptyStateConfig> = {
     icon: 'MapPin',
     title: { es: 'Registra tus viajes de negocios', en: 'Log your business trips' },
     description: {
-      es: 'Calcula deducciones CRA automáticamente con las tasas 2024.',
-      en: 'Calculate CRA deductions automatically with 2024 rates.'
+      es: 'Calcula deducciones CRA automáticamente con las tasas 2026.',
+      en: 'Calculate CRA deductions automatically with 2026 rates.'
     },
     actionLabel: { es: 'Agregar primer viaje', en: 'Add first trip' },
     tips: {
-      es: ['$0.70/km primeros 5,000', 'Rutas con mapa', 'Por cliente'],
-      en: ['$0.70/km first 5,000', 'Routes with map', 'By client']
+      es: ['$0.73/km primeros 5,000', 'Rutas con mapa', 'Por cliente'],
+      en: ['$0.73/km first 5,000', 'Routes with map', 'By client']
     },
     gradient: 'from-orange-500 to-amber-500'
   },

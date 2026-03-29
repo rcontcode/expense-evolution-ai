@@ -630,9 +630,9 @@ export function useGenerateSampleData() {
               {
                 category: 'mileage',
                 reimbursable: true,
-                rate_per_km: 0.70,
+                rate_per_km: 0.73,
                 documentation: 'Mileage log',
-                notes: 'CRA 2024 rate for business travel'
+                notes: 'CRA 2026 rate for business travel'
               },
               {
                 category: 'materials',

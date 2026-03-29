@@ -53,7 +53,7 @@ const getSavingsTips = (expenses: ExtractedExpenseData[], totals: any): string[]
   
   if (fuelExpenses.length > 0) {
     tips.push('⛽ Usa apps como GasBuddy para encontrar el combustible más barato. Diferencias de $0.10/L suman $500+/año.');
-    tips.push('🚗 Registra cada viaje de trabajo en Kilometraje para maximizar tu deducción CRA ($0.70/km primeros 5,000 km).');
+    tips.push('🚗 Registra cada viaje de trabajo en Kilometraje para maximizar tu deducción CRA ($0.73/km primeros 5,000 km).');
   }
   
   if (softwareExpenses.length > 0) {

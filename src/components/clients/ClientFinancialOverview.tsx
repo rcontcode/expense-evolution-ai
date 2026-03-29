@@ -31,7 +31,7 @@ const CRA_RATES: Record<string, { rate: number; description: string; description
   travel: { rate: 100, description: 'Gastos de viaje de negocios', descriptionEn: 'Business travel expenses' },
   equipment: { rate: 100, description: 'Equipos y herramientas de trabajo', descriptionEn: 'Work equipment and tools' },
   software: { rate: 100, description: 'Software y suscripciones', descriptionEn: 'Software and subscriptions' },
-  mileage: { rate: 100, description: 'Kilometraje ($0.70/km primeros 5000km)', descriptionEn: 'Mileage ($0.70/km first 5000km)' },
+  mileage: { rate: 100, description: 'Kilometraje ($0.73/km primeros 5000km)', descriptionEn: 'Mileage ($0.73/km first 5000km)' },
   fuel: { rate: 100, description: 'Combustible para uso de negocios', descriptionEn: 'Fuel for business use' },
   home_office: { rate: 100, description: 'Oficina en casa (proporcional)', descriptionEn: 'Home office (proportional)' },
   professional_services: { rate: 100, description: 'Servicios profesionales', descriptionEn: 'Professional services' },

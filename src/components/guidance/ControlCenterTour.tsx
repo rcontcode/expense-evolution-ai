@@ -94,12 +94,12 @@ const TOUR_STEPS: TourStep[] = [
     icon: <MapPin className="h-8 w-8" />,
     title: { es: '🚗 Kilometraje', en: '🚗 Mileage' },
     description: { 
-      es: 'Registra viajes de negocios y calcula deducciones automáticamente con tasas CRA 2024.',
-      en: 'Track business trips and calculate deductions automatically with CRA 2024 rates.'
+      es: 'Registra viajes de negocios y calcula deducciones automáticamente con tasas CRA 2026.',
+      en: 'Track business trips and calculate deductions automatically with CRA 2026 rates.'
     },
     features: {
-      es: ['$0.70/km primeros 5,000km', '$0.64/km adicionales', 'Cálculo automático de deducciones'],
-      en: ['$0.70/km first 5,000km', '$0.64/km additional', 'Automatic deduction calculation']
+      es: ['$0.73/km primeros 5,000km', '$0.67/km adicionales', 'Cálculo automático de deducciones'],
+      en: ['$0.73/km first 5,000km', '$0.67/km additional', 'Automatic deduction calculation']
     },
     color: 'text-cyan-600',
     gradient: 'from-cyan-500 to-teal-500'

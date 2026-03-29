@@ -3,12 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useMileage, useMileageSummary } from '@/hooks/data/useMileage';
+import { useMileage, useMileageSummary, getCRAMileageRates } from '@/hooks/data/useMileage';
 import { Car, DollarSign, CalendarDays, TrendingUp, AlertTriangle, Lightbulb, Route } from 'lucide-react';
-
-const CRA_RATE_2024 = 0.70; // First 5,000 km
-const CRA_RATE_2024_OVER = 0.64; // After 5,000 km
-const SII_RATE = 0.15; // Approximate CLP rate per km
 
 export function MileageDeductionMaximizer() {
   const { language } = useLanguage();
@@ -17,18 +13,19 @@ export function MileageDeductionMaximizer() {
   const { data: records } = useMileage(currentYear);
   const { data: summary } = useMileageSummary(currentYear);
 
+  const rates = getCRAMileageRates(currentYear);
+
   const analysis = useMemo(() => {
     if (!records?.length || !summary) return null;
 
     const totalKm = summary.yearToDateKm || summary.totalKilometers || 0;
-    // All mileage tracked is considered business use for CRA purposes
     const businessKm = totalKm;
     const personalKm = 0;
 
     // CRA deduction calculation
     const first5k = Math.min(businessKm, 5000);
     const over5k = Math.max(businessKm - 5000, 0);
-    const deduction = (first5k * CRA_RATE_2024) + (over5k * CRA_RATE_2024_OVER);
+    const deduction = (first5k * rates.first5000) + (over5k * rates.after5000);
 
     // Business use ratio
     const businessRatio = totalKm > 0 ? (businessKm / totalKm) * 100 : 0;
@@ -45,8 +42,8 @@ export function MileageDeductionMaximizer() {
     const remainingMonths = 12 - new Date().getMonth();
     const projectedYearEnd = businessKm + (avgMonthlyKm * remainingMonths);
     const projectedDeduction = 
-      (Math.min(projectedYearEnd, 5000) * CRA_RATE_2024) + 
-      (Math.max(projectedYearEnd - 5000, 0) * CRA_RATE_2024_OVER);
+      (Math.min(projectedYearEnd, 5000) * rates.first5000) + 
+      (Math.max(projectedYearEnd - 5000, 0) * rates.after5000);
 
     // Find gaps — months with no trips
     const currentMonth = new Date().getMonth();
@@ -80,8 +77,8 @@ export function MileageDeductionMaximizer() {
     }
     if (projectedYearEnd > 5000 && businessKm < 5000) {
       tips.push(isEs 
-        ? 'Vas camino a superar los 5,000 km. La tarifa baja a $0.64/km después — ¡maximiza ahora!'
-        : 'On track to exceed 5,000 km. Rate drops to $0.64/km after — maximize now!');
+        ? `Vas camino a superar los 5,000 km. La tarifa baja a $${rates.after5000}/km después — ¡maximiza ahora!`
+        : `On track to exceed 5,000 km. Rate drops to $${rates.after5000}/km after — maximize now!`);
     }
 
     return {
@@ -180,11 +177,11 @@ export function MileageDeductionMaximizer() {
         <div className="p-2 rounded-lg bg-muted/50 text-center space-y-1">
           <div className="flex items-center justify-center gap-1.5">
             <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-amber-500/10 border-amber-500/30 text-amber-600">
-              {isEs ? 'Tasas 2024' : '2024 Rates'}
+              {isEs ? `Tasas ${currentYear}` : `${currentYear} Rates`}
             </Badge>
           </div>
           <p className="text-[10px] text-muted-foreground">
-            CRA 2024: $0.70/km ({isEs ? 'primeros' : 'first'} 5,000) · $0.64/km ({isEs ? 'después' : 'after'})
+            CRA {currentYear}: ${rates.first5000}/km ({isEs ? 'primeros' : 'first'} 5,000) · ${rates.after5000}/km ({isEs ? 'después' : 'after'})
           </p>
           <p className="text-[9px] text-muted-foreground/70">
             {isEs 

@@ -133,12 +133,12 @@ const GUIDE_CONFIG = {
     steps: {
       es: [
         { icon: <Car className="h-4 w-4 text-primary" />, title: 'Registra Viajes', description: 'Ruta, kilómetros y propósito' },
-        { icon: <DollarSign className="h-4 w-4 text-primary" />, title: 'Tasas CRA 2024', description: '$0.70/km (primeros 5,000km)' },
+        { icon: <DollarSign className="h-4 w-4 text-primary" />, title: 'Tasas CRA 2026', description: '$0.73/km (primeros 5,000km)' },
         { icon: <BarChart3 className="h-4 w-4 text-primary" />, title: 'Resumen Anual', description: 'Total deducible para T2125' },
       ],
       en: [
         { icon: <Car className="h-4 w-4 text-primary" />, title: 'Record Trips', description: 'Route, kilometers and purpose' },
-        { icon: <DollarSign className="h-4 w-4 text-primary" />, title: 'CRA 2024 Rates', description: '$0.70/km (first 5,000km)' },
+        { icon: <DollarSign className="h-4 w-4 text-primary" />, title: 'CRA 2026 Rates', description: '$0.73/km (first 5,000km)' },
         { icon: <BarChart3 className="h-4 w-4 text-primary" />, title: 'Annual Summary', description: 'Total deductible for T2125' },
       ]
     },

@@ -11,7 +11,13 @@ export type Mileage = Database['public']['Tables']['mileage']['Row'];
 export type MileageInsert = Database['public']['Tables']['mileage']['Insert'];
 export type MileageUpdate = Database['public']['Tables']['mileage']['Update'];
 
-export const CRA_MILEAGE_RATES = { first5000: 0.70, after5000: 0.64, territoryBonus: 0.04 };
+export const CRA_MILEAGE_RATES_BY_YEAR: Record<number, { first5000: number; after5000: number; territoryBonus: number }> = {
+  2024: { first5000: 0.70, after5000: 0.64, territoryBonus: 0.04 },
+  2025: { first5000: 0.72, after5000: 0.66, territoryBonus: 0.04 },
+  2026: { first5000: 0.73, after5000: 0.67, territoryBonus: 0.04 },
+};
+export const CRA_MILEAGE_RATES = CRA_MILEAGE_RATES_BY_YEAR[2026];
+export function getCRAMileageRates(year: number) { return CRA_MILEAGE_RATES_BY_YEAR[year] || CRA_MILEAGE_RATES; }
 
 export interface MileageWithClient extends Mileage {
   client?: { id: string; name: string } | null;
@@ -22,9 +28,10 @@ export interface MileageSummary {
   hstGstPaid: number; itcClaimable: number; yearToDateKm: number;
 }
 
-export function calculateMileageDeduction(kilometers: number, yearToDateKm: number = 0): { deductible: number; rate: number } {
+export function calculateMileageDeduction(kilometers: number, yearToDateKm: number = 0, year?: number): { deductible: number; rate: number } {
   let deductible = 0;
-  const { first5000, after5000 } = CRA_MILEAGE_RATES;
+  const rates = year ? getCRAMileageRates(year) : CRA_MILEAGE_RATES;
+  const { first5000, after5000 } = rates;
   const totalAfterTrip = yearToDateKm + kilometers;
   
   if (yearToDateKm >= 5000) {

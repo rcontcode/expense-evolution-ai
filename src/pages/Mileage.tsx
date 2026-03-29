@@ -176,7 +176,7 @@ export default function Mileage() {
               actions={[
                 { icon: Plus, title: { es: 'Nuevo Viaje', en: 'New Trip' }, description: { es: 'Registrar', en: 'Log trip' }, action: handleCreate },
                 { icon: Car, title: { es: 'Ver Resumen', en: 'View Summary' }, description: { es: 'Deducciones', en: 'Deductions' }, action: () => {} },
-                { icon: DollarSign, title: { es: 'Cálculo CRA', en: 'CRA Calculation' }, description: { es: 'Tarifas 2024', en: '2024 rates' }, path: '/dashboard' },
+                { icon: DollarSign, title: { es: 'Cálculo CRA', en: 'CRA Calculation' }, description: { es: 'Tarifas 2026', en: '2026 rates' }, path: '/dashboard' },
                 { icon: Download, title: { es: 'Exportar', en: 'Export' }, description: { es: 'Para impuestos', en: 'For taxes' }, path: '/dashboard' }
               ]}
             />
