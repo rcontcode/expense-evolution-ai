@@ -54,7 +54,7 @@ export function useAutoReminders() {
   // Fetch user preferences for a given type
   const getPreference = useCallback(async (userId: string, type: string): Promise<NotificationPreference | null> => {
     const { data } = await supabase
-      .from('notification_preferences' as any)
+      .from('notification_preferences')
       .select('*')
       .eq('user_id', userId)
       .eq('notification_type', type)
@@ -123,7 +123,7 @@ export function useAutoReminders() {
       read: false,
       source_type: sourceType ?? null,
       source_id: sourceId ?? null,
-    } as any);
+    });
     if (error) {
       console.warn(`[useAutoReminders] insert failed (${type}):`, error.message);
       return;
@@ -305,7 +305,7 @@ export function useAutoReminders() {
     if (!isWithinPreferredHour(pref?.preferred_hour ?? null)) return;
 
     const { data: rules, error: rulesError } = await supabase
-      .from('budget_alert_rules' as any)
+      .from('budget_alert_rules')
       .select('*')
       .eq('user_id', userId)
       .eq('is_active', true);
@@ -362,8 +362,8 @@ export function useAutoReminders() {
             '/budget', 'budget_rule', rule.id
           );
           await supabase
-            .from('budget_alert_rules' as any)
-            .update({ last_triggered_at: new Date().toISOString() } as any)
+            .from('budget_alert_rules')
+            .update({ last_triggered_at: new Date().toISOString() })
             .eq('id', rule.id);
         }
       }

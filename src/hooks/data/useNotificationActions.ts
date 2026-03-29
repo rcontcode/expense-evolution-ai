@@ -16,7 +16,7 @@ export function useSnoozeNotification() {
         .update({ 
           snoozed_until: snoozeUntil.toISOString(),
           read: true,
-        } as any)
+        })
         .eq('id', id);
       if (error) throw error;
     },
@@ -41,7 +41,7 @@ export function useCompleteNotification() {
         .update({ 
           completed_at: new Date().toISOString(),
           read: true,
-        } as any)
+        })
         .eq('id', id);
       if (error) throw error;
     },
@@ -66,7 +66,7 @@ export function useMuteNotification() {
         .update({ 
           muted: true,
           read: true,
-        } as any)
+        })
         .eq('id', id);
       if (error) throw error;
     },
