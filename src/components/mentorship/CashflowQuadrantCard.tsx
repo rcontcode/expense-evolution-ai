@@ -49,6 +49,12 @@ export function CashflowQuadrantCard() {
             <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
               <TrendingUp className="h-8 w-8 text-primary" />
             </div>
+            <p className="text-xs italic text-muted-foreground px-4">
+              "{language === 'es' 
+                ? 'Los ricos no trabajan por dinero, hacen que el dinero trabaje para ellos'
+                : 'The rich don\'t work for money, they make money work for them'}"
+              <span className="block mt-1 font-medium not-italic">— Robert Kiyosaki</span>
+            </p>
             <div className="space-y-1">
               <p className="text-sm font-medium">
                 {language === 'es' ? 'Sin ingresos registrados' : 'No income recorded'}

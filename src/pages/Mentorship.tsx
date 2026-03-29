@@ -23,6 +23,7 @@ import {
 } from '@/components/mentorship';
 import { WeeklySummaryBadge } from '@/components/mentorship/WeeklySummaryBadge';
 import { TracyQuickStats } from '@/components/mentorship/TracyQuickStats';
+import { KiyosakiQuickStats } from '@/components/mentorship/KiyosakiQuickStats';
 import { MentorshipLevelBanner } from '@/components/mentorship/MentorshipLevelBanner';
 import { Target, Sparkles, GraduationCap, Brain, Coins, Atom, BookOpen, ChevronDown } from 'lucide-react';
 import { MentorQuoteBanner } from '@/components/MentorQuoteBanner';
@@ -341,6 +342,7 @@ export default function Mentorship() {
               <div id="mentorship-freedom">
                 <FinancialFreedomCard />
               </div>
+              <KiyosakiQuickStats />
               <div id="mentorship-debt" className="md:col-span-2">
                 <DebtClassificationCard />
               </div>

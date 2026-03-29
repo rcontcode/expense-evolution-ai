@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChallengeAutoTracker } from '@/hooks/data/useChallengeAutoTracker';
 import { useJournalStats } from '@/hooks/data/useFinancialJournal';
@@ -5,8 +6,7 @@ import { useHabitStats } from '@/hooks/data/useFinancialHabits';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
-import { CalendarDays, CheckCircle2, PenLine, Flame } from 'lucide-react';
-import { getWeekKey } from '@/lib/constants/mentorship-challenges';
+import { CalendarDays, CheckCircle2, PenLine, Flame, TrendingUp } from 'lucide-react';
 
 function getWeekRange(): { startLabel: string; endLabel: string } {
   const now = new Date();
@@ -17,6 +17,18 @@ function getWeekRange(): { startLabel: string; endLabel: string } {
   sunday.setDate(monday.getDate() + 6);
   const fmt = (d: Date) => d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   return { startLabel: fmt(monday), endLabel: fmt(sunday) };
+}
+
+function getScoreDelta(): number | null {
+  try {
+    const stored = localStorage.getItem('mentorship-score-history');
+    if (!stored) return null;
+    const history = JSON.parse(stored);
+    if (history.previousScore !== undefined && history.lastScore !== undefined) {
+      return history.lastScore - history.previousScore;
+    }
+  } catch {}
+  return null;
 }
 
 export function WeeklySummaryBadge() {
@@ -30,8 +42,8 @@ export function WeeklySummaryBadge() {
   const journalThisMonth = journalStats?.entriesThisMonth || 0;
   const streak = habitStats?.longestStreak || 0;
 
-  // Count how many challenge types have progress
   const activeKeys = Object.values(counts).filter(v => v > 0).length;
+  const scoreDelta = useMemo(() => getScoreDelta(), []);
 
   const items = [
     {
@@ -75,6 +87,14 @@ export function WeeklySummaryBadge() {
                   <span className="text-[10px] text-muted-foreground hidden sm:inline">{item.label}</span>
                 </div>
               ))}
+              {scoreDelta !== null && scoreDelta !== 0 && (
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                  <span className={`text-xs font-bold ${scoreDelta > 0 ? 'text-emerald-500' : 'text-destructive'}`}>
+                    {scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta} pts
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

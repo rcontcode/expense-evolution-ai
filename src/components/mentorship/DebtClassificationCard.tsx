@@ -62,6 +62,12 @@ export function DebtClassificationCard() {
             <div className="w-16 h-16 mx-auto rounded-2xl bg-green-500/10 flex items-center justify-center">
               <ThumbsUp className="h-8 w-8 text-green-500" />
             </div>
+            <p className="text-xs italic text-muted-foreground px-4">
+              "{language === 'es' 
+                ? 'La deuda buena pone dinero en tu bolsillo. La deuda mala lo saca.'
+                : 'Good debt puts money in your pocket. Bad debt takes it out.'}"
+              <span className="block mt-1 font-medium not-italic">— Robert Kiyosaki</span>
+            </p>
             <div className="space-y-1">
               <p className="text-sm font-medium text-green-600">
                 {language === 'es' ? '¡Sin deudas registradas!' : 'No debts recorded!'}

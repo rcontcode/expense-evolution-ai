@@ -55,6 +55,12 @@ export function FinancialFreedomCard() {
             <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
               <DollarSign className="h-8 w-8 text-primary" />
             </div>
+            <p className="text-xs italic text-muted-foreground px-4">
+              "{language === 'es' 
+                ? 'La libertad financiera es cuando tus ingresos pasivos cubren todos tus gastos'
+                : 'Financial freedom is when your passive income covers all your expenses'}"
+              <span className="block mt-1 font-medium not-italic">— Robert Kiyosaki</span>
+            </p>
             <div className="space-y-1">
               <p className="text-sm font-medium">
                 {language === 'es' ? 'Sin datos suficientes' : 'Not enough data'}
