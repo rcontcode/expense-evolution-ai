@@ -1,67 +1,42 @@
 
 
-# Diagrama de Arquitectura: Evaluación Honesta y Propuesta Mejorada
+# Migrar `.single()` a `.maybeSingle()` + Limpiar código muerto
 
-## ¿Conviene o no?
+## 1. Migrar `.single()` → `.maybeSingle()` (14 archivos)
 
-**Lo que NO conviene del plan original:**
-- Una página `/architecture` dedicada es para desarrolladores, no para usuarios finales — nadie va a buscar "arquitectura" en un app de finanzas
-- Cargar Mermaid desde CDN agrega peso y fragilidad (dependencia externa)
-- Un diagrama técnico tipo "system architecture" confunde más que ayuda al usuario promedio
+Solo en queries SELECT de lectura donde el registro podría no existir (pre-delete audit lookups, fetches condicionales). Los `.insert().select().single()` y `.update().select().single()` se mantienen porque siempre retornan el registro creado/actualizado.
 
-**Lo que SÍ conviene:**
-- Mejorar la sección "Interconexiones" del Manual que ya existe pero es solo texto plano con flechas
-- Mostrar visualmente cómo fluyen los datos, pero desde la perspectiva del USUARIO, no del desarrollador
+| Archivo | Línea(s) | Contexto |
+|---|---|---|
+| `useSavingsGoals.ts` | 95 | select before delete |
+| `useNetWorth.ts` | 347, 442 | select assets/liabilities before delete |
+| `useCategoryBudgets.ts` | 83 | select before delete |
+| `useExpenses.ts` | 235 | select before delete |
+| `useMileage.ts` | 215 | select before delete |
+| `useFinancialHabits.ts` | 116 | select habit after log |
+| `useTags.ts` | 76 | select before delete |
+| `useFiscalEntities.ts` | 118 | select before delete |
+| `useRecurringBills.ts` | 154 | select before delete |
+| `useClients.ts` | 100, 128 | select before delete/report |
+| `useContracts.ts` | 142 | select before delete |
+| `useFinancialJournal.ts` | 106 | select before delete |
+| `useIncome.ts` | 144 | select before delete |
+| `useDocumentReview.ts` | 132 | select for corrections |
+| `useFinancialEducation.ts` | 258, 372 | select for progress |
 
-## Propuesta Mejorada: Mapa Visual de Flujos (sin Mermaid)
+**Total: ~20 cambios de `.single()` → `.maybeSingle()` en 15 archivos.**
 
-En vez de un diagrama técnico, crear un **mapa interactivo con React puro** integrado en el Manual de Usuario. Sin dependencias externas.
+## 2. Limpiar código muerto
 
-### Componente: `DataFlowMap.tsx`
+| Qué | Dónde | Acción |
+|---|---|---|
+| `connectionsDiagram` export | `user-guide-content.ts` L1334-1351 | Eliminar objeto completo (reemplazado por `DataFlowMap`) |
+| `connectionsDiagram` import | `UserGuide.tsx` L13 | Quitar del import |
+| `FeedbackButton` component | `FeedbackButton.tsx` | Eliminar archivo |
+| `FeedbackButton` import + uso | `App.tsx` L130-132, L412-414 | Quitar lazy import y `<Suspense>` wrapper |
 
-Un componente visual con nodos clickeables organizados por categoría:
+## Archivos a modificar (17)
 
-```text
-┌─────────────────────────────────────────────────┐
-│              ¿Cómo fluye tu información?         │
-│                                                   │
-│  [ENTRADA]          [PROCESO]        [RESULTADO]  │
-│  ┌──────┐          ┌──────┐         ┌──────┐     │
-│  │📸Foto│───────→  │🤖 IA │──────→  │🧾Gasto│    │
-│  │🎤Voz │───────→  │Clasif.│──────→  │💰Ingr.│   │
-│  │🏦Bank│───────→  │Concil.│──────→  │📊Stats│   │
-│  │✍️Man.│─────────────────────────→  │🧾Gasto│   │
-│  └──────┘          └──────┘         └──────┘     │
-│                                                   │
-│  Click en cualquier nodo → te lleva a esa sección │
-└─────────────────────────────────────────────────┘
-```
-
-**Características:**
-- Nodos con el mismo estilo 3D candy de la app (gradientes, sombras, hover)
-- 3 columnas: Entrada → Procesamiento → Resultado/Análisis
-- Líneas SVG simples conectando nodos (sin librería externa)
-- Click en nodo = navega a esa página
-- Responsive: en mobile se apila verticalmente
-- Bilingüe con `useLanguage()`
-- Dark/light mode compatible
-
-### Integración
-
-1. **En el Manual de Usuario** — Reemplaza el bloque actual de cards de texto (líneas 360-382) por el mapa visual
-2. **NO crear página separada** — No agrega valor, el diagrama vive donde el usuario lo necesita
-3. **NO agregar al sidebar** — Ya está accesible desde el Manual
-
-### Nodos del mapa (basados en flujos reales existentes)
-
-| Columna | Nodos | Link |
-|---------|-------|------|
-| Entrada | Captura Foto, Phoenix Voz, Texto Manual, Import Banco, Chaos Inbox | /capture, /phoenix, /expenses, /banking, /chaos |
-| Proceso | IA Clasificación, Conciliación, Detección Anomalías | (sin link, decorativo) |
-| Salida | Gastos, Ingresos, Dashboard, Presupuesto, Análisis, Reporte Fiscal | /expenses, /income, /dashboard, /budget, /analytics, /tax-report-flow |
-
-## Archivos a modificar/crear (2)
-
-1. **`src/components/diagrams/DataFlowMap.tsx`** — Nuevo componente: mapa visual con nodos SVG + click navigation, sin dependencias externas
-2. **`src/pages/UserGuide.tsx`** — Reemplazar bloque "Connections Diagram" (líneas 360-382) con `<DataFlowMap />`
+**Migración `.maybeSingle()`:** 15 hooks en `src/hooks/data/`
+**Limpieza:** `user-guide-content.ts`, `UserGuide.tsx`, `App.tsx`, eliminar `FeedbackButton.tsx`
 
