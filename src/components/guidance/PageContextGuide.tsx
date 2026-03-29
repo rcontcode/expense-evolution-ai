@@ -9,7 +9,8 @@ import {
   ChevronUp,
   X,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Link2
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,12 @@ interface PageWorkflow {
   completed?: boolean;
 }
 
+interface CrossReference {
+  path: string;
+  title: { es: string; en: string };
+  relationship: { es: string; en: string };
+}
+
 interface PageContextGuideProps {
   pageKey: string;
   pageTitle: { es: string; en: string };
@@ -42,6 +49,7 @@ interface PageContextGuideProps {
   workflows?: PageWorkflow[];
   tips?: { es: string; en: string }[];
   goals?: { es: string; en: string }[];
+  crossReferences?: CrossReference[];
   className?: string;
   onActionClick?: (actionIndex: number) => void;
 }
@@ -54,6 +62,7 @@ export function PageContextGuide({
   workflows,
   tips,
   goals,
+  crossReferences,
   className,
   onActionClick
 }: PageContextGuideProps) {
@@ -243,6 +252,33 @@ export function PageContextGuide({
                 </p>
               </div>
             )}
+
+            {/* Cross References - Related Tools */}
+            {crossReferences && crossReferences.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Link2 className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-medium">
+                    {language === 'es' ? 'Herramientas relacionadas' : 'Related tools'}
+                  </span>
+                </div>
+                <div className="space-y-1.5">
+                  {crossReferences.map((ref, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => navigate(ref.path)}
+                      className="w-full flex items-start gap-2 p-2 rounded-lg border border-border/50 bg-muted/30 hover:bg-primary/10 hover:border-primary/30 transition-all duration-200 text-left group"
+                    >
+                      <ArrowRight className="h-3 w-3 text-primary mt-0.5 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs font-medium text-primary">{ref.title[language]}</span>
+                        <span className="text-[10px] text-muted-foreground block leading-tight">{ref.relationship[language]}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
@@ -275,6 +311,11 @@ export const PAGE_GUIDES = {
       { es: 'los gastos bien clasificados pueden ahorrarte hasta 30% en impuestos.', en: 'well-classified expenses can save you up to 30% in taxes.' },
       { es: 'recuerda asignar cada gasto a un cliente para generar reportes de reembolso.', en: 'remember to assign each expense to a client to generate reimbursement reports.' },
       { es: 'puedes filtrar por categoría para ver exactamente cuánto gastas en cada área.', en: 'you can filter by category to see exactly how much you spend in each area.' }
+    ],
+    crossReferences: [
+      { path: '/chaos', title: { es: 'Bandeja del Caos', en: 'Chaos Inbox' }, relationship: { es: 'Captura fotos/archivos → IA extrae datos → llegan aquí como gastos', en: 'Capture photos/files → AI extracts data → they arrive here as expenses' } },
+      { path: '/banking', title: { es: 'Análisis Bancario', en: 'Banking Analysis' }, relationship: { es: 'Las transacciones bancarias importadas se concilian con estos gastos', en: 'Imported bank transactions are reconciled with these expenses' } },
+      { path: '/bills', title: { es: 'Pagos Fijos', en: 'Recurring Bills' }, relationship: { es: 'Los gastos recurrentes se detectan automáticamente y aparecen en Pagos Fijos', en: 'Recurring expenses are auto-detected and appear in Recurring Bills' } },
     ]
   },
   income: {
@@ -299,6 +340,9 @@ export const PAGE_GUIDES = {
     tips: [
       { es: 'los ingresos gravables afectan tu declaración de impuestos - asegúrate de clasificarlos correctamente.', en: 'taxable income affects your tax return - make sure to classify them correctly.' },
       { es: 'vincular ingresos a proyectos te ayuda a ver la rentabilidad de cada uno.', en: 'linking income to projects helps you see the profitability of each one.' }
+    ],
+    crossReferences: [
+      { path: '/chaos', title: { es: 'Bandeja del Caos', en: 'Chaos Inbox' }, relationship: { es: 'También puedes registrar ingresos subiendo facturas — la IA detecta si es ingreso o gasto', en: 'You can also register income by uploading invoices — AI detects if it\'s income or expense' } },
     ]
   },
   clients: {
@@ -348,7 +392,6 @@ export const PAGE_GUIDES = {
       { es: 'guarda un registro de cada viaje - las autoridades fiscales pueden solicitar comprobantes.', en: 'keep a record of each trip - tax authorities may request proof.' }
     ]
   },
-  // contracts key moved to after banking
   'net-worth': {
     pageKey: 'net-worth',
     pageTitle: { es: 'aquí ves tu patrimonio completo', en: 'here you see your complete wealth' },
@@ -388,6 +431,10 @@ export const PAGE_GUIDES = {
     tips: [
       { es: 'puedes preguntar en lenguaje natural: "¿cuánto pago de internet al mes?"', en: 'you can ask in natural language: "how much do I pay for internet per month?"' },
       { es: 'EvoFinz detecta automáticamente suscripciones y cobros recurrentes.', en: 'EvoFinz automatically detects subscriptions and recurring charges.' }
+    ],
+    crossReferences: [
+      { path: '/reconciliation', title: { es: 'Conciliación', en: 'Reconciliation' }, relationship: { es: 'Las transacciones importadas aquí se emparejan con tus gastos registrados en Conciliación', en: 'Transactions imported here are matched with your recorded expenses in Reconciliation' } },
+      { path: '/subscriptions', title: { es: 'Suscripciones', en: 'Subscriptions' }, relationship: { es: 'Los pagos recurrentes detectados aquí aparecen automáticamente en Suscripciones', en: 'Recurring payments detected here automatically appear in Subscriptions' } },
     ]
   },
   reconciliation: {
@@ -412,6 +459,10 @@ export const PAGE_GUIDES = {
     tips: [
       { es: 'usa el Modo Asistente si eres nuevo - te guía paso a paso.', en: 'use Assistant Mode if you are new - it guides you step by step.' },
       { es: 'puedes crear gastos directamente desde transacciones no emparejadas.', en: 'you can create expenses directly from unmatched transactions.' }
+    ],
+    crossReferences: [
+      { path: '/banking', title: { es: 'Análisis Bancario', en: 'Banking Analysis' }, relationship: { es: 'Primero importa estados de cuenta en Análisis Bancario para tener transacciones que conciliar', en: 'First import bank statements in Banking Analysis to have transactions to reconcile' } },
+      { path: '/expenses', title: { es: 'Gastos', en: 'Expenses' }, relationship: { es: 'Los gastos registrados se emparejan automáticamente con las transacciones bancarias', en: 'Recorded expenses are automatically matched with bank transactions' } },
     ]
   },
   tags: {
@@ -441,10 +492,10 @@ export const PAGE_GUIDES = {
   },
   'chaos-inbox': {
     pageKey: 'chaos-inbox',
-    pageTitle: { es: 'aquí revisas tus recibos capturados', en: 'here you review your captured receipts' },
+    pageTitle: { es: 'aquí revisas documentos capturados', en: 'here you review captured documents' },
     pageDescription: { 
-      es: 'Aprueba, corrige o rechaza los recibos procesados', 
-      en: 'Approve, correct or reject processed receipts' 
+      es: 'Bandeja de entrada de documentos: las fotos de Captura Rápida y archivos subidos llegan aquí para revisión. Una vez aprobados, se crean como gastos o ingresos.', 
+      en: 'Document inbox: photos from Quick Capture and uploaded files arrive here for review. Once approved, they become expenses or income.' 
     },
     goals: [
       { es: 'Revisar recibos pendientes', en: 'Review pending receipts' },
@@ -461,6 +512,10 @@ export const PAGE_GUIDES = {
     tips: [
       { es: 'haz clic en cualquier tarjeta de recibo para ver la imagen completa y editar los datos.', en: 'click on any receipt card to see the full image and edit the data.' },
       { es: 'puedes capturar múltiples recibos en secuencia con la cámara continua.', en: 'you can capture multiple receipts in sequence with continuous camera.' }
+    ],
+    crossReferences: [
+      { path: '/expenses', title: { es: 'Gastos', en: 'Expenses' }, relationship: { es: 'Los recibos aprobados aquí se convierten en gastos en la sección de Gastos', en: 'Receipts approved here become expenses in the Expenses section' } },
+      { path: '/income', title: { es: 'Ingresos', en: 'Income' }, relationship: { es: 'Las facturas de clientes aprobadas aquí se registran como ingresos', en: 'Client invoices approved here are recorded as income' } },
     ]
   },
   bills: {
@@ -486,6 +541,11 @@ export const PAGE_GUIDES = {
       { es: 'usa el Quick Setup para agregar tus pagos típicos en segundos.', en: 'use Quick Setup to add your typical bills in seconds.' },
       { es: 'el Kanban te permite arrastrar pagos de "Pendiente" a "Pagado" fácilmente.', en: 'the Kanban lets you drag bills from "Pending" to "Paid" easily.' },
       { es: 'la vista Calendario te muestra exactamente cuándo vence cada pago del mes.', en: 'the Calendar view shows you exactly when each payment is due this month.' }
+    ],
+    crossReferences: [
+      { path: '/expenses', title: { es: 'Gastos', en: 'Expenses' }, relationship: { es: 'Los pagos fijos también se detectan automáticamente al registrar gastos recurrentes', en: 'Recurring bills are also auto-detected when you record recurring expenses' } },
+      { path: '/banking', title: { es: 'Análisis Bancario', en: 'Banking Analysis' }, relationship: { es: 'Al importar extractos bancarios, se detectan cobros recurrentes que pueden convertirse en pagos fijos', en: 'When importing bank statements, recurring charges are detected that can become recurring bills' } },
+      { path: '/subscriptions', title: { es: 'Suscripciones', en: 'Subscriptions' }, relationship: { es: 'Las suscripciones detectadas automáticamente pueden convertirse en pagos fijos aquí', en: 'Auto-detected subscriptions can be converted to recurring bills here' } },
     ]
   },
   contracts: {
