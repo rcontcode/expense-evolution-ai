@@ -311,6 +311,11 @@ export const PAGE_GUIDES = {
       { es: 'los gastos bien clasificados pueden ahorrarte hasta 30% en impuestos.', en: 'well-classified expenses can save you up to 30% in taxes.' },
       { es: 'recuerda asignar cada gasto a un cliente para generar reportes de reembolso.', en: 'remember to assign each expense to a client to generate reimbursement reports.' },
       { es: 'puedes filtrar por categoría para ver exactamente cuánto gastas en cada área.', en: 'you can filter by category to see exactly how much you spend in each area.' }
+    ],
+    crossReferences: [
+      { path: '/chaos', title: { es: 'Bandeja del Caos', en: 'Chaos Inbox' }, relationship: { es: 'Captura fotos/archivos → IA extrae datos → llegan aquí como gastos', en: 'Capture photos/files → AI extracts data → they arrive here as expenses' } },
+      { path: '/banking', title: { es: 'Análisis Bancario', en: 'Banking Analysis' }, relationship: { es: 'Las transacciones bancarias importadas se concilian con estos gastos', en: 'Imported bank transactions are reconciled with these expenses' } },
+      { path: '/bills', title: { es: 'Pagos Fijos', en: 'Recurring Bills' }, relationship: { es: 'Los gastos recurrentes se detectan automáticamente y aparecen en Pagos Fijos', en: 'Recurring expenses are auto-detected and appear in Recurring Bills' } },
     ]
   },
   income: {
@@ -335,9 +340,11 @@ export const PAGE_GUIDES = {
     tips: [
       { es: 'los ingresos gravables afectan tu declaración de impuestos - asegúrate de clasificarlos correctamente.', en: 'taxable income affects your tax return - make sure to classify them correctly.' },
       { es: 'vincular ingresos a proyectos te ayuda a ver la rentabilidad de cada uno.', en: 'linking income to projects helps you see the profitability of each one.' }
+    ],
+    crossReferences: [
+      { path: '/chaos', title: { es: 'Bandeja del Caos', en: 'Chaos Inbox' }, relationship: { es: 'También puedes registrar ingresos subiendo facturas — la IA detecta si es ingreso o gasto', en: 'You can also register income by uploading invoices — AI detects if it\'s income or expense' } },
     ]
   },
-  clients: {
     pageKey: 'clients',
     pageTitle: { es: 'aquí gestionas tus clientes', en: 'here you manage your clients' },
     pageDescription: { 
