@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -74,6 +75,7 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
   const createExpense = useCreateExpense();
   const { data: clients = [] } = useClients();
   const { currentEntity } = useEntity();
+  const queryClient = useQueryClient();
 
   const { isListening, transcript, isSupported: voiceSupported, toggleListening, setTranscript } = useVoiceInput({ onResult: () => {} });
   const { isListening: isCategoryListening, isSupported: categoryVoiceSupported, toggleListening: toggleCategoryListening, setTranscript: setCategoryTranscript } = useVoiceInput({
@@ -216,6 +218,8 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
           console.error('Error saving extracted data:', error);
         } else {
           console.log('Extracted data saved to document:', savedDocumentId);
+          queryClient.invalidateQueries({ queryKey: ['documents-review'] });
+          queryClient.invalidateQueries({ queryKey: ['documents'] });
         }
       }
     }
@@ -254,7 +258,9 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
         description: currentExpense.description, 
         client_id: currentExpense.client_id || null,
         document_id: savedDocumentId,
-        status: 'pending' as const
+        status: 'pending' as const,
+        entity_id: currentEntity?.id || null,
+        currency: currentEntity?.default_currency || 'CAD',
       };
       
       const newExpense = await createExpense.mutateAsync(expenseData as any);
@@ -299,7 +305,9 @@ export function QuickCapture({ onSuccess, onCancel }: QuickCaptureProps) {
           description: exp.description, 
           client_id: exp.client_id || null,
           document_id: docId,
-          status: 'pending' as const
+          status: 'pending' as const,
+          entity_id: currentEntity?.id || null,
+          currency: currentEntity?.default_currency || 'CAD',
         } as any);
 
         // Link document back to first expense only

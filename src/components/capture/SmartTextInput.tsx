@@ -9,10 +9,13 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useCreateExpense } from '@/hooks/data/useExpenses';
+import { useCreateIncome } from '@/hooks/data/useIncome';
 import { useVoiceInput } from '@/hooks/utils/useVoiceInput';
 import { useEntity } from '@/contexts/EntityContext';
 import { toast } from 'sonner';
+import type { IncomeType } from '@/types/income.types';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RecurringBillConfirmDialog, type RecurringBillCandidate } from '@/components/bills/RecurringBillConfirmDialog';
@@ -52,6 +55,7 @@ const TYPE_CONFIG = {
 
 export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
   const { language } = useLanguage();
+  const { user } = useAuth();
   const { currentEntity } = useEntity();
   const l = language === 'es';
   const [text, setText] = useState('');
@@ -60,6 +64,7 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
   const [isSaving, setIsSaving] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const createExpense = useCreateExpense();
+  const createIncome = useCreateIncome();
   const [pendingBillCandidate, setPendingBillCandidate] = useState<RecurringBillCandidate | null>(null);
   const [showBillConfirm, setShowBillConfirm] = useState(false);
 
@@ -149,30 +154,26 @@ export function SmartTextInput({ onSuccess, onCancel }: SmartTextInputProps) {
         setIsSaving(false);
         return; // Don't call onSuccess yet - wait for dialog
       } else if (result.type === 'income') {
-        const { data: userData } = await supabase.auth.getUser();
-        if (!userData.user) throw new Error('Not authenticated');
+        if (!user) throw new Error('Not authenticated');
         
         // Map parsed income_type to valid DB enum values
         const incomeTypeMap: Record<string, string> = {
           salary: 'salary', freelance: 'freelance', investment: 'investment_stocks',
           rental: 'passive_rental', refund: 'refund', bonus: 'bonus', gift: 'gift', other: 'other',
         };
-        type IncomeType = "salary" | "client_payment" | "bonus" | "gift" | "refund" | "investment_stocks" | "investment_crypto" | "investment_funds" | "passive_rental" | "passive_royalties" | "online_business" | "freelance" | "other";
         const mappedType = (incomeTypeMap[result.data.income_type || 'other'] || 'other') as IncomeType;
         
-        const { error } = await supabase.from('income').insert({
-          user_id: userData.user.id,
+        await createIncome.mutateAsync({
           amount: result.data.amount,
-          date: result.data.date,
+          date: new Date(result.data.date),
           description: result.data.description,
-          source: result.data.source || null,
+          source: result.data.source || undefined,
           income_type: mappedType,
           is_taxable: result.data.is_taxable !== false,
           currency: currentEntity?.default_currency || 'CAD',
-          entity_id: currentEntity?.id || null,
+          entity_id: currentEntity?.id || undefined,
+          recurrence: 'one_time',
         });
-        if (error) throw error;
-        toast.success(l ? '✅ Ingreso registrado' : '✅ Income recorded');
       }
       
       onSuccess?.();
