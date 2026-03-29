@@ -2427,6 +2427,80 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_nurturing_log: {
+        Row: {
+          created_at: string | null
+          executed_at: string | null
+          id: string
+          lead_id: string
+          message_generated: string | null
+          scheduled_for: string
+          sequence_id: string | null
+          status: string | null
+          step_index: number
+        }
+        Insert: {
+          created_at?: string | null
+          executed_at?: string | null
+          id?: string
+          lead_id: string
+          message_generated?: string | null
+          scheduled_for: string
+          sequence_id?: string | null
+          status?: string | null
+          step_index: number
+        }
+        Update: {
+          created_at?: string | null
+          executed_at?: string | null
+          id?: string
+          lead_id?: string
+          message_generated?: string | null
+          scheduled_for?: string
+          sequence_id?: string | null
+          status?: string | null
+          step_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_nurturing_log_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "lead_nurturing_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_nurturing_sequences: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_enabled: boolean | null
+          name: string
+          steps: Json
+          trigger_priority: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          name: string
+          steps?: Json
+          trigger_priority?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          name?: string
+          steps?: Json
+          trigger_priority?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       liabilities: {
         Row: {
           category: string
