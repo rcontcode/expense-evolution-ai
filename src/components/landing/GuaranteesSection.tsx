@@ -150,6 +150,9 @@ export function GuaranteesSection() {
                 <div>
                   <p className="text-2xl font-black text-slate-800">{indicator.value}</p>
                   <p className="text-xs text-slate-500">{indicator.label}</p>
+                  {'sublabel' in indicator && indicator.sublabel && (
+                    <p className="text-[10px] text-slate-400 mt-0.5">{indicator.sublabel}</p>
+                  )}
                 </div>
               </motion.div>
             );
