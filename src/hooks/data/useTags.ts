@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Tag, TagInsert } from '@/types/expense.types';
 import { toast } from 'sonner';
 import { DEFAULT_TAGS } from '@/lib/constants/default-tags';
@@ -7,30 +8,30 @@ import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
 
 export function useTags() {
-  return useQuery({
-    queryKey: ['tags'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+  const { user } = useAuth();
 
+  return useQuery({
+    queryKey: ['tags', user?.id],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('tags')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
         .order('name', { ascending: true });
       
       if (error) throw error;
       return data as Tag[];
     },
+    enabled: !!user,
   });
 }
 
 export function useCreateTag() {
+  const { user } = useAuth();
   const { afterTag } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (tag: TagInsert) => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
@@ -53,14 +54,17 @@ export function useCreateTag() {
 }
 
 export function useUpdateTag() {
+  const { user } = useAuth();
   const { afterTag } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<TagInsert> }) => {
+      if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('tags')
         .update(updates)
         .eq('id', id)
+        .eq('user_id', user.id)
         .select()
         .single();
       
@@ -78,25 +82,25 @@ export function useUpdateTag() {
 }
 
 export function useDeleteTag() {
+  const { user } = useAuth();
   const { afterTag } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data: existing } = await supabase.from('tags').select('name').eq('id', id).single();
+      if (!user) throw new Error('Not authenticated');
+      const { data: existing } = await supabase.from('tags').select('name').eq('id', id).eq('user_id', user.id).single();
       const { error } = await supabase
         .from('tags')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
       
       if (error) throw error;
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await insertAuditLog(user.id, {
-          action: 'delete', entity_type: 'tag', entity_id: id,
-          entity_name: existing?.name || null,
-        });
-      }
+      await insertAuditLog(user.id, {
+        action: 'delete', entity_type: 'tag', entity_id: id,
+        entity_name: existing?.name || null,
+      });
     },
     onSuccess: () => {
       afterTag();
@@ -109,16 +113,15 @@ export function useDeleteTag() {
 }
 
 export function useTagsWithExpenseCount() {
-  return useQuery({
-    queryKey: ['tags-with-expense-count'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+  const { user } = useAuth();
 
+  return useQuery({
+    queryKey: ['tags-with-expense-count', user?.id],
+    queryFn: async () => {
       const { data: tags, error: tagsError } = await supabase
         .from('tags')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
         .order('name', { ascending: true });
       
       if (tagsError) throw tagsError;
@@ -139,15 +142,16 @@ export function useTagsWithExpenseCount() {
         expenseCount: countMap[tag.id] || 0,
       }));
     },
+    enabled: !!user,
   });
 }
 
 export function useSeedDefaultTags() {
+  const { user } = useAuth();
   const { afterTag } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const { data: existingTags } = await supabase

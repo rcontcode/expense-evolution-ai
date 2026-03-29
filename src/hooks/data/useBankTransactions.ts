@@ -170,12 +170,12 @@ function findMatchingExpenses(
 }
 
 export function useCreateBankTransactions() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const { language } = useLanguage();
 
   return useMutation({
     mutationFn: async (transactions: Omit<BankTransaction, 'id' | 'user_id' | 'created_at'>[]) => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const transactionsWithUser = transactions.map(t => ({

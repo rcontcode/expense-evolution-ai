@@ -125,22 +125,23 @@ export const useUpdateContract = () => {
 };
 
 export const useDeleteContract = () => {
+  const { user } = useAuth();
   const { afterContract } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
+      if (!user) throw new Error('Not authenticated');
+
       const { data: contract } = await supabase
         .from('contracts')
         .select('file_path')
         .eq('id', id)
+        .eq('user_id', user.id)
         .single();
 
       if (contract?.file_path) {
         await supabase.storage.from('contracts').remove([contract.file_path]);
       }
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
 
       const { error } = await supabase.from('contracts').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id);
       if (error) throw error;
