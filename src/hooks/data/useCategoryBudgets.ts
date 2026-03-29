@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useInvalidateRelated } from "./useInvalidateRelated";
+import { insertAuditLog } from "./useAuditLog";
 
 export interface CategoryBudget {
   id: string;
@@ -73,16 +74,26 @@ export function useUpsertCategoryBudget() {
 }
 
 export function useDeleteCategoryBudget() {
+  const { user } = useAuth();
   const { afterBudget } = useInvalidateRelated();
 
   return useMutation({
     mutationFn: async (id: string) => {
+      if (!user) throw new Error("Not authenticated");
+      const { data: existing } = await supabase.from("category_budgets").select("category, monthly_budget").eq("id", id).eq("user_id", user.id).single();
       const { error } = await supabase
         .from("category_budgets")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .eq("user_id", user.id);
 
       if (error) throw error;
+
+      await insertAuditLog(user.id, {
+        action: 'delete', entity_type: 'category_budget', entity_id: id,
+        entity_name: existing?.category || null,
+        old_values: existing ? { category: existing.category, monthly_budget: existing.monthly_budget } : null,
+      });
     },
     onSuccess: () => {
       afterBudget();
