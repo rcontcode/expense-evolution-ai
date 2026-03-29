@@ -26,6 +26,7 @@ export function useTrashItems() {
       const { data: expenses } = await supabase
         .from('expenses')
         .select('id, vendor, amount, date, deleted_at')
+        .eq('user_id', user!.id)
         .not('deleted_at', 'is', null)
         .order('deleted_at', { ascending: false });
 
@@ -37,6 +38,7 @@ export function useTrashItems() {
       const { data: incomeData } = await supabase
         .from('income')
         .select('id, source, amount, date, deleted_at')
+        .eq('user_id', user!.id)
         .not('deleted_at', 'is', null)
         .order('deleted_at', { ascending: false });
 
@@ -48,6 +50,7 @@ export function useTrashItems() {
       const { data: clients } = await supabase
         .from('clients')
         .select('id, name, deleted_at')
+        .eq('user_id', user!.id)
         .not('deleted_at', 'is', null)
         .order('deleted_at', { ascending: false });
 
@@ -58,6 +61,7 @@ export function useTrashItems() {
       const { data: projects } = await supabase
         .from('projects')
         .select('id, name, deleted_at')
+        .eq('user_id', user!.id)
         .not('deleted_at', 'is', null)
         .order('deleted_at', { ascending: false });
 
@@ -68,6 +72,7 @@ export function useTrashItems() {
       const { data: contracts } = await supabase
         .from('contracts')
         .select('id, title, file_name, deleted_at')
+        .eq('user_id', user!.id)
         .not('deleted_at', 'is', null)
         .order('deleted_at', { ascending: false });
 
@@ -78,6 +83,7 @@ export function useTrashItems() {
       const { data: mileageData } = await supabase
         .from('mileage')
         .select('id, purpose, kilometers, date, deleted_at')
+        .eq('user_id', user!.id)
         .not('deleted_at', 'is', null)
         .order('deleted_at', { ascending: false });
 
