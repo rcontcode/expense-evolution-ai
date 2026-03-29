@@ -32,9 +32,11 @@ export default function UserGuide() {
   const scrollToSection = useCallback((id: string) => {
     const el = sectionRefs.current[id];
     if (el) {
-      const headerOffset = 70;
-      const elementPosition = el.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({ top: elementPosition - headerOffset, behavior: 'smooth' });
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Retry after a short delay to handle lazy-rendered content
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
     }
   }, []);
 
