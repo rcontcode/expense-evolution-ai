@@ -23,12 +23,12 @@ export function useBudgetAlertRules() {
     queryKey: ['budget-alert-rules', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('budget_alert_rules' as any)
+        .from('budget_alert_rules')
         .select('*')
         .eq('user_id', user!.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data || []) as unknown as BudgetAlertRule[];
+      return (data || []) as BudgetAlertRule[];
     },
     enabled: !!user,
   });
@@ -40,7 +40,7 @@ export function useCreateAlertRule() {
   return useMutation({
     mutationFn: async (rule: Partial<BudgetAlertRule>) => {
       const { error } = await supabase
-        .from('budget_alert_rules' as any)
+        .from('budget_alert_rules')
         .insert({ ...rule, user_id: user!.id } as any);
       if (error) throw error;
     },
@@ -53,7 +53,7 @@ export function useUpdateAlertRule() {
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<BudgetAlertRule> & { id: string }) => {
       const { error } = await supabase
-        .from('budget_alert_rules' as any)
+        .from('budget_alert_rules')
         .update(updates as any)
         .eq('id', id);
       if (error) throw error;
@@ -66,7 +66,7 @@ export function useDeleteAlertRule() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('budget_alert_rules' as any).delete().eq('id', id);
+      const { error } = await supabase.from('budget_alert_rules').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['budget-alert-rules'] }),

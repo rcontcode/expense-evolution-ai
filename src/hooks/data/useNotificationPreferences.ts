@@ -40,11 +40,11 @@ export function useNotificationPreferences() {
     queryKey: ['notification-preferences', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('notification_preferences' as any)
+        .from('notification_preferences')
         .select('*')
         .eq('user_id', user!.id);
       if (error) throw error;
-      return data as unknown as NotificationPreference[];
+      return data as NotificationPreference[];
     },
     enabled: !!user,
   });
@@ -84,7 +84,7 @@ export function useUpsertNotificationPreference() {
       if (!user) throw new Error('Not authenticated');
       
       const { data, error } = await supabase
-        .from('notification_preferences' as any)
+        .from('notification_preferences')
         .upsert(
           {
             user_id: user.id,
@@ -94,7 +94,7 @@ export function useUpsertNotificationPreference() {
             repeat_frequency: pref.repeat_frequency ?? 'once',
             max_reminders: pref.max_reminders ?? 3,
             preferred_hour: pref.preferred_hour ?? null,
-          } as any,
+          },
           { onConflict: 'user_id,notification_type' }
         )
         .select()
