@@ -16,6 +16,9 @@ import {
   ReadingPaceComparison,
   SMARTGoalsCard,
   TracyGoalWizard,
+  WeeklyChallengesCard,
+  MentorshipProgressSummary,
+  LearningPathCard,
 } from '@/components/mentorship';
 import { MentorshipLevelBanner } from '@/components/mentorship/MentorshipLevelBanner';
 import { Target, Sparkles, ListChecks, GraduationCap, BookOpen, TrendingUp, Brain, Coins, Atom } from 'lucide-react';
