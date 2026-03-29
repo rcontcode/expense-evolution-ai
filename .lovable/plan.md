@@ -1,85 +1,44 @@
 
 
-# Mentoría Financiera — Mejoras Ronda 3
+# Fix: Reading Progress Tracker — Porcentaje Real y Funcionalidad
 
-## Hallazgos tras revisión completa
+## Problemas Encontrados
 
-### Lo que ya funciona bien
-- Auto-tracker corregido, desafíos con navegación funcional
-- Learning Path con deep-link + scroll + highlight
-- WeeklySummaryBadge, TracyQuickStats, score con persistencia y milestones
-- Rohn reorganizado con collapsible de herramientas de lectura
-- Tips rotativos por mentor, TabBanner con descripciones
+### Bug 1: Status "In Progress" muestra 100%
+En `useUpdateEducationResource`, cuando se cambia a `completed`, se fuerza `progress_percentage = 100`. Pero al volver a `in_progress`, **nunca se recalcula** el progreso real. El 100% persiste en la DB.
 
-### Problemas pendientes (6 issues)
+### Bug 2: Sin `total_pages`, el progreso no tiene sentido
+Si un recurso no tiene `total_pages` definido, `progress_percentage` queda en 0 o en el último valor forzado. No hay prompt para que el usuario configure las páginas totales.
 
-**Issue 1: Kiyosaki tab poco interactivo**
-Solo tiene 3 cards estáticas (CashflowQuadrant, FinancialFreedom, DebtClassification). Sin estadísticas rápidas ni mini-resumen como Tracy tiene con `TracyQuickStats`. Se siente como "solo lectura".
+### Bug 3: `handleStatusChange` no envía datos de progreso
+Solo envía `{ id, resource_type, title, status }` — no incluye `pages_read` ni `total_pages`, así que la lógica de recálculo (líneas 249-253) nunca se ejecuta.
 
-**Issue 2: No hay "logros de mentoría" integrados**
-El sistema de gamificación general existe pero no hay achievements específicos de mentoría (ej: "Completaste todos los challenges de una semana", "Usaste las 5 tabs", "Score 80+"). Esto es una ventaja competitiva no aprovechada.
+## Plan de Corrección
 
-**Issue 3: Empty states poco motivacionales**
-Cuando el usuario no tiene datos (ej: CashflowQuadrant sin ingresos, FinancialFreedom sin gastos), los empty states son genéricos. Deberían incluir un CTA directo y una frase motivacional del mentor correspondiente.
+### Paso 1: Fix `useUpdateEducationResource` 
+**Archivo**: `src/hooks/data/useFinancialEducation.ts`
+- Cuando `status === 'in_progress'`, recalcular `progress_percentage` basado en datos reales de la DB:
+  - Consultar el recurso actual para obtener `pages_read`, `total_pages`
+  - Si hay `total_pages > 0`: `progress = (pages_read / total_pages) * 100`
+  - Si no hay `total_pages`: `progress_percentage = 0`
+- Limpiar `completed_date = null` al volver a `in_progress`
 
-**Issue 4: No hay "streak de mentoría" visible**
-El streak del banner es global (XP), pero no hay un streak específico de "visité mentoría X días seguidos" que motive la exploración recurrente.
+### Paso 2: Fix `handleStatusChange` en FinancialEducationCard
+**Archivo**: `src/components/mentorship/FinancialEducationCard.tsx`
+- Pasar los datos actuales del recurso (`pages_read`, `total_pages`, `total_minutes`, `minutes_consumed`) al llamar `updateResource.mutate`, para que la lógica de recálculo funcione correctamente
 
-**Issue 5: Challenges no premian con XP real del sistema de gamificación**
-Los challenges dan XP visual (localStorage) pero NO llaman a `addExperience()` del sistema de gamificación real. El XP de challenges no se refleja en el nivel del usuario.
+### Paso 3: Prompt de `total_pages` cuando falta
+**Archivo**: `src/components/mentorship/FinancialEducationCard.tsx`
+- Cuando un recurso está `in_progress` y no tiene `total_pages`, mostrar un mini-form inline pidiendo las páginas totales en lugar de la barra de progreso con "0/? páginas"
+- Hacer que sea fácil y rápido: un input con botón "Guardar"
 
-**Issue 6: WeeklySummaryBadge demasiado simple**
-Solo muestra 3 datos. Podría incluir score delta y un mini-gráfico de tendencia semanal.
-
----
-
-## Plan de mejoras
-
-### Paso 1: Conectar XP de challenges al sistema de gamificación real
-**Archivo**: `src/components/mentorship/WeeklyChallengesCard.tsx`
-- Cuando un challenge se auto-completa, llamar `addExperience(user.id, challenge.xpReward)` del hook de gamificación
-- Esto hace que el XP ganado en challenges suba el nivel real del usuario
-- Agregar `useAuth` para obtener el user ID
-
-### Paso 2: Agregar KiyosakiQuickStats
-**Archivo nuevo**: `src/components/mentorship/KiyosakiQuickStats.tsx`
-- Card compacta mostrando: total activos, total pasivos, ratio activos/pasivos, % ingreso pasivo
-- Usa hooks existentes (`useCashflowQuadrant`, `useFinancialFreedom`, `useDebtClassification`)
-- Se inserta en Kiyosaki tab al lado de CashflowQuadrantCard
-
-### Paso 3: Mejorar empty states de Kiyosaki cards
-**Archivos**: `CashflowQuadrantCard.tsx`, `FinancialFreedomCard.tsx`, `DebtClassificationCard.tsx`
-- Agregar frase motivacional de Kiyosaki en cada empty state
-- Agregar botón CTA que navegue directamente a la acción necesaria (registrar ingreso, registrar gasto, etc.)
-
-### Paso 4: Enriquecer WeeklySummaryBadge
-**Archivo**: `src/components/mentorship/WeeklySummaryBadge.tsx`
-- Agregar score delta desde `MentorshipProgressSummary` (reusar lógica de localStorage)
-- Agregar indicador de "tabs visitadas esta semana" usando localStorage
-
-### Paso 5: Logros de mentoría
-**Archivo**: `src/components/mentorship/WeeklyChallengesCard.tsx`
-- Cuando se completan TODOS los challenges de la semana, disparar `unlockAchievement('mentorship_weekly_master')` si existe en el sistema
-- Usar `useUnlockAchievement` del hook de gamificación
-- Toast especial con confetti
-
-### Paso 6: Mentorship streak tracker
-**Archivo**: `src/components/mentorship/MentorshipProgressSummary.tsx`
-- Trackear en localStorage cuántos días consecutivos el usuario visitó `/mentorship`
-- Mostrar como badge "🔥 5 días visitando mentoría" junto al score
-- Incrementar al montar el componente si `lastVisitDate !== today`
-
----
-
-## Archivos a crear
-1. `src/components/mentorship/KiyosakiQuickStats.tsx` — Stats rápidas del cuadrante
+### Paso 4: Validar progreso en ReadingProgressTracker
+**Archivo**: `src/components/mentorship/ReadingProgressTracker.tsx`
+- Si `total_pages` es 0/null, mostrar prominentemente que se necesita configurar antes de trackear
+- Asegurar que el porcentaje no pueda exceder 100% visualmente
 
 ## Archivos a modificar
-1. `src/components/mentorship/WeeklyChallengesCard.tsx` — Conectar XP real + logro semanal
-2. `src/components/mentorship/WeeklySummaryBadge.tsx` — Score delta + tabs visitadas
-3. `src/components/mentorship/MentorshipProgressSummary.tsx` — Streak de visitas a mentoría
-4. `src/components/mentorship/CashflowQuadrantCard.tsx` — Empty state mejorado
-5. `src/components/mentorship/FinancialFreedomCard.tsx` — Empty state mejorado
-6. `src/components/mentorship/DebtClassificationCard.tsx` — Empty state mejorado
-7. `src/pages/Mentorship.tsx` — Insertar KiyosakiQuickStats en tab Kiyosaki
+1. `src/hooks/data/useFinancialEducation.ts` — Recalcular progreso al cambiar a `in_progress`, limpiar `completed_date`
+2. `src/components/mentorship/FinancialEducationCard.tsx` — Pasar datos completos en `handleStatusChange` + prompt de total_pages
+3. `src/components/mentorship/ReadingProgressTracker.tsx` — Validación cuando falta `total_pages`
 
