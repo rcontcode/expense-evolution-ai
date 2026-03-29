@@ -313,6 +313,13 @@ export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }
                   key={lead.id}
                   className={cn(colors.row, colors.border)}
                 >
+                  {/* Checkbox */}
+                  <TableCell className="px-2">
+                    <Checkbox
+                      checked={selectedIds.has(lead.id)}
+                      onCheckedChange={() => toggleSelect(lead.id)}
+                    />
+                  </TableCell>
                   {/* Priority indicator */}
                   <TableCell className="px-2">
                     <div 
