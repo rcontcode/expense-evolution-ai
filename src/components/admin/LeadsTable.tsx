@@ -204,7 +204,7 @@ export function LeadsTable({ leads, allLeads, onMarkContacted, onMarkConverted }
     return Array.from(tags).sort();
   }, [allLeads, leads]);
 
-
+  const handleSort = (key: SortKey) => {
     if (sortKey === key) {
       setSortDir(prev => prev === 'desc' ? 'asc' : 'desc');
     } else {
