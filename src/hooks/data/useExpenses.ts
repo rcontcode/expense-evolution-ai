@@ -6,6 +6,7 @@ import { useMissionTracker } from './useMissions';
 import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { insertAuditLog } from './useAuditLog';
 import { useExpenseBillMatcher } from './useExpenseBillMatcher';
 
 const QUERY_LIMIT = 500;
@@ -184,14 +185,11 @@ export function useCreateExpense() {
       
       await triggers.expense(currentCount);
       
-      await supabase.from('audit_log' as any).insert({
-        user_id: userData.user.id,
-        action: 'create',
-        entity_type: 'expense',
-        entity_id: data.id,
+      await insertAuditLog(userData.user.id, {
+        action: 'create', entity_type: 'expense', entity_id: data.id,
         entity_name: (expense as any).vendor || null,
         new_values: { amount: (expense as any).amount, vendor: (expense as any).vendor, category: (expense as any).category },
-      } as any);
+      });
 
       return data;
     },
@@ -260,14 +258,11 @@ export function useDeleteExpense() {
 
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
-        await supabase.from('audit_log' as any).insert({
-          user_id: userData.user.id,
-          action: 'delete',
-          entity_type: 'expense',
-          entity_id: id,
+        await insertAuditLog(userData.user.id, {
+          action: 'delete', entity_type: 'expense', entity_id: id,
           entity_name: existing?.vendor || null,
           old_values: existing ? { vendor: existing.vendor, amount: existing.amount } : null,
-        } as any);
+        });
       }
     },
     onSuccess: () => {

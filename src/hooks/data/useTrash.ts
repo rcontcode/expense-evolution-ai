@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { insertAuditLog } from './useAuditLog';
 
 export type TrashItemType = 'expense' | 'income' | 'client' | 'project' | 'contract' | 'mileage';
 
@@ -108,12 +109,9 @@ export function useRestoreItem() {
 
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
-        await supabase.from('audit_log' as any).insert({
-          user_id: userData.user.id,
-          action: 'restore',
-          entity_type: type,
-          entity_id: id,
-        } as any);
+        await insertAuditLog(userData.user.id, {
+          action: 'restore', entity_type: type, entity_id: id,
+        });
       }
     },
     onSuccess: () => {
