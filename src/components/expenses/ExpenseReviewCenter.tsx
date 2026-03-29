@@ -344,6 +344,14 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
       const date = data.date || ed.date || new Date().toISOString().split('T')[0];
       const currency = ed.currency || (currentEntity?.default_currency) || 'CAD';
 
+      // Get user's primary fiscal entity for entity_id
+      const { data: primaryEntity } = await supabase
+        .from('fiscal_entities')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('is_primary', true)
+        .single();
+
       const { error: incomeError } = await supabase
         .from('income')
         .insert({
@@ -356,6 +364,7 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
           currency,
           is_taxable: true,
           document_id: docId,
+          entity_id: primaryEntity?.id || null,
         } as any);
 
       if (incomeError) throw incomeError;
@@ -366,10 +375,15 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
           review_status: 'approved',
           reviewed_at: new Date().toISOString(),
         })
-        .eq('id', docId);
+        .eq('id', docId)
+        .eq('user_id', user.id);
 
+      // Invalidate all related queries for full sync
       queryClient.invalidateQueries({ queryKey: ['documents-review'] });
       queryClient.invalidateQueries({ queryKey: ['income'] });
+      queryClient.invalidateQueries({ queryKey: ['income-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['data-health'] });
       toast.success(language === 'es' ? `✅ Ingreso de $${amount.toLocaleString()} aprobado y registrado` : `✅ Income of $${amount.toLocaleString()} approved and recorded`);
       setEditingIncomeId(null);
     } catch (error: any) {
@@ -378,16 +392,18 @@ export function ExpenseReviewCenter({ expenses, onExportReady }: ExpenseReviewCe
     } finally {
       setApprovingIncomeId(null);
     }
-  }, [user, documents, editingIncomeId, editIncomeData, queryClient, language]);
+  }, [user, documents, editingIncomeId, editIncomeData, queryClient, language, currentEntity]);
 
   const handleRejectIncome = useCallback(async (docId: string) => {
+    if (!user) return;
     await supabase
       .from('documents')
       .update({ review_status: 'rejected', reviewed_at: new Date().toISOString() })
-      .eq('id', docId);
+      .eq('id', docId)
+      .eq('user_id', user.id);
     queryClient.invalidateQueries({ queryKey: ['documents-review'] });
     toast.success(language === 'es' ? '🗑️ Ingreso descartado' : '🗑️ Income discarded');
-  }, [queryClient, language]);
+  }, [user, queryClient, language]);
 
   // Auto-select tab based on what needs attention — only on initial mount
   const hasAutoSelected = useRef(false);

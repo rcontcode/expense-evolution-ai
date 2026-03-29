@@ -408,7 +408,27 @@ export function useUnifiedChaosInbox() {
 
           if (error) throw error;
 
+          // Persist bank statement document to DB for audit trail
+          await supabase
+            .from('documents')
+            .insert({
+              user_id: user.id,
+              file_path: doc.storagePath,
+              file_name: doc.fileName,
+              file_type: doc.fileType,
+              file_size: doc.fileSize,
+              status: 'classified',
+              review_status: 'approved',
+              reviewed_at: new Date().toISOString(),
+              extracted_data: {
+                document_classification: 'bank_statement',
+                transactions_count: result?.transactions?.length || 0,
+                ...preview,
+              },
+            });
+
           processedResult = { type: 'bank_statement', transactions: result?.transactions || [] };
+          queryClient.invalidateQueries({ queryKey: ['documents-review'] });
           break;
         }
 
@@ -419,16 +439,47 @@ export function useUnifiedChaosInbox() {
 
           if (error) throw error;
 
+          const suggestedAmount = preview.amount || result?.expenses?.[0]?.amount;
+          const suggestedDate = preview.date || result?.expenses?.[0]?.date;
+          const suggestedSource = preview.vendor || result?.expenses?.[0]?.vendor;
+
+          // Persist income proof as document for Review Center
+          const { data: dbDoc } = await supabase
+            .from('documents')
+            .insert({
+              user_id: user.id,
+              file_path: doc.storagePath,
+              file_name: doc.fileName,
+              file_type: doc.fileType,
+              file_size: doc.fileSize,
+              status: 'classified',
+              review_status: 'pending_review',
+              extracted_data: {
+                invoice_direction: 'income',
+                amount: suggestedAmount,
+                date: suggestedDate,
+                source: suggestedSource,
+                vendor: suggestedSource,
+                currency: preview.currency || userCurrency,
+                income_type: 'freelance',
+                document_classification: 'income_proof',
+              },
+            })
+            .select()
+            .single();
+
           processedResult = {
             type: 'income_proof',
             data: result,
+            docId: dbDoc?.id,
             suggestedIncome: {
-              amount: preview.amount || result?.expenses?.[0]?.amount,
-              date: preview.date || result?.expenses?.[0]?.date,
-              source: preview.vendor || result?.expenses?.[0]?.vendor,
+              amount: suggestedAmount,
+              date: suggestedDate,
+              source: suggestedSource,
               currency: preview.currency || userCurrency,
             },
           };
+          queryClient.invalidateQueries({ queryKey: ['documents-review'] });
           break;
         }
 
