@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { startOfYear, endOfYear, format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { getBillCategoryLabel, getBillFrequencyLabel, getPaymentMethodLabel } from '@/lib/constants/bill-categories';
+import { PageHeader } from '@/components/PageHeader';
 
 interface ReportCard {
   id: string;
@@ -479,16 +480,10 @@ export default function Reports() {
 
   return (
     <div className="container mx-auto max-w-5xl py-6 px-4 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <FileText className="h-6 w-6 text-primary" />
-            {l ? 'Centro de Reportes' : 'Reports Center'}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {l ? 'Genera y descarga reportes profesionales de tu actividad financiera.' : 'Generate and download professional reports of your financial activity.'}
-          </p>
-        </div>
+      <PageHeader
+        title={l ? 'Centro de Reportes' : 'Reports Center'}
+        description={l ? 'Genera y descarga reportes profesionales de tu actividad financiera.' : 'Generate and download professional reports of your financial activity.'}
+      >
         <Select value={String(selectedYear)} onValueChange={v => setSelectedYear(Number(v))}>
           <SelectTrigger className="w-[120px]">
             <SelectValue />
@@ -499,7 +494,7 @@ export default function Reports() {
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </PageHeader>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard label={l ? 'Gastos' : 'Expenses'} value={expenses?.length || 0} icon="📊" />

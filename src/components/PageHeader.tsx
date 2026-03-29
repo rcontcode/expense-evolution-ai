@@ -46,6 +46,7 @@ const ROUTE_CONFIG: Record<string, { labelEs: string; labelEn: string; parent?: 
   '/adventure': { labelEs: 'Aventura Financiera', labelEn: 'Financial Adventure', parent: '/dashboard' },
   '/files': { labelEs: 'Centro de Archivos', labelEn: 'File Center', parent: '/dashboard' },
   '/trash': { labelEs: 'Papelera', labelEn: 'Trash', parent: '/dashboard' },
+  '/reports': { labelEs: 'Reportes', labelEn: 'Reports', parent: '/dashboard' },
   '/data-health': { labelEs: 'Salud de Datos', labelEn: 'Data Health', parent: '/dashboard' },
   '/beta-feedback': { labelEs: 'Feedback Beta', labelEn: 'Beta Feedback', parent: '/dashboard' },
   '/beta-guide': { labelEs: 'Guía Beta', labelEn: 'Beta Guide', parent: '/dashboard' },
