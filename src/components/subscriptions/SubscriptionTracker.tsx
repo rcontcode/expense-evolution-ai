@@ -563,7 +563,7 @@ export function SubscriptionTracker() {
           </CardHeader>
           <CardContent className="p-4">
             {subscriptions.length === 0 ? (
-              <div className="text-center py-16">
+              <div className="text-center py-12">
                 <div className="mx-auto w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/20 dark:to-orange-900/20 flex items-center justify-center mb-5">
                   <FileSearch className="h-10 w-10 text-amber-500/60" />
                 </div>
@@ -572,25 +572,49 @@ export function SubscriptionTracker() {
                 </h3>
                 <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
                   {isEs
-                    ? 'Agrega más gastos o importa extractos bancarios para que el sistema detecte automáticamente tus pagos recurrentes.'
-                    : 'Add more expenses or import bank statements so the system can automatically detect your recurring payments.'}
+                    ? 'El sistema analiza automáticamente tus gastos y extractos bancarios para detectar cobros recurrentes. Registra datos desde estas fuentes:'
+                    : 'The system automatically analyzes your expenses and bank statements to detect recurring charges. Add data from these sources:'}
                 </p>
-                <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full">
-                    <CreditCard className="h-3 w-3" />
-                    {isEs ? 'Gastos' : 'Expenses'}
-                  </div>
-                  <span>+</span>
-                  <div className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full">
-                    <Building2 className="h-3 w-3" />
-                    {isEs ? 'Extractos' : 'Statements'}
-                  </div>
-                  <span>=</span>
-                  <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-3 py-1.5 rounded-full font-semibold">
-                    <Sparkles className="h-3 w-3" />
-                    {isEs ? 'Detección' : 'Detection'}
+                <div className="flex items-center justify-center gap-3 text-xs flex-wrap mb-5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 shadow-sm hover:shadow-md transition-all"
+                    onClick={() => window.location.href = '/expenses'}
+                  >
+                    <CreditCard className="h-3.5 w-3.5" />
+                    {isEs ? 'Registrar Gastos' : 'Add Expenses'}
+                  </Button>
+                  <span className="text-muted-foreground">+</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 shadow-sm hover:shadow-md transition-all"
+                    onClick={() => window.location.href = '/banking'}
+                  >
+                    <Building2 className="h-3.5 w-3.5" />
+                    {isEs ? 'Importar Extractos' : 'Import Statements'}
+                  </Button>
+                  <span className="text-muted-foreground">=</span>
+                  <div className="flex items-center gap-1.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 px-3 py-1.5 rounded-lg font-semibold border border-amber-500/25 shadow-sm shadow-amber-500/10">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {isEs ? 'Detección Auto' : 'Auto Detection'}
                   </div>
                 </div>
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => window.location.href = '/bills'}
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  {isEs ? 'Ir a Pagos Fijos' : 'Go to Fixed Payments'}
+                </Button>
+                <p className="text-[11px] text-muted-foreground mt-3 max-w-sm mx-auto">
+                  {isEs
+                    ? '💡 También puedes registrar pagos fijos manualmente desde la sección de Pagos Fijos'
+                    : '💡 You can also manually register fixed payments from the Fixed Payments section'}
+                </p>
               </div>
             ) : (
               <div className="space-y-3">
