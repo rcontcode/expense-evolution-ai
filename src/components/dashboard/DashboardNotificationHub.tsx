@@ -143,7 +143,18 @@ export function DashboardNotificationHub() {
       if (!user) return;
       await supabase.from('notifications').update({ read: true } as any).eq('id', id).eq('user_id', user.id);
     },
-    onSuccess: () => {
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['dashboard-notifications'] });
+      const prev = queryClient.getQueryData<Notification[]>(['dashboard-notifications']);
+      queryClient.setQueryData<Notification[]>(['dashboard-notifications'], (old) =>
+        (old || []).filter(n => n.id !== id)
+      );
+      return { prev };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.prev) queryClient.setQueryData(['dashboard-notifications'], context.prev);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard-notifications'] });
       queryClient.invalidateQueries({ queryKey: ['unread-notifications-count'] });
     },
@@ -454,7 +465,7 @@ function SmartAlertRow({ alert, index, l, onAction, onDismiss }: {
         {alert.actionLabel}
         <ArrowRight className="h-3 w-3 ml-1" />
       </Button>
-      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
         onClick={onDismiss}>
         <X className="h-3.5 w-3.5" />
       </Button>
@@ -482,7 +493,7 @@ function NotificationRow({ notification: n, index, l, onAction, onDismiss }: {
         <p className="text-[11px] text-muted-foreground truncate">{n.message}</p>
       </div>
       <span className="text-[10px] text-muted-foreground/50 shrink-0 hidden sm:block">{timeAgo}</span>
-      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-1 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
         {n.action_url && (
           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={onAction}>
             <ArrowRight className="h-3.5 w-3.5" />

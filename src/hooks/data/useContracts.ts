@@ -1,9 +1,9 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
 import { ContractFormData, ContractWithClient, ContractStatus } from '@/types/contract.types';
 import { useInvalidateRelated } from './useInvalidateRelated';
+import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
 
 export const useContracts = () => {
   const { user } = useAuth();
@@ -12,15 +12,9 @@ export const useContracts = () => {
     queryKey: ['contracts', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('contracts')
-        .select(`
-          *,
-          client:clients(id, name)
-        `)
-        .eq('user_id', user!.id)
-        .is('deleted_at', null)
+        .from('contracts').select(`*, client:clients(id, name)`)
+        .eq('user_id', user!.id).is('deleted_at', null)
         .order('created_at', { ascending: false });
-
       if (error) throw error;
       return data as ContractWithClient[];
     },
@@ -31,28 +25,19 @@ export const useContracts = () => {
 export const useCreateContract = () => {
   const { user } = useAuth();
   const { afterContract } = useInvalidateRelated();
+  const t = useLocalizedToast();
 
   return useMutation({
     mutationFn: async (data: ContractFormData) => {
       if (!user) throw new Error('User not authenticated');
-
       const uploadedFiles: { fileName: string; filePath: string; fileType: string }[] = [];
       
       for (const file of data.files) {
         const fileExt = file.name.split('.').pop();
         const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('contracts')
-          .upload(filePath, file);
-
+        const { error: uploadError } = await supabase.storage.from('contracts').upload(filePath, file);
         if (uploadError) throw uploadError;
-        
-        uploadedFiles.push({
-          fileName: file.name,
-          filePath,
-          fileType: file.type,
-        });
+        uploadedFiles.push({ fileName: file.name, filePath, fileType: file.type });
       }
 
       const contracts = [];
@@ -60,37 +45,28 @@ export const useCreateContract = () => {
         const { data: contract, error: insertError } = await supabase
           .from('contracts')
           .insert({
-            user_id: user.id,
-            client_id: data.client_id,
-            file_name: uploadedFile.fileName,
-            file_path: uploadedFile.filePath,
-            file_type: uploadedFile.fileType,
-            billing_profile: data.billing_profile || {},
-            status: 'uploaded',
-            title: data.title || null,
+            user_id: user.id, client_id: data.client_id,
+            file_name: uploadedFile.fileName, file_path: uploadedFile.filePath,
+            file_type: uploadedFile.fileType, billing_profile: data.billing_profile || {},
+            status: 'uploaded', title: data.title || null,
             contract_type: data.contract_type || 'services',
             start_date: data.start_date ? data.start_date.toISOString().split('T')[0] : null,
             end_date: data.end_date ? data.end_date.toISOString().split('T')[0] : null,
-            auto_renew: data.auto_renew || false,
-            renewal_notice_days: data.renewal_notice_days || 30,
-            value: data.value || null,
-            description: data.description || null,
+            auto_renew: data.auto_renew || false, renewal_notice_days: data.renewal_notice_days || 30,
+            value: data.value || null, description: data.description || null,
           })
-          .select()
-          .single();
-
+          .select().single();
         if (insertError) throw insertError;
         contracts.push(contract);
       }
-
       return contracts;
     },
     onSuccess: () => {
       afterContract();
-      toast.success('Contrato subido exitosamente');
+      t.success('Contrato subido exitosamente', 'Contract uploaded successfully');
     },
     onError: (error) => {
-      toast.error('No se pudo subir el contrato');
+      t.error('No se pudo subir el contrato', 'Could not upload contract');
       console.error('Error uploading contract:', error);
     },
   });
@@ -99,27 +75,22 @@ export const useCreateContract = () => {
 export const useUpdateContract = () => {
   const { user } = useAuth();
   const { afterContract } = useInvalidateRelated();
+  const t = useLocalizedToast();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; client_id?: string; status?: ContractStatus }) => {
       if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
-        .from('contracts')
-        .update(updates)
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
+        .from('contracts').update(updates).eq('id', id).eq('user_id', user.id).select().single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       afterContract();
-      toast.success('Contrato actualizado');
+      t.success('Contrato actualizado', 'Contract updated');
     },
     onError: () => {
-      toast.error('No se pudo actualizar el contrato');
+      t.error('No se pudo actualizar el contrato', 'Could not update contract');
     },
   });
 };
@@ -127,31 +98,24 @@ export const useUpdateContract = () => {
 export const useDeleteContract = () => {
   const { user } = useAuth();
   const { afterContract } = useInvalidateRelated();
+  const t = useLocalizedToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error('Not authenticated');
-
-      const { data: contract } = await supabase
-        .from('contracts')
-        .select('file_path')
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .single();
-
+      const { data: contract } = await supabase.from('contracts').select('file_path').eq('id', id).eq('user_id', user.id).single();
       if (contract?.file_path) {
         await supabase.storage.from('contracts').remove([contract.file_path]);
       }
-
       const { error } = await supabase.from('contracts').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id);
       if (error) throw error;
     },
     onSuccess: () => {
       afterContract();
-      toast.success('Contrato movido a la papelera');
+      t.success('Contrato movido a la papelera', 'Contract moved to trash');
     },
     onError: () => {
-      toast.error('No se pudo eliminar el contrato');
+      t.error('No se pudo eliminar el contrato', 'Could not delete contract');
     },
   });
 };
@@ -161,11 +125,7 @@ export const useContractUrl = (filePath: string | null) => {
     queryKey: ['contract-url', filePath],
     queryFn: async () => {
       if (!filePath) return null;
-      
-      const { data } = await supabase.storage
-        .from('contracts')
-        .createSignedUrl(filePath, 3600);
-
+      const { data } = await supabase.storage.from('contracts').createSignedUrl(filePath, 3600);
       return data?.signedUrl || null;
     },
     enabled: !!filePath,

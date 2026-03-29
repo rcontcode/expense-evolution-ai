@@ -1,12 +1,12 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
 import { Income, IncomeWithRelations, IncomeFormData } from '@/types/income.types';
 import { useMissionTracker } from './useMissions';
 import { useGamificationTriggers, getTableCount } from '@/hooks/utils/useGamificationTriggers';
 import { useInvalidateRelated } from './useInvalidateRelated';
 import { insertAuditLog } from './useAuditLog';
+import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
 
 export interface IncomeFilters {
   year?: number;
@@ -24,12 +24,7 @@ export function useIncome(filters?: IncomeFilters) {
     queryFn: async () => {
       let query = supabase
         .from('income')
-        .select(`
-          *,
-          client:clients(id, name),
-          project:projects(id, name, color),
-          document:documents(id, file_path, file_name)
-        `)
+        .select(`*, client:clients(id, name), project:projects(id, name, color), document:documents(id, file_path, file_name)`)
         .eq('user_id', user!.id)
         .is('deleted_at', null)
         .order('date', { ascending: false })
@@ -40,18 +35,15 @@ export function useIncome(filters?: IncomeFilters) {
         const endDate = `${filters.year}-12-31`;
         query = query.gte('date', startDate).lte('date', endDate);
       }
-
       if (filters?.month && filters?.year) {
         const startDate = `${filters.year}-${String(filters.month).padStart(2, '0')}-01`;
         const lastDay = new Date(filters.year, filters.month, 0).getDate();
         const endDate = `${filters.year}-${String(filters.month).padStart(2, '0')}-${lastDay}`;
         query = query.gte('date', startDate).lte('date', endDate);
       }
-
       if (filters?.type) {
         query = query.eq('income_type', filters.type as any);
       }
-
       if (filters?.entityId) {
         query = query.eq('entity_id', filters.entityId);
       }
@@ -69,36 +61,28 @@ export function useCreateIncome() {
   const { trackAction } = useMissionTracker();
   const { triggers } = useGamificationTriggers();
   const { afterIncome, invalidate } = useInvalidateRelated();
+  const t = useLocalizedToast();
 
   return useMutation({
     mutationFn: async (data: IncomeFormData) => {
       if (!user) throw new Error('Not authenticated');
-      
       const currentCount = await getTableCount('income', user.id);
 
       const { error, data: newIncome } = await supabase
         .from('income')
         .insert({
-          user_id: user.id,
-          amount: data.amount,
-          currency: data.currency,
-          date: data.date.toISOString().split('T')[0],
-          income_type: data.income_type,
-          description: data.description || null,
-          source: data.source || null,
-          client_id: data.client_id || null,
-          project_id: data.project_id || null,
+          user_id: user.id, amount: data.amount, currency: data.currency,
+          date: data.date.toISOString().split('T')[0], income_type: data.income_type,
+          description: data.description || null, source: data.source || null,
+          client_id: data.client_id || null, project_id: data.project_id || null,
           recurrence: data.recurrence,
           recurrence_end_date: data.recurrence_end_date?.toISOString().split('T')[0] || null,
-          is_taxable: data.is_taxable,
-          notes: data.notes || null,
+          is_taxable: data.is_taxable, notes: data.notes || null,
           entity_id: data.entity_id || null,
         })
-        .select()
-        .single();
+        .select().single();
 
       if (error) throw error;
-      
       await triggers.income(currentCount);
 
       await insertAuditLog(user.id, {
@@ -106,17 +90,16 @@ export function useCreateIncome() {
         entity_name: data.source || data.description || null,
         new_values: { amount: data.amount, source: data.source, income_type: data.income_type },
       });
-      
       return newIncome;
     },
     onSuccess: () => {
       afterIncome();
       invalidate('user-level', 'user-achievements');
       trackAction('add_income', 1);
-      toast.success('Ingreso registrado');
+      t.success('Ingreso registrado', 'Income recorded');
     },
     onError: (error) => {
-      toast.error('Error al registrar ingreso');
+      t.error('Error al registrar ingreso', 'Error recording income');
       console.error(error);
     },
   });
@@ -124,36 +107,27 @@ export function useCreateIncome() {
 
 export function useUpdateIncome() {
   const { afterIncome } = useInvalidateRelated();
+  const t = useLocalizedToast();
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<IncomeFormData> }) => {
       const updateData: any = { ...data };
-      
       if (data.date) {
-        updateData.date = data.date instanceof Date 
-          ? data.date.toISOString().split('T')[0] 
-          : data.date;
+        updateData.date = data.date instanceof Date ? data.date.toISOString().split('T')[0] : data.date;
       }
-      
       if (data.recurrence_end_date) {
         updateData.recurrence_end_date = data.recurrence_end_date instanceof Date
-          ? data.recurrence_end_date.toISOString().split('T')[0]
-          : data.recurrence_end_date;
+          ? data.recurrence_end_date.toISOString().split('T')[0] : data.recurrence_end_date;
       }
-
-      const { error } = await supabase
-        .from('income')
-        .update(updateData)
-        .eq('id', id);
-
+      const { error } = await supabase.from('income').update(updateData).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       afterIncome();
-      toast.success('Ingreso actualizado');
+      t.success('Ingreso actualizado', 'Income updated');
     },
     onError: (error) => {
-      toast.error('Error al actualizar ingreso');
+      t.error('Error al actualizar ingreso', 'Error updating income');
       console.error(error);
     },
   });
@@ -162,6 +136,7 @@ export function useUpdateIncome() {
 export function useDeleteIncome() {
   const { user } = useAuth();
   const { afterIncome } = useInvalidateRelated();
+  const t = useLocalizedToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -178,10 +153,10 @@ export function useDeleteIncome() {
     },
     onSuccess: () => {
       afterIncome();
-      toast.success('Ingreso movido a la papelera');
+      t.success('Ingreso movido a la papelera', 'Income moved to trash');
     },
     onError: (error) => {
-      toast.error('Error al eliminar ingreso');
+      t.error('Error al eliminar ingreso', 'Error deleting income');
       console.error(error);
     },
   });
@@ -228,12 +203,9 @@ export function useIncomeSummary(year?: number, entityId?: string | null) {
       });
 
       return {
-        totalIncome,
-        taxableIncome,
+        totalIncome, taxableIncome,
         nonTaxableIncome: totalIncome - taxableIncome,
-        byType,
-        byMonth,
-        count: data.length,
+        byType, byMonth, count: data.length,
       };
     },
     enabled: !!user,

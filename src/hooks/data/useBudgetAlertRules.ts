@@ -1,20 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLocalizedToast } from '@/hooks/utils/useLocalizedToast';
 
 export interface BudgetAlertRule {
-  id: string;
-  user_id: string;
-  name: string;
-  category: string | null;
+  id: string; user_id: string; name: string; category: string | null;
   condition_type: 'exceeds' | 'approaches' | 'daily_exceeds';
-  threshold_amount: number;
-  threshold_percentage: number | null;
-  is_active: boolean;
-  notify_method: string;
-  last_triggered_at: string | null;
-  entity_id: string | null;
-  created_at: string;
+  threshold_amount: number; threshold_percentage: number | null;
+  is_active: boolean; notify_method: string; last_triggered_at: string | null;
+  entity_id: string | null; created_at: string;
 }
 
 export function useBudgetAlertRules() {
@@ -22,11 +16,8 @@ export function useBudgetAlertRules() {
   return useQuery({
     queryKey: ['budget-alert-rules', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('budget_alert_rules')
-        .select('*')
-        .eq('user_id', user!.id)
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('budget_alert_rules').select('*')
+        .eq('user_id', user!.id).order('created_at', { ascending: false });
       if (error) throw error;
       return (data || []) as BudgetAlertRule[];
     },
@@ -37,41 +28,50 @@ export function useBudgetAlertRules() {
 export function useCreateAlertRule() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const t = useLocalizedToast();
+
   return useMutation({
     mutationFn: async (rule: Partial<BudgetAlertRule>) => {
-      const { error } = await supabase
-        .from('budget_alert_rules')
-        .insert({ ...rule, user_id: user!.id } as any);
+      const { error } = await supabase.from('budget_alert_rules').insert({ ...rule, user_id: user!.id } as any);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['budget-alert-rules'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['budget-alert-rules'] });
+      t.success('Regla de alerta creada', 'Alert rule created');
+    },
   });
 }
 
 export function useUpdateAlertRule() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const t = useLocalizedToast();
+
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<BudgetAlertRule> & { id: string }) => {
-      const { error } = await supabase
-        .from('budget_alert_rules')
-        .update(updates as any)
-        .eq('id', id)
-        .eq('user_id', user!.id);
+      const { error } = await supabase.from('budget_alert_rules').update(updates as any).eq('id', id).eq('user_id', user!.id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['budget-alert-rules'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['budget-alert-rules'] });
+      t.success('Regla actualizada', 'Rule updated');
+    },
   });
 }
 
 export function useDeleteAlertRule() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const t = useLocalizedToast();
+
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('budget_alert_rules').delete().eq('id', id).eq('user_id', user!.id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['budget-alert-rules'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['budget-alert-rules'] });
+      t.success('Regla eliminada', 'Rule deleted');
+    },
   });
 }

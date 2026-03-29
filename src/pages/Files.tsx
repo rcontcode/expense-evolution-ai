@@ -30,6 +30,10 @@ import {
 import { format, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { toast } from 'sonner';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 type OriginFilter = 'all' | 'receipt' | 'contract';
 type StatusFilter = 'all' | 'pending' | 'processed' | 'approved' | 'rejected';
@@ -235,14 +239,16 @@ export default function FilesPage() {
     }
   }, [selectedFiles, handleDownload]);
 
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+
+  const handleBulkDeleteRequest = useCallback(() => {
+    if (selectedFiles.length === 0 || !user) return;
+    setBulkDeleteConfirmOpen(true);
+  }, [selectedFiles, user]);
+
   const handleBulkDelete = useCallback(async () => {
     if (selectedFiles.length === 0 || !user) return;
-    const confirmed = window.confirm(
-      language === 'es'
-        ? `¿Eliminar ${selectedFiles.length} archivo(s)? Esta acción no se puede deshacer.`
-        : `Delete ${selectedFiles.length} file(s)? This cannot be undone.`
-    );
-    if (!confirmed) return;
+    setBulkDeleteConfirmOpen(false);
     setBulkDeleting(true);
     let count = 0;
     for (const f of selectedFiles) {
@@ -359,11 +365,33 @@ export default function FilesPage() {
       {/* Bulk Actions */}
       <FileBulkActions
         selectedCount={selected.size}
-        onBulkDelete={handleBulkDelete}
+        onBulkDelete={handleBulkDeleteRequest}
         onBulkDownload={handleBulkDownload}
         onClearSelection={() => setSelected(new Set())}
         isDeleting={bulkDeleting}
       />
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={bulkDeleteConfirmOpen} onOpenChange={setBulkDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {language === 'es' ? '¿Eliminar archivos?' : 'Delete files?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {language === 'es'
+                ? `Se eliminarán ${selectedFiles.length} archivo(s). Esta acción no se puede deshacer.`
+                : `${selectedFiles.length} file(s) will be deleted. This cannot be undone.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{language === 'es' ? 'Cancelar' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {language === 'es' ? 'Eliminar' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* File list */}
       {isLoading ? (
