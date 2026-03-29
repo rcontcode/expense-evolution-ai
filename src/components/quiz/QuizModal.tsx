@@ -414,6 +414,19 @@ export const QuizModal = ({ isOpen, onClose, onComplete, referralInfo }: QuizMod
               </motion.button>
             ))}
           </div>
+          {/* Note when "Otro/Other" is selected in country step */}
+          {mcStep.field === "country" && (formData.country === "🌍 Otro" || formData.country === "🌍 Other") && (
+            <motion.p
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-amber-400/90 text-sm text-center flex items-center justify-center gap-1.5"
+            >
+              <Sparkles className="w-4 h-4" />
+              {language === "es" 
+                ? "EvoFinz funciona en cualquier país. Solo las herramientas fiscales son exclusivas de Chile y Canadá por ahora."
+                : "EvoFinz works in any country. Only tax tools are currently exclusive to Chile and Canada."}
+            </motion.p>
+          )}
           {errors[mcStep.field] && (
             <p className="text-red-400 text-sm text-center">{errors[mcStep.field]}</p>
           )}
