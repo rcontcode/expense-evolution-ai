@@ -113,7 +113,7 @@ export function useCompleteHabit() {
       const { error: logError } = await supabase.from('financial_habit_logs').insert({ user_id: user.id, habit_id: habitId, notes });
       if (logError) throw logError;
 
-      const { data: habit } = await supabase.from('financial_habits').select('current_streak, best_streak, last_completed_at').eq('id', habitId).single();
+      const { data: habit } = await supabase.from('financial_habits').select('current_streak, best_streak, last_completed_at').eq('id', habitId).maybeSingle();
       if (habit) {
         const lastCompleted = habit.last_completed_at ? new Date(habit.last_completed_at) : null;
         const today = new Date();

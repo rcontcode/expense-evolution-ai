@@ -151,7 +151,7 @@ export function useDeleteBill() {
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error('Not authenticated');
-      const { data: existing } = await supabase.from('recurring_bills').select('name, amount').eq('id', id).eq('user_id', user.id).single();
+      const { data: existing } = await supabase.from('recurring_bills').select('name, amount').eq('id', id).eq('user_id', user.id).maybeSingle();
       const { error } = await supabase.from('recurring_bills').delete().eq('id', id).eq('user_id', user.id);
       if (error) throw error;
 

@@ -255,7 +255,7 @@ export function useUpdateEducationResource() {
           .select('pages_read, total_pages, minutes_consumed, total_minutes')
           .eq('id', id)
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
         
         if (current) {
           const pagesRead = data.pages_read ?? current.pages_read ?? 0;
@@ -369,7 +369,7 @@ export function useLogDailyProgress() {
         .select('total_pages, total_minutes, progress_percentage, status')
         .eq('id', data.resource_id)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       let progressPercent = resource?.progress_percentage || 0;
       if (resource?.total_pages && resource.total_pages > 0) {

@@ -115,7 +115,7 @@ export function useDeleteFiscalEntity() {
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error('Not authenticated');
-      const { data: existing } = await supabase.from('fiscal_entities').select('name, entity_type').eq('id', id).eq('user_id', user.id).single();
+      const { data: existing } = await supabase.from('fiscal_entities').select('name, entity_type').eq('id', id).eq('user_id', user.id).maybeSingle();
       const { error } = await supabase
         .from('fiscal_entities')
         .delete()

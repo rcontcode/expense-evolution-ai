@@ -212,7 +212,7 @@ export const useDeleteMileage = () => {
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error('Not authenticated');
-      const { data: existing } = await supabase.from('mileage').select('purpose, kilometers').eq('id', id).eq('user_id', user.id).single();
+      const { data: existing } = await supabase.from('mileage').select('purpose, kilometers').eq('id', id).eq('user_id', user.id).maybeSingle();
       const { error } = await supabase.from('mileage').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id);
       if (error) throw error;
 

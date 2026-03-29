@@ -80,7 +80,7 @@ export function useDeleteCategoryBudget() {
   return useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error("Not authenticated");
-      const { data: existing } = await supabase.from("category_budgets").select("category, monthly_budget").eq("id", id).eq("user_id", user.id).single();
+      const { data: existing } = await supabase.from("category_budgets").select("category, monthly_budget").eq("id", id).eq("user_id", user.id).maybeSingle();
       const { error } = await supabase
         .from("category_budgets")
         .delete()
