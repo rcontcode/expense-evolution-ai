@@ -1,45 +1,38 @@
 
 
-# Agregar Más Libros Top a la Biblioteca
+# Corregir Disponibilidad Global: 80+ Países, No 30
 
-## Libros que YA tenemos (~98 recursos entre libros, docs, películas, series)
-Kiyosaki (10), Clear (2), Tracy (10), Rohn (10), Clason, Graham, Hill, Dalio, Macías, Robin, Stanley, Robbins, Housel, Lynch, Pabrai, Eker, Samsó, Melé, Hardy, Michalowicz, Sharma, Malkiel, Collins, Sethi, Ramsey, Bogle, Perkins, Larimore, Ferriss, DeMarco, Trench, Bach, Chilton, Pape, Fisker, Shen, Sabatier, Warren, Galán, Yeager
+## El error
+Dije "30+ países" pero los números reales son:
+- **Español**: idioma oficial en **21 países** + hablado significativamente en USA (~41M), Brasil, etc.
+- **Inglés**: idioma oficial o co-oficial en **67+ países** (USA, UK, India, Nigeria, Australia, South Africa, Philippines, etc.)
+- **Total real**: **80+ países** donde la app es útil en su idioma nativo
 
-## Libros TOP que FALTAN (25 nuevos)
+La distinción clave: la app completa funciona en **80+ países** hispanohablantes y angloparlantes. Solo los **módulos fiscales** son específicos de Canadá y Chile.
 
-**Español:**
-1. "Padre Rico, Padre Pobre para Jóvenes" — Robert Kiyosaki (versión juvenil, basics)
-2. "El Cuadrante del Flujo de Dinero" ya está. Skip.
-3. "Aprendiendo de los Mejores" — Francisco Alcaide (mindset, bestseller hispano)
-4. "De Cero a Inversionista" — Omar Educación Financiera (investing, LatAm)
-5. "Empieza con el Porqué" — Simon Sinek (mindset)
-6. "El Club de las 5 de la Mañana" — Robin Sharma (habits)
-7. "Los 7 Hábitos de la Gente Altamente Efectiva" — Stephen Covey (habits)
-8. "La Semana Laboral de 4 Horas" — Tim Ferriss (entrepreneurship, versión ES)
-9. "El Efecto Compuesto" — Darren Hardy (habits, versión ES)
-10. "Despierta tu Héroe Interior" — Víctor Hugo Manzanilla (mindset, LatAm)
+## Cambios
 
-**English:**
-11. "Rich Dad Poor Dad for Teens" — Robert Kiyosaki (basics)
-12. "The Lean Startup" — Eric Ries (entrepreneurship)
-13. "Start with Why" — Simon Sinek (mindset)
-14. "The 7 Habits of Highly Effective People" — Stephen Covey (habits)
-15. "The Richest Man Who Ever Lived" — Steven K. Scott (wealth)
-16. "You Are a Badass at Making Money" — Jen Sincero (mindset)
-17. "The Dhandho Investor" ya está. Skip.
-18. "Rich AF" — Vivian Tu (basics, Gen Z)
-19. "The Algebra of Wealth" — Scott Galloway (wealth)
-20. "Same as Ever" — Morgan Housel (mindset)
-21. "Just Keep Buying" — Nick Maggiulli (investing)
-22. "The Subtle Art of Not Giving a F*ck" — Mark Manson (mindset)
-23. "Can't Hurt Me" — David Goggins (mindset)
-24. "Never Split the Difference" — Chris Voss (business)
-25. "Build the Life You Want" — Arthur C. Brooks (mindset)
+### 1. `src/components/landing/AnimatedStats.tsx` (línea 18)
+- `"2" / "Países soportados"` → `"80+"` / `"Países disponibles" / "Countries available"`
 
-## Implementación
+### 2. `src/components/landing/GuaranteesSection.tsx` (líneas 68-72)
+- Trust indicator: `"🇨🇦 🇨🇱" / "Países Soportados"` → `"80+"` / `"Países Disponibles"` con sublabel: `"Impuestos: 🇨🇦🇨🇱 · Más pronto" / "Tax: 🇨🇦🇨🇱 · More soon"`
 
-**Archivo**: `src/components/mentorship/FinancialLibrary.tsx`
-- Insertar 25 nuevos libros en el array `BOOKS` antes de la línea 150 (cierre del array)
-- Organizados en secciones con comentarios: `// ========== MODERN CLASSICS (ES) ==========` y `// ========== MODERN CLASSICS (EN) ==========`
-- Cada uno con: title, author, description, link (Amazon real), platform, language, category
+### 3. `src/components/landing/FAQSection.tsx` (líneas 377-378 y 414-415)
+- Reescribir respuesta ES: "EvoFinz está disponible para usuarios en **80+ países** de habla hispana e inglesa. Todas las herramientas de finanzas personales, mentoría, presupuestos, FIRE y patrimonio neto funcionan sin importar tu ubicación. Los **módulos fiscales especializados** (deducciones, calendarios, formularios) están actualmente disponibles para Canadá (CRA) y Chile (SII), con más jurisdicciones próximamente (México, España, Colombia)."
+- Misma lógica en EN
+
+### 4. `src/components/landing/TargetAudienceSection.tsx`
+- Agregar badge bajo el header: `"Disponible en 20+ países hispanohablantes y 60+ angloparlantes" / "Available in 20+ Spanish-speaking and 60+ English-speaking countries"`
+
+### 5. `src/data/user-guide-content.ts` (líneas 37-39 y 44-50)
+- En `whatIs.desc`: agregar mención de disponibilidad global (80+ países)
+- En `forWhom.items`: agregar item `"🌎 Usuarios en 20+ países hispanohablantes y 60+ angloparlantes (impuestos: 🇨🇦🇨🇱)"`
+
+## Archivos a modificar
+1. `src/components/landing/AnimatedStats.tsx`
+2. `src/components/landing/GuaranteesSection.tsx`
+3. `src/components/landing/FAQSection.tsx`
+4. `src/components/landing/TargetAudienceSection.tsx`
+5. `src/data/user-guide-content.ts`
 
